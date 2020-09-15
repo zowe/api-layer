@@ -17,12 +17,10 @@ import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
-import java.io.IOException;
 import java.util.Objects;
 
 @Slf4j
 public class ZaasClientImpl implements ZaasClient {
-    private static final String TOKEN_PREFIX = "apimlAuthenticationToken=";
     private final TokenService tokens;
     private final PassTicketService passTickets;
 
@@ -34,7 +32,6 @@ public class ZaasClientImpl implements ZaasClient {
             tokens = new ZaasJwtService(httpClientProvider, baseUrl);
             passTickets = new PassTicketServiceImpl(httpClientProvider, baseUrl);
         } catch (ZaasConfigurationException e) {
-            log.error(e.getErrorCode().toString());
             throw e;
         }
     }
@@ -64,14 +61,12 @@ public class ZaasClientImpl implements ZaasClient {
     @Override
     public String login(String userId, String password) throws ZaasClientException {
         if (userId == null || password == null || userId.isEmpty() || password.isEmpty()) {
-            log.error(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD.toString());
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         }
 
         try {
             return tokens.login(userId, password);
         } catch (ZaasClientException e) {
-            log.error(e.getErrorCode().toString());
             throw e;
         }
     }
@@ -85,7 +80,6 @@ public class ZaasClientImpl implements ZaasClient {
         try {
             return tokens.login(authorizationHeader);
         } catch (ZaasClientException e) {
-            log.error(e.getErrorCode().toString());
             throw e;
         }
     }
@@ -95,7 +89,6 @@ public class ZaasClientImpl implements ZaasClient {
         try {
             return tokens.query(token);
         } catch (ZaasClientException e) {
-            log.error(e.getErrorCode().toString());
             throw e;
         }
     }
@@ -113,10 +106,8 @@ public class ZaasClientImpl implements ZaasClient {
         try {
             return passTickets.passTicket(jwtToken, applicationId);
         } catch (ZaasClientException e) {
-            log.error(e.getErrorCode().toString());
             throw e;
         } catch (ZaasConfigurationException e) {
-            log.error(e.getErrorCode().toString());
             throw e;
         }
     }
@@ -126,11 +117,9 @@ public class ZaasClientImpl implements ZaasClient {
         try {
             tokens.logout(jwtToken);
         } catch (ZaasClientException e) {
-            log.error(e.getErrorCode().toString());
             throw e;
         }
         catch (ZaasConfigurationException e) {
-            log.error(e.getErrorCode().toString());
             throw e;
         }
     }

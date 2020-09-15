@@ -364,42 +364,18 @@ public class AuthenticationService {
      * 2. Authorization header
      *
      * @param request the http request
+     * @throws TokenFormatNotValidException if the token format is not valid or the either the cookie or authorization header is empty
      * @return the JWT token
      */
-
-//    public Optional<String> getJwtTokenFromRequest(HttpServletRequest request) {
-//        Optional<String> fromCookie = getJwtTokenFromCookie(request);
-//        if (!fromCookie.isPresent()) {
-//            return extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
-//        }
-//        return fromCookie;
-//    }
-
-    // TODO this method cause problems
     public Optional<String> getJwtTokenFromRequest(HttpServletRequest request) {
         Optional<String> jwtToken = getJwtTokenFromCookie(request);
         if (!jwtToken.isPresent()) {
             jwtToken = extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
             if (!jwtToken.isPresent()) {
-                throw new TokenFormatNotValidException("The token you are trying to logout is not valid or not present in the cookie");
+                throw new TokenFormatNotValidException("The token you are trying to logout is not valid or not present in the header");
             }
         }
         return jwtToken;
-    }
-
-    /**
-     * Get the JWT token from the cookie to process the logout
-     *
-     * @param request the http request
-     * @throws TokenFormatNotValidException if the token format is not valid or the cookie is empty
-     * @return the JWT token
-     */
-    public Optional<String> getJwtTokenFromRequestToLogout(HttpServletRequest request) {
-        Optional<String> fromCookie = getJwtTokenFromCookie(request);
-        if (!fromCookie.isPresent()) {
-            throw new TokenFormatNotValidException("The token you are trying to logout is not valid or not present in the cookie");
-        }
-        return fromCookie;
     }
 
     /**

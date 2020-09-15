@@ -82,21 +82,12 @@ public class ZaasClientTestControllerTest {
     }
 
     @Test
-    public void givenEmptyToken_whenPerformingLogout_thenFailLogout() throws Exception {
+    public void givenNoToken_whenPerformingLogout_thenFailLogout() throws Exception {
         this.mockMvc.perform(
             post("/api/v1/zaasClient/logout")
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(status().is(400));
+            .andExpect(status().is(500))
+            .andExpect(content().string("Missing cookie or authorization header in the request"));
     }
 
-//    @Test
-    public void test() throws Exception {
-        this.mockMvc.perform(
-            post("/api/v1/zaasClient/logout")
-                .header("Cookie", TOKEN_PREFIX + "=" + 1234)
-                .contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(status().is(400))
-            .andExpect(content().string("Invalid token provided"));
-
-    }
 }

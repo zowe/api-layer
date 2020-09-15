@@ -54,8 +54,11 @@ public class ZaasClientTestController {
     public ResponseEntity<String> forwardLogout(@RequestHeader HttpHeaders httpHeaders) throws ZaasConfigurationException {
         try {
             List<String> auth = httpHeaders.get("Cookie");
-            if(auth == null || auth.isEmpty()) {
+            if (auth == null || auth.isEmpty()) {
                 auth = httpHeaders.get("Authorization");
+                if (auth == null || auth.isEmpty()) {
+                    return ResponseEntity.status(500).body("Missing cookie or authorization header in the request");
+                }
             }
             zaasClientService.logout(auth.get(0));
         } catch (ZaasClientException e) {

@@ -209,8 +209,11 @@ public class AuthenticationServiceTest {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         MockHttpServletRequest request = new MockHttpServletRequest();
 
-        Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
-        assertFalse(optionalToken.isPresent());
+        Optional<String> optionalToken;
+        assertThrows(
+            TokenFormatNotValidException.class,
+            () -> authService.getJwtTokenFromRequest(request)
+        );
 
         request.setCookies(new Cookie("apimlAuthenticationToken", jwtToken));
 
@@ -224,8 +227,12 @@ public class AuthenticationServiceTest {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer ");
-        Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
-        assertFalse(optionalToken.isPresent());
+        Optional<String> optionalToken;
+        MockHttpServletRequest finalRequest = request;
+        assertThrows(
+            TokenFormatNotValidException.class,
+            () -> authService.getJwtTokenFromRequest(finalRequest)
+        );
 
         request = new MockHttpServletRequest();
         request.addHeader("Authorization", String.format("Bearer %s", jwtToken));
@@ -579,35 +586,35 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    void givenAValidToken_whenGetJwtTokenFromRequestToLogout_thenReturnTheToken() {
+    void givenAValidToken_whenGetJwtTokenFromRequest_thenReturnTheToken() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setCookies(new Cookie("apimlAuthenticationToken", jwtToken));
-        Optional<String> optionalToken = authService.getJwtTokenFromRequestToLogout(request);
+        Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
         assertTrue(optionalToken.isPresent());
         assertEquals(optionalToken.get(), jwtToken);
     }
 
     @Test
-    void givenTokenWithInvalidPrefix_whenGetJwtTokenFromRequestToLogout_thenThrowException() {
+    void givenTokenWithInvalidPrefix_whenGetJwtTokenFromRequest_thenThrowException() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setCookies(new Cookie("invalidName", "jwtToken"));
 
         Exception exception = assertThrows(TokenFormatNotValidException.class,
-            () -> authService.getJwtTokenFromRequestToLogout(request),
+            () -> authService.getJwtTokenFromRequest(request),
             "Expected exception is not TokenFormatNotValidException");
 
-        assertEquals("The token you are trying to logout is not valid or not present in the cookie", exception.getMessage());
+        assertEquals("The token you are trying to logout is not valid or not present in the header", exception.getMessage());
     }
 
     @Test
-    void givenRequestWithNoCookie_whenGetJwtTokenFromRequestToLogout_thenThrowException() {
+    void givenRequestWithNoCookie_whenGetJwtTokenFromRequest_thenThrowException() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         Exception exception = assertThrows(TokenFormatNotValidException.class,
-            () -> authService.getJwtTokenFromRequestToLogout(request),
+            () -> authService.getJwtTokenFromRequest(request),
             "Expected exception is not TokenFormatNotValidException");
 
-        assertEquals("The token you are trying to logout is not valid or not present in the cookie", exception.getMessage());
+        assertEquals("The token you are trying to logout is not valid or not present in the header", exception.getMessage());
     }
 }
