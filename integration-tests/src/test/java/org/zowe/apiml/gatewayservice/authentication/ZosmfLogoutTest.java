@@ -10,7 +10,6 @@
 package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
@@ -30,8 +29,4 @@ public class ZosmfLogoutTest extends LogoutTest {
         providers.switchProvider("zosmf");
     }
 
-    @AfterAll
-    static void switchToDefaultProvider() {
-        providers.switchProvider(null);
-    }
 }

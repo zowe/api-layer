@@ -16,7 +16,6 @@ import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.ssl.*;
 import org.json.JSONObject;
@@ -70,6 +69,38 @@ abstract class Login {
         return PASSWORD;
     }
 
+    protected static RestAssuredConfig clientCertValid;
+    protected static RestAssuredConfig clientCertApiml;
+    protected static RestAssuredConfig tlsWithoutCert;
+
+    @BeforeAll
+    static void prepareSslAuthentication() throws Exception {
+        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
+
+        SSLContext sslContext = SSLContextBuilder
+            .create()
+            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
+                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD,
+                (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apimtst")
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+        clientCertValid = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext)));
+
+        SSLContext sslContext2 = SSLContextBuilder
+            .create()
+            .loadKeyMaterial(ResourceUtils.getFile(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore()),
+                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+        clientCertApiml = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext2)));
+
+        SSLContext sslContext3 = SSLContextBuilder
+            .create()
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+        tlsWithoutCert =  RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3)));
+    }
+
     @AfterAll
     static void switchToOriginalProvider() {
         providers.switchProvider(null);
@@ -104,7 +135,6 @@ abstract class Login {
     }
 
     protected void assertValidAuthToken(Cookie cookie, Optional<String> username) {
-
         assertThat(cookie.isHttpOnly(), is(true));
         assertThat(cookie.getValue(), is(notNullValue()));
         assertThat(cookie.getMaxAge(), is(-1));
@@ -261,27 +291,11 @@ abstract class Login {
 
         return cookie.getValue();
     }
-    //@formatter:on
 
     @Test
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
-        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
 
-        SSLContext sslContext = SSLContextBuilder
-            .create()
-            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
-                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD,
-                (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apimtst")
-            // trust server blind folded. Need to test only that the client pass appropriate x509 certificate.
-            .loadTrustMaterial(null, trustStrategy)
-            .build();
-
-        RequestSpecification clientCertificateRequestConfig = given()
-            .config(RestAssuredConfig
-                .newConfig()
-                .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext))));
-
-        Cookie cookie = clientCertificateRequestConfig
+        Cookie cookie = given().config(clientCertValid)
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
             .statusCode(is(SC_NO_CONTENT))
@@ -289,6 +303,27 @@ abstract class Login {
             .extract().detailedCookie(COOKIE_NAME);
 
         assertValidAuthToken(cookie, Optional.of("APIMTST"));
-
     }
+
+    @Test
+    void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
+        Cookie cookie = given().config(clientCertValid)
+            .auth().basic("Bob","The Builder")
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
+    }
+
+    @Test
+    void givenApimlsCert_whenAuth_thenUnauthorized() throws Exception {
+        given().config(clientCertApiml)
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_BAD_REQUEST));
+    }
+    //@formatter:on
 }
