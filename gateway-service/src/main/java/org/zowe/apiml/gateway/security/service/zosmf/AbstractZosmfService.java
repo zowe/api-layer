@@ -142,23 +142,4 @@ public abstract class AbstractZosmfService {
             })
             .orElse(null);
     }
-
-    /**
-     * Method reads authentication values from answer of REST call. It read all supported tokens, which are returned
-     * from z/OSMF.
-     *
-     * @param responseEntity answer of REST call
-     * @return AuthenticationResponse with all supported tokens from responseEntity
-     */
-    protected AuthenticationResponse getAuthenticationResponse(ResponseEntity<String> responseEntity) {
-        final List<String> cookies = responseEntity.getHeaders().get(HttpHeaders.SET_COOKIE);
-        final EnumMap<TokenType, String> tokens = new EnumMap<>(TokenType.class);
-        if (cookies != null) {
-            for (final TokenType tokenType : TokenType.values()) {
-                final String token = readTokenFromCookie(cookies, tokenType.getCookieName());
-                if (token != null) tokens.put(tokenType, token);
-            }
-        }
-        return new AuthenticationResponse(tokens);
-    }
 }
