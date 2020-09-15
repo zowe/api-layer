@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.login.x509;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
@@ -70,6 +71,14 @@ class X509AuthenticationProviderTest {
     }
 
     @Test
+    void givenZosmfIsntPresentBecauseOfError_whenProvidedCertificate_shouldReturnToken() {
+        when(providers.isZosmfAvailable()).thenThrow(new AuthenticationServiceException("zOSMF id invalid"));
+        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn("user");
+        TokenAuthentication token = (TokenAuthentication) x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate));
+        assertEquals("jwt", token.getCredentials());
+    }
+
+    @Test
     void givenZosmfIsntPresent_whenWrongTokenProvided_ThrowException() {
         when(providers.isZosmfAvailable()).thenReturn(false);
         when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn("user");
@@ -87,6 +96,12 @@ class X509AuthenticationProviderTest {
     void givenZosmfIsntPresent_givenZosmfIsntPresent_whenCommonNameIsNotCorrect_returnNull() {
         when(providers.isZosmfAvailable()).thenReturn(false);
         when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn("wrong username");
+        assertNull(x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)));
+    }
+
+    @Test
+    void givenX509AuthIsDisabled_whenRequested_thenNullIsReturned() {
+        x509AuthenticationProvider.isClientCertEnabled = false;
         assertNull(x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)));
     }
 
