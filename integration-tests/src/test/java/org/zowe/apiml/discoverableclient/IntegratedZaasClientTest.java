@@ -116,7 +116,7 @@ class IntegratedZaasClientTest {
     }
 
     @Test
-    void givenValidToken_whenCallingLogout_thenSuccess() {
+    void givenValidToken_whenCallingLogoutOldPathFormat_thenSuccess() {
         String token = "validToken";
 
         given()
@@ -129,14 +129,62 @@ class IntegratedZaasClientTest {
     }
 
     @Test
+    void givenValidToken_whenCallingLogout_thenSuccess() {
+        String token = "validToken";
+
+        given()
+            .contentType(JSON)
+            .cookie(COOKIE_NAME, generateToken())
+            .when()
+            .post(ZAAS_CLIENT_URI + LOGOUT)
+            .then()
+            .statusCode(is(SC_NO_CONTENT));
+    }
+
+    @Test
+    void givenInvalidToken_whenCallingLogoutOldPathFormat_thenFail() {
+
+        given()
+            .contentType(JSON)
+            .cookie(COOKIE_NAME, "invalidToken")
+            .when()
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGOUT)
+            .then()
+            .statusCode(is(SC_BAD_REQUEST));
+    }
+
+    @Test
     void givenInvalidToken_whenCallingLogout_thenFail() {
+
+        given()
+            .contentType(JSON)
+            .cookie(COOKIE_NAME, "invalidToken")
+            .when()
+            .post(ZAAS_CLIENT_URI + LOGOUT)
+            .then()
+            .statusCode(is(SC_BAD_REQUEST));
+    }
+
+    @Test
+    void givenNoTokenInHeader_whenCallingLogoutOldPathFormat_thenFail() {
 
         given()
             .contentType(JSON)
             .when()
             .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGOUT)
             .then()
-            .statusCode(is(SC_BAD_REQUEST));
+            .statusCode(is(SC_INTERNAL_SERVER_ERROR));
+    }
+
+    @Test
+    void givenNoTokenInHeader_whenCallingLogout_thenFail() {
+
+        given()
+            .contentType(JSON)
+            .when()
+            .post(ZAAS_CLIENT_URI + LOGOUT)
+            .then()
+            .statusCode(is(SC_INTERNAL_SERVER_ERROR));
     }
 
     private String generateToken() {
