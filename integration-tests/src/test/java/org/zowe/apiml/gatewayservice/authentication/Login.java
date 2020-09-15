@@ -22,7 +22,6 @@ import org.apache.http.ssl.*;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 import org.springframework.util.ResourceUtils;
-import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
 
