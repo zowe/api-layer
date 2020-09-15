@@ -43,6 +43,7 @@ public class SecurityUtils {
 
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
     public final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
+    public final static String GATEWAY_LOGOUT_ENDPOINT = "/auth/logout";
     public final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
     private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
 
