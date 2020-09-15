@@ -139,7 +139,7 @@ public class ZosmfService extends AbstractZosmfService {
 
             ZosmfInfo zosmfInfo = info.getBody();
 
-            if ((zosmfInfo != null) && StringUtils.isEmpty(zosmfInfo.getSafRealm())) {
+            if (zosmfInfo == null || StringUtils.isEmpty(zosmfInfo.getSafRealm())) {
                 apimlLog.log("apiml.security.zosmfDomainIsEmpty", ZOSMF_DOMAIN);
                 throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
             }
