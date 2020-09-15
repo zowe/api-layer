@@ -49,6 +49,8 @@ apiml:
         auth:
             provider: zosmf
             jwtKeyAlias: jwtsecret
+        x509:
+            enabled: false
 
 spring:
     application:
