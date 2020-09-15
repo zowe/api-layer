@@ -23,22 +23,22 @@ class CheckEnvironment {
 
     @Test
     void checkZosmfIsUpAndApimtstIsWorking() {
-        String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-        String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+        String username = ConfigReader.environmentConfiguration().getCredentials().getUser();
+        String password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
 
-        String ZOSMF_HOST = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
-        int ZOSMF_PORT = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
-        String ZOSMF_AUTH_ENDPOINT = "/zosmf/services/authenticate";
-        String ZOSMF_PROTECTED_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
-        String ZOSMF_SCHEME = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
+        String zosmfHost = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
+        int zosmfPort = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
+        String zosmfAuthEndpoint = "/zosmf/services/authenticate";
+        String zosmfProtectedEndpoint = "/zosmf/restfiles/ds?dslevel=sys1.p*";
+        String zosmfScheme = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
 
         // login with Basic and get JWT
         String basicJWT =
-            given().auth().basic(USERNAME, PASSWORD)
+            given().auth().basic(username, password)
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
                 //.post("https://usilca32.lvn.broadcom.net:1443/zosmf/services/authenticate")
-                .post(String.format("%s://%s:%d%s", ZOSMF_SCHEME, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_AUTH_ENDPOINT))
+                .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
                 .then().statusCode(is(SC_OK))
                 .extract().cookie("jwtToken");
 
@@ -48,7 +48,7 @@ class CheckEnvironment {
             .header("X-CSRF-ZOSMF-HEADER", "")
             .when()
             //.get("https://usilca32.lvn.broadcom.net:1443/zosmf/restfiles/ds?dslevel=sys1.p*")
-            .get(String.format("%s://%s:%d%s", ZOSMF_SCHEME, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_PROTECTED_ENDPOINT))
+            .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfProtectedEndpoint))
             .then().statusCode(SC_OK);
     }
 }
