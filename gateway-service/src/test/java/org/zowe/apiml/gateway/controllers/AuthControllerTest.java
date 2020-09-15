@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
-import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceFacade;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -46,13 +46,13 @@ class AuthControllerTest {
     private JwtSecurityInitializer jwtSecurityInitializer;
 
     @Mock
-    private ZosmfServiceFacade zosmfServiceFacade;
+    private ZosmfService zosmfService;
 
     private JWK jwk1, jwk2, jwk3;
 
     @BeforeEach
     void setUp() throws ParseException {
-        authController = new AuthController(authenticationService, jwtSecurityInitializer, zosmfServiceFacade);
+        authController = new AuthController(authenticationService, jwtSecurityInitializer, zosmfService);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
 
         jwk1 = getJwk(1);
@@ -97,7 +97,7 @@ class AuthControllerTest {
         when(zosmf.getKeys()).thenReturn(
             zosmfKeys ? Arrays.asList(jwk1, jwk2) : Collections.emptyList()
         );
-        when(zosmfServiceFacade.getPublicKeys()).thenReturn(zosmf);
+        when(zosmfService.getPublicKeys()).thenReturn(zosmf);
         when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(jwk3);
     }
 

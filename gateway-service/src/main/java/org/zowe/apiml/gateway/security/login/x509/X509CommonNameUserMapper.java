@@ -7,12 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.service.zosmf;
+package org.zowe.apiml.gateway.security.login.x509;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.stereotype.Service;
-import org.zowe.apiml.gateway.security.login.x509.X509Authentication;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -21,13 +19,12 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-@Service
 @Slf4j
-public class X509AuthenticationService implements X509Authentication {
+public class X509CommonNameUserMapper implements X509AuthenticationMapper {
 
     private static final String CLIENT_AUTH_OID = "1.3.6.1.5.5.7.3.2";
 
-    public String mapUserToCertificate(X509Certificate certificate) {
+    public String mapCertificateToMainframeUserId(X509Certificate certificate) {
         if (isClientAuthCertificate(certificate)) {
             String dn = certificate.getSubjectX500Principal().getName();
             LdapName ldapDN = getLdapName(dn);

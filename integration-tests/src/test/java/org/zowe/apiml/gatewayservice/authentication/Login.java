@@ -18,20 +18,19 @@ import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
+import org.apache.http.ssl.*;
 import org.json.JSONObject;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import javax.net.ssl.SSLContext;
+import java.net.Socket;
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.util.Map;
+import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -43,7 +42,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 
-class Login {
+abstract class Login {
     protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     protected final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
@@ -100,7 +99,12 @@ class Login {
         assertValidAuthToken(cookie);
     }
 
-    private void assertValidAuthToken(Cookie cookie) {
+    protected void assertValidAuthToken (Cookie cookie) {
+        assertValidAuthToken(cookie, Optional.empty());
+    }
+
+    protected void assertValidAuthToken(Cookie cookie, Optional<String> username) {
+
         assertThat(cookie.isHttpOnly(), is(true));
         assertThat(cookie.getValue(), is(notNullValue()));
         assertThat(cookie.getMaxAge(), is(-1));
@@ -108,7 +112,7 @@ class Login {
         int i = cookie.getValue().lastIndexOf('.');
         String untrustedJwtString = cookie.getValue().substring(0, i + 1);
         Claims claims = parseJwtString(untrustedJwtString);
-        assertThatTokenIsValid(claims);
+        assertThatTokenIsValid(claims, username);
     }
 
     @Test
@@ -130,8 +134,12 @@ class Login {
     }
 
     protected void assertThatTokenIsValid(Claims claims) {
+        assertThatTokenIsValid(claims, Optional.empty());
+    }
+
+    protected void assertThatTokenIsValid(Claims claims, Optional<String> username) {
         assertThat(claims.getId(), not(isEmptyString()));
-        assertThat(claims.getSubject(), is(getUsername()));
+        assertThat(claims.getSubject(), is(username.orElseGet(this::getUsername)));
     }
 
     protected Claims parseJwtString(String untrustedJwtString) {
@@ -255,18 +263,15 @@ class Login {
     }
     //@formatter:on
 
-    /*
-     * This test will be for MF once the implementation of certificate mapping in SAF is available
-     */
     @Test
-    @NotForMainframeTest
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
         TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
 
         SSLContext sslContext = SSLContextBuilder
             .create()
             .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
-                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
+                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD,
+                (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apimtst")
             // trust server blind folded. Need to test only that the client pass appropriate x509 certificate.
             .loadTrustMaterial(null, trustStrategy)
             .build();
@@ -283,7 +288,7 @@ class Login {
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
 
-        assertValidAuthToken(cookie);
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
 
     }
 }

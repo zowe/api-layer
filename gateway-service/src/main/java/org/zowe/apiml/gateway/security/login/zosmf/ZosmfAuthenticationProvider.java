@@ -17,10 +17,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.ZosmfService;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 
-import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.JWT;
-import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.LTPA;
+import static  org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
+import static  org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
 /**
  * Authentication provider that verifies credentials against z/OSMF service

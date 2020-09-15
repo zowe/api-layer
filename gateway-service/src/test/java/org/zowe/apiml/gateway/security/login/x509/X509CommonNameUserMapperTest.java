@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.service.zosmf;
+package org.zowe.apiml.gateway.security.login.x509;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -20,9 +20,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 
-class X509AuthenticationServiceTest {
+class X509CommonNameUserMapperTest {
 
-    private final X509AuthenticationService x509AuthenticationService = new X509AuthenticationService();
+    private final X509CommonNameUserMapper x509CommonNameUserMapper = new X509CommonNameUserMapper();
 
 
     @Test
@@ -30,7 +30,7 @@ class X509AuthenticationServiceTest {
         X509Certificate x509Certificate =
             X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "CN=user,OU=CA CZ,O=Broadcom,L=Prague,ST=Czechia,C=CZ");
 
-        assertEquals("user", x509AuthenticationService.mapUserToCertificate(x509Certificate));
+        assertEquals("user", x509CommonNameUserMapper.mapCertificateToMainframeUserId(x509Certificate));
     }
 
     @Test
@@ -38,13 +38,13 @@ class X509AuthenticationServiceTest {
         X509Certificate x509Certificate =
             X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "OU=CA CZ,O=Broadcom,L=Prague,ST=Czechia,C=CZ");
 
-        assertNull(x509AuthenticationService.mapUserToCertificate(x509Certificate));
+        assertNull(x509CommonNameUserMapper.mapCertificateToMainframeUserId(x509Certificate));
     }
 
     @Test
     void whenWrongDN_exceptionIsThrown() {
         Exception exception = assertThrows(AuthenticationServiceException.class, () -> {
-            x509AuthenticationService.getLdapName("wrong DN");
+            x509CommonNameUserMapper.getLdapName("wrong DN");
         });
         assertEquals("Not able to create ldap name from certificate. Cause: Invalid name: wrong DN", exception.getMessage());
     }
@@ -58,7 +58,7 @@ class X509AuthenticationServiceTest {
         } catch (CertificateParsingException e) {
             throw new RuntimeException("Error mocking exception");
         }
-        Exception exception = assertThrows(AuthenticationServiceException.class, () -> x509AuthenticationService.isClientAuthCertificate(x509Certificate));
+        Exception exception = assertThrows(AuthenticationServiceException.class, () -> x509CommonNameUserMapper.isClientAuthCertificate(x509Certificate));
         assertEquals("Can't get extensions from certificate", exception.getMessage());
     }
 
@@ -71,7 +71,7 @@ class X509AuthenticationServiceTest {
         } catch (CertificateParsingException e) {
             throw new RuntimeException("Error mocking exception");
         }
-        assertFalse(x509AuthenticationService.isClientAuthCertificate(x509Certificate));
+        assertFalse(x509CommonNameUserMapper.isClientAuthCertificate(x509Certificate));
     }
 
 }
