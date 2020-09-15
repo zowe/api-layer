@@ -32,6 +32,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -232,22 +233,17 @@ public class CachedProductFamilyService {
      * @return the base URL
      */
     private String getInstanceBasePath(InstanceInfo instanceInfo) {
-        String instanceBasePath = instanceInfo.getHomePageUrl();
-        if (hasRealHomePage(instanceInfo)) {
-            int fourthSlashIndex = StringUtils.ordinalIndexOf(instanceBasePath, "/", 4);
-            if (fourthSlashIndex >= 0) {
-                instanceBasePath = instanceBasePath.substring(0, fourthSlashIndex);
-            }
-        }
-
-        return instanceBasePath;
+        String s = URI.create(instanceInfo.getHomePageUrl()).getPath();
+        return String.format("/%s/api/v1", s);
     }
 
     private boolean hasRealHomePage(InstanceInfo instanceInfo) {
-        String instanceHomePage = instanceInfo.getHomePageUrl();
-        return instanceHomePage != null
-            && !instanceHomePage.isEmpty()
-            && !instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId());
+        return instanceInfo != null && !instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId())
+            && hasRealHomePage(instanceInfo.getHomePageUrl());
+    }
+
+    private boolean hasRealHomePage(String instanceHomePage) {
+        return instanceHomePage != null && !instanceHomePage.isEmpty();
     }
 
     /**
@@ -327,7 +323,8 @@ public class CachedProductFamilyService {
             instanceInfo.getAppName().toLowerCase(),
             instanceInfo.getMetadata().get(SERVICE_TITLE),
             instanceInfo.getMetadata().get(SERVICE_DESCRIPTION),
-            secureEnabled, instanceHomePage,
+            secureEnabled,
+            instanceHomePage,
             instanceBasePath);
     }
 

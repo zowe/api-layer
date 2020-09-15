@@ -37,7 +37,6 @@ export default class SwaggerUI extends Component {
 
     retrieveSwagger = () => {
         const { selectedService } = this.props;
-
         if (
             selectedService.apiDoc !== null &&
             selectedService.apiDoc !== undefined &&
@@ -45,6 +44,12 @@ export default class SwaggerUI extends Component {
         ) {
             try {
                 const swagger = JSON.parse(selectedService.apiDoc);
+                if (!swagger.basePath){
+                    console.log('SELECTED SERVICE:')
+                    console.log(selectedService);
+                    console.log(`Original swagger base path: ${swagger.basePath} new base path: ${selectedService.basePath}`);
+                    swagger.basePath = selectedService.basePath // sets the base path properly, check if things with swagger docs have it proper
+                }
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
                     spec: swagger,
