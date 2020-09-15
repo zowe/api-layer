@@ -164,5 +164,4 @@ public abstract class AbstractZosmfService implements ZosmfService {
         }
         return new AuthenticationResponse(tokens);
     }
-
 }

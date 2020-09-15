@@ -37,8 +37,8 @@ import java.util.Collections;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZosmfServiceV2Test {
