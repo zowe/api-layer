@@ -53,6 +53,9 @@ class DummyLogoutTest extends LogoutTest {
 
         assertIfLogged(jwt1, false);
         assertIfLogged(jwt2, true);
+
+        SecurityUtils.logout(jwt1);
+        SecurityUtils.logout(jwt2);
     }
 
     @AfterAll

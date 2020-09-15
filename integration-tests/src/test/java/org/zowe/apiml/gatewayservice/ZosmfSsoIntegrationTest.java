@@ -48,6 +48,10 @@ public class ZosmfSsoIntegrationTest {
         token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
     }
 
+    public void tearDown() {
+        SecurityUtils.logout(token);
+    }
+
     @Test
     //@formatter:off
     public void doZosmfCallWithValidToken() {

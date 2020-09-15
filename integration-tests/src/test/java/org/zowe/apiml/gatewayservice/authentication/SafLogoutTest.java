@@ -20,6 +20,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.logout;
 
 @MainframeDependentTests
 class SafLogoutTest extends LogoutTest {
@@ -51,6 +52,9 @@ class SafLogoutTest extends LogoutTest {
 
         assertIfLogged(jwt1, false);
         assertIfLogged(jwt2, true);
+
+        logout(jwt1);
+        logout(jwt2);
     }
 
     @AfterAll

@@ -22,6 +22,7 @@ import org.apache.http.ssl.*;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 import org.springframework.util.ResourceUtils;
+import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -41,6 +42,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.logout;
 
 abstract class Login {
     protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
@@ -97,22 +99,8 @@ abstract class Login {
             .extract().detailedCookie(COOKIE_NAME);
 
         assertValidAuthToken(cookie);
-    }
 
-    protected void assertValidAuthToken (Cookie cookie) {
-        assertValidAuthToken(cookie, Optional.empty());
-    }
-
-    protected void assertValidAuthToken(Cookie cookie, Optional<String> username) {
-
-        assertThat(cookie.isHttpOnly(), is(true));
-        assertThat(cookie.getValue(), is(notNullValue()));
-        assertThat(cookie.getMaxAge(), is(-1));
-
-        int i = cookie.getValue().lastIndexOf('.');
-        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
-        Claims claims = parseJwtString(untrustedJwtString);
-        assertThatTokenIsValid(claims, username);
+        logout(cookie.getValue());
     }
 
     @Test
@@ -131,21 +119,8 @@ abstract class Login {
         String untrustedJwtString = token.substring(0, i + 1);
         Claims claims = parseJwtString(untrustedJwtString);
         assertThatTokenIsValid(claims);
-    }
 
-    protected void assertThatTokenIsValid(Claims claims) {
-        assertThatTokenIsValid(claims, Optional.empty());
-    }
-
-    protected void assertThatTokenIsValid(Claims claims, Optional<String> username) {
-        assertThat(claims.getId(), not(isEmptyString()));
-        assertThat(claims.getSubject(), is(username.orElseGet(this::getUsername)));
-    }
-
-    protected Claims parseJwtString(String untrustedJwtString) {
-        return Jwts.parserBuilder().build()
-            .parseClaimsJwt(untrustedJwtString)
-            .getBody();
+        logout(token);
     }
 
     @Test
@@ -250,9 +225,7 @@ abstract class Login {
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
 
-        assertThat(cookie.isHttpOnly(), is(true));
-        assertThat(cookie.getValue(), is(notNullValue()));
-        assertThat(cookie.getMaxAge(), is(-1));
+        assertValidAuthToken(cookie);
 
         int i = cookie.getValue().lastIndexOf('.');
         String untrustedJwtString = cookie.getValue().substring(0, i + 1);
@@ -262,6 +235,37 @@ abstract class Login {
         return cookie.getValue();
     }
     //@formatter:on
+
+    protected Claims parseJwtString(String untrustedJwtString) {
+        return Jwts.parserBuilder().build()
+            .parseClaimsJwt(untrustedJwtString)
+            .getBody();
+    }
+
+    protected void assertValidAuthToken (Cookie cookie) {
+        assertValidAuthToken(cookie, Optional.empty());
+    }
+
+    protected void assertValidAuthToken(Cookie cookie, Optional<String> username) {
+
+        assertThat(cookie.isHttpOnly(), is(true));
+        assertThat(cookie.getValue(), is(notNullValue()));
+        assertThat(cookie.getMaxAge(), is(-1));
+
+        int i = cookie.getValue().lastIndexOf('.');
+        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
+        Claims claims = parseJwtString(untrustedJwtString);
+        assertThatTokenIsValid(claims, username);
+    }
+
+    protected void assertThatTokenIsValid(Claims claims) {
+        assertThatTokenIsValid(claims, Optional.empty());
+    }
+
+    protected void assertThatTokenIsValid(Claims claims, Optional<String> username) {
+        assertThat(claims.getId(), not(isEmptyString()));
+        assertThat(claims.getSubject(), is(username.orElseGet(this::getUsername)));
+    }
 
     @Test
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
@@ -290,5 +294,6 @@ abstract class Login {
 
         assertValidAuthToken(cookie, Optional.of("APIMTST"));
 
+        logout(cookie.getValue());
     }
 }

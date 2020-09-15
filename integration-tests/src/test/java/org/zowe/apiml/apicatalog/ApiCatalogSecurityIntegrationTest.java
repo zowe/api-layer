@@ -105,6 +105,8 @@ public class ApiCatalogSecurityIntegrationTest {
                 CATALOG_SERVICE_ID, endpoint))
         .then()
             .statusCode(is(SC_OK));
+
+        SecurityUtils.logout(token);
     }
 
     @Test

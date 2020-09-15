@@ -78,6 +78,8 @@ class PassTicketTest {
             )
         .then()
             .statusCode(is(SC_OK));
+
+        logout(jwt);
     }
 
     @Test
@@ -92,6 +94,8 @@ class PassTicketTest {
             .then()
                 .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                 .body("message", containsString("Error on evaluation of PassTicket"));
+
+        logout(jwt);
     }
 
     //@formatter:off
@@ -144,6 +148,8 @@ class PassTicketTest {
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
         .then()
             .statusCode(is(SC_OK));
+
+        logout(jwt);
     }
 
     @Test
@@ -176,6 +182,8 @@ class PassTicketTest {
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
         .then()
             .statusCode(is(SC_OK));
+
+        logout(jwt);
     }
 
     @Test
@@ -279,6 +287,8 @@ class PassTicketTest {
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
+
+        logout(jwt);
     }
 
     @Test
@@ -300,6 +310,7 @@ class PassTicketTest {
             .statusCode(is(SC_BAD_REQUEST))
             .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
 
+        logout(jwt);
     }
 
     private <T extends ValidatableResponseOptions<T, R>, R extends ResponseBody<R> & ResponseOptions<R>>
@@ -316,25 +327,33 @@ class PassTicketTest {
     @Test
     @TestsNotMeantForZowe
     void givenBearerJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+        String jwt = gatewayToken();
+
         verifyPassTicketHeaders(
             given()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + gatewayToken())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
             .when()
                 .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, REQUEST_INFO_ENDPOINT))
             .then()
         );
+
+        logout(jwt);
     }
 
     @Test
     @TestsNotMeantForZowe
     void givenCookieJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+        String jwt = gatewayToken();
+
         verifyPassTicketHeaders(
             given()
-                .cookie(COOKIE, gatewayToken())
+                .cookie(COOKIE, jwt)
             .when()
                 .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, REQUEST_INFO_ENDPOINT))
             .then()
         );
+
+        logout(jwt);
     }
 
     @Test
@@ -352,27 +371,35 @@ class PassTicketTest {
     @Test
     @TestsNotMeantForZowe
     void givenBothJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+        String jwt = gatewayToken();
+
         verifyPassTicketHeaders(
             given()
-                .cookie(COOKIE, gatewayToken())
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + gatewayToken())
+                .cookie(COOKIE, jwt)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
             .when()
                 .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, REQUEST_INFO_ENDPOINT))
             .then()
         );
+
+        logout(jwt);
     }
 
     @Test
     @TestsNotMeantForZowe
     void givenBasicAndCookieJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+        String jwt = gatewayToken();
+
         verifyPassTicketHeaders(
             given()
                 .auth().preemptive().basic(USERNAME, PASSWORD)
-                .cookie(COOKIE, gatewayToken())
+                .cookie(COOKIE, jwt)
             .when()
                 .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, REQUEST_INFO_ENDPOINT))
             .then()
         );
+
+        logout(jwt);
     }
     //@formatter:on
 

@@ -95,6 +95,15 @@ public class SecurityUtils {
             .extract().cookie(ZOSMF_TOKEN);
     }
 
+    public static void logout(String jwtToken) {
+        given()
+            .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwtToken)
+        .when()
+            .post(getGateWayUrl(GATEWAY_LOGOUT_ENDPOINT))
+        .then()
+            .statusCode(is(SC_NO_CONTENT));
+    }
+
     public static SSLConfig getConfiguredSslConfig() {
         TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
         try {

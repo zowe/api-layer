@@ -146,6 +146,8 @@ class AuthenticationOnDeploymentTest {
                 });
             });
         }
+
+        SecurityUtils.logout(jwt);
     }
 
     @Test

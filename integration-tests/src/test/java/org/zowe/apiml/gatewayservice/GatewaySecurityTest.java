@@ -81,6 +81,8 @@ class GatewaySecurityTest {
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
         .then()
             .statusCode(is(SC_OK));
+
+        SecurityUtils.logout(token);
     }
 
     @Test
@@ -129,5 +131,7 @@ class GatewaySecurityTest {
 
         expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
         forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
+
+        SecurityUtils.logout(token);
     }
 }

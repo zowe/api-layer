@@ -10,6 +10,7 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -40,6 +41,11 @@ public class QueryIntegrationTest {
         RestAssured.useRelaxedHTTPSValidation();
 
         token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        SecurityUtils.logout(token);
     }
 
     //@formatter:off
