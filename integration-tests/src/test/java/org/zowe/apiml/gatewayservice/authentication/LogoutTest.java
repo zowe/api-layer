@@ -54,13 +54,7 @@ abstract class LogoutTest {
         // check if it is logged in
         assertIfLogged(jwt, true);
 
-        // make logout
-        given()
-            .cookie(COOKIE_NAME, jwt)
-        .when()
-            .post(SecurityUtils.getGateWayUrl(LOGOUT_ENDPOINT))
-        .then()
-            .statusCode(is(SC_NO_CONTENT));
+        SecurityUtils.logout(jwt);
 
         // check if it is logged in
         assertIfLogged(jwt, false);
