@@ -104,7 +104,7 @@ class ZaasJwtService implements TokenService {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
         clearZaasClientCookies();
         HttpPost httpPost = new HttpPost(logoutEndpoint);
-        if(jwtToken.startsWith("Bearer")){
+        if (jwtToken.startsWith("Bearer")) {
             httpPost.addHeader(HttpHeaders.AUTHORIZATION,jwtToken);
         } else {
             httpPost.addHeader(SM.COOKIE, jwtToken);
@@ -113,7 +113,7 @@ class ZaasJwtService implements TokenService {
     }
 
     private void clearZaasClientCookies () {
-        if(httpClientProvider instanceof ZaasHttpsClientProvider) {
+        if (httpClientProvider instanceof ZaasHttpsClientProvider) {
             ((ZaasHttpsClientProvider) httpClientProvider).clearCookieStore();
         }
     }
@@ -181,17 +181,14 @@ class ZaasJwtService implements TokenService {
         try {
 
             clientWithResponse = request.request();
-    }
-        catch (ZaasClientException e) {
-            throw e;
+        } catch (ZaasClientException e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, e);
         }
-        catch (IOException e) {
-        throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
-    } catch (Exception e) {
-        throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, e);
-    } finally {
+        catch (IOException | ZaasConfigurationException e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
+        } finally {
         finallyClose(clientWithResponse.getResponse());
-    }
+        }
     }
 
     private Object doRequest(Operation request, Token token) throws ZaasClientException {
