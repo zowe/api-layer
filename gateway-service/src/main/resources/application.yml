@@ -50,7 +50,7 @@ apiml:
             provider: zosmf
             jwtKeyAlias: jwtsecret
         x509:
-            enabled: false
+            enabled: true
 
 spring:
     application:
