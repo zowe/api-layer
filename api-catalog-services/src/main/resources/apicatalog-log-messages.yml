@@ -36,8 +36,8 @@ messages:
       number: ZWEAC104
       type: ERROR
       text: "Could not retrieve container statuses, %s"
-      reason: "One or more containers statuses could not be retrieved."
-      action: "Check the status of the message for more information and the health of Discovery Service."
+      reason: "The status of one or more containers could not be retrieved."
+      action: "Check the status of the message for more information and the health of the Discovery Service."
 
     # HTTP, Protocol messages
     # 400-499\
@@ -90,9 +90,9 @@ messages:
       text: "The home page url for service %s was not transformed. %s"
       reason: "The home page url for service was not transformed. The original url will be used."
       action: "Refer to the specific printed message. Possible causes include:\n
-      - The Gateway was not found. Transform service cannot perform the request. Wait for the Gateway to be discovered.\n
+      - The Gateway was not found. The Transform service cannot perform the request. Wait for the Gateway to be discovered.\n
       - The URI ... is not valid. Ensure the service is providing a valid url.\n
-      - Not able to select a route for url ... of the service ... Original url is used. If this is a problem, check the routing metadata of the service.\n
+      - Not able to select a route for url ... of the service ... The original url is used. If this is a problem, check the routing metadata of the service.\n
       - The path ... of the service URL ... is not valid. Ensure the service is providing the correct path.\n"
 
     - key: org.zowe.apiml.apicatalog.serviceNotFound
