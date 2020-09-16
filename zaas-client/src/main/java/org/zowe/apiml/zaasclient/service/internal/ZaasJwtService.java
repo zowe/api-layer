@@ -182,7 +182,7 @@ class ZaasJwtService implements TokenService {
 
             clientWithResponse = request.request();
         } catch (ZaasClientException e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, e);
+            throw e;
         }
         catch (IOException | ZaasConfigurationException e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);

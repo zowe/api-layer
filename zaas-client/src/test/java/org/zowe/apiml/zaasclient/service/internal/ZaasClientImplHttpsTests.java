@@ -350,4 +350,22 @@ class ZaasClientImplHttpsTests {
 
         assertTrue(exception.getMessage().contains("'ZWEAS130E', message='Invalid token provided'"));
     }
+
+    @Test
+    void givenValidTokenInBearer_whenLogout_thenSuccess() throws ZaasClientException {
+        prepareResponse(HttpStatus.SC_NO_CONTENT);
+        String token = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
+        token = "Bearer " + token;
+        String finalToken = token;
+        assertDoesNotThrow(() -> tokenService.logout(finalToken));
+    }
+
+    @Test
+    void givenLogoutRequest_whenResponseCodeIs401_thenThrowException() {
+        prepareResponse(HttpStatus.SC_NO_CONTENT);
+        when(closeableHttpResponse.getStatusLine().getStatusCode()).thenReturn(401);
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.logout("token"));
+
+        assertTrue(exception.getMessage().contains("'ZWEAS120E', message='Invalid username or password'"));
+    }
 }
