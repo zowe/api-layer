@@ -121,6 +121,11 @@ task runAllIntegrationTests(dependsOn: ":integration-tests:runAllIntegrationTest
     group "Integration tests"
 }
 
+task environmentCheck(dependsOn: ":integration-tests:environmentCheck") {
+    description "Environment check"
+    group "Integration tests"
+}
+
 task runIntegrationTestInstances(dependsOn: buildCore) {
     doFirst {
         if (System.properties['os.name'].toLowerCase().contains('windows')) {
