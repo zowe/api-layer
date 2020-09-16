@@ -54,10 +54,14 @@ abstract class LogoutTest {
         // check if it is logged in
         assertIfLogged(jwt, true);
 
-        SecurityUtils.logout(jwt);
+        logout(jwt);
 
         // check if it is logged in
         assertIfLogged(jwt, false);
+    }
+
+    protected void logout(String jwtToken) {
+        SecurityUtils.logoutOnZosmf(jwtToken);
     }
 
 }

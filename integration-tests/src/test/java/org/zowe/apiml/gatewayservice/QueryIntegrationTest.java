@@ -10,9 +10,7 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import static io.restassured.RestAssured.given;
@@ -45,7 +43,7 @@ public class QueryIntegrationTest {
 
     @AfterEach
     public void tearDown() {
-        SecurityUtils.logout(token);
+        SecurityUtils.logoutOnZosmf(token);
     }
 
     //@formatter:off

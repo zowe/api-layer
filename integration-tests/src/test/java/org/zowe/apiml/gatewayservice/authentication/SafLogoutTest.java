@@ -10,9 +10,7 @@
 package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
@@ -20,7 +18,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.logout;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutOnGateway;
 
 @MainframeDependentTests
 class SafLogoutTest extends LogoutTest {
@@ -55,6 +53,11 @@ class SafLogoutTest extends LogoutTest {
 
         logout(jwt1);
         logout(jwt2);
+    }
+
+    @Override
+    protected void logout(String jwtToken) {
+        logoutOnGateway(jwtToken);
     }
 
     @AfterAll

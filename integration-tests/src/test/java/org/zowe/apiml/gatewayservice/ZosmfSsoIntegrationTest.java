@@ -49,7 +49,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     public void tearDown() {
-        SecurityUtils.logout(token);
+        SecurityUtils.logoutOnZosmf(token);
     }
 
     @Test

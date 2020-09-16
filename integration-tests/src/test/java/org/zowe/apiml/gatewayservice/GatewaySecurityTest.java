@@ -14,12 +14,10 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.config.ConfigReader;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -82,7 +80,7 @@ class GatewaySecurityTest {
         .then()
             .statusCode(is(SC_OK));
 
-        SecurityUtils.logout(token);
+        SecurityUtils.logoutOnZosmf(token);
     }
 
     @Test
@@ -132,6 +130,6 @@ class GatewaySecurityTest {
         expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
         forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
 
-        SecurityUtils.logout(token);
+        SecurityUtils.logoutOnZosmf(token);
     }
 }
