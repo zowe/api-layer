@@ -71,7 +71,7 @@ messages:
       action: "Ensure that the security provider recognized the application id."
 
     - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.INVALID_JWT_TOKEN
-      number: ZWEAS417
+      number: ZWEAS130
       type: ERROR
       text: "Invalid token provided"
       reason: "The JWT token is not valid"
