@@ -10,27 +10,64 @@
 
 package org.zowe.apiml.startup;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.categories.EnvironmentCheck;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.EnvironmentConfiguration;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 
 @EnvironmentCheck
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CheckEnvironment {
 
-    @Test
-    void checkZosmfIsUpAndApimtstIsWorking() {
-        String username = ConfigReader.environmentConfiguration().getCredentials().getUser();
-        String password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private String username;
+    private String password;
+    private String zosmfHost;
+    private int zosmfPort;
+    private String zosmfAuthEndpoint;
+    private String zosmfProtectedEndpoint;
+    private String zosmfScheme;
 
-        String zosmfHost = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
-        int zosmfPort = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
-        String zosmfAuthEndpoint = "/zosmf/services/authenticate";
-        String zosmfProtectedEndpoint = "/zosmf/restfiles/ds?dslevel=sys1.p*";
-        String zosmfScheme = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
+    @BeforeEach
+    void setUp() {
+        EnvironmentConfiguration config = ConfigReader.environmentConfiguration();
+        username = config.getCredentials().getUser();
+        password = config.getCredentials().getPassword();
+        zosmfHost = config.getZosmfServiceConfiguration().getHost();
+        zosmfPort = config.getZosmfServiceConfiguration().getPort();
+        zosmfAuthEndpoint = "/zosmf/services/authenticate";
+        zosmfProtectedEndpoint = "/zosmf/restfiles/ds?dslevel=sys1.p*";
+        zosmfScheme = config.getZosmfServiceConfiguration().getScheme();
+    }
+
+    @Test
+    @Order(1)
+    void unblockLockedITUser() {
+        // login with Basic and get LTPA
+        String ltpa2 =
+            given().auth().basic(username, password)
+                .header("X-CSRF-ZOSMF-HEADER", "")
+                .when()
+                .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+                .then().statusCode(is(SC_OK))
+                .extract().cookie("LtpaToken2");
+        // Logout LTPA
+        given()
+            .header("X-CSRF-ZOSMF-HEADER", "")
+            .cookie("LtpaToken2", ltpa2)
+        .when()
+            .delete(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+        .then()
+            .statusCode(is(SC_NO_CONTENT));
+    }
+
+    @Test
+    @Order(2)
+    void checkZosmfIsUpAndApimtstIsWorking() {
 
         // login with Basic and get JWT
         String basicJWT =
@@ -47,7 +84,6 @@ class CheckEnvironment {
             .cookie("jwtToken", basicJWT)
             .header("X-CSRF-ZOSMF-HEADER", "")
             .when()
-            //.get("https://usilca32.lvn.broadcom.net:1443/zosmf/restfiles/ds?dslevel=sys1.p*")
             .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfProtectedEndpoint))
             .then().statusCode(SC_OK);
     }
