@@ -22,9 +22,9 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zowe.apiml.client.configuration.ApplicationConfiguration;
 import org.zowe.apiml.client.configuration.SpringComponentsConfiguration;
-import org.zowe.apiml.client.service.ZaasClientService;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.service.ZaasClient;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -41,14 +41,14 @@ public class ZaasClientTestControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @MockBean
-    private ZaasClientService zaasClientService;
+    private ZaasClient zaasClient;
 
     private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
 
     @Test
     public void forwardLoginTest_successfulLogin() throws Exception {
         LoginRequest loginRequest = new LoginRequest("username", "password");
-        when(zaasClientService.login("username", "password")).thenReturn("token");
+        when(zaasClient.login("username", "password")).thenReturn("token");
 
         this.mockMvc.perform(
             post("/api/v1/zaasClient/login")
@@ -60,7 +60,7 @@ public class ZaasClientTestControllerTest {
     @Test
     public void forwardLoginTest_invalidCredentials() throws Exception {
         LoginRequest loginRequest = new LoginRequest("incorrectUser", "incorrectPass");
-        when(zaasClientService.login("incorrectUser", "incorrectPass"))
+        when(zaasClient.login("incorrectUser", "incorrectPass"))
             .thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION));
 
         this.mockMvc.perform(

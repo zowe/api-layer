@@ -17,9 +17,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.client.service.ZaasClientService;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
+import org.zowe.apiml.zaasclient.service.ZaasClient;
 
 import java.util.List;
 
@@ -31,17 +31,17 @@ import java.util.List;
     tags = {"Zaas client test call"})
 public class ZaasClientTestController {
 
-    private ZaasClientService zaasClientService;
+    private ZaasClient zaasClient;
 
-    public ZaasClientTestController(ZaasClientService zaasClientService) {
-        this.zaasClientService = zaasClientService;
+    public ZaasClientTestController(ZaasClient zaasClient) {
+        this.zaasClient = zaasClient;
     }
 
     @PostMapping(value = "/login")
     @ApiOperation(value = "Forward login to gateway service via zaas client")
     public ResponseEntity<String> forwardLogin(@RequestBody LoginRequest loginRequest) {
         try {
-            String jwt = zaasClientService.login(loginRequest.getUsername(), loginRequest.getPassword());
+            String jwt = zaasClient.login(loginRequest.getUsername(), loginRequest.getPassword());
             return ResponseEntity.ok().body(jwt);
         } catch (ZaasClientException e) {
             return ResponseEntity.status(e.getErrorCode().getReturnCode()).body(e.getErrorCode().getMessage());
@@ -60,7 +60,7 @@ public class ZaasClientTestController {
                     return ResponseEntity.status(500).body("Missing cookie or authorization header in the request");
                 }
             }
-            zaasClientService.logout(auth.get(0));
+            zaasClient.logout(auth.get(0));
         } catch (ZaasClientException e) {
             return ResponseEntity.status(e.getErrorCode().getReturnCode()).body(e.getErrorCode().getMessage());
         }

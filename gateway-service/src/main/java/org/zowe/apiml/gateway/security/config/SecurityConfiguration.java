@@ -48,12 +48,7 @@ import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 /**
@@ -285,32 +280,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      */
     private LogoutHandler logoutHandler() {
         FailedAuthenticationHandler failure = handlerInitializer.getAuthenticationFailureHandler();
-        return (request, response, authentication) -> {
-
-                Optional<String> token = authenticationService.getJwtTokenFromRequest(request);
-            checkJwtTokenFormat(failure, request, response, token);
-        };
-    }
-
-    private void checkJwtTokenFormat(FailedAuthenticationHandler failure, HttpServletRequest request, HttpServletResponse response, Optional<String> token) {
-        if (token.isPresent()) {
-            try {
-                authenticationService.invalidateJwtToken(token.get(), true);
-            } catch (TokenNotValidException e) {
-                try {
-                    failure.onAuthenticationFailure(request, response, new TokenFormatNotValidException("The token you are trying to logout is not valid or not present in the header"));
-                } catch (ServletException ex) {
-                    log.error("The response cannot be written during the logout exception handler: {}", e.getMessage());
-                }
-            }
-        }
-        else {
-            try {
-                failure.onAuthenticationFailure(request, response, new TokenFormatNotValidException("The token you are trying to logout is not valid or not present in the header"));
-            } catch (ServletException e) {
-                log.error("The response cannot be written during the logout exception handler: {}", e.getMessage());
-            }
-        }
+        return new JWTLogoutHandler(authenticationService, failure);
     }
 
     /**
