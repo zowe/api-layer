@@ -324,6 +324,14 @@ class ZaasClientImplHttpsTests {
     }
 
     @Test
+    void testLoginWithToken_WhenResponseCodeIs400_ZaasClientException() {
+        when(closeableHttpResponse.getStatusLine().getStatusCode()).thenReturn(400);
+
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(token));
+        assertTrue(exception.getMessage().contains("'ZWEAS121E', message='Empty or null username or password values provided'"));
+    }
+
+    @Test
     void testPassTicketWithToken_ValidToken_ValidPassTicket() throws Exception {
 
         ZaasPassTicketResponse zaasPassTicketResponse = new ZaasPassTicketResponse();
@@ -367,5 +375,14 @@ class ZaasClientImplHttpsTests {
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.logout("token"));
 
         assertTrue(exception.getMessage().contains("'ZWEAS120E', message='Invalid username or password'"));
+    }
+
+    @Test
+    void givenLogoutCall_whenGetIOException_thenThrowException() {
+        prepareResponseForServerUnavailable();
+
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.logout("token"));
+
+        assertThatExceptionContainValidCode(exception, ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
     }
 }
