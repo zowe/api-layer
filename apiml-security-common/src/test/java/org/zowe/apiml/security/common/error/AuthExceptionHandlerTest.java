@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.security.common.error;
 
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.message.core.Message;
@@ -142,6 +143,21 @@ public class AuthExceptionHandlerTest {
         Message message = messageService.createMessage(ErrorType.TOKEN_NOT_PROVIDED.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
+
+    @Test
+    public void testAuthenticationFailure_whenExceptionIsTokenFormatNotValidException() throws IOException, ServletException {
+        authExceptionHandler.handleException(
+            httpServletRequest,
+            httpServletResponse,
+            new TokenFormatNotValidException("ERROR"));
+
+        assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
+        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+
+        Message message = messageService.createMessage(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+    }
+
 
     @Test
     public void testAuthenticationFailure_whenExceptionIsAuthenticationException() throws IOException, ServletException {
