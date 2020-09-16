@@ -41,13 +41,13 @@ messages:
       number: ZWEAS120
       type: ERROR
       text: "Invalid username or password for URL '%s'"
-      reason: "The username or password are invalid."
+      reason: "The username or password is invalid."
       action: "Provide a valid username and password."
 
     - key: org.zowe.apiml.security.login.invalidInput
       number: ZWEAS121
       type: ERROR
-      text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
+      text: "Authorization header is missing, or the request body is missing or invalid for URL '%s'"
       reason: "The authorization header is missing, or the request body is missing or invalid."
       action: "Provide valid authentication."
 
