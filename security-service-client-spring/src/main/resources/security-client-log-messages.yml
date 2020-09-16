@@ -26,8 +26,8 @@ messages:
       number: ZWEAS104
       type: ERROR
       text: "Authentication service is not available by URL '%s'"
-      reason: "Authentication service is not available."
-      action: "Make sure that authentication service is running and is accessible by the URL provided in the message."
+      reason: "The Authentication service is not available."
+      action: "Make sure that the Authentication service is running and is accessible by the URL provided in the message."
 
     - key: org.zowe.apiml.security.authRequired
       number: ZWEAS105
