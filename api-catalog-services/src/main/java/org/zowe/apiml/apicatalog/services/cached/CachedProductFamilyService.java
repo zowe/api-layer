@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.services.cached;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
@@ -208,7 +207,7 @@ public class CachedProductFamilyService {
         String instanceHomePage = instanceInfo.getHomePageUrl();
 
         //Gateway homePage is used to hold DVIPA address and must not be modified
-        if (hasRealHomePage(instanceInfo)) {
+        if (hasHomePage(instanceInfo)) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
             try {
@@ -237,13 +236,11 @@ public class CachedProductFamilyService {
         return String.format("/%s/api/v1", s);
     }
 
-    private boolean hasRealHomePage(InstanceInfo instanceInfo) {
-        return instanceInfo != null && !instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId())
-            && hasRealHomePage(instanceInfo.getHomePageUrl());
-    }
-
-    private boolean hasRealHomePage(String instanceHomePage) {
-        return instanceHomePage != null && !instanceHomePage.isEmpty();
+    private boolean hasHomePage(InstanceInfo instanceInfo) {
+        String instanceHomePage = instanceInfo.getHomePageUrl();
+        return instanceHomePage != null
+            && !instanceHomePage.isEmpty()
+            && !instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId());
     }
 
     /**
