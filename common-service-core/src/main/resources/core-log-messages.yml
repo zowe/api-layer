@@ -18,7 +18,7 @@ messages:
       number: ZWEAM101
       type: ERROR
       text: "I/O Error reading properties from: '%s' Details: '%s'"
-      reason: "I/O error reading `META-INF/build-info.properties` or `META-INF/git.properties`"
+      reason: "I/O error reading `META-INF/build-info.properties` or `META-INF/git.properties`."
       action: "The jar file is not packaged correctly. Please submit an issue."
 
     - key: org.zowe.apiml.common.invalidMessageKey
@@ -65,12 +65,12 @@ messages:
       type: WARNING
       text: "The service is not verifying the TLS/SSL certificates of the services"
       reason: "This is a warning that the SSL Context will be created without verifying certificates."
-      action: "Stop the service and set the verifySslCertificatesOfServices parameter to `true`. Then restart the service. Do not use this option in a production environment."
+      action: "Stop the service and set the verifySslCertificatesOfServices parameter to `true`, and then restart the service. Do not use this option in a production environment."
 
     - key: org.zowe.apiml.common.insecureHttpWarning
       number: ZWEAM501
       type: WARNING
-      text: "Service is connecting to Discovery service using insecure HTTP protocol."
+      text: "Service is connecting to Discovery service using the non-secure HTTP protocol."
       reason: "The service is connecting to the Discovery Service using the non-secure HTTP protocol."
       action: "For production use, start the Discovery Service in HTTPS mode and configure the services accordingly."
 
@@ -155,10 +155,10 @@ messages:
       text: "The certificate of the service accessed using URL '%s' is not trusted by the API Gateway: %s"
       reason: "The Gateway does not trust the requested service and refuses to communicate with it."
       action: "Possible actions regarding to message content:\n
-        - Message: Certificate doesn't match any of the subject alternative names.\n
-          Action: Verify that hostname the certificate is issued for, match the hostname of the service \n
-        - Message: Unable to find valid certification path to requested target.\n
-          Action: Import the root CA (that issued services's certificate) certificate, to API Gateway truststore "
+        - Message: Certificate does not match any of the subject alternative names.\n
+          Action: Verify that the hostname which the certificate is issued for matches the hostname of the service. \n
+        - Message: Unable to find the valid certification path to the requested target.\n
+          Action: Import the root CA that issued services's certificate to API Gateway truststore "
 
     # Various messages
     # 600-699
@@ -184,7 +184,7 @@ messages:
       number: ZWEAM701
       type: ERROR
       text: "The request to the URL '%s' has failed: %s caused by: %s"
-      reason: "Request failed because of an internal error."
+      reason: "The request failed because of an internal error."
       action: "Refer to specific exception details for troubleshooting. Create an issue with this message."
 
     # Legacy messages
