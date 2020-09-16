@@ -37,10 +37,7 @@ import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
@@ -581,4 +578,15 @@ public class AuthenticationServiceTest {
         assertTrue(token.isPresent());
         assertEquals("jwt", token.get());
     }
+
+    @Test
+    void givenAValidToken_whenGetJwtTokenFromRequest_thenReturnTheToken() {
+        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new Cookie("apimlAuthenticationToken", jwtToken));
+        Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
+        assertTrue(optionalToken.isPresent());
+        assertEquals(optionalToken.get(), jwtToken);
+    }
+
 }
