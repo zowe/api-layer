@@ -60,8 +60,4 @@ class SafLogoutTest extends LogoutTest {
         logoutOnGateway(jwtToken);
     }
 
-    @AfterAll
-    static void switchToDefaultProvider() {
-        providers.switchProvider(null);
-    }
 }

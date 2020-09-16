@@ -10,7 +10,8 @@
 package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 
 import static io.restassured.RestAssured.given;
@@ -62,8 +63,4 @@ class DummyLogoutTest extends LogoutTest {
         logoutOnGateway(jwtToken);
     }
 
-    @AfterAll
-    static void switchToDefaultProvider() {
-        providers.switchProvider(null);
-    }
 }

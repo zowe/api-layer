@@ -16,7 +16,6 @@ import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.ssl.*;
 import org.json.JSONObject;
@@ -71,6 +70,38 @@ abstract class Login {
         return PASSWORD;
     }
 
+    protected static RestAssuredConfig clientCertValid;
+    protected static RestAssuredConfig clientCertApiml;
+    protected static RestAssuredConfig tlsWithoutCert;
+
+    @BeforeAll
+    static void prepareSslAuthentication() throws Exception {
+        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
+
+        SSLContext sslContext = SSLContextBuilder
+            .create()
+            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
+                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD,
+                (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apimtst")
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+        clientCertValid = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext)));
+
+        SSLContext sslContext2 = SSLContextBuilder
+            .create()
+            .loadKeyMaterial(ResourceUtils.getFile(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore()),
+                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+        clientCertApiml = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext2)));
+
+        SSLContext sslContext3 = SSLContextBuilder
+            .create()
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+        tlsWithoutCert =  RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3)));
+    }
+
     @AfterAll
     static void switchToOriginalProvider() {
         providers.switchProvider(null);
@@ -102,6 +133,21 @@ abstract class Login {
         logout(cookie.getValue());
     }
 
+    protected void assertValidAuthToken (Cookie cookie) {
+        assertValidAuthToken(cookie, Optional.empty());
+    }
+
+    protected void assertValidAuthToken(Cookie cookie, Optional<String> username) {
+        assertThat(cookie.isHttpOnly(), is(true));
+        assertThat(cookie.getValue(), is(notNullValue()));
+        assertThat(cookie.getMaxAge(), is(-1));
+
+        int i = cookie.getValue().lastIndexOf('.');
+        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
+        Claims claims = parseJwtString(untrustedJwtString);
+        assertThatTokenIsValid(claims, username);
+    }
+
     @Test
     void givenValidCredentialsInHeader_whenUserAuthenticates_thenTheValidTokenIsProduced() {
         String token = given()
@@ -120,6 +166,21 @@ abstract class Login {
         assertThatTokenIsValid(claims);
 
         logout(token);
+    }
+
+    protected void assertThatTokenIsValid(Claims claims) {
+        assertThatTokenIsValid(claims, Optional.empty());
+    }
+
+    protected void assertThatTokenIsValid(Claims claims, Optional<String> username) {
+        assertThat(claims.getId(), not(isEmptyString()));
+        assertThat(claims.getSubject(), is(username.orElseGet(this::getUsername)));
+    }
+
+    protected Claims parseJwtString(String untrustedJwtString) {
+        return Jwts.parserBuilder().build()
+            .parseClaimsJwt(untrustedJwtString)
+            .getBody();
     }
 
     @Test
@@ -224,7 +285,9 @@ abstract class Login {
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
 
-        assertValidAuthToken(cookie);
+        assertThat(cookie.isHttpOnly(), is(true));
+        assertThat(cookie.getValue(), is(notNullValue()));
+        assertThat(cookie.getMaxAge(), is(-1));
 
         int i = cookie.getValue().lastIndexOf('.');
         String untrustedJwtString = cookie.getValue().substring(0, i + 1);
@@ -233,58 +296,24 @@ abstract class Login {
 
         return cookie.getValue();
     }
-    //@formatter:on
-
-    protected Claims parseJwtString(String untrustedJwtString) {
-        return Jwts.parserBuilder().build()
-            .parseClaimsJwt(untrustedJwtString)
-            .getBody();
-    }
-
-    protected void assertValidAuthToken (Cookie cookie) {
-        assertValidAuthToken(cookie, Optional.empty());
-    }
-
-    protected void assertValidAuthToken(Cookie cookie, Optional<String> username) {
-
-        assertThat(cookie.isHttpOnly(), is(true));
-        assertThat(cookie.getValue(), is(notNullValue()));
-        assertThat(cookie.getMaxAge(), is(-1));
-
-        int i = cookie.getValue().lastIndexOf('.');
-        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
-        Claims claims = parseJwtString(untrustedJwtString);
-        assertThatTokenIsValid(claims, username);
-    }
-
-    protected void assertThatTokenIsValid(Claims claims) {
-        assertThatTokenIsValid(claims, Optional.empty());
-    }
-
-    protected void assertThatTokenIsValid(Claims claims, Optional<String> username) {
-        assertThat(claims.getId(), not(isEmptyString()));
-        assertThat(claims.getSubject(), is(username.orElseGet(this::getUsername)));
-    }
 
     @Test
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
-        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
 
-        SSLContext sslContext = SSLContextBuilder
-            .create()
-            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
-                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD,
-                (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apimtst")
-            // trust server blind folded. Need to test only that the client pass appropriate x509 certificate.
-            .loadTrustMaterial(null, trustStrategy)
-            .build();
+        Cookie cookie = given().config(clientCertValid)
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
 
-        RequestSpecification clientCertificateRequestConfig = given()
-            .config(RestAssuredConfig
-                .newConfig()
-                .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext))));
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
+    }
 
-        Cookie cookie = clientCertificateRequestConfig
+    @Test
+    void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
+        Cookie cookie = given().config(clientCertValid)
+            .auth().basic("Bob","The Builder")
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
             .statusCode(is(SC_NO_CONTENT))
@@ -296,7 +325,16 @@ abstract class Login {
         logout(cookie.getValue());
     }
 
+    @Test
+    void givenApimlsCert_whenAuth_thenUnauthorized() throws Exception {
+        given().config(clientCertApiml)
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_BAD_REQUEST));
+    }
+
     protected void logout(String jwtToken) {
         logoutOnZosmf(jwtToken);
     }
+    //@formatter:on
 }

@@ -11,8 +11,7 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 
@@ -24,11 +23,17 @@ abstract class LogoutTest {
     protected final static String LOGOUT_ENDPOINT = "/auth/logout";
     protected final static String QUERY_ENDPOINT = "/auth/query";
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
+    protected static AuthenticationProviders providers = new AuthenticationProviders(Login.authenticationEndpointPath);
 
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+    }
+
+    @AfterAll
+    static void switchToOriginalProvider() {
+        providers.switchProvider(null);
     }
 
     protected void assertIfLogged(String jwt, boolean logged) {
