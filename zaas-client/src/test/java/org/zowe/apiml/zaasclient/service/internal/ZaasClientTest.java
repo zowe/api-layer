@@ -146,8 +146,4 @@ class ZaasClientTest {
         assertDoesNotThrow(() -> underTest.logout("apimlAuthenticationToken=" + VALID_TOKEN));
     }
 
-    @Test
-    void givenInvalidToken_whenLogoutIsCalled_thenThrowException() {
-        assertThrows(ZaasClientException.class, () -> underTest.logout("invalidToken"));
-    }
 }
