@@ -10,7 +10,6 @@
 package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
@@ -53,8 +52,4 @@ class SafLogoutTest extends LogoutTest {
         assertIfLogged(jwt2, true);
     }
 
-    @AfterAll
-    static void switchToDefaultProvider() {
-        providers.switchProvider(null);
-    }
 }
