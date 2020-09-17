@@ -67,7 +67,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     }
 
     @Test
-    @Disabled
+    @MainframeDependentTests
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
 
         Cookie cookie = given().config(clientCertValid)
@@ -89,5 +89,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
+
+        logout(cookie.getValue());
     }
 }
