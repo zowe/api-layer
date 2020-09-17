@@ -12,7 +12,7 @@ describe(">>> Swagger component tests", () => {
             "status": "UP",
             "secured": false,
             "homePageUrl": "http://localhost:10013/enabler/",
-            "basePath": "/enabler/api/v1"
+            "basePath": "/enabler/api/v1",
             "apiDoc": null
         };
         const wrapper = shallow(

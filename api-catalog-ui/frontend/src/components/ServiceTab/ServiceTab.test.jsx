@@ -32,7 +32,7 @@ const tiles = {
             "title": "API Gateway",
             "description": "API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.",
             "homePageUrl": "https://localhost:10010/",
-            "basePath": "/service/api/v1"
+            "basePath": "/service/api/v1",
             "apiDoc": null
         },
     ],
