@@ -49,6 +49,8 @@ apiml:
         auth:
             provider: zosmf
             jwtKeyAlias: jwtsecret
+        x509:
+            enabled: true
 
 spring:
     application:
@@ -59,6 +61,7 @@ spring:
             ipAddress: ${apiml.service.ipAddress}
     mvc:
         throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
+        log-resolved-exception: false # Suppress useless logs from AbstractHandlerExceptionResolver
         favicon:
             enabled: false
     output:

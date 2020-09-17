@@ -9,31 +9,33 @@
  */
 package org.zowe.apiml.gateway.error.check;
 
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.MessageService;
 import com.netflix.zuul.exception.ZuulException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.zowe.apiml.gateway.error.ErrorUtils;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Checks whether the error was caused by an invalid token
+ * Checks whether the error was caused by an invalid token or credentials.
  */
 @RequiredArgsConstructor
-public class SecurityTokenErrorCheck implements ErrorCheck {
+public class SecurityErrorCheck implements ErrorCheck {
     private final MessageService messageService;
 
     /**
      * Validate whether the exception is related to token and sets the proper response and status code
      *
      * @param request Http request
-     * @param exc Exception thrown
+     * @param exc     Exception thrown
      * @return Response entity with appropriate response and status code
      */
     @Override
@@ -45,6 +47,10 @@ public class SecurityTokenErrorCheck implements ErrorCheck {
                 messageView = messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToView();
             } else if (cause instanceof TokenNotValidException) {
                 messageView = messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToView();
+            } else if (cause instanceof BadCredentialsException) {
+                messageView = messageService.createMessage("org.zowe.apiml.security.login.invalidCredentials",
+                    ErrorUtils.getGatewayUri(request)
+                ).mapToView();
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(messageView);
         }

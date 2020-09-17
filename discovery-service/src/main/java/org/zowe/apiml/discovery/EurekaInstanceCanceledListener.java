@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceCanceledEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
 /**
  * Called by Eureka when the service instance is unregistered (/cancelled)
  */
@@ -28,7 +29,7 @@ public class EurekaInstanceCanceledListener {
      */
     @EventListener
     public void listen(EurekaInstanceCanceledEvent event) {
-        gatewayNotifier.serviceUpdated(EurekaUtils.getServiceIdFromInstanceId(event.getServerId()), null);
+        gatewayNotifier.serviceCancelledRegistration(EurekaUtils.getServiceIdFromInstanceId(event.getServerId()));
     }
 
 }

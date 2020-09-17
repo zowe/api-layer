@@ -68,12 +68,36 @@ public class GatewayNotifierTest {
         return createInstanceInfo("service", hostName, port, securePort);
     }
 
-    private Message createMessage(String messageKey, Object...params) {
+    private Message createMessage(String messageKey, Object... params) {
         final MessageTemplate mt = new MessageTemplate();
         mt.setKey(messageKey);
         mt.setText("message");
         mt.setType(MessageType.INFO);
         return Message.of(messageKey, mt, params);
+    }
+
+    @Test
+    public void testServiceRegistrationCancelled() {
+        verify(restTemplate, never()).delete(anyString());
+
+        List<InstanceInfo> instances = Arrays.asList(
+            createInstanceInfo("hostname1", 1000, 1433),
+            createInstanceInfo("hostname2", 1000, 0)
+        );
+
+        Application application = mock(Application.class);
+        when(application.getInstances()).thenReturn(instances);
+        when(registry.getApplication("GATEWAY")).thenReturn(application);
+
+        gatewayNotifierSync.serviceCancelledRegistration("testService");
+        verify(restTemplate, times(1)).delete("https://hostname1:1433/gateway/cache/services/testService");
+        verify(restTemplate, times(1)).delete("http://hostname2:1000/gateway/cache/services/testService");
+
+        gatewayNotifierSync.serviceCancelledRegistration(null);
+        verify(restTemplate, times(1)).delete("https://hostname1:1433/gateway/cache/services");
+        verify(restTemplate, times(1)).delete("http://hostname2:1000/gateway/cache/services");
+
+        verify(restTemplate, times(4)).delete(anyString());
     }
 
     @Test
@@ -113,7 +137,7 @@ public class GatewayNotifierTest {
     }
 
     @Test
-    public void testNotificationFailed() {
+    public void testServiceRegistrationCancelledNotificationFailed() {
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
@@ -123,12 +147,38 @@ public class GatewayNotifierTest {
         when(application.getInstances()).thenReturn(instances);
         when(registry.getApplication("GATEWAY")).thenReturn(application);
 
-        // no gateway is registred
+        // no gateway is registered
+        gatewayNotifierSync.serviceCancelledRegistration("service");
+        verify(restTemplate, never()).delete(anyString());
+
+
+        // notify gateway and restTemplate failed
+        instances.add(createInstanceInfo("GATEWAY", "host", 1000, 1433));
+        gatewayNotifierSync.serviceCancelledRegistration("service");
+        verify(restTemplate, times(1)).delete(anyString());
+        verify(messageService).createMessage(
+            "org.zowe.apiml.discovery.unregistration.gateway.notify",
+            "https://host:1433/gateway/cache/services/service"
+        );
+    }
+
+    @Test
+    public void testServiceUpdatedNotificationFailed() {
+        MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+        Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+        when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
+        doThrow(new RuntimeException("any exception")).when(restTemplate).delete(anyString());
+        List<InstanceInfo> instances = new LinkedList<>();
+        Application application = mock(Application.class);
+        when(application.getInstances()).thenReturn(instances);
+        when(registry.getApplication("GATEWAY")).thenReturn(application);
+
+        // no gateway is registered
         gatewayNotifierSync.serviceUpdated("service", "host:service:1433");
         verify(restTemplate, never()).delete(anyString());
 
         // notify gateway itself
-        instances.add(createInstanceInfo("GATEWAY","host", 1000, 1433));
+        instances.add(createInstanceInfo("GATEWAY", "host", 1000, 1433));
         gatewayNotifierSync.serviceUpdated("GATEWAY", "host:GATEWAY:1433");
         verify(restTemplate, never()).delete(anyString());
 
@@ -188,7 +238,7 @@ public class GatewayNotifierTest {
         gatewayNotifier.preDestroy();
     }
 
-    private class GatewayNotifierSync extends GatewayNotifier {
+    private static class GatewayNotifierSync extends GatewayNotifier {
 
         public GatewayNotifierSync(RestTemplate restTemplate, MessageService messageService) {
             super(restTemplate, messageService);
@@ -206,7 +256,7 @@ public class GatewayNotifierTest {
     }
 
     @Getter
-    private class GatewayNotifierHandler extends GatewayNotifier {
+    private static class GatewayNotifierHandler extends GatewayNotifier {
 
         private String lastCall;
 

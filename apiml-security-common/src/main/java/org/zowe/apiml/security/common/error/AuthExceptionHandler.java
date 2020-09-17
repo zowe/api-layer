@@ -10,6 +10,7 @@
 package org.zowe.apiml.security.common.error;
 
 import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.message.api.ApiMessageView;
@@ -63,11 +64,15 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleTokenNotProvided(request, response, ex);
         } else if (ex instanceof TokenExpireException) {
             handleTokenExpire(request, response, ex);
-        } else if (ex instanceof InvalidCertificateException) {
+        } else if (ex instanceof TokenFormatNotValidException) {
+            handleTokenFormatException(request, response, ex);
+        }
+        else if (ex instanceof InvalidCertificateException) {
             handleInvalidCertificate(response, ex);
         } else if (ex instanceof AuthenticationException) {
             handleAuthenticationException(request, response, ex);
-        } else {
+        }
+        else {
             throw new ServletException(ex);
         }
     }
@@ -113,6 +118,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleInvalidCertificate(HttpServletResponse response, RuntimeException ex) {
         log.debug(ERROR_MESSAGE_400, ex.getMessage());
         response.setStatus(HttpStatus.FORBIDDEN.value());
+    }
+
+    private void handleTokenFormatException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.BAD_REQUEST, request, response);
     }
 
     //500

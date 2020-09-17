@@ -19,7 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.AuthenticationServiceTest;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
-import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceV2;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.CacheUtils;
 
@@ -54,8 +54,8 @@ public class MockedAuthenticationServiceContext {
     }
 
     @Bean
-    public ZosmfServiceV2 getZosmfService() {
-        return new ZosmfServiceV2(
+    public ZosmfService getZosmfService() {
+        return new ZosmfService(
             getAuthConfigurationProperties(),
             getDiscoveryClient(),
             getRestTemplate(),
