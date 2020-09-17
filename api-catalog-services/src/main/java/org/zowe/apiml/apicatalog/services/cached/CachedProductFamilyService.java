@@ -230,16 +230,19 @@ public class CachedProductFamilyService {
      * @return the base URL
      */
     private String getApiBasePath(InstanceInfo instanceInfo) {
-        try {
-            RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
-            return transformService.retrieveApiBasePath(
-                instanceInfo.getVIPAddress(),
-                instanceInfo.getHomePageUrl(),
-                routes);
-        } catch (URLTransformationException e) {
-            apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", instanceInfo.getAppName(), e.getMessage());
+        String apiBasePath = "";
+        if (hasHomePage(instanceInfo)) {
+            try {
+                RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
+                apiBasePath = transformService.retrieveApiBasePath(
+                    instanceInfo.getVIPAddress(),
+                    instanceInfo.getHomePageUrl(),
+                    routes);
+            } catch (URLTransformationException e) {
+                apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", instanceInfo.getAppName(), e.getMessage());
+            }
         }
-        return "";
+        return apiBasePath;
     }
 
     private boolean hasHomePage(InstanceInfo instanceInfo) {
