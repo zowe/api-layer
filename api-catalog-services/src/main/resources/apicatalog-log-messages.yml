@@ -109,7 +109,7 @@ messages:
       reason: "The Static API refresh could not be performed because of exception."
       action: "Check the specific exception for troubleshooting."
 
-    - key: org.zowe.apiml.apicatalog.homePageTransformFailed
+    - key: org.zowe.apiml.apicatalog.getApiBasePathFailed
       number: ZWEAC708
       type: ERROR
       text: "The API base path for service %s was not retrieved. %s"
