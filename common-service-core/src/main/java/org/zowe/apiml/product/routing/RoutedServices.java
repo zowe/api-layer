@@ -72,7 +72,9 @@ public class RoutedServices {
     private boolean isProperServiceRoute(String serviceUrl, String routeServiceUrl) {
         serviceUrl = serviceUrl.toLowerCase();
         return serviceUrl.startsWith(routeServiceUrl)
-            || routeServiceUrl.startsWith(serviceUrl + "/"); // Allow serviceUrl of /serviceId to map to /serviceId/{type}/{version} NOSONAR
+            // Allow serviceUrl of /serviceId to map to /serviceId/{type}/{version} NOSONAR
+            // Remove last slash first to avoid double slash if serviceUrl was input with an extra slash
+            || routeServiceUrl.startsWith(UrlUtils.removeLastSlash(serviceUrl) + "/");
     }
 
     @Override
