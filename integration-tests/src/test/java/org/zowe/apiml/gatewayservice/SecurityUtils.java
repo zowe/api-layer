@@ -91,7 +91,8 @@ public class SecurityUtils {
             .extract().cookie(ZOSMF_TOKEN);
     }
 
-    public static void logoutOnZosmf(String jwtToken) {
+    public static void logoutItUserGatewayZosmf(String jwtToken) {
+        logoutOnGateway(jwtToken);
 
         if ( ! (System.getProperties().getProperty("externalJenkinsToggle") != null && System.getProperties().getProperty("externalJenkinsToggle").equalsIgnoreCase("true"))) {
             // login with Basic and get LTPA
