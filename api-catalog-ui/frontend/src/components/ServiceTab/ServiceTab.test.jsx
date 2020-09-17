@@ -16,6 +16,7 @@ const selectedService = {
     "description": "API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.",
     "status": "UP",
     "homePageUrl": "https://localhost:10010/",
+    "basePath": "/service/api/v1",
     "apiDoc": null
 }
 
@@ -31,6 +32,7 @@ const tiles = {
             "title": "API Gateway",
             "description": "API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.",
             "homePageUrl": "https://localhost:10010/",
+            "basePath": "/service/api/v1"
             "apiDoc": null
         },
     ],
@@ -47,7 +49,8 @@ describe('>>> ServiceTab component tests', () => {
         expect(serviceTab.find('Link').exists()).toEqual(true);
         expect(serviceTab.find('Link').first().props().href).toEqual("https://localhost:10010/");
         expect(serviceTab.find('Text').first().prop('children')).toEqual("API Gateway");
-        expect(serviceTab.find('Text').at(1).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
+        expect(serviceTab.find('Text').at(1).prop('children')).toEqual("[ API Base Path: /service/api/v1 ]")
+        expect(serviceTab.find('Text').at(2).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
 
     });
 
