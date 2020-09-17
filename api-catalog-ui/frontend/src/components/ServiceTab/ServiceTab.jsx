@@ -85,35 +85,12 @@ export default class ServiceTab extends Component {
                                     <br />
                                     <br />
                                    {hasBasePath && (
-                                       <React.Fragment>
-                                           {selectedService.status === 'UP' && (
-                                               <Tooltip
-                                                   key={selectedService.serviceId}
-                                                   content="Open Service Base Path"
-                                                   placement="bottom"
-                                               >
-                                                   <Link href={selectedService.basePath}>
-                                                       <strong>Service Base Path</strong>
-                                                   </Link>
-                                               </Tooltip>
-                                           )}
-                                           {selectedService.status === 'DOWN' && (
-                                               <Tooltip
-                                                   key={selectedService.serviceId}
-                                                   content="API Base Path navigation is disabled as the service is not running"
-                                                   placement="bottom"
-                                               >
-                                                   <Link variant="danger">
-                                                       <strong>API Base Path</strong>
-                                                   </Link>
-                                               </Tooltip>
-                                           )}
-                                       </React.Fragment>
+                                       <Text>[ API Base Path: {selectedService.basePath} ]</Text>
                                    )}
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
                             </div>
-                            <SwaggerContainer />
+                            <SwaggerContainer/>
                         </React.Fragment>
                     )}
                 </Shield>
