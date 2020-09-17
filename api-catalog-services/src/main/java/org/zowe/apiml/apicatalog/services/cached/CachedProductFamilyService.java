@@ -237,8 +237,7 @@ public class CachedProductFamilyService {
                 instanceInfo.getHomePageUrl(),
                 routes);
         } catch (URLTransformationException e) {
-            //TODO change logs
-            apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
+            apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", instanceInfo.getAppName(), e.getMessage());
         }
         return "";
     }
