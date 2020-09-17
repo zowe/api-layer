@@ -31,7 +31,6 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -206,7 +205,6 @@ public class CachedProductFamilyService {
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
         String instanceHomePage = instanceInfo.getHomePageUrl();
 
-        //Gateway homePage is used to hold DVIPA address and must not be modified
         if (hasHomePage(instanceInfo)) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
@@ -226,20 +224,30 @@ public class CachedProductFamilyService {
     }
 
     /**
-     * Use the homepage to get the base path for the service.
+     * Get the base path for the service.
      *
      * @param instanceInfo the service instance
      * @return the base URL
      */
-    private String getInstanceBasePath(InstanceInfo instanceInfo) {
-        String s = URI.create(instanceInfo.getHomePageUrl()).getPath();
-        return String.format("/%s/api/v1", s);
+    private String getApiBasePath(InstanceInfo instanceInfo) {
+        try {
+            RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
+            return transformService.retrieveApiBasePath(
+                instanceInfo.getVIPAddress(),
+                instanceInfo.getHomePageUrl(),
+                routes);
+        } catch (URLTransformationException e) {
+            //TODO change logs
+            apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
+        }
+        return "";
     }
 
     private boolean hasHomePage(InstanceInfo instanceInfo) {
         String instanceHomePage = instanceInfo.getHomePageUrl();
         return instanceHomePage != null
             && !instanceHomePage.isEmpty()
+            //Gateway homePage is used to hold DVIPA address and must not be modified
             && !instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId());
     }
 
@@ -315,14 +323,14 @@ public class CachedProductFamilyService {
         boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
-        String instanceBasePath = getInstanceBasePath(instanceInfo);
+        String apiBasePath = getApiBasePath(instanceInfo);
         return new APIService(
             instanceInfo.getAppName().toLowerCase(),
             instanceInfo.getMetadata().get(SERVICE_TITLE),
             instanceInfo.getMetadata().get(SERVICE_DESCRIPTION),
             secureEnabled,
             instanceHomePage,
-            instanceBasePath);
+            apiBasePath);
     }
 
     /**
