@@ -18,6 +18,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutOnGateway;
 
 class DummyLogoutTest extends LogoutTest {
     private static AuthenticationProviders providers = new AuthenticationProviders(SecurityUtils.getGateWayUrl("/authentication"));
@@ -52,6 +53,14 @@ class DummyLogoutTest extends LogoutTest {
 
         assertIfLogged(jwt1, false);
         assertIfLogged(jwt2, true);
+
+        logout(jwt1);
+        logout(jwt2);
+    }
+
+    @Override
+    protected void logout(String jwtToken) {
+        logoutOnGateway(jwtToken);
     }
 
 }

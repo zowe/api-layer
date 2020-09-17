@@ -10,6 +10,7 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
@@ -46,6 +47,11 @@ public class ZosmfSsoIntegrationTest {
         RestAssured.basePath = BASE_PATH;
         RestAssured.useRelaxedHTTPSValidation();
         token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        SecurityUtils.logoutItUserGatewayZosmf(token);
     }
 
     @Test

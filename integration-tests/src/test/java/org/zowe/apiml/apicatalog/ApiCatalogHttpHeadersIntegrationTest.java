@@ -16,10 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
@@ -64,5 +61,7 @@ public class ApiCatalogHttpHeadersIntegrationTest {
 
         expectedHeaders.entrySet().forEach(h -> assertThat(responseHeaders, hasEntry(h.getKey(),h.getValue())));
         forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
+
+        SecurityUtils.logoutItUserGatewayZosmf(token);
     }
 }

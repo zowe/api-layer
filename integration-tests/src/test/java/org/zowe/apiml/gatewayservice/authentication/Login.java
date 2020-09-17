@@ -40,6 +40,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutItUserGatewayZosmf;
 
 abstract class Login {
     protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
@@ -128,6 +129,8 @@ abstract class Login {
             .extract().detailedCookie(COOKIE_NAME);
 
         assertValidAuthToken(cookie);
+
+        logout(cookie.getValue());
     }
 
     protected void assertValidAuthToken (Cookie cookie) {
@@ -161,6 +164,8 @@ abstract class Login {
         String untrustedJwtString = token.substring(0, i + 1);
         Claims claims = parseJwtString(untrustedJwtString);
         assertThatTokenIsValid(claims);
+
+        logout(token);
     }
 
     protected void assertThatTokenIsValid(Claims claims) {
@@ -316,6 +321,8 @@ abstract class Login {
             .extract().detailedCookie(COOKIE_NAME);
 
         assertValidAuthToken(cookie, Optional.of("APIMTST"));
+
+        logout(cookie.getValue());
     }
 
     @Test
@@ -324,6 +331,10 @@ abstract class Login {
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
             .statusCode(is(SC_BAD_REQUEST));
+    }
+
+    protected void logout(String jwtToken) {
+        logoutItUserGatewayZosmf(jwtToken);
     }
     //@formatter:on
 }
