@@ -221,7 +221,7 @@ abstract class Login {
 
     @Test
     void givenNoCredentials_whenUserAuthenticates_then400IsReturned() {
-        String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
+        String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
         given()
@@ -236,7 +236,7 @@ abstract class Login {
 
     @Test
     void givenCredentialsInTheWrongJsonFormat_whenUserAuthenticates_then400IsReturned() {
-        String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
+        String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
         JSONObject loginRequest = new JSONObject()
