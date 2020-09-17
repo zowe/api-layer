@@ -106,7 +106,7 @@ public class ApiCatalogSecurityIntegrationTest {
         .then()
             .statusCode(is(SC_OK));
 
-        SecurityUtils.logoutOnZosmf(token);
+        SecurityUtils.logoutItUserWithLtpa();
     }
 
     @Test

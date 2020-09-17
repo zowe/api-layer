@@ -43,7 +43,7 @@ public class QueryIntegrationTest {
 
     @AfterEach
     public void tearDown() {
-        SecurityUtils.logoutOnZosmf(token);
+        SecurityUtils.logoutItUserWithLtpa();
     }
 
     //@formatter:off
