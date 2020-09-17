@@ -45,7 +45,7 @@ describe('>>> Detail page test', () => {
 
         cy.get('pre.base-url')
             .should('exist')
-            .should('contain', `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/api/v1/apicatalog ]`);
+            .should('contain', `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/api/v1 ]`);
 
         cy.get('.tabs-container')
             .should('exist')

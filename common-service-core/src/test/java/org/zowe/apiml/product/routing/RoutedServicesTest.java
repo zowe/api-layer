@@ -97,7 +97,7 @@ public class RoutedServicesTest {
     }
 
     @Test
-    public void testBestMatchingServiceUrlWithRouteServiceUrlStartingWithServiceUrl(){
+    public void testBestMatchingServiceUrlWithRouteServiceUrlStartingWithServiceUrl() {
         RoutedService routedService1 = new RoutedService("api_v2", "api/v2", "/apicatalog/api/v2");
         RoutedService routedService2 = new RoutedService("ui_v2", "ui/v2", "/apicatalog/ui/v2");
         routedServices.addRoutedService(routedService1);
