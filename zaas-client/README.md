@@ -9,7 +9,7 @@
 
 ## Introduction
 
-This is a native java library developed on the top of API ML login, query and pass ticket API. It is developed with apache http Client version 4.5.11.
+This is a native java library developed on the top of API ML login, query, logout and pass ticket API. It is developed with apache http Client version 4.5.11.
 
 ## Functionalities of zaas-client
 
@@ -21,6 +21,7 @@ This java library provides you the `ZaasClient` interface:
         String login(String authorizationHeader) throws ZaasClientException;
         ZaasToken query(String token) throws ZaasClientException;
         String passTicket(String jwtToken, String applicationId) throws ZaasClientException;
+        void logout(String token) throws ZaasClientException, ZaasConfigurationException;
     }
     ```
 
@@ -61,6 +62,17 @@ which enables your application to add following functions:
 
     This method will automatically use the truststore file to add a security layer, which you configured in the `ConfigProperties`         class.
 
+- **Invalidate the JWT token (logout)**
+
+    The `logout` method is used to invalidate the JWT token. The token must be provided in the Cookie header and must follow the format accepted by the API ML. 
+    To use this method, call the method from your API.
+    
+     ```java
+     void logout(String token) throws ZaasClientException, ZaasConfigurationException;   
+     ```
+  
+    In return, you receive a `204` HTTP status code if the token was successfully invalidated.
+    
 - **Obtain a PassTicket (passTicket)**
 
     The `passTicket` method has an added layer of protection. To use this method, call the method of the interface and provide
@@ -104,7 +116,7 @@ To use this library use the procedure described in this article.
         </dependency>
 
 2. In your application, create your java class which will be used to create an instance of `ZaasClient` and further to use its method to
-   login, query and to issue passTicket.
+   login, query, logout and to issue passTicket.
 
 3. To use `zaas-client`, provide a property file for configuration. Kindly check `org.zowe.apiml.zaasclient.config.ConfigProperites` to make sure what properties we have to provide in the property file. 
  

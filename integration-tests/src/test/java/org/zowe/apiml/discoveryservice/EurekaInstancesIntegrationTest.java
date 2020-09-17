@@ -160,6 +160,8 @@ class EurekaInstancesIntegrationTest {
             .get(getDiscoveryUriWithPath("/application/beans"))
         .then()
             .statusCode(is(HttpStatus.SC_OK));
+
+        SecurityUtils.logoutItUserGatewayZosmf(jwtToken);
     }
 
     // /discovery endpoints
@@ -195,6 +197,8 @@ class EurekaInstancesIntegrationTest {
             .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
         .then()
             .statusCode(is(HttpStatus.SC_OK));
+
+        SecurityUtils.logoutItUserGatewayZosmf(jwtToken);
     }
 
     @Test
@@ -240,6 +244,8 @@ class EurekaInstancesIntegrationTest {
             .get(getDiscoveryUriWithPath("/"))
         .then()
             .statusCode(is(HttpStatus.SC_OK));
+
+        SecurityUtils.logoutItUserGatewayZosmf(jwtToken);
     }
 
     @Test

@@ -59,10 +59,11 @@ apply plugin : 'java'
 
 test {
     testLogging.showStandardStreams = true
+    systemProperty "externalJenkinsToggle", System.getProperty("externalJenkinsToggle")
 }
 
 task startUpCheck(type: Test) {
-    group 'integration test'
+    group 'integration tests'
     description "Check that the API Mediation Layer is up and runnig"
 
     systemProperties System.properties
@@ -72,8 +73,20 @@ task startUpCheck(type: Test) {
     outputs.upToDateWhen { false }
 }
 
+task environmentCheck(type: Test) {
+    group 'integration tests'
+    description "Check that the Integration environment is healthy"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags 'EnvironmentCheck'
+    }
+    outputs.upToDateWhen { false }
+}
+
+
 task runWebsocketTests(type: Test) {
-    group "integration test"
+    group "integration tests"
     description "Runs tests for WebSockets"
 
     systemProperties System.properties
@@ -92,6 +105,7 @@ task runIntegrationTests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'SlowTests',
             'AdditionalLocalTest'
         )
@@ -107,6 +121,7 @@ task runLocalIntegrationTests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'SlowTests',
             'MainframeDependentTests',
             'AdditionalLocalTest'
@@ -124,6 +139,7 @@ task runAllLocalIntegrationTests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'SlowTests',
             'MainframeDependentTests'
         )
@@ -140,6 +156,7 @@ task runAllIntegrationTests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'AdditionalLocalTest',
             'NotForMainframeTest'
         )
@@ -166,6 +183,7 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'AdditionalLocalTest',
             'TestsNotMeantForZowe'
         )
@@ -182,6 +200,7 @@ task runCITests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'SlowTests',
             'AdditionalLocalTest',
             'MainframeDependentTests'
@@ -190,7 +209,7 @@ task runCITests(type: Test) {
 }
 
 task runMainFrameTests(type: Test) {
-    group "integration test"
+    group "integration tests"
     description "Run tests that verify integration with MainFrame"
 
     dependsOn startUpCheck

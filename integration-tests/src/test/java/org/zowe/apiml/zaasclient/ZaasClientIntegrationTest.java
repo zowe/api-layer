@@ -42,8 +42,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ZaasClientIntegrationTest {
 
@@ -225,5 +224,19 @@ class ZaasClientIntegrationTest {
             String emptyApplicationId = "";
             tokenService.passTicket(token, emptyApplicationId);
         });
+    }
+
+    @Test
+    void givenValidTokenBut_whenLogoutIsCalled_thenSuccess() throws ZaasClientException {
+        String token = tokenService.login(USERNAME, PASSWORD);
+        assertDoesNotThrow(() ->
+            tokenService.logout("apimlAuthenticationToken=" + token));
+    }
+
+    @Test
+    void givenInvalidTokenBut_whenLogoutIsCalled_thenExceptionIsThrown() {
+        String token = "";
+        assertThrows(ZaasClientException.class, () ->
+            tokenService.logout(token));
     }
 }

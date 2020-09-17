@@ -18,6 +18,7 @@ import org.zowe.apiml.util.categories.MainframeDependentTests;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutOnGateway;
 
 /**
  * Test that when valid credentials are provided the SAF authentication provider will accept them and the valid token
@@ -44,5 +45,11 @@ class SafAuthenticationLoginIntegrationTest extends Login {
 
         assertThat(jwtToken1, is(not(jwtToken2)));
     }
+
+    @Override
+    protected void logout(String jwtToken) {
+        logoutOnGateway(jwtToken);
+    }
+
 
 }

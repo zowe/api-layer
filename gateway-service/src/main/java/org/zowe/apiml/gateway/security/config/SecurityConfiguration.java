@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -45,6 +46,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
 
 import java.util.*;
@@ -58,6 +60,7 @@ import java.util.*;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {
@@ -271,11 +274,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             PROTECTED_ENDPOINTS);
     }
 
+    /**
+     * Handles the logout action by checking the validity of JWT token passed in the Cookie.
+     * If present, the token will be invalidated.
+     */
     private LogoutHandler logoutHandler() {
-        return (request, response, authentication) -> authenticationService.getJwtTokenFromRequest(request)
-            .ifPresent(x ->
-                authenticationService.invalidateJwtToken(x, true)
-            );
+        FailedAuthenticationHandler failure = handlerInitializer.getAuthenticationFailureHandler();
+        return new JWTLogoutHandler(authenticationService, failure);
     }
 
     /**
