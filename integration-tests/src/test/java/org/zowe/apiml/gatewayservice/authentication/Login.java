@@ -40,7 +40,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutItUserWithLtpa;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutOnZosmf;
 
 abstract class Login {
     protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
@@ -334,7 +334,7 @@ abstract class Login {
     }
 
     protected void logout(String jwtToken) {
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwtToken);
     }
     //@formatter:on
 }

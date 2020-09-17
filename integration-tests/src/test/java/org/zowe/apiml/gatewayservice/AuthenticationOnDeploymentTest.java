@@ -144,7 +144,7 @@ class AuthenticationOnDeploymentTest {
             });
         }
 
-        SecurityUtils.logoutItUserWithLtpa();
+        SecurityUtils.logoutOnZosmf(jwt);
     }
 
     @Test

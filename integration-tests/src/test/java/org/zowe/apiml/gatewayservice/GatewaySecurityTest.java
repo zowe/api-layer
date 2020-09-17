@@ -80,7 +80,7 @@ class GatewaySecurityTest {
         .then()
             .statusCode(is(SC_OK));
 
-        SecurityUtils.logoutItUserWithLtpa();
+        SecurityUtils.logoutOnZosmf(token);
     }
 
     @Test
@@ -130,6 +130,6 @@ class GatewaySecurityTest {
         expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
         forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
 
-        SecurityUtils.logoutItUserWithLtpa();
+        SecurityUtils.logoutOnZosmf(token);
     }
 }

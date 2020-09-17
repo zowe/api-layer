@@ -74,7 +74,7 @@ class PassTicketTest {
         .then()
             .statusCode(is(SC_OK));
 
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwt);
     }
 
     @Test
@@ -90,7 +90,7 @@ class PassTicketTest {
                 .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                 .body("message", containsString("Error on evaluation of PassTicket"));
 
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwt);
     }
 
     //@formatter:off
@@ -144,7 +144,7 @@ class PassTicketTest {
         .then()
             .statusCode(is(SC_OK));
 
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwt);
     }
 
     @Test
@@ -178,7 +178,7 @@ class PassTicketTest {
         .then()
             .statusCode(is(SC_OK));
 
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwt);
     }
 
     @Test
@@ -283,7 +283,7 @@ class PassTicketTest {
             .statusCode(is(SC_BAD_REQUEST))
             .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
 
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwt);
     }
 
     @Test
@@ -305,7 +305,7 @@ class PassTicketTest {
             .statusCode(is(SC_BAD_REQUEST))
             .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
 
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwt);
     }
 
     private <T extends ValidatableResponseOptions<T, R>, R extends ResponseBody<R> & ResponseOptions<R>>
@@ -332,7 +332,7 @@ class PassTicketTest {
             .then()
         );
 
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwt);
     }
 
     @Test
@@ -348,7 +348,7 @@ class PassTicketTest {
             .then()
         );
 
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwt);
     }
 
     @Test
@@ -377,7 +377,7 @@ class PassTicketTest {
             .then()
         );
 
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwt);
     }
 
     @Test
@@ -394,7 +394,7 @@ class PassTicketTest {
             .then()
         );
 
-        logoutItUserWithLtpa();
+        logoutOnZosmf(jwt);
     }
     //@formatter:on
 
