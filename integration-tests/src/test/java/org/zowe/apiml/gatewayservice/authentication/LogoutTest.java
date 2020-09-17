@@ -66,7 +66,7 @@ abstract class LogoutTest {
     }
 
     protected void logout(String jwtToken) {
-        SecurityUtils.logoutOnZosmf(jwtToken);
+        SecurityUtils.logoutOnGateway(jwtToken);
     }
 
 }
