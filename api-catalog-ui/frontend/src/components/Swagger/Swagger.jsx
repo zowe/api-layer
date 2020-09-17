@@ -44,12 +44,9 @@ export default class SwaggerUI extends Component {
         ) {
             try {
                 const swagger = JSON.parse(selectedService.apiDoc);
-                if (!swagger.basePath){
-                    console.log('SELECTED SERVICE:')
-                    console.log(selectedService);
-                    console.log(`Original swagger base path: ${swagger.basePath} new base path: ${selectedService.basePath}`);
-                    swagger.basePath = selectedService.basePath // sets the base path properly, check if things with swagger docs have it proper
-                }
+                // some static clients don't have a swagger base path but do have a service base path
+                swagger.basePath = selectedService.basePath
+
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
                     spec: swagger,
