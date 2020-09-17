@@ -93,23 +93,24 @@ public class SecurityUtils {
 
     public static void logoutOnZosmf(String jwtToken) {
 
-        // login with Basic and get LTPA
-        String ltpa2 =
-            given().auth().basic(USERNAME, PASSWORD)
+        if ( ! (System.getProperties().getProperty("externalJenkinsToggle") != null && System.getProperties().getProperty("externalJenkinsToggle").equalsIgnoreCase("true"))) {
+            // login with Basic and get LTPA
+            String ltpa2 =
+                given().auth().basic(USERNAME, PASSWORD)
+                    .header("X-CSRF-ZOSMF-HEADER", "")
+                    .when()
+                    .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+                    .then().statusCode(is(SC_OK))
+                    .extract().cookie("LtpaToken2");
+            // Logout LTPA
+            given()
                 .header("X-CSRF-ZOSMF-HEADER", "")
+                .cookie("LtpaToken2", ltpa2)
                 .when()
-                .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
-                .then().statusCode(is(SC_OK))
-                .extract().cookie("LtpaToken2");
-        // Logout LTPA
-        given()
-            .header("X-CSRF-ZOSMF-HEADER", "")
-            .cookie("LtpaToken2", ltpa2)
-            .when()
-            .delete(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
-            .then()
-            .statusCode(is(SC_NO_CONTENT));
-
+                .delete(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+                .then()
+                .statusCode(is(SC_NO_CONTENT));
+        }
     }
 
     public static void logoutOnGateway(String jwtToken) {
