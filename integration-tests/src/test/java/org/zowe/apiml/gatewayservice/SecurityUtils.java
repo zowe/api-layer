@@ -16,18 +16,12 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.config.TlsConfiguration;
-import org.zowe.apiml.util.config.ZosmfServiceConfiguration;
+import org.zowe.apiml.util.config.*;
 
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 
 import static io.restassured.RestAssured.given;
@@ -43,8 +37,10 @@ public class SecurityUtils {
 
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
     public final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
+    public final static String GATEWAY_LOGOUT_ENDPOINT = "/auth/logout";
     public final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
     private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
+    private final static String zosmfAuthEndpoint = "/zosmf/services/authenticate";
 
     private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private final static ZosmfServiceConfiguration zosmfServiceConfiguration = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration();
@@ -93,6 +89,38 @@ public class SecurityUtils {
             .statusCode(is(SC_OK))
             .cookie(ZOSMF_TOKEN, not(isEmptyString()))
             .extract().cookie(ZOSMF_TOKEN);
+    }
+
+    public static void logoutItUserGatewayZosmf(String jwtToken) {
+        logoutOnGateway(jwtToken);
+
+        if ( ! (System.getProperties().getProperty("externalJenkinsToggle") != null && System.getProperties().getProperty("externalJenkinsToggle").equalsIgnoreCase("true"))) {
+            // login with Basic and get LTPA
+            String ltpa2 =
+                given().auth().basic(USERNAME, PASSWORD)
+                    .header("X-CSRF-ZOSMF-HEADER", "")
+                    .when()
+                    .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+                    .then().statusCode(is(SC_OK))
+                    .extract().cookie("LtpaToken2");
+            // Logout LTPA
+            given()
+                .header("X-CSRF-ZOSMF-HEADER", "")
+                .cookie("LtpaToken2", ltpa2)
+                .when()
+                .delete(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+                .then()
+                .statusCode(is(SC_NO_CONTENT));
+        }
+    }
+
+    public static void logoutOnGateway(String jwtToken) {
+        given()
+            .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwtToken)
+            .when()
+            .post(getGateWayUrl(GATEWAY_LOGOUT_ENDPOINT))
+            .then()
+            .statusCode(is(SC_NO_CONTENT));
     }
 
     public static SSLConfig getConfiguredSslConfig() {

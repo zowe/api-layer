@@ -16,8 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 abstract class LogoutTest {
@@ -61,16 +59,14 @@ abstract class LogoutTest {
         // check if it is logged in
         assertIfLogged(jwt, true);
 
-        // make logout
-        given()
-            .cookie(COOKIE_NAME, jwt)
-        .when()
-            .post(SecurityUtils.getGateWayUrl(LOGOUT_ENDPOINT))
-        .then()
-            .statusCode(is(SC_NO_CONTENT));
+        logout(jwt);
 
         // check if it is logged in
         assertIfLogged(jwt, false);
+    }
+
+    protected void logout(String jwtToken) {
+        SecurityUtils.logoutOnGateway(jwtToken);
     }
 
 }
