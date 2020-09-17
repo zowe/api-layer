@@ -108,7 +108,7 @@ public class TransformService {
             throw new URLTransformationException(message);
         }
 
-        RoutedService route = routes.getBestMatchingServiceUrl(serviceUriPath, ServiceType.API);
+        RoutedService route = routes.getBestMatchingApiUrl(serviceUriPath);
         if (route == null) {
             String message = String.format("Not able to select API base path for the service %s. Original url used.", serviceId);
             throw new URLTransformationException(message);
