@@ -72,7 +72,7 @@ public class RoutedServices {
     private boolean isProperServiceRoute(String serviceUrl, String routeServiceUrl) {
         serviceUrl = serviceUrl.toLowerCase();
         return serviceUrl.startsWith(routeServiceUrl)
-            || routeServiceUrl.startsWith(serviceUrl); // Allow serviceUrl of /serviceId to map to /serviceId/{type}/{version} NOSONAR
+            || routeServiceUrl.startsWith(serviceUrl + "/"); // Allow serviceUrl of /serviceId to map to /serviceId/{type}/{version} NOSONAR
     }
 
     @Override

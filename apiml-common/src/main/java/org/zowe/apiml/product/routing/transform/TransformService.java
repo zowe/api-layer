@@ -119,7 +119,6 @@ public class TransformService {
             route.getGatewayUrl());
     }
 
-
     /**
      * Get short endpoint
      *

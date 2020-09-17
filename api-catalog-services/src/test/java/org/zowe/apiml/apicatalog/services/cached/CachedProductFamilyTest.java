@@ -53,7 +53,7 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
-        // To speed up the test, create instance which consider even 5 miliseconds as old.
+        // To speed up the test, create instance which consider even 5 milliseconds as old.
         service = new CachedProductFamilyService(
             null,
             null,
@@ -71,7 +71,7 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
-        // To speed up the test, create instance which consider even 5 miliseconds as old.
+        // To speed up the test, create instance which consider even 5 milliseconds as old.
         service = new CachedProductFamilyService(
             null,
             null,
