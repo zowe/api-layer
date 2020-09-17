@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -139,4 +140,10 @@ class ZaasClientTest {
 
         assertThrows(ZaasConfigurationException.class, () -> underTest.passTicket(VALID_TOKEN, VALID_APPLICATION_ID));
     }
+
+    @Test
+    void givenValidToken_whenLogoutIsCalled_thenSuccessLogout() {
+        assertDoesNotThrow(() -> underTest.logout("apimlAuthenticationToken=" + VALID_TOKEN));
+    }
+
 }

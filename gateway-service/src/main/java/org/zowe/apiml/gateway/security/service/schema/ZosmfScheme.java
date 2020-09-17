@@ -17,7 +17,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.ZosmfService;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;

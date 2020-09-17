@@ -9,10 +9,16 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
-import org.zowe.apiml.passticket.PassTicketService;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.zowe.apiml.gateway.security.login.Providers;
+import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationMapper;
+import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
+
 
 /**
  * Registers security related beans
@@ -31,11 +37,25 @@ public class ComponentsConfiguration {
     /**
      * Service to call generating and validating of passTickets. If JVM contains mainframe's class, it uses it,
      * otherwise method returns dummy implementation
+     *
      * @return mainframe / dummy implementation of passTicket's generation and validation
      */
     @Bean
     public PassTicketService passTicketService() {
         return new PassTicketService();
+    }
+
+    @Bean
+    public Providers loginProviders(
+        DiscoveryClient discoveryClient,
+        AuthConfigurationProperties authConfigurationProperties
+    ) {
+        return new Providers(discoveryClient, authConfigurationProperties);
+    }
+
+    @Bean
+    public X509AuthenticationMapper x509Authentication() {
+        return new X509CommonNameUserMapper();
     }
 
 }

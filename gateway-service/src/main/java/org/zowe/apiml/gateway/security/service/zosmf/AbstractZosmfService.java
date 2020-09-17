@@ -12,8 +12,6 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -21,7 +19,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.ZosmfService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -31,7 +28,7 @@ import org.zowe.apiml.util.EurekaUtils;
 import java.util.*;
 import java.util.function.Supplier;
 
-public abstract class AbstractZosmfService implements ZosmfService {
+public abstract class AbstractZosmfService {
 
     protected static final String ZOSMF_INFO_END_POINT = "/zosmf/info";
     protected static final String ZOSMF_AUTHENTICATE_END_POINT = "/zosmf/services/authenticate";
@@ -145,24 +142,4 @@ public abstract class AbstractZosmfService implements ZosmfService {
             })
             .orElse(null);
     }
-
-    /**
-     * Method reads authentication values from answer of REST call. It read all supported tokens, which are returned
-     * from z/OSMF.
-     *
-     * @param responseEntity answer of REST call
-     * @return AuthenticationResponse with all supported tokens from responseEntity
-     */
-    protected AuthenticationResponse getAuthenticationResponse(ResponseEntity<String> responseEntity) {
-        final List<String> cookies = responseEntity.getHeaders().get(HttpHeaders.SET_COOKIE);
-        final EnumMap<TokenType, String> tokens = new EnumMap<>(TokenType.class);
-        if (cookies != null) {
-            for (final TokenType tokenType : TokenType.values()) {
-                final String token = readTokenFromCookie(cookies, tokenType.getCookieName());
-                if (token != null) tokens.put(tokenType, token);
-            }
-        }
-        return new AuthenticationResponse(tokens);
-    }
-
 }
