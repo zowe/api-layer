@@ -23,10 +23,6 @@ export default class ServiceTab extends Component {
             selectedService.homePageUrl !== null &&
             selectedService.homePageUrl !== undefined &&
             selectedService.homePageUrl.length > 0;
-        const hasBasePath =
-            selectedService.basePath !== null &&
-            selectedService.basePath !== undefined &&
-            selectedService.basePath.length > 0;
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
@@ -84,9 +80,8 @@ export default class ServiceTab extends Component {
                                     )}
                                     <br />
                                     <br />
-                                   {hasBasePath && (
-                                       <Text>[ API Base Path: {selectedService.basePath} ]</Text>
-                                   )}
+                                    <Text>API Base Path: {selectedService.basePath}</Text>
+                                    <Text>Service ID: {selectedService.serviceId}</Text>
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
                             </div>

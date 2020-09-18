@@ -40,7 +40,7 @@ const tiles = {
 }
 
 describe('>>> ServiceTab component tests', () => {
-    it('should display service tab informations', () => {
+    it('should display service tab information', () => {
 
         const selectService = jest.fn();
         const serviceTab = shallow(<ServiceTab match={params} selectedService={selectedService} tiles={[tiles]} selectService={selectService}/>);
@@ -49,8 +49,9 @@ describe('>>> ServiceTab component tests', () => {
         expect(serviceTab.find('Link').exists()).toEqual(true);
         expect(serviceTab.find('Link').first().props().href).toEqual("https://localhost:10010/");
         expect(serviceTab.find('Text').first().prop('children')).toEqual("API Gateway");
-        expect(serviceTab.find('Text').at(1).prop('children')).toEqual("[ API Base Path: /service/api/v1 ]")
-        expect(serviceTab.find('Text').at(2).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
+        expect(serviceTab.find('Text').at(1).prop('children')).toEqual(["API Base Path: ", "/service/api/v1"]);
+        expect(serviceTab.find('Text').at(2).prop('children')).toEqual(["Service ID: ", "gateway"]);
+        expect(serviceTab.find('Text').at(3).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
 
     });
 

@@ -39,7 +39,7 @@ public class APIService implements Serializable {
     @ApiModelProperty(notes = "The service home page of the API service")
     private String homePageUrl;
 
-    @ApiModelProperty(notes = "The service base path of the API service")
+    @ApiModelProperty(notes = "The service API base path of the API service")
     private String basePath;
 
     @ApiModelProperty(notes = "The API documentation for this service")
