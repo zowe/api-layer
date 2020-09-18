@@ -64,6 +64,9 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         String jwtToken2 = authenticateAndVerify(loginRequest);
 
         assertThat(jwtToken1, is((jwtToken2)));
+
+        logout(jwtToken1);
+        logout(jwtToken2);
     }
 
     @Test

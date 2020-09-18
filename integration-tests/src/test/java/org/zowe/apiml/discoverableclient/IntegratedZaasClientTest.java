@@ -119,26 +119,34 @@ class IntegratedZaasClientTest {
     void givenValidToken_whenCallingLogoutOldPathFormat_thenSuccess() {
         String token = "validToken";
 
+        String jwt =  generateToken();
+
         given()
             .contentType(JSON)
-            .cookie(COOKIE_NAME, generateToken())
+            .cookie(COOKIE_NAME, jwt)
             .when()
             .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGOUT)
             .then()
             .statusCode(is(SC_NO_CONTENT));
+
+        SecurityUtils.logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
     void givenValidToken_whenCallingLogout_thenSuccess() {
         String token = "validToken";
 
+        String jwt = generateToken();
+
         given()
             .contentType(JSON)
-            .cookie(COOKIE_NAME, generateToken())
+            .cookie(COOKIE_NAME, jwt)
             .when()
             .post(ZAAS_CLIENT_URI + LOGOUT)
             .then()
             .statusCode(is(SC_NO_CONTENT));
+
+        SecurityUtils.logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
