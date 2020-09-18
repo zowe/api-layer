@@ -9,11 +9,14 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.zowe.apiml.gateway.security.login.Providers;
+import org.zowe.apiml.gateway.security.login.x509.X509ExternalMapper;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationMapper;
@@ -54,8 +57,9 @@ public class ComponentsConfiguration {
     }
 
     @Bean
-    public X509AuthenticationMapper x509Authentication() {
-        return new X509CommonNameUserMapper();
+    @Autowired
+    public X509AuthenticationMapper x509Authentication(CloseableHttpClient httpClientProxy) {
+        return new X509ExternalMapper(httpClientProxy);
     }
 
 }
