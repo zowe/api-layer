@@ -15,6 +15,7 @@ const selectedService = {
     "title": "API Gateway",
     "description": "API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.",
     "status": "UP",
+    "baseUrl": "https://localhost:6000",
     "homePageUrl": "https://localhost:10010/",
     "basePath": "/service/api/v1",
     "apiDoc": null
@@ -31,6 +32,7 @@ const tiles = {
             "serviceId": "gateway",
             "title": "API Gateway",
             "description": "API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.",
+            "baseUrl": "https://localhost:6000",
             "homePageUrl": "https://localhost:10010/",
             "basePath": "/service/api/v1",
             "apiDoc": null
@@ -49,9 +51,10 @@ describe('>>> ServiceTab component tests', () => {
         expect(serviceTab.find('Link').exists()).toEqual(true);
         expect(serviceTab.find('Link').first().props().href).toEqual("https://localhost:10010/");
         expect(serviceTab.find('Text').first().prop('children')).toEqual("API Gateway");
-        expect(serviceTab.find('Text').at(1).prop('children')).toEqual(["API Base Path: ", "/service/api/v1"]);
-        expect(serviceTab.find('Text').at(2).prop('children')).toEqual(["Service ID: ", "gateway"]);
-        expect(serviceTab.find('Text').at(3).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
+        expect(serviceTab.find('Text').at(1).prop('children')).toEqual(["Base URL: ", "https://localhost:6000"]);
+        expect(serviceTab.find('Text').at(2).prop('children')).toEqual(["API Base Path: ", "/service/api/v1"]);
+        expect(serviceTab.find('Text').at(3).prop('children')).toEqual(["Service ID: ", "gateway"]);
+        expect(serviceTab.find('Text').at(4).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
 
     });
 

@@ -146,10 +146,10 @@ public class ApiCatalogControllerTests {
     private List<APIContainer> createContainers() {
         Set<APIService> services = new HashSet<>();
 
-        APIService service = new APIService("service1", "service-1", "service-1", false, "home", "base");
+        APIService service = new APIService("service1", "service-1", "service-1", false, "url","home", "base");
         services.add(service);
 
-        service = new APIService("service2", "service-2", "service-2", true, "home", "base");
+        service = new APIService("service2", "service-2", "service-2", true, "url","home", "base");
         services.add(service);
 
         APIContainer container = new APIContainer("api-one", "API One", "This is API One", services);

@@ -31,7 +31,6 @@ import java.util.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
@@ -284,7 +283,7 @@ public class CachedProductFamilyTest {
     @Test
     public void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew()
         throws URLTransformationException {
-        
+
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(CATALOG_ID, "demoapp");
         metadata.put(CATALOG_TITLE, "Title");

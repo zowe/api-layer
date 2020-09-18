@@ -326,6 +326,7 @@ public class CachedProductFamilyService {
             instanceInfo.getMetadata().get(SERVICE_TITLE),
             instanceInfo.getMetadata().get(SERVICE_DESCRIPTION),
             secureEnabled,
+            instanceInfo.getHomePageUrl(),
             instanceHomePage,
             apiBasePath);
     }

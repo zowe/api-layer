@@ -80,8 +80,9 @@ export default class ServiceTab extends Component {
                                     )}
                                     <br />
                                     <br />
-                                    <Text>API Base Path: {selectedService.basePath}</Text>
-                                    <Text>Service ID: {selectedService.serviceId}</Text>
+                                    <Text style={{ fontSize: '13px' }}>Base URL: {selectedService.baseUrl}</Text>
+                                    <Text style={{ fontSize: '13px' }}>API Base Path: {selectedService.basePath}</Text>
+                                    <Text style={{ fontSize: '13px' }}>Service ID: {selectedService.serviceId}</Text>
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
                             </div>
