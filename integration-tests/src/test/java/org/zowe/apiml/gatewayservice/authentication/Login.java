@@ -308,6 +308,8 @@ abstract class Login {
             .extract().detailedCookie(COOKIE_NAME);
 
         assertValidAuthToken(cookie, Optional.of("APIMTST"));
+
+        logout(cookie.getValue());
     }
 
     @Test
