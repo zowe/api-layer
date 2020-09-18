@@ -44,6 +44,9 @@ class SafAuthenticationLoginIntegrationTest extends Login {
         String jwtToken2 = authenticateAndVerify(loginRequest);
 
         assertThat(jwtToken1, is(not(jwtToken2)));
+
+        logout(jwtToken1);
+        logout(jwtToken2);
     }
 
     @Override

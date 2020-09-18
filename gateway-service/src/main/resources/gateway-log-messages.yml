@@ -22,21 +22,21 @@ messages:
       type: ERROR
       text: "No instance of the service '%s' found. Routing will not be available."
       reason: "The Gateway could not find an instance of the service from the Discovery Service."
-      action: "Check that the service was successfully registered to the Discovery Service and wait for Spring Cloud to refresh the routes definitions"
+      action: "Check that the service was successfully registered to the Discovery Service and wait for Spring Cloud to refresh the routes definitions."
 
     - key: org.zowe.apiml.gateway.requestContainEncodedCharacter
       number: ZWEAG701
       type: ERROR
-      text: "Service '%s' does not allow encoded characters used in request path: '%s'."
+      text: "Service '%s' does not allow encoded characters in the request path: '%s'."
       reason: "The request that was issued to the Gateway contains an encoded character in the URL path. The service that the request was addressing does not allow this pattern."
-      action: "Contact the system administrator and ask to enable encoded characters in the service"
+      action: "Contact the system administrator and request enablement of encoded characters in the service."
 
     - key: org.zowe.apiml.gateway.requestContainEncodedSlash
       number: ZWEAG702
       type: ERROR
-      text: "Gateway does not to allow encoded slashes in request: '%s'."
+      text: "Gateway does not allow encoded slashes in request: '%s'."
       reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
-      action: "Contact the system administrator and ask to enable encoded slashes in the Gateway."
+      action: "Contact the system administrator and request enablement of encoded slashes in the Gateway."
 
     - key: org.zowe.apiml.gateway.jwtInitConfigError
       number: ZWEAG704
@@ -55,23 +55,23 @@ messages:
     - key: org.zowe.apiml.gateway.contextNotPrepared
       number: ZWEAG706
       type: ERROR
-      text: "RequestContext not prepared for load balancing."
+      text: "RequestContext is not prepared for load balancing."
       reason: "Custom Ribbon load balancing is not in place before calling Ribbon."
       action: "Contact Broadcom support."
 
     - key: org.zowe.apiml.gateway.requestAborted
       number: ZWEAG707
       type: ERROR
-      text: "The request to the URL '%s' has been aborted without retrying on another instance. Caused by: %s"
-      reason: "Request to server instance has failed and will not be retried on another instance."
+      text: "The request to the URL '%s' aborted without retrying on another instance. Caused by: %s"
+      reason: "Request to the server instance failed and will not be retried on another instance."
       action: "Refer to Caused by details for troubleshooting."
 
     - key: org.zowe.apiml.gateway.connectionRefused
       number: ZWEAG708
       type: ERROR
-      text: "The request to the URL '%s' has failed after retrying on all known service instances. Caused by: %s"
-      reason: "Request to server instance could not be executed on any known service instance."
-      action: "Verify status of the requested instance."
+      text: "The request to the URL '%s' failed after retrying on all known service instances. Caused by: %s"
+      reason: "Request to the server instance could not be executed on any known service instance."
+      action: "Verify the status of the requested instance."
 
     - key: org.zowe.apiml.gateway.serviceUnavailable
       number: ZWEAG709
@@ -87,7 +87,7 @@ messages:
       type: ERROR
       text: "Authentication exception: '%s' for URL '%s'"
       reason: "A generic failure occurred during authentication."
-      action: "Refer to specific authentication exception details for troubleshooting."
+      action: "Refer to the specific authentication exception details for troubleshooting."
 
     - key: org.zowe.apiml.security.invalidMethod
       number: ZWEAG101
@@ -106,7 +106,7 @@ messages:
     - key: org.zowe.apiml.gateway.security.expiredToken
       number: ZWEAG103
       type: ERROR
-      text: "Token is expired"
+      text: "The token has expired"
       reason: "The JWT token has expired."
       action: "Obtain new token by performing an authentication request."
 
@@ -127,14 +127,14 @@ messages:
     - key: org.zowe.apiml.security.loginEndpointInDummyMode
       number: ZWEAG106
       type: WARNING
-      text: "Login endpoint is running in the dummy mode. Use credentials '%s'/'%s' to login. Do not use this option in the production environment."
+      text: "Login endpoint is running in dummy mode. Use credentials '%s'/'%s' to log in. Do not use this option in the production environment."
       reason: "The authentication is running in dummy mode."
-      action: "Do not use this option in the production environment."
+      action: "Ensure that this option is not being used in a production environment."
 
     - key: org.zowe.apiml.security.invalidAuthenticationProvider
       number: ZWEAG107
       type: WARNING
-      text: "Incorrect value: apiml.security.auth.provider = '%s'. Authentication provider is not set correctly. Default 'zosmf' authentication provider is used."
+      text: "Incorrect value: apiml.security.auth.provider = '%s'. The authentication provider is not set correctly. The default 'zosmf' authentication provider is being used."
       reason: "An incorrect value of the apiml.security.auth.provider parameter is set in the configuration."
       action: "Ensure that the value of apiml.security.auth.provider is set either to 'dummy' if you want to use dummy mode, or to 'zosmf' if you want to use the z/OSMF authentication provider."
 
@@ -164,13 +164,13 @@ messages:
       number: ZWEAG120
       type: ERROR
       text: "Invalid username or password for URL '%s'"
-      reason: "The username or password are invalid."
+      reason: "The username and/or password are invalid."
       action: "Provide a valid username and password."
 
     - key: org.zowe.apiml.security.login.invalidInput
       number: ZWEAG121
       type: ERROR
-      text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
+      text: "Authorization header is missing, or the request body is missing or invalid for URL '%s'"
       reason: "The authorization header is missing, or the request body is missing or invalid."
       action: "Provide valid authentication."
 
