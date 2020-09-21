@@ -58,14 +58,17 @@ class IntegratedZaasClientTest {
     void loginWithValidCredentials() {
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
-        given()
+        String token = given()
             .contentType(JSON)
             .body(loginRequest)
             .when()
             .post(ZAAS_CLIENT_URI + LOGIN)
             .then()
             .statusCode(is(SC_OK))
-            .body(not(isEmptyString()));
+            .body(not(isEmptyString()))
+            .extract().cookie(COOKIE_NAME);
+
+        SecurityUtils.logoutItUserGatewayZosmf(token);
     }
 
     /**
@@ -91,14 +94,17 @@ class IntegratedZaasClientTest {
     void loginWithValidCredentials_OldPathFormat() {
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
-        given()
+        String token = given()
             .contentType(JSON)
             .body(loginRequest)
             .when()
             .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGIN)
             .then()
             .statusCode(is(SC_OK))
-            .body(not(isEmptyString()));
+            .body(not(isEmptyString()))
+            .extract().cookie(COOKIE_NAME);
+
+        SecurityUtils.logoutItUserGatewayZosmf(token);
     }
 
     @Test
@@ -117,28 +123,32 @@ class IntegratedZaasClientTest {
 
     @Test
     void givenValidToken_whenCallingLogoutOldPathFormat_thenSuccess() {
-        String token = "validToken";
+        String token = generateToken();
 
         given()
             .contentType(JSON)
-            .cookie(COOKIE_NAME, generateToken())
+            .cookie(COOKIE_NAME, token)
             .when()
             .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGOUT)
             .then()
             .statusCode(is(SC_NO_CONTENT));
+
+        SecurityUtils.logoutItUserGatewayZosmf(token);
     }
 
     @Test
     void givenValidToken_whenCallingLogout_thenSuccess() {
-        String token = "validToken";
+        String token = generateToken();
 
         given()
             .contentType(JSON)
-            .cookie(COOKIE_NAME, generateToken())
+            .cookie(COOKIE_NAME, token)
             .when()
             .post(ZAAS_CLIENT_URI + LOGOUT)
             .then()
             .statusCode(is(SC_NO_CONTENT));
+
+        SecurityUtils.logoutItUserGatewayZosmf(token);
     }
 
     @Test
