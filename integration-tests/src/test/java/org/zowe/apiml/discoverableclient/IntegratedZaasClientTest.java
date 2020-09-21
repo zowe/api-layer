@@ -58,17 +58,14 @@ class IntegratedZaasClientTest {
     void loginWithValidCredentials() {
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
-        String token = given()
+        given()
             .contentType(JSON)
             .body(loginRequest)
             .when()
             .post(ZAAS_CLIENT_URI + LOGIN)
             .then()
             .statusCode(is(SC_OK))
-            .body(not(isEmptyString()))
-            .extract().cookie(COOKIE_NAME);
-
-        SecurityUtils.logoutItUserGatewayZosmf(token);
+            .body(not(isEmptyString()));
     }
 
     /**

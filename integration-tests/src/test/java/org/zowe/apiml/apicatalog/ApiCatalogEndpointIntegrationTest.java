@@ -211,7 +211,7 @@ public class ApiCatalogEndpointIntegrationTest {
 
         // Then
         assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
-        SecurityUtils.logoutItUserGatewayZosmf(cookie);
+        SecurityUtils.logoutItUserGatewayZosmf(cookie.replaceFirst("apimlAuthenticationToken=", ""));
 
         return response;
     }
