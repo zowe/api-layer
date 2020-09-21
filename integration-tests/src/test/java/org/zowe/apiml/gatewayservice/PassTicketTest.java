@@ -211,6 +211,8 @@ class PassTicketTest {
             .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
         .then()
             .statusCode(is(SC_FORBIDDEN));
+
+        SecurityUtils.logoutItUserGatewayZosmf(jwt);
     }
 
     @Test

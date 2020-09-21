@@ -53,8 +53,33 @@ public class RoutedServices {
                 int size = value.getServiceUrl().length();
                 //Remove last slash for service url
                 String routeServiceUrl = UrlUtils.removeLastSlash(value.getServiceUrl().toLowerCase());
-                if (size > maxSize &&
-                    serviceUrl.toLowerCase().startsWith(routeServiceUrl)) {
+                if (size > maxSize && serviceUrl.toLowerCase().startsWith(routeServiceUrl)) {
+                    result = value;
+                    maxSize = size;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get best matching api url
+     *
+     * @param serviceUrl service url
+     * @return the route
+     */
+    public RoutedService getBestMatchingApiUrl(String serviceUrl) {
+        RoutedService result = null;
+        int maxSize = 0;
+
+        for (Map.Entry<String, RoutedService> serviceEntry : routedService.entrySet()) {
+            if (isServiceTypeMatch(serviceEntry, ServiceType.API)) {
+                RoutedService value = serviceEntry.getValue();
+                int size = value.getServiceUrl().length();
+                //Remove last slash for service url
+                String routeServiceUrl = UrlUtils.removeLastSlash(value.getServiceUrl().toLowerCase());
+                if (size > maxSize && isMatchingApiRoute(serviceUrl, routeServiceUrl)) {
                     result = value;
                     maxSize = size;
                 }
@@ -68,6 +93,12 @@ public class RoutedServices {
         String serviceEntryKey = serviceEntry.getKey().toLowerCase();
         String typeName = type.name().toLowerCase();
         return type.equals(ServiceType.ALL) || serviceEntryKey.startsWith(typeName);
+    }
+
+    private boolean isMatchingApiRoute(String serviceUrl, String routeServiceUrl) {
+        serviceUrl = serviceUrl.toLowerCase();
+        return serviceUrl.startsWith(routeServiceUrl)
+            || routeServiceUrl.startsWith(serviceUrl); // Allow serviceUrl of /serviceId to map to /serviceId/{type}/{version} NOSONAR
     }
 
     @Override

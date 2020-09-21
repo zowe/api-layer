@@ -6,9 +6,9 @@ messages:
     - key: org.zowe.apiml.common.serviceStarted
       number: ZWEAM000
       type: INFO
-      text: "%s has been started in %s seconds"
-      reason: "The service has been started"
-      action: "No action is needed"
+      text: "%s started in %s seconds"
+      reason: "The service started."
+      action: "No action required."
 
     # General messages
     # 100-199

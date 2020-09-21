@@ -89,6 +89,35 @@ public class TransformService {
             endPoint);
     }
 
+    /**
+     * Construct the API base path using the route
+     *
+     * @param serviceId  the service id
+     * @param serviceUrl the service URL
+     * @param routes     the routes
+     * @return the new URL
+     * @throws URLTransformationException if the path of the service base path is not valid or cannot be found
+     */
+    public String retrieveApiBasePath(String serviceId,
+                                      String serviceUrl,
+                                      RoutedServices routes) throws URLTransformationException {
+        URI serviceUri = URI.create(serviceUrl);
+        String serviceUriPath = serviceUri.getPath();
+        if (serviceUriPath == null) {
+            String message = String.format("The URI %s is not valid.", serviceUri);
+            throw new URLTransformationException(message);
+        }
+
+        RoutedService route = routes.getBestMatchingApiUrl(serviceUriPath);
+        if (route == null) {
+            String message = String.format("Not able to select API base path for the service %s. Original url used.", serviceId);
+            throw new URLTransformationException(message);
+        }
+
+        return String.format("/%s/%s",
+            serviceId,
+            route.getGatewayUrl());
+    }
 
     /**
      * Get short endpoint
