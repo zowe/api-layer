@@ -16,6 +16,7 @@ import io.restassured.http.Cookie;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -76,6 +77,8 @@ public class ApiCatalogLoginIntegrationTest {
 
         assertThat(claims.getId(), not(isEmptyString()));
         assertThat(claims.getSubject(), is(USERNAME));
+
+        SecurityUtils.logoutItUserGatewayZosmf(cookie.getValue());
     }
 
     @Test
@@ -98,6 +101,8 @@ public class ApiCatalogLoginIntegrationTest {
 
         assertThat(claims.getId(), not(isEmptyString()));
         assertThat(claims.getSubject(), is(USERNAME));
+
+        SecurityUtils.logoutItUserGatewayZosmf(token);
     }
 
     @Test
