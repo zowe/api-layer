@@ -17,8 +17,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,21 +36,17 @@ public class X509ExternalMapper implements X509AuthenticationMapper {
 
         try {
             HttpPost httpPost = new HttpPost(new URI("http://localhost:8542/usermap"));
-            HttpEntity httpEntity = null;
-            try {
-                httpEntity = new ByteArrayEntity(certificate.getEncoded());
-            } catch (CertificateEncodingException e) {
-                log.error("Can`t get encoded data from certificate", e);
-            }
+
+            HttpEntity httpEntity = new ByteArrayEntity(certificate.getEncoded());
             httpPost.setEntity(httpEntity);
-            try {
-                HttpResponse httpResponse = httpClientProxy.execute(httpPost);
-                return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                log.error("Not able to send certificate to mapper", e);
-            }
-        }catch (URISyntaxException e) {
-            log.error("Wrong URI provided",e);
+            HttpResponse httpResponse = httpClientProxy.execute(httpPost);
+            return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+        } catch (URISyntaxException e) {
+            log.error("Wrong URI provided", e);
+        } catch (CertificateEncodingException e) {
+            log.error("Can`t get encoded data from certificate", e);
+        } catch (IOException e) {
+            log.error("Not able to send certificate to mapper", e);
         }
         return null;
     }

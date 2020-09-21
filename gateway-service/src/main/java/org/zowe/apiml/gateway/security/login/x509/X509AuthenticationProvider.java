@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.security.login.x509;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -26,6 +25,7 @@ import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
 import java.security.cert.X509Certificate;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -36,7 +36,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     @Value("${apiml.security.x509.enabled:false}")
     boolean isClientCertEnabled;
 
-    private final X509AuthenticationMapper x509AuthenticationMapper;
+    private final Map<String, X509AuthenticationMapper> x509AuthenticationMapper;
     private final AuthenticationService authenticationService;
 
     private final PassTicketService passTicketService;
@@ -62,20 +62,18 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
             if (!isClientCertEnabled) {
                 return null;
             }
-
-            X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
-            String username = x509AuthenticationMapper.mapCertificateToMainframeUserId(certs[0]);
-            if (username == null) {
-                return null;
-            }
-
             boolean isZosmfUsedAndAvailable = false;
             try {
                 isZosmfUsedAndAvailable = providers.isZosfmUsed() && providers.isZosmfAvailable();
             } catch (AuthenticationServiceException ex) {
                 // Intentionally do nothing. The issue is logged deeper.
             }
-
+            X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
+            String providerName = isZosmfUsedAndAvailable ? "externalMapper" : "commonNameMapper";
+            String username = x509AuthenticationMapper.get(providerName).mapCertificateToMainframeUserId(certs[0]);
+            if (username == null) {
+                return null;
+            }
             if (isZosmfUsedAndAvailable) {
                 try {
                     String passTicket = passTicketService.generate(username, zosmfApplId);

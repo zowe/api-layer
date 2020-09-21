@@ -24,6 +24,8 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -50,14 +52,16 @@ class X509AuthenticationProviderTest {
     @BeforeEach
     void setUp() {
         x509AuthenticationMapper = mock(X509AuthenticationMapper.class);
-
+        Map<String, X509AuthenticationMapper> providerMap = new HashMap<>();
+        providerMap.put("commonNameMapper", x509AuthenticationMapper);
+        providerMap.put("externalMapper", x509AuthenticationMapper);
         authenticationService = mock(AuthenticationService.class);
         passTicketService = mock(PassTicketService.class);
         zosmfAuthenticationProvider = mock(ZosmfAuthenticationProvider.class);
         providers = mock(Providers.class);
         when(authenticationService.createJwtToken("user", "security-domain", null)).thenReturn("jwt");
         when(authenticationService.createTokenAuthentication("user", "jwt")).thenReturn(new TokenAuthentication("user", "jwt"));
-        x509AuthenticationProvider = new X509AuthenticationProvider(x509AuthenticationMapper
+        x509AuthenticationProvider = new X509AuthenticationProvider(providerMap
             , authenticationService, passTicketService, zosmfAuthenticationProvider, providers);
         x509AuthenticationProvider.isClientCertEnabled = true;
     }
@@ -129,7 +133,7 @@ class X509AuthenticationProviderTest {
         when(providers.isZosmfAvailable()).thenReturn(true);
         when(providers.isZosfmUsed()).thenReturn(true);
         when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn(validUsername);
-        when(passTicketService.generate(validUsername, null)).thenThrow(new IRRPassTicketGenerationException(8,8,8));
+        when(passTicketService.generate(validUsername, null)).thenThrow(new IRRPassTicketGenerationException(8, 8, 8));
 
         X509AuthenticationToken token = new X509AuthenticationToken(x509Certificate);
         assertThrows(AuthenticationTokenException.class, () -> x509AuthenticationProvider.authenticate(token));

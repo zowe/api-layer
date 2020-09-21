@@ -16,11 +16,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.zowe.apiml.gateway.security.login.Providers;
+import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationMapper;
+import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
 import org.zowe.apiml.gateway.security.login.x509.X509ExternalMapper;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationMapper;
-import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -58,8 +61,11 @@ public class ComponentsConfiguration {
 
     @Bean
     @Autowired
-    public X509AuthenticationMapper x509Authentication(CloseableHttpClient httpClientProxy) {
-        return new X509ExternalMapper(httpClientProxy);
+    public Map<String, X509AuthenticationMapper> x509Authentication(CloseableHttpClient httpClientProxy) {
+        Map<String, X509AuthenticationMapper> x509Providers = new HashMap<>();
+        x509Providers.put("externalMapper", new X509ExternalMapper(httpClientProxy));
+        x509Providers.put("commonNameMapper", new X509CommonNameUserMapper());
+        return x509Providers;
     }
 
 }
