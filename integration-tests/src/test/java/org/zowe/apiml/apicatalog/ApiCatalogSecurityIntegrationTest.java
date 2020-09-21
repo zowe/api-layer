@@ -85,16 +85,14 @@ public class ApiCatalogSecurityIntegrationTest {
 
     @Test
     public void accessProtectedEndpointWithBasicAuth() {
-        String token = given()
+        given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
         .when()
             .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
                 CATALOG_SERVICE_ID, endpoint))
         .then()
-            .statusCode(is(SC_OK))
-            .extract().cookie(COOKIE);
+            .statusCode(is(SC_OK));
 
-        SecurityUtils.logoutItUserGatewayZosmf(token);
     }
 
     @Test
