@@ -23,7 +23,6 @@ export default class ServiceTab extends Component {
             selectedService.homePageUrl !== null &&
             selectedService.homePageUrl !== undefined &&
             selectedService.homePageUrl.length > 0;
-
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
@@ -79,10 +78,35 @@ export default class ServiceTab extends Component {
                                             )}
                                         </React.Fragment>
                                     )}
+                                    <br />
+                                    <br />
+                                    <Tooltip
+                                        key={selectedService.baseUrl}
+                                        content="The instance URL for this service"
+                                        placement="bottom"
+                                    >
+                                        <Text style={{ fontSize: '13px' }}>Instance URL: {selectedService.baseUrl}</Text>
+                                    </Tooltip>
+                                    <br/>
+                                    <Tooltip
+                                        key={selectedService.basePath}
+                                        content="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
+                                        placement="bottom"
+                                    >
+                                        <Text style={{ fontSize: '13px' }}>API Base Path: {selectedService.basePath}</Text>
+                                    </Tooltip>
+                                    <br/>
+                                    <Tooltip
+                                        key={selectedService.serviceId}
+                                        content="The identifier for this service"
+                                        placement="bottom"
+                                    >
+                                        <Text style={{ fontSize: '13px' }}>Service ID: {selectedService.serviceId}</Text>
+                                    </Tooltip>
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
                             </div>
-                            <SwaggerContainer />
+                            <SwaggerContainer/>
                         </React.Fragment>
                     )}
                 </Shield>

@@ -44,11 +44,11 @@ describe('>>> Detail page test', () => {
                 .within(title => {
                     cy.contains('1.0.0');
                 });
-            cy.get('pre.base-url').should('contain', '[ Base URL: ca3x.ca.com:10010/api/v1/apicatalog ]');
+            cy.get('pre.base-url').should('contain', '[ Base URL: ca3x.ca.com:10010/apicatalog/api/v1 ]');
 
             cy.get('h4.opblock-tag').should('have.length', 2);
 
-            cy.get('span.opblock-summary-path').should('not.contain', '/api/v1/apicatalog');
+            cy.get('span.opblock-summary-path').should('not.contain', '/apicatalog/api/v1');
         });
     });
 });
