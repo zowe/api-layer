@@ -14,10 +14,12 @@ import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
+import org.zowe.apiml.util.categories.AuthenticationTest;
 
 import static io.restassured.RestAssured.given;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
+@AuthenticationTest
 abstract class LogoutTest {
 
     protected final static String LOGOUT_ENDPOINT = "/auth/logout";
