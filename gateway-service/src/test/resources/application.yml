@@ -30,7 +30,7 @@ apiml:
         ssl:
             verifySslCertificatesOfServices: true
         x509:
-            externalMapperUrl: http://localhost:8542/certificate/map
+            externalMapperUrl: http://localhost:8542/certificate/x509/map
         auth:
             provider: dummy
             zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id

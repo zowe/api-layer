@@ -7,12 +7,12 @@ const port = 8542;
 let jsonResponse = {
     "userId" : "CERTSITE",
     "rc": 0,
-    "safRc": 0,
-    "racfRc": 0,
-    "reasonCode": 0
+    "sac_rc": 0,
+    "racf_rc": 0,
+    "reason_code": 0
 }
 
-app.post("/certificate/map", (req, res) => {
+app.post("/certificate/x509/map", (req, res) => {
 let data = [];
 req.on("data", function(chunk) {
     data.push(chunk);

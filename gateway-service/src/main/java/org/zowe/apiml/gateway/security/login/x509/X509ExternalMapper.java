@@ -27,6 +27,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
+/**
+ * Certificate mapper that allows to return user id of the provided x509 certificate
+ * This mapper will be executed when ZSS is used
+ */
 @RequiredArgsConstructor
 @Slf4j
 public class X509ExternalMapper implements X509AuthenticationMapper {
@@ -34,6 +38,14 @@ public class X509ExternalMapper implements X509AuthenticationMapper {
     private final CloseableHttpClient httpClientProxy;
     private final String externalMapperUrl;
 
+    /**
+     * Maps certificate to the mainframe user id
+     * @param certificate
+     * @return the user
+     * @throws URISyntaxException if the certificate mapping URL is wrong
+     * @throws CertificateEncodingException when it cannot get encoded data from certificate
+     * @throws IOException if not able to send certificate to the mapper
+     */
     @Override
     public String mapCertificateToMainframeUserId(X509Certificate certificate) {
 
