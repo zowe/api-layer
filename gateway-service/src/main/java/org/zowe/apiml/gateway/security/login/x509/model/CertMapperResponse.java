@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.login.x509.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,9 +18,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CertMapperResponse {
+    @JsonProperty("userid")
     private String userId;
     private int rc;
+    @JsonProperty("saf_rc")
     private int safRc;
+    @JsonProperty("racf_rc")
     private int racfRc;
+    @JsonProperty("reason_code")
     private int reasonCode;
 }
