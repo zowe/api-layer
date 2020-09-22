@@ -10,15 +10,15 @@
 
 package org.zowe.apiml.product.routing.transform;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -79,7 +79,6 @@ public class TransformServiceTest {
         exception.expect(URLTransformationException.class);
         exception.expectMessage("Not able to select route for url https://localhost:8080/u of the service service. Original url used.");
         transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices);
-
     }
 
     @Test
@@ -231,5 +230,48 @@ public class TransformServiceTest {
         assertEquals(expectedUrl, actualUrl);
     }
 
+    @Test
+    public void givenServiceAndApiRoute_whenGetApiBasePath_thenReturnApiPath() throws URLTransformationException {
+        String url = "https://localhost:8080/" + SERVICE_ID;
 
+        String serviceUrl = String.format("/%s/%s", SERVICE_ID, API_PREFIX);
+        RoutedServices routedServices = new RoutedServices();
+        RoutedService routedService = new RoutedService(SERVICE_ID, API_PREFIX, serviceUrl);
+        routedServices.addRoutedService(routedService);
+
+        TransformService transformService = new TransformService(null);
+
+        String actualPath = transformService.retrieveApiBasePath(SERVICE_ID, url, routedServices);
+        String expectedPath = String.format("/%s/%s",
+            SERVICE_ID,
+            API_PREFIX);
+        assertEquals(expectedPath, actualPath);
+    }
+
+    @Test
+    public void givenInvalidUriPath_whenGetApiBasePath_thenThrowError() throws URLTransformationException {
+        String url = "https:localhost:8080/wss";
+
+        TransformService transformService = new TransformService(null);
+
+        exception.expect(URLTransformationException.class);
+        exception.expectMessage("The URI " + url + " is not valid.");
+        transformService.retrieveApiBasePath(null, url, null);
+    }
+
+    @Test
+    public void givenNoRoutes_whenGetApiBasePath_thenThrowError() throws URLTransformationException {
+        String url = "https://localhost:8080/u";
+
+        RoutedServices routedServices = new RoutedServices();
+        RoutedService routedService1 = new RoutedService(SERVICE_ID, UI_PREFIX, "/ui");
+        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/api");
+        routedServices.addRoutedService(routedService1);
+        routedServices.addRoutedService(routedService2);
+
+        TransformService transformService = new TransformService(null);
+        exception.expect(URLTransformationException.class);
+        exception.expectMessage("Not able to select API base path for the service " + SERVICE_ID + ". Original url used.");
+        transformService.retrieveApiBasePath(SERVICE_ID, url, routedServices);
+    }
 }

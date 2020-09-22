@@ -108,3 +108,13 @@ messages:
       text: "Static API refresh failed, caused by exception: %s"
       reason: "The Static API refresh could not be performed because of exception."
       action: "Check the specific exception for troubleshooting."
+
+    - key: org.zowe.apiml.apicatalog.getApiBasePathFailed
+      number: ZWEAC708
+      type: ERROR
+      text: "The API base path for service %s was not retrieved. %s"
+      reason: "The api base path for service was not retrieved. An empty path will be used."
+      action: "Refer to the specific printed message. Possible causes include:\n
+      - The URI ... is not valid. Ensure the service is providing a valid url.\n
+      - Not able to select a route for url ... of the service ... Original url is used. If this is a problem, check the routing metadata of the service.\n
+      - The path ... of the service URL ... is not valid. Ensure the service is providing the correct path.\n"
