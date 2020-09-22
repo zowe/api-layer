@@ -18,7 +18,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.zowe.apiml.gateway.security.login.x509.model.CertMapperResponse;
 
 import java.io.IOException;
 import java.net.URI;
@@ -32,14 +32,13 @@ import java.security.cert.X509Certificate;
 public class X509ExternalMapper implements X509AuthenticationMapper {
 
     private final CloseableHttpClient httpClientProxy;
-    @Value("${apiml.security.x509.externalMapperUrl}")
-    private String EXTERNAL_CERT_MAPPER_URL;
+    private final String externalMapperUrl;
 
     @Override
     public String mapCertificateToMainframeUserId(X509Certificate certificate) {
 
         try {
-            HttpPost httpPost = new HttpPost(new URI(EXTERNAL_CERT_MAPPER_URL));
+            HttpPost httpPost = new HttpPost(new URI(externalMapperUrl));
             HttpEntity httpEntity = new ByteArrayEntity(certificate.getEncoded());
             httpPost.setEntity(httpEntity);
             HttpResponse httpResponse = httpClientProxy.execute(httpPost);
@@ -47,7 +46,7 @@ public class X509ExternalMapper implements X509AuthenticationMapper {
             log.error("Mapper response, {}", response);
             ObjectMapper objectMapper = new ObjectMapper();
             CertMapperResponse certMapperResponse = objectMapper.readValue(response, CertMapperResponse.class);
-            return certMapperResponse.userid;
+            return certMapperResponse.getUserId();
         } catch (URISyntaxException e) {
             log.error("Wrong URI provided", e);
         } catch (CertificateEncodingException e) {
@@ -59,10 +58,4 @@ public class X509ExternalMapper implements X509AuthenticationMapper {
     }
 }
 
-class CertMapperResponse {
-    String userid;
-    int rc;
-    int saf_rc;
-    int racf_rc;
-    int reason_code;
-}
+

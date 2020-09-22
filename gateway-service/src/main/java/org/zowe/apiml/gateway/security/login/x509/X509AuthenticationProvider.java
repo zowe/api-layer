@@ -37,6 +37,8 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     private String zosmfApplId;
     @Value("${apiml.security.x509.enabled:false}")
     boolean isClientCertEnabled;
+    @Value("${apiml.security.x509.useZss:false}")
+    boolean useZss;
 
     private final Map<String, X509AuthenticationMapper> x509AuthenticationMapper;
     private final AuthenticationService authenticationService;
@@ -72,7 +74,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
                 // Intentionally do nothing. The issue is logged deeper.
             }
             X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
-            String providerName = isZosmfUsedAndAvailable ? "externalMapper" : "commonNameMapper";
+            String providerName = useZss ? "externalMapper" : "commonNameMapper";
             log.error("mapper: {}", providerName);
             String username = x509AuthenticationMapper.get(providerName).mapCertificateToMainframeUserId(certs[0]);
             log.error("username:{}", username);

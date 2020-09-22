@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.config;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,8 @@ import java.util.Map;
 @Configuration
 public class ComponentsConfiguration {
 
-
+    @Value("${apiml.security.x509.externalMapperUrl}")
+    private String externalMapperUrl;
     /**
      * Used for dummy authentication provider
      */
@@ -64,7 +66,7 @@ public class ComponentsConfiguration {
     @Autowired
     public Map<String, X509AuthenticationMapper> x509Authentication(CloseableHttpClient httpClientProxy) {
         Map<String, X509AuthenticationMapper> x509Providers = new HashMap<>();
-        x509Providers.put("externalMapper", new X509ExternalMapper(httpClientProxy));
+        x509Providers.put("externalMapper", new X509ExternalMapper(httpClientProxy, externalMapperUrl));
         x509Providers.put("commonNameMapper", new X509CommonNameUserMapper());
         return x509Providers;
     }
