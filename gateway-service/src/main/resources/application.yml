@@ -51,6 +51,9 @@ apiml:
             jwtKeyAlias: jwtsecret
         x509:
             enabled: true
+            externalMapperUrl: http://localhost:8542/certificate/map
+
+
 
 spring:
     application:

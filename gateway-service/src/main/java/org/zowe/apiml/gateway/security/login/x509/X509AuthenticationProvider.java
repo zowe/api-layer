@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.login.x509;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -28,6 +29,7 @@ import java.security.cert.X509Certificate;
 import java.util.Map;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class X509AuthenticationProvider implements AuthenticationProvider {
 
@@ -65,12 +67,15 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
             boolean isZosmfUsedAndAvailable = false;
             try {
                 isZosmfUsedAndAvailable = providers.isZosfmUsed() && providers.isZosmfAvailable();
+                log.error("Is zosmf available,{}", isZosmfUsedAndAvailable);
             } catch (AuthenticationServiceException ex) {
                 // Intentionally do nothing. The issue is logged deeper.
             }
             X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
             String providerName = isZosmfUsedAndAvailable ? "externalMapper" : "commonNameMapper";
+            log.error("mapper: {}", providerName);
             String username = x509AuthenticationMapper.get(providerName).mapCertificateToMainframeUserId(certs[0]);
+            log.error("username:{}", username);
             if (username == null) {
                 return null;
             }

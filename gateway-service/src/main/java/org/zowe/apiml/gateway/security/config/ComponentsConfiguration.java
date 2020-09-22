@@ -32,6 +32,7 @@ import java.util.Map;
 @Configuration
 public class ComponentsConfiguration {
 
+
     /**
      * Used for dummy authentication provider
      */
