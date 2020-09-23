@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
 import org.junit.jupiter.api.*;
 import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.util.categories.AuthenticationTest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -28,6 +29,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
+@AuthenticationTest
 @MainframeDependentTests
 class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private String scheme;
