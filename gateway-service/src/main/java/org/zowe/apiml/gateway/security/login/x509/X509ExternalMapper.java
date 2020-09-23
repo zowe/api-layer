@@ -33,7 +33,7 @@ import java.security.cert.X509Certificate;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class X509ExternalMapper implements X509AuthenticationMapper {
+public class X509ExternalMapper extends X509AbstractMapper {
 
     private final CloseableHttpClient httpClientProxy;
     private final String externalMapperUrl;
@@ -49,29 +49,32 @@ public class X509ExternalMapper implements X509AuthenticationMapper {
      */
     @Override
     public String mapCertificateToMainframeUserId(X509Certificate certificate) {
-
-        try {
-            HttpPost httpPost = new HttpPost(new URI(externalMapperUrl));
-            HttpEntity httpEntity = new ByteArrayEntity(certificate.getEncoded());
-            httpPost.setEntity(httpEntity);
-            HttpResponse httpResponse = httpClientProxy.execute(httpPost);
-            String response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
-            log.error("Mapper response, {}", response);
-            ObjectMapper objectMapper = new ObjectMapper();
-            CertMapperResponse certMapperResponse = objectMapper.readValue(response, CertMapperResponse.class);
-            if (certMapperResponse.getUserId() != null && !"CERTAUTH".equalsIgnoreCase(certMapperResponse.getUserId())) {
-                return certMapperResponse.getUserId().trim();
+        if (isClientAuthCertificate(certificate)) {
+            try {
+                HttpPost httpPost = new HttpPost(new URI(externalMapperUrl));
+                HttpEntity httpEntity = new ByteArrayEntity(certificate.getEncoded());
+                httpPost.setEntity(httpEntity);
+                HttpResponse httpResponse = httpClientProxy.execute(httpPost);
+                String response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+                log.error("Mapper response, {}", response);
+                ObjectMapper objectMapper = new ObjectMapper();
+                CertMapperResponse certMapperResponse = objectMapper.readValue(response, CertMapperResponse.class);
+                if (certMapperResponse.getUserId() != null) {
+                    return certMapperResponse.getUserId().trim();
+                }
+                return null;
+            } catch (URISyntaxException e) {
+                log.error("Wrong URI provided", e);
+            } catch (CertificateEncodingException e) {
+                log.error("Can`t get encoded data from certificate", e);
+            } catch (IOException e) {
+                log.error("Not able to send certificate to mapper", e);
             }
             return null;
-        } catch (URISyntaxException e) {
-            log.error("Wrong URI provided", e);
-        } catch (CertificateEncodingException e) {
-            log.error("Can`t get encoded data from certificate", e);
-        } catch (IOException e) {
-            log.error("Not able to send certificate to mapper", e);
         }
         return null;
     }
+
 }
 
 

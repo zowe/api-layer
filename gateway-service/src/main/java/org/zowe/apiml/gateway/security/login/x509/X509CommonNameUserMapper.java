@@ -15,21 +15,19 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.List;
 
 /**
  * Certificate mapper that allows to return user id of the provided x509 certificate
  * This mapper will be executed when ZSS is not used
  */
 @Slf4j
-public class X509CommonNameUserMapper implements X509AuthenticationMapper {
+public class X509CommonNameUserMapper extends X509AbstractMapper {
 
-    private static final String CLIENT_AUTH_OID = "1.3.6.1.5.5.7.3.2";
 
     /**
      * Maps certificate to user id
+     *
      * @param certificate
      * @return the user
      */
@@ -46,26 +44,10 @@ public class X509CommonNameUserMapper implements X509AuthenticationMapper {
         return null;
     }
 
-    /**
-     * Verify that the certificate is valid and that contains the OID for client authentication
-     * @param certificate
-     * @return
-     */
-    public boolean isClientAuthCertificate(X509Certificate certificate) {
-        List<String> extendedKeyUsage;
-        try {
-            extendedKeyUsage = certificate.getExtendedKeyUsage();
-        } catch (CertificateParsingException e) {
-            throw new AuthenticationServiceException("Can't get extensions from certificate");
-        }
-        if (extendedKeyUsage == null) {
-            return false;
-        }
-        return extendedKeyUsage.contains(CLIENT_AUTH_OID);
-    }
 
     /**
      * Return the LDAP name from the given distinguished name
+     *
      * @param dn distinguished name
      * @return LDAP name
      */

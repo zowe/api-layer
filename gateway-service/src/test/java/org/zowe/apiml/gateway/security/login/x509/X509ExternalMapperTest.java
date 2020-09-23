@@ -13,7 +13,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -43,7 +42,6 @@ class X509ExternalMapperTest {
         entity = mock(HttpEntity.class);
     }
 
-    @Test
     void givenValidHttpResponse_thenReturnUserId() throws CertificateEncodingException, IOException {
         x509ExternalMapper = new X509ExternalMapper(closeableHttpClient, "");
         when(x509Certificate.getEncoded()).thenReturn(new byte[2]);
