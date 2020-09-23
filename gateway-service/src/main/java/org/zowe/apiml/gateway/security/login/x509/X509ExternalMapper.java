@@ -40,11 +40,12 @@ public class X509ExternalMapper implements X509AuthenticationMapper {
 
     /**
      * Maps certificate to the mainframe user id
+     *
      * @param certificate
      * @return the user
-     * @throws URISyntaxException if the certificate mapping URL is wrong
+     * @throws URISyntaxException           if the certificate mapping URL is wrong
      * @throws CertificateEncodingException when it cannot get encoded data from certificate
-     * @throws IOException if not able to send certificate to the mapper
+     * @throws IOException                  if not able to send certificate to the mapper
      */
     @Override
     public String mapCertificateToMainframeUserId(X509Certificate certificate) {
@@ -58,7 +59,10 @@ public class X509ExternalMapper implements X509AuthenticationMapper {
             log.error("Mapper response, {}", response);
             ObjectMapper objectMapper = new ObjectMapper();
             CertMapperResponse certMapperResponse = objectMapper.readValue(response, CertMapperResponse.class);
-            return certMapperResponse.getUserId();
+            if (certMapperResponse.getUserId() != null) {
+                return certMapperResponse.getUserId().trim();
+            }
+            return null;
         } catch (URISyntaxException e) {
             log.error("Wrong URI provided", e);
         } catch (CertificateEncodingException e) {
