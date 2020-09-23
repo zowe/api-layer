@@ -64,8 +64,8 @@ class IntegratedZaasClientTest {
             .when()
             .post(ZAAS_CLIENT_URI + LOGIN)
             .then()
-            .statusCode(is(SC_OK))
-            .body(not(isEmptyString()));
+            .body(not(isEmptyString()))
+            .statusCode(is(SC_OK));
     }
 
     /**
@@ -83,8 +83,8 @@ class IntegratedZaasClientTest {
             .when()
             .post(ZAAS_CLIENT_URI + LOGIN)
             .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(is("Invalid username or password"));
+            .body(is("Invalid username or password"))
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     @Test
@@ -97,8 +97,8 @@ class IntegratedZaasClientTest {
             .when()
             .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGIN)
             .then()
-            .statusCode(is(SC_OK))
-            .body(not(isEmptyString()));
+            .body(not(isEmptyString()))
+            .statusCode(is(SC_OK));
     }
 
     @Test
@@ -111,15 +111,15 @@ class IntegratedZaasClientTest {
             .when()
             .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGIN)
             .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(is("Invalid username or password"));
+            .body(is("Invalid username or password"))
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     @Test
     void givenValidToken_whenCallingLogoutOldPathFormat_thenSuccess() {
         String token = "validToken";
 
-        String jwt =  generateToken();
+        String jwt = generateToken();
 
         given()
             .contentType(JSON)

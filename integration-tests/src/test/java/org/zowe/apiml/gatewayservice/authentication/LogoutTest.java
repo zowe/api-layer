@@ -20,7 +20,7 @@ import static io.restassured.RestAssured.given;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @AuthenticationTest
-abstract class LogoutTest {
+abstract class  LogoutTest {
 
     protected final static String LOGOUT_ENDPOINT = "/auth/logout";
     protected final static String QUERY_ENDPOINT = "/auth/query";

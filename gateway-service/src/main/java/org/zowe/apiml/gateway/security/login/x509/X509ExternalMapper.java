@@ -59,7 +59,7 @@ public class X509ExternalMapper implements X509AuthenticationMapper {
             log.error("Mapper response, {}", response);
             ObjectMapper objectMapper = new ObjectMapper();
             CertMapperResponse certMapperResponse = objectMapper.readValue(response, CertMapperResponse.class);
-            if (certMapperResponse.getUserId() != null) {
+            if (certMapperResponse.getUserId() != null && !"CERTAUTH".equalsIgnoreCase(certMapperResponse.getUserId())) {
                 return certMapperResponse.getUserId().trim();
             }
             return null;

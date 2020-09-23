@@ -17,9 +17,14 @@ import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.*;
+import org.apache.http.ssl.PrivateKeyDetails;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.AuthenticationTest;
@@ -101,7 +106,7 @@ abstract class Login {
             .create()
             .loadTrustMaterial(null, trustStrategy)
             .build();
-        tlsWithoutCert =  RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3)));
+        tlsWithoutCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3)));
     }
 
     @AfterAll
@@ -135,7 +140,7 @@ abstract class Login {
         logout(cookie.getValue());
     }
 
-    protected void assertValidAuthToken (Cookie cookie) {
+    protected void assertValidAuthToken(Cookie cookie) {
         assertValidAuthToken(cookie, Optional.empty());
     }
 
@@ -280,9 +285,9 @@ abstract class Login {
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
@@ -317,7 +322,7 @@ abstract class Login {
     @Test
     void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
         Cookie cookie = given().config(clientCertValid)
-            .auth().basic("Bob","The Builder")
+            .auth().basic("Bob", "The Builder")
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
             .statusCode(is(SC_NO_CONTENT))
@@ -334,6 +339,7 @@ abstract class Login {
         given().config(clientCertApiml)
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
+            .body(isEmptyString())
             .statusCode(is(SC_BAD_REQUEST));
     }
 
