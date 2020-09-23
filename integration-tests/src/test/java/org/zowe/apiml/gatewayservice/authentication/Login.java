@@ -339,7 +339,6 @@ abstract class Login {
         given().config(clientCertApiml)
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
-            .body(isEmptyString())
             .statusCode(is(SC_BAD_REQUEST));
     }
 
