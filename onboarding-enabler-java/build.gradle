@@ -1,5 +1,6 @@
 dependencies {
     compile(project(':common-service-core'))
+    compile(project(':apiml-utility'))
 
     implementation libraries.jackson_annotations
     implementation libraries.jackson_dataformat_yaml

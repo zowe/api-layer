@@ -11,9 +11,7 @@
 package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,9 +23,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -35,7 +31,8 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PROXY_KEY;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 
 
@@ -47,8 +44,9 @@ class EncodedCharactersFilterTest {
     private final String METADATA_KEY = EncodedCharactersFilter.METADATA_KEY;
     private final String SERVICE_ID = "serviceid";
 
-    private final DefaultServiceInstance serviceInstanceWithConfiguration = new DefaultServiceInstance("INSTANCE1", SERVICE_ID ,"",0,true, new HashMap<String, String>());
-    private final DefaultServiceInstance serviceInstanceWithoutConfiguration = new DefaultServiceInstance("INSTANCE2", SERVICE_ID ,"",0,true, new HashMap<String, String>());
+    private final DefaultServiceInstance serviceInstanceWithTrueConfiguration = new DefaultServiceInstance("INSTANCE1", SERVICE_ID ,"",0,true, new HashMap<String, String>());
+    private final DefaultServiceInstance serviceInstanceWithFalseConfiguration = new DefaultServiceInstance("INSTANCE2", SERVICE_ID ,"",0,true, new HashMap<String, String>());
+    private final DefaultServiceInstance serviceInstanceWithNoConfiguration = new DefaultServiceInstance("INSTANCE3", SERVICE_ID ,"",0,true, new HashMap<String, String>());
 
     private static MessageService messageService;
 
@@ -63,8 +61,8 @@ class EncodedCharactersFilterTest {
     @BeforeEach
     void setup() {
         filter = new EncodedCharactersFilter(discoveryClient, messageService);
-        serviceInstanceWithConfiguration.getMetadata().put(METADATA_KEY, "true");
-        serviceInstanceWithoutConfiguration.getMetadata().put(METADATA_KEY, "false");
+        serviceInstanceWithTrueConfiguration.getMetadata().put(METADATA_KEY, "true");
+        serviceInstanceWithFalseConfiguration.getMetadata().put(METADATA_KEY, "false");
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
         ctx.set(PROXY_KEY, "api/v1/" + SERVICE_ID);
@@ -73,18 +71,27 @@ class EncodedCharactersFilterTest {
     }
 
     @Test
-    void givenSingleInstance_WhenNotConfigured_ShouldFilter() {
+    void givenSingleInstance_WhenConfiguredFalse_ShouldFilter() {
         List<ServiceInstance> instanceList = new ArrayList<>();
-        instanceList.add(serviceInstanceWithoutConfiguration);
+        instanceList.add(serviceInstanceWithFalseConfiguration);
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(instanceList);
 
         assertThat(filter.shouldFilter(), is(equalTo(true)));
     }
 
     @Test
-    void givenSingleInstance_WhenConfigured_ShouldNotFilter() {
+    void givenSingleInstance_WhenConfiguredTrue_ShouldNotFilter() {
         List<ServiceInstance> instanceList = new ArrayList<>();
-        instanceList.add(serviceInstanceWithConfiguration);
+        instanceList.add(serviceInstanceWithTrueConfiguration);
+        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(instanceList);
+
+        assertThat(filter.shouldFilter(), is(equalTo(false)));
+    }
+
+    @Test
+    void givenSingleInstance_WhenNotConfigured_ShouldNotFilter() {
+        List<ServiceInstance> instanceList = new ArrayList<>();
+        instanceList.add(serviceInstanceWithNoConfiguration);
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(instanceList);
 
         assertThat(filter.shouldFilter(), is(equalTo(false)));
@@ -103,10 +110,10 @@ class EncodedCharactersFilterTest {
     }
 
     @Test
-    void givenMultipleInstances_WhenMixedSetup_ShouldBePesimistic() {
+    void givenMultipleInstances_WhenMixedSetup_ShouldBePessimistic() {
         List<ServiceInstance> instanceList = new ArrayList<>();
-        instanceList.add(serviceInstanceWithoutConfiguration);
-        instanceList.add(serviceInstanceWithConfiguration);
+        instanceList.add(serviceInstanceWithFalseConfiguration);
+        instanceList.add(serviceInstanceWithTrueConfiguration);
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(instanceList);
 
         assertThat(filter.shouldFilter(), is(equalTo(true)));
@@ -119,7 +126,7 @@ class EncodedCharactersFilterTest {
         mockRequest.setRequestURI("/He%2f%2f0%2dwor%2fd");
         context.setRequest(mockRequest);
         this.filter.run();
-        assertTrue(context.getResponseBody().contains("Service 'serviceid' does not allow encoded characters used in request path: '/He%2f%2f0%2dwor%2fd'."));
+        assertTrue(context.getResponseBody().contains("Service 'serviceid' does not allow encoded characters in the request path: '/He%2f%2f0%2dwor%2fd'."));
         assertTrue(context.getResponseBody().contains("ZWEAG701E"));
         assertEquals(400, context.getResponse().getStatus());
     }

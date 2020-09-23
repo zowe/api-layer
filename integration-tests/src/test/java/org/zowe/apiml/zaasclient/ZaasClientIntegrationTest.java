@@ -25,7 +25,7 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
-import org.zowe.apiml.zaasclient.service.internal.ZaasClientHttps;
+import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.File;
@@ -42,8 +42,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ZaasClientIntegrationTest {
 
@@ -59,8 +58,8 @@ class ZaasClientIntegrationTest {
     private static final String EMPTY_AUTH_HEADER = "";
     private static final String EMPTY_STRING = "";
 
-    private long now = System.currentTimeMillis();
-    private long expirationForExpiredToken = now - 1000;
+    private final long now = System.currentTimeMillis();
+    private final long expirationForExpiredToken = now - 1000;
 
     ConfigProperties configProperties;
     ZaasClient tokenService;
@@ -79,7 +78,7 @@ class ZaasClientIntegrationTest {
             .setExpiration(new Date(expiration))
             .setIssuer("APIML")
             .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.RS256, jwtSecretKey)
+            .signWith(jwtSecretKey, SignatureAlgorithm.RS256)
             .compact();
     }
 
@@ -105,7 +104,7 @@ class ZaasClientIntegrationTest {
     @BeforeEach
     void setUp() throws Exception {
         configProperties = ConfigReaderZaasClient.getConfigProperties();
-        tokenService = new ZaasClientHttps(configProperties);
+        tokenService = new ZaasClientImpl(configProperties);
     }
 
     @Test
@@ -225,5 +224,19 @@ class ZaasClientIntegrationTest {
             String emptyApplicationId = "";
             tokenService.passTicket(token, emptyApplicationId);
         });
+    }
+
+    @Test
+    void givenValidTokenBut_whenLogoutIsCalled_thenSuccess() throws ZaasClientException {
+        String token = tokenService.login(USERNAME, PASSWORD);
+        assertDoesNotThrow(() ->
+            tokenService.logout("apimlAuthenticationToken=" + token));
+    }
+
+    @Test
+    void givenInvalidTokenBut_whenLogoutIsCalled_thenExceptionIsThrown() {
+        String token = "";
+        assertThrows(ZaasClientException.class, () ->
+            tokenService.logout(token));
     }
 }

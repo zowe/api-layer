@@ -9,23 +9,30 @@
  */
 package org.zowe.apiml.apicatalog.services.cached;
 
-import org.zowe.apiml.apicatalog.model.APIContainer;
-import org.zowe.apiml.apicatalog.model.APIService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.zowe.apiml.apicatalog.model.APIContainer;
+import org.zowe.apiml.apicatalog.model.APIService;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.routing.RoutedServices;
+import org.zowe.apiml.product.routing.ServiceType;
+import org.zowe.apiml.product.routing.transform.TransformService;
+import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @SuppressWarnings({"squid:S2925"}) // replace with proper wait test library
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -34,11 +41,14 @@ public class CachedProductFamilyTest {
 
     private CachedProductFamilyService service;
 
+    @Mock
+    private final TransformService transformService = new TransformService(new GatewayClient());
+
     @Before
     public void setup() {
         service = new CachedProductFamilyService(
             null,
-            null,
+            transformService,
             cacheRefreshUpdateThresholdInMillis);
     }
 
@@ -53,10 +63,10 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
-        // To speed up the test, create instance which consider even 5 miliseconds as old.
+        // To speed up the test, create instance which consider even 5 milliseconds as old.
         service = new CachedProductFamilyService(
             null,
-            null,
+            transformService,
             5);
         // This is considered as old update.
         service.getContainer("demoapp", createApp("service1", "demoapp"));
@@ -71,10 +81,10 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
-        // To speed up the test, create instance which consider even 5 miliseconds as old.
+        // To speed up the test, create instance which consider even 5 milliseconds as old.
         service = new CachedProductFamilyService(
             null,
-            null,
+            transformService,
             5);
         service.getContainer("demoapp", createApp("service1", "demoapp"));
         service.getContainer("demoapp2", createApp("service2", "demoapp2"));
@@ -194,7 +204,7 @@ public class CachedProductFamilyTest {
         when(cachedServicesService.getService("service")).thenReturn(application);
         service = new CachedProductFamilyService(
             cachedServicesService,
-            null,
+            transformService,
             cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
@@ -225,7 +235,7 @@ public class CachedProductFamilyTest {
         when(cachedServicesService.getService("service2")).thenReturn(application2);
         service = new CachedProductFamilyService(
             cachedServicesService,
-            null,
+            transformService,
             cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
@@ -255,7 +265,7 @@ public class CachedProductFamilyTest {
         when(cachedServicesService.getService("service2")).thenReturn(application2);
         service = new CachedProductFamilyService(
             cachedServicesService,
-            null,
+            transformService,
             cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
@@ -271,7 +281,9 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew() {
+    public void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew()
+        throws URLTransformationException {
+
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(CATALOG_ID, "demoapp");
         metadata.put(CATALOG_TITLE, "Title");
@@ -280,6 +292,10 @@ public class CachedProductFamilyTest {
         metadata.put(SERVICE_TITLE, "sTitle");
         metadata.put(SERVICE_DESCRIPTION, "sDescription");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+
+        when(transformService.transformURL(
+            any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class)
+        )).thenReturn(instance.getHomePageUrl());
 
         APIContainer actualDemoAppContainer = service.saveContainerFromInstance("demoapp", instance);
 
@@ -303,7 +319,9 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void givenInstanceIsInTheCache_whenCallSaveContainerFromInstance_thenUpdate() throws InterruptedException {
+    public void givenInstanceIsInTheCache_whenCallSaveContainerFromInstance_thenUpdate()
+        throws InterruptedException, URLTransformationException {
+
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(CATALOG_ID, "demoapp");
         metadata.put(CATALOG_TITLE, "Title");
@@ -312,6 +330,11 @@ public class CachedProductFamilyTest {
         metadata.put(SERVICE_TITLE, "sTitle");
         metadata.put(SERVICE_DESCRIPTION, "sDescription");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+
+        when(transformService.transformURL(
+            any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class)
+        )).thenReturn(instance.getHomePageUrl());
+
         APIContainer actualDemoAppContainer = service.saveContainerFromInstance("demoapp", instance);
         Calendar createTimestamp = actualDemoAppContainer.getLastUpdatedTimestamp();
 
@@ -355,6 +378,9 @@ public class CachedProductFamilyTest {
             .setInstanceId(serviceId)
             .setAppName(serviceId)
             .setStatus(status)
+            .setHostName("localhost")
+            .setHomePageUrl(null, "https://localhost:8080/")
+            .setVIPAddress(serviceId)
             .setMetadata(metadata)
             .build();
     }

@@ -36,8 +36,14 @@ public class APIService implements Serializable {
     @ApiModelProperty(notes = "The security status of the API service")
     private boolean secured;
 
+    @ApiModelProperty(notes = "The instance home URL")
+    private String baseUrl;
+
     @ApiModelProperty(notes = "The service home page of the API service")
     private String homePageUrl;
+
+    @ApiModelProperty(notes = "The service API base path of the API service")
+    private String basePath;
 
     @ApiModelProperty(notes = "The API documentation for this service")
     private String apiDoc;
@@ -47,24 +53,29 @@ public class APIService implements Serializable {
         this.status = "UP";
     }
 
-
-    public APIService(String serviceId, String title, String description, boolean secured, String homePageUrl) {
+    public APIService(String serviceId, String title, String description, boolean secured,
+                      String baseUrl, String homePageUrl, String basePath) {
         this.serviceId = serviceId;
         this.title = title;
         this.description = description;
         this.status = "UP";
         this.secured = secured;
+        this.baseUrl = baseUrl;
         this.homePageUrl = homePageUrl;
+        this.basePath = basePath;
         this.apiDoc = null;
     }
 
-    public APIService(String serviceId, String title, String description, boolean secured, String homePageUrl, String apiDoc) {
+    public APIService(String serviceId, String title, String description, boolean secured,
+                      String baseUrl, String homePageUrl, String basePath, String apiDoc) {
         this.serviceId = serviceId;
         this.title = title;
         this.description = description;
         this.status = "UP";
         this.secured = secured;
+        this.baseUrl = baseUrl;
         this.homePageUrl = homePageUrl;
+        this.basePath = basePath;
         this.apiDoc = apiDoc;
     }
 }

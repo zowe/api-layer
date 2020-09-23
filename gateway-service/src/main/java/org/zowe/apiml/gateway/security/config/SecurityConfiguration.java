@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -36,6 +37,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
+import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -44,6 +46,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
 
 import java.util.*;
@@ -57,6 +60,7 @@ import java.util.*;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {
@@ -84,6 +88,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
     private final ZuulProperties zuulProperties;
+    private final X509AuthenticationProvider x509AuthenticationProvider;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
@@ -142,7 +147,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).authenticated()
             .and().x509()
-            .x509AuthenticationFilter(apimlX509AuthenticationFilter())
+            .x509AuthenticationFilter(apimlX509Filter())
             .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
             .userDetailsService(x509UserDetailsService())
 
@@ -151,13 +156,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH, CacheServiceController.CONTROLLER_PATH + "/**").authenticated()
             .and().x509()
-            .x509AuthenticationFilter(apimlX509AuthenticationFilter())
+            .x509AuthenticationFilter(apimlX509Filter())
             .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
             .userDetailsService(x509UserDetailsService())
 
             // add filters - login, query, ticket
             .and()
             .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509Filter(authConfigurationProperties.getGatewayLoginEndpoint()), LoginFilter.class)
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -211,6 +217,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getResourceAccessExceptionHandler());
     }
 
+    private X509AuthenticationFilter x509Filter(String loginEndpoint) {
+        return new X509AuthenticationFilter(loginEndpoint,
+            handlerInitializer.getSuccessfulLoginHandler(),
+            x509AuthenticationProvider);
+    }
+
     /**
      * Processes /query requests
      */
@@ -262,11 +274,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             PROTECTED_ENDPOINTS);
     }
 
+    /**
+     * Handles the logout action by checking the validity of JWT token passed in the Cookie.
+     * If present, the token will be invalidated.
+     */
     private LogoutHandler logoutHandler() {
-        return (request, response, authentication) -> authenticationService.getJwtTokenFromRequest(request)
-            .ifPresent(x ->
-                authenticationService.invalidateJwtToken(x, true)
-            );
+        FailedAuthenticationHandler failure = handlerInitializer.getAuthenticationFailureHandler();
+        return new JWTLogoutHandler(authenticationService, failure);
     }
 
     /**
@@ -284,8 +298,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * 2) Move the logic to decide whether the client which is signed by the Gateway client certificate should be used
      * into the HttpClientChooser - This didn't work as the HttpClientChooser isn't used in these specific calls.
      */
-    private ApimlX509AuthenticationFilter apimlX509AuthenticationFilter() throws Exception {
-        ApimlX509AuthenticationFilter out = new ApimlX509AuthenticationFilter(publicKeyCertificatesBase64);
+    private ApimlX509Filter apimlX509Filter() throws Exception {
+        ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
         out.setAuthenticationManager(authenticationManager());
         return out;
     }

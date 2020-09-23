@@ -45,7 +45,7 @@ describe('>>> Detail page test', () => {
 
         cy.get('pre.base-url')
             .should('exist')
-            .should('contain', `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/api/v1/apicatalog ]`);
+            .should('contain', `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/api/v1 ]`);
 
         cy.get('.tabs-container')
             .should('exist')
@@ -58,7 +58,7 @@ describe('>>> Detail page test', () => {
 
         cy.get('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a')
             .should('have.attr', 'href')
-            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/ui/v1/apicatalog`);
+            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
 
         cy.get('pre.version').should('contain', '1.0.0');
 

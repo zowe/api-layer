@@ -9,8 +9,8 @@ statusPageRelativeUrl: /application/info
 healthCheckRelativeUrl: /application/health
 
 discoveryServiceUrls:
-    - http://eureka:password@localhost:10011/eureka
-    - http://eureka:password@localhost:10011/eureka1
+    - https://localhost:10011/eureka
+    - http://eureka:password@localhost:10021/eureka1
 
 routes:
     - gatewayUrl: api/v1

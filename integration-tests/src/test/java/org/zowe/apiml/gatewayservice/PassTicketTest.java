@@ -10,9 +10,7 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
-import io.restassured.response.ResponseBody;
-import io.restassured.response.ResponseOptions;
-import io.restassured.response.ValidatableResponseOptions;
+import io.restassured.response.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,10 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.ticket.TicketRequest;
 import org.zowe.apiml.security.common.ticket.TicketResponse;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
-import org.zowe.apiml.util.config.EnvironmentConfiguration;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.*;
 
 import java.util.Base64;
 
@@ -78,6 +73,8 @@ class PassTicketTest {
             )
         .then()
             .statusCode(is(SC_OK));
+
+        logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
@@ -92,6 +89,8 @@ class PassTicketTest {
             .then()
                 .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                 .body("message", containsString("Error on evaluation of PassTicket"));
+
+        logoutItUserGatewayZosmf(jwt);
     }
 
     //@formatter:off
@@ -144,6 +143,8 @@ class PassTicketTest {
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
         .then()
             .statusCode(is(SC_OK));
+
+        logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
@@ -176,6 +177,8 @@ class PassTicketTest {
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
         .then()
             .statusCode(is(SC_OK));
+
+        logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
@@ -208,6 +211,8 @@ class PassTicketTest {
             .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
         .then()
             .statusCode(is(SC_FORBIDDEN));
+
+        SecurityUtils.logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
@@ -279,6 +284,8 @@ class PassTicketTest {
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
+
+        logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
@@ -300,6 +307,7 @@ class PassTicketTest {
             .statusCode(is(SC_BAD_REQUEST))
             .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
 
+        logoutItUserGatewayZosmf(jwt);
     }
 
     private <T extends ValidatableResponseOptions<T, R>, R extends ResponseBody<R> & ResponseOptions<R>>
@@ -316,25 +324,33 @@ class PassTicketTest {
     @Test
     @TestsNotMeantForZowe
     void givenBearerJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+        String jwt = gatewayToken();
+
         verifyPassTicketHeaders(
             given()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + gatewayToken())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
             .when()
                 .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, REQUEST_INFO_ENDPOINT))
             .then()
         );
+
+        logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
     @TestsNotMeantForZowe
     void givenCookieJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+        String jwt = gatewayToken();
+
         verifyPassTicketHeaders(
             given()
-                .cookie(COOKIE, gatewayToken())
+                .cookie(COOKIE, jwt)
             .when()
                 .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, REQUEST_INFO_ENDPOINT))
             .then()
         );
+
+        logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
@@ -352,27 +368,35 @@ class PassTicketTest {
     @Test
     @TestsNotMeantForZowe
     void givenBothJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+        String jwt = gatewayToken();
+
         verifyPassTicketHeaders(
             given()
-                .cookie(COOKIE, gatewayToken())
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + gatewayToken())
+                .cookie(COOKIE, jwt)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
             .when()
                 .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, REQUEST_INFO_ENDPOINT))
             .then()
         );
+
+        logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
     @TestsNotMeantForZowe
     void givenBasicAndCookieJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+        String jwt = gatewayToken();
+
         verifyPassTicketHeaders(
             given()
                 .auth().preemptive().basic(USERNAME, PASSWORD)
-                .cookie(COOKIE, gatewayToken())
+                .cookie(COOKIE, jwt)
             .when()
                 .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, REQUEST_INFO_ENDPOINT))
             .then()
         );
+
+        logoutItUserGatewayZosmf(jwt);
     }
     //@formatter:on
 

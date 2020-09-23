@@ -16,7 +16,7 @@ messages:
       number: ZWEAT103
       type: ERROR
       text: "Could not write response: %s"
-      reason: "A message could not be written to the response"
+      reason: "A message could not be written to the response."
       action: "Please submit an issue with this message."
 
     # HTTP,Protocol messages
@@ -33,7 +33,7 @@ messages:
       type: ERROR
       text: "z/OSMF service name not found. Set parameter apiml.security.auth.zosmfServiceId to your service ID."
       reason: "The parameter zosmfserviceId was not configured correctly and could not be validated."
-      action: "Ensure that the parameter apiml.security.auth.zosmfServiceId is correctly entered with a valid zosmf service ID."
+      action: "Ensure that the parameter apiml.security.auth.zosmfServiceId is correctly entered with a valid z/OSMF service ID."
 
     # Service specific messages
     # 700-999

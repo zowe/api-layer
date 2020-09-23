@@ -1,7 +1,6 @@
 spring.profiles.include: diag
 apiml:
     service:
-        allowEncodedSlashes: true
         hostname: localhost
         ipAddress: 127.0.0.1
         port: 10010
@@ -16,6 +15,8 @@ apiml:
             verifySslCertificatesOfServices: true
         zosmf:
             useJwtToken: true # if true and z/OSMF returns JWT token use it, otherwise create Zowe JWT token with LTPA token from z/OSMF, default is true
+        x509:
+            enabled: true
     banner: console
 
 spring:

@@ -291,7 +291,9 @@ public class ServiceDefinitionProcessor {
                 .setDurationInSecs(LeaseInfo.DEFAULT_LEASE_DURATION).build())
             .setMetadata(createMetadata(service, url, tile));
 
-        if (service.getHomePageRelativeUrl() != null) {
+        if (service.getHomePageRelativeUrl() == null) {
+            builder.setHomePageUrl(null, instanceBaseUrl);
+        } else {
             builder.setHomePageUrl(null, instanceBaseUrl + service.getHomePageRelativeUrl());
         }
 

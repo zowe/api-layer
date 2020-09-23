@@ -138,7 +138,7 @@ public class ApiCatalogLoginIntegrationTest {
 
     @Test
     void doLoginWithoutCredentials() {
-        String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
+        String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" +
             CATALOG_SERVICE_ID + LOGIN_ENDPOINT + "'";
 
         given()
@@ -153,7 +153,7 @@ public class ApiCatalogLoginIntegrationTest {
 
     @Test
     void doLoginWithInvalidLoginRequest() {
-        String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
+        String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" +
             CATALOG_SERVICE_ID + LOGIN_ENDPOINT + "'";
 
         JSONObject loginRequest = new JSONObject()

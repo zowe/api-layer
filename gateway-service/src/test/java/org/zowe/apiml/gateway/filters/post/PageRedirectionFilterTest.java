@@ -97,7 +97,7 @@ class PageRedirectionFilterTest {
             .findFirst();
 
         verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
-            "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
+            "/" + SERVICE_ID + "/" + currentService.getGatewayUrl() + relativePath);
     }
 
 
@@ -166,7 +166,7 @@ class PageRedirectionFilterTest {
             .findFirst();
 
         this.verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
-            "/" + otherService.getGatewayUrl() + "/" + OTHER_SERVICE_ID + relativePath);
+            "/" + OTHER_SERVICE_ID + "/" + otherService.getGatewayUrl() + relativePath);
     }
 
 
@@ -234,7 +234,7 @@ class PageRedirectionFilterTest {
             .findFirst();
 
         verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
-            "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
+            "/" + SERVICE_ID + "/" + currentService.getGatewayUrl() + relativePath);
     }
 
 
@@ -280,7 +280,7 @@ class PageRedirectionFilterTest {
             .findFirst();
 
         verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
-            "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
+            "/" + SERVICE_ID + "/" + currentService.getGatewayUrl() + relativePath);
     }
 
     private String mockLocationSameServer(String relativeUrl) {

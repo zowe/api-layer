@@ -9,33 +9,15 @@
  */
 package org.zowe.apiml.zaasclient.service.internal;
 
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
 interface CloseableClientProvider {
     /**
-     * Return Closeable Client with properly set up SSL using Trust store.
+     * Returns HTTP client provider with proper configuration fot HTTPS if HTTPS is used.
      *
-     * @return Valid closeable client to be used.
-     * @throws ZaasConfigurationException Wrapper for errors in the crypto methods and IO based on the configuration.
+     * @return Configured CloseableHttpClient that can be used for connections to the API ML ZAAS.
+     * @throws ZaasConfigurationException Wrapper for errors in HTTP client and TLS configuration.
      */
-    CloseableHttpClient getHttpsClientWithTrustStore() throws ZaasConfigurationException;
-
-    /**
-     * Return Closeable Client with properly set up SSL using Trust store. The client also contain Cookie Store.
-     *
-     * @return Valid closeable client to be used.
-     * @throws ZaasConfigurationException Wrapper for errors in the crypto methods and IO based on the configuration.
-     */
-    CloseableHttpClient getHttpsClientWithTrustStore(BasicCookieStore cookieStore) throws ZaasConfigurationException;
-
-    /**
-     * Return Closeable Client with properly set up SSL using Trust store and properly set up private keys for
-     * authentication via certificate.
-     *
-     * @return Valid closeable client to be used.
-     * @throws ZaasConfigurationException Wrapper for errors in the crypto methods and IO based on the configuration.
-     */
-    CloseableHttpClient getHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException;
+    CloseableHttpClient getHttpClient() throws ZaasConfigurationException;
 }

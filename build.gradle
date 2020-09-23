@@ -121,24 +121,29 @@ task runAllIntegrationTests(dependsOn: ":integration-tests:runAllIntegrationTest
     group "Integration tests"
 }
 
+task environmentCheck(dependsOn: ":integration-tests:environmentCheck") {
+    description "Environment check"
+    group "Integration tests"
+}
+
 task runIntegrationTestInstances(dependsOn: buildCore) {
     doFirst {
         if (System.properties['os.name'].toLowerCase().contains('windows')) {
             ext.process = new ProcessBuilder()
                 .directory(projectDir)
-                .command("npm.cmd", "run", "api-layer")
+                .command("npm.cmd", "run", "api-layer-ci")
                 .start()
         } else {
             ext.process = new ProcessBuilder()
                 .directory(projectDir)
-                .command("npm", "run", "api-layer", ">", "integration-instances.log")
+                .command("npm", "run", "api-layer-ci", ">", "integration-instances.log")
                 .start()
         }
 
     }
 }
 
-task runCITests(dependsOn: [":integration-tests:runCITests", ":api-catalog-ui:runE2ETests", "runIntegrationTestInstances"]) {
+task runCITests(dependsOn: [":integration-tests:runCITests", "runIntegrationTestInstances"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
 }

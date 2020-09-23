@@ -18,9 +18,9 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
+import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.util.*;
 
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class GatewayHomepageControllerTest {
-    private AuthConfigurationProperties authConfigurationProperties;
+    private Providers providers;
     private DiscoveryClient discoveryClient;
 
     private GatewayHomepageController gatewayHomepageController;
@@ -42,9 +42,7 @@ class GatewayHomepageControllerTest {
     @BeforeEach
     void setup() {
         discoveryClient = mock(DiscoveryClient.class);
-        authConfigurationProperties = new AuthConfigurationProperties();
-        authConfigurationProperties.setProvider("DUMMY");
-        authConfigurationProperties.setZosmfServiceId(AUTHORIZATION_SERVICE_ID); // Default based on the local configuration
+        providers = mock(Providers.class);
 
         BuildInfo buildInfo = mock(BuildInfo.class);
 
@@ -52,7 +50,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, authConfigurationProperties, buildInfo);
+            discoveryClient, providers, buildInfo);
     }
 
 
@@ -77,7 +75,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, authConfigurationProperties, buildInfo);
+            discoveryClient, providers, buildInfo);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -105,7 +103,8 @@ class GatewayHomepageControllerTest {
     @Test
     void givenApiCatalogInstanceWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
         discoveryReturnValidApiCatalog();
-        when(discoveryClient.getInstances(AUTHORIZATION_SERVICE_ID)).thenReturn(Collections.EMPTY_LIST);
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailable()).thenReturn(false);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -174,7 +173,6 @@ class GatewayHomepageControllerTest {
         metadataMap.put("apiml.routes.ui_v1.serviceUrl", "/apicatalog");
         ServiceInstance apiCatalogServiceInstance = new DefaultServiceInstance("instanceId", "serviceId",
             "host", 10000, true, metadataMap);
-        authConfigurationProperties.setProvider("zosmf");
 
         when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(
             Collections.singletonList(apiCatalogServiceInstance));
@@ -250,9 +248,9 @@ class GatewayHomepageControllerTest {
     }
 
     @Test
-    void givenZOSMFProviderWithNullInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
-        authConfigurationProperties.setProvider("zosmf");
-        authConfigurationProperties.setZosmfServiceId("zosmf");
+    void givenZOSMFProviderIsntRunning_whenHomePageCalled_thenHomePageModelShouldContainNotRunning() {
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailable()).thenReturn(false);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -264,31 +262,9 @@ class GatewayHomepageControllerTest {
     }
 
     @Test
-    void givenZOSMFProviderWithEmptyInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
-        when(discoveryClient.getInstances("zosmf")).thenReturn(Collections.EMPTY_LIST);
-
-        authConfigurationProperties.setProvider("zosmf");
-        authConfigurationProperties.setZosmfServiceId("zosmf");
-
-        Model model = new ConcurrentModel();
-        gatewayHomepageController.home(model);
-
-        Map<String, Object> actualModelMap = model.asMap();
-
-        assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "warning"));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication service is not running"));
-    }
-
-    @Test
-    void givenZOSMFProviderWithOneInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
-        ServiceInstance serviceInstance = new DefaultServiceInstance("instanceId", "serviceId",
-            "host", 10000, true);
-        when(discoveryClient.getInstances("zosmf")).thenReturn(
-            Arrays.asList(serviceInstance)
-        );
-
-        authConfigurationProperties.setProvider("zosmf");
-        authConfigurationProperties.setZosmfServiceId("zosmf");
+    void givenZOSMFProviderRunning_whenHomePageCalled_thenHomePageModelShouldContainRunning() {
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailable()).thenReturn(true);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);

@@ -12,76 +12,36 @@ package org.zowe.apiml.gateway.security.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.zowe.apiml.gateway.security.login.LoginProvider;
-import org.zowe.apiml.gateway.security.login.dummy.DummyAuthenticationProvider;
-import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 
 import static org.mockito.Mockito.*;
 
 class AuthProviderInitializerTest {
 
-    private DummyAuthenticationProvider dummyAuthenticationProvider;
+    private CompoundAuthProvider loginAuthProvider;
     private TokenAuthenticationProvider tokenAuthenticationProvider;
-    private ZosmfAuthenticationProvider zosmfAuthenticationProvider;
     private CertificateAuthenticationProvider certificateAuthenticationProvider;
 
     @BeforeEach
     void setup() {
-        dummyAuthenticationProvider = mock(DummyAuthenticationProvider.class);
         tokenAuthenticationProvider = mock(TokenAuthenticationProvider.class);
-        zosmfAuthenticationProvider = mock(ZosmfAuthenticationProvider.class);
+        loginAuthProvider =  mock(CompoundAuthProvider.class);
         certificateAuthenticationProvider = mock(CertificateAuthenticationProvider.class);
     }
 
     @Test
-    void testConfigure_whenProviderIsDummy() {
-        String authProvider = LoginProvider.DUMMY.toString();
-
+    void givenValidProviders_whenTheClassIsCreated_thenTheProvidersArePassedToSpring() {
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
-            dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
-            certificateAuthenticationProvider, authProvider
+            loginAuthProvider,
+            tokenAuthenticationProvider,
+            certificateAuthenticationProvider
         );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
         authProviderInitializer.configure(authenticationManagerBuilder);
 
+        verify(authenticationManagerBuilder).authenticationProvider(loginAuthProvider);
         verify(authenticationManagerBuilder).authenticationProvider(tokenAuthenticationProvider);
-        verify(authenticationManagerBuilder).authenticationProvider(dummyAuthenticationProvider);
-        verify(authenticationManagerBuilder, never()).authenticationProvider(zosmfAuthenticationProvider);
-    }
-
-    @Test
-    void testConfigure_whenProviderIsZOSMF() {
-        String authProvider = LoginProvider.ZOSMF.toString();
-
-        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
-            dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
-            certificateAuthenticationProvider, authProvider
-        );
-
-        AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
-        authProviderInitializer.configure(authenticationManagerBuilder);
-
-        verify(authenticationManagerBuilder).authenticationProvider(tokenAuthenticationProvider);
-        verify(authenticationManagerBuilder).authenticationProvider(zosmfAuthenticationProvider);
-        verify(authenticationManagerBuilder, never()).authenticationProvider(dummyAuthenticationProvider);
-    }
-
-    @Test
-    void testConfigure_whenProviderIsUnexpectedString() {
-        String authProvider = "unexpectedProvider";
-
-        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
-            dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
-            certificateAuthenticationProvider, authProvider
-        );
-
-        AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
-        authProviderInitializer.configure(authenticationManagerBuilder);
-
-        verify(authenticationManagerBuilder).authenticationProvider(tokenAuthenticationProvider);
-        verify(authenticationManagerBuilder).authenticationProvider(zosmfAuthenticationProvider);
-        verify(authenticationManagerBuilder, never()).authenticationProvider(dummyAuthenticationProvider);
+        verify(authenticationManagerBuilder).authenticationProvider(certificateAuthenticationProvider);
     }
 }

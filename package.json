@@ -7,11 +7,13 @@
     },
     "scripts": {
         "api-layer": "concurrently --names \"GS,DS,AC,DC\" -c cyan,yellow,white,blue npm:gateway-service npm:discovery-service npm:api-catalog-service npm:discoverable-client",
+        "api-layer-ci": "concurrently --names \"GS,DS,AC,DC\" -c cyan,yellow,white,blue npm:gateway-service-ci npm:discovery-service npm:api-catalog-service npm:discoverable-client",
         "api-layer-core": "concurrently --names \"GW,DS,AC\" -c cyan,yellow,white npm:gateway-service npm:discovery-service npm:api-catalog-service",
         "api-layer-without-gateway": "concurrently --names \"DS,AC,DC\" -c yellow,white,blue npm:discovery-service npm:api-catalog-service npm:discoverable-client",
         "api-layer-without-discovery": "concurrently --names \"GW,AC,DC\" -c cyan,white,blue npm:gateway-service npm:api-catalog-service npm:discoverable-client",
         "api-layer-without-catalog": "concurrently --names \"GW,DS,DC\" -c cyan,yellow,blue npm:gateway-service npm:discovery-service npm:discoverable-client",
         "gateway-service": "java -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local/gateway-service.yml --apiml.security.ssl.verifySslCertificatesOfServices=true",
+        "gateway-service-ci": "java -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local/gateway-service.yml --apiml.security.ssl.verifySslCertificatesOfServices=true --spring.profiles.include=diag --apiml.security.x509.enabled=true",
         "gateway-service-debug": "java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=5010,suspend=y -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local/gateway-service.yml",
         "discovery-service": "java -jar discovery-service/build/libs/discovery-service.jar --spring.profiles.active=https --spring.config.additional-location=file:./config/local/discovery-service.yml --apiml.security.ssl.verifySslCertificatesOfServices=true",
         "discovery-service-http": "java -jar discovery-service/build/libs/discovery-service.jar --spring.profiles.active=http --spring.config.additional-location=file:./config/local/discovery-service.yml",

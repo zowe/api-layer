@@ -12,8 +12,15 @@ messages:
       number: ZWEAD400
       type: ERROR
       text: "Cannot notify Gateway on '%s' about new instance '%s'"
-      reason: "The Discovery Service tried to notify the Gateway about instance update, but the REST call failed. The purpose of this call is to update the Gateway caches. The Gateway might be down or a network problem occured."
-      action: "Ensure there are no network issues and the Gateway was not restarted. If the problem reoccurs, contact Broadcom support. "
+      reason: "The Discovery Service tried to notify the Gateway about an instance update, but the REST call failed. The purpose of this call is to update the Gateway caches. The Gateway might be down or a network problem occurred."
+      action: "Ensure that there are no network issues and that the Gateway was not restarted. If the problem reoccurs, contact Broadcom support. "
+
+    - key: org.zowe.apiml.discovery.unregistration.gateway.notify
+      number: ZWEAD401
+      type: ERROR
+      text: "Cannot notify Gateway on '%s' about cancelled registration"
+      reason: "The Discovery Service tried to notify the Gateway about service un-registration, but the REST call failed. The purpose of this call is to update the Gateway caches. The Gateway might be down or a network problem occurred."
+      action: "Ensure that there are no network issues and that the Gateway was not restarted. If the problem reoccurs, contact Broadcom support. "
 
     # TLS,Certificate messages
     # 500-599
@@ -44,7 +51,7 @@ messages:
       text: "Unable to process static API definition data: '%s' - '%s'"
       reason: "A problem occurred while parsing a static API definition file."
       action: "Review the mentioned static API definition file for errors.\n
-      Refer to the specific log message to see what is the exact cause of the problem:\n\n
+      Refer to the specific log message to determine the exact cause of the problem:\n\n
       - ServiceId is not defined in the file '%s'. The instance will not be created. Make sure to specify the ServiceId.\n
       - The `instanceBaseUrls` parameter of %s is not defined. The instance will not be created. Make sure to specify the `InstanceBaseUrl` property.\n
       - The API Catalog UI tile ID %s is invalid. The service %s will not have an API Catalog UI tile. Specify the correct catalog title ID.\n
@@ -53,7 +60,7 @@ messages:
       - The URL %s does not contain a port number. The instance of %s will not be created.\n
       - The specified URL is missing a port number. Make sure to specify a valid URL.\n
       - The URL %s is malformed. The instance of %s will not be created: The Specified URL is malformed. Make sure to specify a valid URL.\n
-      - The hostname of URL %s is unknown. The instance of %s will not be created: The specified hostname of the URL is invalid. Make sure to specify valid hostname.\n
+      - The hostname of URL %s is unknown. The instance of %s will not be created: The specified hostname of the URL is invalid. Make sure to specify a valid hostname.\n
       - Invalid protocol. The specified protocol of the URL is invalid. Make sure to specify valid protocol.\n
       - Additional service metadata of %s in processing file %s could not be created: %s"
 
@@ -71,7 +78,7 @@ messages:
       number: ZWEAD704
       type: ERROR
       text: "Gateway Service is not available so it cannot be notified about changes in Discovery Service"
-      reason: "Gateway Service is probably misconfigured or failed to start from another reason."
+      reason: "Gateway Service is probably mis-configured or failed to start from another reason."
       action: "Review the log of Gateway Service and its configuration."
 
     # Legacy messages

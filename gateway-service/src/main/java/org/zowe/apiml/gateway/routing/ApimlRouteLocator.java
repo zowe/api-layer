@@ -79,7 +79,7 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
                 List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
                 if (serviceInstances == null || serviceInstances.isEmpty()) {
                     apimlLog.log("org.zowe.apiml.gateway.instanceNotFound", serviceId);
-                    return null;
+                    continue;
                 }
 
                 RoutedServices routedServices = new RoutedServices();
@@ -149,7 +149,9 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
                 metadata -> eurekaMetadataParser.parseToListRoute(metadata).stream()
             )
             .forEach(routedService -> {
+                // Currently support two API path formats. Old: /{typeOfService}/{version}/{serviceId}. New: /{serviceId}/{version}/{typeOfService} //NOSONAR
                 keys.add("/" + routedService.getGatewayUrl() + "/" + mapRouteToService(serviceId) + "/**");
+                keys.add("/" + mapRouteToService(serviceId) + "/" + routedService.getGatewayUrl() + "/**");
                 routes.addRoutedService(routedService);
             });
 

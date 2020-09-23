@@ -1,0 +1,26 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration name="spring-GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="api-layer.gateway-service.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="SHORTEN_COMMAND_LINE" value="CLASSPATH_FILE" />
+    <additionalParameters>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="spring.config.additional-location" />
+        <option name="value" value="file:./config/local/gateway-service.yml" />
+      </param>
+      <param>
+        <option name="name" value="spring.profiles.active" />
+        <option name="value" value="debug" />
+      </param>
+      <param>
+        <option name="name" value="apiml.service.corsEnabled" />
+        <option name="value" value="true" />
+      </param>
+    </additionalParameters>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
