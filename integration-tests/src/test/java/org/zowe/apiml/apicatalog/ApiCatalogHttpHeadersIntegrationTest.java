@@ -62,6 +62,5 @@ public class ApiCatalogHttpHeadersIntegrationTest {
         expectedHeaders.entrySet().forEach(h -> assertThat(responseHeaders, hasEntry(h.getKey(),h.getValue())));
         forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
 
-        SecurityUtils.logoutItUserGatewayZosmf(token);
     }
 }

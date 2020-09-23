@@ -129,7 +129,6 @@ class IntegratedZaasClientTest {
             .then()
             .statusCode(is(SC_NO_CONTENT));
 
-        SecurityUtils.logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
@@ -146,7 +145,6 @@ class IntegratedZaasClientTest {
             .then()
             .statusCode(is(SC_NO_CONTENT));
 
-        SecurityUtils.logoutItUserGatewayZosmf(jwt);
     }
 
     @Test
