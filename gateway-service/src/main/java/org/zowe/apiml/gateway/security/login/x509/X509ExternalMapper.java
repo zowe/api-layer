@@ -56,13 +56,12 @@ public class X509ExternalMapper extends X509AbstractMapper {
                 httpPost.setEntity(httpEntity);
                 HttpResponse httpResponse = httpClientProxy.execute(httpPost);
                 String response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
-                log.error("Mapper response, {}", response);
+                if (response == null || response.isEmpty()) {
+                    return null;
+                }
                 ObjectMapper objectMapper = new ObjectMapper();
                 CertMapperResponse certMapperResponse = objectMapper.readValue(response, CertMapperResponse.class);
-                if (certMapperResponse.getUserId() != null) {
-                    return certMapperResponse.getUserId().trim();
-                }
-                return null;
+                return certMapperResponse.getUserId().trim();
             } catch (URISyntaxException e) {
                 log.error("Wrong URI provided", e);
             } catch (CertificateEncodingException e) {
