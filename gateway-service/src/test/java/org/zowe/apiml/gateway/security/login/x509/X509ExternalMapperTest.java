@@ -14,6 +14,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -49,7 +50,8 @@ class X509ExternalMapperTest {
 
     @Test
     void givenValidHttpResponse_thenReturnUserId() throws CertificateEncodingException, IOException, CertificateParsingException {
-        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient, "");
+        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient);
+        ReflectionTestUtils.setField(x509ExternalMapper,"externalMapperUrl","");
         when(x509Certificate.getExtendedKeyUsage()).thenReturn(Collections.singletonList(CLIENT_AUTH_OID));
         when(x509Certificate.getEncoded()).thenReturn(new byte[2]);
         when(httpResponse.getEntity()).thenReturn(entity);
@@ -60,7 +62,8 @@ class X509ExternalMapperTest {
 
     @Test
     void givenValidHttpResponse_andUserIsNotFound_thenReturnNull() throws CertificateEncodingException, IOException, CertificateParsingException {
-        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient, "");
+        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient);
+        ReflectionTestUtils.setField(x509ExternalMapper,"externalMapperUrl","");
         when(x509Certificate.getExtendedKeyUsage()).thenReturn(Collections.singletonList(CLIENT_AUTH_OID));
         when(x509Certificate.getEncoded()).thenReturn(new byte[2]);
         when(httpResponse.getEntity()).thenReturn(entity);
@@ -72,14 +75,16 @@ class X509ExternalMapperTest {
     @Test
     void givenInvalidUriCharacters_thenNullIsReturned_andExceptionIsHandled() throws CertificateParsingException {
         when(x509Certificate.getExtendedKeyUsage()).thenReturn(Collections.singletonList(CLIENT_AUTH_OID));
-        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient, "%");
+        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient);
+        ReflectionTestUtils.setField(x509ExternalMapper,"externalMapperUrl","%");
         assertNull(x509ExternalMapper.mapCertificateToMainframeUserId(x509Certificate));
     }
 
     @Test
     void givenInvalidCertificateEncodedData_thenNullIsReturned_andExceptionIsHandled() throws CertificateEncodingException, CertificateParsingException {
         when(x509Certificate.getExtendedKeyUsage()).thenReturn(Collections.singletonList(CLIENT_AUTH_OID));
-        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient, "");
+        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient);
+        ReflectionTestUtils.setField(x509ExternalMapper,"externalMapperUrl","");
         when(x509Certificate.getEncoded()).thenThrow(new CertificateEncodingException());
         assertNull(x509ExternalMapper.mapCertificateToMainframeUserId(x509Certificate));
     }

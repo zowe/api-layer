@@ -15,7 +15,7 @@ import org.zowe.apiml.util.categories.EnvironmentCheck;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.EnvironmentConfiguration;
 
-import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.*;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
@@ -31,6 +31,7 @@ class CheckEnvironment {
     private String zosmfAuthEndpoint;
     private String zosmfProtectedEndpoint;
     private String zosmfScheme;
+    private String externalMapperUrl;
 
     @BeforeEach
     void setUp() {
@@ -42,6 +43,7 @@ class CheckEnvironment {
         zosmfAuthEndpoint = "/zosmf/services/authenticate";
         zosmfProtectedEndpoint = "/zosmf/restfiles/ds?dslevel=sys1.p*";
         zosmfScheme = config.getZosmfServiceConfiguration().getScheme();
+        externalMapperUrl = config.getGatewayServiceConfiguration().getExternalMapperUrl();
     }
 
     @Test
@@ -86,5 +88,11 @@ class CheckEnvironment {
             .when()
             .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfProtectedEndpoint))
             .then().statusCode(SC_OK);
+    }
+
+    @Test
+    @Order(3)
+    void checkZssIsRunning () {
+        when().get(externalMapperUrl).then().body(is("{\"error\":\"Only POST requests are supported\"}"));
     }
 }

@@ -25,7 +25,6 @@ import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
 import java.security.cert.X509Certificate;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -38,7 +37,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     @Value("${apiml.security.x509.useZss:false}")
     boolean useZss;
 
-    private final Map<String, X509AuthenticationMapper> x509AuthenticationMapper;
+    private final X509AuthenticationMapper x509AuthenticationMapper;
     private final AuthenticationService authenticationService;
 
     private final PassTicketService passTicketService;
@@ -99,8 +98,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
 
     private String getUserid(Authentication authentication) {
         X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
-        String providerName = useZss ? "externalMapper" : "commonNameMapper";
-        return x509AuthenticationMapper.get(providerName).mapCertificateToMainframeUserId(certs[0]);
+        return x509AuthenticationMapper.mapCertificateToMainframeUserId(certs[0]);
     }
 }
 

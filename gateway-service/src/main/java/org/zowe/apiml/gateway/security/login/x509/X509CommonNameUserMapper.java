@@ -10,7 +10,9 @@
 package org.zowe.apiml.gateway.security.login.x509;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.stereotype.Component;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -22,6 +24,9 @@ import java.security.cert.X509Certificate;
  * This mapper will be executed when ZSS is not used
  */
 @Slf4j
+@Component
+@ConditionalOnExpression("T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')"
+)
 public class X509CommonNameUserMapper extends X509AbstractMapper {
 
 

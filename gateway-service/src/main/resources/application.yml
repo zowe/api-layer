@@ -51,8 +51,7 @@ apiml:
             jwtKeyAlias: jwtsecret
         x509:
             enabled: true
-            useZss: false
-            externalMapperUrl: http://localhost:8542/certificate/x509/map
+            externalMapperUrl:
 
 
 

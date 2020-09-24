@@ -18,6 +18,9 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.login.x509.model.CertMapperResponse;
 
 import java.io.IOException;
@@ -31,12 +34,18 @@ import java.security.cert.X509Certificate;
  * Certificate mapper that allows to return user id of the provided x509 certificate
  * This mapper will be executed when ZSS is used
  */
-@RequiredArgsConstructor
+
 @Slf4j
+@Component
+@RequiredArgsConstructor
+@ConditionalOnExpression("!T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')"
+)
 public class X509ExternalMapper extends X509AbstractMapper {
 
     private final CloseableHttpClient httpClientProxy;
-    private final String externalMapperUrl;
+
+    @Value("${apiml.security.x509.externalMapperUrl}")
+    private String externalMapperUrl;
 
     /**
      * Maps certificate to the mainframe user id
