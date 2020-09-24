@@ -97,7 +97,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
         return X509AuthenticationToken.class.isAssignableFrom(authentication);
     }
 
-    private String getUserid(Authentication authentication){
+    private String getUserid(Authentication authentication) {
         X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
         String providerName = useZss ? "externalMapper" : "commonNameMapper";
         return x509AuthenticationMapper.get(providerName).mapCertificateToMainframeUserId(certs[0]);
