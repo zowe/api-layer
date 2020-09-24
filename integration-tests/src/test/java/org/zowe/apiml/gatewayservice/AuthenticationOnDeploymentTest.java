@@ -144,7 +144,6 @@ class AuthenticationOnDeploymentTest {
             });
         }
 
-        SecurityUtils.logoutItUserGatewayZosmf(jwt);
     }
 
     @Test

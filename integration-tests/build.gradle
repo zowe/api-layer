@@ -147,18 +147,33 @@ task runAllLocalIntegrationTests(type: Test) {
     outputs.upToDateWhen { false }
 }
 
-task runAllIntegrationTests(type: Test) {
+task runAllIntegrationTestsNormal(type: Test) {
     group "Integration tests"
-    description "Run all integration tests"
-
-    dependsOn startUpCheck
+    description "Run all integration tests normal"
     systemProperties System.properties
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
             'EnvironmentCheck',
             'AdditionalLocalTest',
-            'NotForMainframeTest'
+            'NotForMainframeTest',
+            'AuthenticationTest'
+        )
+
+    }
+}
+
+task runAllIntegrationTests(type: Test) {
+    group "Integration tests"
+    description "Run all integration tests"
+
+    dependsOn startUpCheck, runAllIntegrationTestsNormal
+    tasks.findByName('runAllIntegrationTestsNormal').mustRunAfter 'startUpCheck'
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags(
+            'AuthenticationTest'
         )
     }
     outputs.upToDateWhen { false }
