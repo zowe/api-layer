@@ -50,7 +50,6 @@ class X509AuthenticationProviderTest {
     @BeforeEach
     void setUp() {
         x509AuthenticationMapper = mock(X509AuthenticationMapper.class);
-
         authenticationService = mock(AuthenticationService.class);
         passTicketService = mock(PassTicketService.class);
         zosmfAuthenticationProvider = mock(ZosmfAuthenticationProvider.class);
@@ -129,7 +128,7 @@ class X509AuthenticationProviderTest {
         when(providers.isZosmfAvailable()).thenReturn(true);
         when(providers.isZosfmUsed()).thenReturn(true);
         when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn(validUsername);
-        when(passTicketService.generate(validUsername, null)).thenThrow(new IRRPassTicketGenerationException(8,8,8));
+        when(passTicketService.generate(validUsername, null)).thenThrow(new IRRPassTicketGenerationException(8, 8, 8));
 
         X509AuthenticationToken token = new X509AuthenticationToken(x509Certificate);
         assertThrows(AuthenticationTokenException.class, () -> x509AuthenticationProvider.authenticate(token));

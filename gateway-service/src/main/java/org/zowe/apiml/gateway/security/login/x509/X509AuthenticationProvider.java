@@ -34,6 +34,8 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     private String zosmfApplId;
     @Value("${apiml.security.x509.enabled:false}")
     boolean isClientCertEnabled;
+    @Value("${apiml.security.x509.useZss:false}")
+    boolean useZss;
 
     private final X509AuthenticationMapper x509AuthenticationMapper;
     private final AuthenticationService authenticationService;
@@ -61,20 +63,16 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
             if (!isClientCertEnabled) {
                 return null;
             }
-
-            X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
-            String username = x509AuthenticationMapper.mapCertificateToMainframeUserId(certs[0]);
+            String username = getUserid(authentication);
             if (username == null) {
                 return null;
             }
-
             boolean isZosmfUsedAndAvailable = false;
             try {
                 isZosmfUsedAndAvailable = providers.isZosfmUsed() && providers.isZosmfAvailable();
             } catch (AuthenticationServiceException ex) {
                 // Intentionally do nothing. The issue is logged deeper.
             }
-
             if (isZosmfUsedAndAvailable) {
                 try {
                     String passTicket = passTicketService.generate(username, zosmfApplId);
@@ -96,6 +94,11 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     @Override
     public boolean supports(Class<?> authentication) {
         return X509AuthenticationToken.class.isAssignableFrom(authentication);
+    }
+
+    private String getUserid(Authentication authentication) {
+        X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
+        return x509AuthenticationMapper.mapCertificateToMainframeUserId(certs[0]);
     }
 }
 
