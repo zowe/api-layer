@@ -64,17 +64,15 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
             if (!isClientCertEnabled) {
                 return null;
             }
+            String username = getUserid(authentication);
+            if (username == null) {
+                return null;
+            }
             boolean isZosmfUsedAndAvailable = false;
             try {
                 isZosmfUsedAndAvailable = providers.isZosfmUsed() && providers.isZosmfAvailable();
             } catch (AuthenticationServiceException ex) {
                 // Intentionally do nothing. The issue is logged deeper.
-            }
-            X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
-            String providerName = useZss ? "externalMapper" : "commonNameMapper";
-            String username = x509AuthenticationMapper.get(providerName).mapCertificateToMainframeUserId(certs[0]);
-            if (username == null) {
-                return null;
             }
             if (isZosmfUsedAndAvailable) {
                 try {
@@ -97,6 +95,12 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     @Override
     public boolean supports(Class<?> authentication) {
         return X509AuthenticationToken.class.isAssignableFrom(authentication);
+    }
+
+    private String getUserid(Authentication authentication){
+        X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
+        String providerName = useZss ? "externalMapper" : "commonNameMapper";
+        return x509AuthenticationMapper.get(providerName).mapCertificateToMainframeUserId(certs[0]);
     }
 }
 

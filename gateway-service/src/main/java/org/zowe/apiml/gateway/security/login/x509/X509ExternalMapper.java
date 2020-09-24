@@ -63,7 +63,7 @@ public class X509ExternalMapper extends X509AbstractMapper {
                 CertMapperResponse certMapperResponse = objectMapper.readValue(response, CertMapperResponse.class);
                 return certMapperResponse.getUserId().trim();
             } catch (URISyntaxException e) {
-                log.error("Wrong URI provided", e);
+                log.error("Wrong service URI provided", e);
             } catch (CertificateEncodingException e) {
                 log.error("Can`t get encoded data from certificate", e);
             } catch (IOException e) {
