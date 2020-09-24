@@ -7,7 +7,6 @@ gatewayServiceConfiguration:
     host: localhost
     port: 10010
     instances: 1
-    externalMapperUrl: http://localhost:8542/certificate/x509/map
 discoveryServiceConfiguration:
     scheme: https
     user: user

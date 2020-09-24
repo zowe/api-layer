@@ -31,7 +31,6 @@ class CheckEnvironment {
     private String zosmfAuthEndpoint;
     private String zosmfProtectedEndpoint;
     private String zosmfScheme;
-    private String externalMapperUrl;
 
     @BeforeEach
     void setUp() {
@@ -43,7 +42,6 @@ class CheckEnvironment {
         zosmfAuthEndpoint = "/zosmf/services/authenticate";
         zosmfProtectedEndpoint = "/zosmf/restfiles/ds?dslevel=sys1.p*";
         zosmfScheme = config.getZosmfServiceConfiguration().getScheme();
-        externalMapperUrl = config.getGatewayServiceConfiguration().getExternalMapperUrl();
     }
 
     @Test
@@ -90,9 +88,4 @@ class CheckEnvironment {
             .then().statusCode(SC_OK);
     }
 
-    @Test
-    @Order(3)
-    void checkZssIsRunning () {
-        when().get(externalMapperUrl).then().body(is("{\"error\":\"Only POST requests are supported\"}"));
-    }
 }

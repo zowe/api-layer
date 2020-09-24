@@ -21,5 +21,4 @@ public class GatewayServiceConfiguration {
     private String host;
     private int port;
     private int instances;
-    private String externalMapperUrl;
 }
