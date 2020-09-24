@@ -74,7 +74,6 @@ class CheckEnvironment {
             given().auth().basic(username, password)
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
-                //.post("https://usilca32.lvn.broadcom.net:1443/zosmf/services/authenticate")
                 .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
                 .then().statusCode(is(SC_OK))
                 .extract().cookie("jwtToken");

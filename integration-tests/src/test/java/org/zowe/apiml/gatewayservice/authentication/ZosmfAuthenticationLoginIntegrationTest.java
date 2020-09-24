@@ -15,8 +15,7 @@ import org.junit.jupiter.api.*;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.AuthenticationTest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.*;
 
 import java.net.URI;
 
@@ -39,6 +38,14 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
     private final static String ZOSMF_BASE_PATH = "/api/" + ZOSMF_SERVICE_ID;
 
+    private String username;
+    private String password;
+    private String zosmfHost;
+    private int zosmfPort;
+    private String zosmfAuthEndpoint;
+    private String zosmfProtectedEndpoint;
+    private String zosmfScheme;
+
     @BeforeAll
     static void setupClients()  {
         RestAssured.port = PORT;
@@ -53,6 +60,15 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
         port = serviceConfiguration.getPort();
+
+        EnvironmentConfiguration config = ConfigReader.environmentConfiguration();
+        username = config.getCredentials().getUser();
+        password = config.getCredentials().getPassword();
+        zosmfHost = config.getZosmfServiceConfiguration().getHost();
+        zosmfPort = config.getZosmfServiceConfiguration().getPort();
+        zosmfAuthEndpoint = "/zosmf/services/authenticate";
+        zosmfProtectedEndpoint = "/zosmf/restfiles/ds?dslevel=sys1.p*";
+        zosmfScheme = config.getZosmfServiceConfiguration().getScheme();
     }
 
     /**
@@ -75,6 +91,8 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     @MainframeDependentTests
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
 
+        unblockLockedITUser();
+
         Cookie cookie = given().config(clientCertValid)
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
@@ -96,5 +114,25 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
                 "items.dsname", hasItems(dsname1, dsname2));
 
         logout(cookie.getValue());
+    }
+
+    void unblockLockedITUser() {
+        // login with Basic and get LTPA
+        String ltpa2 =
+            given().auth().basic(username, password)
+                .header("X-CSRF-ZOSMF-HEADER", "")
+                .when()
+                .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+                .then().statusCode(is(SC_OK))
+                .extract().cookie("LtpaToken2");
+
+        // Logout LTPA
+        given()
+            .header("X-CSRF-ZOSMF-HEADER", "")
+            .cookie("LtpaToken2", ltpa2)
+            .when()
+            .delete(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+            .then()
+            .statusCode(is(SC_NO_CONTENT));
     }
 }
