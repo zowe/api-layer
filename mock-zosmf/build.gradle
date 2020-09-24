@@ -1,0 +1,77 @@
+buildscript {
+    repositories mavenRepositories
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
+    }
+}
+
+normalization {
+    runtimeClasspath {
+        ignore("**/*git.properties*")
+        ignore("**/*build-info.properties*")
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+apply plugin: 'com.gorylenko.gradle-git-properties'
+
+springBoot {
+    // This statement tells the Gradle Spring Boot plugin to generate a file
+    // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
+    // via /info endpoint
+    buildInfo {
+        properties {
+            // Generate extra build info:
+            additionalProperties = [
+                by: System.properties['user.name'],
+                operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
+                number: System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
+                machine: InetAddress.localHost.hostName
+            ]
+        }
+    }
+}
+
+gitProperties {
+    gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
+}
+
+dependencies {
+    compile libraries.jjwt
+    compile libraries.jjwt_impl
+    compile libraries.jjwt_jackson
+
+    implementation libraries.springFox
+    implementation libraries.spring_boot_starter
+    implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_boot_starter_web
+    implementation libraries.spring_boot_starter_websocket
+
+    implementation libraries.bootstrap
+    implementation libraries.jquery
+
+    implementation libraries.gson
+    compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
+
+    testImplementation libraries.spring_boot_starter_test
+}
+
+
+bootJar.archiveName = "${bootJar.baseName}.jar"
+
+jar {
+    enabled = true
+    archiveName = "${jar.baseName}-thin.jar"
+
+    def libClassPathEntries = configurations.runtimeClasspath.files.collect {
+        "lib/" + it.getName()
+    }
+    doFirst {
+        manifest {
+            attributes "Class-Path": libClassPathEntries.join(" "),
+                "Main-Class": "org.zowe.apiml.client.DiscoverableClientSampleApplication"
+        }
+    }
+}

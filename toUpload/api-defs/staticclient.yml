@@ -4,63 +4,35 @@
 # This file provides static API service definition in YAML format.
 # It is loaded by the Discovery Service during its startup.
 #
+
 services:
     - serviceId: staticclient  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
-      title: Statically Defined API Service  # Title of the service in the API catalog
+      title: Statically Defined Sample API Service  # Title of the service in the API catalog
       description: Sample to demonstrate how to add an API service with Swagger to API Catalog using a static YAML definition  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
-        - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+        - https://{{ systems_hostname[0] }}:{{ base_port + 3 }}/discoverableclient  # scheme://hostname:port/contextPath/
       homePageRelativeUrl: / # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
-      routes:
+      routedServices:
         - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
           serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
         - gatewayUrl: ui/v1
           serviceRelativeUrl: /
         - gatewayUrl: ws/v1
           serviceRelativeUrl: /ws
-      # List of APIs provided by the service (currently only one is supported):
       apiInfo:
         - apiId: org.zowe.discoverableclient
           gatewayUrl: api/v1
-          swaggerUrl: https://localhost:10012/discoverableclient/v2/api-docs
-      customMetadata:
-            apiml:
-                okToRetryOnAllOperations: true
-
-    - serviceId: staticclient2  # unique lowercase ID of the service
-      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
-      title: Staticaly Defined Service 2  # Title of the service in the API catalog
-      description: Sample to demonstrate how to add an API service without Swagger documentation to API Catalog using a static YAML definition  # Description of the service in the API catalog
-      instanceBaseUrls:  # list of base URLs for each instance
-        - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
-      homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
-      statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
-      healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
-      routes:
-        - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
-          serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
-        - gatewayUrl: ui/v1
-          serviceRelativeUrl: /
-        - gatewayUrl: ws/v1
-          serviceRelativeUrl: /ws
-      authentication:
-          scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
-          applid: TSTAPPL  # APPLID to generate PassTickets for this service
-      # List of APIs provided by the service (currently only one is supported):
-      apiInfo:
-        - apiId: org.zowe.discoverableclient
-          gatewayUrl: api/v1
-          version: 1.0.0
+          swaggerUrl: https://{{ systems_hostname[0] }}:{{ base_port + 3 }}/discoverableclient/v2/api-docs
 
     - serviceId: dcbypass  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
       title: Discoverable client with by pass authentication scheme  # Title of the service in the API catalog
       description: Define service to test by pass authentication schema for integration tests.
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+          - https://{{ systems_hostname[0] }}:{{ base_port + 3 }}/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -79,7 +51,7 @@ services:
       title: Discoverable client with passTicket authentication scheme  # Title of the service in the API catalog
       description: Define service to test passTicket authentication schema for integration tests.
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+          - https://{{ systems_hostname[0] }}:{{ base_port + 3 }}/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -94,34 +66,13 @@ services:
             gatewayUrl: api/v1
             version: 1.0.0
 
-    - serviceId: zosmf  # unique lowercase ID of the service
-      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
-      title: Statically Defined API Service  # Title of the service in the API catalog
-      description: Mock ZOSMF service  # Description of the service in the API catalog
-      instanceBaseUrls:  # list of base URLs for each instance
-          - https://localhost:10013/  # scheme://hostname:port/contextPath
-      homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
-      routes:
-          - gatewayUrl: api # [api/ui/ws]/v{majorVersion}
-            serviceRelativeUrl:  # relativePath that is added to baseUrl of an instance
-          # List of APIs provided by the service (currently only one is supported):
-      authentication:
-          scheme: zosmf     # This service expects z/OSMF LTPA token
-      apiInfo:
-        - apiId: com.ibm.zosmf
-          gatewayUrl: api
-          version: 2.4.0
-          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
-
 # Additional metadata that will be added to existing dynamically registered services:
 additionalServiceMetadata:
     - serviceId: staticclient  # The staticclient service metadata will be extended
       mode: UPDATE # How to update UPDATE=only missing, FORCE_UPDATE=update all set values
       authentication:
-        scheme: bypass  # This service expects credentials in HTTP basic scheme with a PassTicket
-        applid: TSTAPPL  # APPLID to generate PassTickets for this service
+        scheme: bypass
 
-# List of tiles that can be used by services defined in the YAML file:
 catalogUiTiles:
     static:
         title: Static API Services

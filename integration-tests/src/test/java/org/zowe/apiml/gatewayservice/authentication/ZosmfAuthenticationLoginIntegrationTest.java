@@ -28,7 +28,6 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
-@MainframeDependentTests
 class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private String scheme;
     private String host;
