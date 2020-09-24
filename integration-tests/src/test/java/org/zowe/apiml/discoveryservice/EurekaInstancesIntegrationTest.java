@@ -161,7 +161,6 @@ class EurekaInstancesIntegrationTest {
         .then()
             .statusCode(is(HttpStatus.SC_OK));
 
-        SecurityUtils.logoutItUserGatewayZosmf(jwtToken);
     }
 
     // /discovery endpoints
@@ -198,7 +197,6 @@ class EurekaInstancesIntegrationTest {
         .then()
             .statusCode(is(HttpStatus.SC_OK));
 
-        SecurityUtils.logoutItUserGatewayZosmf(jwtToken);
     }
 
     @Test
@@ -245,7 +243,6 @@ class EurekaInstancesIntegrationTest {
         .then()
             .statusCode(is(HttpStatus.SC_OK));
 
-        SecurityUtils.logoutItUserGatewayZosmf(jwtToken);
     }
 
     @Test
