@@ -36,37 +36,27 @@ public class ZosmfController {
         HttpServletResponse response,
         @RequestHeader Map<String, String> headers
     ) {
-        System.out.println(servletRequest.getServletPath() + " " + servletRequest.getMethod());
         String authorization = headers.get("authorization");
-        if (authorization != null) {
-            System.out.println("Authorization: " + authorization);
-        }
 
         if (servletRequest.getServletPath().contains("/zosmf/services/authenticate")) {
             if (servletRequest.getMethod().equals("DELETE")) {
-                System.out.println("Delete");
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
 
             if (authorization == null) {
-                System.out.println("Unauthorized");
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
 
             if (
                 authorization.equals("Basic aW5jb3JyZWN0VXNlcjppbmNvcnJlY3RQYXNzd29yZA==")
             ) {
-                System.out.println("Unauthorized");
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
 
             byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
-            System.out.println("Decoded: " + new String(decoded));
             if(new String(decoded).equals("APIMTST:prague20")) {
-                System.out.println("Ok");
                 return validJwtResponse(response);
             } else {
-                System.out.println("Unauthorized");
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         } else if (servletRequest.getServletPath().contains("/zosmf/info")) {
@@ -74,12 +64,14 @@ public class ZosmfController {
         } else if (servletRequest.getServletPath().contains("/jwt/ibm/api/zOSMFBuilder/jwk")) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else if (servletRequest.getServletPath().contains("/zosmf/restfiles/ds")) {
-            if(authorization != null) {
-                byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
-                System.out.println("Decoded: " + new String(decoded));
-
-                if (!new String(decoded).equals("APIMTST:prague20")) {
-                    System.out.println("Unauthorized");
+            System.out.println(servletRequest.getServletPath() + " " + servletRequest.getMethod());
+            if (authorization != null) {
+                System.out.println("Authorization: " + authorization);
+                if(authorization.startsWith("Bearer")) {
+                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+                }
+            } else {
+                if(headers.get("cookie") == null || !headers.get("cookie").contains("LtpaToken2")) {
                     return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
             }
