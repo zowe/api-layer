@@ -10,7 +10,6 @@
 package org.zowe.apiml.client.api;
 
 import io.jsonwebtoken.Jwts;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -20,23 +19,27 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.time.Instant;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.Key;
+import java.security.KeyStore;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
 @RestController
 public class ZosmfController {
-    @RequestMapping("/**")
+    @RequestMapping(value = "/**", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> zosmfCall(
         HttpServletRequest servletRequest,
         HttpServletResponse response,
-        @RequestHeader Map<String, String> headers,
-        HttpEntity<String> httpEntity
+        @RequestHeader Map<String, String> headers
     ) {
         System.out.println(servletRequest.getServletPath() + " " + servletRequest.getMethod());
-        if (headers.get("authorization") != null) {
-            System.out.println("Authorization: " + headers.get("authorization"));
+        String authorization = headers.get("authorization");
+        if (authorization != null) {
+            System.out.println("Authorization: " + authorization);
         }
 
         if (servletRequest.getServletPath().contains("/zosmf/services/authenticate")) {
@@ -45,26 +48,88 @@ public class ZosmfController {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
 
-            if (headers.get("authorization") == null) {
+            if (authorization == null) {
                 System.out.println("Unauthorized");
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
 
             if (
-                headers.get("authorization").equals("Basic aW5jb3JyZWN0VXNlcjppbmNvcnJlY3RQYXNzd29yZA==")
+                authorization.equals("Basic aW5jb3JyZWN0VXNlcjppbmNvcnJlY3RQYXNzd29yZA==")
             ) {
                 System.out.println("Unauthorized");
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
 
-            System.out.println("Ok");
-            return validJwtResponse(response);
+            byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
+            System.out.println("Decoded: " + new String(decoded));
+            if(new String(decoded).equals("APIMTST:prague20")) {
+                System.out.println("Ok");
+                return validJwtResponse(response);
+            } else {
+                System.out.println("Unauthorized");
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
         } else if (servletRequest.getServletPath().contains("/zosmf/info")) {
             return zosmfInfo(response);
         } else if (servletRequest.getServletPath().contains("/jwt/ibm/api/zOSMFBuilder/jwk")) {
             return new ResponseEntity<>(HttpStatus.OK);
+        } else if (servletRequest.getServletPath().contains("/zosmf/restfiles/ds")) {
+            if(authorization != null) {
+                byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
+                System.out.println("Decoded: " + new String(decoded));
+
+                if (!new String(decoded).equals("APIMTST:prague20")) {
+                    System.out.println("Unauthorized");
+                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+                }
+            }
+
+            return new ResponseEntity<>("{\n" +
+                "  \"items\": [\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PAGEDUMP.VMVD21M\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PAGEDUMP.VMVD22M\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PAGEDUMP.VMVD23M\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PAGEDUMP.VMVD24M\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PARMLIB\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PARMLIB.ARCHIVE\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PARMLIB.D200328\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PARMLIBN\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PDEFLIB\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PHELP\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PROCLIB\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PROCLIBX\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dsname\": \"SYS1.PSEGLIB\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"returnedRows\": 13,\n" +
+                "  \"JSONversion\": 1\n" +
+                "}", HttpStatus.OK);
         } else {
-            // restfiles data information ?
             return new ResponseEntity<>(HttpStatus.OK);
         }
     }
@@ -81,6 +146,7 @@ public class ZosmfController {
             .setExpiration(expiration)
             .setIssuer("zOSMF")
             .setId(UUID.randomUUID().toString())
+            .signWith(getKeyForSigning())
             .compact();
 
         // Build a valid JWT token
@@ -128,5 +194,19 @@ public class ZosmfController {
             "  \"zosmf_full_version\": \"27.0\",\n" +
             "  \"api_version\": \"1\"\n" +
             "}", HttpStatus.OK);
+    }
+
+    private Key getKeyForSigning() {
+        try {
+            KeyStore ks = KeyStore.getInstance("PKCS12");
+            ks.load(
+                new FileInputStream(new File("keystore/localhost/localhost.keystore.p12")),
+                "password".toCharArray()
+            );
+            return ks.getKey("localhost", "password".toCharArray());
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
     }
 }
