@@ -16,8 +16,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationMapper;
-import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
 
 
 /**
@@ -25,6 +23,7 @@ import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
  */
 @Configuration
 public class ComponentsConfiguration {
+
 
     /**
      * Used for dummy authentication provider
@@ -51,11 +50,6 @@ public class ComponentsConfiguration {
         AuthConfigurationProperties authConfigurationProperties
     ) {
         return new Providers(discoveryClient, authConfigurationProperties);
-    }
-
-    @Bean
-    public X509AuthenticationMapper x509Authentication() {
-        return new X509CommonNameUserMapper();
     }
 
 }

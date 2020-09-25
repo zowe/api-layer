@@ -51,6 +51,9 @@ apiml:
             jwtKeyAlias: jwtsecret
         x509:
             enabled: true
+            externalMapperUrl:
+
+
 
 spring:
     application:
