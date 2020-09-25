@@ -50,7 +50,7 @@ apiml:
             provider: zosmf
             jwtKeyAlias: jwtsecret
         x509:
-            enabled: true
+            enabled: false
             externalMapperUrl:
 
 
