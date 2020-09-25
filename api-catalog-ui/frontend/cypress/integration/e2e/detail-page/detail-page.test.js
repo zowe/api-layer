@@ -43,9 +43,16 @@ describe('>>> Detail page test', () => {
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
+        const values = [`\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/apicatalog\/api\/v1 \]`,
+            `\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/api\/v1\/apicatalog \]`];
+        const regex = new RegExp(`${values.join('|')}`, 'g');
+
         cy.get('pre.base-url')
             .should('exist')
-            .should('contain', `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/api/v1 ]`);
+            .then( element => {
+                const text = element.text();
+                expect(text).to.match(regex);
+            })
 
         cy.get('.tabs-container')
             .should('exist')

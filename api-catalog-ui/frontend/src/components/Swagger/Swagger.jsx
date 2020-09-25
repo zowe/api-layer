@@ -44,8 +44,6 @@ export default class SwaggerUI extends Component {
         ) {
             try {
                 const swagger = JSON.parse(selectedService.apiDoc);
-                // some static clients don't have a swagger base path but do have a service base path
-                swagger.basePath = selectedService.basePath
 
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
