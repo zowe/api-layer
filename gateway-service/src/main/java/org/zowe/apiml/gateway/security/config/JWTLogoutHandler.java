@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
@@ -53,6 +54,8 @@ public class JWTLogoutHandler implements LogoutHandler {
                 authenticationService.invalidateJwtToken(token, true);
             } catch (TokenFormatNotValidException e) {
                 failure.onAuthenticationFailure(request, response, e);
+            } catch (Exception e) {
+                failure.onAuthenticationFailure(request, response, new AuthenticationTokenException("Error while logging out token"));
             }
         }
     }

@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 class JWTLogoutHandlerTest {
     private static final String TOKEN = "apimlToken";
 
-    private ExpectedException expectedException = ExpectedException.none();
+    private final ExpectedException expectedException = ExpectedException.none();
 
     private AuthenticationService authenticationService;
 
@@ -91,5 +91,14 @@ class JWTLogoutHandlerTest {
         expectedException.expectMessage("The response cannot be written during the logout exception handler: msg");
 
         handler.logout(request, response, authentication);
+    }
+
+    @Test
+    void givenLogoutRequest_whenUnknownError_thenHandleFailure() throws ServletException {
+        when(authenticationService.invalidateJwtToken(TOKEN, true)).thenThrow(new RuntimeException("msg"));
+
+        handler.logout(request, response, authentication);
+
+        verify(failedAuthenticationHandler, times(1)).onAuthenticationFailure(any(), any(), any());
     }
 }
