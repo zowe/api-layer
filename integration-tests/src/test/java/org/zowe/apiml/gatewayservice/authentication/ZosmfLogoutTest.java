@@ -11,10 +11,13 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.AuthenticationTest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @AuthenticationTest
@@ -32,4 +35,29 @@ public class ZosmfLogoutTest extends LogoutTest {
         providers.switchProvider("zosmf");
     }
 
+    @Test
+    void givenTwoValidTokens_whenLogoutCalledOnFirstOne_thenSecondStillValid() {
+        String jwt1 = generateToken();
+        String jwt2 = generateToken();
+
+        assertIfLogged(jwt1, true);
+        assertIfLogged(jwt2, true);
+
+        assertLogout(jwt1, SC_NO_CONTENT);
+
+        assertIfLogged(jwt1, false);
+        assertIfLogged(jwt2, true);
+
+        logout(jwt2);
+    }
+
+    @Test
+    void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized() {
+        String jwt = generateToken();
+
+        assertIfLogged(jwt, true);
+
+        assertLogout(jwt, SC_NO_CONTENT);
+        assertLogout(jwt, SC_UNAUTHORIZED);
+    }
 }

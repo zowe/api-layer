@@ -18,7 +18,7 @@ import org.mockito.Mockito;
 import org.springframework.security.core.Authentication;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -69,7 +69,7 @@ class JWTLogoutHandlerTest {
     @Test
     void givenInvalidToken_exceptionIsThrown_thenItsCorrectlyHandled() throws ServletException {
         when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
-        when(authenticationService.invalidateJwtToken(TOKEN, true)).thenThrow(new TokenNotValidException("msg"));
+        when(authenticationService.invalidateJwtToken(TOKEN, true)).thenThrow(new TokenFormatNotValidException("msg"));
         handler.logout(request, response, authentication);
         verify(failedAuthenticationHandler, times(1)).onAuthenticationFailure(any(), any(), any());
     }

@@ -11,12 +11,15 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.AuthenticationTest;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @AuthenticationTest
@@ -43,9 +46,9 @@ abstract class LogoutTest {
 
         given()
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-        .when()
+            .when()
             .get(SecurityUtils.getGateWayUrl(QUERY_ENDPOINT))
-        .then()
+            .then()
             .statusCode(status.value());
     }
 
@@ -69,6 +72,15 @@ abstract class LogoutTest {
 
     protected void logout(String jwtToken) {
         SecurityUtils.logoutOnGateway(jwtToken);
+    }
+
+    protected void assertLogout(String jwtToken, int expectedStatusCode) {
+        given()
+            .cookie(COOKIE_NAME, jwtToken)
+            .when()
+            .post(SecurityUtils.getGateWayUrl(LOGOUT_ENDPOINT))
+            .then()
+            .statusCode(is(expectedStatusCode));
     }
 
 }

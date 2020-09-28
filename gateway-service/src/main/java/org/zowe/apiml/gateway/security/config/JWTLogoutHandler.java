@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -50,7 +51,7 @@ public class JWTLogoutHandler implements LogoutHandler {
         } else {
             try {
                 authenticationService.invalidateJwtToken(token, true);
-            } catch (TokenNotValidException e) {
+            } catch (TokenFormatNotValidException e) {
                 failure.onAuthenticationFailure(request, response, e);
             }
         }

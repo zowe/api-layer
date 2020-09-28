@@ -16,11 +16,9 @@ import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.AuthenticationTest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
-import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.hamcrest.core.Is.is;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutOnGateway;
 
 @AuthenticationTest
 @MainframeDependentTests
@@ -44,23 +42,21 @@ class SafLogoutTest extends LogoutTest {
         assertIfLogged(jwt1, true);
         assertIfLogged(jwt2, true);
 
-        given()
-            .cookie(COOKIE_NAME, jwt1)
-            .when()
-            .post(SecurityUtils.getGateWayUrl(LOGOUT_ENDPOINT))
-            .then()
-            .statusCode(is(SC_NO_CONTENT));
+        assertLogout(jwt1, SC_NO_CONTENT);
 
         assertIfLogged(jwt1, false);
         assertIfLogged(jwt2, true);
 
-        logout(jwt1);
         logout(jwt2);
     }
 
-    @Override
-    protected void logout(String jwtToken) {
-        logoutOnGateway(jwtToken);
-    }
+    @Test
+    void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized() {
+        String jwt = generateToken();
 
+        assertIfLogged(jwt, true);
+
+        assertLogout(jwt, SC_NO_CONTENT);
+        assertLogout(jwt, SC_UNAUTHORIZED);
+    }
 }

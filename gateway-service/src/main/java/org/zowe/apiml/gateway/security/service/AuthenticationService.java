@@ -136,7 +136,7 @@ public class AuthenticationService {
                 zosmfService.invalidate(JWT, jwtToken);
                 break;
             default:
-                throw new TokenNotValidException("Unknown token type.");
+                throw new TokenFormatNotValidException("Unknown token type.");
         }
 
         return Boolean.TRUE;
