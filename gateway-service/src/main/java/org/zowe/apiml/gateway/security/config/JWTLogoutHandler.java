@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.config;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
@@ -52,7 +53,9 @@ public class JWTLogoutHandler implements LogoutHandler {
         } else {
             try {
                 authenticationService.invalidateJwtToken(token, true);
-            } catch (TokenFormatNotValidException e) {
+            } catch (TokenNotValidException e) {
+                failure.onAuthenticationFailure(request, response, new TokenFormatNotValidException(e.getMessage()));
+            } catch (AuthenticationException e) {
                 failure.onAuthenticationFailure(request, response, e);
             } catch (Exception e) {
                 failure.onAuthenticationFailure(request, response, new AuthenticationTokenException("Error while logging out token"));
