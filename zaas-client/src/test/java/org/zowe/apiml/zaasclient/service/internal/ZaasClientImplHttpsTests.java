@@ -374,7 +374,7 @@ class ZaasClientImplHttpsTests {
         when(closeableHttpResponse.getStatusLine().getStatusCode()).thenReturn(401);
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.logout("token"));
 
-        assertTrue(exception.getMessage().contains("'ZWEAS120E', message='Invalid username or password'"));
+        assertTrue(exception.getMessage().contains("'ZWEAS100E', message='Token is expired for URL'"));
     }
 
     @Test
