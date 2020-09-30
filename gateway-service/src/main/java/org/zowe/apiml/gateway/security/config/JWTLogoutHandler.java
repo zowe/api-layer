@@ -15,7 +15,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
@@ -54,11 +53,14 @@ public class JWTLogoutHandler implements LogoutHandler {
             try {
                 authenticationService.invalidateJwtToken(token, true);
             } catch (TokenNotValidException e) {
+                // TokenNotValidException thrown in cases where the format is not valid
                 failure.onAuthenticationFailure(request, response, new TokenFormatNotValidException(e.getMessage()));
             } catch (AuthenticationException e) {
                 failure.onAuthenticationFailure(request, response, e);
             } catch (Exception e) {
-                failure.onAuthenticationFailure(request, response, new AuthenticationTokenException("Error while logging out token"));
+                // Catch any issue like ServiceNotAccessibleException, throw TokenNotValidException
+                // so a 401 is returned. Returning 500 gives information about the system and is thus avoided.
+                failure.onAuthenticationFailure(request, response, new TokenNotValidException("Error while logging out token"));
             }
         }
     }
