@@ -107,7 +107,7 @@ class ZaasJwtService implements TokenService {
         if (jwtToken.startsWith("Bearer")) {
             httpPost.addHeader(HttpHeaders.AUTHORIZATION,jwtToken);
         } else {
-            httpPost.addHeader(SM.COOKIE, jwtToken);
+            httpPost.addHeader(SM.COOKIE, TOKEN_PREFIX + "=" + jwtToken);
         }
         return getClientWithResponse(client, httpPost);
     }
@@ -179,15 +179,11 @@ class ZaasJwtService implements TokenService {
     private void doRequest(Operation request) throws ZaasClientException {
         ClientWithResponse clientWithResponse = new ClientWithResponse();
         try {
-
             clientWithResponse = request.request();
-        } catch (ZaasClientException e) {
-            throw e;
-        }
-        catch (IOException | ZaasConfigurationException e) {
+        } catch (IOException | ZaasConfigurationException e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
         } finally {
-        finallyClose(clientWithResponse.getResponse());
+            finallyClose(clientWithResponse.getResponse());
         }
     }
 
