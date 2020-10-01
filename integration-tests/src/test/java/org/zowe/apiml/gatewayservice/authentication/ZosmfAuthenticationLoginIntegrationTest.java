@@ -18,6 +18,7 @@ import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.config.*;
 
 import java.net.URI;
+import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -99,7 +100,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
-        assertValidAuthToken(cookie);
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
 
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
