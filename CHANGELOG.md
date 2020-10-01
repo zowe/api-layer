@@ -11,7 +11,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 - Bugfix: Added the Base Path field in the API Catalog if one is available, which can override the Swagger Base Path. This causes the proper Base Path to be displayed in the event that the api doc is not populated properly. [#810](https://github.com/zowe/api-layer/issues/810)
 - Bugfix: Removed overwriting of the Swagger Base Path, which resulted in malformed API routes when the base URL is shared among multiple services. [#852](https://github.com/zowe/api-layer/issues/852)
 - Bugfix: API ML was previously not reporting SSL certificate errors when servers were unable to communicate. Now, if a SSLException occurs, SSL certificate errors are reported.  [#698](https://github.com/zowe/api-layer/issues/698)
-- Bugfix: Fix language in log messages for consistency. [#830](https://github.com/zowe/api-layer/issues/830)
+- Bugfix: Fixed language in log messages for consistency. [#830](https://github.com/zowe/api-layer/issues/830)
 
 ## `1.15.0`
 
