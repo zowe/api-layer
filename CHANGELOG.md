@@ -1,6 +1,18 @@
 # API Mediation Layer Changelog
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
+## `1.16.0`
+
+- Feature: ZAAS Client can now use HTTP so AT-TLS can be used for communication to ZAAS. [#813](https://github.com/zowe/api-layer/issues/813)
+- Feature: Implement logout functionality in ZAAS Client. [#808](https://github.com/zowe/api-layer/issues/808)
+- Feature: Add more helpful and actionable description to message ZWEAM511E, which occurs when API ML does not trust the certificate provided by the service. [#818](https://github.com/zowe/api-layer/issues/818)
+- Bugfix: Change default expiration time value for JWT token to 8h to match z/OSMF default one. [#615](https://github.com/zowe/api-layer/issues/615)
+- Bugfix: Reduce excessive and unhelpful logging. [#672](https://github.com/zowe/api-layer/issues/672)
+- Bugfix: Add Base Path field in the API Catalog. Also overrides the Swagger Base Path, so the proper Base Path is displayed in the event of the api doc not being populated properly. [#810](https://github.com/zowe/api-layer/issues/810)
+- Bugfix: Remove overwriting of the Swagger Base Path, which leaded to malformed API routes when the base URL is shared amongst services. [#852](https://github.com/zowe/api-layer/issues/852)
+- Bugfix: API ML was not reporting SSL certificate errors when servers were unable to communicate. Now if SSLException occurs, it is handled properly. [#698](https://github.com/zowe/api-layer/issues/698)
+- Bugfix: Fix language, grammar issues, and typos in the API ML log messages. [#830](https://github.com/zowe/api-layer/issues/830)
+
 ## `1.15.0`
 
 - Feature: The API Path Pattern now supports serviceId as the first element. This improves the consistency of the URL when processing through the Gateway or outside of the Gateway. [#688](https://github.com/zowe/api-layer/issues/688)
