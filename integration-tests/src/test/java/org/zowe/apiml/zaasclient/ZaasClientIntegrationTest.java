@@ -229,8 +229,7 @@ class ZaasClientIntegrationTest {
     @Test
     void givenValidTokenBut_whenLogoutIsCalled_thenSuccess() throws ZaasClientException {
         String token = tokenService.login(USERNAME, PASSWORD);
-        assertDoesNotThrow(() ->
-            tokenService.logout("apimlAuthenticationToken=" + token));
+        assertDoesNotThrow(() -> tokenService.logout(token));
     }
 
     @Test
