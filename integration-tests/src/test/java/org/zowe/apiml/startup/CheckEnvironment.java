@@ -15,7 +15,7 @@ import org.zowe.apiml.util.categories.EnvironmentCheck;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.EnvironmentConfiguration;
 
-import static io.restassured.RestAssured.*;
+import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
@@ -67,7 +67,7 @@ class CheckEnvironment {
 
     @Test
     @Order(2)
-    void checkZosmfIsUpAndApimtstIsWorking() {
+    void checkZosmfIsUpAndJwtTokenFromLoginCanBeUsed() {
 
         // login with Basic and get JWT
         String basicJWT =
