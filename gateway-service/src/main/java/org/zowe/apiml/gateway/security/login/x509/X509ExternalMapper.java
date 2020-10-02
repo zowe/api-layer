@@ -71,7 +71,7 @@ public class X509ExternalMapper extends X509AbstractMapper {
                 HttpEntity httpEntity = new ByteArrayEntity(certificate.getEncoded());
                 httpPost.setEntity(httpEntity);
 
-                httpPost.setHeader(new BasicHeader("Cookie", jwtToken));
+                httpPost.setHeader(new BasicHeader("Cookie", "apimlAuthenticationToken=" + jwtToken));
 
                 HttpResponse httpResponse = httpClientProxy.execute(httpPost);
                 String response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
