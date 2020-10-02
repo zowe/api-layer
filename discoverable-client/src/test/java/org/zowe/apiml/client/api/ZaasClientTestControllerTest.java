@@ -26,6 +26,8 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 
+import javax.servlet.http.Cookie;
+
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -76,7 +78,7 @@ public class ZaasClientTestControllerTest {
         String token = "token";
         this.mockMvc.perform(
             post("/api/v1/zaasClient/logout")
-                .header("Cookie", TOKEN_PREFIX + "=" + token)
+                .cookie(new Cookie(TOKEN_PREFIX, token))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(status().is(204));
     }

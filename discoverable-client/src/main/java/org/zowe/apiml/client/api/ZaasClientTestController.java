@@ -14,14 +14,13 @@ import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/zaasClient")
@@ -51,16 +50,17 @@ public class ZaasClientTestController {
 
     @PostMapping(value = "/logout")
     @ApiOperation(value = "Forward logout to gateway service via zaas client")
-    public ResponseEntity<String> forwardLogout(@RequestHeader HttpHeaders httpHeaders) throws ZaasConfigurationException {
+    public ResponseEntity<String> forwardLogout(
+        @CookieValue(value = "apimlAuthenticationToken", required = false) String cookieToken,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader
+    ) throws ZaasConfigurationException {
+        if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(authorizationHeader)) {
+            return ResponseEntity.status(500).body("Missing cookie or authorization header in the request");
+        }
+
         try {
-            List<String> auth = httpHeaders.get("Cookie");
-            if (auth == null || auth.isEmpty()) {
-                auth = httpHeaders.get("Authorization");
-                if (auth == null || auth.isEmpty()) {
-                    return ResponseEntity.status(500).body("Missing cookie or authorization header in the request");
-                }
-            }
-            zaasClient.logout(auth.get(0));
+            String token = StringUtils.isEmpty(cookieToken) ? authorizationHeader : cookieToken;
+            zaasClient.logout(token);
         } catch (ZaasClientException e) {
             return ResponseEntity.status(e.getErrorCode().getReturnCode()).body(e.getErrorCode().getMessage());
         }

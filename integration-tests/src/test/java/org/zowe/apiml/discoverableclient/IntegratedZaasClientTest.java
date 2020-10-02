@@ -133,8 +133,6 @@ class IntegratedZaasClientTest {
 
     @Test
     void givenValidToken_whenCallingLogout_thenSuccess() {
-        String token = "validToken";
-
         String jwt = generateToken();
 
         given()
