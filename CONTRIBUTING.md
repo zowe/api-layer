@@ -152,3 +152,23 @@ In addition to external documentation, please thoroughly comment your code for f
  ### Javadoc
 
 Methods and classes should have concise javadoc describing usage and purpose.
+
+## Planning guidelines
+
+The new issues raised in the GitHub are triaged and sized weekly on one of the Squad meetings. There is an [Open Mainframe Project
+Zowe calendar](https://lists.openmainframeproject.org/calendar) with the squad meetings.
+
+In order to get a better understanding for the complexity of different issues and to improve the quality and reliability of
+our planning we size the issues that squad takes responsibility for. 
+
+For sizing we use the Fibonacci sequence: 1,2,3,5,8,13 The higher the number the more complex the work involved or more uncertainty
+around how to implement the solution.  
+
+### Examples of given size
+
+-   1 The smallest meaningful issue. Usually done mainly by one team member. An example: [Streamline Single Sign On Documentation](https://github.com/zowe/api-layer/issues/677) 
+-   2 Ideal size of the story. It is possible to split the issue among multiple members. The issue is delivered within a Sprint. An example: [Add logout functionality to the ZAAS client](https://github.com/zowe/api-layer/issues/808) 
+-   3 Good size of the story. It is posible to split among multiple members. The issue is usually delivered within a Sprint. An example: [Alpha of client certificate using SAF API](https://github.com/zowe/api-layer/issues/758)
+-   5 The problems start at this size. If possible split the issue into multiple smaller ones. Unless it is possible to split the issue among more members of the squad it is possible that the issue won't fit into one sprint. An example: [Support the x509 client certificate authentication via x509](https://github.com/zowe/api-layer/issues/827)
+-   8 Large issue. Unless there is a good way to split work the risk of not being able to deliver the issue within sprint is quite large. Split to smaller issues if possible. An example: [Implement Caching Service](https://github.com/zowe/api-layer/issues/863)
+-   13 WARNING: Here be lions! We haven't used this size so far. If it occurs split the issue into smaller issues. 
