@@ -15,6 +15,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,12 +27,15 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class X509ExternalMapperTest {
 
     private X509ExternalMapper x509ExternalMapper;
+    private TokenCreationService tokenCreationService;
+
     private CloseableHttpClient closeableHttpClient;
     private CloseableHttpResponse httpResponse;
     private HttpEntity entity;
@@ -43,6 +47,8 @@ class X509ExternalMapperTest {
         closeableHttpClient = mock(CloseableHttpClient.class);
         httpResponse = mock(CloseableHttpResponse.class);
         when(closeableHttpClient.execute(any())).thenReturn(httpResponse);
+        tokenCreationService = mock(TokenCreationService.class);
+        when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("validJwtToken");
 
         x509Certificate = mock(X509Certificate.class);
         entity = mock(HttpEntity.class);
@@ -50,7 +56,7 @@ class X509ExternalMapperTest {
 
     @Test
     void givenValidHttpResponse_thenReturnUserId() throws CertificateEncodingException, IOException, CertificateParsingException {
-        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient);
+        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient, tokenCreationService);
         ReflectionTestUtils.setField(x509ExternalMapper,"externalMapperUrl","");
         when(x509Certificate.getExtendedKeyUsage()).thenReturn(Collections.singletonList(CLIENT_AUTH_OID));
         when(x509Certificate.getEncoded()).thenReturn(new byte[2]);
@@ -62,7 +68,7 @@ class X509ExternalMapperTest {
 
     @Test
     void givenValidHttpResponse_andUserIsNotFound_thenReturnNull() throws CertificateEncodingException, IOException, CertificateParsingException {
-        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient);
+        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient, tokenCreationService);
         ReflectionTestUtils.setField(x509ExternalMapper,"externalMapperUrl","");
         when(x509Certificate.getExtendedKeyUsage()).thenReturn(Collections.singletonList(CLIENT_AUTH_OID));
         when(x509Certificate.getEncoded()).thenReturn(new byte[2]);
@@ -75,7 +81,7 @@ class X509ExternalMapperTest {
     @Test
     void givenInvalidUriCharacters_thenNullIsReturned_andExceptionIsHandled() throws CertificateParsingException {
         when(x509Certificate.getExtendedKeyUsage()).thenReturn(Collections.singletonList(CLIENT_AUTH_OID));
-        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient);
+        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient, tokenCreationService);
         ReflectionTestUtils.setField(x509ExternalMapper,"externalMapperUrl","%");
         assertNull(x509ExternalMapper.mapCertificateToMainframeUserId(x509Certificate));
     }
@@ -83,7 +89,7 @@ class X509ExternalMapperTest {
     @Test
     void givenInvalidCertificateEncodedData_thenNullIsReturned_andExceptionIsHandled() throws CertificateEncodingException, CertificateParsingException {
         when(x509Certificate.getExtendedKeyUsage()).thenReturn(Collections.singletonList(CLIENT_AUTH_OID));
-        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient);
+        x509ExternalMapper = new X509ExternalMapper(closeableHttpClient, tokenCreationService);
         ReflectionTestUtils.setField(x509ExternalMapper,"externalMapperUrl","");
         when(x509Certificate.getEncoded()).thenThrow(new CertificateEncodingException());
         assertNull(x509ExternalMapper.mapCertificateToMainframeUserId(x509Certificate));
