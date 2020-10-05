@@ -12,5 +12,12 @@ import java.security.cert.X509Certificate;
 
 public interface X509AuthenticationMapper {
 
+    /**
+     * Get the information about the certificate and return mainframe user id if there is one associated with the provided
+     * certificate.
+     *
+     * @param certificate Certificate to map.
+     * @return Either valid user id or null.
+     */
     String mapCertificateToMainframeUserId(X509Certificate certificate);
 }
