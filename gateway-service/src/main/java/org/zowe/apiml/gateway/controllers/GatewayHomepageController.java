@@ -40,7 +40,7 @@ public class GatewayHomepageController {
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers) {
-       this(discoveryClient, providers, new BuildInfo());
+        this(discoveryClient, providers, new BuildInfo());
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
@@ -139,7 +139,7 @@ public class GatewayHomepageController {
     private String getCatalogLink(ServiceInstance catalogInstance) {
         String gatewayUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, ROUTES_GATEWAY_URL));
         String serviceUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, ROUTES_SERVICE_URL));
-        return gatewayUrl + serviceUrl;
+        return serviceUrl + "/" + gatewayUrl;
     }
 
     private boolean authorizationServiceUp() {
