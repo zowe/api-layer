@@ -90,9 +90,9 @@ public class ApiDocV3ServiceTest {
             gatewayClient.getGatewayConfigProperties().getScheme() +
             "://" +
             gatewayClient.getGatewayConfigProperties().getHostname() +
-            CATALOG_VERSION +
             SEPARATOR +
             CoreService.API_CATALOG.getServiceId() +
+            CATALOG_VERSION +
             CATALOG_APIDOC_ENDPOINT +
             SEPARATOR +
             SERVICE_ID +
