@@ -159,16 +159,16 @@ The new issues raised in the GitHub are triaged and sized weekly on one of the S
 Zowe calendar](https://lists.openmainframeproject.org/calendar) with the squad meetings.
 
 In order to get a better understanding for the complexity of different issues and to improve the quality and reliability of
-our planning we size the issues that squad takes responsibility for. 
+our planning we size the issues that squad takes responsibility for. The sizing is relative considering the complexity of a particular issue compared to the others.
 
 For sizing we use the Fibonacci sequence: 1,2,3,5,8,13 The higher the number the more complex the work involved or more uncertainty
 around how to implement the solution.  
 
 ### Examples of given size
 
--   1 The smallest meaningful issue. Usually done mainly by one team member. An example: [Streamline Single Sign On Documentation](https://github.com/zowe/api-layer/issues/677) 
--   2 Ideal size of the story. It is possible to split the issue among multiple members. The issue is delivered within a Sprint. An example: [Add logout functionality to the ZAAS client](https://github.com/zowe/api-layer/issues/808) 
--   3 Good size of the story. It is posible to split among multiple members. The issue is usually delivered within a Sprint. An example: [Alpha of client certificate using SAF API](https://github.com/zowe/api-layer/issues/758)
--   5 The problems start at this size. If possible split the issue into multiple smaller ones. Unless it is possible to split the issue among more members of the squad it is possible that the issue won't fit into one sprint. An example: [Support the x509 client certificate authentication via x509](https://github.com/zowe/api-layer/issues/827)
--   8 Large issue. Unless there is a good way to split work the risk of not being able to deliver the issue within sprint is quite large. Split to smaller issues if possible. An example: [Implement Caching Service](https://github.com/zowe/api-layer/issues/863)
+-   1 The smallest meaningful issue that delivers value on its own. Usually no collaboration within the squad is necessary and fix can be delivered mainly by one team member. An example: [Streamline Single Sign On Documentation](https://github.com/zowe/api-layer/issues/677) 
+-   2 Ideal size of the story. It allows meaningful collaboration (i.e. to split the issue into separate tasks among multiple members). The issue is delivered within a Sprint. An example: [Add logout functionality to the ZAAS client](https://github.com/zowe/api-layer/issues/808) 
+-   3 Good size of the story. It is posible to collaborate among multiple members. The fix to the issue is usually delivered within a Sprint. An example: [Alpha of client certificate using SAF API](https://github.com/zowe/api-layer/issues/758)
+-   5 The problems start at this size. If possible split the issue into multiple smaller ones and focus namely on the value delivered (i.e. do the smaller issues still bring value if delivered separately?). Unless it is possible to collaborate on the issue among more members of the squad, it is possible that the issue won't fit into one sprint. An example: [Support the x509 client certificate authentication via x509](https://github.com/zowe/api-layer/issues/827)
+-   8 Large issue. Unless there is a good way to split the issue or collaborate, the risk of not being able to deliver the issue within a sprint is quite large. Split to smaller issues if possible. An example: [Implement Caching Service](https://github.com/zowe/api-layer/issues/863)
 -   13 WARNING: Here be lions! We haven't used this size so far. If it occurs split the issue into smaller issues. 
