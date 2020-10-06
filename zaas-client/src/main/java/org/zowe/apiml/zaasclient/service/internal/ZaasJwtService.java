@@ -127,7 +127,7 @@ class ZaasJwtService implements TokenService {
         else {
             String obtainedMessage = EntityUtils.toString(clientWithResponse.getResponse().getEntity());
             if (httpResponseCode == 401) {
-                throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
+                throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, obtainedMessage);
             } else {
                 throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, obtainedMessage);
             }

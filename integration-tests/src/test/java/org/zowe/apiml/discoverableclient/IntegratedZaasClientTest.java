@@ -117,8 +117,6 @@ class IntegratedZaasClientTest {
 
     @Test
     void givenValidToken_whenCallingLogoutOldPathFormat_thenSuccess() {
-        String token = "validToken";
-
         String jwt = generateToken();
 
         given()
@@ -128,7 +126,6 @@ class IntegratedZaasClientTest {
             .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGOUT)
             .then()
             .statusCode(is(SC_NO_CONTENT));
-
     }
 
     @Test
@@ -142,12 +139,10 @@ class IntegratedZaasClientTest {
             .post(ZAAS_CLIENT_URI + LOGOUT)
             .then()
             .statusCode(is(SC_NO_CONTENT));
-
     }
 
     @Test
     void givenInvalidToken_whenCallingLogoutOldPathFormat_thenFail() {
-
         given()
             .contentType(JSON)
             .cookie(COOKIE_NAME, "invalidToken")
@@ -159,7 +154,6 @@ class IntegratedZaasClientTest {
 
     @Test
     void givenInvalidToken_whenCallingLogout_thenFail() {
-
         given()
             .contentType(JSON)
             .cookie(COOKIE_NAME, "invalidToken")
@@ -171,7 +165,6 @@ class IntegratedZaasClientTest {
 
     @Test
     void givenNoTokenInHeader_whenCallingLogoutOldPathFormat_thenFail() {
-
         given()
             .contentType(JSON)
             .when()
@@ -182,13 +175,33 @@ class IntegratedZaasClientTest {
 
     @Test
     void givenNoTokenInHeader_whenCallingLogout_thenFail() {
-
         given()
             .contentType(JSON)
             .when()
             .post(ZAAS_CLIENT_URI + LOGOUT)
             .then()
             .statusCode(is(SC_INTERNAL_SERVER_ERROR));
+    }
+
+    @Test
+    void givenValidToken_whenCallLogoutTwice_thenSecondLogoutUnauthorized() {
+        String jwt = generateToken();
+
+        given()
+            .contentType(JSON)
+            .cookie(COOKIE_NAME, jwt)
+            .when()
+            .post(ZAAS_CLIENT_URI + LOGOUT)
+            .then()
+            .statusCode(is(SC_NO_CONTENT));
+
+        given()
+            .contentType(JSON)
+            .cookie(COOKIE_NAME, jwt)
+            .when()
+            .post(ZAAS_CLIENT_URI + LOGOUT)
+            .then()
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     private String generateToken() {
