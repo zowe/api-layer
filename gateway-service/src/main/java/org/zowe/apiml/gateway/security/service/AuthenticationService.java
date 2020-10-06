@@ -136,7 +136,7 @@ public class AuthenticationService {
                 zosmfService.invalidate(JWT, jwtToken);
                 break;
             default:
-                throw new TokenNotValidException("Unknown token type.");
+                throw new TokenFormatNotValidException("Unknown token type.");
         }
 
         return Boolean.TRUE;
@@ -189,7 +189,7 @@ public class AuthenticationService {
         }
 
         log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
-        return new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid.");
+        return new TokenNotValidException("An internal error occurred while validating the token therefore the token is no longer valid.");
     }
 
     private Claims validateAndParseLocalJwtToken(String jwtToken) {
@@ -207,12 +207,12 @@ public class AuthenticationService {
     /**
      * Method validate if jwtToken is valid or not. This method contains two types of verification:
      * - Zowe
-     *   - it checks validity of signature
-     *   - it checks if token is not expired
-     *   - it checks if token was not removed (see logout)
+     * - it checks validity of signature
+     * - it checks if token is not expired
+     * - it checks if token was not removed (see logout)
      * - z/OSMF
-     *   - it uses validation via REST directly in z/OSMF
-     *
+     * - it uses validation via REST directly in z/OSMF
+     * <p>
      * Method uses cache to speedup validation. In case of invalidating jwtToken in z/OSMF without Zowe, method
      * can return still true until cache will expired or be evicted.
      *

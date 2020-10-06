@@ -11,16 +11,19 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.AuthenticationTest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @AuthenticationTest
 @SuppressWarnings({"squid:S2187"})
 @MainframeDependentTests
-public class ZosmfLogoutTest extends LogoutTest {
+class ZosmfLogoutTest extends LogoutTest {
     private static AuthenticationProviders providers = new AuthenticationProviders(SecurityUtils.getGateWayUrl("/authentication"));
 
     // Change to dummy and run the same test as for the zOSMF
@@ -32,4 +35,13 @@ public class ZosmfLogoutTest extends LogoutTest {
         providers.switchProvider("zosmf");
     }
 
+    @Test
+    void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized() {
+        String jwt = generateToken();
+
+        assertIfLogged(jwt, true);
+
+        assertLogout(jwt, SC_NO_CONTENT);
+        assertLogout(jwt, SC_UNAUTHORIZED);
+    }
 }

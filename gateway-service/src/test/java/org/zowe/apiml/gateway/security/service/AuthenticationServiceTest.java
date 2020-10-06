@@ -481,9 +481,9 @@ public class AuthenticationServiceTest {
 
     @Test
     void testHandleJwtParserException() {
-        class AuthenticationServiceExceptionHanlderTest extends AuthenticationService {
+        class AuthenticationServiceExceptionHandlerTest extends AuthenticationService {
 
-            AuthenticationServiceExceptionHanlderTest() {
+            AuthenticationServiceExceptionHandlerTest() {
                 super(null, null, null, null, null, null, null, null);
             }
 
@@ -494,7 +494,7 @@ public class AuthenticationServiceTest {
 
         }
 
-        AuthenticationServiceExceptionHanlderTest as = new AuthenticationServiceExceptionHanlderTest();
+        AuthenticationServiceExceptionHandlerTest as = new AuthenticationServiceExceptionHandlerTest();
         Exception exception;
 
         exception = as.handleJwtParserException(new ExpiredJwtException(mock(Header.class), mock(Claims.class), "msg"));
@@ -507,7 +507,7 @@ public class AuthenticationServiceTest {
 
         exception = as.handleJwtParserException(new RuntimeException("msg"));
         assertTrue(exception instanceof TokenNotValidException);
-        assertEquals("An internal error occurred while validating the token therefor the token is no longer valid.", exception.getMessage());
+        assertEquals("An internal error occurred while validating the token therefore the token is no longer valid.", exception.getMessage());
     }
 
     @Test
