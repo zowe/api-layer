@@ -65,7 +65,7 @@ public class AbstractApiDocServiceTest {
     public void shouldGetEndpointPairs() {
         RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog/api/v1");
         Pair endpointPairs = abstractApiDocService.getEndPointPairs("/apicatalog", "apicatalog", routedService);
-        ImmutablePair expectedPairs = new ImmutablePair("/apicatalog", "/api/v1/apicatalog/apicatalog");
+        ImmutablePair expectedPairs = new ImmutablePair("/apicatalog", "/apicatalog/api/v1/apicatalog");
         assertEquals(expectedPairs, endpointPairs);
     }
 
@@ -95,7 +95,7 @@ public class AbstractApiDocServiceTest {
 
         abstractApiDocService.preparePath(openAPI.getPaths(), apiDocPath, apiDocInfo, "/api/v1/api-doc", "/", "apicatalog");
 
-        assertThat(apiDocPath.getLongPaths(), hasKey("/api/v1/apicatalog/api-doc/"));
+        assertThat(apiDocPath.getLongPaths(), hasKey("/apicatalog/api/v1/api-doc/"));
         assertThat(apiDocPath.getShortPaths(), hasKey("/api-doc/"));
         assertTrue(apiDocPath.getPrefixes().contains("api/v1"));
 

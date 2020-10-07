@@ -28,4 +28,8 @@ public class OpenApiUtil {
             + CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
         return "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";
     }
+
+    public static String getBasePath(String serviceId, ApiDocPath<?> apiDocPath) {
+        return SEPARATOR + serviceId + SEPARATOR + apiDocPath.getPrefixes().iterator().next();
+    }
 }

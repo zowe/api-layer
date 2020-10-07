@@ -36,8 +36,8 @@ public class SubstituteSwaggerGenerator {
                                                       String gatewayScheme, String gatewayHost) {
         String title = service.getMetadata().get(SERVICE_TITLE);
         String description = service.getMetadata().get(SERVICE_DESCRIPTION);
-        String basePath = (api.getGatewayUrl().startsWith("/") ? "" : "/") + api.getGatewayUrl()
-            + (api.getGatewayUrl().endsWith("/") ? "" : "/") + service.getAppName().toLowerCase();
+        String basePath = (api.getGatewayUrl().startsWith("/") ? "" : "/") + service.getAppName().toLowerCase()
+            + (api.getGatewayUrl().endsWith("/") ? "" : "/") + api.getGatewayUrl();
 
         Template t = ve.getTemplate("substitute_swagger.json");
         VelocityContext context = new VelocityContext();

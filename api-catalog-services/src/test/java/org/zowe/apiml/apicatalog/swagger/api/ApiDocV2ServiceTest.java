@@ -10,13 +10,6 @@
 
 package org.zowe.apiml.apicatalog.swagger.api;
 
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.product.routing.RoutedServices;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.models.*;
@@ -27,6 +20,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
 
 import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
@@ -65,7 +65,7 @@ public class ApiDocV2ServiceTest {
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
-    public void givenSwaggerJsonNotAsExpectedFormat_whenConvertToSwagger_thenThrowIOException () throws IOException {
+    public void givenSwaggerJsonNotAsExpectedFormat_whenConvertToSwagger_thenThrowIOException() throws IOException {
         String apiDocContent = "Failed content";
 
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, null);
@@ -118,7 +118,7 @@ public class ApiDocV2ServiceTest {
         assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
         assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
         assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
-        assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
+        assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
 
         assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
         assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
@@ -142,7 +142,7 @@ public class ApiDocV2ServiceTest {
         Swagger actualSwagger = convertJsonToSwagger(actualContent);
         assertNotNull(actualSwagger);
 
-        assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
+        assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
         assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
     }
 
@@ -238,8 +238,8 @@ public class ApiDocV2ServiceTest {
         assertEquals("", actualSwagger.getBasePath());
 
         assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
-        assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey("/" + routedService.getGatewayUrl() + "/" + SERVICE_ID));
-        assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey("/" + routedService3.getGatewayUrl() + "/" + SERVICE_ID));
+        assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey("/" + SERVICE_ID + "/" + routedService.getGatewayUrl()));
+        assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey("/" + SERVICE_ID + "/" + routedService3.getGatewayUrl()));
     }
 
     @Test
@@ -261,7 +261,7 @@ public class ApiDocV2ServiceTest {
         Swagger actualSwagger = convertJsonToSwagger(actualContent);
         assertNotNull(actualSwagger);
 
-        assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
+        assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
 
         dummySwaggerObject.getPaths().forEach((k, v) ->
             assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey(dummySwaggerObject.getBasePath() + k))

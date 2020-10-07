@@ -37,13 +37,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 public class ApiCatalogEndpointIntegrationTest {
-    private static final String GET_ALL_CONTAINERS_ENDPOINT = "/api/v1/apicatalog/containers";
-    private static final String INVALID_CONTAINER_ENDPOINT = "/api/v1/apicatalog/containerz";
-    private static final String INVALID_STATUS_UPDATES_ENDPOINT = "/api/v1/apicatalog/statuz/updatez";
-    private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/api/v1/apicatalog/apidoc/apicatalog/v1";
-    private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/api/v1/apicatalog/apidoc/discoverableclient/v1";
-    private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/api/v1/apicatalog/apidoc/apicatalog/v2";
-    private static final String REFRESH_STATIC_APIS_ENDPOINT = "/api/v1/apicatalog/static-api/refresh";
+    private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
+    private static final String INVALID_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containerz";
+    private static final String INVALID_STATUS_UPDATES_ENDPOINT = "/apicatalog/api/v1/statuz/updatez";
+    private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v1";
+    private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/v1";
+    private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v2";
+    private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
 
     private String baseHost;
 
@@ -93,7 +93,7 @@ public class ApiCatalogEndpointIntegrationTest {
         assertFalse(apiCatalogSwagger, paths.isEmpty());
         assertFalse(apiCatalogSwagger, definitions.isEmpty());
         assertEquals(apiCatalogSwagger, baseHost, swaggerHost);
-        assertEquals(apiCatalogSwagger, "/api/v1/apicatalog", swaggerBasePath);
+        assertEquals(apiCatalogSwagger, "/apicatalog/api/v1", swaggerBasePath);
         assertNull(apiCatalogSwagger, paths.get("/status/updates"));
         assertNotNull(apiCatalogSwagger, paths.get("/containers/{id}"));
         assertNotNull(apiCatalogSwagger, paths.get("/containers"));
@@ -128,7 +128,7 @@ public class ApiCatalogEndpointIntegrationTest {
         // Then
         assertTrue(apiCatalogSwagger, swaggerInfo.get("description").toString().contains("API"));
         assertEquals(apiCatalogSwagger, baseHost, swaggerHost);
-        assertEquals(apiCatalogSwagger, "/api/v1/discoverableclient", swaggerBasePath);
+        assertEquals(apiCatalogSwagger, "/discoverableclient/api/v1", swaggerBasePath);
         assertEquals(apiCatalogSwagger, "External documentation", externalDoc.get("description"));
 
         assertFalse(apiCatalogSwagger, paths.isEmpty());
@@ -170,7 +170,7 @@ public class ApiCatalogEndpointIntegrationTest {
         final String jsonResponse = EntityUtils.toString(response.getEntity());
         String swaggerBasePath = JsonPath.parse(jsonResponse).read("$.basePath");
 
-        assertEquals("/api/v1/apicatalog", swaggerBasePath);
+        assertEquals("/apicatalog/api/v1", swaggerBasePath);
     }
 
     @Test
