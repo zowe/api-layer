@@ -132,6 +132,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Dapiml.security.x509.enabled=false \
+    -Dapiml.security.x509.externalMapperUrl=http://localhost:8542/certificate/x509/map \
+    -Dapiml.security.x509.externalMapperUser=ZWESVUSR \
     -Dapiml.security.zosmf.applid=IZUDFLT \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -cp ${ROOT_DIR}"/components/api-mediation/gateway-service.jar":/usr/include/java_classes/IRRRacf.jar \
