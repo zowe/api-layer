@@ -23,23 +23,43 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 import static org.junit.Assert.assertTrue;
 
 public class SubstituteSwaggerGeneratorTest {
+    private static final String GATEWAY_SCHEME = "https";
+    private static final String GATEWAY_HOST = "localhost:8080";
+    private static final String DOC_URL = "https://doc.ca.com/api";
+    private static final String HOST_NAME = "localhost";
+    private static final String APP_NAME = "serviceId";
+
+    private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     @Test
     public void testParseApiInfo() {
-        String gatewayScheme = "https";
-        String gatewayHost = "localhost:8080";
-
         Map<String, String> metadata = new HashMap<>();
         metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "api/v1");
-        metadata.put(API_INFO + ".1." + API_INFO_DOCUMENTATION_URL, "https://doc.ca.com/api");
+        metadata.put(API_INFO + ".1." + API_INFO_DOCUMENTATION_URL, DOC_URL);
 
         List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
 
-        InstanceInfo service = InstanceInfo.Builder.newBuilder().setAppName("serviceId").setHostName("localhost")
+        InstanceInfo service = InstanceInfo.Builder.newBuilder().setAppName(APP_NAME).setHostName(HOST_NAME)
             .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
 
-        String result = new SubstituteSwaggerGenerator().generateSubstituteSwaggerForService(service,
-            info.get(0), gatewayScheme, gatewayHost);
-        assertTrue(result.contains("https://doc.ca.com/api"));
+        String result = swaggerGenerator.generateSubstituteSwaggerForService(service,
+            info.get(0), GATEWAY_SCHEME, GATEWAY_HOST);
+        assertTrue(result.contains(DOC_URL));
+    }
+
+    @Test
+    public void testParseApiInfoWithGatewayUrlSlashes() {
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "/api/v1/");
+        metadata.put(API_INFO + ".1." + API_INFO_DOCUMENTATION_URL, DOC_URL);
+
+        List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
+
+        InstanceInfo service = InstanceInfo.Builder.newBuilder().setAppName(APP_NAME).setHostName(HOST_NAME)
+            .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
+
+        String result = swaggerGenerator.generateSubstituteSwaggerForService(service,
+            info.get(0), GATEWAY_SCHEME, GATEWAY_HOST);
+        assertTrue(result.contains(DOC_URL));
     }
 }
