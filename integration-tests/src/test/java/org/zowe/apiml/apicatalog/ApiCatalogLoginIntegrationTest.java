@@ -75,7 +75,7 @@ public class ApiCatalogLoginIntegrationTest {
             .getBody();
 
         assertThat(claims.getId(), not(isEmptyString()));
-        assertThat(claims.getSubject(), is(USERNAME));
+            assertThat(claims.getSubject(), is(USERNAME));
     }
 
     @Test

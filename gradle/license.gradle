@@ -16,7 +16,8 @@ ext.projectsNeedLicense = [
     'zowe-install',
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
-    'zaas-client'
+    'zaas-client',
+    'mock-zosmf'
 ]
 
 configure(subprojects.findAll { it.name in projectsNeedLicense }) {
