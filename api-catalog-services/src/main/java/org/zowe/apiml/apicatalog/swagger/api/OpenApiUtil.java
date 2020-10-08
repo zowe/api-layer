@@ -9,9 +9,9 @@
  */
 package org.zowe.apiml.apicatalog.swagger.api;
 
+import lombok.experimental.UtilityClass;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class OpenApiUtil {
@@ -23,8 +23,13 @@ public class OpenApiUtil {
     public static final String SEPARATOR = "/";
 
     public static String getOpenApiLink(String serviceId, GatewayConfigProperties gatewayConfigProperties) {
-        String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname() + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +
-            CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
-        return  "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";
+        String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname()
+            + SEPARATOR + CoreService.API_CATALOG.getServiceId() + CATALOG_VERSION
+            + CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
+        return "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";
+    }
+
+    public static String getBasePath(String serviceId, ApiDocPath<?> apiDocPath) {
+        return SEPARATOR + serviceId + SEPARATOR + apiDocPath.getPrefixes().iterator().next();
     }
 }
