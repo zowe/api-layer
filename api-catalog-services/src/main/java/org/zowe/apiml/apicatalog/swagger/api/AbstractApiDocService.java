@@ -9,14 +9,14 @@
  */
 package org.zowe.apiml.apicatalog.swagger.api;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.ServiceType;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -86,7 +86,7 @@ public abstract class AbstractApiDocService<T, N> {
             return Pair.of(endPoint, endPoint);
         } else {
             String updatedShortEndPoint = getShortEndPoint(route.getServiceUrl(), endPoint);
-            String updatedLongEndPoint = OpenApiUtil.SEPARATOR + route.getGatewayUrl() + OpenApiUtil.SEPARATOR + serviceId + updatedShortEndPoint;
+            String updatedLongEndPoint = OpenApiUtil.SEPARATOR + serviceId + OpenApiUtil.SEPARATOR + route.getGatewayUrl() + updatedShortEndPoint;
 
             return Pair.of(updatedShortEndPoint, updatedLongEndPoint);
         }

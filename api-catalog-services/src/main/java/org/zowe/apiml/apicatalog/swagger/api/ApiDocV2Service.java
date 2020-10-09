@@ -9,10 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.swagger.api;
 
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Path;
@@ -20,10 +16,15 @@ import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
 
 @Slf4j
 public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
@@ -94,7 +95,7 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
 
         Map<String, Path> updatedPaths;
         if (apiDocPath.getPrefixes().size() == 1) {
-            swagger.setBasePath(OpenApiUtil.SEPARATOR + apiDocPath.getPrefixes().iterator().next() + OpenApiUtil.SEPARATOR + serviceId);
+            swagger.setBasePath(OpenApiUtil.getBasePath(serviceId, apiDocPath));
             updatedPaths = apiDocPath.getShortPaths();
         } else {
             swagger.setBasePath("");
