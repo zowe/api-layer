@@ -23,3 +23,7 @@ server:
         keyStorePassword: password
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+zosmf:
+    username: RIPTST1,APIMTST
+    password: validPassword,PASSTICKET
