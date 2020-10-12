@@ -186,7 +186,7 @@ public class LocalApiDocServiceTest {
             "      , \"version\": \"1.0.0\"\n" +
             "    },\n" +
             "    \"host\": \"gateway:10000\",\n" +
-            "    \"basePath\": \"/api/v1/service\",\n" +
+            "    \"basePath\": \"/service/api/v1\",\n" +
             "    \"schemes\": [\"http\"],\n" +
             "    \"tags\": [\n" +
             "        {\n" +

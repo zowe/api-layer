@@ -156,7 +156,7 @@ class GatewayHomepageControllerTest {
         assertThat(preparedModelView, hasEntry("catalogIconName", "success"));
         assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog is running"));
         assertThat(preparedModelView, hasEntry("linkEnabled", true));
-        assertThat(preparedModelView, hasEntry("catalogLink", "ui/v1/apicatalog"));
+        assertThat(preparedModelView, hasEntry("catalogLink", "/apicatalog/ui/v1"));
     }
 
     private void discoveryReturnValidZosmfAuthorizationInstance() {

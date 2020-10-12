@@ -108,10 +108,10 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
         Map<String, PathItem> updatedPaths;
         if (apiDocPath.getPrefixes().size() == 1) {
-            updateServerUrl(openAPI, server, apiDocPath.getPrefixes().iterator().next() + OpenApiUtil.SEPARATOR + serviceId);
+            updateServerUrl(openAPI, server, OpenApiUtil.getBasePath(serviceId, apiDocPath));
             updatedPaths = apiDocPath.getShortPaths();
         } else {
-            updateServerUrl(openAPI, server, "");
+            updateServerUrl(openAPI, server, "/");
             updatedPaths = apiDocPath.getLongPaths();
         }
 
@@ -142,7 +142,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
             URI uri = new URI(serverUrl);
             basePath = uri.getPath();
         } catch (Exception e) {
-            log.debug("serverUrl is not parsable");
+            log.debug("serverUrl is not parse-able");
         }
         return basePath;
     }
@@ -169,7 +169,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
     private void updateServerUrl(OpenAPI openAPI, Server server, String basePath) {
         if (server != null) {
-            server.setUrl(basePath);
+            server.setUrl(basePath.startsWith("/") ? basePath.substring(1) : basePath); // server expects no / at start of url
             openAPI.setServers(Collections.singletonList(server));
         } else {
             openAPI.addServersItem(new Server().url(basePath));

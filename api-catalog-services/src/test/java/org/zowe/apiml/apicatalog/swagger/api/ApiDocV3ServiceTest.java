@@ -90,16 +90,16 @@ public class ApiDocV3ServiceTest {
             gatewayClient.getGatewayConfigProperties().getScheme() +
             "://" +
             gatewayClient.getGatewayConfigProperties().getHostname() +
-            CATALOG_VERSION +
             SEPARATOR +
             CoreService.API_CATALOG.getServiceId() +
+            CATALOG_VERSION +
             CATALOG_APIDOC_ENDPOINT +
             SEPARATOR +
             SERVICE_ID +
             HARDCODED_VERSION +
             ")";
 
-        assertEquals("https://localhost:10010/api/v1/serviceId", actualSwagger.getServers().get(0).getUrl());
+        assertEquals("https://localhost:10010/serviceId/api/v1", actualSwagger.getServers().get(0).getUrl());
         assertThat(actualSwagger.getPaths(), is(dummyOpenApiObject.getPaths()));
 
         assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
