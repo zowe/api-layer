@@ -30,7 +30,6 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 @AuthenticationTest
-@MainframeDependentTests
 class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private String scheme;
     private String host;
@@ -74,8 +73,10 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
 
     /**
      * This is how z/OSMF behaves. Two logins with basic auth give identical token.
+     * There is no point to replicate this behavior on mock.
      */
     @Test
+    @MainframeDependentTests
     void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenIdenticalTokenIsProduced() {
         LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 

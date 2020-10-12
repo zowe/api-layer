@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-@MainframeDependentTests
 @TestsNotMeantForZowe
 public class PublicKeyIntegrationTest {
 
@@ -65,6 +64,7 @@ public class PublicKeyIntegrationTest {
     }
 
     @Test
+    @MainframeDependentTests
     void testAllPublicKeys() throws ParseException {
         String response = given()
             .when()

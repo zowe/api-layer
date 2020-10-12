@@ -25,5 +25,5 @@ server:
         trustStorePassword: password
 
 zosmf:
-    username: RIPTST1,APIMTST
+    username: USER,APIMTST
     password: validPassword,PASSTICKET

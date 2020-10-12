@@ -22,7 +22,6 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 
 @AuthenticationTest
 @SuppressWarnings({"squid:S2187"})
-@MainframeDependentTests
 class ZosmfLogoutTest extends LogoutTest {
     private static AuthenticationProviders providers = new AuthenticationProviders(SecurityUtils.getGateWayUrl("/authentication"));
 

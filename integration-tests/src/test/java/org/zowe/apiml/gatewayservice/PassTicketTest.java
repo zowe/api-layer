@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.ticket.TicketRequest;
 import org.zowe.apiml.security.common.ticket.TicketResponse;
-import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.*;
 
@@ -64,7 +63,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @MainframeDependentTests
     void accessServiceWithCorrectPassTicket() {
         String jwt = gatewayToken();
         given()
@@ -114,7 +112,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @MainframeDependentTests
     void doTicketWithValidCookieAndCertificate() {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String jwt = gatewayToken();
@@ -149,7 +146,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @MainframeDependentTests
     void doTicketWithValidHeaderAndCertificate() {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String jwt = gatewayToken();
