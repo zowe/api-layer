@@ -20,11 +20,12 @@ import lombok.NoArgsConstructor;
 public class CertMapperResponse {
     @JsonProperty("userid")
     private String userId;
+    @JsonProperty("returnCode")
     private int rc;
-    @JsonProperty("saf_rc")
+    @JsonProperty("safReturnCode")
     private int safRc;
-    @JsonProperty("racf_rc")
+    @JsonProperty("racfReturnCode")
     private int racfRc;
-    @JsonProperty("reason_code")
+    @JsonProperty("racfReasonCode")
     private int reasonCode;
 }

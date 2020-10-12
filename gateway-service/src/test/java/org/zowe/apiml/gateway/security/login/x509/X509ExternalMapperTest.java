@@ -61,7 +61,7 @@ class X509ExternalMapperTest {
         when(x509Certificate.getExtendedKeyUsage()).thenReturn(Collections.singletonList(CLIENT_AUTH_OID));
         when(x509Certificate.getEncoded()).thenReturn(new byte[2]);
         when(httpResponse.getEntity()).thenReturn(entity);
-        when(entity.getContent()).thenReturn(new ByteArrayInputStream("{\"userid\":\"ZOSUSER\",\"rc\":0,\"saf_rc\":0,\"racf_rc\":0,\"reason_code\":0}".getBytes()));
+        when(entity.getContent()).thenReturn(new ByteArrayInputStream("{\"userid\":\"ZOSUSER\",\"returnCode\":0,\"safReturnCode\":0,\"racfReturnCode\":0,\"racfReasonCode\":0}".getBytes()));
         String userId = x509ExternalMapper.mapCertificateToMainframeUserId(x509Certificate);
         assertEquals("ZOSUSER", userId);
     }
