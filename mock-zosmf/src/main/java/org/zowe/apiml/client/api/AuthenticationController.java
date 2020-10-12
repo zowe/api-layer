@@ -11,7 +11,6 @@ package org.zowe.apiml.client.api;
 
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.client.service.AuthenticationService;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -36,8 +34,6 @@ public class AuthenticationController {
     private String[] usernames;
     @Value("${zosmf.password}")
     private String[] passwords;
-
-    private final AuthenticationService authenticationService;
 
     @RequestMapping(value = "/zosmf/services/authenticate", produces = "application/json; charset=utf-8", method = RequestMethod.DELETE)
     public ResponseEntity<?> logout() {
