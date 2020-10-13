@@ -121,6 +121,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         // login with Basic and get LTPA
         String ltpa2 =
             given()
+                .auth().basic(username, password)
                 .header("authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()))
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()

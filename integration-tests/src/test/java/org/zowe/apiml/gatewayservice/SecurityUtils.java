@@ -99,6 +99,7 @@ public class SecurityUtils {
             // login with Basic and get LTPA
             String ltpa2 =
                 given()
+                    .auth().basic(USERNAME, PASSWORD)
                     .header("authorization", Base64.getEncoder().encodeToString((USERNAME + ":" + PASSWORD).getBytes()))
                     .header("X-CSRF-ZOSMF-HEADER", "")
                     .when()
