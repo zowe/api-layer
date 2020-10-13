@@ -15,6 +15,8 @@ import org.zowe.apiml.util.categories.EnvironmentCheck;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.EnvironmentConfiguration;
 
+import java.util.Base64;
+
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -49,7 +51,8 @@ class CheckEnvironment {
     void unblockLockedITUser() {
         // login with Basic and get LTPA
         String ltpa2 =
-            given().auth().basic(username, password)
+            given()
+                .header("authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()))
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
                 .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))

@@ -18,6 +18,7 @@ import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.config.*;
 
 import java.net.URI;
+import java.util.Base64;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -89,7 +90,6 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     }
 
     @Test
-    @MainframeDependentTests
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
 
         unblockLockedITUser();
@@ -120,7 +120,8 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     void unblockLockedITUser() {
         // login with Basic and get LTPA
         String ltpa2 =
-            given().auth().basic(username, password)
+            given()
+                .header("authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()))
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
                 .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
