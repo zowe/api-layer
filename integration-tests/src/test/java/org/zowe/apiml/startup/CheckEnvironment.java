@@ -53,7 +53,6 @@ class CheckEnvironment {
         String ltpa2 =
             given()
                 .auth().basic(username, password)
-                .header("authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()))
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
                 .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
