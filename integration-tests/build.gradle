@@ -158,7 +158,8 @@ task runAllIntegrationTestsNormal(type: Test) {
             'EnvironmentCheck',
             'AdditionalLocalTest',
             'NotForMainframeTest',
-            'AuthenticationTest'
+            'AuthenticationTest',
+            'Failing'
         )
 
     }
