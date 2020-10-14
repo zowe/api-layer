@@ -49,7 +49,8 @@ class CheckEnvironment {
     void unblockLockedITUser() {
         // login with Basic and get LTPA
         String ltpa2 =
-            given().auth().basic(username, password)
+            given()
+                .auth().basic(username, password)
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
                 .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -97,7 +98,9 @@ public class SecurityUtils {
         if ( ! (System.getProperties().getProperty("externalJenkinsToggle") != null && System.getProperties().getProperty("externalJenkinsToggle").equalsIgnoreCase("true"))) {
             // login with Basic and get LTPA
             String ltpa2 =
-                given().auth().basic(USERNAME, PASSWORD)
+                given()
+                    .auth().basic(USERNAME, PASSWORD)
+                    .header("authorization", Base64.getEncoder().encodeToString((USERNAME + ":" + PASSWORD).getBytes()))
                     .header("X-CSRF-ZOSMF-HEADER", "")
                     .when()
                     .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
