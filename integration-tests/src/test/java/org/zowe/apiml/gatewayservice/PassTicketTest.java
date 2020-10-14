@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.ticket.TicketRequest;
 import org.zowe.apiml.security.common.ticket.TicketResponse;
-import org.zowe.apiml.util.categories.Failing;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.*;
 
@@ -64,7 +63,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @Failing
     void accessServiceWithCorrectPassTicket() {
         String jwt = gatewayToken();
         given()
@@ -80,7 +78,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @Failing
     void accessServiceWithIncorrectApplId() {
         String jwt = gatewayToken();
         given()
@@ -115,7 +112,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @Failing
     void doTicketWithValidCookieAndCertificate() {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String jwt = gatewayToken();
@@ -150,7 +146,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @Failing
     void doTicketWithValidHeaderAndCertificate() {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String jwt = gatewayToken();
@@ -271,7 +266,6 @@ class PassTicketTest {
     }
 
     @Test
-    @Failing
     void doTicketWithoutApplicationName() {
         String expectedMessage = "The 'applicationName' parameter name is missing.";
 
@@ -290,7 +284,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @Failing
     void doTicketWithInvalidApplicationName() {
         String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
 
@@ -323,7 +316,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @Failing
     void givenBearerJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
         String jwt = gatewayToken();
 
@@ -339,7 +331,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @Failing
     void givenCookieJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
         String jwt = gatewayToken();
 
@@ -367,7 +358,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @Failing
     void givenBothJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
         String jwt = gatewayToken();
 
@@ -384,7 +374,6 @@ class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    @Failing
     void givenBasicAndCookieJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
         String jwt = gatewayToken();
 

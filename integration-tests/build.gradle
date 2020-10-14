@@ -107,8 +107,7 @@ task runIntegrationTests(type: Test) {
             'StartupCheck',
             'EnvironmentCheck',
             'SlowTests',
-            'AdditionalLocalTest',
-            'Failing'
+            'AdditionalLocalTest'
         )
     }
 }
@@ -158,8 +157,7 @@ task runAllIntegrationTestsNormal(type: Test) {
             'EnvironmentCheck',
             'AdditionalLocalTest',
             'NotForMainframeTest',
-            'AuthenticationTest',
-            'Failing'
+            'AuthenticationTest'
         )
 
     }

@@ -12,7 +12,6 @@ package org.zowe.apiml.gatewayservice;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.categories.Failing;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import static io.restassured.RestAssured.given;
@@ -45,7 +44,6 @@ public class QueryIntegrationTest {
 
     //@formatter:off
     @Test
-    @Failing
     void doQueryWithValidTokenFromHeader() {
         given()
              .header("Authorization", "Bearer " + token)
@@ -57,7 +55,6 @@ public class QueryIntegrationTest {
     }
 
     @Test
-    @Failing
     void doQueryWithValidTokenFromCookie() {
         given()
             .cookie(COOKIE, token)
