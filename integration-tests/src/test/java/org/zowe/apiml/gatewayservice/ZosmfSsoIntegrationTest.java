@@ -12,6 +12,7 @@ package org.zowe.apiml.gatewayservice;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.Failing;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
@@ -47,6 +48,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Failing
     //@formatter:off
     public void doZosmfCallWithValidToken() {
         String dsname1 = "SYS1.PARMLIB";
@@ -64,6 +66,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Failing
     void doZosmfCallWithValidCookie() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";

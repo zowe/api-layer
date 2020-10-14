@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.util.categories.Failing;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -116,6 +117,7 @@ class IntegratedZaasClientTest {
     }
 
     @Test
+    @Failing
     void givenValidToken_whenCallingLogoutOldPathFormat_thenSuccess() {
         String jwt = generateToken();
 

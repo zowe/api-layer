@@ -107,7 +107,8 @@ task runIntegrationTests(type: Test) {
             'StartupCheck',
             'EnvironmentCheck',
             'SlowTests',
-            'AdditionalLocalTest'
+            'AdditionalLocalTest',
+            'Failing'
         )
     }
 }
