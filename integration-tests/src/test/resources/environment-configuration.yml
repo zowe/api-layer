@@ -5,7 +5,7 @@ credentials:
 gatewayServiceConfiguration:
     scheme: https
     host: localhost
-    port: 10010
+    port: 55756
     instances: 1
 discoveryServiceConfiguration:
     scheme: https
@@ -17,7 +17,7 @@ discoveryServiceConfiguration:
 discoverableClientConfiguration:
     applId: ZOWEAPPL
 tlsConfiguration:
-    keyAlias: localhost
+    keyAlias: apimtst
     keyPassword: password
     keyStoreType: PKCS12
     keyStore: ../keystore/localhost/localhost.keystore.p12

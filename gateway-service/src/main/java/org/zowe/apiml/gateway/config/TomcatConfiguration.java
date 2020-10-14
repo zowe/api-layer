@@ -46,7 +46,8 @@ public class TomcatConfiguration {
         protocol.setKeystorePass("password");
         protocol.setTruststoreFile(truststore.getAbsolutePath());
         protocol.setTruststorePass("password");
-        protocol.setKeyAlias("localhost");
+        protocol.setKeyAlias("apimtst");
+        protocol.setKeyPass("password");
         return connector;
     }
 }
