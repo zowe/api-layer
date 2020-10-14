@@ -57,6 +57,13 @@ project(":zowe-install") {
     }
 }
 
+// Mock, not involved in the production code
+project(":mock-zosmf") {
+    sonarqube {
+        skipProject = true
+    }
+}
+
 project(":integration-tests") {
     sonarqube {
         properties {
