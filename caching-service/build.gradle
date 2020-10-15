@@ -38,6 +38,8 @@ gitProperties {
 }
 
 dependencies {
+    implementation project(':onboarding-enabler-spring')
+
     compile libraries.jjwt
     compile libraries.jjwt_impl
     compile libraries.jjwt_jackson
