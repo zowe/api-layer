@@ -21,4 +21,6 @@ public class CachingConfiguration {
     public Storage inMemory() {
         return new InMemoryStorage();
     }
+
+    // Authentication
 }
