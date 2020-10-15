@@ -3,6 +3,7 @@ ext.projectsNeedLicense = [
     'api-catalog-ui',
     'apiml-common',
     'apiml-security-common',
+    'caching-service',
     'common-service-core',
     'discoverable-client',
     'discovery-service',
