@@ -17,17 +17,13 @@ import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.PrivateKeyDetails;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
+import org.apache.http.ssl.*;
 import org.json.JSONObject;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.AuthenticationTest;
+import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import javax.net.ssl.SSLContext;
@@ -305,6 +301,7 @@ abstract class Login {
     }
 
     @Test
+    @NotForMainframeTest
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
 
         Cookie cookie = given().config(clientCertValid)
@@ -320,6 +317,7 @@ abstract class Login {
     }
 
     @Test
+    @NotForMainframeTest
     void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .auth().basic("Bob", "The Builder")

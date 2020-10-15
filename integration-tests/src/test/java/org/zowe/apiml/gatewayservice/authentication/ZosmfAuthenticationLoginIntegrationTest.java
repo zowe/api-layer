@@ -13,8 +13,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
 import org.junit.jupiter.api.*;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.categories.AuthenticationTest;
-import org.zowe.apiml.util.categories.MainframeDependentTests;
+import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.config.*;
 
 import java.net.URI;
@@ -90,6 +89,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     }
 
     @Test
+    @NotForMainframeTest
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
 
         unblockLockedITUser();
