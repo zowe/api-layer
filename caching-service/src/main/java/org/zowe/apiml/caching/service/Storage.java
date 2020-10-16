@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.service;
 import org.zowe.apiml.caching.model.KeyValue;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Every supported storage backend needs to have an implementation of the Storage.
@@ -19,11 +20,16 @@ import java.util.Collection;
 public interface Storage {
     KeyValue create(KeyValue toCreate);
 
-    KeyValue readSpecific(String key);
-
-    Collection<KeyValue> readForService(String serviceId);
+    /**
+     * Returns the keys associated with the provided keys.
+     * @param keys Array of the keys to lookup.
+     * @return List of the KeyValue associated with the values.
+     */
+    List<KeyValue> read(String[] keys);
 
     KeyValue update(KeyValue toUpdate);
 
-    KeyValue delete(String key);
+    KeyValue delete(String[] key);
+
+    Collection<KeyValue> readForService(String serviceId);
 }

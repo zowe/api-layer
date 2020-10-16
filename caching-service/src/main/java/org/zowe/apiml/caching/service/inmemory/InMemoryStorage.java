@@ -9,35 +9,40 @@
  */
 package org.zowe.apiml.caching.service.inmemory;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Storage;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class InMemoryStorage implements Storage {
 
     @Override
     public KeyValue create(KeyValue toCreate) {
-        return null;
+        throw new NotImplementedException("Not implemented yet");
     }
 
     @Override
-    public KeyValue readSpecific(String key) {
-        return null;
+    public List<KeyValue> read(String[] key) {
+        List<KeyValue> currentList = new ArrayList<>();
+        currentList.add(new KeyValue("key", "value"));
+        return currentList;
     }
 
     @Override
     public Collection<KeyValue> readForService(String serviceId) {
-        return null;
+        throw new NotImplementedException("Not implemented yet");
     }
 
     @Override
     public KeyValue update(KeyValue toUpdate) {
-        return null;
+        throw new NotImplementedException("Not implemented yet");
     }
 
     @Override
-    public KeyValue delete(String key) {
-        return null;
+    public KeyValue delete(String[] key) {
+        throw new NotImplementedException("Not implemented yet");
     }
 }

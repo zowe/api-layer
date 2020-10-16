@@ -9,6 +9,26 @@
  */
 package org.zowe.apiml.caching.service.inmemory;
 
-public class InMemoryStorageTest {
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.caching.model.KeyValue;
 
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
+public class InMemoryStorageTest {
+    private InMemoryStorage underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new InMemoryStorage();
+    }
+
+    @Test
+    void testReadValue() {
+        List<KeyValue> stored = underTest.read(new String[]{"key"});
+        assertThat(stored.size(), is(1));
+    }
 }

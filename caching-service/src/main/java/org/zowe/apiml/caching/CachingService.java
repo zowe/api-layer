@@ -11,8 +11,10 @@ package org.zowe.apiml.caching;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.zowe.apiml.enable.EnableApiDiscovery;
 
 @SpringBootApplication
+@EnableApiDiscovery
 public class CachingService {
 
     public static void main(String[] args) {

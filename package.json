@@ -6,8 +6,8 @@
         "doc": "docs"
     },
     "scripts": {
-        "api-layer": "concurrently --names \"GS,DS,AC,DC,ZO\" -c cyan,yellow,white,blue,green npm:gateway-service npm:discovery-service npm:api-catalog-service npm:discoverable-client npm:mock-zosmf",
-        "api-layer-ci": "concurrently --names \"GS,DS,AC,DC,ZO\" -c cyan,yellow,white,blue,green npm:gateway-service-ci npm:discovery-service npm:api-catalog-service npm:discoverable-client npm:mock-zosmf",
+        "api-layer": "concurrently --names \"GS,DS,AC,DC,ZO,CS\" -c cyan,yellow,white,blue,green npm:gateway-service npm:discovery-service npm:api-catalog-service npm:discoverable-client npm:mock-zosmf npm:caching-service",
+        "api-layer-ci": "concurrently --names \"GS,DS,AC,DC,ZO,CS\" -c cyan,yellow,white,blue,green npm:gateway-service-ci npm:discovery-service npm:api-catalog-service npm:discoverable-client npm:mock-zosmf npm:caching-service",
         "api-layer-core": "concurrently --names \"GW,DS,AC\" -c cyan,yellow,white npm:gateway-service npm:discovery-service npm:api-catalog-service",
         "api-layer-without-gateway": "concurrently --names \"DS,AC,DC\" -c yellow,white,blue npm:discovery-service npm:api-catalog-service npm:discoverable-client",
         "api-layer-without-discovery": "concurrently --names \"GW,AC,DC\" -c cyan,white,blue npm:gateway-service npm:api-catalog-service npm:discoverable-client",

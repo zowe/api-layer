@@ -10,10 +10,23 @@
 package org.zowe.apiml.caching.api;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.caching.service.Storage;
 
 @RestController
 @RequiredArgsConstructor
 public class CachingController {
+    private final Storage storage;
+
+    @RequestMapping(value = "/api/v1/cache/{key}", produces = "application/json; charset=utf-8", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<?> getKey(
+        @PathVariable String key
+    ) {
+        String[] keys = key.split(",");
+        return new ResponseEntity<>(storage.read(keys), HttpStatus.OK);
+    }
 
 }
