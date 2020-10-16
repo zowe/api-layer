@@ -138,7 +138,3 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -cp ${ROOT_DIR}"/components/api-mediation/gateway-service.jar":/usr/include/java_classes/IRRRacf.jar \
     org.springframework.boot.loader.PropertiesLauncher &
-
-
-echo "Running start.sh and printing variables"
-sh env
