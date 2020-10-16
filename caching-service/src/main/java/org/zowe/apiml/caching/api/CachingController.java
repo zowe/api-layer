@@ -25,8 +25,8 @@ public class CachingController {
     public ResponseEntity<?> getKey(
         @PathVariable String key
     ) {
-        String[] keys = key.split(",");
-        return new ResponseEntity<>(storage.read(keys), HttpStatus.OK);
+        String serviceId = "test-service";
+        return new ResponseEntity<>(storage.read(serviceId, key), HttpStatus.OK);
     }
 
 }

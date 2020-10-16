@@ -15,9 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Storage;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
@@ -35,13 +32,11 @@ public class CachingControllerTest {
     }
 
     @Test
-    void testData() {
-        List<KeyValue> results = new ArrayList<>();
-        results.add(new KeyValue("key", "value"));
-        when(mockStorage.read(new String[]{"key"})).thenReturn(results);
+    void givenStorageReturnsValidValue_whenRequired_thenItIsProperlyProvided() {
+        when(mockStorage.read("test-service", "key")).thenReturn(new KeyValue("key", "value"));
 
-        ResponseEntity key = underTest.getKey("key");
-        List result =  (List) key.getBody();
-        assertThat(result.size(), is(1));
+        ResponseEntity<?> key = underTest.getKey("key");
+        KeyValue result =  (KeyValue) key.getBody();
+        assertThat(result.getValue(), is("value"));
     }
 }

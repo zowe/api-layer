@@ -9,40 +9,56 @@
  */
 package org.zowe.apiml.caching.service.inmemory;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Storage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InMemoryStorage implements Storage {
+    private Map<String, Map<String, KeyValue>> storage = new HashMap<>();
 
-    @Override
-    public KeyValue create(KeyValue toCreate) {
-        throw new NotImplementedException("Not implemented yet");
+    public InMemoryStorage() {}
+
+    protected InMemoryStorage(Map<String, Map<String, KeyValue>> storage) {
+        this.storage = storage;
     }
 
     @Override
-    public List<KeyValue> read(String[] key) {
-        List<KeyValue> currentList = new ArrayList<>();
-        currentList.add(new KeyValue("key", "value"));
-        return currentList;
+    public KeyValue create(String serviceId, KeyValue toCreate) {
+        storage.computeIfAbsent(serviceId, k -> new HashMap<>());
+        Map<String, KeyValue> serviceStorage = storage.get(serviceId);
+        serviceStorage.put(toCreate.getKey(), toCreate);
+        return toCreate;
     }
 
     @Override
-    public Collection<KeyValue> readForService(String serviceId) {
-        throw new NotImplementedException("Not implemented yet");
+    public KeyValue read(String serviceId, String key) {
+        Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
+        if(serviceSpecificStorage == null) {
+            return null;
+        }
+
+        return serviceSpecificStorage.get(key);
     }
 
     @Override
-    public KeyValue update(KeyValue toUpdate) {
-        throw new NotImplementedException("Not implemented yet");
+    public KeyValue update(String serviceId, KeyValue toUpdate) {
+        return create(serviceId, toUpdate);
     }
 
     @Override
-    public KeyValue delete(String[] key) {
-        throw new NotImplementedException("Not implemented yet");
+    public KeyValue delete(String serviceId, String toDelete) {
+        Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
+        if(serviceSpecificStorage == null) {
+            return null;
+        }
+
+        return serviceSpecificStorage.remove(toDelete);
+    }
+
+    @Override
+    public Map<String, KeyValue> readForService(String serviceId) {
+        return storage.get(serviceId);
     }
 }
