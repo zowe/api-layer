@@ -50,6 +50,32 @@ public class CachingControllerTest {
     }
 
     @Test
+    void givenNoToken_whenGetByKey_thenResponseBadRequest() {
+        //TODO
+    }
+
+    @Test
+    void givenNoKey_whenGetByKey_thenResponseBadRequest() {
+        ResponseEntity<?> response = underTest.getValue(null);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(response.getBody(), is(nullValue())); //TODO have content?
+    }
+
+    @Test
+    void givenInvalidToken_whenGetByKey_thenResponseNotAuthorized() {
+        //TODO
+    }
+
+    @Test
+    void givenStoreWithNoKey_whenGetByKey_thenResponseNotFound() {
+        when(mockStorage.read(SERVICE_ID, "key")).thenReturn(null);
+
+        ResponseEntity<?> response = underTest.getValue("key");
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(response.getBody(), is(nullValue()));
+    }
+
+    @Test
     void givenStorageReturnsValidValues_whenGetByService_thenItReturnsProperValues() {
         Map<String, KeyValue> values = new HashMap<>();
         values.put("key", new KeyValue("key2", "value"));
@@ -63,12 +89,50 @@ public class CachingControllerTest {
     }
 
     @Test
-    void givenStorage_whenCreateKey_thenResponseOk() {
+    void givenNoToken_whenGetByService_thenResponseBadRequest() {
+        //TODO
+    }
+
+    @Test
+    void givenInvalidToken_whenGetByService_thenResponseNotAuthorized() {
+        //TODO
+    }
+
+    @Test
+    void givenStorage_whenCreateKey_thenResponseCreated() {
         KeyValue keyValue = new KeyValue("key", "value");
         when(mockStorage.create(SERVICE_ID, keyValue)).thenReturn(keyValue);
 
         ResponseEntity<?> response = underTest.createKey(keyValue);
-        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+        assertThat(response.getBody(), is(nullValue()));
+    }
+
+    @Test
+    void givenInvalidJson_whenCreateKey_thenResponseBadRequest() {
+        ResponseEntity<?> response = underTest.createKey(null);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(response.getBody(), is(nullValue()));
+    }
+
+    @Test
+    void givenNoToken_whenCreateKey_thenResponseBadRequest() {
+        //TODO
+    }
+
+    @Test
+    void givenInvalidToken_whenCreateKey_thenResponseNotAuthorized() {
+        //TODO
+    }
+
+    @Test
+    void givenStorageWithExistingKey_whenCreateKey_thenResponseConflict() {
+        KeyValue keyValue = new KeyValue("key", "value");
+        //TODO mock storage method to show conflict
+        underTest.createKey(keyValue);
+
+        ResponseEntity<?> response = underTest.createKey(keyValue);
+        assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
         assertThat(response.getBody(), is(nullValue()));
     }
 
@@ -84,11 +148,64 @@ public class CachingControllerTest {
     }
 
     @Test
+    void givenInvalidJson_whenUpdateKey_thenResponseBadRequest() {
+        ResponseEntity<?> response = underTest.update(null);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(response.getBody(), is(nullValue()));
+    }
+
+    @Test
+    void givenNoToken_whenUpdateKey_thenResponseBadRequest() {
+        //TODO
+    }
+
+    @Test
+    void givenInvalidToken_whenUpdateKey_thenResponseNotAuthorized() {
+        //TODO
+    }
+
+    @Test
+    void givenStorageWithNoKey_whenUpdateKey_thenResponseNotFound() {
+        KeyValue keyValue = new KeyValue("key", "value");
+        //TODO mock storage method to show doesn't exist
+
+        ResponseEntity<?> response = underTest.update(keyValue);
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(response.getBody(), is(nullValue()));
+    }
+
+    @Test
     void givenStorageWithKey_whenDeleteKey_thenResponseNoContent() {
         when(mockStorage.delete(SERVICE_ID, "key")).thenReturn(new KeyValue("key", "value"));
 
         ResponseEntity<?> response = underTest.delete("key");
         assertThat(response.getStatusCode(), is(HttpStatus.NO_CONTENT));
+        assertThat(response.getBody(), is(nullValue()));
+    }
+
+    @Test
+    void givenNoKey_whenDeleteKey_thenResponseBadRequest() {
+        ResponseEntity<?> response = underTest.delete(null);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(response.getBody(), is(nullValue()));
+    }
+
+    @Test
+    void givenNoToken_whenDeleteKey_thenResponseBadRequest() {
+        //TODO
+    }
+
+    @Test
+    void givenInvalidToken_whenDeleteKey_thenResponseNotAuthorized() {
+        //TODO
+    }
+
+    @Test
+    void givenStorageWithNoKey_whenDeleteKey_thenResponseNotFound() {
+        //TODO mock storage method to show doesn't exist
+
+        ResponseEntity<?> response = underTest.delete("key");
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
         assertThat(response.getBody(), is(nullValue()));
     }
 }

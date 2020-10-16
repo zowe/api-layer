@@ -48,7 +48,7 @@ public class CachingController {
         //TODO 409 key already exists
         String serviceId = getServiceId();
         storage.create(serviceId, keyValue);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/api/v1/cache/{key}", produces = "application/json; charset=utf-8", method = RequestMethod.PUT)
