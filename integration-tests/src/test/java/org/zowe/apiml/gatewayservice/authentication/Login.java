@@ -23,7 +23,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.AuthenticationTest;
-import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import javax.net.ssl.SSLContext;
@@ -132,8 +131,6 @@ abstract class Login {
             .extract().detailedCookie(COOKIE_NAME);
 
         assertValidAuthToken(cookie);
-
-        logout(cookie.getValue());
     }
 
     protected void assertValidAuthToken(Cookie cookie) {
@@ -167,8 +164,6 @@ abstract class Login {
         String untrustedJwtString = token.substring(0, i + 1);
         Claims claims = parseJwtString(untrustedJwtString);
         assertThatTokenIsValid(claims);
-
-        logout(token);
     }
 
     protected void assertThatTokenIsValid(Claims claims) {
@@ -301,7 +296,6 @@ abstract class Login {
     }
 
     @Test
-    @NotForMainframeTest
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
 
         Cookie cookie = given().config(clientCertValid)
@@ -317,7 +311,6 @@ abstract class Login {
     }
 
     @Test
-    @NotForMainframeTest
     void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .auth().basic("Bob", "The Builder")
