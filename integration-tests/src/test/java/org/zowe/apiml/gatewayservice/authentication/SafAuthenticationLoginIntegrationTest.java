@@ -18,7 +18,6 @@ import org.zowe.apiml.util.categories.AuthenticationTest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutOnGateway;
 
 /**
  * Test that when valid credentials are provided the SAF authentication provider will accept them and the valid token

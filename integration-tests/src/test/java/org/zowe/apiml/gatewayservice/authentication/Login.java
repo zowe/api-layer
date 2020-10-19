@@ -41,7 +41,6 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutItUserGatewayZosmf;
 
 @AuthenticationTest
 abstract class Login {
