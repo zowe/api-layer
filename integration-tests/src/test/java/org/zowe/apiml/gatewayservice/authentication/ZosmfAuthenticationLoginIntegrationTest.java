@@ -87,8 +87,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         assertThat(jwtToken1, is((jwtToken2)));
     }
 
-    @Test
-    @Ignore
+
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
 
         Cookie cookie = given().config(clientCertValid)
@@ -112,8 +111,6 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
                 "items.dsname", hasItems(dsname1, dsname2));
     }
 
-    @Test
-    @Ignore
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
 
         Cookie cookie = given().config(clientCertValid)
@@ -126,8 +123,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         assertValidAuthToken(cookie, Optional.of("APIMTST"));
     }
 
-    @Test
-    @Ignore
+
     void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .auth().basic("Bob", "The Builder")
