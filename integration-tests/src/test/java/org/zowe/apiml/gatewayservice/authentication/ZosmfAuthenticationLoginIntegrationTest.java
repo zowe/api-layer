@@ -109,4 +109,30 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
     }
+
+    @Test
+    void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
+
+        Cookie cookie = given().config(clientCertValid)
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
+    }
+
+    @Test
+    void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
+        Cookie cookie = given().config(clientCertValid)
+            .auth().basic("Bob", "The Builder")
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
+    }
 }
