@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.caching;
+package org.zowe.apiml.caching.config;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +16,7 @@ import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.inmemory.InMemoryStorage;
 
 @Configuration
-public class CachingConfiguration {
+public class StorageConfiguration {
     @ConditionalOnMissingBean(Storage.class)
     @Bean
     public Storage inMemory() {
