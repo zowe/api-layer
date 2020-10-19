@@ -306,8 +306,6 @@ abstract class Login {
             .extract().detailedCookie(COOKIE_NAME);
 
         assertValidAuthToken(cookie, Optional.of("APIMTST"));
-
-        logout(cookie.getValue());
     }
 
     @Test
@@ -321,8 +319,6 @@ abstract class Login {
             .extract().detailedCookie(COOKIE_NAME);
 
         assertValidAuthToken(cookie, Optional.of("APIMTST"));
-
-        logout(cookie.getValue());
     }
 
     @Test
@@ -331,10 +327,6 @@ abstract class Login {
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
             .statusCode(is(SC_BAD_REQUEST));
-    }
-
-    protected void logout(String jwtToken) {
-        logoutItUserGatewayZosmf(jwtToken);
     }
     //@formatter:on
 }
