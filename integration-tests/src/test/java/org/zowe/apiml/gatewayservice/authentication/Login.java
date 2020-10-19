@@ -17,15 +17,10 @@ import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.PrivateKeyDetails;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
+import org.apache.http.ssl.*;
 import org.json.JSONObject;
 import org.junit.Ignore;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.AuthenticationTest;
@@ -47,7 +42,6 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutItUserGatewayZosmf;
 
 @AuthenticationTest
 abstract class Login {
@@ -137,8 +131,6 @@ abstract class Login {
             .extract().detailedCookie(COOKIE_NAME);
 
         assertValidAuthToken(cookie);
-
-        logout(cookie.getValue());
     }
 
     protected void assertValidAuthToken(Cookie cookie) {
@@ -172,8 +164,6 @@ abstract class Login {
         String untrustedJwtString = token.substring(0, i + 1);
         Claims claims = parseJwtString(untrustedJwtString);
         assertThatTokenIsValid(claims);
-
-        logout(token);
     }
 
     protected void assertThatTokenIsValid(Claims claims) {
@@ -343,10 +333,6 @@ abstract class Login {
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
             .statusCode(is(SC_BAD_REQUEST));
-    }
-
-    protected void logout(String jwtToken) {
-        logoutItUserGatewayZosmf(jwtToken);
     }
     //@formatter:on
 }
