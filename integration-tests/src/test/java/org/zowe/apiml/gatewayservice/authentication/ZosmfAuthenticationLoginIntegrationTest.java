@@ -113,6 +113,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     }
 
     @Test
+    @Ignore
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
 
         Cookie cookie = given().config(clientCertValid)
@@ -126,6 +127,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     }
 
     @Test
+    @Ignore
     void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .auth().basic("Bob", "The Builder")
