@@ -52,7 +52,7 @@ apiml:
         x509:
             enabled: true
             externalMapperUrl: http://localhost:8542/certificate/x509/map
-
+            externalMapperUser: APIMTST
 
 
 spring:
