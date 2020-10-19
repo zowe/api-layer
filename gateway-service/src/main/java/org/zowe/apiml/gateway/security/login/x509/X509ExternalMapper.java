@@ -75,7 +75,7 @@ public class X509ExternalMapper extends X509AbstractMapper {
 
                 HttpResponse httpResponse = httpClientProxy.execute(httpPost);
                 String response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
-                if (response == null || response.isEmpty() || response.equals("Not Authorized")) {
+                if (response == null || response.isEmpty()) {
                     return null;
                 }
 
