@@ -2,12 +2,16 @@ spring.profiles.include: diag
 
 apiml:
     service:
-        hostname: localhost3
-        ipAddress: 127.0.0.3
-        port: 10031
+        hostname: localhost2
+        ipAddress: 127.0.0.1
+        port: 10021
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
-        allPeersUrls: https://localhost2:10021/eureka/,https://localhost3:10031/eureka/
+        allPeersUrls: https://localhost:10011/eureka
+    security:
+        ssl:
+            verifySslCertificatesOfServices: false
+    banner: console
 
 spring:
     output:
@@ -17,12 +21,7 @@ spring:
 ---
 spring.profiles: https
 
-apiml:
-    discovery:
-        allPeersUrls: https://localhost2:10021/eureka/,https://localhost3:10031/eureka/
-
 server:
-    address: 0.0.0.0
     ssl:
         keyAlias: localhost
         keyPassword: password
