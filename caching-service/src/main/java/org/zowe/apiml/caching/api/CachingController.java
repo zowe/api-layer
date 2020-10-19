@@ -19,7 +19,6 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequiredArgsConstructor
 public class CachingController {
-    //TODO what is no authorization? How separate from jwt invalid?
     //TODO hash key values to adjust for limit of 250 chars, and only use ascii alphanum
 
     private final Storage storage;
@@ -39,10 +37,13 @@ public class CachingController {
         notes = "Value returned is for the provided {key}")
     @ResponseBody
     public ResponseEntity<?> getValue(@PathVariable String key, HttpServletRequest request) {
-        //TODO 400 if no key
-        //TODO 404 if key not in cache
         String serviceId = getServiceId();
-        return new ResponseEntity<>(storage.read(serviceId, key), HttpStatus.OK);
+        KeyValue readPair = storage.read(serviceId, key);
+        if (readPair == null) {
+            Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", serviceId);
+            return new ResponseEntity<>(message.mapToView(), HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(readPair, HttpStatus.OK);
     }
 
     @GetMapping(value = "/api/v1/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -59,10 +60,12 @@ public class CachingController {
         notes = "A new key-value pair will be added to the cache")
     @ResponseBody
     public ResponseEntity<?> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
-        //TODO 400 - invalid json data, no json data
-        //TODO 409 key already exists
         String serviceId = getServiceId();
-        storage.create(serviceId, keyValue);
+        KeyValue createdPair = storage.create(serviceId, keyValue);
+        if (createdPair == null) {
+            Message message = messageService.createMessage("org.zowe.apiml.cache.keyCollision", keyValue.getKey());
+            return new ResponseEntity<>(message.mapToView(), HttpStatus.CONFLICT);
+        }
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -71,10 +74,12 @@ public class CachingController {
         notes = "Value at the key in the provided key-value pair will be updated to the provided value")
     @ResponseBody
     public ResponseEntity<?> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
-        //TODO 400 - no key, no authorization provided
-        //TODO 404 key not in cache
         String serviceId = getServiceId();
-        storage.update(serviceId, keyValue);
+        KeyValue updatedPair = storage.update(serviceId, keyValue);
+        if (updatedPair == null) {
+            Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", keyValue.getKey(), serviceId);
+            return new ResponseEntity<>(message.mapToView(), HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -83,10 +88,16 @@ public class CachingController {
         notes = "Will delete key-value pair for the provided {key}")
     @ResponseBody
     public ResponseEntity<?> delete(@PathVariable String key, HttpServletRequest request) {
-        //TODO 400 - no key
-        //TODO 404 key not in cache
+        if (key == null) {
+            Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided");
+            return new ResponseEntity<>(message.mapToView(), HttpStatus.BAD_REQUEST);
+        }
         String serviceId = getServiceId();
-        storage.delete(serviceId, key);
+        KeyValue deletedPair = storage.delete(serviceId, key);
+        if (deletedPair == null) {
+            Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", key, serviceId);
+            return new ResponseEntity<>(message.mapToView(), HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

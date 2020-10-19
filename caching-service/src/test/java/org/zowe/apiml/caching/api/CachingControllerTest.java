@@ -179,7 +179,7 @@ public class CachingControllerTest {
     void givenStorageWithExistingKey_whenCreateKey_thenResponseConflict() {
         KeyValue keyValue = new KeyValue("key", "value");
         when(mockStorage.create(SERVICE_ID, keyValue)).thenReturn(null);
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyAlreadyExists", SERVICE_ID).mapToView();
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyCollision", SERVICE_ID).mapToView();
 
         ResponseEntity<?> response = underTest.createKey(keyValue, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
@@ -200,6 +200,7 @@ public class CachingControllerTest {
     @Test
     void givenInvalidPayload_whenUpdateKey_thenResponseBadRequest() {
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload", Collections.singleton(null)).mapToView();
+
         ResponseEntity<?> response = underTest.update(null, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         assertThat(response.getBody(), is(expectedBody));

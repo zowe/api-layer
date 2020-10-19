@@ -20,3 +20,10 @@ messages:
         text: "No cache key provided."
         reason: "No cache key is provided."
         action: "Provide a key in the cache."
+
+    -   key: org.zowe.apiml.cache.keyCollision
+        number: ZWECS133
+        type: ERROR
+        text: "Adding key '%s' resulted in a collision in the cache."
+        reason: "Key is already in the cache."
+        action: "Update or delete the key, or add a different key."
