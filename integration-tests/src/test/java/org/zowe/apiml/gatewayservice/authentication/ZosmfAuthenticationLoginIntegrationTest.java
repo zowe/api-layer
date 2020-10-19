@@ -11,12 +11,15 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
-import org.junit.Ignore;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.AuthenticationTest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.EnvironmentConfiguration;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import java.net.URI;
 import java.util.Optional;
@@ -48,7 +51,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private String zosmfScheme;
 
     @BeforeAll
-    static void setupClients()  {
+    static void setupClients() {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
 
