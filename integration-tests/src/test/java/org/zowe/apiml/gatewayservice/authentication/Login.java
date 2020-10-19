@@ -19,7 +19,6 @@ import io.restassured.response.ValidatableResponse;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.ssl.*;
 import org.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.jupiter.api.*;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
@@ -293,38 +292,6 @@ abstract class Login {
         assertThatTokenIsValid(claims);
 
         return cookie.getValue();
-    }
-
-    @Test
-    @Ignore
-    void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
-
-        Cookie cookie = given().config(clientCertValid)
-            .post(new URI(LOGIN_ENDPOINT_URL))
-            .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().detailedCookie(COOKIE_NAME);
-
-        assertValidAuthToken(cookie, Optional.of("APIMTST"));
-
-        logout(cookie.getValue());
-    }
-
-    @Test
-    @Ignore
-    void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
-        Cookie cookie = given().config(clientCertValid)
-            .auth().basic("Bob", "The Builder")
-            .post(new URI(LOGIN_ENDPOINT_URL))
-            .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().detailedCookie(COOKIE_NAME);
-
-        assertValidAuthToken(cookie, Optional.of("APIMTST"));
-
-        logout(cookie.getValue());
     }
 
     @Test
