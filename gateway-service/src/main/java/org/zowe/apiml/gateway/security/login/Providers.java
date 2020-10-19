@@ -12,12 +12,14 @@ package org.zowe.apiml.gateway.security.login;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 @RequiredArgsConstructor
 public class Providers {
     private final DiscoveryClient discoveryClient;
     private final AuthConfigurationProperties authConfigurationProperties;
+    private final CompoundAuthProvider compoundAuthProvider;
 
     /**
      * This method decides whether the Zosmf service is available.
@@ -33,6 +35,6 @@ public class Providers {
      * @return Usage of the ZOSMF service in the system.
      */
     public boolean isZosfmUsed() {
-        return authConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.ZOSMF.toString());
+        return compoundAuthProvider.getLoginAuthProviderName().equalsIgnoreCase(LoginProvider.ZOSMF.toString());
     }
 }
