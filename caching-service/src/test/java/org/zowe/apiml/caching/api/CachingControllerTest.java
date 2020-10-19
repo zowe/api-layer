@@ -39,12 +39,12 @@ public class CachingControllerTest {
     private static final String VALUE = "value";
     private static final KeyValue KEY_VALUE = new KeyValue(KEY, VALUE);
 
+    private MockHttpServletRequest mockRequest;
+
     private Storage mockStorage;
     private ZaasClient mockZaasClient;
     private final MessageService messageService = new YamlMessageService("/caching-log-messages.yml");
     private CachingController underTest;
-
-    private MockHttpServletRequest mockRequest;
 
     @BeforeEach
     void setUp() {
@@ -208,7 +208,7 @@ public class CachingControllerTest {
 
     @Test
     void givenNoToken_whenUpdateKey_thenResponseBadRequest() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided").mapToView();
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided", mockRequest.getRequestURL().toString()).mapToView();
         when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED));
 
         ResponseEntity<?> response = underTest.update(KEY_VALUE, mockRequest);

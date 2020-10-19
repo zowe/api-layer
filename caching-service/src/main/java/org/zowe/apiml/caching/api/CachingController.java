@@ -20,10 +20,11 @@ import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
+import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,6 +40,12 @@ public class CachingController {
         notes = "Value returned is for the provided {key}")
     @ResponseBody
     public ResponseEntity<?> getValue(@PathVariable String key, HttpServletRequest request) {
+        try {
+            ZaasToken token = zaasClient.query("my-token");
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        }
+
         String serviceId = getServiceId();
 
         if (key == null) {
@@ -60,6 +67,12 @@ public class CachingController {
         notes = "Values returned for the calling service")
     @ResponseBody
     public ResponseEntity<?> getAllValues(HttpServletRequest request) {
+        try {
+            ZaasToken token = zaasClient.query("my-token");
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        }
+
         String serviceId = getServiceId();
         return new ResponseEntity<>(storage.readForService(serviceId), HttpStatus.OK);
     }
@@ -69,6 +82,12 @@ public class CachingController {
         notes = "A new key-value pair will be added to the cache")
     @ResponseBody
     public ResponseEntity<?> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+        try {
+            ZaasToken token = zaasClient.query("my-token");
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        }
+
         if (isInvalidPayload(keyValue)) {
             return invalidPayloadResponse(keyValue);
         }
@@ -89,6 +108,12 @@ public class CachingController {
         notes = "Value at the key in the provided key-value pair will be updated to the provided value")
     @ResponseBody
     public ResponseEntity<?> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+        try {
+            ZaasToken token = zaasClient.query("my-token");
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        }
+
         if (isInvalidPayload(keyValue)) {
             return invalidPayloadResponse(keyValue);
         }
@@ -109,6 +134,12 @@ public class CachingController {
         notes = "Will delete key-value pair for the provided {key}")
     @ResponseBody
     public ResponseEntity<?> delete(@PathVariable String key, HttpServletRequest request) {
+        try {
+            ZaasToken token = zaasClient.query("my-token");
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        }
+
         String serviceId = getServiceId();
 
         if (key == null) {
@@ -141,5 +172,28 @@ public class CachingController {
     private ResponseEntity<ApiMessageView> noKeyProvidedResponse(String serviceId) {
         Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided", serviceId);
         return new ResponseEntity<>(message.mapToView(), HttpStatus.BAD_REQUEST);
+    }
+
+    private ResponseEntity<ApiMessageView> handleZaasClientException(ZaasClientException e, HttpServletRequest request) {
+        String requestUrl = request.getRequestURL().toString();
+        Message message;
+        HttpStatus statusCode;
+
+        switch (e.getErrorCode()) {
+            case TOKEN_NOT_PROVIDED:
+                statusCode = HttpStatus.BAD_REQUEST;
+                message = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided", requestUrl);
+                break;
+            case INVALID_JWT_TOKEN:
+                statusCode = HttpStatus.UNAUTHORIZED;
+                message = messageService.createMessage("org.zowe.apiml.security.query.invalidToken", requestUrl);
+                break;
+            default:
+                statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+                message = messageService.createMessage("org.zowe.apiml.common.internalRequestError", requestUrl);
+                break;
+        }
+
+        return new ResponseEntity<>(message.mapToView(), statusCode);
     }
 }
