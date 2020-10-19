@@ -18,7 +18,6 @@ import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.config.*;
 
 import java.net.URI;
-import java.util.Base64;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -85,14 +84,10 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         String jwtToken2 = authenticateAndVerify(loginRequest);
 
         assertThat(jwtToken1, is((jwtToken2)));
-
-        logout(jwtToken1);
     }
 
     @Test
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
-
-        unblockLockedITUser();
 
         Cookie cookie = given().config(clientCertValid)
             .post(new URI(LOGIN_ENDPOINT_URL))
@@ -113,29 +108,31 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
-
-        logout(cookie.getValue());
     }
 
-    void unblockLockedITUser() {
-        // login with Basic and get LTPA
-        String ltpa2 =
-            given()
-                .auth().basic(username, password)
-                .header("authorization", Base64.getEncoder().encodeToString((username + ":" + password).getBytes()))
-                .header("X-CSRF-ZOSMF-HEADER", "")
-                .when()
-                .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
-                .then().statusCode(is(SC_OK))
-                .extract().cookie("LtpaToken2");
+    @Test
+    void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
 
-        // Logout LTPA
-        given()
-            .header("X-CSRF-ZOSMF-HEADER", "")
-            .cookie("LtpaToken2", ltpa2)
-            .when()
-            .delete(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+        Cookie cookie = given().config(clientCertValid)
+            .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
-            .statusCode(is(SC_NO_CONTENT));
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
+    }
+
+    @Test
+    void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
+        Cookie cookie = given().config(clientCertValid)
+            .auth().basic("Bob", "The Builder")
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
     }
 }

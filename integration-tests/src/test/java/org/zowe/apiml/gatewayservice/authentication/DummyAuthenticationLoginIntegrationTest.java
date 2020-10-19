@@ -18,7 +18,6 @@ import org.zowe.apiml.util.categories.AuthenticationTest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.logoutOnGateway;
 
 @AuthenticationTest
 class DummyAuthenticationLoginIntegrationTest extends Login {
@@ -46,10 +45,5 @@ class DummyAuthenticationLoginIntegrationTest extends Login {
         String jwtToken2 = authenticateAndVerify(loginRequest);
 
         assertThat(jwtToken1, is(not(jwtToken2)));
-    }
-
-    @Override
-    protected void logout(String jwtToken) {
-        logoutOnGateway(jwtToken);
     }
 }

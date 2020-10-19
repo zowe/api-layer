@@ -1,5 +1,5 @@
 services:
-    - serviceId: zosmf  # unique lowercase ID of the service
+    - serviceId: mockzosmf  # unique lowercase ID of the service
       catalogUiTileId: zosmf  # ID of the API Catalog UI tile (visual grouping of the services)
       title: Statically Defined API Service  # Title of the service in the API catalog
       description: Mock ZOSMF service  # Description of the service in the API catalog

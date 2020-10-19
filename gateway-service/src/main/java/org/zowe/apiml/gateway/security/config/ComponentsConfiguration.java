@@ -10,8 +10,7 @@
 package org.zowe.apiml.gateway.security.config;
 
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -45,11 +44,13 @@ public class ComponentsConfiguration {
     }
 
     @Bean
+    @Lazy
     public Providers loginProviders(
         DiscoveryClient discoveryClient,
-        AuthConfigurationProperties authConfigurationProperties
+        AuthConfigurationProperties authConfigurationProperties,
+        @Lazy CompoundAuthProvider compoundAuthProvider
     ) {
-        return new Providers(discoveryClient, authConfigurationProperties);
+        return new Providers(discoveryClient, authConfigurationProperties, compoundAuthProvider);
     }
 
 }
