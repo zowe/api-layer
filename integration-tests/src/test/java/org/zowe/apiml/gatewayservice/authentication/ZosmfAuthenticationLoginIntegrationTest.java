@@ -11,6 +11,7 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
+import org.junit.Ignore;
 import org.junit.jupiter.api.*;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.AuthenticationTest;
@@ -90,6 +91,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     }
 
     @Test
+    @Ignore
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
 
         unblockLockedITUser();

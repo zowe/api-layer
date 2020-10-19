@@ -21,6 +21,7 @@ import org.apache.http.ssl.PrivateKeyDetails;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -305,6 +306,7 @@ abstract class Login {
     }
 
     @Test
+    @Ignore
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
 
         Cookie cookie = given().config(clientCertValid)
@@ -320,6 +322,7 @@ abstract class Login {
     }
 
     @Test
+    @Ignore
     void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .auth().basic("Bob", "The Builder")
