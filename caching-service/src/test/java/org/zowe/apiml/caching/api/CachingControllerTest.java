@@ -229,7 +229,7 @@ public class CachingControllerTest {
     void givenStorageWithNoKey_whenUpdateKey_thenResponseNotFound() {
         KeyValue keyValue = new KeyValue("key", "value");
         when(mockStorage.update(SERVICE_ID, keyValue)).thenReturn(null);
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", SERVICE_ID).mapToView();
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", "key", SERVICE_ID).mapToView();
 
         ResponseEntity<?> response = underTest.update(keyValue, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
@@ -276,7 +276,7 @@ public class CachingControllerTest {
 
     @Test
     void givenStorageWithNoKey_whenDeleteKey_thenResponseNotFound() {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", SERVICE_ID).mapToView();
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", "key", SERVICE_ID).mapToView();
         when(mockStorage.delete(SERVICE_ID, "key")).thenReturn(null);
 
         ResponseEntity<?> response = underTest.delete("key", mockRequest);

@@ -1,0 +1,22 @@
+messages:
+    # Query messages (130 - 140)
+    -   key: org.zowe.apiml.cache.invalidPayload
+        number: ZWECS130
+        type: ERROR
+        text: "Payload '%s' is not valid."
+        reason: "The payload is not in valid JSON format."
+        action: "Provide a payload in JSON format."
+
+    -   key: org.zowe.apiml.cache.keyNotInCache
+        number: ZWECS131
+        type: ERROR
+        text: "Key '%s' is not in the cache for service '%s'"
+        reason: "Cache does not contain the provided key."
+        action: "Add a key-value pair to the cache using the key or operate on an existing key in the cache."
+
+    -   key: org.zowe.apiml.cache.keyNotProvided
+        number: ZWECS132
+        type: ERROR
+        text: "No cache key provided."
+        reason: "No cache key is provided."
+        action: "Provide a key in the cache."
