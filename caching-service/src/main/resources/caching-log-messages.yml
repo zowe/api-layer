@@ -1,5 +1,19 @@
 messages:
     # Query messages (130 - 140)
+    -   key: org.zowe.apiml.security.query.invalidToken
+        number: ZWEAG130
+        type: ERROR
+        text: "Token is not valid for URL '%s'"
+        reason: "The token is not valid."
+        action: "Provide a valid token."
+
+    -   key: org.zowe.apiml.security.query.tokenNotProvided
+        number: ZWEAG131
+        type: ERROR
+        text: "No authorization token provided for URL '%s'"
+        reason: "No authorization token is provided."
+        action: "Provide a valid authorization token."
+
     -   key: org.zowe.apiml.cache.invalidPayload
         number: ZWECS130
         type: ERROR
@@ -18,8 +32,8 @@ messages:
         number: ZWECS132
         type: ERROR
         text: "No cache key provided."
-        reason: "No cache key is provided."
-        action: "Provide a key in the cache."
+        reason: "No cache key was provided."
+        action: "Provide a key that is in the cache."
 
     -   key: org.zowe.apiml.cache.keyCollision
         number: ZWECS133

@@ -39,7 +39,7 @@ public class CachingControllerTest {
 
     private Storage mockStorage;
     private ZaasClient mockZaasClient;
-    private final MessageService messageService = new YamlMessageService();
+    private final MessageService messageService = new YamlMessageService("/caching-log-messages.yml");
     private CachingController underTest;
 
     private MockHttpServletRequest mockRequest;
@@ -95,7 +95,7 @@ public class CachingControllerTest {
 
     @Test
     void givenStoreWithNoKey_whenGetByKey_thenResponseNotFound() {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", SERVICE_ID).mapToView();
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache","key", SERVICE_ID).mapToView();
         when(mockStorage.read(SERVICE_ID, "key")).thenReturn(null);
 
         ResponseEntity<?> response = underTest.getValue("key", mockRequest);
@@ -179,7 +179,7 @@ public class CachingControllerTest {
     void givenStorageWithExistingKey_whenCreateKey_thenResponseConflict() {
         KeyValue keyValue = new KeyValue("key", "value");
         when(mockStorage.create(SERVICE_ID, keyValue)).thenReturn(null);
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyCollision", SERVICE_ID).mapToView();
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyCollision", "key").mapToView();
 
         ResponseEntity<?> response = underTest.createKey(keyValue, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));

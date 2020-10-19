@@ -19,7 +19,6 @@ public class MessageConfiguration {
     @Bean
     public MessageService messageService() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
-        messageService.loadMessages("/security-client-log-messages.yml");
         messageService.loadMessages("/caching-log-messages.yml");
         return messageService;
     }

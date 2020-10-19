@@ -38,9 +38,13 @@ public class CachingController {
     @ResponseBody
     public ResponseEntity<?> getValue(@PathVariable String key, HttpServletRequest request) {
         String serviceId = getServiceId();
+        if (key == null) {
+            Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided", serviceId);
+            return new ResponseEntity<>(message.mapToView(), HttpStatus.BAD_REQUEST);
+        }
         KeyValue readPair = storage.read(serviceId, key);
         if (readPair == null) {
-            Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", serviceId);
+            Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", key, serviceId);
             return new ResponseEntity<>(message.mapToView(), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(readPair, HttpStatus.OK);
