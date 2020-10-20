@@ -208,7 +208,7 @@ public class CachingController {
                 break;
             case SERVICE_UNAVAILABLE:
                 statusCode = HttpStatus.NOT_FOUND;
-                message = messageService.createMessage("org.zowe.apiml.cache.gatewayUnavailable", requestUrl, e.getCause());
+                message = messageService.createMessage("org.zowe.apiml.cache.gatewayUnavailable", requestUrl, e.getMessage());
                 break;
             default:
                 statusCode = HttpStatus.INTERNAL_SERVER_ERROR;

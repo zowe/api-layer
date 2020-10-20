@@ -22,6 +22,7 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
+import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,9 @@ public class CachingControllerTest {
     private static final String SERVICE_ID = "test-service";
     private static final String KEY = "key";
     private static final String VALUE = "value";
+
     private static final KeyValue KEY_VALUE = new KeyValue(KEY, VALUE);
+    private static final ZaasToken TOKEN = new ZaasToken();
 
     private MockHttpServletRequest mockRequest;
 
@@ -47,10 +50,12 @@ public class CachingControllerTest {
     private CachingController underTest;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws ZaasClientException {
+        TOKEN.setUserId(SERVICE_ID);
         mockRequest = new MockHttpServletRequest();
         mockStorage = mock(Storage.class);
         mockZaasClient = mock(ZaasClient.class);
+        when(mockZaasClient.query(any())).thenReturn(TOKEN);
         underTest = new CachingController(mockStorage, mockZaasClient, messageService);
     }
 
@@ -66,16 +71,6 @@ public class CachingControllerTest {
     }
 
     @Test
-    void givenNoToken_whenGetByKey_thenResponseBadRequest() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided", mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED));
-
-        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
     void givenNoKey_whenGetByKey_thenResponseBadRequest() {
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided", SERVICE_ID).mapToView();
 
@@ -85,19 +80,9 @@ public class CachingControllerTest {
     }
 
     @Test
-    void givenInvalidToken_whenGetByKey_thenResponseUnauthorized() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken", mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN));
-
-        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
     void givenStoreWithNoKey_whenGetByKey_thenResponseNotFound() {
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
-        when(mockStorage.read(SERVICE_ID, KEY)).thenReturn(null);
+        when(mockStorage.read(any(), any())).thenReturn(null);
 
         ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
@@ -118,26 +103,6 @@ public class CachingControllerTest {
     }
 
     @Test
-    void givenNoToken_whenGetByService_thenResponseBadRequest() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided", mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED));
-
-        ResponseEntity<?> response = underTest.getAllValues(mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
-    void givenInvalidToken_whenGetByService_thenResponseUnauthorized() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken", mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN));
-
-        ResponseEntity<?> response = underTest.getAllValues(mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
     void givenStorage_whenCreateKey_thenResponseCreated() {
         when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenReturn(KEY_VALUE);
 
@@ -153,26 +118,6 @@ public class CachingControllerTest {
 
         ResponseEntity<?> response = underTest.createKey(null, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
-    void givenNoToken_whenCreateKey_thenResponseBadRequest() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided", mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED));
-
-        ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
-    void givenInvalidToken_whenCreateKey_thenResponseUnauthorized() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken", mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN));
-
-        ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         assertThat(response.getBody(), is(expectedBody));
     }
 
@@ -207,26 +152,6 @@ public class CachingControllerTest {
     }
 
     @Test
-    void givenNoToken_whenUpdateKey_thenResponseBadRequest() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided", mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED));
-
-        ResponseEntity<?> response = underTest.update(KEY_VALUE, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
-    void givenInvalidToken_whenUpdateKey_thenResponseUnauthorized() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken", mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN));
-
-        ResponseEntity<?> response = underTest.getAllValues(mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
     void givenStorageWithNoKey_whenUpdateKey_thenResponseNotFound() {
         when(mockStorage.update(SERVICE_ID, KEY_VALUE)).thenReturn(null);
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
@@ -238,7 +163,7 @@ public class CachingControllerTest {
 
     @Test
     void givenStorageWithKey_whenDeleteKey_thenResponseNoContent() {
-        when(mockStorage.delete(SERVICE_ID, KEY)).thenReturn(KEY_VALUE);
+        when(mockStorage.delete(any(), any())).thenReturn(KEY_VALUE);
 
         ResponseEntity<?> response = underTest.delete(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.NO_CONTENT));
@@ -255,32 +180,67 @@ public class CachingControllerTest {
     }
 
     @Test
-    void givenNoToken_whenDeleteKey_thenResponseBadRequest() throws ZaasClientException {
+    void givenStorageWithNoKey_whenDeleteKey_thenResponseNotFound() {
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
+        when(mockStorage.delete(any(), any())).thenReturn(null);
+
+        ResponseEntity<?> response = underTest.delete(KEY, mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(response.getBody(), is(expectedBody));
+    }
+
+    @Test
+    void givenNoToken_whenQueryToken_thenResponseBadRequest() throws ZaasClientException {
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided", mockRequest.getRequestURL().toString()).mapToView();
         when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED));
 
-        ResponseEntity<?> response = underTest.delete(KEY, mockRequest);
+        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         assertThat(response.getBody(), is(expectedBody));
     }
 
     @Test
-    void givenInvalidToken_whenDeleteKey_thenResponseUnauthorized() throws ZaasClientException {
+    void givenInvalidToken_whenQueryToken_thenResponseUnauthorized() throws ZaasClientException {
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken", mockRequest.getRequestURL().toString()).mapToView();
         when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN));
 
-        ResponseEntity<?> response = underTest.delete(KEY, mockRequest);
+        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         assertThat(response.getBody(), is(expectedBody));
     }
 
     @Test
-    void givenStorageWithNoKey_whenDeleteKey_thenResponseNotFound() {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
-        when(mockStorage.delete(SERVICE_ID, KEY)).thenReturn(null);
+    void givenExpiredToken_whenQueryToken_thenResponseUnauthorized() throws ZaasClientException {
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.expiredToken", mockRequest.getRequestURL().toString()).mapToView();
+        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION));
 
-        ResponseEntity<?> response = underTest.delete(KEY, mockRequest);
+        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+        assertThat(response.getBody(), is(expectedBody));
+    }
+
+    @Test
+    void givenNoGateway_whenQueryToken_thenResponseUnauthorized() throws ZaasClientException {
+        ZaasClientException zaasException = new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, "This is an error");
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.gatewayUnavailable",
+            mockRequest.getRequestURL().toString(), zaasException.getMessage()).mapToView();
+        when(mockZaasClient.query(any())).thenThrow(zaasException);
+
+        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(response.getBody(), is(expectedBody));
+    }
+
+    @Test
+    void givenRandomError_whenQueryToken_thenResponseInternalError() throws ZaasClientException {
+        Throwable errCause = new Exception("This is an error");
+        ZaasClientException zaasException = new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, errCause);
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.common.internalRequestError",
+            mockRequest.getRequestURL().toString(), zaasException.getMessage(), zaasException.getCause()).mapToView();
+        when(mockZaasClient.query(any())).thenThrow(zaasException);
+
+        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         assertThat(response.getBody(), is(expectedBody));
     }
 }
