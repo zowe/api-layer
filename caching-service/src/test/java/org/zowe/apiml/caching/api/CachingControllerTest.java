@@ -51,11 +51,12 @@ public class CachingControllerTest {
 
     @BeforeEach
     void setUp() throws ZaasClientException {
-        TOKEN.setUserId(SERVICE_ID);
         mockRequest = new MockHttpServletRequest();
         mockStorage = mock(Storage.class);
         mockZaasClient = mock(ZaasClient.class);
         when(mockZaasClient.query(any())).thenReturn(TOKEN);
+
+        TOKEN.setUserId(SERVICE_ID);
         underTest = new CachingController(mockStorage, mockZaasClient, messageService);
     }
 

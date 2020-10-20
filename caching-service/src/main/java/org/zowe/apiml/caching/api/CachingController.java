@@ -25,17 +25,21 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 
 @RestController
 @RequiredArgsConstructor
 public class CachingController {
     //TODO hash key values to adjust for limit of 250 chars, and only use ascii alphanum
+    //TODO swagger
+
+    private static final String TOKEN_COOKIE_PREFIX = "apimlAuthenticationToken";
 
     private final Storage storage;
     private final ZaasClient zaasClient;
     private final MessageService messageService;
-    String myToken = null;
 
     @GetMapping(value = "/api/v1/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Retrieves a specific value in the cache",
@@ -44,7 +48,7 @@ public class CachingController {
     public ResponseEntity<?> getValue(@PathVariable String key, HttpServletRequest request) {
         ZaasToken token;
         try {
-            token = queryToken(myToken);
+            token = queryTokenFromRequest(request);
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
         }
@@ -72,7 +76,7 @@ public class CachingController {
     public ResponseEntity<?> getAllValues(HttpServletRequest request) {
         ZaasToken token;
         try {
-            token = queryToken(myToken);
+            token = queryTokenFromRequest(request);
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
         }
@@ -88,7 +92,7 @@ public class CachingController {
     public ResponseEntity<?> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
         ZaasToken token;
         try {
-            token = queryToken(myToken);
+            token = queryTokenFromRequest(request);
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
         }
@@ -115,7 +119,7 @@ public class CachingController {
     public ResponseEntity<?> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
         ZaasToken token;
         try {
-            token = queryToken(myToken);
+            token = queryTokenFromRequest(request);
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
         }
@@ -142,7 +146,7 @@ public class CachingController {
     public ResponseEntity<?> delete(@PathVariable String key, HttpServletRequest request) {
         ZaasToken token;
         try {
-            token = queryToken(myToken);
+            token = queryTokenFromRequest(request);
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
         }
@@ -177,15 +181,31 @@ public class CachingController {
         return new ResponseEntity<>(message.mapToView(), HttpStatus.BAD_REQUEST);
     }
 
-    private ZaasToken queryToken(String myToken) throws ZaasClientException {
-        ZaasToken token = zaasClient.query(myToken);
-        if (token == null) {
+    private ZaasToken queryTokenFromRequest(HttpServletRequest request) throws ZaasClientException {
+        String jwtToken = getJwtTokenFromCookie(request);
+        ZaasToken zaasToken = zaasClient.query(jwtToken);
+
+        if (zaasToken == null) {
             throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is null");
         }
-        if (token.isExpired()) {
+        if (zaasToken.isExpired()) {
             throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, "Queried token is expired");
         }
-        return token;
+
+        return zaasToken;
+    }
+
+    private String getJwtTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        return Arrays.stream(cookies)
+            .filter(cookie -> cookie.getName().equals(TOKEN_COOKIE_PREFIX))
+            .filter(cookie -> !cookie.getValue().isEmpty())
+            .findFirst()
+            .map(Cookie::getValue)
+            .orElse(null);
     }
 
     private ResponseEntity<ApiMessageView> handleZaasClientException(ZaasClientException e, HttpServletRequest request) {
