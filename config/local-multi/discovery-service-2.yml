@@ -3,14 +3,14 @@ spring.profiles.include: diag
 apiml:
     service:
         hostname: localhost2
-        ipAddress: 127.0.0.1
+        ipAddress: 0.0.0.0
         port: 10021
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
-        allPeersUrls: https://localhost:10011/eureka
+        allPeersUrls: https://localhost:10011/eureka,https://localhost2:10021/eureka
     security:
         ssl:
-            verifySslCertificatesOfServices: false
+            verifySslCertificatesOfServices: true
     banner: console
 
 spring:
@@ -23,11 +23,11 @@ spring.profiles: https
 
 server:
     ssl:
-        keyAlias: localhost
+        keyAlias: localhost-multi
         keyPassword: password
         keyStoreType: PKCS12
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/localhost/localhost-multi.keystore.p12
         keyStorePassword: password
         trustStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/localhost/localhost-multi.truststore.p12
         trustStorePassword: password

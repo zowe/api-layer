@@ -2,9 +2,9 @@ spring.profiles.include: diag
 apiml:
     service:
         hostname: localhost
-        ipAddress: 127.0.0.1
+        ipAddress: 0.0.0.0
         port: 10010
-        discoveryServiceUrls: https://localhost:10011/eureka/, https://localhost2:10021/eureka/
+        discoveryServiceUrls: https://localhost2:10021/eureka/
     security:
         auth:
             provider: dummy
@@ -12,7 +12,7 @@ apiml:
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
         ssl:
-            verifySslCertificatesOfServices: false
+            verifySslCertificatesOfServices: true
         zosmf:
             useJwtToken: true # if true and z/OSMF returns JWT token use it, otherwise create Zowe JWT token with LTPA token from z/OSMF, default is true
         x509:
@@ -29,11 +29,11 @@ spring:
 
 server:
     ssl:
-        keyAlias: localhost
+        keyAlias: localhost-multi
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/localhost/localhost-multi.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/localhost/localhost-multi.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
