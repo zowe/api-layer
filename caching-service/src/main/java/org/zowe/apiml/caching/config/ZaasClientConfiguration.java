@@ -47,7 +47,6 @@ public class ZaasClientConfiguration {
     @Value("${apiml.service.ssl.trustStoreType}")
     private String trustStoreType;
 
-
     @Bean
     public ConfigProperties getConfigProperties() {
         ConfigProperties configProperties = new ConfigProperties();
