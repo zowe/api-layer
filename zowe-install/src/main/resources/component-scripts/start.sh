@@ -120,6 +120,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.gateway.timeoutMillis=${APIML_GATEWAY_TIMEOUT_MILLIS} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
     -Dapiml.security.auth.zosmfServiceId=zosmf \
+    -Dapiml.security.auth.provider=${APIML_SECURITY_AUTH_PROVIDER} \
     -Dapiml.zoweManifest=${ZOWE_MANIFEST} \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
