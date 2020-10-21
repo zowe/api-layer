@@ -78,6 +78,7 @@ public class X509ExternalMapper extends X509AbstractMapper {
                 if (response == null || response.isEmpty()) {
                     return null;
                 }
+
                 ObjectMapper objectMapper = new ObjectMapper();
                 CertMapperResponse certMapperResponse = objectMapper.readValue(response, CertMapperResponse.class);
                 return certMapperResponse.getUserId().trim();

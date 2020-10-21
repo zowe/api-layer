@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.util.Collections;
@@ -27,28 +27,28 @@ class ProvidersTest {
     private AuthConfigurationProperties authConfigurationProperties;
     private DiscoveryClient discovery;
     private Providers underTest;
-
+    private CompoundAuthProvider compoundAuthProvider;
     private static final String ZOSMF_ID = "zosmf";
 
     @BeforeEach
     void setUp() {
         authConfigurationProperties = mock(AuthConfigurationProperties.class);
+        compoundAuthProvider = mock(CompoundAuthProvider.class);
         discovery = mock(DiscoveryClient.class);
 
-        underTest = new Providers(discovery, authConfigurationProperties);
+        underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider);
     }
 
 
     @Test
     void givenZosmfAsAuthentication_whenInUseIsRequested_thenReturnTrue() {
-        when(authConfigurationProperties.getProvider()).thenReturn(AuthenticationScheme.ZOSMF.getScheme());
-
+        when(compoundAuthProvider.getLoginAuthProviderName()).thenReturn(LoginProvider.ZOSMF.getValue());
         assertThat(underTest.isZosfmUsed(), is(true));
     }
 
     @Test
     void givenSafIsUsedAsAuthentication_whenInUseIsRequested_thenReturnFalse() {
-        when(authConfigurationProperties.getProvider()).thenReturn("saf");
+        when(compoundAuthProvider.getLoginAuthProviderName()).thenReturn(LoginProvider.SAF.getValue());
 
         assertThat(underTest.isZosfmUsed(), is(false));
     }
