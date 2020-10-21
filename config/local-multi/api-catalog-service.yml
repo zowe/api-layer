@@ -1,5 +1,5 @@
 environment:
-    discoveryLocations: https://localhost2:10021/eureka/,https://localhost3:10031/eureka/
+    discoveryLocations: https://localhost2:10021/eureka/,https://localhost:10011/eureka/
     dsIpAddress: 0.0.0.0
     eurekaPassword: password
     eurekaUserId: eureka
@@ -8,7 +8,7 @@ environment:
     ipAddress: 127.0.0.1
     port: 10014
     preferIpAddress: false
-    truststore: keystore/localhost/localhost.truststore.p12
+    truststore: keystore/localhost/localhost-multi.truststore.p12
     truststorePassword: password
     truststoreType: PKCS12
 
@@ -22,12 +22,14 @@ eureka:
 
 server:
     ssl:
-        enabled: false
-        keyAlias: localhost
+        keyAlias: localhost-multi
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/localhost/localhost-multi.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
+        truststore: keystore/localhost/localhost-multi.truststore.p12
+        truststorePassword: password
+        truststoreType: PKCS12
 apiml:
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
