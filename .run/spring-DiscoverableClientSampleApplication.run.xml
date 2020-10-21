@@ -1,35 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="spring-DiscoverableClientSampleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <module name="api-layer.discoverable-client.main" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.client.DiscoverableClientSampleApplication" />
-    <option name="ALTERNATIVE_JRE_PATH" />
-    <additionalParameters>
-      <param>
-        <option name="enabled" value="true" />
-        <option name="name" value="spring.config.additional-location" />
-        <option name="value" value="file:./config/local/discoverable-client.yml" />
-      </param>
-      <param>
-        <option name="enabled" value="true" />
-        <option name="name" value="apiml.service.customMetadata.apiml.connectTimeout" />
-        <option name="value" value="60000" />
-      </param>
-      <param>
-        <option name="enabled" value="true" />
-        <option name="name" value="apiml.service.customMetadata.apiml.readTimeout" />
-        <option name="value" value="60000" />
-      </param>
-      <param>
-        <option name="enabled" value="true" />
-        <option name="name" value="apiml.service.customMetadata.apiml.connectionManagerTimeout" />
-        <option name="value" value="60000" />
-      </param>
-    </additionalParameters>
-    <method v="2">
-      <option name="Make" enabled="true" />
-    </method>
-  </configuration>
-  <configuration default="false" name="spring-DiscoverableClientSampleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+  <configuration name="spring-DiscoverableClientSampleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <module name="api-layer.discoverable-client.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.client.DiscoverableClientSampleApplication" />
     <option name="ALTERNATIVE_JRE_PATH" />
