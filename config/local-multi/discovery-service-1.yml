@@ -31,3 +31,7 @@ server:
         trustStoreType: PKCS12
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+apiml:
+    discovery:
+        allPeersUrls: https://localhost2:10021/eureka,https://localhost:10011/eureka
