@@ -7,7 +7,7 @@ apiml:
         port: 10011
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
-        allPeersUrls: https://localhost2:10021/eureka,https://localhost:10011/eureka
+        allPeersUrls: https://localhost2:10021/eureka
     security:
         ssl:
             verifySslCertificatesOfServices: true
@@ -23,15 +23,15 @@ spring.profiles: https
 
 server:
     ssl:
-        keyAlias: localhost
+        keyAlias: localhost-multi
         keyPassword: password
         keyStoreType: PKCS12
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/localhost/localhost-multi.keystore.p12
         keyStorePassword: password
         trustStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/localhost/localhost-multi.truststore.p12
         trustStorePassword: password
 
 apiml:
     discovery:
-        allPeersUrls: https://localhost2:10021/eureka,https://localhost:10011/eureka
+        allPeersUrls: https://localhost2:10021/eureka

@@ -7,7 +7,7 @@ apiml:
         port: 10021
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
-        allPeersUrls: https://localhost:10011/eureka,https://localhost2:10021/eureka
+        allPeersUrls: https://localhost:10011/eureka
     security:
         ssl:
             verifySslCertificatesOfServices: true
@@ -34,4 +34,4 @@ server:
 
 apiml:
     discovery:
-        allPeersUrls: https://localhost:10011/eureka,https://localhost2:10021/eureka
+        allPeersUrls: https://localhost:10011/eureka
