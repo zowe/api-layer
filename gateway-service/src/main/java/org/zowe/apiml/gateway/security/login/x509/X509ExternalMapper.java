@@ -67,6 +67,7 @@ public class X509ExternalMapper extends X509AbstractMapper {
             try {
                 String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(externalMapperUser);
 
+                log.error("JWT for call to external mapper: {}",jwtToken);
                 HttpPost httpPost = new HttpPost(new URI(externalMapperUrl));
                 HttpEntity httpEntity = new ByteArrayEntity(certificate.getEncoded());
                 httpPost.setEntity(httpEntity);
@@ -75,6 +76,7 @@ public class X509ExternalMapper extends X509AbstractMapper {
 
                 HttpResponse httpResponse = httpClientProxy.execute(httpPost);
                 String response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+                log.error("User ID: {}", response);
                 if (response == null || response.isEmpty()) {
                     return null;
                 }

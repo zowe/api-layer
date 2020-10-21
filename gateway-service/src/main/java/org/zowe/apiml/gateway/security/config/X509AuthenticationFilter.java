@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
@@ -24,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
+@Slf4j
 public class X509AuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private final AuthenticationProvider authenticationProvider;
@@ -59,6 +61,7 @@ public class X509AuthenticationFilter extends AbstractAuthenticationProcessingFi
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
         if (certs != null && certs.length > 0) {
+            log.error("Trying to login with x509");
             return this.authenticationProvider.authenticate(new X509AuthenticationToken(certs));
         }
         return null;

@@ -73,7 +73,6 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
 
     private String getUserid(Authentication authentication) {
         X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
-
         return x509AuthenticationMapper.mapCertificateToMainframeUserId(certs[0]);
     }
 }

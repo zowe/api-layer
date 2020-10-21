@@ -1,7 +1,7 @@
 logging:
     level:
         ROOT: INFO
-        org.zowe.apiml: INFO
+        org.zowe.apiml: DEBUG
         org.springframework: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
@@ -20,6 +20,7 @@ logging:
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         javax.servlet: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.zowe.apiml.gateway.security.login.x509: DEBUG
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
@@ -56,6 +57,8 @@ apiml:
 
 
 spring:
+    profiles:
+        include: debug
     application:
         name: ${apiml.service.id}
     cloud:
@@ -196,6 +199,7 @@ eureka:
 ---
 spring:
     profiles: debug
+
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -221,7 +225,7 @@ logging:
 
 ---
 spring:
-    profiles: diag
+    profiles: debug
 
 management:
     endpoints:
