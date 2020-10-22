@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.security.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,7 +22,6 @@ import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 @RequiredArgsConstructor
-@Slf4j
 @Service
 public class TokenCreationService {
     private final Providers providers;
@@ -45,7 +43,6 @@ public class TokenCreationService {
         boolean isZosmfUsedAndAvailable = false;
         try {
             isZosmfUsedAndAvailable = providers.isZosfmUsed() && providers.isZosmfAvailable();
-            log.error("Is zosmf available: {} ", isZosmfUsedAndAvailable);
         } catch (AuthenticationServiceException ex) {
             // Intentionally do nothing. The issue is logged deeper.
         }
@@ -53,7 +50,6 @@ public class TokenCreationService {
         if (isZosmfUsedAndAvailable) {
             try {
                 String passTicket = passTicketService.generate(user, zosmfApplId);
-                log.error("Passticket for zOSMF: {} ", passTicket);
                 return ((TokenAuthentication) zosmfAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(user, passTicket)))
                     .getCredentials();
             } catch (IRRPassTicketGenerationException e) {

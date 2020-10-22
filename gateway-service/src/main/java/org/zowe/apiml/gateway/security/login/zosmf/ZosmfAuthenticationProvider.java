@@ -48,9 +48,9 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         final String user = authentication.getPrincipal().toString();
 
         final ZosmfService.AuthenticationResponse ar = zosmfService.authenticate(authentication);
-
-        log.error(ar.toString());
-
+        if (ar != null) {
+            log.error(ar.toString());
+        }
 
         // if z/OSMF support JWT, use it as Zowe JWT token
         if (ar.getTokens().containsKey(JWT) && useJwtToken) {

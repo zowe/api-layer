@@ -23,8 +23,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.*;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -105,15 +105,12 @@ public class ZosmfService extends AbstractZosmfService {
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
         if (authenticationEndpointExists(HttpMethod.POST)) {
-            log.error("ZOSMF post {}", getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT);
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
                 getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
                 HttpMethod.POST);
         } else {
-
             String zosmfInfoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
-            log.error("ZOSMF info {}", zosmfInfoURIEndpoint);
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
                 zosmfInfoURIEndpoint,
@@ -124,6 +121,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     /**
+     *
      * @return String containing the zosmf realm/domain
      */
     @Cacheable("zosmfInfo")
@@ -154,9 +152,8 @@ public class ZosmfService extends AbstractZosmfService {
 
     /**
      * POST to provided url and return authentication response
-     *
      * @param authentication
-     * @param url            String containing auth endpoint to be used
+     * @param url String containing auth endpoint to be used
      * @return AuthenticationResponse containing auth token, either LTPA or JWT
      */
     protected AuthenticationResponse issueAuthenticationRequest(Authentication authentication, String url, HttpMethod httpMethod) {
@@ -177,7 +174,6 @@ public class ZosmfService extends AbstractZosmfService {
 
     /**
      * Check if call to ZOSMF_AUTHENTICATE_END_POINT resolves
-     *
      * @param httpMethod HttpMethod to be checked for existence
      * @return boolean, containing true if endpoint resolves
      */
@@ -193,7 +189,8 @@ public class ZosmfService extends AbstractZosmfService {
         } catch (HttpClientErrorException hce) {
             if (hce.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
                 return true;
-            } else if (hce.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+            }
+            else if (hce.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
                 log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure APAR PH12143 " +
                     "(https://www.ibm.com/support/pages/apar/PH12143) fix has been applied. " +
                     "Using z/OSMF info endpoint as backup.");

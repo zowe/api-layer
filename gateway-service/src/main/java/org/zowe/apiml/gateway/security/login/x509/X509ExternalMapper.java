@@ -66,7 +66,8 @@ public class X509ExternalMapper extends X509AbstractMapper {
         if (isClientAuthCertificate(certificate)) {
             try {
                 String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(externalMapperUser);
-                log.error("JWT for call to external mapper: {}", jwtToken);
+
+                log.error("JWT for call to external mapper: {}",jwtToken);
                 HttpPost httpPost = new HttpPost(new URI(externalMapperUrl));
                 HttpEntity httpEntity = new ByteArrayEntity(certificate.getEncoded());
                 httpPost.setEntity(httpEntity);
