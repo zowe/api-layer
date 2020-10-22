@@ -113,16 +113,6 @@ public class CachingControllerTest {
     }
 
     @Test
-    void givenInvalidPayload_whenCreateKey_thenResponseBadRequest() {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload",
-            null, "No KeyValue provided in the payload").mapToView();
-
-        ResponseEntity<?> response = underTest.createKey(null, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
     void givenStorageWithExistingKey_whenCreateKey_thenResponseConflict() {
         when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenReturn(null);
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyCollision", KEY).mapToView();
@@ -139,16 +129,6 @@ public class CachingControllerTest {
         ResponseEntity<?> response = underTest.update(KEY_VALUE, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.NO_CONTENT));
         assertThat(response.getBody(), is(nullValue()));
-    }
-
-    @Test
-    void givenInvalidPayload_whenUpdateKey_thenResponseBadRequest() {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload",
-            null, "No KeyValue provided in the payload").mapToView();
-
-        ResponseEntity<?> response = underTest.update(null, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), is(expectedBody));
     }
 
     @Test
@@ -186,6 +166,38 @@ public class CachingControllerTest {
 
         ResponseEntity<?> response = underTest.delete(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(response.getBody(), is(expectedBody));
+    }
+
+    @Test
+    void givenNoPayload_whenValidatePayload_thenResponseBadRequest() {
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload",
+            null, "No KeyValue provided in the payload").mapToView();
+
+        ResponseEntity<?> response = underTest.createKey(null, mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(response.getBody(), is(expectedBody));
+    }
+
+    @Test
+    void givenNoValue_whenValidatePayload_thenResponseBadRequest() {
+        KeyValue keyValue = new KeyValue("key", null);
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload",
+            keyValue, "No value provided in the payload").mapToView();
+
+        ResponseEntity<?> response = underTest.createKey(keyValue, mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(response.getBody(), is(expectedBody));
+    }
+
+    @Test
+    void givenIllegalKey_whenValidatePayload_thenResponseBadRequest() {
+        KeyValue keyValue = new KeyValue("key ", "value");
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload",
+            keyValue, "Key is not alphanumeric").mapToView();
+
+        ResponseEntity<?> response = underTest.createKey(keyValue, mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         assertThat(response.getBody(), is(expectedBody));
     }
 
