@@ -56,7 +56,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
                 return null;
             }
             String username = getUserid(authentication);
-            log.error("x509 user {}",username);
+            log.error("x509 user " + username);
             if (username == null) {
                 return null;
             }
