@@ -57,8 +57,7 @@ class GatewaySecurityTest {
             .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX);
     }
 
-    @Test
-    @TestsNotMeantForZowe
+
     void loginToGatewayAndAccessProtectedEndpointWithBasicAuthentication() {
         given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
@@ -68,8 +67,7 @@ class GatewaySecurityTest {
             .statusCode(is(SC_OK));
     }
 
-    @Test
-    @TestsNotMeantForZowe
+
     void loginToGatewayAndAccessProtectedEndpointWithCookie() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
