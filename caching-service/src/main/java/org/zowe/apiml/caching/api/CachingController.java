@@ -35,8 +35,6 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
 public class CachingController {
-    //TODO hash key values to adjust for limit of 250 chars, and only use ascii alphanum
-
     private static final String TOKEN_COOKIE_PREFIX = "apimlAuthenticationToken";
 
     private final Storage storage;
