@@ -31,9 +31,9 @@ import java.util.Arrays;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1")
 public class CachingController {
     //TODO hash key values to adjust for limit of 250 chars, and only use ascii alphanum
-    //TODO swagger
 
     private static final String TOKEN_COOKIE_PREFIX = "apimlAuthenticationToken";
 
@@ -41,7 +41,7 @@ public class CachingController {
     private final ZaasClient zaasClient;
     private final MessageService messageService;
 
-    @GetMapping(value = "/api/v1/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Retrieves a specific value in the cache",
         notes = "Value returned is for the provided {key}")
     @ResponseBody
@@ -69,7 +69,7 @@ public class CachingController {
         return new ResponseEntity<>(readPair, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/api/v1/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Retrieves all values in the cache",
         notes = "Values returned for the calling service")
     @ResponseBody
@@ -85,7 +85,7 @@ public class CachingController {
         return new ResponseEntity<>(storage.readForService(serviceId), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/api/v1/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Create a new key in the cache",
         notes = "A new key-value pair will be added to the cache")
     @ResponseBody
@@ -112,7 +112,7 @@ public class CachingController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/api/v1/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Update key in the cache",
         notes = "Value at the key in the provided key-value pair will be updated to the provided value")
     @ResponseBody
@@ -139,7 +139,7 @@ public class CachingController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping(value = "/api/v1/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @DeleteMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Delete key from the cache",
         notes = "Will delete key-value pair for the provided {key}")
     @ResponseBody
