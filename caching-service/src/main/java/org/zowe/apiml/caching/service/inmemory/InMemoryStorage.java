@@ -35,7 +35,7 @@ public class InMemoryStorage implements Storage {
     @Override
     public KeyValue read(String serviceId, String key) {
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
-        if(serviceSpecificStorage == null) {
+        if (serviceSpecificStorage == null) {
             return null;
         }
 
@@ -50,7 +50,7 @@ public class InMemoryStorage implements Storage {
     @Override
     public KeyValue delete(String serviceId, String toDelete) {
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
-        if(serviceSpecificStorage == null) {
+        if (serviceSpecificStorage == null) {
             return null;
         }
 
