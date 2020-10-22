@@ -114,8 +114,8 @@ public class CachingControllerTest {
 
     @Test
     void givenInvalidPayload_whenCreateKey_thenResponseBadRequest() {
-        // cast null to object to avoid ambiguous call to overloaded method
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload", (Object) null).mapToView();
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload",
+            null, "No KeyValue provided in the payload").mapToView();
 
         ResponseEntity<?> response = underTest.createKey(null, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
@@ -134,7 +134,6 @@ public class CachingControllerTest {
 
     @Test
     void givenStorageWithKey_whenUpdateKey_thenResponseNoContent() {
-        //TODO decide payload structure
         when(mockStorage.update(SERVICE_ID, KEY_VALUE)).thenReturn(KEY_VALUE);
 
         ResponseEntity<?> response = underTest.update(KEY_VALUE, mockRequest);
@@ -144,8 +143,8 @@ public class CachingControllerTest {
 
     @Test
     void givenInvalidPayload_whenUpdateKey_thenResponseBadRequest() {
-        // cast null to object as to avoid ambiguous call to overloaded method
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload", (Object) null).mapToView();
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload",
+            null, "No KeyValue provided in the payload").mapToView();
 
         ResponseEntity<?> response = underTest.update(null, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));

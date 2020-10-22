@@ -25,7 +25,7 @@ messages:
     -   key: org.zowe.apiml.cache.invalidPayload
         number: ZWECS130
         type: ERROR
-        text: "Payload '%s' is not valid."
+        text: "Payload '%s' is not valid: '%s'."
         reason: "The payload is not in valid JSON format."
         action: "Provide a payload in JSON format."
 

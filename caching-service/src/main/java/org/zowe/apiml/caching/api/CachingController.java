@@ -11,10 +11,12 @@ package org.zowe.apiml.caching.api;
 
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.caching.exceptions.CachingPayloadException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.message.api.ApiMessageView;
@@ -97,8 +99,10 @@ public class CachingController {
             return handleZaasClientException(e, request);
         }
 
-        if (isInvalidPayload(keyValue)) {
-            return invalidPayloadResponse(keyValue);
+        try {
+            checkForInvalidPayload(keyValue);
+        } catch (CachingPayloadException e) {
+            return invalidPayloadResponse(e, keyValue);
         }
 
         String serviceId = token.getUserId();
@@ -124,8 +128,10 @@ public class CachingController {
             return handleZaasClientException(e, request);
         }
 
-        if (isInvalidPayload(keyValue)) {
-            return invalidPayloadResponse(keyValue);
+        try {
+            checkForInvalidPayload(keyValue);
+        } catch (CachingPayloadException e) {
+            return invalidPayloadResponse(e, keyValue);
         }
 
         String serviceId = token.getUserId();
@@ -167,12 +173,23 @@ public class CachingController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    private boolean isInvalidPayload(KeyValue keyValue) {
-        return keyValue == null; //TODO proper validation
+    private void checkForInvalidPayload(KeyValue keyValue) throws CachingPayloadException {
+        if (keyValue == null) {
+            throw new CachingPayloadException("No KeyValue provided in the payload");
+        }
+
+        if (keyValue.getValue() == null) {
+            throw new CachingPayloadException("No value provided in the payload");
+        }
+
+        String key = keyValue.getKey();
+        if (key != null && !StringUtils.isAlphanumeric(key)) {
+            throw new CachingPayloadException("Key is not alphanumeric");
+        }
     }
 
-    private ResponseEntity<ApiMessageView> invalidPayloadResponse(KeyValue keyValue) {
-        Message message = messageService.createMessage("org.zowe.apiml.cache.invalidPayload", keyValue);
+    private ResponseEntity<ApiMessageView> invalidPayloadResponse(CachingPayloadException e, KeyValue keyValue) {
+        Message message = messageService.createMessage("org.zowe.apiml.cache.invalidPayload", keyValue, e.getMessage());
         return new ResponseEntity<>(message.mapToView(), HttpStatus.BAD_REQUEST);
     }
 
