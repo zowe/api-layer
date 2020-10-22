@@ -181,7 +181,10 @@ public class CachingController {
         }
 
         String key = keyValue.getKey();
-        if (key != null && !StringUtils.isAlphanumeric(key)) {
+        if (key == null){
+            throw new CachingPayloadException("No key provided in the payload");
+        }
+        if (!StringUtils.isAlphanumeric(key)) {
             throw new CachingPayloadException("Key is not alphanumeric");
         }
     }

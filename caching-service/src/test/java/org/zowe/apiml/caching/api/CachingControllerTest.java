@@ -191,6 +191,17 @@ public class CachingControllerTest {
     }
 
     @Test
+    void givenNoKey_whenValidatePayload_thenResponseBadRequest() {
+        KeyValue keyValue = new KeyValue(null, "value");
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload",
+            keyValue, "No key provided in the payload").mapToView();
+
+        ResponseEntity<?> response = underTest.createKey(keyValue, mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(response.getBody(), is(expectedBody));
+    }
+
+    @Test
     void givenIllegalKey_whenValidatePayload_thenResponseBadRequest() {
         KeyValue keyValue = new KeyValue("key ", "value");
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload",
