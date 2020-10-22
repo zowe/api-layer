@@ -2,3 +2,6 @@ logging:
     level:
         ROOT: INFO
         org.springframework: WARN
+
+spring:
+    profiles.include: debug
