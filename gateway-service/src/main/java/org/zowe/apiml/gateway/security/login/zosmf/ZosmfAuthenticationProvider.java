@@ -51,14 +51,14 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
         // if z/OSMF support JWT, use it as Zowe JWT token
         if (ar.getTokens().containsKey(JWT) && useJwtToken) {
-
+            log.error(ar.toString());
             return authenticationService.createTokenAuthentication(user, ar.getTokens().get(JWT));
         }
 
         if (ar.getTokens().containsKey(LTPA)) {
             // construct own JWT token, including LTPA from z/OSMF
             final String domain = ar.getDomain();
-
+            log.error(ar.toString());
             final String jwtToken = authenticationService.createJwtToken(user, domain, ar.getTokens().get(LTPA));
 
             return authenticationService.createTokenAuthentication(user, jwtToken);

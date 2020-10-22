@@ -105,11 +105,13 @@ public class ZosmfService extends AbstractZosmfService {
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
         if (authenticationEndpointExists(HttpMethod.POST)) {
+            log.error("ZOSMF post");
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
                 getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
                 HttpMethod.POST);
         } else {
+            log.error("ZOSMF get info");
             String zosmfInfoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
