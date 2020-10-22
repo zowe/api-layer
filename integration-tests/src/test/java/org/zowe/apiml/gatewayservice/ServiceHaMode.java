@@ -14,7 +14,6 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.RandomPort;
 import org.zowe.apiml.util.service.VirtualService;
@@ -33,7 +32,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 
 /**
  * Objective is to test Gateway can retry on service that is down.
- *
+ * <p>
  * 2 services are registered and after that, one is killed. Service is called through Gateway
  * and responses are inspected. Implementation returns a debug header that describes the retries.
  * The test repeats calls until it sees that request has been retried from mentioned header.
@@ -48,13 +47,13 @@ class ServiceHaMode {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 
-    @Test
+
     void givenTwoServices_whenOneServiceGoesDown_verifyThatGatewayRetriesToTheLiveOne() throws Exception {
 
         try (
             VirtualService service1 = new VirtualService("testHaModeService", (new RandomPort()).getPort());
             VirtualService service2 = new VirtualService("testHaModeService", (new RandomPort()).getPort());
-            ) {
+        ) {
 
             service1.start();
             service2.start().waitForGatewayRegistration(2, TIMEOUT);
@@ -81,8 +80,7 @@ class ServiceHaMode {
                     StringTokenizer retryList = new StringTokenizer(response.getHeader("RibbonRetryDebug"), "|");
                     assertThat(retryList.countTokens(), is(greaterThan(1)));
                     break;
-                }
-                catch (RuntimeException | AssertionError e) {
+                } catch (RuntimeException | AssertionError e) {
                     if (System.currentTimeMillis() - time0 > timeoutSec * 1000) throw e;
                     await().timeout(1, TimeUnit.SECONDS);
                 }

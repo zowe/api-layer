@@ -14,10 +14,12 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -50,34 +52,31 @@ class GatewaySecurityTest {
     @Test
     void accessProtectedEndpointWithoutCredentials() {
         given()
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX);
     }
 
-    @Test
-    @TestsNotMeantForZowe
     void loginToGatewayAndAccessProtectedEndpointWithBasicAuthentication() {
         given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK));
     }
 
-    @Test
-    @TestsNotMeantForZowe
+
     void loginToGatewayAndAccessProtectedEndpointWithCookie() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
         given()
             .cookie(COOKIE, token)
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK));
 
     }
@@ -88,9 +87,9 @@ class GatewaySecurityTest {
 
         given()
             .cookie(COOKIE, invalidToken)
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED));
     }
 
@@ -99,9 +98,9 @@ class GatewaySecurityTest {
     void accessProtectedEndpointWithInvalidCredentials() {
         given()
             .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED));
     }
 
@@ -110,21 +109,21 @@ class GatewaySecurityTest {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
         Map<String, String> expectedHeaders = new HashMap<>();
-        expectedHeaders.put("X-Content-Type-Options","nosniff");
-        expectedHeaders.put("X-XSS-Protection","1; mode=block");
-        expectedHeaders.put("Cache-Control","no-cache, no-store, max-age=0, must-revalidate");
-        expectedHeaders.put("Pragma","no-cache");
-        expectedHeaders.put("Content-Type","text/html;charset=UTF-8");
-        expectedHeaders.put("Transfer-Encoding","chunked");
+        expectedHeaders.put("X-Content-Type-Options", "nosniff");
+        expectedHeaders.put("X-XSS-Protection", "1; mode=block");
+        expectedHeaders.put("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
+        expectedHeaders.put("Pragma", "no-cache");
+        expectedHeaders.put("Content-Type", "text/html;charset=UTF-8");
+        expectedHeaders.put("Transfer-Encoding", "chunked");
 
         List<String> forbiddenHeaders = new ArrayList<>();
         forbiddenHeaders.add("X-Frame-Options");
         forbiddenHeaders.add("Strict-Transport-Security");
 
-        Response response =  RestAssured.given().cookie(COOKIE, token)
-                            .get(String.format("%s://%s:%d", SCHEME, HOST, PORT));
-        Map<String,String> responseHeaders = new HashMap<>();
-        response.getHeaders().forEach(h -> responseHeaders.put(h.getName(),h.getValue()));
+        Response response = RestAssured.given().cookie(COOKIE, token)
+            .get(String.format("%s://%s:%d", SCHEME, HOST, PORT));
+        Map<String, String> responseHeaders = new HashMap<>();
+        response.getHeaders().forEach(h -> responseHeaders.put(h.getName(), h.getValue()));
 
         expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
         forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
