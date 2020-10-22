@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.login.x509;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,7 @@ import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 import java.security.cert.X509Certificate;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class X509AuthenticationProvider implements AuthenticationProvider {
 
@@ -49,10 +51,12 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         if (authentication instanceof X509AuthenticationToken) {
+            log.error("Is client cert enabled " + isClientCertEnabled);
             if (!isClientCertEnabled) {
                 return null;
             }
             String username = getUserid(authentication);
+            log.error("x509 user {}",username);
             if (username == null) {
                 return null;
             }

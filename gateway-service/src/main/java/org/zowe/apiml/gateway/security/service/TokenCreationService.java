@@ -43,6 +43,7 @@ public class TokenCreationService {
      */
     public String createJwtTokenWithoutCredentials(String user) {
         boolean isZosmfUsedAndAvailable = false;
+        log.error("Creating JWT");
         try {
             isZosmfUsedAndAvailable = providers.isZosfmUsed() && providers.isZosmfAvailable();
             log.error("Is zosmf available: " + isZosmfUsedAndAvailable);

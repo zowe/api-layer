@@ -57,8 +57,6 @@ apiml:
 
 
 spring:
-    profiles:
-        include: debug
     application:
         name: ${apiml.service.id}
     cloud:
