@@ -33,6 +33,16 @@ public class InMemoryStorageTest {
     }
 
     @Test
+    void givenDefaultStorageConstructor_whenStorageConstructed_thenCanUseStorage() {
+        underTest = new InMemoryStorage();
+        underTest.create(serviceId, new KeyValue("key", "value"));
+
+        KeyValue result = underTest.read(serviceId, "key");
+        assertThat(result.getKey(), is("key"));
+        assertThat(result.getValue(), is("value"));
+    }
+
+    @Test
     void givenThereIsNoValueForService_whenValueIsStored_thenItIsStored() {
         underTest.create(serviceId, new KeyValue("username", "ValidName"));
 

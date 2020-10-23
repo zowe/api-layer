@@ -286,45 +286,27 @@ public class CachingControllerTest {
         assertThat(response.getBody(), is(expectedBody));
     }
 
-    @Test
-    void givenCookieWithNoToken_whenQueryToken_thenResponseUnauthorized() throws ZaasClientException {
+    @ParameterizedTest
+    @MethodSource("cookieTestProvider")
+    void givenCookieWithWrongAuthentication_whenQueryToken_thenResponseUnauthorized
+        (String cookieName, String cookieValue, String queryToken) throws ZaasClientException {
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken",
             mockRequest.getRequestURL().toString()).mapToView();
 
-        Cookie[] cookies = new Cookie[]{new Cookie("my", "cookie")};
+        Cookie[] cookies = new Cookie[]{new Cookie(cookieName, cookieValue)};
         mockRequest.setCookies(cookies);
-        when(mockZaasClient.query(null)).thenReturn(null);
+        when(mockZaasClient.query(queryToken)).thenReturn(null);
 
         ResponseEntity<?> response = underTest.getAllValues(mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         assertThat(response.getBody(), is(expectedBody));
     }
 
-    @Test
-    void givenInvalidTokenInCookie_whenQueryToken_thenResponseUnauthorized() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken",
-            mockRequest.getRequestURL().toString()).mapToView();
-
-        Cookie[] cookies = new Cookie[]{new Cookie("apimlAuthenticationToken", "bad_token")};
-        mockRequest.setCookies(cookies);
-        when(mockZaasClient.query("bad_token")).thenReturn(null);
-
-        ResponseEntity<?> response = underTest.getAllValues(mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
-    void givenEmptyTokenInCookie_whenQueryToken_thenResponseUnauthorized() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken",
-            mockRequest.getRequestURL().toString()).mapToView();
-
-        Cookie[] cookies = new Cookie[]{new Cookie("apimlAuthenticationToken", "")};
-        mockRequest.setCookies(cookies);
-        when(mockZaasClient.query(null)).thenReturn(null);
-
-        ResponseEntity<?> response = underTest.getAllValues(mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
-        assertThat(response.getBody(), is(expectedBody));
+    private static Stream<Arguments> cookieTestProvider() {
+        return Stream.of(
+            Arguments.of("my", "cookie", null),
+            Arguments.of("apimlAuthenticationToken", "bad_token", "bad_token"),
+            Arguments.of("apimlAuthenticationToken", "", null)
+        );
     }
 }
