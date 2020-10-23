@@ -181,7 +181,7 @@ public class CachingController {
         }
 
         String key = keyValue.getKey();
-        if (key == null){
+        if (key == null) {
             throw new CachingPayloadException("No key provided in the payload");
         }
         if (!StringUtils.isAlphanumeric(key)) {
