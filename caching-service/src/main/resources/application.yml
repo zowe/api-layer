@@ -9,7 +9,7 @@ apiml:
 
         serviceId: cachingservice
         title: Caching service for internal usage.
-        description: Service that provides caching API
+        description: Service that provides caching API.
 
         discoveryServiceUrls: https://localhost:10011/eureka/
 
@@ -36,8 +36,8 @@ apiml:
         catalog:
             tile:
                 id: zowe
-                title: Zowe applications
-                description: Applications which are part of the Zowe
+                title: Zowe Applications
+                description: Applications which are part of Zowe.
                 version: 1.0.0
         ssl:
             enabled: true
@@ -60,7 +60,7 @@ apiml:
                 corsEnabled: false
 
 server:
-    port: 10016
+    port: ${apiml.service.port}
 
     servlet:
         contextPath: /${apiml.service.serviceId}

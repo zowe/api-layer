@@ -12,7 +12,11 @@ Internal architecture needs to take into consideration, namely the fact that the
 
 ![Diagram](cachingServiceStructure.png "Architecture of the service")
 
-The Caching Service is built on top of enabler, which means that it is dynamically registered to the API Mediation Layer. 
+## How to use
+
+The Caching Service is built on top of the spring enabler, which means that it is dynamically registered to the API Mediation Layer. It appears in the API Catalog under the tile "Zowe Applications".
+
+There are REST APIs available to create, delete, and update key-value pairs in the cache, as well as APIs to read a specific key-value pair or all key-value pairs in the cache.  
 
 ## Storage
 
@@ -34,10 +38,17 @@ TO BE DONE
 
 ## How do you run for local development
 
-It is a Spring Boot application. So you either add it as a run configuration and run it together with other services or the npm command to run API ML also runs the mock. 
+The Caching Service is a Spring Boot application. You can either add it as a run configuration and run it together with other services, or the npm command to run API ML also runs the mock. 
 
-Command to run full set of api-layer `npm run api-layer`
+Command to run full set of api-layer: `npm run api-layer`.
+
+In local usage, the Caching Service will run at `https://localhost:10016`. The API path is `/cachingservice/api/v1/cache/${path-params-as-needed}`.
+For example, `https://localhost:10016/cachingservice/api/v1/cache/my-key` retrieves the cache entry using the key 'my-key'.
 
 ## Configuration properties
 
-How do we configure the storage? By providing the name of the class implementing the?
+The Caching Service uses the standard `application.yml` structure for configuration.
+
+`apiml.service.routes` only specifies one API route as there is no need for web socket or UI routes.
+
+TO BE DONE: How do we handle configuration for the type of storage?
