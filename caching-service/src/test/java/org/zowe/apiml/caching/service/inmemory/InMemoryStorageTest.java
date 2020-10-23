@@ -24,7 +24,7 @@ public class InMemoryStorageTest {
     private InMemoryStorage underTest;
 
     private Map<String, Map<String, KeyValue>> testingStorage;
-    private String serviceId = "acme";
+    private final String serviceId = "acme";
 
     @BeforeEach
     void setUp() {
@@ -51,6 +51,19 @@ public class InMemoryStorageTest {
         KeyValue result = testingStorage.get(serviceId).get("username");
         assertThat(result.getKey(), is("username"));
         assertThat(result.getValue(), is("ValidName"));
+    }
+
+    @Test
+    void givenThereIsNoServiceCache_whenValueIsUpdated_thenNullIsReturned() {
+        KeyValue result = underTest.update(serviceId, new KeyValue("username", "Name 1"));
+        assertThat(result, is(nullValue()));
+    }
+
+    @Test
+    void givenThereIsNoKey_whenValueIsUpdated_thenNullIsReturned() {
+        testingStorage.put(serviceId, new HashMap<>());
+        KeyValue result = underTest.update(serviceId, new KeyValue("bad key", "Name 1"));
+        assertThat(result, is(nullValue()));
     }
 
     @Test
@@ -82,6 +95,13 @@ public class InMemoryStorageTest {
 
     @Test
     void givenKeyDoesntExist_whenDeletionRequested_thenNullIsReturned() {
+        testingStorage.put(serviceId, new HashMap<>());
+        KeyValue result = underTest.delete(serviceId, "nonexistent");
+        assertThat(result, is(nullValue()));
+    }
+
+    @Test
+    void givenServiceStorageDoesntExist_whenDeletionRequest_thenNullIsReturned() {
         KeyValue result = underTest.delete(serviceId, "nonexistent");
         assertThat(result, is(nullValue()));
     }
@@ -95,5 +115,4 @@ public class InMemoryStorageTest {
         underTest.delete(serviceId, "username");
         assertThat(serviceStorage.containsKey("username"), is(false));
     }
-    // Remove existing key
 }
