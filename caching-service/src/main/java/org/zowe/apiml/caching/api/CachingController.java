@@ -49,14 +49,13 @@ public class CachingController {
         notes = "Value returned is for the provided {key}")
     @ResponseBody
     public ResponseEntity<Object> getValue(@PathVariable String key, HttpServletRequest request) {
-        ZaasToken token;
+        String serviceId;
         try {
-            token = queryTokenFromRequest(request);
+            ZaasToken token = queryTokenFromRequest(request);
+            serviceId = token.getUserId();
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
         }
-
-        String serviceId = token.getUserId();
 
         if (key == null) {
             return noKeyProvidedResponse(serviceId);
@@ -77,14 +76,14 @@ public class CachingController {
         notes = "Values returned for the calling service")
     @ResponseBody
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
-        ZaasToken token;
+        String serviceId;
         try {
-            token = queryTokenFromRequest(request);
+            ZaasToken token = queryTokenFromRequest(request);
+            serviceId = token.getUserId();
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
         }
 
-        String serviceId = token.getUserId();
         return new ResponseEntity<>(storage.readForService(serviceId), HttpStatus.OK);
     }
 
@@ -93,20 +92,18 @@ public class CachingController {
         notes = "A new key-value pair will be added to the cache")
     @ResponseBody
     public ResponseEntity<Object> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
-        ZaasToken token;
+        String serviceId;
         try {
-            token = queryTokenFromRequest(request);
+            ZaasToken token = queryTokenFromRequest(request);
+            serviceId = token.getUserId();
+
+            checkForInvalidPayload(keyValue);
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
-        }
-
-        try {
-            checkForInvalidPayload(keyValue);
         } catch (CachingPayloadException e) {
             return invalidPayloadResponse(e, keyValue);
         }
 
-        String serviceId = token.getUserId();
         KeyValue createdPair = storage.create(serviceId, keyValue);
 
         if (createdPair == null) {
@@ -122,20 +119,18 @@ public class CachingController {
         notes = "Value at the key in the provided key-value pair will be updated to the provided value")
     @ResponseBody
     public ResponseEntity<Object> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
-        ZaasToken token;
+        String serviceId;
         try {
-            token = queryTokenFromRequest(request);
+            ZaasToken token = queryTokenFromRequest(request);
+            serviceId = token.getUserId();
+
+            checkForInvalidPayload(keyValue);
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
-        }
-
-        try {
-            checkForInvalidPayload(keyValue);
         } catch (CachingPayloadException e) {
             return invalidPayloadResponse(e, keyValue);
         }
 
-        String serviceId = token.getUserId();
         KeyValue updatedPair = storage.update(serviceId, keyValue);
 
         if (updatedPair == null) {
@@ -151,14 +146,13 @@ public class CachingController {
         notes = "Will delete key-value pair for the provided {key}")
     @ResponseBody
     public ResponseEntity<Object> delete(@PathVariable String key, HttpServletRequest request) {
-        ZaasToken token;
+        String serviceId;
         try {
-            token = queryTokenFromRequest(request);
+            ZaasToken token = queryTokenFromRequest(request);
+            serviceId = token.getUserId();
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
         }
-
-        String serviceId = token.getUserId();
 
         if (key == null) {
             return noKeyProvidedResponse(serviceId);
