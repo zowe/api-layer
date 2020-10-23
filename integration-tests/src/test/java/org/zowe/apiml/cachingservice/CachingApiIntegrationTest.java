@@ -39,8 +39,6 @@ class CachingApiIntegrationTest {
         RestAssured.useRelaxedHTTPSValidation();
         jwtToken = generateToken();
     }
-    @BeforeEach
-    public void setUp() { RestAssured.useRelaxedHTTPSValidation(); }
 
     @Test
     @Order(1)
