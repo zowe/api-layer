@@ -313,4 +313,18 @@ public class CachingControllerTest {
         assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         assertThat(response.getBody(), is(expectedBody));
     }
+
+    @Test
+    void givenEmptyTokenInCookie_whenQueryToken_thenResponseUnauthorized() throws ZaasClientException {
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken",
+            mockRequest.getRequestURL().toString()).mapToView();
+
+        Cookie[] cookies = new Cookie[]{new Cookie("apimlAuthenticationToken", "")};
+        mockRequest.setCookies(cookies);
+        when(mockZaasClient.query(null)).thenReturn(null);
+
+        ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+        assertThat(response.getBody(), is(expectedBody));
+    }
 }
