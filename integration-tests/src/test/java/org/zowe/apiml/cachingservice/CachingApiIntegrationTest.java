@@ -30,7 +30,7 @@ import static org.hamcrest.core.IsNot.not;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CachingApiIntegrationTest {
 
-    private static final URI CREATE_KEY_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
+    private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
     private static String jwtToken;
 
@@ -52,7 +52,7 @@ class CachingApiIntegrationTest {
             .body(keyValue)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .post(CREATE_KEY_PATH)
+            .post(CACHING_PATH)
             .then()
             .statusCode(is(SC_CREATED));
     }
@@ -64,7 +64,7 @@ class CachingApiIntegrationTest {
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .post(CREATE_KEY_PATH)
+            .post(CACHING_PATH)
             .then()
             .statusCode(is(SC_BAD_REQUEST));
     }
@@ -76,7 +76,7 @@ class CachingApiIntegrationTest {
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .get(CREATE_KEY_PATH + "/testKey")
+            .get(CACHING_PATH + "/testKey")
             .then()
             .body(not(isEmptyString()))
             .statusCode(is(SC_OK));
@@ -92,7 +92,7 @@ class CachingApiIntegrationTest {
             .body(keyValue)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .post(CREATE_KEY_PATH)
+            .post(CACHING_PATH)
             .then()
             .statusCode(is(SC_CREATED));
 
@@ -100,7 +100,7 @@ class CachingApiIntegrationTest {
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .get(CREATE_KEY_PATH)
+            .get(CACHING_PATH)
             .then()
             .body("testKey", Matchers.is(not(isEmptyString())),
                 "testKey2", Matchers.is(not(isEmptyString())))
@@ -114,7 +114,7 @@ class CachingApiIntegrationTest {
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .get(CREATE_KEY_PATH + "/invalidKey")
+            .get(CACHING_PATH + "/invalidKey")
             .then()
             .body(not(isEmptyString()))
             .statusCode(is(SC_NOT_FOUND));
@@ -130,7 +130,7 @@ class CachingApiIntegrationTest {
             .body(newValue)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .put(CREATE_KEY_PATH)
+            .put(CACHING_PATH)
             .then()
             .statusCode(is(SC_NO_CONTENT));
 
@@ -138,7 +138,7 @@ class CachingApiIntegrationTest {
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .get(CREATE_KEY_PATH + "/testKey")
+            .get(CACHING_PATH + "/testKey")
             .then()
             .body("value", Matchers.is("newValue"))
             .statusCode(is(SC_OK));
@@ -151,7 +151,7 @@ class CachingApiIntegrationTest {
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .delete(CREATE_KEY_PATH + "/testKey")
+            .delete(CACHING_PATH + "/testKey")
             .then()
             .statusCode(is(SC_NO_CONTENT));
 
@@ -159,7 +159,7 @@ class CachingApiIntegrationTest {
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .get(CREATE_KEY_PATH + "/testKey")
+            .get(CACHING_PATH + "/testKey")
             .then()
             .statusCode(is(SC_NOT_FOUND));
     }
