@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
@@ -33,6 +35,7 @@ import java.util.Arrays;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
+@Import(DefaultZaasClientConfiguration.class)
 public class CachingController {
     private static final String TOKEN_COOKIE_PREFIX = "apimlAuthenticationToken";
     private static final String KEY_NOT_IN_CACHE_MESSAGE = "org.zowe.apiml.cache.keyNotInCache";

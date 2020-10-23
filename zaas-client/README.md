@@ -157,6 +157,15 @@ To use this library use the procedure described in this article.
         }   
    ``` 
    
+   Alternatively, you can import `DefaultZaasClientCongfiguration` to use the default configuration file structure:
+   
+   ```java
+   @Import(DefaultZaasClientConfiguration.class)
+   public class SampleZaasClientImplementation {
+       private ZaasClient zaasClient;
+    }
+   ```
+   
 4. Create an instance of `ZaasClient` in your class and provide the `configProperties` object like the following:
 
     ```java
