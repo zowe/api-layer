@@ -1,0 +1,82 @@
+spring:
+    application:
+        name: Caching service
+
+apiml:
+    enabled: true
+    service:
+        preferIpAddress: false
+
+        serviceId: cachingservice
+        title: Caching service for internal usage.
+        description: Service that provides caching API.
+
+        discoveryServiceUrls: https://localhost:10011/eureka/
+
+        scheme: https
+
+        hostname: localhost
+        port: 10016
+        baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+        contextPath: /${apiml.service.serviceId}
+
+        homePageRelativeUrl: ${apiml.service.contextPath}
+        statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
+        healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
+
+        routes:
+            -   gateway-url: "api/v1"
+                service-url: ${apiml.service.contextPath}/api/v1
+        apiInfo:
+            -   apiId: org.zowe.cachingservice
+                version: 1.0.0
+                gatewayUrl: api/v1
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                documentationUrl: https://www.zowe.org
+        catalog:
+            tile:
+                id: zowe
+                title: Zowe Applications
+                description: Applications which are part of Zowe.
+                version: 1.0.0
+        ssl:
+            enabled: true
+            verifySslCertificatesOfServices: true
+            protocol: ${server.ssl.protocol}
+            keyStoreType: ${server.ssl.keyStoreType}
+            trustStoreType: ${server.ssl.trustStoreType}
+
+            keyAlias: ${server.ssl.keyAlias}
+            keyPassword: ${server.ssl.keyPassword}
+            keyStore: ${server.ssl.keyStore}
+            keyStorePassword: ${server.ssl.keyStorePassword}
+            trustStore: ${server.ssl.trustStore}
+            trustStorePassword: ${server.ssl.trustStorePassword}
+        customMetadata:
+            apiml:
+                enableUrlEncodedCharacters: true
+                gatewayPort: 10010
+                gatewayAuthEndpoint: /api/v1/gateway/auth
+                corsEnabled: false
+
+server:
+    port: ${apiml.service.port}
+
+    servlet:
+        contextPath: /${apiml.service.serviceId}
+
+    ssl:
+        enabled: true
+        clientAuth: want
+        protocol: TLSv1.2
+        enabled-protocols: TLSv1.2
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
+
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password

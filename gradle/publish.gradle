@@ -7,6 +7,7 @@ ext.javaLibraries = [
     'apiml-utility',
     'apiml-common',
     'apiml-security-common',
+    'caching-service',
     'discovery-service',
     'gateway-service',
     'security-service-client-spring',

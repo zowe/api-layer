@@ -41,6 +41,11 @@ java -jar discovery-service/build/libs/discovery-service.jar --spring.config.add
 java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local/api-catalog-service.yml
 ```
 
+### Caching API
+
+```shell
+java -jar caching-service/build/libs/caching-service.jar
+```
 
 ### Sample Application - Discoverable Client
 

@@ -139,3 +139,24 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -cp ${ROOT_DIR}"/components/api-mediation/gateway-service.jar":/usr/include/java_classes/IRRRacf.jar \
     org.springframework.boot.loader.PropertiesLauncher &
+
+if [[ ! -z "$ZOWE_CACHING_SERVICE_START" ]]
+then
+  CACHING_CODE=CS
+  _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m -Xquickstart \
+    -Dibm.serversocket.recover=true \
+    -Dfile.encoding=UTF-8 \
+    -Djava.io.tmpdir=/tmp \
+    -Dspring.profiles.include=$LOG_LEVEL \
+    -Dserver.ssl.enabled=true \
+    -Dserver.ssl.keyStore=${KEYSTORE} \
+    -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
+    -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
+    -Dserver.ssl.keyAlias=${KEY_ALIAS} \
+    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
+    -Dserver.ssl.trustStore=${TRUSTSTORE} \
+    -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
+    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
+    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -jar ${ROOT_DIR}"/components/api-mediation/caching-service.jar" &
+fi
