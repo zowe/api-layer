@@ -9,24 +9,248 @@
  */
 package org.zowe.apiml.caching.api;
 
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.caching.exceptions.CachingPayloadException;
+import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
+import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
+import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.service.ZaasClient;
+import org.zowe.apiml.zaasclient.service.ZaasToken;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1")
+@Import(DefaultZaasClientConfiguration.class)
 public class CachingController {
-    private final Storage storage;
+    private static final String TOKEN_COOKIE_PREFIX = "apimlAuthenticationToken";
+    private static final String KEY_NOT_IN_CACHE_MESSAGE = "org.zowe.apiml.cache.keyNotInCache";
 
-    @RequestMapping(value = "/api/v1/cache/{key}", produces = "application/json; charset=utf-8", method = RequestMethod.GET)
+    private final Storage storage;
+    private final ZaasClient zaasClient;
+    private final MessageService messageService;
+
+    @GetMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Retrieves a specific value in the cache",
+        notes = "Value returned is for the provided {key}")
     @ResponseBody
-    public ResponseEntity<?> getKey(
-        @PathVariable String key
-    ) {
-        String serviceId = "test-service";
-        return new ResponseEntity<>(storage.read(serviceId, key), HttpStatus.OK);
+    public ResponseEntity<Object> getValue(@PathVariable String key, HttpServletRequest request) {
+        String serviceId;
+        try {
+            ZaasToken token = queryTokenFromRequest(request);
+            serviceId = token.getUserId();
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        }
+
+        if (key == null) {
+            return noKeyProvidedResponse(serviceId);
+        }
+
+        KeyValue readPair = storage.read(serviceId, key);
+
+        if (readPair == null) {
+            Message message = messageService.createMessage(KEY_NOT_IN_CACHE_MESSAGE, key, serviceId);
+            return new ResponseEntity<>(message.mapToView(), HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(readPair, HttpStatus.OK);
     }
 
+    @GetMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Retrieves all values in the cache",
+        notes = "Values returned for the calling service")
+    @ResponseBody
+    public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
+        String serviceId;
+        try {
+            ZaasToken token = queryTokenFromRequest(request);
+            serviceId = token.getUserId();
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        }
+
+        return new ResponseEntity<>(storage.readForService(serviceId), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Create a new key in the cache",
+        notes = "A new key-value pair will be added to the cache")
+    @ResponseBody
+    public ResponseEntity<Object> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+        String serviceId;
+        try {
+            ZaasToken token = queryTokenFromRequest(request);
+            serviceId = token.getUserId();
+
+            checkForInvalidPayload(keyValue);
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        } catch (CachingPayloadException e) {
+            return invalidPayloadResponse(e, keyValue);
+        }
+
+        KeyValue createdPair = storage.create(serviceId, keyValue);
+
+        if (createdPair == null) {
+            Message message = messageService.createMessage("org.zowe.apiml.cache.keyCollision", keyValue.getKey());
+            return new ResponseEntity<>(message.mapToView(), HttpStatus.CONFLICT);
+        }
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PutMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Update key in the cache",
+        notes = "Value at the key in the provided key-value pair will be updated to the provided value")
+    @ResponseBody
+    public ResponseEntity<Object> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+        String serviceId;
+        try {
+            ZaasToken token = queryTokenFromRequest(request);
+            serviceId = token.getUserId();
+
+            checkForInvalidPayload(keyValue);
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        } catch (CachingPayloadException e) {
+            return invalidPayloadResponse(e, keyValue);
+        }
+
+        KeyValue updatedPair = storage.update(serviceId, keyValue);
+
+        if (updatedPair == null) {
+            Message message = messageService.createMessage(KEY_NOT_IN_CACHE_MESSAGE, keyValue.getKey(), serviceId);
+            return new ResponseEntity<>(message.mapToView(), HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Delete key from the cache",
+        notes = "Will delete key-value pair for the provided {key}")
+    @ResponseBody
+    public ResponseEntity<Object> delete(@PathVariable String key, HttpServletRequest request) {
+        String serviceId;
+        try {
+            ZaasToken token = queryTokenFromRequest(request);
+            serviceId = token.getUserId();
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        }
+
+        if (key == null) {
+            return noKeyProvidedResponse(serviceId);
+        }
+
+        KeyValue deletedPair = storage.delete(serviceId, key);
+
+        if (deletedPair == null) {
+            Message message = messageService.createMessage(KEY_NOT_IN_CACHE_MESSAGE, key, serviceId);
+            return new ResponseEntity<>(message.mapToView(), HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    private void checkForInvalidPayload(KeyValue keyValue) throws CachingPayloadException {
+        if (keyValue == null) {
+            throw new CachingPayloadException("No KeyValue provided in the payload");
+        }
+
+        if (keyValue.getValue() == null) {
+            throw new CachingPayloadException("No value provided in the payload");
+        }
+
+        String key = keyValue.getKey();
+        if (key == null) {
+            throw new CachingPayloadException("No key provided in the payload");
+        }
+        if (!StringUtils.isAlphanumeric(key)) {
+            throw new CachingPayloadException("Key is not alphanumeric");
+        }
+    }
+
+    private ResponseEntity<Object> invalidPayloadResponse(CachingPayloadException e, KeyValue keyValue) {
+        Message message = messageService.createMessage("org.zowe.apiml.cache.invalidPayload", keyValue, e.getMessage());
+        return new ResponseEntity<>(message.mapToView(), HttpStatus.BAD_REQUEST);
+    }
+
+    private ResponseEntity<Object> noKeyProvidedResponse(String serviceId) {
+        Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided", serviceId);
+        return new ResponseEntity<>(message.mapToView(), HttpStatus.BAD_REQUEST);
+    }
+
+    private ZaasToken queryTokenFromRequest(HttpServletRequest request) throws ZaasClientException {
+        String jwtToken = getJwtTokenFromCookie(request);
+        ZaasToken zaasToken = zaasClient.query(jwtToken);
+
+        if (zaasToken == null) {
+            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is null");
+        }
+        if (zaasToken.isExpired()) {
+            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, "Queried token is expired");
+        }
+
+        return zaasToken;
+    }
+
+    private String getJwtTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        return Arrays.stream(cookies)
+            .filter(cookie -> cookie.getName().equals(TOKEN_COOKIE_PREFIX))
+            .filter(cookie -> !cookie.getValue().isEmpty())
+            .findFirst()
+            .map(Cookie::getValue)
+            .orElse(null);
+    }
+
+    private ResponseEntity<Object> handleZaasClientException(ZaasClientException e, HttpServletRequest request) {
+        String requestUrl = request.getRequestURL().toString();
+        Message message;
+        HttpStatus statusCode;
+
+        switch (e.getErrorCode()) {
+            case TOKEN_NOT_PROVIDED:
+                statusCode = HttpStatus.BAD_REQUEST;
+                message = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided", requestUrl);
+                break;
+            case INVALID_JWT_TOKEN:
+                statusCode = HttpStatus.UNAUTHORIZED;
+                message = messageService.createMessage("org.zowe.apiml.security.query.invalidToken", requestUrl);
+                break;
+            case EXPIRED_JWT_EXCEPTION:
+                statusCode = HttpStatus.UNAUTHORIZED;
+                message = messageService.createMessage("org.zowe.apiml.security.expiredToken", requestUrl);
+                break;
+            case SERVICE_UNAVAILABLE:
+                statusCode = HttpStatus.NOT_FOUND;
+                message = messageService.createMessage("org.zowe.apiml.cache.gatewayUnavailable", requestUrl, e.getMessage());
+                break;
+            default:
+                statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+                message = messageService.createMessage("org.zowe.apiml.common.internalRequestError", requestUrl, e.getMessage(), e.getCause());
+                break;
+        }
+
+        return new ResponseEntity<>(message.mapToView(), statusCode);
+    }
 }

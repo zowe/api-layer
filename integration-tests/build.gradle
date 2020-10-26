@@ -27,6 +27,7 @@ dependencies {
     compile libraries.jjwt
     compile(project(':apiml-security-common'))
     compile(project(':zaas-client'))
+    compile(project(':caching-service'))
 
     testCompile libraries.junit
     testCompile libraries.hamcrest

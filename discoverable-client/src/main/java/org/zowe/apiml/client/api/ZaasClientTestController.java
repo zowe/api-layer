@@ -15,9 +15,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
@@ -28,6 +30,7 @@ import org.zowe.apiml.zaasclient.service.ZaasClient;
     value = "/api/v1/zaasClient",
     consumes = "application/json",
     tags = {"Zaas client test call"})
+@Import(DefaultZaasClientConfiguration.class)
 public class ZaasClientTestController {
 
     private ZaasClient zaasClient;

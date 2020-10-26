@@ -38,6 +38,9 @@ gitProperties {
 }
 
 dependencies {
+    compile project(':common-service-core')
+    compile project(':zaas-client')
+
     implementation project(':onboarding-enabler-spring')
 
     compile libraries.jjwt

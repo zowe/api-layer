@@ -7,18 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.client.configuration;
+package org.zowe.apiml.zaasclient.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 
-@Configuration
-public class ZaasClientConfig {
+public class DefaultZaasClientConfiguration {
 
     @Value("${apiml.service.hostname}")
     private String host;
@@ -47,10 +44,8 @@ public class ZaasClientConfig {
     @Value("${apiml.service.ssl.trustStoreType}")
     private String trustStoreType;
 
-
     @Bean
     public ConfigProperties getConfigProperties() {
-
         ConfigProperties configProperties = new ConfigProperties();
         configProperties.setApimlHost(host);
         configProperties.setApimlPort(port);

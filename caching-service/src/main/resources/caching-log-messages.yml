@@ -1,0 +1,59 @@
+messages:
+    # General messages (100 - 199)
+    -   key: org.zowe.apiml.security.expiredToken
+        number: ZWEAT100
+        type: ERROR
+        text: "Token is expired for URL '%s'"
+        reason: "The validity of the token is expired."
+        action: "Obtain a new token by performing an authentication request."
+
+    # Query messages (130 - 140)
+    -   key: org.zowe.apiml.security.query.invalidToken
+        number: ZWEAG130
+        type: ERROR
+        text: "Token is not valid for URL '%s'"
+        reason: "The token is not valid."
+        action: "Provide a valid token."
+
+    -   key: org.zowe.apiml.security.query.tokenNotProvided
+        number: ZWEAG131
+        type: ERROR
+        text: "No authorization token provided for URL '%s'"
+        reason: "No authorization token is provided."
+        action: "Provide a valid authorization token."
+
+    -   key: org.zowe.apiml.cache.invalidPayload
+        number: ZWECS130
+        type: ERROR
+        text: "Payload '%s' is not valid: '%s'."
+        reason: "The payload is not in valid JSON format."
+        action: "Provide a payload in JSON format."
+
+    -   key: org.zowe.apiml.cache.keyNotInCache
+        number: ZWECS131
+        type: ERROR
+        text: "Key '%s' is not in the cache for service '%s'"
+        reason: "Cache does not contain the provided key."
+        action: "Add a key-value pair to the cache using the key or operate on an existing key in the cache."
+
+    -   key: org.zowe.apiml.cache.keyNotProvided
+        number: ZWECS132
+        type: ERROR
+        text: "No cache key provided."
+        reason: "No cache key was provided."
+        action: "Provide a key that is in the cache."
+
+    -   key: org.zowe.apiml.cache.keyCollision
+        number: ZWECS133
+        type: ERROR
+        text: "Adding key '%s' resulted in a collision in the cache."
+        reason: "Key is already in the cache."
+        action: "Update or delete the key, or add a different key."
+
+    # Service specific messages (700 - 799)
+    -   key: org.zowe.apiml.cache.gatewayUnavailable
+        number: ZWECS700
+        type: ERROR
+        text: "Gateway service is not available at URL '%s'. Error returned: '%s'"
+        reason: "The gateway service is not available."
+        action: "Make sure that the gateway service is running and is accessible by the URL provided in the message."

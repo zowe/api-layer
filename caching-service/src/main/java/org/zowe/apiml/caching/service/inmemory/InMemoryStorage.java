@@ -18,7 +18,8 @@ import java.util.Map;
 public class InMemoryStorage implements Storage {
     private Map<String, Map<String, KeyValue>> storage = new HashMap<>();
 
-    public InMemoryStorage() {}
+    public InMemoryStorage() {
+    }
 
     protected InMemoryStorage(Map<String, Map<String, KeyValue>> storage) {
         this.storage = storage;
@@ -44,21 +45,33 @@ public class InMemoryStorage implements Storage {
 
     @Override
     public KeyValue update(String serviceId, KeyValue toUpdate) {
-        return create(serviceId, toUpdate);
+        String keyToUpdate = toUpdate.getKey();
+        if (isKeyNotInCache(serviceId, keyToUpdate)) {
+            return null;
+        }
+
+        Map<String, KeyValue> serviceStorage = storage.get(serviceId);
+        serviceStorage.put(keyToUpdate, toUpdate);
+        return toUpdate;
     }
 
     @Override
     public KeyValue delete(String serviceId, String toDelete) {
-        Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
-        if (serviceSpecificStorage == null) {
+        if (isKeyNotInCache(serviceId, toDelete)) {
             return null;
         }
 
+        Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
         return serviceSpecificStorage.remove(toDelete);
     }
 
     @Override
     public Map<String, KeyValue> readForService(String serviceId) {
         return storage.get(serviceId);
+    }
+
+    private boolean isKeyNotInCache(String serviceId, String keyToTest) {
+        Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
+        return serviceSpecificStorage == null || serviceSpecificStorage.get(keyToTest) == null;
     }
 }
