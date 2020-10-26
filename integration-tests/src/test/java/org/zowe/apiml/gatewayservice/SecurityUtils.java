@@ -94,7 +94,9 @@ public class SecurityUtils {
 
     public static void logoutItUserGatewayZosmf(String jwtToken) {
         logoutOnGateway(jwtToken);
+    }
 
+    public static void logoutOnZosmf() {
         if ( ! (System.getProperties().getProperty("externalJenkinsToggle") != null && System.getProperties().getProperty("externalJenkinsToggle").equalsIgnoreCase("true"))) {
             // login with Basic and get LTPA
             String ltpa2 =
