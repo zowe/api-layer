@@ -14,6 +14,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
+import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -28,6 +29,7 @@ import static org.hamcrest.core.IsNot.not;
 
 @TestsNotMeantForZowe
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@NotForMainframeTest
 class CachingApiIntegrationTest {
 
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");

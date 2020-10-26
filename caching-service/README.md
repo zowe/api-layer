@@ -36,11 +36,27 @@ TO BE DONE
 
 ### Additional Storage Support
 
+To add a new implementation it is necessary to provide the library with the implementation
+of the Storage.class and properly configure the Spring with the used implementation. 
+
+    @ConditionalOnProperty(
+        value = "caching.storage",
+        havingValue = "custom"
+    )
+    @Bean
+    public Storage custom() {
+        return new CustomStorage();
+    }
+
+The example above shows the Configuration within the library that will use different storage than the default InMemory one. 
+
+It is possible to provide the custom implementation via the -Dloader.path property provided on startup of the Caching service. 
+
 ## How do you run for local development
 
 The Caching Service is a Spring Boot application. You can either add it as a run configuration and run it together with other services, or the npm command to run API ML also runs the mock. 
 
-Command to run full set of api-layer: `npm run api-layer`.
+Command to run full set of api-layer: `npm run api-layer`. If you are looking for the Continuous Integration set up run: `npm run api-layer-ci`
 
 In local usage, the Caching Service will run at `https://localhost:10016`. The API path is `/cachingservice/api/v1/cache/${path-params-as-needed}`.
 For example, `https://localhost:10016/cachingservice/api/v1/cache/my-key` retrieves the cache entry using the key 'my-key'.
@@ -50,5 +66,4 @@ For example, `https://localhost:10016/cachingservice/api/v1/cache/my-key` retrie
 The Caching Service uses the standard `application.yml` structure for configuration.
 
 `apiml.service.routes` only specifies one API route as there is no need for web socket or UI routes.
-
-TO BE DONE: How do we handle configuration for the type of storage?
+`caching.storage` this property is reserved for the setup of the proper storage within the Caching Service. 
