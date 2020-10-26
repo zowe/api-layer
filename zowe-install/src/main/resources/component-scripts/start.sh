@@ -55,7 +55,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dapiml.discovery.userid=eureka \
-    -Dapiml.discovery.password=password     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
+    -Dapiml.discovery.password=password \
+    -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
     -Dapiml.service.port=${DISCOVERY_PORT} \
     -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
