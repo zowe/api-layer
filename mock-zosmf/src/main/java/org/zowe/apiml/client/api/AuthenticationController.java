@@ -46,7 +46,6 @@ public class AuthenticationController {
         @RequestHeader Map<String, String> headers
     ) {
         String authorization = headers.get("authorization");
-        System.out.println("Authorization: " + authorization);
 
         if (authorization == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
