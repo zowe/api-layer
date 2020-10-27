@@ -83,7 +83,8 @@ public class AuthenticationController {
         String username
     ) {
         Date current = new Date();
-        Date expiration = new Date(current.getTime() + 86400);
+        final int HOUR = 3600000;
+        Date expiration = new Date(current.getTime() + 8 * HOUR);
 
         String jwtToken = Jwts.builder()
             .setSubject(username)
