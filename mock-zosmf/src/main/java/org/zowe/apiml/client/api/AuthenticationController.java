@@ -46,6 +46,7 @@ public class AuthenticationController {
         @RequestHeader Map<String, String> headers
     ) {
         String authorization = headers.get("authorization");
+        System.out.println("Authorization: " + authorization);
 
         if (authorization == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -83,7 +84,8 @@ public class AuthenticationController {
         String username
     ) {
         Date current = new Date();
-        Date expiration = new Date(current.getTime() + 86400);
+        int HOUR = 3600000;
+        Date expiration = new Date(current.getTime() + 8 * HOUR);
 
         String jwtToken = Jwts.builder()
             .setSubject(username)
