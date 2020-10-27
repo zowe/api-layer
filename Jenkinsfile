@@ -208,6 +208,7 @@ pipeline {
 
         success {
             archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
