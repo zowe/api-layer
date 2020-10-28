@@ -111,17 +111,15 @@ public class ApiCatalogController {
             if (containerById != null) {
                 apiContainers.add(containerById);
             }
-            if (apiContainers.isEmpty()) {
-                return new ResponseEntity<>(apiContainers, HttpStatus.OK);
-            } else {
+            if (!apiContainers.isEmpty()) {
                 apiContainers.forEach(apiContainer -> {
                     // Fot this single container, check the status of all it's services so it's overall status can be set here
                     cachedProductFamilyService.calculateContainerServiceTotals(apiContainer);
                     // add API Doc to the services to improve UI performance
                     setApiDocToService(apiContainer);
                 });
-                return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             }
+            return new ResponseEntity<>(apiContainers, HttpStatus.OK);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalThrowable(e);
