@@ -22,12 +22,11 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.services.status.model.ApiVersionsNotFoundException;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -266,6 +265,25 @@ public class LocalApiDocServiceTest {
         assertNotNull(actualResponse.getApiDocContent());
 
         assertEquals(responseBody, actualResponse.getApiDocContent());
+    }
+
+    @Test
+    public void givenApiVersions_whenRetrieveVersions_thenReturnThem() {
+        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            .thenReturn(getStandardInstance(getStandardMetadata(), false));
+
+        List<String> actualVersions = apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
+        assertEquals(Collections.singletonList("1.0.0"), actualVersions);
+    }
+
+    @Test
+    public void givenNoApiVersions_whenRetrieveVersions_thenThrowException() {
+        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
+
+        exceptionRule.expect(ApiVersionsNotFoundException.class);
+        exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + ".");
+
+        apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
     }
 
     private HttpEntity<Object> getObjectHttpEntity() {

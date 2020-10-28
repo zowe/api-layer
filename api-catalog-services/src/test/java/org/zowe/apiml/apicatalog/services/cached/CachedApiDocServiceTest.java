@@ -9,16 +9,21 @@
  */
 package org.zowe.apiml.apicatalog.services.cached;
 
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.services.status.model.ApiVersionsNotFoundException;
+import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -101,7 +106,48 @@ public class CachedApiDocServiceTest {
 
         Exception exception = assertThrows(ApiDocNotFoundException.class,
             () -> cachedApiDocService.getApiDocForService(serviceId, version),
-        "Expected exception is not ApiDocNotFoundException");
+            "Expected exception is not ApiDocNotFoundException");
         assertEquals("No API Documentation was retrieved for the service Service.", exception.getMessage());
+    }
+
+    @Test
+    public void givenValidApiVersions_whenRetrieving_thenReturnIt() {
+        String serviceId = "service";
+        List<String> expectedVersions = Arrays.asList("1.0.0", "2.0.0");
+
+        when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(expectedVersions);
+
+        List<String> versions = cachedApiDocService.getApiVersionsForService(serviceId);
+        Assert.assertEquals(expectedVersions, versions);
+    }
+
+    @Test
+    public void givenValidApiVersions_whenUpdating_thenRetrieve() {
+        String serviceId = "service";
+        List<String> initialVersions = Arrays.asList("1.0.0", "2.0.0");
+        List<String> updatedVersions = Arrays.asList("1.0.0", "2.0.0", "3.0.0");
+
+        when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(initialVersions);
+
+        List<String> versions = cachedApiDocService.getApiVersionsForService(serviceId);
+        Assert.assertEquals(initialVersions, versions);
+
+        cachedApiDocService.updateApiVersionsForService(serviceId, updatedVersions);
+
+        when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(updatedVersions);
+
+        versions = cachedApiDocService.getApiVersionsForService(serviceId);
+        Assert.assertEquals(updatedVersions, versions);
+    }
+
+    @Test
+    public void givenInvalidApiVersion_whenRetrieving_thenThrowException() {
+        String serviceId = "service";
+
+        when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(Collections.emptyList());
+
+        Exception exception = assertThrows(ApiVersionsNotFoundException.class,
+            () -> cachedApiDocService.getApiVersionsForService(serviceId), "Exception is not ApiVersionsNotFoundException");
+        assertEquals("No API versions were retrieved for the service service.", exception.getMessage());
     }
 }
