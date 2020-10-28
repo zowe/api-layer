@@ -55,6 +55,9 @@ public class SwaggerConfiguration {
             );
     }
 
+    @Value("${apiml.service.apiInfo[1].version}")
+    private String apiVersion2;
+
     @Bean
     public Docket apiv2() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -67,7 +70,7 @@ public class SwaggerConfiguration {
                 new ApiInfo(
                     apiTitle,
                     apiDescription,
-                    apiVersion,
+                    apiVersion2,
                     null,
                     null,
                     null,
