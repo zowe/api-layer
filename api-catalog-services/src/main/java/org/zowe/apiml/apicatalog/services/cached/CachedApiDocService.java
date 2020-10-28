@@ -9,15 +9,17 @@
  */
 package org.zowe.apiml.apicatalog.services.cached;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocCacheKey;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.services.status.model.ApiVersionsNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,6 +29,8 @@ import java.util.Map;
 @Service
 public class CachedApiDocService {
     private static final Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
+    private static final Map<String, List<String>> serviceApiVersions = new HashMap<>();
+
     private final APIDocRetrievalService apiDocRetrievalService;
     private final TransformApiDocService transformApiDocService;
 
@@ -76,9 +80,46 @@ public class CachedApiDocService {
     }
 
     /**
+     * Update the api versions for this service
+     *
+     * @param serviceId service identifier
+     * @return List of API version strings for the requested service ID
+     */
+    public List<String> getApiVersionsForService(final String serviceId) {
+        List<String> apiVersions = CachedApiDocService.serviceApiVersions.get(serviceId);
+        try {
+            List<String> versions = apiDocRetrievalService.retrieveApiVersions(serviceId);
+            if (versions.isEmpty()) {
+                throw new ApiVersionsNotFoundException("No API versions were retrieved for the service " + serviceId + ".");
+            } else {
+                apiVersions = versions;
+                CachedApiDocService.serviceApiVersions.put(serviceId, apiVersions);
+            }
+        } catch (Exception e) {
+            // if no versions in cache
+            if (apiVersions == null) {
+                throw new ApiVersionsNotFoundException("No API versions were retrieved for the service " + serviceId + ".");
+            }
+        }
+        return apiVersions;
+    }
+
+    /**
+     * Update the api versions for this service.
+     * This method should be executed if a new version of a service is discovered on renewal.
+     *
+     * @param serviceId   service identifier
+     * @param apiVersions the API versions
+     */
+    public void updateApiVersionsForService(final String serviceId, final List<String> apiVersions) {
+        CachedApiDocService.serviceApiVersions.put(serviceId, apiVersions);
+    }
+
+    /**
      * Reset the cache for this service
      */
     public void resetCache() {
         serviceApiDocs.clear();
+        serviceApiVersions.clear();
     }
 }

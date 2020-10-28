@@ -9,16 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
-import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.swagger.SubstituteSwaggerGenerator;
-import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +17,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
+import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.services.status.model.ApiVersionsNotFoundException;
+import org.zowe.apiml.apicatalog.swagger.SubstituteSwaggerGenerator;
+import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,13 +48,35 @@ public class APIDocRetrievalService {
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     /**
+     * Retrieves the available API versions for a registered service.
+     * Takes the versions available in each 'apiml.service.apiInfo' element.
+     *
+     * @param serviceId the unique service ID
+     * @return a list of API version strings
+     * @throws ApiVersionsNotFoundException if the API versions cannot be loaded
+     */
+    public List<String> retrieveApiVersions(@NonNull String serviceId) {
+        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
+        if (instanceInfo == null) {
+            throw new ApiVersionsNotFoundException("Could not load instance information for service " + serviceId + ".");
+        }
+
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        List<String> apiVersions = new ArrayList<>();
+        for (ApiInfo apiInfo : apiInfoList) {
+            apiVersions.add(apiInfo.getVersion());
+        }
+        return apiVersions;
+    }
+
+    /**
      * Retrieve the API docs for a registered service
      * <p>
      * API doc URL is taken from the application metadata in the following
      * order:
      * <p>
-     * 1. 'apiml.apiInfo.swaggerUrl' (preferred way)
-     * 2. 'apiml.apiInfo' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
+     * 1. 'apiml.service.apiInfo.swaggerUrl' (preferred way)
+     * 2. 'apiml.service.apiInfo' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
      * 3. URL is constructed from 'apiml.routes.api-doc.serviceUrl'. This method is deprecated and used for
      * backwards compatibility only
      *
