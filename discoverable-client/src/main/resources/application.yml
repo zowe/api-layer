@@ -58,6 +58,11 @@ apiml:
                 gatewayUrl: api/v1
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
                 documentationUrl: https://www.zowe.org
+            -   apiId: org.zowe.discoverableclient
+                version: 2.0.0
+                gatewayUrl: api/v2
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs?group=apiv2
+                documentationUrl: https://www.zowe.org
         catalog:
             tile:
                 id: cademoapps
