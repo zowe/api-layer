@@ -168,7 +168,7 @@ public class APIDocRetrievalService {
 
         ApiInfo highestVersionApi = apiInfoList.get(0);
         for (ApiInfo apiInfo : apiInfoList) {
-            if (highestVersionApi == null || isHigherVersion(apiInfo, highestVersionApi)) {
+            if (isHigherVersion(apiInfo, highestVersionApi)) {
                 highestVersionApi = apiInfo;
             }
         }
@@ -176,17 +176,31 @@ public class APIDocRetrievalService {
     }
 
     private boolean isHigherVersion(ApiInfo toTest, ApiInfo comparedAgainst) {
-        // Version string can be any format. Split by delimiters ('.'; ','; '-'; '_')
-        // then remove non-number characters from the first field (major number) and compare remaining numbers
         int versionToTest = getMajorVersion(toTest);
         int versionToCompare = getMajorVersion(comparedAgainst);
 
         return versionToTest > versionToCompare;
     }
 
+    /**
+     * Return the major version from the version field in ApiInfo.
+     * <p>
+     * Major version is assumed to be the first integer in the version string.
+     * <p>
+     * If there is no major version (that is, no integers in the version string),
+     * -1 is returned as it assumed valid major versions will be 0 or higher. Thus,
+     * -1 can be used in an integer comparison for highest integer.
+     *
+     * @param apiInfo ApiInfo for which major version will be retrieved.
+     * @return int representing major version. If no version integer
+     */
     private int getMajorVersion(ApiInfo apiInfo) {
-        String[] versionFields = apiInfo.getVersion().split("[.\\-_,]");
-        String majorVersionStr = versionFields[0].replaceAll("\\D", "");
+        if (apiInfo == null || apiInfo.getVersion() == null) {
+            return -1;
+        }
+
+        String[] versionFields = apiInfo.getVersion().split("[^0-9a-zA-Z]");
+        String majorVersionStr = versionFields[0].replaceAll("[^0-9]", "");
         return majorVersionStr.isEmpty() ? -1 : Integer.parseInt(majorVersionStr);
     }
 
