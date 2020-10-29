@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
-import com.fasterxml.jackson.core.Version;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -163,8 +162,11 @@ public class APIDocRetrievalService {
     }
 
     private ApiInfo getHighestApiVersion(List<ApiInfo> apiInfoList) {
-        //TODO may not use 1.0.0 format - can be anything really - strip non-numbers, split on delimiters, and then compare?
-        ApiInfo highestVersionApi = null;
+        if (apiInfoList == null || apiInfoList.isEmpty()) {
+            return null;
+        }
+
+        ApiInfo highestVersionApi = apiInfoList.get(0);
         for (ApiInfo apiInfo : apiInfoList) {
             if (highestVersionApi == null || isHigherVersion(apiInfo, highestVersionApi)) {
                 highestVersionApi = apiInfo;
@@ -174,16 +176,18 @@ public class APIDocRetrievalService {
     }
 
     private boolean isHigherVersion(ApiInfo toTest, ApiInfo comparedAgainst) {
-        Version versionToTest = getVersion(toTest);
-        Version versionToCompare = getVersion(comparedAgainst);
+        // Version string can be any format. Split by delimiters ('.'; ','; '-'; '_')
+        // then remove non-number characters from the first field (major number) and compare remaining numbers
+        int versionToTest = getMajorVersion(toTest);
+        int versionToCompare = getMajorVersion(comparedAgainst);
 
-        return versionToTest.compareTo(versionToCompare) > 0;
+        return versionToTest > versionToCompare;
     }
 
-    private Version getVersion(ApiInfo apiInfo) {
-        String[] versionFields = apiInfo.getVersion().split("\\.");
-        return new Version(Integer.parseInt(versionFields[0]), Integer.parseInt(versionFields[1]), Integer.parseInt(versionFields[2]),
-            null, null, null);
+    private int getMajorVersion(ApiInfo apiInfo) {
+        String[] versionFields = apiInfo.getVersion().split("[.\\-_,]");
+        String majorVersionStr = versionFields[0].replaceAll("\\D", "");
+        return majorVersionStr.isEmpty() ? -1 : Integer.parseInt(majorVersionStr);
     }
 
     /**
