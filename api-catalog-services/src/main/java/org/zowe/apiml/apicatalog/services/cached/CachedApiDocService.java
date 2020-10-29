@@ -28,6 +28,8 @@ import java.util.Map;
 
 @Service
 public class CachedApiDocService {
+    private static final String LATEST_API_KEY = "latest";
+
     private static final Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
     private static final Map<String, List<String>> serviceApiVersions = new HashMap<>();
 
@@ -77,6 +79,43 @@ public class CachedApiDocService {
      */
     public void updateApiDocForService(final String serviceId, final String apiVersion, final String apiDoc) {
         CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
+    }
+
+    /**
+     * Update the docs for the latest API version for this service
+     *
+     * @param serviceId service identifier
+     * @return api doc info for the latest API of the request service id
+     */
+    public String getDefaultApiDocForService(final String serviceId) {
+        String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, LATEST_API_KEY));
+        try {
+            ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveDefaultApiDoc(serviceId);
+            if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
+                apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
+                CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, LATEST_API_KEY), apiDoc);
+            }
+            if (apiDoc == null) {
+                throw new ApiDocNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+            }
+        } catch (Exception e) {
+            //if there's not apiDoc in cache
+            if (apiDoc == null) {
+                throw new ApiDocNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+            }
+        }
+        return apiDoc;
+    }
+
+    /**
+     * Update the latest version api doc for this service.
+     * THis method should be executed if a new version of a service is discovered on renewal
+     *
+     * @param serviceId service identifier
+     * @param apiDoc    API Doc info
+     */
+    public void updateLatestApiDocForService(final String serviceId, final String apiDoc) {
+        CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, LATEST_API_KEY), apiDoc);
     }
 
     /**

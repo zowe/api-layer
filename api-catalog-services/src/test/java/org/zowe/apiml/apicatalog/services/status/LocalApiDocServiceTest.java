@@ -26,7 +26,10 @@ import org.zowe.apiml.apicatalog.services.status.model.ApiVersionsNotFoundExcept
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -37,10 +40,11 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class LocalApiDocServiceTest {
     private static final String SERVICE_ID = "service";
-    private final String ZOSMF_ID = "ibmzosmf";
+    private static final String ZOSMF_ID = "ibmzosmf";
     private static final String SERVICE_HOST = "service";
     private static final int SERVICE_PORT = 8080;
     private static final String SERVICE_VERSION = "1.0.0";
+    private static final String HIGHER_SERVICE_VERSION = "2.0.0";
     private static final String GATEWAY_SCHEME = "http";
     private static final String GATEWAY_HOST = "gateway:10000";
     private static final String GATEWAY_URL = "api/v1";
@@ -136,7 +140,7 @@ public class LocalApiDocServiceTest {
     @Test
     public void testFailedRetrievalOfAPIDocWhenServiceNotFound() {
         exceptionRule.expect(ApiDocNotFoundException.class);
-        exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + " .");
+        exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + ".");
 
         apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
     }
@@ -170,7 +174,7 @@ public class LocalApiDocServiceTest {
             .thenReturn(expectedResponse);
 
         exceptionRule.expect(ApiDocNotFoundException.class);
-        exceptionRule.expectMessage("No API Documentation defined for service " + SERVICE_ID + " .");
+        exceptionRule.expectMessage("No API Documentation defined for service " + SERVICE_ID + ".");
 
         apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
     }
@@ -268,6 +272,77 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
+    public void givenDefaultApiDoc_whenRetrieveDefault_thenReturnIt() {
+        String responseBody = "api-doc body";
+        Map<String,String> metadata = getMetadataWithMultipleApiInfo();
+        metadata.put(API_INFO + ".1." + API_INFO_IS_DEFAULT, "true"); //set lower version to default
+
+        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            .thenReturn(getStandardInstance(metadata, true));
+
+        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+            .thenReturn(expectedResponse);
+
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+
+        assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+        assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+        assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+
+        assertNotNull(actualResponse);
+        assertNotNull(actualResponse.getApiDocContent());
+        assertEquals(responseBody, actualResponse.getApiDocContent());
+
+        assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+    }
+
+    @Test
+    public void givenNoDefaultApiDoc_whenRetrieveDefault_thenReturnLatest() {
+        String responseBody = "api-doc body";
+
+        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfo(), true));
+
+        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+            .thenReturn(expectedResponse);
+
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+
+        assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+        assertEquals(HIGHER_SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+        assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+
+        assertNotNull(actualResponse);
+        assertNotNull(actualResponse.getApiDocContent());
+        assertEquals(responseBody, actualResponse.getApiDocContent());
+
+        assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+    }
+
+    @Test
+    public void givenNoApiDocs_whenRetrieveDefault_thenReturnNull() {
+        String responseBody = "api-doc body";
+
+        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
+
+        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+            .thenReturn(expectedResponse);
+
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+
+        assertNotNull(actualResponse);
+        assertNotNull(actualResponse.getApiDocContent());
+
+        assertEquals(responseBody, actualResponse.getApiDocContent());
+    }
+
+    @Test
     public void givenApiVersions_whenRetrieveVersions_thenReturnThem() {
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
             .thenReturn(getStandardInstance(getStandardMetadata(), false));
@@ -324,6 +399,26 @@ public class LocalApiDocServiceTest {
         metadata.put(API_INFO + ".1." + API_INFO_API_ID, API_ID);
         metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, GATEWAY_URL);
         metadata.put(API_INFO + ".1." + API_INFO_VERSION, SERVICE_VERSION);
+        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api");
+        metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
+        metadata.put(SERVICE_TITLE, "Test service");
+        metadata.put(SERVICE_DESCRIPTION, "Test service description");
+
+        return metadata;
+    }
+
+    private Map<String, String> getMetadataWithMultipleApiInfo() {
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(API_INFO + ".1." + API_INFO_API_ID, API_ID);
+        metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, GATEWAY_URL);
+        metadata.put(API_INFO + ".1." + API_INFO_VERSION, SERVICE_VERSION);
+        metadata.put(API_INFO + ".1." + API_INFO_SWAGGER_URL, SWAGGER_URL);
+
+        metadata.put(API_INFO + ".2." + API_INFO_API_ID, API_ID);
+        metadata.put(API_INFO + ".2." + API_INFO_GATEWAY_URL, GATEWAY_URL);
+        metadata.put(API_INFO + ".2." + API_INFO_VERSION, HIGHER_SERVICE_VERSION);
+        metadata.put(API_INFO + ".2." + API_INFO_SWAGGER_URL, SWAGGER_URL);
+
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
         metadata.put(SERVICE_TITLE, "Test service");

@@ -150,4 +150,50 @@ public class CachedApiDocServiceTest {
             () -> cachedApiDocService.getApiVersionsForService(serviceId), "Exception is not ApiVersionsNotFoundException");
         assertEquals("No API versions were retrieved for the service service.", exception.getMessage());
     }
+
+    @Test
+    public void givenValidApiDocs_whenRetrievingDefault_thenReturnLatestApi() {
+        String serviceId = "service";
+        String expectedApiDoc = "This is some api doc";
+        ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null);
+
+        when(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).thenReturn(apiDocInfo);
+        when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo)).thenReturn(expectedApiDoc);
+
+        String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
+        Assert.assertEquals(expectedApiDoc, apiDoc);
+    }
+
+    @Test
+    public void givenValidApiDocs_whenUpdatingDefault_thenRetrieveDefault() {
+        String serviceId = "service";
+        String initialApiDoc = "This is some api doc";
+        String updatedApiDoc = "This is some updated api doc";
+        ApiDocInfo initialApiDocInfo = new ApiDocInfo(null, initialApiDoc, null);
+        ApiDocInfo updatedApiDocInfo = new ApiDocInfo(null, updatedApiDoc, null);
+
+        when(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).thenReturn(initialApiDocInfo);
+        when(transformApiDocService.transformApiDoc(serviceId, initialApiDocInfo)).thenReturn(initialApiDoc);
+
+        String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
+        Assert.assertEquals(initialApiDoc, apiDoc);
+
+        cachedApiDocService.updateLatestApiDocForService(serviceId, updatedApiDoc);
+
+        when(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).thenReturn(updatedApiDocInfo);
+        when(transformApiDocService.transformApiDoc(serviceId, updatedApiDocInfo)).thenReturn(updatedApiDoc);
+
+        apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
+        Assert.assertEquals(updatedApiDoc, apiDoc);
+    }
+
+    @Test
+    public void givenInvalidApiDoc_whenRetrievingDefault_thenThrowException() {
+        String serviceId = "service";
+
+        Exception exception = assertThrows(ApiDocNotFoundException.class,
+            () -> cachedApiDocService.getDefaultApiDocForService(serviceId),
+            "Expected exception is not ApiDocNotFoundException");
+        assertEquals("No API Documentation was retrieved for the service service.", exception.getMessage());
+    }
 }

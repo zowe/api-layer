@@ -108,8 +108,8 @@ public class ApiCatalogControllerTests {
         given(this.cachedServicesService.getService("service1")).willReturn(service1);
         given(this.cachedServicesService.getService("service2")).willReturn(service2);
         given(this.cachedProductFamilyService.getContainerById("api-one")).willReturn(createContainers().get(0));
-        given(this.cachedApiDocService.getApiDocForService("service1", "v1")).willReturn("service1");
-        given(this.cachedApiDocService.getApiDocForService("service2", "v1")).willReturn("service2");
+        given(this.cachedApiDocService.getDefaultApiDocForService("service1")).willReturn("service1");
+        given(this.cachedApiDocService.getDefaultApiDocForService("service2")).willReturn("service2");
         given(this.cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
         given(this.cachedApiDocService.getApiVersionsForService("service2")).willReturn(apiVersions);
         ResponseEntity<List<APIContainer>> containers = this.apiCatalogController.getAPIContainerById("api-one");
@@ -135,8 +135,8 @@ public class ApiCatalogControllerTests {
         given(this.cachedServicesService.getService("service1")).willReturn(service1);
         given(this.cachedServicesService.getService("service2")).willReturn(service2);
         given(this.cachedProductFamilyService.getContainerById("api-one")).willReturn(createContainers().get(0));
-        given(this.cachedApiDocService.getApiDocForService("service1", "v1")).willReturn("service1");
-        given(this.cachedApiDocService.getApiDocForService("service2", "v1")).willThrow(new RuntimeException());
+        given(this.cachedApiDocService.getDefaultApiDocForService("service1")).willReturn("service1");
+        given(this.cachedApiDocService.getDefaultApiDocForService("service2")).willThrow(new RuntimeException());
         given(this.cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
         ResponseEntity<List<APIContainer>> containers = this.apiCatalogController.getAPIContainerById("api-one");
         Assert.assertNotNull(containers.getBody());
@@ -166,8 +166,8 @@ public class ApiCatalogControllerTests {
         given(this.cachedServicesService.getService("service1")).willReturn(service1);
         given(this.cachedServicesService.getService("service2")).willReturn(service2);
         given(this.cachedProductFamilyService.getContainerById("api-one")).willReturn(createContainers().get(0));
-        given(this.cachedApiDocService.getApiDocForService("service1", "v1")).willReturn("service1");
-        given(this.cachedApiDocService.getApiDocForService("service2", "v1")).willReturn("service2");
+        given(this.cachedApiDocService.getDefaultApiDocForService("service1")).willReturn("service1");
+        given(this.cachedApiDocService.getDefaultApiDocForService("service2")).willReturn("service2");
         given(this.cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
         given(this.cachedApiDocService.getApiVersionsForService("service2")).willThrow(new RuntimeException());
         ResponseEntity<List<APIContainer>> containers = this.apiCatalogController.getAPIContainerById("api-one");

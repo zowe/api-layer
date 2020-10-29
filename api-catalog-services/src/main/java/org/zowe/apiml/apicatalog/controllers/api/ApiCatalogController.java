@@ -131,7 +131,7 @@ public class ApiCatalogController {
             // try the get the Api Doc for this service, if it fails for any reason then do not change the existing value
             // it may or may not be null
             try {
-                String apiDoc = cachedApiDocService.getApiDocForService(apiService.getServiceId(), "v1");
+                String apiDoc = cachedApiDocService.getDefaultApiDocForService(apiService.getServiceId());
                 if (apiDoc != null) {
                     apiService.setApiDoc(apiDoc);
                 }

@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
+import com.fasterxml.jackson.core.Version;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -56,9 +57,12 @@ public class APIDocRetrievalService {
      * @throws ApiVersionsNotFoundException if the API versions cannot be loaded
      */
     public List<String> retrieveApiVersions(@NonNull String serviceId) {
-        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
-        if (instanceInfo == null) {
-            throw new ApiVersionsNotFoundException("Could not load instance information for service " + serviceId + ".");
+        InstanceInfo instanceInfo;
+
+        try {
+            instanceInfo = getInstanceInfo(serviceId);
+        } catch (ApiDocNotFoundException e) {
+            throw new ApiVersionsNotFoundException(e.getMessage());
         }
 
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
@@ -86,16 +90,18 @@ public class APIDocRetrievalService {
      * @throws ApiDocNotFoundException if the response is error
      */
     public ApiDocInfo retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
-        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
-        if (instanceInfo == null) {
-            throw new ApiDocNotFoundException("Could not load instance information for service " + serviceId + " .");
-        }
+        InstanceInfo instanceInfo = getInstanceInfo(serviceId);
 
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
-        RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
-
         ApiInfo apiInfo = findApi(apiInfoList, apiVersion);
+
+        return buildApiDocInfo(serviceId, apiInfo, instanceInfo);
+    }
+
+    private ApiDocInfo buildApiDocInfo(String serviceId, ApiInfo apiInfo, InstanceInfo instanceInfo) {
+        RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
         String apiDocUrl = getApiDocUrl(apiInfo, instanceInfo, routes);
+
         if (apiDocUrl == null) {
             return getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);
         }
@@ -116,6 +122,69 @@ public class APIDocRetrievalService {
         return new ApiDocInfo(apiInfo, apiDocContent, routes);
     }
 
+    /**
+     * Retrieve the default API docs for a registered service.
+     * <p>
+     * Default API doc is selected via the configuration parameter 'apiml.service.apiInfo.isDefault'.
+     * <p>
+     * If there are multiple apiInfo elements with isDefault set to 'true', or there are none set to 'true',
+     * then the high API version will be selected.
+     *
+     * @param serviceId the unique service id
+     * @return the default API doc and related information for transfer
+     * @throws ApiDocNotFoundException if the response is error
+     */
+    public ApiDocInfo retrieveDefaultApiDoc(@NonNull String serviceId) {
+        InstanceInfo instanceInfo = getInstanceInfo(serviceId);
+
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        ApiInfo defaultApiInfo = getApiInfoSetAsDefault(apiInfoList);
+
+        if (defaultApiInfo == null) {
+            defaultApiInfo = getHighestApiVersion(apiInfoList);
+        }
+
+        return buildApiDocInfo(serviceId, defaultApiInfo, instanceInfo);
+    }
+
+    private ApiInfo getApiInfoSetAsDefault(List<ApiInfo> apiInfoList) {
+        ApiInfo defaultApiInfo = null;
+        for (ApiInfo apiInfo : apiInfoList) {
+            if (apiInfo.isDefaultApi()) {
+                if (defaultApiInfo != null) {
+                    // multiple APIs set as default, can't handle conflict so stop looking for set default
+                    return null;
+                } else {
+                    defaultApiInfo = apiInfo;
+                }
+            }
+        }
+        return defaultApiInfo;
+    }
+
+    private ApiInfo getHighestApiVersion(List<ApiInfo> apiInfoList) {
+        //TODO may not use 1.0.0 format - can be anything really - strip non-numbers, split on delimiters, and then compare?
+        ApiInfo highestVersionApi = null;
+        for (ApiInfo apiInfo : apiInfoList) {
+            if (highestVersionApi == null || isHigherVersion(apiInfo, highestVersionApi)) {
+                highestVersionApi = apiInfo;
+            }
+        }
+        return highestVersionApi;
+    }
+
+    private boolean isHigherVersion(ApiInfo toTest, ApiInfo comparedAgainst) {
+        Version versionToTest = getVersion(toTest);
+        Version versionToCompare = getVersion(comparedAgainst);
+
+        return versionToTest.compareTo(versionToCompare) > 0;
+    }
+
+    private Version getVersion(ApiInfo apiInfo) {
+        String[] versionFields = apiInfo.getVersion().split("\\.");
+        return new Version(Integer.parseInt(versionFields[0]), Integer.parseInt(versionFields[1]), Integer.parseInt(versionFields[2]),
+            null, null, null);
+    }
 
     /**
      * Get ApiDoc url
@@ -201,6 +270,14 @@ public class APIDocRetrievalService {
             .orElse(apiInfos.get(0));
     }
 
+    private InstanceInfo getInstanceInfo(String serviceId) {
+        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
+        if (instanceInfo == null) {
+            throw new ApiDocNotFoundException("Could not load instance information for service " + serviceId + ".");
+        }
+        return instanceInfo;
+    }
+
     /**
      * Creates a URL from the routing metadata 'apiml.routes.api-doc.serviceUrl' when 'apiml.apiInfo.swaggerUrl' is
      * not present
@@ -229,7 +306,7 @@ public class APIDocRetrievalService {
         }
 
         if (path == null) {
-            throw new ApiDocNotFoundException("No API Documentation defined for service " + instanceInfo.getAppName().toLowerCase() + " .");
+            throw new ApiDocNotFoundException("No API Documentation defined for service " + instanceInfo.getAppName().toLowerCase() + ".");
         }
 
         UriComponents uri = UriComponentsBuilder
