@@ -16,6 +16,7 @@ normalization {
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
+apply from: "$projectDir/gradle/lite.gradle"
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -39,19 +40,19 @@ gitProperties {
 }
 
 dependencies {
-    compile(project(':security-service-client-spring'))
+    implementation(project(':security-service-client-spring'))
 
-    compile libraries.spring_boot_starter_web
-    compile libraries.spring_boot_starter_security
-    compile libraries.spring_boot_starter_actuator
-    compile libraries.spring_cloud_starter_eureka_server
-    compile libraries.jackson_dataformat_yaml
+    implementation libraries.spring_boot_starter_web
+    implementation libraries.spring_boot_starter_security
+    implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_cloud_starter_eureka_server
+    implementation libraries.jackson_dataformat_yaml
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
     // https://mvnrepository.com/artifact/com.netflix.servo/servo-core
-    compile group: 'com.netflix.servo', name: 'servo-core', version: '0.12.28'
+    implementation group: 'com.netflix.servo', name: 'servo-core', version: '0.12.28'
 
     testCompile libraries.lombok
     testAnnotationProcessor libraries.lombok

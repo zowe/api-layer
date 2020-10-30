@@ -42,6 +42,7 @@ apply from: 'gradle/sonar.gradle'
 apply from: 'gradle/coverage.gradle'
 apply from: 'gradle/code-quality.gradle'
 apply from: 'gradle/generate-pom.gradle'
+apply from: 'gradle/lite.gradle'
 
 allprojects {
     apply plugin: 'java'

@@ -1,0 +1,101 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
+/**
+ * This gradle file extends task `build` to create thin JAR files:
+ * <baseName>-lite.jar - contains base SpringBoot part to be executable and built submodules
+ * <baseName>-lite-lib.jar - contains all external libraries (except modules)
+ *
+ * To run application with thin and library file use:
+ * java -Dloader.path=<baseName>-lite-lib-<version>.jar -cp <basename>-lite-<version>.jar org.springframework.boot.loader.PropertiesLauncher
+ *
+ * Example:
+ * java -Dloader.path=zowe-rest-api-sample-spring-lite-lib-0.0.1-SNAPSHOT.jar -cp zowe-rest-api-sample-spring-lite-0.0.1-SNAPSHOT.jar org.springframework.boot.loader.PropertiesLauncher
+ */
+
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+def getModulesJarNames() {
+    def output = []
+    rootProject.subprojects.findAll({
+        def jarTask = it.properties.jar
+        if (!jarTask) return
+
+        def archivePath = jarTask.properties.archivePath
+        if (!archivePath) return
+
+        output += jarTask.properties.archivePath.name
+    })
+    return output
+}
+
+def getModulesJarFilters() {
+    return getModulesJarNames().stream().map({i -> "**/" + i}).collect()
+}
+
+static def verifySpringBootApp(File input) {
+    return input.readLines().stream().filter({line -> line.contains("@SpringBootApplication")}).any()
+}
+
+static def searchSpringBootApp(File input, List<File> output, File basePath) {
+    if (input.isDirectory()) {
+        input.listFiles().collect().forEach({file -> searchSpringBootApp(file, output, basePath)})
+    } else {
+        if (input.name.endsWith('.java') && verifySpringBootApp(input)) {
+            String clazz = input.absolutePath.substring(basePath.absolutePath.length() + 1)
+            clazz = clazz.substring(0, clazz.lastIndexOf("."))
+            clazz = clazz.replace(File.separatorChar, '.'.charAt(0))
+            output.add(clazz)
+        }
+    }
+}
+
+def getSpringBootApp() {
+    def classes = []
+    project.sourceSets.main.java.dirs.findAll().forEach({folder -> searchSpringBootApp(folder, classes, folder)})
+    switch (classes.size()) {
+        case 0:
+            println("No Spring Boot application was found. Please fix project or update lite.gradle (see mainClassName = getSpringBootApp() in task liteJar)")
+            System.exit(-1)
+        case 1:
+            return classes.get(0)
+        default:
+            println("Multiple Spring Boot application were found (" + classes + "). Please fix project or update lite.gradle (see mainClassName = getSpringBootApp() in task liteJar)")
+            System.exit(-1)
+    }
+}
+
+def getBaseNameLite() {
+    if (hasProperty("customBaseName")) {
+        return customBaseName + "-lite"
+    }
+    return project.name  + "-lite"
+}
+
+task liteJar(type: BootJar) {
+    def modulesJar = getModulesJarNames()
+    baseName = getBaseNameLite()
+    mainClassName = getSpringBootApp()
+    from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }}
+    exclude { details -> details.file && details.file.name.endsWith('.jar') && !modulesJar.contains(details.file.name) }
+    with bootJar
+}
+
+task liteLibJar(type: Jar) {
+    baseName = getBaseNameLite() + "-lib"
+    entryCompression = ZipEntryCompression.STORED
+    from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }}
+    include '*.jar'
+    exclude getModulesJarFilters()
+    with bootJar
+}
+
+jar.dependsOn liteLibJar
+jar.dependsOn liteJar
