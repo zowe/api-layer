@@ -16,6 +16,7 @@ normalization {
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
+apply from: "$projectDir/gradle/lite.gradle"
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -45,34 +46,34 @@ configurations.all {
 }
 
 dependencies {
-    compile(project(':apiml-security-common'))
-    compile libraries.spring_cloud_starter_zuul
-    compile libraries.spring_boot_starter_actuator
-    compile libraries.spring_boot_starter_web
-    compile libraries.spring_boot_starter_websocket
-    compile libraries.spring_boot_starter_thymeleaf
-    compile libraries.spring_boot_starter_cache
-    compile libraries.spring_boot_starter_aop
-    compile libraries.spring_security_web
-    compile libraries.spring_security_config
-    compile libraries.swagger3_core
-    compile libraries.swagger3_parser
-    compile libraries.jackson_core
-    compile libraries.tomcat_coyote
-    compile libraries.tomcat_embed_core
-    compile libraries.spring_cloud_starter_eureka
-    compile libraries.spring_cloud_starter_ribbon
-    compile libraries.jetty_websocket_client
-    compile libraries.jetty_util
-    compile libraries.jjwt
-    compile libraries.nimbusJoseJwt
-    compile libraries.eh_cache
-    compile libraries.spring_retry
+    implementation(project(':apiml-security-common'))
+    implementation libraries.spring_cloud_starter_zuul
+    implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_boot_starter_web
+    implementation libraries.spring_boot_starter_websocket
+    implementation libraries.spring_boot_starter_thymeleaf
+    implementation libraries.spring_boot_starter_cache
+    implementation libraries.spring_boot_starter_aop
+    implementation libraries.spring_security_web
+    implementation libraries.spring_security_config
+    implementation libraries.swagger3_core
+    implementation libraries.swagger3_parser
+    implementation libraries.jackson_core
+    implementation libraries.tomcat_coyote
+    implementation libraries.tomcat_embed_core
+    implementation libraries.spring_cloud_starter_eureka
+    implementation libraries.spring_cloud_starter_ribbon
+    implementation libraries.jetty_websocket_client
+    implementation libraries.jetty_util
+    implementation libraries.jjwt
+    implementation libraries.nimbusJoseJwt
+    implementation libraries.eh_cache
+    implementation libraries.spring_retry
     compileOnly libraries.javax_inject
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    compile libraries.springFox
+    implementation libraries.springFox
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
     testRuntime libraries.http_client
