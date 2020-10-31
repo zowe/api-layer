@@ -33,7 +33,7 @@ stop_jobs()
 {
   kill -15 $discovery_pid $catalog_pid $gateway_pid $cache_pid
 }
->
+
 trap 'stop_jobs' INT
 
 # If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
