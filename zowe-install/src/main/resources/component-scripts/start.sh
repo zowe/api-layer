@@ -29,6 +29,13 @@
 # To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
 LOG_LEVEL=
 
+stop_jobs()
+{
+  kill -15 $discovery_pid $catalog_pid $gateway_pid $cache_pid
+}
+
+trap 'stop_jobs' INT
+
 # If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
 APIML_STATIC_DEF=${STATIC_DEF_CONFIG_DIR}
 if [[ ! -z "$ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES" ]]
@@ -74,6 +81,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/discovery-service.jar" &
+discovery_pid=$?
 
 CATALOG_CODE=AC
 _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
@@ -102,6 +110,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/api-catalog-services.jar" &
+catalog_pid=$?
 
 GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
@@ -139,6 +148,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -cp ${ROOT_DIR}"/components/api-mediation/gateway-service.jar":/usr/include/java_classes/IRRRacf.jar \
     org.springframework.boot.loader.PropertiesLauncher &
+gateway_pid=$?
 
 if [[ ! -z "$ZOWE_CACHING_SERVICE_START" ]]
 then
@@ -159,4 +169,7 @@ then
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/caching-service.jar" &
+  cache_pid=$?
 fi
+
+wait
