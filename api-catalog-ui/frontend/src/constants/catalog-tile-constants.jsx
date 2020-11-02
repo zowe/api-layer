@@ -8,4 +8,6 @@ export const FETCH_TILES_SUCCESS = 'FETCH_TILES_SUCCESS';
 
 export const FETCH_TILES_FAILED = 'FETCH_TILES_FAILED';
 
+export const FETCH_SERVICE_DOC = 'FETCH_SERVICE_DOC';
+
 export const TILE_BY_ID = 'TILE_BY_ID';

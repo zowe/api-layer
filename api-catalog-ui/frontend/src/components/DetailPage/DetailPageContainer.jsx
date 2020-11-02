@@ -4,6 +4,7 @@ import {
     fetchTilesStart,
     fetchTilesStop,
     fetchTilesSuccess,
+    fetchServiceDoc,
 } from '../../actions/catalog-tile-actions';
 import { clearService } from '../../actions/selected-service-actions';
 import { createLoadingSelector } from '../../selectors/selectors';
@@ -16,6 +17,7 @@ const mapStateToProps = state => ({
     tiles: state.tilesReducer.tiles,
     fetchTilesError: state.tilesReducer.error,
     selectedTile: state.selectedServiceReducer.selectedTile,
+    selectedServiceId: state.selectedServiceReducer.selectedService.serviceId,
     isLoading: loadingSelector(state),
 });
 
@@ -24,6 +26,7 @@ const mapDispatchToProps = dispatch => ({
     fetchTilesSuccess: tiles => dispatch(fetchTilesSuccess(tiles)),
     fetchTilesFailed: error => dispatch(fetchTilesFailed(error)),
     fetchTilesStop: () => dispatch(fetchTilesStop()),
+    fetchServiceDoc: (id, version) => dispatch(fetchServiceDoc(id, version)),
     clearService: () => dispatch(clearService()),
 });
 

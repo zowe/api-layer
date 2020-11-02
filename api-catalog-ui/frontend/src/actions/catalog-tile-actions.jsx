@@ -5,6 +5,7 @@ import {
     FETCH_TILES_REQUEST,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
+    FETCH_SERVICE_DOC,
 } from '../constants/catalog-tile-constants';
 
 const fetchRetryToastId = 9998;
@@ -51,8 +52,24 @@ export function fetchTilesRetry(retryAttempt, maxRetries) {
 export function fetchTilesStart(id) {
     // dismiss the notification if it is displayed
     toast.dismiss(fetchRetryToastId);
+    let payload;
+    if (id){
+        payload = `${process.env.REACT_APP_CATALOG_UPDATE}/${id}`;
+    } else {
+        payload = process.env.REACT_APP_CATALOG_UPDATE
+    }
+    console.log(payload)
     return {
         type: FETCH_TILES_REQUEST,
-        payload: id,
+        payload,
     };
+}
+
+export function fetchServiceDoc(id, version) {
+    // dismiss the notification if it is displayed
+    toast.dismiss(fetchRetryToastId);
+    return {
+        type: FETCH_SERVICE_DOC,
+        payload: `${process.env.REACT_APP_APIDOC_UPDATE}/${id}/${version}`
+    }
 }

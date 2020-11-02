@@ -6,8 +6,16 @@ import SwaggerContainer from '../Swagger/SwaggerContainer';
 import './ServiceTab.css';
 
 export default class ServiceTab extends Component {
-    render() {
-        const message = 'The API documentation was retrieved but could not be displayed.';
+    constructor(props) {
+        super(props);
+        this.state = {
+            currentService: null,
+            invalidService: true,
+            selectedVersion: null,
+        }
+    }
+
+    componentDidMount() {
         const {
             match: {
                 params: { tileID, serviceId },
@@ -17,24 +25,43 @@ export default class ServiceTab extends Component {
             selectedService,
             selectedTile,
         } = this.props;
-        let currentService = null;
-        let invalidService = true;
-        const hasHomepage =
-            selectedService.homePageUrl !== null &&
-            selectedService.homePageUrl !== undefined &&
-            selectedService.homePageUrl.length > 0;
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
         tiles[0].services.forEach(service => {
             if (service.serviceId === serviceId) {
-                currentService = service;
+                const currentService = service;
                 if (currentService.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
                     selectService(currentService, tileID);
                 }
-                invalidService = false;
+                this.setState({"invalidService": false});
+                this.setState({currentService});
             }
         });
+    }
+
+    componentDidUpdate(){
+        console.log(this.props);
+    }
+
+    render() {
+        const { serviceId, selectedService } = this.props;
+        const { invalidService, currentService, selectedVersion } = this.state;
+        const message = 'The API documentation was retrieved but could not be displayed.';        
+        const hasHomepage =
+            selectedService.homePageUrl !== null &&
+            selectedService.homePageUrl !== undefined &&
+            selectedService.homePageUrl.length > 0;
+        
+        let apiVersions = [];
+        if(currentService && currentService.apiVersions) {
+            apiVersions = currentService.apiVersions.map(version => {
+                //TODO:: when setting state need to extrapolate value from version being clicked on and map to v1, v2, etc.
+                //TODO:: Fix styling of componetn, currently just text
+                return <span key={version} onClick={()=>{this.setState({selectedVersion: 'v1'})}}>{version}</span>
+            });
+        }
+
         return (
             <React.Fragment>
                 {invalidService && (
@@ -48,6 +75,7 @@ export default class ServiceTab extends Component {
                     {selectedService !== null && (
                         <React.Fragment>
                             <div style={{ background: '#ffff' }}>
+                                {apiVersions}
                                 <div style={{ margin: '20px 0px 0px 55px', background: '#ffff', width: '100vh' }}>
                                     <Text element="h2" color="#3b4151" fontWeight="bold">
                                         {selectedService.title}
