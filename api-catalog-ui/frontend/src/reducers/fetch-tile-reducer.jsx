@@ -4,7 +4,6 @@ import {
     FETCH_TILES_RETRY,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
-    FETCH_SERVICE_DOC,
 } from '../constants/catalog-tile-constants';
 
 const tilesReducerDefaultState = {
@@ -26,8 +25,6 @@ const tilesReducer = (state = tilesReducerDefaultState, action) => {
             return state;
         case FETCH_TILES_STOP:
             return state;
-        case FETCH_SERVICE_DOC:
-            return { tiles: state.tiles, id: action.payload, error: null}
         default:
             return state;
     }

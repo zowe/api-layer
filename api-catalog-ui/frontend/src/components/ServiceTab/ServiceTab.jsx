@@ -40,10 +40,6 @@ export default class ServiceTab extends Component {
         });
     }
 
-    componentDidUpdate(){
-        console.log(this.props);
-    }
-
     render() {
         const { serviceId, selectedService } = this.props;
         const { invalidService, currentService, selectedVersion } = this.state;
@@ -56,9 +52,8 @@ export default class ServiceTab extends Component {
         let apiVersions = [];
         if(currentService && currentService.apiVersions) {
             apiVersions = currentService.apiVersions.map(version => {
-                //TODO:: when setting state need to extrapolate value from version being clicked on and map to v1, v2, etc.
                 //TODO:: Fix styling of componetn, currently just text
-                return <span key={version} onClick={()=>{this.setState({selectedVersion: 'v1'})}}>{version}</span>
+                return <span key={version} onClick={()=>{this.setState({selectedVersion: version})}}>{version}</span>
             });
         }
 
@@ -134,7 +129,7 @@ export default class ServiceTab extends Component {
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
                             </div>
-                            <SwaggerContainer/>
+                            <SwaggerContainer selectedVersion={this.state.selectedVersion}/>
                         </React.Fragment>
                     )}
                 </Shield>

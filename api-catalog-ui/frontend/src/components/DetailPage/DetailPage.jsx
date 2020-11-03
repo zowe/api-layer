@@ -16,13 +16,7 @@ export default class DetailPage extends Component {
     tileId = null;
 
     componentDidMount() {
-        const { 
-            fetchTilesStart, 
-            fetchServiceDoc, 
-            match,
-            selectedServiceId } = this.props;
-            //TODO:: v1 hardcoded until it's passed own as a prop from ServiceTab component
-        fetchServiceDoc(selectedServiceId, 'v1');
+        const { fetchTilesStart, match, } = this.props;
         fetchTilesStart(match.params.tileID);
     }
 
@@ -57,7 +51,6 @@ export default class DetailPage extends Component {
                 params: { tileID },
             },
             fetchTilesStart,
-            fetchServiceDoc,
             history,
         } = this.props;
         const iconBack = <IconChevronLeft />;
@@ -68,15 +61,10 @@ export default class DetailPage extends Component {
         } else if (selectedTile !== null && selectedTile !== undefined && selectedTile !== tileID) {
             clearService();
             fetchTilesStop();
-            //TODO:: v1 hardcoded until it's passed own as a prop from ServiceTab component
-            fetchServiceDoc(selectedServiceId, 'v1');
             fetchTilesStart(tileID);
         }
-        //TODO:: test component to force fetchServiceDocAction
-        const testCallerButton = <div onClick={() => {fetchServiceDoc(selectedServiceId, 'v1');}}>test me</div>
         return (
             <div className="detail-page">
-                {testCallerButton}
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">
