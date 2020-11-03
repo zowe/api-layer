@@ -18,7 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.services.status.model.ApiVersionsNotFoundException;
+import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
 
 import java.util.Arrays;
@@ -146,7 +146,7 @@ public class CachedApiDocServiceTest {
 
         when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(Collections.emptyList());
 
-        Exception exception = assertThrows(ApiVersionsNotFoundException.class,
+        Exception exception = assertThrows(ApiVersionNotFoundException.class,
             () -> cachedApiDocService.getApiVersionsForService(serviceId), "Exception is not ApiVersionsNotFoundException");
         assertEquals("No API versions were retrieved for the service service.", exception.getMessage());
     }
@@ -178,7 +178,7 @@ public class CachedApiDocServiceTest {
         String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
         Assert.assertEquals(initialApiDoc, apiDoc);
 
-        cachedApiDocService.updateLatestApiDocForService(serviceId, updatedApiDoc);
+        cachedApiDocService.updateDefaultApiDocForService(serviceId, updatedApiDoc);
 
         when(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).thenReturn(updatedApiDocInfo);
         when(transformApiDocService.transformApiDoc(serviceId, updatedApiDocInfo)).thenReturn(updatedApiDoc);

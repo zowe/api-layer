@@ -20,7 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.services.status.model.ApiVersionsNotFoundException;
+import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.SubstituteSwaggerGenerator;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
@@ -53,7 +53,7 @@ public class APIDocRetrievalService {
      *
      * @param serviceId the unique service ID
      * @return a list of API version strings
-     * @throws ApiVersionsNotFoundException if the API versions cannot be loaded
+     * @throws ApiVersionNotFoundException if the API versions cannot be loaded
      */
     public List<String> retrieveApiVersions(@NonNull String serviceId) {
         InstanceInfo instanceInfo;
@@ -61,7 +61,7 @@ public class APIDocRetrievalService {
         try {
             instanceInfo = getInstanceInfo(serviceId);
         } catch (ApiDocNotFoundException e) {
-            throw new ApiVersionsNotFoundException(e.getMessage());
+            throw new ApiVersionNotFoundException(e.getMessage());
         }
 
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
@@ -74,6 +74,34 @@ public class APIDocRetrievalService {
             }
         }
         return apiVersions;
+    }
+
+    /**
+     * Retrieves the default API version for a registered service.
+     * Uses 'apiml.service.apiInfo.defaultApi' field.
+     * <p>
+     * Returns version in the format 'v{majorVersion|'}. If no API is set as default, null is returned.
+     *
+     * @param serviceId
+     * @return default API version in the format v{majorVersion}, or null.
+     */
+    public String retrieveDefaultApiVersion(@NonNull String serviceId) {
+        InstanceInfo instanceInfo;
+
+        try {
+            instanceInfo = getInstanceInfo(serviceId);
+        } catch (ApiDocNotFoundException e) {
+            throw new ApiVersionNotFoundException(e.getMessage());
+        }
+
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        ApiInfo defaultApiInfo = getApiInfoSetAsDefault(apiInfoList);
+
+        if (defaultApiInfo == null) {
+            return null;
+        }
+
+        return "v" + getMajorVersion(defaultApiInfo);
     }
 
     /**

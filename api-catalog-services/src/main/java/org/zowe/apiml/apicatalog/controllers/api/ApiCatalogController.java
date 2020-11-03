@@ -130,15 +130,20 @@ public class ApiCatalogController {
         apiContainer.getServices().forEach(apiService -> {
             // try the get the Api Doc for this service, if it fails for any reason then do not change the existing value
             // it may or may not be null
+            String serviceId = apiService.getServiceId();
             try {
-                String apiDoc = cachedApiDocService.getDefaultApiDocForService(apiService.getServiceId());
+                String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
                 if (apiDoc != null) {
                     apiService.setApiDoc(apiDoc);
                 }
-                List<String> apiVersions = cachedApiDocService.getApiVersionsForService(apiService.getServiceId());
+
+                List<String> apiVersions = cachedApiDocService.getApiVersionsForService(serviceId);
                 apiService.setApiVersions(apiVersions);
+
+                String defaultApiVersion = cachedApiDocService.getDefaultApiVersionForService(serviceId);
+                apiService.setDefaultApiVersion(defaultApiVersion);
             } catch (Exception e) {
-                log.debug("An error occurred when trying to fetch ApiDoc for service: " + apiService.getServiceId() +
+                log.debug("An error occurred when trying to fetch ApiDoc for service: " + serviceId +
                     ", processing can continue but this service will not be able to display any Api Documentation.\n" +
                     "Error Message: " + e.getMessage());
             }
