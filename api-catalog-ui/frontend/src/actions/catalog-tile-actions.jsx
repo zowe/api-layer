@@ -52,14 +52,8 @@ export function fetchTilesRetry(retryAttempt, maxRetries) {
 export function fetchTilesStart(id) {
     // dismiss the notification if it is displayed
     toast.dismiss(fetchRetryToastId);
-    let payload;
-    if (id){
-        payload = `${process.env.REACT_APP_CATALOG_UPDATE}/${id}`;
-    } else {
-        payload = process.env.REACT_APP_CATALOG_UPDATE
-    }
     return {
         type: FETCH_TILES_REQUEST,
-        payload,
+        payload: id,
     };
 }

@@ -2,7 +2,7 @@ import * as log from 'loglevel';
 import { of, throwError, timer } from 'rxjs';
 import { ofType } from 'redux-observable';
 import { catchError, debounceTime, exhaustMap, map, mergeMap, retryWhen, takeUntil } from 'rxjs/operators';
-import { FETCH_TILES_REQUEST, FETCH_TILES_STOP, FETCH_SERVICE_DOC } from '../constants/catalog-tile-constants';
+import { FETCH_TILES_REQUEST, FETCH_TILES_STOP } from '../constants/catalog-tile-constants';
 import { fetchTilesFailed, fetchTilesRetry, fetchTilesSuccess } from '../actions/catalog-tile-actions';
 import { userActions } from '../actions/user-actions';
 
@@ -38,9 +38,9 @@ function checkOrigin() {
  */
 function getUrl(action) {
     let url =
-        process.env.REACT_APP_GATEWAY_URL + process.env.REACT_APP_CATALOG_HOME;
+        process.env.REACT_APP_GATEWAY_URL + process.env.REACT_APP_CATALOG_HOME + process.env.REACT_APP_CATALOG_UPDATE;
     if (action.payload !== undefined) {
-        url += `${action.payload}`;
+        url += `/${action.payload}`;
     }
     return url;
 }
