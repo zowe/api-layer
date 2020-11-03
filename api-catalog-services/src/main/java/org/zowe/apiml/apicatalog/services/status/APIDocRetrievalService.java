@@ -67,7 +67,11 @@ public class APIDocRetrievalService {
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         List<String> apiVersions = new ArrayList<>();
         for (ApiInfo apiInfo : apiInfoList) {
-            apiVersions.add(apiInfo.getVersion());
+            int majorVersion = getMajorVersion(apiInfo);
+            if (majorVersion >= 0) {
+                // -1 indicates major version not found
+                apiVersions.add("v" + majorVersion);
+            }
         }
         return apiVersions;
     }

@@ -375,7 +375,7 @@ public class LocalApiDocServiceTest {
             .thenReturn(getStandardInstance(getStandardMetadata(), false));
 
         List<String> actualVersions = apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
-        assertEquals(Collections.singletonList("1.0.0"), actualVersions);
+        assertEquals(Collections.singletonList("v1"), actualVersions);
     }
 
     @Test
