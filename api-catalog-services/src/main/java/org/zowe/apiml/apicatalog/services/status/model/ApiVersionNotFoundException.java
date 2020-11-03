@@ -9,8 +9,8 @@
  */
 package org.zowe.apiml.apicatalog.services.status.model;
 
-public class ApiVersionsNotFoundException extends RuntimeException {
-    public ApiVersionsNotFoundException(String s) {
+public class ApiVersionNotFoundException extends RuntimeException {
+    public ApiVersionNotFoundException(String s) {
         super(s);
     }
 

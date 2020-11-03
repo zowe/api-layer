@@ -49,6 +49,9 @@ public class APIService implements Serializable {
     @ApiModelProperty(notes = "The API documentation for this service")
     private String apiDoc;
 
+    @ApiModelProperty(notes = "The default API version for this service")
+    private String defaultApiVersion = "v1";
+
     @ApiModelProperty(notes = "The available API versions for this service")
     private List<String> apiVersions;
 

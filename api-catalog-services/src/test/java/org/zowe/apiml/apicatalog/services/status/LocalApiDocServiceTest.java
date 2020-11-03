@@ -22,7 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.services.status.model.ApiVersionsNotFoundException;
+import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
@@ -277,7 +277,6 @@ public class LocalApiDocServiceTest {
     public void givenDefaultApiDoc_whenRetrieveDefault_thenReturnIt() {
         String responseBody = "api-doc body";
         Map<String, String> metadata = getMetadataWithMultipleApiInfo();
-        metadata.put(API_INFO + ".1." + API_INFO_IS_DEFAULT, "true"); //set lower version to default
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
             .thenReturn(getStandardInstance(metadata, true));
@@ -303,9 +302,11 @@ public class LocalApiDocServiceTest {
     @Test
     public void givenNoDefaultApiDoc_whenRetrieveDefault_thenReturnHighestVersion() {
         String responseBody = "api-doc body";
+        Map<String, String> metadata = getMetadataWithMultipleApiInfo();
+        metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfo(), true));
+            .thenReturn(getStandardInstance(metadata, true));
 
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
@@ -382,10 +383,38 @@ public class LocalApiDocServiceTest {
     public void givenNoApiVersions_whenRetrieveVersions_thenThrowException() {
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
 
-        exceptionRule.expect(ApiVersionsNotFoundException.class);
+        exceptionRule.expect(ApiVersionNotFoundException.class);
         exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + ".");
 
         apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
+    }
+
+    @Test
+    public void givenDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnIt() {
+        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfo(), false));
+
+        String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+        assertEquals("v1", defaultVersion);
+    }
+
+    @Test
+    public void givenNoDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnNull() {
+        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            .thenReturn(getStandardInstance(getStandardMetadata(), false));
+
+        String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+        assertNull(defaultVersion);
+    }
+
+    @Test
+    public void givenNoApiInfo_whenRetrieveDefaultVersion_thenThrowException() {
+        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
+
+        exceptionRule.expect(ApiVersionNotFoundException.class);
+        exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + ".");
+
+        apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
     }
 
     private HttpEntity<Object> getObjectHttpEntity() {
@@ -440,6 +469,7 @@ public class LocalApiDocServiceTest {
         metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, GATEWAY_URL);
         metadata.put(API_INFO + ".1." + API_INFO_VERSION, SERVICE_VERSION);
         metadata.put(API_INFO + ".1." + API_INFO_SWAGGER_URL, SWAGGER_URL);
+        metadata.put(API_INFO + ".1." + API_INFO_IS_DEFAULT, "true");
 
         metadata.put(API_INFO + ".2." + API_INFO_API_ID, API_ID);
         metadata.put(API_INFO + ".2." + API_INFO_GATEWAY_URL, GATEWAY_URL);
