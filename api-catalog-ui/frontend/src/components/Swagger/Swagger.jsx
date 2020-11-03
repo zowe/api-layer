@@ -38,32 +38,33 @@ export default class SwaggerUI extends Component {
 
     retrieveSwagger = () => {
         const { selectedService, selectedVersion } = this.props;
-        let swaggerConfig;
         try {
+            //If no version selected use the default apiDoc
             if (
-                selectedVersion == null &&
+                selectedVersion === null &&
                 selectedService.apiDoc !== null &&
                 selectedService.apiDoc !== undefined &&
                 selectedService.apiDoc.length !== 0
             ) {
-                swaggerConfig = { 
+                const swagger = JSON.parse(selectedService.apiDoc);
+                SwaggerUi({ 
                     dom_id: '#swaggerContainer',
-                    spec: JSON.parse(selectedService.apiDoc),
+                    spec: swagger,
                     presets: [presets.apis],
                     plugins: [this.customPlugins],
-                };
-            } else {
+                });
+            } 
+            if (selectedVersion !== null) {
                 const url = `${process.env.REACT_APP_GATEWAY_URL + 
                     process.env.REACT_APP_CATALOG_HOME + 
-                    process.env.REACT_APP_APIDOC_UPDATE}/${selectedService.serviceId}/v2`;
-                swaggerConfig = { 
+                    process.env.REACT_APP_APIDOC_UPDATE}/${selectedService.serviceId}/${selectedVersion}`;
+                SwaggerUi({ 
                     dom_id: '#swaggerContainer',
                     url,
                     presets: [presets.apis],
                     plugins: [this.customPlugins],
-                }
+                });
             }
-            SwaggerUi(swaggerConfig);
         } catch (e) {
             throw new Error(e);
         }

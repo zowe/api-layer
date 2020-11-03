@@ -53,7 +53,14 @@ export default class ServiceTab extends Component {
         if(currentService && currentService.apiVersions) {
             apiVersions = currentService.apiVersions.map(version => {
                 //TODO:: Fix styling of componetn, currently just text
-                return <span key={version} onClick={()=>{this.setState({selectedVersion: version})}}>{version}</span>
+                return <span 
+                    key={version} 
+                    onClick={ ()=>{ 
+                        this.setState({selectedVersion: version})
+                    }}
+                    style={{marginRight: '10px', padding: '7px', border: '1px solid #000000', borderRadius: '6px', cursor: 'pointer'}}>
+                        {version}
+                    </span>
             });
         }
 
@@ -70,7 +77,7 @@ export default class ServiceTab extends Component {
                     {selectedService !== null && (
                         <React.Fragment>
                             <div style={{ background: '#ffff' }}>
-                                {apiVersions}
+                                <div className="version-selectoion-container" style={{margin: '20px 0px 0px 55px'}}>{apiVersions}</div>
                                 <div style={{ margin: '20px 0px 0px 55px', background: '#ffff', width: '100vh' }}>
                                     <Text element="h2" color="#3b4151" fontWeight="bold">
                                         {selectedService.title}
