@@ -48,17 +48,21 @@ export default class ServiceTab extends Component {
             selectedService.homePageUrl !== null &&
             selectedService.homePageUrl !== undefined &&
             selectedService.homePageUrl.length > 0;
-        
         let apiVersions = [];
         if(currentService && currentService.apiVersions) {
+            let versionSelectorStyle = {
+                marginRight: '10px', 
+                padding: '7px', 
+                display: 'inline-block', 
+                border: '1px solid #000000', 
+                borderRadius: '6px', 
+                cursor: 'pointer'
+            };
             apiVersions = currentService.apiVersions.map(version => {
-                //TODO:: Fix styling of componetn, currently just text
                 return <span 
                     key={version} 
-                    onClick={ ()=>{ 
-                        this.setState({selectedVersion: version})
-                    }}
-                    style={{marginRight: '10px', padding: '7px', border: '1px solid #000000', borderRadius: '6px', cursor: 'pointer'}}>
+                    onClick={ ()=>{ this.setState({selectedVersion: version}); }}
+                    style={selectedVersion === version ? {...versionSelectorStyle, ...{background: '#d0d0d0'}} : versionSelectorStyle}>
                         {version}
                     </span>
             });
@@ -77,7 +81,6 @@ export default class ServiceTab extends Component {
                     {selectedService !== null && (
                         <React.Fragment>
                             <div style={{ background: '#ffff' }}>
-                                <div className="version-selectoion-container" style={{margin: '20px 0px 0px 55px'}}>{apiVersions}</div>
                                 <div style={{ margin: '20px 0px 0px 55px', background: '#ffff', width: '100vh' }}>
                                     <Text element="h2" color="#3b4151" fontWeight="bold">
                                         {selectedService.title}
@@ -135,6 +138,7 @@ export default class ServiceTab extends Component {
                                     </Tooltip>
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
+                                <div className="version-selectoion-container" style={{margin: '20px 0px 0px 55px'}}>{apiVersions}</div>
                             </div>
                             <SwaggerContainer selectedVersion={this.state.selectedVersion}/>
                         </React.Fragment>
