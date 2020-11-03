@@ -82,7 +82,7 @@ public class APIDocRetrievalService {
      * <p>
      * Returns version in the format 'v{majorVersion|'}. If no API is set as default, null is returned.
      *
-     * @param serviceId
+     * @param serviceId the unique service ID
      * @return default API version in the format v{majorVersion}, or null.
      */
     public String retrieveDefaultApiVersion(@NonNull String serviceId) {

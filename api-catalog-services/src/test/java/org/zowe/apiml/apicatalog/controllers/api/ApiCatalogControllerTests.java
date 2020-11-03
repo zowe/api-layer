@@ -104,6 +104,7 @@ public class ApiCatalogControllerTests {
         service1.addInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN));
 
         List<String> apiVersions = Arrays.asList("1.0.0", "2.0.0");
+        String defaultApiVersion = "v1";
 
         given(this.cachedServicesService.getService("service1")).willReturn(service1);
         given(this.cachedServicesService.getService("service2")).willReturn(service2);
@@ -112,13 +113,17 @@ public class ApiCatalogControllerTests {
         given(this.cachedApiDocService.getDefaultApiDocForService("service2")).willReturn("service2");
         given(this.cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
         given(this.cachedApiDocService.getApiVersionsForService("service2")).willReturn(apiVersions);
+        given(this.cachedApiDocService.getDefaultApiVersionForService("service1")).willReturn(defaultApiVersion);
+        given(this.cachedApiDocService.getDefaultApiVersionForService("service2")).willReturn(defaultApiVersion);
+
         ResponseEntity<List<APIContainer>> containers = this.apiCatalogController.getAPIContainerById("api-one");
         Assert.assertNotNull(containers.getBody());
         Assert.assertEquals(1, containers.getBody().size());
         containers.getBody().forEach(apiContainer ->
             apiContainer.getServices().forEach(apiService -> {
                 Assert.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                Assert.assertEquals(apiService.getApiVersions(), apiVersions);
+                Assert.assertEquals(apiVersions, apiService.getApiVersions());
+                Assert.assertEquals(defaultApiVersion, apiService.getDefaultApiVersion());
             }));
     }
 
