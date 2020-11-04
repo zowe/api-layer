@@ -65,6 +65,7 @@ public class TomcatConfiguration {
 
             connector.setSecure(true);
             protocol.setSSLEnabled(true);
+            protocol.setSslEnabledProtocols("TLSv1.2");
 
             File keyStore = new File(keyStorePath);
             File trustStore = new File(trustStorePath);
