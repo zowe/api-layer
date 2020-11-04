@@ -5,7 +5,6 @@ import {
     FETCH_TILES_REQUEST,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
-    FETCH_SERVICE_DOC,
 } from '../constants/catalog-tile-constants';
 
 const fetchRetryToastId = 9998;

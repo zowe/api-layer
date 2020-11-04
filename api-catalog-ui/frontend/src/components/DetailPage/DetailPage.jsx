@@ -45,7 +45,6 @@ export default class DetailPage extends Component {
             fetchTilesStop,
             fetchTilesError,
             selectedTile,
-            selectedServiceId,
             match,
             match: {
                 params: { tileID },

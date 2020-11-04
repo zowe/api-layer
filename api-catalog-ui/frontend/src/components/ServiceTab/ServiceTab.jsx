@@ -59,10 +59,16 @@ export default class ServiceTab extends Component {
                 cursor: 'pointer'
             };
             apiVersions = currentService.apiVersions.map(version => {
+                let versionStyle;
+                if (selectedVersion === version || (currentService.defaultApiVersion === version && selectedVersion === null)) {
+                    versionStyle = {...versionSelectorStyle, ...{background: '#d0d0d0'}}
+                } else {
+                    versionStyle = versionSelectorStyle;
+                }
                 return <span 
                     key={version} 
                     onClick={ ()=>{ this.setState({selectedVersion: version}); }}
-                    style={selectedVersion === version ? {...versionSelectorStyle, ...{background: '#d0d0d0'}} : versionSelectorStyle}>
+                    style={versionStyle}>
                         {version}
                     </span>
             });
