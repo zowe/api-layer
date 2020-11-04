@@ -16,7 +16,7 @@ export default class DetailPage extends Component {
     tileId = null;
 
     componentDidMount() {
-        const { fetchTilesStart, match, } = this.props;
+        const { fetchTilesStart, match } = this.props;
         fetchTilesStart(match.params.tileID);
     }
 

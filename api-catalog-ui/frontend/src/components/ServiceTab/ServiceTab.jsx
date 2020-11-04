@@ -9,45 +9,41 @@ export default class ServiceTab extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            currentService: null,
-            invalidService: true,
             selectedVersion: null,
         }
     }
 
-    componentDidMount() {
-        const {
-            match: {
-                params: { tileID, serviceId },
+    render() {
+        const { 
+            match : {
+                params: {tileID, serviceId},
             },
-            tiles,
-            selectService,
+            tiles, 
             selectedService,
             selectedTile,
+            selectService,
         } = this.props;
-        if (tiles === null || tiles === undefined || tiles.length === 0) {
-            throw new Error('No tile is selected.');
-        }
+        const { selectedVersion } = this.state;
+        let currentService = null;	
+        let invalidService = true;
         tiles[0].services.forEach(service => {
             if (service.serviceId === serviceId) {
-                const currentService = service;
-                if (currentService.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
-                    selectService(currentService, tileID);
+                
+                if (service.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
+                    selectService(service, tileID);
                 }
-                this.setState({"invalidService": false});
-                this.setState({currentService});
+                invalidService = false;
+                currentService = service;
             }
         });
-    }
-
-    render() {
-        const { serviceId, selectedService } = this.props;
-        const { invalidService, currentService, selectedVersion } = this.state;
         const message = 'The API documentation was retrieved but could not be displayed.';        
         const hasHomepage =
             selectedService.homePageUrl !== null &&
             selectedService.homePageUrl !== undefined &&
             selectedService.homePageUrl.length > 0;
+        if (tiles === null || tiles === undefined || tiles.length === 0) {
+            throw new Error('No tile is selected.');
+        }
         let apiVersions = [];
         if(currentService && currentService.apiVersions) {
             let versionSelectorStyle = {
@@ -144,9 +140,9 @@ export default class ServiceTab extends Component {
                                     </Tooltip>
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
-                                <div className="version-selectoion-container" style={{margin: '20px 0px 0px 55px'}}>{apiVersions}</div>
+                                <div className="version-selection-container" style={{margin: '20px 0px 0px 55px'}}>{apiVersions}</div>
                             </div>
-                            <SwaggerContainer selectedVersion={this.state.selectedVersion}/>
+                            <SwaggerContainer selectedVersion={selectedVersion}/>
                         </React.Fragment>
                     )}
                 </Shield>
