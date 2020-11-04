@@ -75,6 +75,9 @@ server:
             keyAlias: localhost
             trustStore: ../keystore/localhost/localhost.truststore.p12
             trustStorePassword: password
+            keyStoreType: PKCS12
+            trustStoreType: PKCS12
+            clientAuth: want
     ssl:
         enabled: true
         clientAuth: want

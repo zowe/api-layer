@@ -28,6 +28,8 @@ public class TomcatConfiguration {
     private boolean enableInternalPort;
     @Value("${server.internal.ssl.enabled:true}")
     private boolean enableSslOnInternal;
+    @Value("${server.internal.ssl.clientAuth:want}")
+    private String clientAuth;
     @Value("${server.internal.port:10017}")
     private int internalPort;
 
@@ -35,14 +37,20 @@ public class TomcatConfiguration {
     private String keyStorePath;
     @Value("${server.internal.ssl.keyStorePassword:password}")
     private String keyStorePassword;
+    @Value("${server.internal.ssl.keyStoreType:PKCS12}")
+    private String keyStoreType;
+
     @Value("${server.internal.ssl.keyPassword:password}")
     private String keyPassword;
     @Value("${server.internal.ssl.keyAlias:localhost}")
     private String keyAlias;
+
     @Value("${server.internal.ssl.trustStore:keystore/localhost/localhost.truststore.p12}")
     private String trustStorePath;
     @Value("${server.internal.ssl.trustStorePassword:password}")
     private String trustStorePassword;
+    @Value("${server.internal.ssl.trustStoreType:PKCS12}")
+    private String trustStoreType;
     @Value("${server.ssl.ciphers}")
     private String ciphers;
 
@@ -70,14 +78,17 @@ public class TomcatConfiguration {
             protocol.setSslEnabledProtocols("TLSv1.2");
             protocol.setSSLHonorCipherOrder(true);
             protocol.setCiphers(ciphers);
+            protocol.setClientAuth(clientAuth);
 
             File keyStore = new File(keyStorePath);
             File trustStore = new File(trustStorePath);
 
             protocol.setKeystoreFile(keyStore.getAbsolutePath());
             protocol.setKeystorePass(keyStorePassword);
+            protocol.setKeystoreType(keyStoreType);
             protocol.setTruststoreFile(trustStore.getAbsolutePath());
             protocol.setTruststorePass(trustStorePassword);
+            protocol.setTruststoreType(trustStoreType);
             protocol.setKeyAlias(keyAlias);
             protocol.setKeyPass(keyPassword);
         } else {
