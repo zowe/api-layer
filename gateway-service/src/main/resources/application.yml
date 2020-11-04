@@ -77,6 +77,8 @@ spring:
         banner-mode: ${apiml.banner:"off"}
 
 server:
+    internal:
+        enabled: false
     max-http-header-size: 48000
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
