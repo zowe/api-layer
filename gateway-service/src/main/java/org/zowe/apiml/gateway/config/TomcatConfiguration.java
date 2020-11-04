@@ -43,6 +43,8 @@ public class TomcatConfiguration {
     private String trustStorePath;
     @Value("${server.internal.ssl.trustStorePassword:password}")
     private String trustStorePassword;
+    @Value("${server.ssl.ciphers}")
+    private String ciphers;
 
     @Bean
     public ServletWebServerFactory servletContainer() {
@@ -66,6 +68,8 @@ public class TomcatConfiguration {
             connector.setSecure(true);
             protocol.setSSLEnabled(true);
             protocol.setSslEnabledProtocols("TLSv1.2");
+            protocol.setSSLHonorCipherOrder(true);
+            protocol.setCiphers(ciphers);
 
             File keyStore = new File(keyStorePath);
             File trustStore = new File(trustStorePath);
