@@ -148,6 +148,11 @@ task runCITests(dependsOn: [":integration-tests:runCITests", "runIntegrationTest
     group "Integration tests"
 }
 
+task runCITestsInternalPort(dependsOn: [":integration-tests:runCITestsInternalPort"]) {
+    description "Run Integration Test Without MF Dependencies, this is meant to be run after runCITests so the apiml is not automatically started here"
+    group "Integration tests"
+}
+
 task runMainFrameTests(dependsOn: ":integration-tests:runMainFrameTests") {
     description "Run only tests related to the MainFrame"
     group "Integration tests"
