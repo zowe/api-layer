@@ -224,6 +224,24 @@ task runCITests(type: Test) {
     }
 }
 
+task runCITestsInternalPort(type: Test) {
+    group "Integration tests"
+    description "Run only tests without long tests"
+
+    dependsOn startUpCheck
+    systemProperties System.properties
+    systemProperty "gateway.port", System.getProperty("internal.gateway.port")
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'SlowTests',
+            'AdditionalLocalTest',
+            'MainframeDependentTests'
+        )
+    }
+}
+
 task runMainFrameTests(type: Test) {
     group "integration tests"
     description "Run tests that verify integration with MainFrame"
