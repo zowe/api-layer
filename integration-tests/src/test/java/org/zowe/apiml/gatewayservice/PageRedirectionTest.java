@@ -133,7 +133,7 @@ class PageRedirectionTest {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         gatewayScheme = gatewayServiceConfiguration.getScheme();
         gatewayHost = gatewayServiceConfiguration.getHost();
-        gatewayPort = gatewayServiceConfiguration.getPort();
+        gatewayPort = gatewayServiceConfiguration.getExternalPort();
 
         RestAssured.port = gatewayPort;
         RestAssured.useRelaxedHTTPSValidation();

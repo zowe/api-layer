@@ -25,9 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.http.HttpClientUtils;
-import org.zowe.apiml.util.http.HttpRequestUtils;
-import org.zowe.apiml.util.http.HttpSecurityUtils;
+import org.zowe.apiml.util.http.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -51,7 +49,7 @@ public class ApiCatalogEndpointIntegrationTest {
     public void setUp() {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String host = gatewayServiceConfiguration.getHost();
-        int port = gatewayServiceConfiguration.getPort();
+        int port = gatewayServiceConfiguration.getExternalPort();
         baseHost = host + ":" + port;
     }
 
