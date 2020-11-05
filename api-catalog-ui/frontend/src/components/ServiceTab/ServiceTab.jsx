@@ -140,6 +140,7 @@ export default class ServiceTab extends Component {
                                     </Tooltip>
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
+                                {apiVersions.length > 0 ? <hr/> : ''}
                                 <div className="version-selection-container" style={{margin: '20px 0px 0px 55px'}}>{apiVersions}</div>
                             </div>
                             <SwaggerContainer selectedVersion={selectedVersion}/>
