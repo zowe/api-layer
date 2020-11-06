@@ -80,6 +80,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Dspring.profiles.include=${SPRING_PROFILE} \
     -jar ${ROOT_DIR}"/components/api-mediation/discovery-service.jar" &
 discovery_pid=$?
 
@@ -109,6 +110,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Dspring.profiles.include=${SPRING_PROFILE} \
     -jar ${ROOT_DIR}"/components/api-mediation/api-catalog-services.jar" &
 catalog_pid=$?
 
@@ -146,6 +148,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.security.x509.externalMapperUser=ZWESVUSR \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Dspring.profiles.include=${SPRING_PROFILE} \
     -cp ${ROOT_DIR}"/components/api-mediation/gateway-service.jar":/usr/include/java_classes/IRRRacf.jar \
     org.springframework.boot.loader.PropertiesLauncher &
 gateway_pid=$?
