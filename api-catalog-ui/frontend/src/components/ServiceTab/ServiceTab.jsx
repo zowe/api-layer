@@ -62,6 +62,7 @@ export default class ServiceTab extends Component {
                     versionStyle = versionSelectorStyle;
                 }
                 return <span 
+                    class="version-selector"
                     key={version} 
                     onClick={ ()=>{ this.setState({selectedVersion: version}); }}
                     style={versionStyle}>
