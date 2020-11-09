@@ -6,6 +6,7 @@ gatewayServiceConfiguration:
     scheme: https
     host: localhost
     port: 10010
+    externalPort: 10010
     instances: 1
 discoveryServiceConfiguration:
     scheme: https

@@ -65,6 +65,19 @@ spring:
 server:
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
+    internal:
+        port: 10017
+        enabled: true
+        ssl:
+            keyStore: ../keystore/localhost/localhost.keystore.p12
+            keyStorePassword: password
+            keyPassword: password
+            keyAlias: localhost
+            trustStore: ../keystore/localhost/localhost.truststore.p12
+            trustStorePassword: password
+            keyStoreType: PKCS12
+            trustStoreType: PKCS12
+            clientAuth: want
     ssl:
         enabled: true
         clientAuth: want

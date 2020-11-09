@@ -26,8 +26,12 @@
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
 # API Mediation Layer Debug Mode
-# To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
 LOG_LEVEL=
+
+if [ "$APIML_DEBUG_MODE_ENABLED" ]
+then
+  LOG_LEVEL="debug"
+fi
 
 stop_jobs()
 {
