@@ -249,6 +249,22 @@ public class TransformServiceTest {
     }
 
     @Test
+    public void givenServiceAndApiRouteWithVersion_whenGetApiBasePath_thenReturnApiPath() throws URLTransformationException {
+        String url = "https://localhost:8080/" + SERVICE_ID;
+
+        String serviceUrl = String.format("/%s/%s/%s", SERVICE_ID, API_PREFIX, "v1");
+        RoutedServices routedServices = new RoutedServices();
+        RoutedService routedService = new RoutedService(SERVICE_ID, API_PREFIX + "/v1", serviceUrl);
+        routedServices.addRoutedService(routedService);
+
+        TransformService transformService = new TransformService(null);
+
+        String actualPath = transformService.retrieveApiBasePath(SERVICE_ID, url, routedServices);
+        String expectedPath = String.format("/%s/%s/%s", SERVICE_ID, API_PREFIX, "{api-version}");
+        assertEquals(expectedPath, actualPath);
+    }
+
+    @Test
     public void givenInvalidUriPath_whenGetApiBasePath_thenThrowError() throws URLTransformationException {
         String url = "https:localhost:8080/wss";
 

@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.product.routing.transform;
 
-import org.zowe.apiml.util.UrlUtils;
+import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
@@ -18,7 +18,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
-import lombok.RequiredArgsConstructor;
+import org.zowe.apiml.util.UrlUtils;
 
 import java.net.URI;
 
@@ -114,9 +114,12 @@ public class TransformService {
             throw new URLTransformationException(message);
         }
 
+        // Make base path version a template so user can understand base path when looking at different API versions
+        String templatedVersionRoute = route.getGatewayUrl().replaceAll("/v\\d", "/{api-version}");
+
         return String.format("/%s/%s",
             serviceId,
-            route.getGatewayUrl());
+            templatedVersionRoute);
     }
 
     /**

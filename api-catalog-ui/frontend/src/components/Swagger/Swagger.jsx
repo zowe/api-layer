@@ -8,10 +8,11 @@ export default class SwaggerUI extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { selectedService } = this.props;
+        const { selectedService, selectedVersion } = this.props;
         if (
             selectedService.serviceId !== prevProps.selectedService.serviceId ||
-            selectedService.tileId !== prevProps.selectedService.tileId
+            selectedService.tileId !== prevProps.selectedService.tileId  ||
+            selectedVersion !== prevProps.selectedVersion
         ) {
             this.retrieveSwagger();
         }
@@ -36,24 +37,36 @@ export default class SwaggerUI extends Component {
     });
 
     retrieveSwagger = () => {
-        const { selectedService } = this.props;
-        if (
-            selectedService.apiDoc !== null &&
-            selectedService.apiDoc !== undefined &&
-            selectedService.apiDoc.length !== 0
-        ) {
-            try {
+        const { selectedService, selectedVersion } = this.props;
+        try {
+            //If no version selected use the default apiDoc
+            if (
+                selectedVersion === null &&
+                selectedService.apiDoc !== null &&
+                selectedService.apiDoc !== undefined &&
+                selectedService.apiDoc.length !== 0
+            ) {
                 const swagger = JSON.parse(selectedService.apiDoc);
-
-                SwaggerUi({
+                SwaggerUi({ 
                     dom_id: '#swaggerContainer',
                     spec: swagger,
                     presets: [presets.apis],
                     plugins: [this.customPlugins],
                 });
-            } catch (e) {
-                throw new Error(e);
+            } 
+            if (selectedVersion !== null) {
+                const url = `${process.env.REACT_APP_GATEWAY_URL + 
+                    process.env.REACT_APP_CATALOG_HOME + 
+                    process.env.REACT_APP_APIDOC_UPDATE}/${selectedService.serviceId}/${selectedVersion}`;
+                SwaggerUi({ 
+                    dom_id: '#swaggerContainer',
+                    url,
+                    presets: [presets.apis],
+                    plugins: [this.customPlugins],
+                });
             }
+        } catch (e) {
+            throw new Error(e);
         }
     };
 

@@ -65,6 +65,9 @@ public class EurekaMetadataParser {
                         case API_INFO_DOCUMENTATION_URL:
                             api.setDocumentationUrl(metadata.getValue());
                             break;
+                        case API_INFO_IS_DEFAULT:
+                            api.setDefaultApi(Boolean.parseBoolean(metadata.getValue()));
+                            break;
                         default:
                             apimlLog.log("org.zowe.apiml.common.apiInfoParsingError", metadata);
                             break;
@@ -162,7 +165,7 @@ public class EurekaMetadataParser {
      * Generate Eureka metadata for ApiInfo configuration
      *
      * @param serviceId the identifier of a service which ApiInfo configuration belongs
-     * @param apiInfo ApiInfo config data
+     * @param apiInfo   ApiInfo config data
      * @return the generated Eureka metadata
      */
     public static Map<String, String> generateMetadata(String serviceId, ApiInfo apiInfo) {
@@ -192,6 +195,8 @@ public class EurekaMetadataParser {
 
             metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), apiInfo.getDocumentationUrl());
         }
+
+        metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_IS_DEFAULT), String.valueOf(apiInfo.isDefaultApi()));
 
         return metadata;
     }

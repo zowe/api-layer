@@ -655,7 +655,7 @@ class ServiceDefinitionProcessorTest {
 
         Map<String, String> md = sod.getMetadata();
 
-        assertEquals(11, md.size());
+        assertEquals(13, md.size());
 
         assertEquals(CURRENT_VERSION, md.get(VERSION));
         assertEquals("testServiceTitle", md.get(SERVICE_TITLE));

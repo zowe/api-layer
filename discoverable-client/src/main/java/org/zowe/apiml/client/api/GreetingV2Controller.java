@@ -18,17 +18,16 @@ import org.zowe.apiml.client.model.Greeting;
 
 import java.util.Date;
 
-
 /**
- * Version 1 of the controller that returns greetings.
+ * Version 2 of the controller that returns greetings.
  */
 @RestController
 @Api(tags = {"Other Operations"})
 @SwaggerDefinition(tags = {
     @Tag(name = "Other Operations", description = "General Operations")})
-@RequestMapping("/api/v1")
-public class GreetingController {
-    private static final String TEMPLATE = "Hello, %s!";
+@RequestMapping("/api/v2")
+public class GreetingV2Controller {
+    private static final String TEMPLATE = "Hi, %s!";
 
     /**
      * Gets a greeting for anyone.
@@ -36,7 +35,7 @@ public class GreetingController {
     @GetMapping(value = "/greeting")
     @ApiOperation(value = "Get a greeting", response = Greeting.class,
         tags = {"Other Operations"})
-    public Greeting greeting(@RequestParam(value = "name", defaultValue = "world") String name,
+    public Greeting greeting(@RequestParam(value = "name", defaultValue = "user") String name,
                              @RequestParam(value = "delayMs", defaultValue = "0", required = false) Integer delayMs) {
         if (delayMs > 0) {
             try {
@@ -51,11 +50,10 @@ public class GreetingController {
     /**
      * Gets a custom greeting.
      */
-    @GetMapping(value = {"/{yourName}/greeting"})
+    @GetMapping(value = {"/greeting/{yourName}"})
     @ApiOperation(value = "Get a greeting", response = Greeting.class,
         tags = {"Other Operations"})
     public Greeting customGreeting(@PathVariable(value = "yourName") String yourName) {
         return new Greeting(new Date(), String.format(TEMPLATE, yourName));
     }
 }
-

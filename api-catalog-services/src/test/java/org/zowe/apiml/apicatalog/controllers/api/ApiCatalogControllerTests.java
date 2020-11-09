@@ -9,13 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import org.springframework.http.HttpStatus;
-import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
-import org.zowe.apiml.apicatalog.model.APIContainer;
-import org.zowe.apiml.apicatalog.model.APIService;
-import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
-import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -25,9 +18,19 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
+import org.zowe.apiml.apicatalog.model.APIContainer;
+import org.zowe.apiml.apicatalog.model.APIService;
+import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
+import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
+import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.mockito.BDDMockito.given;
 
@@ -100,17 +103,28 @@ public class ApiCatalogControllerTests {
         Application service2 = new Application("service-2");
         service1.addInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN));
 
+        List<String> apiVersions = Arrays.asList("1.0.0", "2.0.0");
+        String defaultApiVersion = "v1";
+
         given(this.cachedServicesService.getService("service1")).willReturn(service1);
         given(this.cachedServicesService.getService("service2")).willReturn(service2);
         given(this.cachedProductFamilyService.getContainerById("api-one")).willReturn(createContainers().get(0));
-        given(this.cachedApiDocService.getApiDocForService("service1", "v1")).willReturn("service1");
-        given(this.cachedApiDocService.getApiDocForService("service2", "v1")).willReturn("service2");
+        given(this.cachedApiDocService.getDefaultApiDocForService("service1")).willReturn("service1");
+        given(this.cachedApiDocService.getDefaultApiDocForService("service2")).willReturn("service2");
+        given(this.cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
+        given(this.cachedApiDocService.getApiVersionsForService("service2")).willReturn(apiVersions);
+        given(this.cachedApiDocService.getDefaultApiVersionForService("service1")).willReturn(defaultApiVersion);
+        given(this.cachedApiDocService.getDefaultApiVersionForService("service2")).willReturn(defaultApiVersion);
+
         ResponseEntity<List<APIContainer>> containers = this.apiCatalogController.getAPIContainerById("api-one");
         Assert.assertNotNull(containers.getBody());
         Assert.assertEquals(1, containers.getBody().size());
         containers.getBody().forEach(apiContainer ->
-            apiContainer.getServices().forEach(apiService ->
-                Assert.assertEquals(apiService.getServiceId(), apiService.getApiDoc())));
+            apiContainer.getServices().forEach(apiService -> {
+                Assert.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                Assert.assertEquals(apiVersions, apiService.getApiVersions());
+                Assert.assertEquals(defaultApiVersion, apiService.getDefaultApiVersion());
+            }));
     }
 
     @Test
@@ -121,11 +135,14 @@ public class ApiCatalogControllerTests {
         Application service2 = new Application("service-2");
         service1.addInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN));
 
+        List<String> apiVersions = Arrays.asList("1.0.0", "2.0.0");
+
         given(this.cachedServicesService.getService("service1")).willReturn(service1);
         given(this.cachedServicesService.getService("service2")).willReturn(service2);
         given(this.cachedProductFamilyService.getContainerById("api-one")).willReturn(createContainers().get(0));
-        given(this.cachedApiDocService.getApiDocForService("service1", "v1")).willReturn("service1");
-        given(this.cachedApiDocService.getApiDocForService("service2", "v1")).willThrow(new RuntimeException());
+        given(this.cachedApiDocService.getDefaultApiDocForService("service1")).willReturn("service1");
+        given(this.cachedApiDocService.getDefaultApiDocForService("service2")).willThrow(new RuntimeException());
+        given(this.cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
         ResponseEntity<List<APIContainer>> containers = this.apiCatalogController.getAPIContainerById("api-one");
         Assert.assertNotNull(containers.getBody());
         Assert.assertEquals(1, containers.getBody().size());
@@ -133,9 +150,43 @@ public class ApiCatalogControllerTests {
             apiContainer.getServices().forEach(apiService -> {
                 if (apiService.getServiceId().equals("service1")) {
                     Assert.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                    Assert.assertEquals(apiService.getApiVersions(), apiVersions);
                 }
                 if (apiService.getServiceId().equals("service2")) {
                     Assert.assertNull(apiService.getApiDoc());
+                }
+            }));
+    }
+
+    @Test
+    public void whenGetSingleContainer_thenPopulateApiVersionsForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
+        Application service1 = new Application("service-1");
+        service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
+
+        Application service2 = new Application("service-2");
+        service1.addInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN));
+
+        List<String> apiVersions = Arrays.asList("1.0.0", "2.0.0");
+
+        given(this.cachedServicesService.getService("service1")).willReturn(service1);
+        given(this.cachedServicesService.getService("service2")).willReturn(service2);
+        given(this.cachedProductFamilyService.getContainerById("api-one")).willReturn(createContainers().get(0));
+        given(this.cachedApiDocService.getDefaultApiDocForService("service1")).willReturn("service1");
+        given(this.cachedApiDocService.getDefaultApiDocForService("service2")).willReturn("service2");
+        given(this.cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
+        given(this.cachedApiDocService.getApiVersionsForService("service2")).willThrow(new RuntimeException());
+        ResponseEntity<List<APIContainer>> containers = this.apiCatalogController.getAPIContainerById("api-one");
+        Assert.assertNotNull(containers.getBody());
+        Assert.assertEquals(1, containers.getBody().size());
+        containers.getBody().forEach(apiContainer ->
+            apiContainer.getServices().forEach(apiService -> {
+                if (apiService.getServiceId().equals("service1")) {
+                    Assert.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                    Assert.assertEquals(apiService.getApiVersions(), apiVersions);
+                }
+                if (apiService.getServiceId().equals("service2")) {
+                    Assert.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                    Assert.assertNull(apiService.getApiVersions());
                 }
             }));
     }
@@ -146,10 +197,10 @@ public class ApiCatalogControllerTests {
     private List<APIContainer> createContainers() {
         Set<APIService> services = new HashSet<>();
 
-        APIService service = new APIService("service1", "service-1", "service-1", false, "url","home", "base");
+        APIService service = new APIService("service1", "service-1", "service-1", false, "url", "home", "base");
         services.add(service);
 
-        service = new APIService("service2", "service-2", "service-2", true, "url","home", "base");
+        service = new APIService("service2", "service-2", "service-2", true, "url", "home", "base");
         services.add(service);
 
         APIContainer container = new APIContainer("api-one", "API One", "This is API One", services);
