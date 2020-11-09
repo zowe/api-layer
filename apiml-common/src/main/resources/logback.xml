@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <property resource="application.yml" />
+    <property name="MAX_INDEX" value="${rollingPolicy.maxIndex:-12}"/>
+    <property name="MIN_INDEX" value="${rollingPolicy.minIndex:-1}"/>
+    <property name="MAX_FILE_SIZE" value="${rollingPolicy.file.maxSize:-50MB}"/>
+    <property name="STORAGE_LOCATION" value="${WORKSPACE_DIR}/api-mediation/logs" />
+    <property name="apimlLogPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr(&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt;){magenta} %X{userid:-} %clr(%-5level) %clr(\\(%logger{15}\\)){cyan} %msg%n"/>
 
     <turboFilter class="org.zowe.apiml.product.logging.UseridFilter"/>
     <turboFilter class="org.zowe.apiml.product.logging.ApimlDependencyLogHider"/>
@@ -11,11 +16,30 @@
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr(&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt;){magenta} %X{userid:-} %clr(%-5level) %clr(\(%logger{15}\)){cyan} %msg%n</pattern>
+            <pattern>${apimlLogPattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="org.zowe.apiml.product.logging.ApimlRollingFileAppender">
+        <file>${STORAGE_LOCATION}/${logbackServiceName}.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${STORAGE_LOCATION}/${logbackServiceName}.%i.log</fileNamePattern>
+            <minIndex>${MIN_INDEX}</minIndex>
+            <maxIndex>${MAX_INDEX}</maxIndex>
+        </rollingPolicy>
+
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+        </triggeringPolicy>
+
+        <encoder>
+            <pattern>${apimlLogPattern}</pattern>
         </encoder>
     </appender>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
     </root>
 </configuration>
