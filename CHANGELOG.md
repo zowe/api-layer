@@ -1,6 +1,11 @@
 # API Mediation Layer Changelog
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
+## `1.17.0`
+
+- Feature: Multiple versions of one API will be shown in the Catalogue if configured. [#844](https://github.com/zowe/api-layer/issues/844)
+- Feature: Setting of APIML_DEBUG_MODE_ENABLED in instance.env is properly passed on to the all API ML services. [#901](https://github.com/zowe/api-layer/issues/901)
+
 ## `1.16.0`
 
 - Feature: ZAAS Client can now use HTTP so that the Application Transparent Transport Layer Security (AT-TLS) can be used for communication to ZAAS. [#813](https://github.com/zowe/api-layer/issues/813)
