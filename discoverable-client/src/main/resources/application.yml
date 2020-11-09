@@ -48,6 +48,8 @@ apiml:
                 service-url: ${apiml.service.contextPath}
             -   gateway-url: "api/v1"
                 service-url: ${apiml.service.contextPath}/api/v1
+            -   gateway-url: "api/v2"
+                service-url: ${apiml.service.contextPath}/api/v2
             -   gateway-url: "ws/v1"
                 service-url: ${apiml.service.contextPath}/ws
         apiInfo:
@@ -55,6 +57,12 @@ apiml:
                 version: 1.0.0
                 gatewayUrl: api/v1
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                documentationUrl: https://www.zowe.org
+                defaultApi: true
+            -   apiId: org.zowe.discoverableclient
+                version: 2.0.0
+                gatewayUrl: api/v2
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs?group=apiv2
                 documentationUrl: https://www.zowe.org
         catalog:
             tile:

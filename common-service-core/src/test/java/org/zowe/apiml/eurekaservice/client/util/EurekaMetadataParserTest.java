@@ -9,23 +9,23 @@
  */
 package org.zowe.apiml.eurekaservice.client.util;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class EurekaMetadataParserTest {
 
@@ -43,6 +43,7 @@ public class EurekaMetadataParserTest {
         metadata.put(API_INFO + ".2." + API_INFO_DOCUMENTATION_URL, "doc");
         metadata.put(API_INFO + ".1." + API_INFO_API_ID, "org.zowe.test");
         metadata.put(API_INFO + ".1." + API_INFO_VERSION, "1.0.0");
+        metadata.put(API_INFO + ".1." + API_INFO_IS_DEFAULT, "true");
         metadata.put(API_INFO + ".1.badArgument", "garbage");
 
 
@@ -52,9 +53,11 @@ public class EurekaMetadataParserTest {
         assertEquals("gatewayUrl", info.get(0).getGatewayUrl());
         assertEquals("org.zowe.test", info.get(0).getApiId());
         assertEquals("1.0.0", info.get(0).getVersion());
+        assertTrue(info.get(0).isDefaultApi());
         assertEquals("gatewayUrl2", info.get(1).getGatewayUrl());
         assertEquals("swagger", info.get(1).getSwaggerUrl());
         assertEquals("doc", info.get(1).getDocumentationUrl());
+        assertFalse(info.get(1).isDefaultApi());
     }
 
     @Test
@@ -153,10 +156,10 @@ public class EurekaMetadataParserTest {
         String serviceId = "test service";
         String version = "1.0.0";
 
-        ApiInfo apiInfo = new ApiInfo(null, null, version, null, null);
+        ApiInfo apiInfo = new ApiInfo(null, null, version, null, null); // isDefaultApi defaults to false
         Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
 
-        assertEquals(1, metadata.size());
+        assertEquals(2, metadata.size());
         assertTrue(metadata.toString().contains(version));
     }
 
@@ -164,9 +167,9 @@ public class EurekaMetadataParserTest {
     public void generateNoMetadata() {
         String serviceId = "test service";
 
-        ApiInfo apiInfo = new ApiInfo();
+        ApiInfo apiInfo = new ApiInfo(); // isDefaultApi defaults to false
         Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
-        assertEquals(0, metadata.size());
+        assertEquals(1, metadata.size());
     }
 
     @Test

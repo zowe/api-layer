@@ -6,19 +6,37 @@ import SwaggerContainer from '../Swagger/SwaggerContainer';
 import './ServiceTab.css';
 
 export default class ServiceTab extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            selectedVersion: null,
+        }
+    }
+
     render() {
-        const message = 'The API documentation was retrieved but could not be displayed.';
-        const {
-            match: {
-                params: { tileID, serviceId },
+        const { 
+            match : {
+                params: {tileID, serviceId},
             },
-            tiles,
-            selectService,
+            tiles, 
             selectedService,
             selectedTile,
+            selectService,
         } = this.props;
-        let currentService = null;
+        const { selectedVersion } = this.state;
+        let currentService = null;	
         let invalidService = true;
+        tiles[0].services.forEach(service => {
+            if (service.serviceId === serviceId) {
+                
+                if (service.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
+                    selectService(service, tileID);
+                }
+                invalidService = false;
+                currentService = service;
+            }
+        });
+        const message = 'The API documentation was retrieved but could not be displayed.';        
         const hasHomepage =
             selectedService.homePageUrl !== null &&
             selectedService.homePageUrl !== undefined &&
@@ -26,15 +44,33 @@ export default class ServiceTab extends Component {
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
-        tiles[0].services.forEach(service => {
-            if (service.serviceId === serviceId) {
-                currentService = service;
-                if (currentService.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
-                    selectService(currentService, tileID);
+        let apiVersions = [];
+        if(currentService && currentService.apiVersions) {
+            let versionSelectorStyle = {
+                marginRight: '10px', 
+                padding: '7px', 
+                display: 'inline-block', 
+                border: '1px solid #000000', 
+                borderRadius: '6px', 
+                cursor: 'pointer'
+            };
+            apiVersions = currentService.apiVersions.map(version => {
+                let versionStyle;
+                if (selectedVersion === version || (currentService.defaultApiVersion === version && selectedVersion === null)) {
+                    versionStyle = {...versionSelectorStyle, ...{background: '#d0d0d0'}}
+                } else {
+                    versionStyle = versionSelectorStyle;
                 }
-                invalidService = false;
-            }
-        });
+                return <span 
+                    class="version-selector"
+                    key={version} 
+                    onClick={ ()=>{ this.setState({selectedVersion: version}); }}
+                    style={versionStyle}>
+                        {version}
+                    </span>
+            });
+        }
+
         return (
             <React.Fragment>
                 {invalidService && (
@@ -105,8 +141,10 @@ export default class ServiceTab extends Component {
                                     </Tooltip>
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
+                                {apiVersions.length > 0 ? <hr/> : ''}
+                                <div className="version-selection-container" style={{margin: '20px 0px 0px 55px'}}>{apiVersions}</div>
                             </div>
-                            <SwaggerContainer/>
+                            <SwaggerContainer selectedVersion={selectedVersion}/>
                         </React.Fragment>
                     )}
                 </Shield>

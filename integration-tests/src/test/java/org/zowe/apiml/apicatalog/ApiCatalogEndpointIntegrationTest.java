@@ -37,9 +37,13 @@ import static org.junit.Assert.*;
 public class ApiCatalogEndpointIntegrationTest {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String INVALID_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containerz";
+    private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
+    private static final String GET_CONTAINER_BY_INVALID_ID_ENDPOINT = "/apicatalog/api/v1/containers/bad";
+    private static final String GET_DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containers/cademoapps";
     private static final String INVALID_STATUS_UPDATES_ENDPOINT = "/apicatalog/api/v1/statuz/updatez";
     private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v1";
     private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/v1";
+    private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2 = "/apicatalog/api/v1/apidoc/discoverableclient/v2";
     private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v2";
     private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
 
@@ -66,6 +70,25 @@ public class ApiCatalogEndpointIntegrationTest {
         // Then
         assertTrue("Tile title did not match: API Mediation Layer API", containerTitles.contains("API Mediation Layer API"));
         assertTrue(containerStatus.contains("UP"));
+    }
+
+    @Test
+    void givenApiCatalog_whenGetContainerById_thenResponseOk() throws IOException {
+        final HttpResponse response = getResponse(GET_CONTAINER_BY_ID_ENDPOINT, HttpStatus.SC_OK);
+
+        final String jsonResponse = EntityUtils.toString(response.getEntity());
+        DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+        JSONArray containerTitles = jsonContext.read("$.[*].title");
+        JSONArray containerStatus = jsonContext.read("$.[*].status");
+
+        assertTrue("Tile title did not match: API Mediation Layer API", containerTitles.contains("API Mediation Layer API"));
+        assertTrue(containerStatus.contains("UP"));
+    }
+
+    @Test
+    void givenApiCatalog_whenGetContainerByInvalidId_thenResponseOk() throws IOException {
+        final HttpResponse response = getResponse(GET_CONTAINER_BY_INVALID_ID_ENDPOINT, HttpStatus.SC_OK);
+        assertEquals("[]", EntityUtils.toString(response.getEntity()));
     }
 
     @Test
@@ -105,8 +128,16 @@ public class ApiCatalogEndpointIntegrationTest {
     @TestsNotMeantForZowe
     public void whenDiscoveryClientApiDoc_thenResponseOK() throws Exception {
         final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT, HttpStatus.SC_OK);
+        String jsonResponse = EntityUtils.toString(response.getEntity());
+        DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
-        // When
+        validateDiscoverableClientApiV1(jsonResponse, jsonContext);
+    }
+
+    @Test
+    @TestsNotMeantForZowe
+    public void givenDiscoveryClient_whenGetApiDocV2_thenResponseOk() throws IOException {
+        final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2, HttpStatus.SC_OK);
         final String jsonResponse = EntityUtils.toString(response.getEntity());
 
         String apiCatalogSwagger = "\n**************************\n" +
@@ -123,22 +154,35 @@ public class ApiCatalogEndpointIntegrationTest {
         LinkedHashMap definitions = jsonContext.read("$.definitions");
         LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
 
-        // Then
         assertTrue(apiCatalogSwagger, swaggerInfo.get("description").toString().contains("API"));
         assertEquals(apiCatalogSwagger, baseHost, swaggerHost);
-        assertEquals(apiCatalogSwagger, "/discoverableclient/api/v1", swaggerBasePath);
+        assertEquals(apiCatalogSwagger, "/discoverableclient/api/v2", swaggerBasePath);
         assertEquals(apiCatalogSwagger, "External documentation", externalDoc.get("description"));
 
         assertFalse(apiCatalogSwagger, paths.isEmpty());
         assertNotNull(apiCatalogSwagger, paths.get("/greeting"));
 
         assertFalse(apiCatalogSwagger, definitions.isEmpty());
-
-        assertNotNull(apiCatalogSwagger, definitions.get("ApiMessage"));
-        assertNotNull(apiCatalogSwagger, definitions.get("ApiMessageView"));
         assertNotNull(apiCatalogSwagger, definitions.get("Greeting"));
-        assertNotNull(apiCatalogSwagger, definitions.get("Pet"));
-        assertNotNull(apiCatalogSwagger, definitions.get("RedirectLocation"));
+    }
+
+    @Test
+    @TestsNotMeantForZowe
+    void givenDiscoveryClient_whenGetContainerById_thenGetDefaultApiVersionSwagger() throws IOException {
+        HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT, HttpStatus.SC_OK);
+        String containerJsonResponse = EntityUtils.toString(response.getEntity());
+        DocumentContext containerJsonContext = JsonPath.parse(containerJsonResponse);
+
+        // Validate container
+        assertEquals("cademoapps", containerJsonContext.read("$[0].id"));
+        assertEquals("Sample API Mediation Layer Applications", containerJsonContext.read("$[0].title"));
+        assertEquals("UP", containerJsonContext.read("$[0].status"));
+
+        // Get Discoverable Client swagger
+        String dcJsonResponse = containerJsonContext.read("$[0].services[0]").toString();
+        DocumentContext dcJsonContext = JsonPath.parse(dcJsonResponse);
+
+        validateDiscoverableClientApiV1(dcJsonResponse, dcJsonContext);
     }
 
     @Test
@@ -213,4 +257,36 @@ public class ApiCatalogEndpointIntegrationTest {
         return response;
     }
 
+    private void validateDiscoverableClientApiV1(String jsonResponse, DocumentContext jsonContext) throws IOException {
+        String apiCatalogSwagger = "\n**************************\n" +
+            "Integration Test: Discoverable Client Swagger" +
+            "\n**************************\n" +
+            jsonResponse +
+            "\n**************************\n";
+
+        // When
+        LinkedHashMap swaggerInfo = jsonContext.read("$.info");
+        String swaggerHost = jsonContext.read("$.host");
+        String swaggerBasePath = jsonContext.read("$.basePath");
+        LinkedHashMap paths = jsonContext.read("$.paths");
+        LinkedHashMap definitions = jsonContext.read("$.definitions");
+        LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
+
+        // Then
+        assertTrue(apiCatalogSwagger, swaggerInfo.get("description").toString().contains("API"));
+        assertEquals(apiCatalogSwagger, baseHost, swaggerHost);
+        assertEquals(apiCatalogSwagger, "/discoverableclient/api/v1", swaggerBasePath);
+        assertEquals(apiCatalogSwagger, "External documentation", externalDoc.get("description"));
+
+        assertFalse(apiCatalogSwagger, paths.isEmpty());
+        assertNotNull(apiCatalogSwagger, paths.get("/greeting"));
+
+        assertFalse(apiCatalogSwagger, definitions.isEmpty());
+
+        assertNotNull(apiCatalogSwagger, definitions.get("ApiMessage"));
+        assertNotNull(apiCatalogSwagger, definitions.get("ApiMessageView"));
+        assertNotNull(apiCatalogSwagger, definitions.get("Greeting"));
+        assertNotNull(apiCatalogSwagger, definitions.get("Pet"));
+        assertNotNull(apiCatalogSwagger, definitions.get("RedirectLocation"));
+    }
 }

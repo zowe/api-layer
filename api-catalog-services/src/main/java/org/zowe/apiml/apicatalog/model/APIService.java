@@ -14,6 +14,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(of = {"serviceId"})
@@ -47,6 +48,12 @@ public class APIService implements Serializable {
 
     @ApiModelProperty(notes = "The API documentation for this service")
     private String apiDoc;
+
+    @ApiModelProperty(notes = "The default API version for this service")
+    private String defaultApiVersion = "v1";
+
+    @ApiModelProperty(notes = "The available API versions for this service")
+    private List<String> apiVersions;
 
     public APIService(String serviceId) {
         this.serviceId = serviceId;

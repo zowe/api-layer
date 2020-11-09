@@ -54,4 +54,29 @@ public class SwaggerConfiguration {
                 )
             );
     }
+
+    @Value("${apiml.service.apiInfo[1].version}")
+    private String apiVersion2;
+
+    @Bean
+    public Docket apiv2() {
+        return new Docket(DocumentationType.SWAGGER_2)
+            .groupName("apiv2")
+            .select()
+            .apis(RequestHandlerSelectors.any())
+            .paths(PathSelectors.ant("/api/v2/**"))
+            .build()
+            .apiInfo(
+                new ApiInfo(
+                    apiTitle,
+                    apiDescription,
+                    apiVersion2,
+                    null,
+                    null,
+                    null,
+                    null,
+                    Collections.emptyList()
+                )
+            );
+    }
 }

@@ -9,15 +9,9 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import io.swagger.annotations.Authorization;
-import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
-import org.zowe.apiml.apicatalog.model.APIContainer;
-import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +21,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
+import org.zowe.apiml.apicatalog.model.APIContainer;
+import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
+import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,8 +52,8 @@ public class ApiCatalogController {
     /**
      * Create the controller and autowire in the repository services
      *
-     * @param cachedProductFamilyService  cached service for containers
-     * @param cachedApiDocService     Cached state opf containers and services
+     * @param cachedProductFamilyService cached service for containers
+     * @param cachedApiDocService        Cached state opf containers and services
      */
     @Autowired
     public ApiCatalogController(CachedProductFamilyService cachedProductFamilyService,
@@ -111,17 +111,15 @@ public class ApiCatalogController {
             if (containerById != null) {
                 apiContainers.add(containerById);
             }
-            if (apiContainers.isEmpty()) {
-                return new ResponseEntity<>(apiContainers, HttpStatus.OK);
-            } else {
+            if (!apiContainers.isEmpty()) {
                 apiContainers.forEach(apiContainer -> {
                     // Fot this single container, check the status of all it's services so it's overall status can be set here
                     cachedProductFamilyService.calculateContainerServiceTotals(apiContainer);
                     // add API Doc to the services to improve UI performance
                     setApiDocToService(apiContainer);
                 });
-                return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             }
+            return new ResponseEntity<>(apiContainers, HttpStatus.OK);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalThrowable(e);
@@ -130,15 +128,22 @@ public class ApiCatalogController {
 
     private void setApiDocToService(APIContainer apiContainer) {
         apiContainer.getServices().forEach(apiService -> {
-            // try the get teh Api Doc for this service, if it fails for any reason then do not change the existing value
+            // try the get the Api Doc for this service, if it fails for any reason then do not change the existing value
             // it may or may not be null
+            String serviceId = apiService.getServiceId();
             try {
-                String apiDoc = cachedApiDocService.getApiDocForService(apiService.getServiceId(), "v1");
+                String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
                 if (apiDoc != null) {
                     apiService.setApiDoc(apiDoc);
                 }
+
+                List<String> apiVersions = cachedApiDocService.getApiVersionsForService(serviceId);
+                apiService.setApiVersions(apiVersions);
+
+                String defaultApiVersion = cachedApiDocService.getDefaultApiVersionForService(serviceId);
+                apiService.setDefaultApiVersion(defaultApiVersion);
             } catch (Exception e) {
-                log.debug("An error occurred when trying to fetch ApiDoc for service: " + apiService.getServiceId() +
+                log.debug("An error occurred when trying to fetch ApiDoc for service: " + serviceId +
                     ", processing can continue but this service will not be able to display any Api Documentation.\n" +
                     "Error Message: " + e.getMessage());
             }
