@@ -13,18 +13,28 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 
 public class ApimlRollingFileAppender extends RollingFileAppender {
     public void start() {
-        String debug = System.getenv("LOG_LEVEL");
-        if (debug == null || !debug.equalsIgnoreCase("DEBUG")) {
+        if (verifyStartupParams()) {
+            super.start();
+        }
+    }
+
+    /**
+     * Verifies that the appender should be enabled and that there is a location to use within the zowe instance.
+     * @return true if everything is ok, false otherwise.
+     */
+    protected boolean verifyStartupParams() {
+        String debug = System.getProperty("spring.profiles.include");
+        if (debug == null || !debug.contains("debug")) {
             addInfo("The level isn't set to debug. File appender will be disabled.");
-            return;
+            return false;
         }
 
-        String location = System.getenv("WORKSPACE_DIR");
-        if(location == null) {
+        String location = System.getProperty("apiml.logs.location");
+        if (location == null || location.isEmpty()) {
             addWarn("The WORKSPACE_DIR must be set to store logs.");
-            return;
+            return false;
         }
 
-        super.start();
+        return true;
     }
 }
