@@ -11,7 +11,12 @@ package org.zowe.apiml.product.logging;
 
 import ch.qos.logback.core.rolling.RollingFileAppender;
 
-public class ApimlRollingFileAppender extends RollingFileAppender {
+/**
+ * Appender which is conditional upon the debugging mode and provided location to store the files in.
+ * The conditionality is checked on the start of the Appender to limit the overhead.
+ */
+public class ApimlRollingFileAppender<E> extends RollingFileAppender<E> {
+    @Override
     public void start() {
         if (verifyStartupParams()) {
             super.start();
