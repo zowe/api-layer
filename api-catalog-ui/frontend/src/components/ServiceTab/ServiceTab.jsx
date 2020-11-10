@@ -66,7 +66,7 @@ export default class ServiceTab extends Component {
                     key={version} 
                     onClick={ ()=>{ this.setState({selectedVersion: version}); }}
                     style={versionStyle}>
-                        {version}
+                        <Text>{version}</Text>
                     </span>
             });
         }

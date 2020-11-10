@@ -214,17 +214,6 @@ pipeline {
             archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
-
-            withCredentials([usernamePassword(credentialsId: 'zowe-robot-github', usernameVariable: 'ZOWE_GITHUB_USERID', passwordVariable: 'ZOWE_GITHUB_APIKEY')]) {
-                sh """
-                    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-                    python3 get-pip.py --user
-                    python3 -m pip install --user requests
-                    python3 -m pip freeze
-                    python3 -c 'import requests'
-                    python3 scripts/post_actions.py $env.BRANCH_NAME $ZOWE_GITHUB_APIKEY full
-                    """
-            }
         }
     }
 }
