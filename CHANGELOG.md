@@ -3,10 +3,10 @@
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 ## `1.17.0`
 
-- Feature: Multiple versions of one API will be shown in the Catalog if configured. [#844](https://github.com/zowe/api-layer/issues/844)
-- Feature: Setting of APIML_DEBUG_MODE_ENABLED in instance.env is properly passed on to the all API ML services. [#901](https://github.com/zowe/api-layer/issues/901)
-- Bugfix: Improve returned information while logging out via logout on Gateway. [#831](https://github.com/zowe/api-layer/issues/831) 
-- Bugfix: Update API paths for the API ML in the API Catalog to use the service id in front. [#853](https://github.com/zowe/api-layer/issues/853) 
+- Feature: Multiple versions of one API are now presented in the Catalog if configured to do so. Users can now switch between different versions within the Catalog to see differences in API documentation between versions. [#844](https://github.com/zowe/api-layer/issues/844)
+- Feature: Setting `APIML_DEBUG_MODE_ENABLED` in `instance.env` is properly passed on to the all API ML services. [#901](https://github.com/zowe/api-layer/issues/901)
+- Bugfix: Improved returned information while logging out via logout on Gateway. [#831](https://github.com/zowe/api-layer/issues/831) 
+- Bugfix: Updated API paths for the API ML in the API Catalog to use the service id in front. [#853](https://github.com/zowe/api-layer/issues/853) 
 
 ## `1.16.0`
 

@@ -28,7 +28,7 @@
 # API Mediation Layer Debug Mode
 LOG_LEVEL=
 
-if [ "$APIML_DEBUG_MODE_ENABLED" ]
+if [[ ! -z ${APIML_DEBUG_MODE_ENABLED} && ${APIML_DEBUG_MODE_ENABLED} == true ]]
 then
   LOG_LEVEL="debug"
 fi
