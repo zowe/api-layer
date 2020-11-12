@@ -8,6 +8,7 @@ configurations {
     discoveryServiceJar
     gatewayServiceJar
     discoverableClientJar
+    cachingServiceJar
     zip
 }
 
@@ -16,6 +17,7 @@ dependencies {
     discoveryServiceJar(project(path: ":discovery-service", configuration: "bootArchives"))
     gatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
     discoverableClientJar(project(path: ":discoverable-client", configuration: "bootArchives"))
+    cachingServiceJar(project(path: ":caching-service", configuration: "bootArchives"))
 }
 
 task packageApiMediationZowe(type: Zip) {
@@ -27,6 +29,7 @@ task packageApiMediationZowe(type: Zip) {
         from configurations.discoveryServiceJar
         from configurations.gatewayServiceJar
         from configurations.discoverableClientJar
+        from configurations.cachingServiceJar
     }
 
     into('assets/') {
