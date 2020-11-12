@@ -16,6 +16,7 @@ CACHING_CODE=CS
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
     -Dspring.profiles.include=$LOG_LEVEL \
+    -Dapiml.service.port=${ZWE_CACHING_SERVICE_PORT} \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
     -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
