@@ -48,6 +48,11 @@ task packageApiMediationZowe(type: Zip) {
 
 packageApiMediationZowe.doFirst {
     List<File> scriptFiles =  new ArrayList<File>() {{
+        add(file('src/main/resources/component-scripts/setup.sh'));
+        add(file('src/main/resources/component-scripts/start-gateway.sh'));
+        add(file('src/main/resources/component-scripts/start-discovery.sh'));
+        add(file('src/main/resources/component-scripts/start-cache.sh'));
+        add(file('src/main/resources/component-scripts/start-catalog.sh'));
         add(file('src/main/resources/component-scripts/configure.sh'));
         add(file('src/main/resources/component-scripts/start.sh'));
         add(file('src/main/resources/component-scripts/validate.sh'));
