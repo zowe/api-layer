@@ -36,6 +36,11 @@ task packageApiMediationZowe(type: Zip) {
     into('bin/') {
         from "$buildDir/convert/configure.sh"
         from "$buildDir/convert/start.sh"
+        from "$buildDir/convert/start-cache.sh"
+        from "$buildDir/convert/start-catalog.sh"
+        from "$buildDir/convert/start-discovery.sh"
+        from "$buildDir/convert/start-gateway.sh"
+        from "$buildDir/convert/setup.sh"
         from "$buildDir/convert/validate.sh"
     }
 
