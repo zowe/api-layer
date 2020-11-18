@@ -11,7 +11,8 @@ ext.javaLibraries = [
     'discovery-service',
     'gateway-service',
     'security-service-client-spring',
-    'zaas-client'
+    'zaas-client',
+    'discoverable-client'
 ]
 
 ext.serviceJars = [ 'zowe-install' ]
