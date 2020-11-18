@@ -60,7 +60,8 @@ public class AuthConfigurationProperties {
     //Cookie properties
     @Data
     public static class CookieProperties {
-        private String cookieName = "apimlAuthenticationToken";
+        public static final String DEFAULT_COOKIE_NAME = "apimlAuthenticationToken";
+        private String cookieName = DEFAULT_COOKIE_NAME;
         private boolean cookieSecure = true;
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
