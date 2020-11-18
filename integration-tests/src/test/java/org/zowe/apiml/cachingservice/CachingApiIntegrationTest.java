@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -87,7 +88,9 @@ class CachingApiIntegrationTest {
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .get(CACHING_PATH).then().body(is("{}"))
+            .get(CACHING_PATH).then().body("20",isEmptyOrNullString())
+            .body("21",isEmptyOrNullString())
+            .body("22",isEmptyOrNullString())
             .statusCode(200);
     }
 
