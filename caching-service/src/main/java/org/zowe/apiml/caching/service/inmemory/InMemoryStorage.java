@@ -14,9 +14,10 @@ import org.zowe.apiml.caching.service.Storage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryStorage implements Storage {
-    private Map<String, Map<String, KeyValue>> storage = new HashMap<>();
+    private Map<String, Map<String, KeyValue>> storage = new ConcurrentHashMap<>();
 
     public InMemoryStorage() {
     }
