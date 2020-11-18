@@ -19,18 +19,21 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.cookie.SM;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenUtils;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.apache.http.cookie.SM;
 
 @Slf4j
 class ZaasJwtService implements TokenService {
@@ -56,7 +59,7 @@ class ZaasJwtService implements TokenService {
             this::extractToken);
     }
 
-    private ClientWithResponse loginWithCredentials(String userId, String password) throws ZaasConfigurationException, IOException  {
+    private ClientWithResponse loginWithCredentials(String userId, String password) throws ZaasConfigurationException, IOException {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         ObjectMapper mapper = new ObjectMapper();
@@ -93,6 +96,10 @@ class ZaasJwtService implements TokenService {
         doRequest(() -> logoutJwtToken(jwtToken));
     }
 
+    public Optional<String> getJwtFromRequest(HttpServletRequest request) {
+        return TokenUtils.getJwtTokenFromRequest(request, AuthConfigurationProperties.CookieProperties.DEFAULT_COOKIE_NAME);
+    }
+
     private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpGet httpGet = new HttpGet(queryEndpoint);
@@ -105,14 +112,14 @@ class ZaasJwtService implements TokenService {
         clearZaasClientCookies();
         HttpPost httpPost = new HttpPost(logoutEndpoint);
         if (jwtToken.startsWith("Bearer")) {
-            httpPost.addHeader(HttpHeaders.AUTHORIZATION,jwtToken);
+            httpPost.addHeader(HttpHeaders.AUTHORIZATION, jwtToken);
         } else {
             httpPost.addHeader(SM.COOKIE, TOKEN_PREFIX + "=" + jwtToken);
         }
         return getClientWithResponse(client, httpPost);
     }
 
-    private void clearZaasClientCookies () {
+    private void clearZaasClientCookies() {
         if (httpClientProvider instanceof ZaasHttpsClientProvider) {
             ((ZaasHttpsClientProvider) httpClientProvider).clearCookieStore();
         }
@@ -123,8 +130,7 @@ class ZaasJwtService implements TokenService {
         int httpResponseCode = clientWithResponse.getResponse().getStatusLine().getStatusCode();
         if (httpResponseCode == 204) {
             return clientWithResponse;
-        }
-        else {
+        } else {
             String obtainedMessage = EntityUtils.toString(clientWithResponse.getResponse().getEntity());
             if (httpResponseCode == 401) {
                 throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, obtainedMessage);

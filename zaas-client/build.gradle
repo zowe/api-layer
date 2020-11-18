@@ -1,4 +1,6 @@
 dependencies {
+    implementation project(':apiml-security-common')
+
     annotationProcessor libraries.lombok
 
     compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
