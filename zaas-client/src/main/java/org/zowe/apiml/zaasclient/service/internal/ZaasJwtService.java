@@ -92,12 +92,28 @@ class ZaasJwtService implements TokenService {
     }
 
     @Override
-    public void logout(String jwtToken) throws ZaasClientException {
-        doRequest(() -> logoutJwtToken(jwtToken));
+    public ZaasToken query(HttpServletRequest request) throws ZaasClientException {
+        Optional<String> jwtToken = TokenUtils.getJwtTokenFromRequest(request, AuthConfigurationProperties.CookieProperties.DEFAULT_COOKIE_NAME);
+
+        if (!jwtToken.isPresent()) {
+            throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided in request");
+        }
+
+        ZaasToken zaasToken = query(jwtToken.get());
+
+        if (zaasToken == null) {
+            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is null");
+        }
+        if (zaasToken.isExpired()) {
+            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, "Queried token is expired");
+        }
+
+        return zaasToken;
     }
 
-    public Optional<String> getJwtFromRequest(HttpServletRequest request) {
-        return TokenUtils.getJwtTokenFromRequest(request, AuthConfigurationProperties.CookieProperties.DEFAULT_COOKIE_NAME);
+    @Override
+    public void logout(String jwtToken) throws ZaasClientException {
+        doRequest(() -> logoutJwtToken(jwtToken));
     }
 
     private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
