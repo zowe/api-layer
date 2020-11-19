@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 
 @Slf4j
 class ZaasJwtService implements TokenService {
-    private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
+    private static final String TOKEN_PREFIX = AuthConfigurationProperties.CookieProperties.DEFAULT_COOKIE_NAME;
 
     private final String loginEndpoint;
     private final String queryEndpoint;
