@@ -9,27 +9,31 @@
  */
 
 package org.zowe.apiml.cachingservice;
+
 import io.restassured.RestAssured;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
-import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 @TestsNotMeantForZowe
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@NotForMainframeTest
 class CachingApiIntegrationTest {
 
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
@@ -42,8 +46,57 @@ class CachingApiIntegrationTest {
         jwtToken = generateToken();
     }
 
+
     @Test
     @Order(1)
+    void givenMultipleConcurrentCalls_correctResponseInTheEnd() throws InterruptedException {
+        ExecutorService service = Executors.newFixedThreadPool(8);
+        AtomicInteger ai = new AtomicInteger(20);
+        for (int i = 0; i < 3; i++) {
+            service.execute(() -> {
+                given()
+                    .contentType(JSON)
+                    .cookie(COOKIE_NAME, jwtToken)
+                    .body(new KeyValue(String.valueOf(ai.getAndIncrement()), "someValue"))
+                    .when()
+                    .post(CACHING_PATH).then().statusCode(201);
+
+            });
+        }
+        given()
+            .contentType(JSON)
+            .cookie(COOKIE_NAME, jwtToken)
+            .when()
+            .get(CACHING_PATH).then()
+            .statusCode(200);
+        AtomicInteger ai2 = new AtomicInteger(20);
+        for (int i = 0; i < 3; i++) {
+            service.execute(() -> {
+                given()
+                    .contentType(JSON)
+                    .cookie(COOKIE_NAME, jwtToken)
+                    .when()
+                    .delete(CACHING_PATH + "/" + ai2.getAndIncrement());
+
+            });
+        }
+
+        service.shutdown();
+        service.awaitTermination(30L, TimeUnit.SECONDS);
+
+        given()
+            .contentType(JSON)
+            .cookie(COOKIE_NAME, jwtToken)
+            .when()
+            .get(CACHING_PATH).then().body("20",isEmptyOrNullString())
+            .body("21",isEmptyOrNullString())
+            .body("22",isEmptyOrNullString())
+            .statusCode(200);
+    }
+
+
+    @Test
+    @Order(2)
     void givenValidKeyValue_whenCallingCreateEndpoint_thenStoreIt() {
         KeyValue keyValue = new KeyValue("testKey", "testValue");
 
@@ -58,7 +111,7 @@ class CachingApiIntegrationTest {
     }
 
     @Test
-    @Order(2)
+    @Order(3)
     void givenEmptyBody_whenCallingCreateEndpoint_thenReturn400() {
         given()
             .contentType(JSON)
@@ -70,7 +123,7 @@ class CachingApiIntegrationTest {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     void givenValidKeyParameter_whenCallingGetEndpoint_thenReturnKeyValueEntry() {
         given()
             .contentType(JSON)
@@ -83,7 +136,7 @@ class CachingApiIntegrationTest {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     void givenValidKeyParameter_whenCallingGetAllEndpoint_thenAllTheStoredEntries() {
         KeyValue keyValue = new KeyValue("testKey2", "testValue2");
 
@@ -108,7 +161,7 @@ class CachingApiIntegrationTest {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     void givenNonExistingKeyParameter_whenCallingGetEndpoint_thenReturnKeyNotFound() {
         given()
             .contentType(JSON)
@@ -121,7 +174,7 @@ class CachingApiIntegrationTest {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     void givenValidKeyParameter_whenCallingUpdateEndpoint_thenReturnUpdateValue() {
         KeyValue newValue = new KeyValue("testKey", "newValue");
 
@@ -145,7 +198,7 @@ class CachingApiIntegrationTest {
     }
 
     @Test
-    @Order(7)
+    @Order(8)
     void givenValidKeyParameter_whenCallingDeleteEndpoint_thenDeleteKeyValueFromStore() {
         given()
             .contentType(JSON)

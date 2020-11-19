@@ -36,6 +36,11 @@ task packageApiMediationZowe(type: Zip) {
     into('bin/') {
         from "$buildDir/convert/configure.sh"
         from "$buildDir/convert/start.sh"
+        from "$buildDir/convert/start-cache.sh"
+        from "$buildDir/convert/start-catalog.sh"
+        from "$buildDir/convert/start-discovery.sh"
+        from "$buildDir/convert/start-gateway.sh"
+        from "$buildDir/convert/setup.sh"
         from "$buildDir/convert/validate.sh"
     }
 
@@ -43,6 +48,11 @@ task packageApiMediationZowe(type: Zip) {
 
 packageApiMediationZowe.doFirst {
     List<File> scriptFiles =  new ArrayList<File>() {{
+        add(file('src/main/resources/component-scripts/setup.sh'));
+        add(file('src/main/resources/component-scripts/start-gateway.sh'));
+        add(file('src/main/resources/component-scripts/start-discovery.sh'));
+        add(file('src/main/resources/component-scripts/start-cache.sh'));
+        add(file('src/main/resources/component-scripts/start-catalog.sh'));
         add(file('src/main/resources/component-scripts/configure.sh'));
         add(file('src/main/resources/component-scripts/start.sh'));
         add(file('src/main/resources/component-scripts/validate.sh'));
