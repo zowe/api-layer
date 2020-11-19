@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.security;
 
+import lombok.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.constants.ApimlConstants;
 
@@ -29,7 +30,7 @@ public class TokenUtils {
      * @param request the http request
      * @return the JWT token
      */
-    public static Optional<String> getJwtTokenFromRequest(HttpServletRequest request, String cookieName) {
+    public static Optional<String> getJwtTokenFromRequest(@NonNull HttpServletRequest request, String cookieName) {
         Optional<String> fromCookie = getJwtTokenFromCookie(request, cookieName);
         if (!fromCookie.isPresent()) {
             return extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));

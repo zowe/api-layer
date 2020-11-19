@@ -91,20 +91,13 @@ class ZaasJwtService implements TokenService {
             throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided");
         }
 
-        return (ZaasToken) doRequest(
-            () -> queryWithJwtToken(jwtToken),
-            this::extractZaasToken);
+        return (ZaasToken) doRequest(() -> queryWithJwtToken(jwtToken), this::extractZaasToken);
     }
 
     @Override
     public ZaasToken query(@NonNull HttpServletRequest request) throws ZaasClientException {
         Optional<String> jwtToken = TokenUtils.getJwtTokenFromRequest(request, ApimlConstants.COOKIE_AUTH_NAME);
-
-        if (!jwtToken.isPresent()) {
-            throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided in request");
-        }
-
-        return query(jwtToken.get());
+        return query(jwtToken.orElse(null));
     }
 
     @Override
@@ -176,6 +169,7 @@ class ZaasJwtService implements TokenService {
 
             return token;
         } else if (statusCode == 401) {
+            String s = EntityUtils.toString(response.getEntity());
             throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid");
         } else {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, EntityUtils.toString(response.getEntity()));
