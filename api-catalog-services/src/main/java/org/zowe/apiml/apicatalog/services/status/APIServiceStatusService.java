@@ -9,6 +9,11 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
+import io.swagger.v3.parser.core.extensions.SwaggerParserExtension;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import org.openapitools.openapidiff.core.OpenApiCompare;
+import org.openapitools.openapidiff.core.model.ChangedOpenApi;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
@@ -91,6 +96,14 @@ public class APIServiceStatusService {
      */
     public ResponseEntity<String> getServiceCachedApiDocInfo(@NonNull String serviceId, String apiVersion) {
         return new ResponseEntity<>(cachedApiDocService.getApiDocForService(serviceId, apiVersion), createHeaders(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> getApiDiffInfo(@NonNull String serviceId, String apiVersion1, String apiVersion2) {
+        String doc1 = cachedApiDocService.getApiDocForService(serviceId, apiVersion1);
+        String doc2 = cachedApiDocService.getApiDocForService(serviceId, apiVersion2);
+        //TODO:: Currently throw invocation exception when calling the compare
+        ChangedOpenApi diff = OpenApiCompare.fromContents(doc1, doc2);
+        return new ResponseEntity<>(diff.toString(), createHeaders(), HttpStatus.OK);
     }
 
     /**

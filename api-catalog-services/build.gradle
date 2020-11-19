@@ -57,6 +57,7 @@ dependencies {
     compile libraries.apache_commons_lang3
     compile libraries.spring_boot_starter_thymeleaf
     compile libraries.apache_velocity
+    compile libraries.openapidiff
 
     compile libraries.springFox
 
