@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpHeaders;
@@ -86,29 +87,24 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public ZaasToken query(String jwtToken) throws ZaasClientException {
+        if (jwtToken == null || jwtToken.isEmpty()) {
+            throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided");
+        }
+
         return (ZaasToken) doRequest(
             () -> queryWithJwtToken(jwtToken),
             this::extractZaasToken);
     }
 
     @Override
-    public ZaasToken query(HttpServletRequest request) throws ZaasClientException {
+    public ZaasToken query(@NonNull HttpServletRequest request) throws ZaasClientException {
         Optional<String> jwtToken = TokenUtils.getJwtTokenFromRequest(request, ApimlConstants.COOKIE_AUTH_NAME);
 
         if (!jwtToken.isPresent()) {
             throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided in request");
         }
 
-        ZaasToken zaasToken = query(jwtToken.get());
-
-        if (zaasToken == null) {
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is null");
-        }
-        if (zaasToken.isExpired()) {
-            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, "Queried token is expired");
-        }
-
-        return zaasToken;
+        return query(jwtToken.get());
     }
 
     @Override
@@ -167,10 +163,22 @@ class ZaasJwtService implements TokenService {
     }
 
     private ZaasToken extractZaasToken(CloseableHttpResponse response) throws IOException, ZaasClientException {
-        if (response.getStatusLine().getStatusCode() == 200) {
-            return new ObjectMapper().readValue(response.getEntity().getContent(), ZaasToken.class);
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode == 200) {
+            ZaasToken token = new ObjectMapper().readValue(response.getEntity().getContent(), ZaasToken.class);
+
+            if (token == null) {
+                throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "Queried token is null");
+            }
+            if (token.isExpired()) {
+                throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, "Queried token is expired");
+            }
+
+            return token;
+        } else if (statusCode == 401) {
+            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid");
         } else {
-            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, EntityUtils.toString(response.getEntity()));
+            throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, EntityUtils.toString(response.getEntity()));
         }
     }
 
