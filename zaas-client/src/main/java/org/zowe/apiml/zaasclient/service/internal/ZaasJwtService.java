@@ -169,8 +169,7 @@ class ZaasJwtService implements TokenService {
 
             return token;
         } else if (statusCode == 401) {
-            String s = EntityUtils.toString(response.getEntity());
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid");
+            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid or expired");
         } else {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, EntityUtils.toString(response.getEntity()));
         }

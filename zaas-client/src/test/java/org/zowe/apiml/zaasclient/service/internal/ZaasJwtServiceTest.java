@@ -127,7 +127,7 @@ public class ZaasJwtServiceTest {
     @Test
     public void givenInvalidJwtToken_whenQueryToken_thenThrowException() throws ZaasClientException, IOException {
         mockHttpClient(401);
-        setExpectedException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid");
+        setExpectedException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid or expired");
 
         zaasJwtService.query("bad token");
     }
@@ -182,7 +182,7 @@ public class ZaasJwtServiceTest {
     @Test
     public void givenInvalidJwtToken_whenQueryRequest_thenThrowException() throws ZaasClientException, IOException {
         mockHttpClient(401);
-        setExpectedException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid");
+        setExpectedException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid or expired");
 
         zaasJwtService.query(mockRequest);
     }
