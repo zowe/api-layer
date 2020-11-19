@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.security.common.token;
+package org.zowe.apiml.security;
 
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.constants.ApimlConstants;

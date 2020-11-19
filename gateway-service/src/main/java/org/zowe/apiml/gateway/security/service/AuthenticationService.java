@@ -32,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.security.TokenUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;

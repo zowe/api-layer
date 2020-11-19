@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.security.common.token;
+package org.zowe.apiml.security;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

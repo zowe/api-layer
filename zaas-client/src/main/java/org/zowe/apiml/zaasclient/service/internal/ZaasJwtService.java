@@ -23,8 +23,8 @@ import org.apache.http.cookie.SM;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.TokenUtils;
+import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.security.TokenUtils;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 
 @Slf4j
 class ZaasJwtService implements TokenService {
-    private static final String TOKEN_PREFIX = AuthConfigurationProperties.CookieProperties.DEFAULT_COOKIE_NAME;
+    private static final String TOKEN_PREFIX = ApimlConstants.COOKIE_AUTH_NAME;
 
     private final String loginEndpoint;
     private final String queryEndpoint;
@@ -93,7 +93,7 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public ZaasToken query(HttpServletRequest request) throws ZaasClientException {
-        Optional<String> jwtToken = TokenUtils.getJwtTokenFromRequest(request, AuthConfigurationProperties.CookieProperties.DEFAULT_COOKIE_NAME);
+        Optional<String> jwtToken = TokenUtils.getJwtTokenFromRequest(request, ApimlConstants.COOKIE_AUTH_NAME);
 
         if (!jwtToken.isPresent()) {
             throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided in request");
