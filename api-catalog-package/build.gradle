@@ -4,7 +4,7 @@ ext {
 }
 
 configurations {
-    gatewayServiceJar
+    catalogServiceJar
     zip
 }
 
