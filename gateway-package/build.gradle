@@ -28,11 +28,11 @@ task packageApiGateway(type: Zip) {
     }
 }
 
-jar.dependsOn(packageApiMediationZowe)
-build.dependsOn(packageApiMediationZowe)
+jar.dependsOn(packageApiGateway)
+build.dependsOn(packageApiGateway)
 
 artifacts {
-    zip packageApiMediationZowe
+    zip packageApiGateway
 }
 
 publishing {
