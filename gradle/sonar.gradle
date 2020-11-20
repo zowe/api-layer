@@ -51,6 +51,13 @@ project(":api-catalog-ui") {
 }
 
 // Packaging project; sonar does not apply
+project(":gateway-service-package") {
+    sonarqube {
+        skipProject = true
+    }
+}
+
+// Packaging project; sonar does not apply
 project(":zowe-install") {
     sonarqube {
         skipProject = true

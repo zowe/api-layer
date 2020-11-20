@@ -1,0 +1,56 @@
+ext {
+    artifactName = 'api-mediation-zowe-package'
+    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
+}
+
+configurations {
+    gatewayServiceJar
+    zip
+}
+
+dependencies {
+    gatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
+}
+
+task packageApiMediationZowe(type: Zip) {
+    archiveName = artifactName + pullNo + ".zip"
+    includeEmptyDirs = true
+    def resourceDir = 'src/main/resources/'
+
+     into('/') {
+        from configurations.catalogServiceJar
+        from configurations.discoveryServiceJar
+        from configurations.gatewayServiceJar
+        from configurations.discoverableClientJar
+    }
+
+    into('bin/') {
+        from "$resourceDir/manifest.yaml"
+    }
+
+    into('bin/') {
+        from "$buildDir/convert/configure.sh"
+        from "$buildDir/convert/start.sh"
+        from "$buildDir/convert/start-cache.sh"
+        from "$buildDir/convert/start-catalog.sh"
+        from "$buildDir/convert/start-discovery.sh"
+        from "$buildDir/convert/start-gateway.sh"
+        from "$buildDir/convert/setup.sh"
+        from "$buildDir/convert/validate.sh"
+    }
+}
+
+jar.dependsOn(packageApiMediationZowe)
+build.dependsOn(packageApiMediationZowe)
+
+artifacts {
+    zip packageApiMediationZowe
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+        }
+    }
+}
