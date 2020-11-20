@@ -112,9 +112,10 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     private KeyStore getKeystore(String uri, String keyStoreType, char[] storePassword) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-        InputStream correctInStream = getCorrectInputStream(uri);
-        keyStore.load(correctInStream, storePassword);
-        return keyStore;
+        try (InputStream correctInStream = getCorrectInputStream(uri)) {
+            keyStore.load(correctInStream, storePassword);
+            return keyStore;
+        }
     }
 
     private InputStream getCorrectInputStream(String uri) throws IOException {

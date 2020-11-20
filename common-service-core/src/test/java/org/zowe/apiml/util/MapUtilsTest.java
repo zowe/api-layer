@@ -64,12 +64,12 @@ public class MapUtilsTest {
         nested.put("key3", nestedLvl2);
 
         Map<String, Object> testMap = new HashMap<>();
-        testMap.put("masterKey", nested);
+        testMap.put("primaryKey", nested);
 
         Map<String, String> resultMap = MapUtils.flattenMap(null, testMap);
-        assertThat(resultMap, hasEntry("masterKey.key1", "value1"));
-        assertThat(resultMap, hasEntry("masterKey.key2", "value2"));
-        assertThat(resultMap, hasEntry("masterKey.key3.keyzzz", "valuezzz"));
+        assertThat(resultMap, hasEntry("primaryKey.key1", "value1"));
+        assertThat(resultMap, hasEntry("primaryKey.key2", "value2"));
+        assertThat(resultMap, hasEntry("primaryKey.key3.keyzzz", "valuezzz"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -79,7 +79,7 @@ public class MapUtilsTest {
         nested.add("value2");
 
         Map<String, Object> testMap = new HashMap<>();
-        testMap.put("masterKey", nested);
+        testMap.put("primaryKey", nested);
 
         MapUtils.flattenMap(null, testMap);
     }
@@ -89,7 +89,7 @@ public class MapUtilsTest {
         String[] nested = {"value1", "value2"};
 
         Map<String, Object> testMap = new HashMap<>();
-        testMap.put("masterKey", nested);
+        testMap.put("primaryKey", nested);
 
         MapUtils.flattenMap(null, testMap);
     }
