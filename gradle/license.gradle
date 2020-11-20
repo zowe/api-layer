@@ -15,7 +15,7 @@ ext.projectsNeedLicense = [
     'onboarding-enabler-java-sample-app',
     'onboarding-enabler-spring-v1-sample-app',
     'zowe-install',
-    'gateway-service-package',
+    'gateway-package',
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
     'zaas-client',

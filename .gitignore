@@ -42,7 +42,7 @@ dist
 eggs
 parts
 bin
-!gateway-service-package/src/main/resources/bin
+!gateway-package/src/main/resources/bin
 var
 sdist
 develop-eggs

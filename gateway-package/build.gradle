@@ -12,7 +12,7 @@ dependencies {
     gatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
 }
 
-task packageApiMediationZowe(type: Zip) {
+task packageApiGateway(type: Zip) {
     archiveName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
     def resourceDir = 'src/main/resources/'
