@@ -21,6 +21,7 @@ CACHING_CODE=CS
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
+    -Denvironment.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
