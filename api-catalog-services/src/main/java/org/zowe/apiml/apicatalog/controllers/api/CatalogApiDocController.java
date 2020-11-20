@@ -71,7 +71,7 @@ public class CatalogApiDocController {
         return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiVersion);
     }
 
-    @GetMapping(value = "/{serviceId}/{apiVersion1}/{apiVersion2}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{serviceId}/{apiVersion1}/{apiVersion2}", produces = MediaType.TEXT_HTML_VALUE)
     @ApiOperation(value = "Retrieve diff",
         notes = "Retrive diff between two api version",
         authorizations = {

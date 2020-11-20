@@ -11,6 +11,7 @@ package org.zowe.apiml.apicatalog.services.status;
 
 import org.openapitools.openapidiff.core.OpenApiCompare;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
+import org.openapitools.openapidiff.core.output.HtmlRender;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
@@ -100,7 +101,9 @@ public class APIServiceStatusService {
         String doc2 = cachedApiDocService.getApiDocForService(serviceId, apiVersion2);
         //TODO:: Currently throw invocation exception when calling the compare
         ChangedOpenApi diff = OpenApiCompare.fromContents(doc1, doc2);
-        return new ResponseEntity<>(diff.toString(), createHeaders(), HttpStatus.OK);
+        HtmlRender render = new HtmlRender();
+        String result = render.render(diff);
+        return new ResponseEntity<>(result, createHeaders(), HttpStatus.OK);
     }
 
     /**
