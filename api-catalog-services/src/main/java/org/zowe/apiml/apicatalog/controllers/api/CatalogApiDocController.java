@@ -92,7 +92,6 @@ public class CatalogApiDocController {
         @PathVariable(value = "apiVersion1") String apiVersion1,
         @ApiParam(name = "apiVersion2", value = "The major version of the API documentation (v1, v2, etc.)", required = true, example = "v2")
         @PathVariable(value = "apiVersion2") String apiVersion2) {
-        //TODO:: Currently hardcoded to ease testing of endpoint
-        return this.apiServiceStatusService.getApiDiffInfo("discoverableclient", "v1", "v2");
+        return this.apiServiceStatusService.getApiDiffInfo(serviceId, apiVersion1, apiVersion2);
     }
 }

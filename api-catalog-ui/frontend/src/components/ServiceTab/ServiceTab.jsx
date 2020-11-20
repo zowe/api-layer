@@ -4,6 +4,7 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import '../Swagger/Swagger.css';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import './ServiceTab.css';
+import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
 
 export default class ServiceTab extends Component {
     constructor(props) {
@@ -46,29 +47,30 @@ export default class ServiceTab extends Component {
         }
         let apiVersions = [];
         if(currentService && currentService.apiVersions) {
-            let versionSelectorStyle = {
-                marginRight: '10px', 
-                padding: '7px', 
-                display: 'inline-block', 
-                border: '1px solid #000000', 
-                borderRadius: '6px', 
-                cursor: 'pointer'
-            };
             apiVersions = currentService.apiVersions.map(version => {
-                let versionStyle;
+                let selectedStyle = {};
                 if (selectedVersion === version || (currentService.defaultApiVersion === version && selectedVersion === null)) {
-                    versionStyle = {...versionSelectorStyle, ...{background: '#d0d0d0'}}
-                } else {
-                    versionStyle = versionSelectorStyle;
+                    selectedStyle = { backgroundColor: '#fff' };
                 }
                 return <span 
-                    class="version-selector"
+                    className="nav-tab"
                     key={version} 
-                    onClick={ ()=>{ this.setState({selectedVersion: version}); }}
-                    style={versionStyle}>
+                    style={selectedStyle}
+                    onClick={ () => { this.setState({selectedVersion: version}); }}>
                         <Text>{version}</Text>
                     </span>
             });
+            if(apiVersions.length >= 2){
+                apiVersions.push(
+                    <span 
+                        className="nav-tab" 
+                        onClick={ () => { this.setState({selectedVersion: 'diff'})}}
+                        style={selectedVersion === 'diff' ? { backgroundColor: '#fff'} : {} }
+                    >
+                        <Text>Diff</Text>
+                    </span>
+                );
+            }
         }
 
         return (
@@ -141,10 +143,13 @@ export default class ServiceTab extends Component {
                                     </Tooltip>
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
-                                {apiVersions.length > 0 ? <hr/> : ''}
-                                <div className="version-selection-container" style={{margin: '20px 0px 0px 55px'}}>{apiVersions}</div>
+                                <div className="tabs-container" style={{width: '100%'}}>
+                                    {apiVersions}
+                                </div>
+                            {selectedVersion !== 'diff' ? 
+                                <SwaggerContainer selectedVersion={selectedVersion} /> :
+                                <ServiceVersionDiffContainer serviceId={selectedService.serviceId} versions={currentService.apiVersions} />}
                             </div>
-                            <SwaggerContainer selectedVersion={selectedVersion}/>
                         </React.Fragment>
                     )}
                 </Shield>

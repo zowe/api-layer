@@ -1,0 +1,88 @@
+.article {
+	padding: 20px;
+	max-width: 960px;
+	margin: 0px auto;
+	box-shadow: 0px 0px 4px #ccc;
+	background: #fff;
+	margin-top: 80px;
+}
+
+.article>div {
+	padding: 10px 10px;
+}
+
+.POST, .post, .get, .GET, .put, .PUT,.delete, .DELETE {
+	color: #fff;
+	padding: 4px;
+	border-radius: 2px;
+	font-size: 8px;
+	margin: 0 4px;
+	width: 40px;
+    display: inline-block;
+    text-align: center;
+}
+.POST, .post{
+	background-color: #0B7CAF;
+}
+.get, .GET {
+	background-color: #009688;
+}
+.put, .PUT {
+	background-color: #c5862b;
+}
+.delete, .DELETE {
+	background-color: #F44336;
+}
+
+hr {
+	color: #dfdfdf;
+}
+
+ol>li {
+	margin: 24px;
+}
+
+ol>li>ul {
+	background-color: #504949;
+	color: #fff;
+	padding: 8px 16px;
+}
+
+ul.change>li {
+	margin: 10px 20px;
+}
+
+ul {
+	margin: 10px 0;
+}
+
+ul>li {
+	margin: 10px 0;
+}
+
+.comment {
+	color: #d8fa3c;
+	margin-left: 16px;
+	font-size: 14px;
+}
+
+.missing>s, .missing>del {
+	padding: 0 4px;
+}
+
+s, del, .missing, del.comment {
+	color: #F44336;
+}
+
+.missing>.comment {
+	color: #F44336;
+}
+
+/* Class for link show/hide article */ 
+.showhide {
+    color: #3e373785;
+    text-decoration: none; 
+    padding: 2px;
+    font-size: 12px;
+    float: right;
+}

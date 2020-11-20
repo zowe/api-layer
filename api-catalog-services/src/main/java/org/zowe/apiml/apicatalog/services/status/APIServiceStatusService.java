@@ -99,7 +99,6 @@ public class APIServiceStatusService {
     public ResponseEntity<String> getApiDiffInfo(@NonNull String serviceId, String apiVersion1, String apiVersion2) {
         String doc1 = cachedApiDocService.getApiDocForService(serviceId, apiVersion1);
         String doc2 = cachedApiDocService.getApiDocForService(serviceId, apiVersion2);
-        //TODO:: Currently throw invocation exception when calling the compare
         ChangedOpenApi diff = OpenApiCompare.fromContents(doc1, doc2);
         HtmlRender render = new HtmlRender();
         String result = render.render(diff);
