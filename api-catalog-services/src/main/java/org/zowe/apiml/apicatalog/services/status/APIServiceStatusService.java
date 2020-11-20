@@ -9,11 +9,8 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
-import io.swagger.v3.parser.core.extensions.SwaggerParserExtension;
-import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.openapitools.openapidiff.core.OpenApiCompare;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
-import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;

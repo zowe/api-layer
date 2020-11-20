@@ -10,7 +10,6 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 
-import org.springframework.http.HttpStatus;
 import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +19,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.openapitools.openapidiff.core.model.ChangedOpenApi;
-import org.openapitools.openapidiff.core.OpenApiCompare;
 
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
