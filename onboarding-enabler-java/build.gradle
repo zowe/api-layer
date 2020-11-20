@@ -1,7 +1,8 @@
 dependencies {
     compile(project(':common-service-core'))
     compile(project(':apiml-utility'))
-
+    compile libraries.jaxb_api
+    implementation libraries.javax_annotation
     implementation libraries.jackson_annotations
     implementation libraries.jackson_dataformat_yaml
     implementation libraries.eureka_client
