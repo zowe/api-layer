@@ -58,7 +58,7 @@ project(":api-catalog-package") {
 }
 
 // Packaging project; sonar does not apply
-project(":disocovery-package") {
+project(":discovery-package") {
     sonarqube {
         skipProject = true
     }
