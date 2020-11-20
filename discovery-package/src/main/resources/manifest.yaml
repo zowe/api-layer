@@ -1,12 +1,12 @@
 ---
-name: gateway
+name: discovery
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.gateway # TODO - this needs deciding on and updating
+id: org.zowe.apiml.discovery # TODO - this needs deciding on and updating
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
-title: API Gateway
+title: API Discovery
 # Human readable component description
-description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
+description: The API Discovery service acts as the registration service broker between the API Gateway and its southbound servers.
 license: EPL-2.0
 repository:
   type: git
@@ -18,8 +18,8 @@ build:
   timestamp: "{{build.timestamp}}"
 commands:
   start: bin/start.sh
-  # Note: component has no configure script
+  configure: bin/configure.sh
   validate: bin/validate.sh
 apimlServices:
   dynamic:
-    - serviceId: gateway
+    - serviceId: discovery

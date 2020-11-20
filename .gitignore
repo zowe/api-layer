@@ -43,6 +43,8 @@ eggs
 parts
 bin
 !gateway-package/src/main/resources/bin
+!api-catalog-package/src/main/resources/bin
+!discovery-package/src/main/resources/bin
 var
 sdist
 develop-eggs

@@ -1,0 +1,45 @@
+ext {
+    artifactName = 'discovery-package'
+    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
+}
+
+configurations {
+    gatewayServiceJar
+    zip
+}
+
+dependencies {
+    discoveryServiceJar(project(path: ":discovery-service", configuration: "bootArchives"))
+}
+
+task packageDiscovery(type: Zip) {
+    archiveName = artifactName + pullNo + ".zip"
+    includeEmptyDirs = true
+    def resourceDir = 'src/main/resources/'
+
+    into('/') {
+        from "$resourceDir/manifest.yaml"
+    }
+
+    into('bin/') {
+        from configurations.discoveryServiceJar
+        from "$resourceDir/bin/start.sh"
+        from "$resourceDir/bin/configure.sh"
+        from "$resourceDir/bin/validate.sh"
+    }
+}
+
+jar.dependsOn(packageDiscovery)
+build.dependsOn(packageDiscovery)
+
+artifacts {
+    zip packageDiscovery
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+        }
+    }
+}

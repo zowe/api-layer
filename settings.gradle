@@ -16,20 +16,22 @@ buildCache {
 }
 
 include 'discovery-service'
+include 'discovery-package'
 include 'apiml-utility'
 include 'apiml-common'
 include 'apiml-security-common'
 include 'caching-service'
 include 'gateway-service'
+include 'gateway-package'
 include 'common-service-core'
 include 'discoverable-client'
 include 'integration-tests'
 include 'onboarding-enabler-java-sample-app'
 include 'onboarding-enabler-spring-v1-sample-app'
 include 'zowe-install'
-include 'gateway-package'
 include 'api-catalog-services'
 include 'api-catalog-ui'
+include 'api-catalog-package'
 include 'security-service-client-spring'
 
 include 'onboarding-enabler-java'

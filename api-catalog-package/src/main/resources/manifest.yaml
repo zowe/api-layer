@@ -1,12 +1,12 @@
 ---
-name: gateway
+name: api-catalog
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.gateway # TODO - this needs deciding on and updating
+id: org.zowe.apiml.api-catalog # TODO - this needs deciding on and updating
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
-title: API Gateway
+title: API Catalog
 # Human readable component description
-description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
+description: API Catalog service to display service details and API documentation for discovered API services.
 license: EPL-2.0
 repository:
   type: git
@@ -18,8 +18,8 @@ build:
   timestamp: "{{build.timestamp}}"
 commands:
   start: bin/start.sh
-  # Note: component has no configure script
+  configure: bin/configure.sh
   validate: bin/validate.sh
 apimlServices:
   dynamic:
-    - serviceId: gateway
+    - serviceId: apicatalog
