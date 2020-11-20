@@ -1,5 +1,5 @@
 ext {
-    artifactName = 'api-mediation-zowe-package'
+    artifactName = 'gateway-package'
     pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
 }
 
