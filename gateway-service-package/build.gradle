@@ -17,26 +17,14 @@ task packageApiMediationZowe(type: Zip) {
     includeEmptyDirs = true
     def resourceDir = 'src/main/resources/'
 
-     into('/') {
-        from configurations.catalogServiceJar
-        from configurations.discoveryServiceJar
-        from configurations.gatewayServiceJar
-        from configurations.discoverableClientJar
-    }
-
-    into('bin/') {
+    into('/') {
         from "$resourceDir/manifest.yaml"
     }
 
     into('bin/') {
-        from "$buildDir/convert/configure.sh"
-        from "$buildDir/convert/start.sh"
-        from "$buildDir/convert/start-cache.sh"
-        from "$buildDir/convert/start-catalog.sh"
-        from "$buildDir/convert/start-discovery.sh"
-        from "$buildDir/convert/start-gateway.sh"
-        from "$buildDir/convert/setup.sh"
-        from "$buildDir/convert/validate.sh"
+        from configurations.gatewayServiceJar
+        from "$resourceDir/bin/start.sh"
+        from "$resourceDir/bin/validate.sh"
     }
 }
 
