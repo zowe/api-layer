@@ -20,6 +20,7 @@ CACHING_CODE=CS
     -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
+    -Dapiml.service.customMetadata.apiml.gatewayPort=${GATEWAY_PORT} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
     -Denvironment.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
     -Dserver.address=0.0.0.0 \
