@@ -6,7 +6,6 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     compile libraries.spring_boot_starter_web
-    compile libraries.javax_servlet_api
     compileOnly libraries.lombok
 
     testCompile libraries.spring_boot_starter_test
