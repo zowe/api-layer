@@ -34,7 +34,6 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/api/v1")
 @Import(DefaultZaasClientConfiguration.class)
 public class CachingController {
-    private static final String TOKEN_COOKIE_PREFIX = "apimlAuthenticationToken";
     private static final String KEY_NOT_IN_CACHE_MESSAGE = "org.zowe.apiml.cache.keyNotInCache";
 
     private final Storage storage;

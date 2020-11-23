@@ -26,23 +26,19 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.zowe.apiml.security.TokenUtils;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
+import javax.servlet.http.Cookie;
 import java.io.IOException;
-import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(TokenUtils.class)
+@RunWith(MockitoJUnitRunner.class)
 public class ZaasJwtServiceTest {
     private static final String JWT_TOKEN = "jwtTokenTest";
     private static final String HEADER_AUTHORIZATION = "Bearer " + JWT_TOKEN;
@@ -61,16 +57,10 @@ public class ZaasJwtServiceTest {
     @Mock
     private CloseableClientProvider closeableClientProvider;
 
-    private MockHttpServletRequest mockRequest;
-
     private ZaasJwtService zaasJwtService;
 
     @Before
     public void setUp() throws ZaasConfigurationException {
-        PowerMockito.mockStatic(TokenUtils.class);
-        when(TokenUtils.getJwtTokenFromRequest(any(), any())).thenReturn(Optional.of("token"));
-
-        mockRequest = new MockHttpServletRequest();
         doReturn(closeableHttpClient).when(closeableClientProvider).getHttpClient();
 
         zaasJwtService = new ZaasJwtService(closeableClientProvider, BASE_URL);
@@ -144,7 +134,11 @@ public class ZaasJwtServiceTest {
     }
 
     @Test
-    public void givenValidJwtTokenInRequest_whenQueryRequest_thenReturnToken() throws ZaasClientException, IOException {
+    public void givenJwtTokenInCookie_whenQueryRequest_thenReturnToken() throws ZaasClientException, IOException {
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        Cookie[] cookies = new Cookie[]{new Cookie(COOKIE_NAME, "token")};
+        mockRequest.setCookies(cookies);
+
         ZaasToken expectedToken = new ZaasToken();
         mockHttpClient(200, mapper.writeValueAsString(expectedToken));
 
@@ -153,36 +147,42 @@ public class ZaasJwtServiceTest {
     }
 
     @Test
-    public void givenEmptyJwtTokenInRequest_whenQueryRequest_thenThrowException() throws ZaasClientException {
-        when(TokenUtils.getJwtTokenFromRequest(any(), any())).thenReturn(Optional.of(""));
+    public void givenJwtTokenInHeader_whenQueryRequest_thenReturnToken() throws ZaasClientException, IOException {
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.addHeader(HttpHeaders.AUTHORIZATION, HEADER_AUTHORIZATION);
+
+        ZaasToken expectedToken = new ZaasToken();
+        mockHttpClient(200, mapper.writeValueAsString(expectedToken));
+
+        ZaasToken actualToken = zaasJwtService.query(mockRequest);
+        Assert.assertEquals(expectedToken, actualToken);
+    }
+
+    @Test
+    public void givenNoJwtTokenInRequest_whenQueryRequest_thenThrowException() throws ZaasClientException {
+        setExpectedException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided");
+
+        zaasJwtService.query(new MockHttpServletRequest());
+    }
+
+    @Test
+    public void givenHeadersAndCookiesButNoTokenInRequest_whenQueryRequest_thenThrowException() throws ZaasClientException {
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        Cookie[] cookies = new Cookie[]{new Cookie("cookie", "value")};
+        mockRequest.setCookies(cookies);
+        mockRequest.addHeader("header", "value");
+
         setExpectedException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided");
 
         zaasJwtService.query(mockRequest);
     }
 
     @Test
-    public void givenNullToken_whenQueryRequest_thenThrowException() throws ZaasClientException, IOException {
-        mockHttpClient(200, mapper.writeValueAsString(null));
-        setExpectedException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "Queried token is null");
+    public void givenHeaderWithEmptyAuthorization_whenQueryRequest_thenThrowException() throws ZaasClientException {
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.addHeader(HttpHeaders.AUTHORIZATION, "");
 
-        zaasJwtService.query(mockRequest);
-    }
-
-    @Test
-    public void givenExpiredToken_whenQueryRequest_thenThrowException() throws ZaasClientException, IOException {
-        ZaasToken expectedToken = new ZaasToken();
-        expectedToken.setExpired(true);
-
-        mockHttpClient(200, mapper.writeValueAsString(expectedToken));
-        setExpectedException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, "Queried token is expired");
-
-        zaasJwtService.query(mockRequest);
-    }
-
-    @Test
-    public void givenInvalidJwtToken_whenQueryRequest_thenThrowException() throws ZaasClientException, IOException {
-        mockHttpClient(401);
-        setExpectedException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid or expired");
+        setExpectedException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided");
 
         zaasJwtService.query(mockRequest);
     }

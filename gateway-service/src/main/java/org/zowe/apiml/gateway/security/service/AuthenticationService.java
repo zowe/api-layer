@@ -16,6 +16,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -27,23 +28,22 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.security.TokenUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -392,8 +392,39 @@ public class AuthenticationService {
      * @param request the http request
      * @return the JWT token
      */
-    public Optional<String> getJwtTokenFromRequest(HttpServletRequest request) {
-        return TokenUtils.getJwtTokenFromRequest(request, authConfigurationProperties.getCookieProperties().getCookieName());
+    public Optional<String> getJwtTokenFromRequest(@NonNull HttpServletRequest request) {
+        Optional<String> fromCookie = getJwtTokenFromCookie(request);
+        return fromCookie.isPresent() ?
+            fromCookie : extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
+    }
+
+    private Optional<String> getJwtTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return Optional.empty();
+        return Arrays.stream(cookies)
+            .filter(cookie -> cookie.getName().equals(authConfigurationProperties.getCookieProperties().getCookieName()))
+            .filter(cookie -> !cookie.getValue().isEmpty())
+            .findFirst()
+            .map(Cookie::getValue);
+    }
+
+    /**
+     * Extract the JWT token from the authorization header
+     *
+     * @param header the http request header
+     * @return the JWT token
+     */
+    private Optional<String> extractJwtTokenFromAuthorizationHeader(String header) {
+        if (header != null && header.startsWith(ApimlConstants.BEARER_AUTHENTICATION_PREFIX)) {
+            header = header.replaceFirst(ApimlConstants.BEARER_AUTHENTICATION_PREFIX, "").trim();
+            if (header.isEmpty()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(header);
+        }
+
+        return Optional.empty();
     }
 
     /**

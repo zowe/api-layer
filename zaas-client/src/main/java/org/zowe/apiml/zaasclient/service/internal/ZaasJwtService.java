@@ -24,21 +24,22 @@ import org.apache.http.cookie.SM;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.security.TokenUtils;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
 class ZaasJwtService implements TokenService {
-    private static final String TOKEN_PREFIX = ApimlConstants.COOKIE_AUTH_NAME;
+    private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
+    private static final String BEARER_AUTHENTICATION_PREFIX = "Bearer";
 
     private final String loginEndpoint;
     private final String queryEndpoint;
@@ -96,13 +97,52 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public ZaasToken query(@NonNull HttpServletRequest request) throws ZaasClientException {
-        Optional<String> jwtToken = TokenUtils.getJwtTokenFromRequest(request, ApimlConstants.COOKIE_AUTH_NAME);
+        Optional<String> jwtToken = getJwtTokenFromRequest(request);
         return query(jwtToken.orElse(null));
     }
 
     @Override
     public void logout(String jwtToken) throws ZaasClientException {
         doRequest(() -> logoutJwtToken(jwtToken));
+    }
+
+    /**
+     * Get the JWT token from the authorization header in the http request
+     * <p>
+     * Order:
+     * 1. Cookie
+     * 2. Authorization header
+     *
+     * @param request the http request
+     * @return the JWT token
+     */
+    private Optional<String> getJwtTokenFromRequest(@NonNull HttpServletRequest request) {
+        Optional<String> fromCookie = getJwtTokenFromCookie(request);
+        return fromCookie.isPresent() ?
+            fromCookie : extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
+    }
+
+    private Optional<String> getJwtTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return Optional.empty();
+        return Arrays.stream(cookies)
+            .filter(cookie -> cookie.getName().equals(TOKEN_PREFIX))
+            .filter(cookie -> !cookie.getValue().isEmpty())
+            .findFirst()
+            .map(Cookie::getValue);
+    }
+
+    private Optional<String> extractJwtTokenFromAuthorizationHeader(String header) {
+        if (header != null && header.startsWith(BEARER_AUTHENTICATION_PREFIX)) {
+            header = header.replaceFirst(BEARER_AUTHENTICATION_PREFIX, "").trim();
+            if (header.isEmpty()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(header);
+        }
+
+        return Optional.empty();
     }
 
     private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
