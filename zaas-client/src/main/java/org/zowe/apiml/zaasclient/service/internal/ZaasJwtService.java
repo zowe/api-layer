@@ -156,7 +156,7 @@ class ZaasJwtService implements TokenService {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
         clearZaasClientCookies();
         HttpPost httpPost = new HttpPost(logoutEndpoint);
-        if (jwtToken.startsWith("Bearer")) {
+        if (jwtToken.startsWith(BEARER_AUTHENTICATION_PREFIX)) {
             httpPost.addHeader(HttpHeaders.AUTHORIZATION, jwtToken);
         } else {
             httpPost.addHeader(SM.COOKIE, TOKEN_PREFIX + "=" + jwtToken);
