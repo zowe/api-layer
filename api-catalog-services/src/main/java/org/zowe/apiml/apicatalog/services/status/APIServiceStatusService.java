@@ -96,6 +96,13 @@ public class APIServiceStatusService {
         return new ResponseEntity<>(cachedApiDocService.getApiDocForService(serviceId, apiVersion), createHeaders(), HttpStatus.OK);
     }
 
+    /**
+     * Return the the diff of two api versions
+     * @param serviceId the unique service id
+     * @param apiVersion1 the old version of the api
+     * @param apiVersion2 the new version of the api
+     * @return response containing HTML document detailing changes between api doc versions
+     */
     public ResponseEntity<String> getApiDiffInfo(@NonNull String serviceId, String apiVersion1, String apiVersion2) {
         String doc1 = cachedApiDocService.getApiDocForService(serviceId, apiVersion1);
         String doc2 = cachedApiDocService.getApiDocForService(serviceId, apiVersion2);

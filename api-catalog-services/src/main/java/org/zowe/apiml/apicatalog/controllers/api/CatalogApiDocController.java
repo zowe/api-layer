@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
-
 import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,8 +71,8 @@ public class CatalogApiDocController {
     }
 
     @GetMapping(value = "/{serviceId}/{apiVersion1}/{apiVersion2}", produces = MediaType.TEXT_HTML_VALUE)
-    @ApiOperation(value = "Retrieve diff",
-        notes = "Retrive diff between two api version",
+    @ApiOperation(value = "Retrieve diff of two api versions for a specific service",
+        notes = "Returns an HTML document which details the difference between two versions of a API service",
         authorizations = {
             @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
         },

@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
+import org.mockito.Mockito;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
@@ -30,6 +31,7 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -93,7 +95,7 @@ public class ApiServiceStatusServiceTest {
     }
 
     @Test
-    public void getCachedApiDocInfoForService() {
+    public void testGetCachedApiDocInfoForService() {
         String apiDoc = "this is the api doc";
         when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
@@ -102,6 +104,14 @@ public class ApiServiceStatusServiceTest {
         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
     }
 
+    @Test
+    public void testGetCachedApiDiffForService() {
+        String apiDoc = "{}";
+        when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
+        ResponseEntity<String> actualResponse = apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
+        assertTrue(actualResponse.getBody().contains("Api Change Log"));
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+    }
 
     @Test
     public void testGetRecentlyChangedEvents() {
