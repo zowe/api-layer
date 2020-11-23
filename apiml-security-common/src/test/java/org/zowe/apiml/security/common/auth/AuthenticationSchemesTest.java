@@ -12,16 +12,17 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class AuthenticationSchemeTest {
+public class AuthenticationSchemesTest {
 
     @Test
     public void testFromScheme() {
+        AuthenticationSchemes underTest = new AuthenticationSchemes();
         for (AuthenticationScheme as : AuthenticationScheme.values()) {
-            AuthenticationScheme as2 = AuthenticationScheme.fromScheme(as.getScheme());
+            AuthenticationScheme as2 = underTest.map(as.getScheme());
             assertSame(as, as2);
         }
-        assertNull(AuthenticationScheme.fromScheme("absolute nonsense"));
-        assertEquals("bypass", AuthenticationScheme.fromScheme("bypass").toString());
+        assertNull(underTest.map("absolute nonsense"));
+        assertEquals("bypass", underTest.map("bypass").toString());
     }
 
 }
