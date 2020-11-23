@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(controllers = {ZaasClientTestController.class}, secure = false)
+@WebMvcTest(controllers = {ZaasClientTestController.class})
 @Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class, AnnotationConfigContextLoader.class})
 public class ZaasClientTestControllerTest {
     @Autowired

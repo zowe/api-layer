@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(controllers = {ApiMediationClientTestController.class}, secure = false)
+@WebMvcTest(controllers = {ApiMediationClientTestController.class})
 public class ApiMediationClientTestControllerTest {
     private static final String MEDIATION_CLIENT_URI = "/api/v1/apiMediationClient";
 
