@@ -14,7 +14,7 @@ INITIAL_ERRORS_FOUND=$ERRORS_FOUND
 
 # - GATEWAY_PORT - should not be bound to a port currently
 . ${ROOT_DIR}/bin/utils/network-utils.sh
-validate_port_is_available ${GATEWAY_PORT}
+validate_port_is_available ${ZWE_CACHING_SERVICE_PORT}
 validate_host_is_resolvable "ZOWE_EXPLORER_HOST" # Note - takes variable name, not value as parameter
 
 # Validate some certificate values properly set. Needs more adding?

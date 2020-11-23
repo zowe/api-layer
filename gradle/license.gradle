@@ -5,6 +5,7 @@ ext.projectsNeedLicense = [
     'apiml-common',
     'apiml-security-common',
     'caching-service',
+    'caching-service-package',
     'common-service-core',
     'discoverable-client',
     'discovery-service',

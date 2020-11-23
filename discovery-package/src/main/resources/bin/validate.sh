@@ -15,8 +15,7 @@ INITIAL_ERRORS_FOUND=$ERRORS_FOUND
 # - GATEWAY_PORT - should not be bound to a port currently
 . ${ROOT_DIR}/bin/utils/network-utils.sh
 validate_port_is_available ${DISCOVERY_PORT}
-validate_host_is_resolvable ${ZOWE_EXPLORER_HOST}
-
+validate_host_is_resolvable "ZOWE_EXPLORER_HOST" # Note - takes variable name, not value as parameter
 
 . ${ROOT_DIR}/bin/utils/zosmf-utils.sh
 validate_zosmf_host_and_port "${ZOSMF_HOST}" "${ZOSMF_PORT}"

@@ -15,7 +15,7 @@ ext.javaLibraries = [
     'discoverable-client'
 ]
 
-ext.serviceJars = [ 'zowe-install', 'api-catalog-package', 'discovery-package', 'gateway-package' ]
+ext.serviceJars = [ 'zowe-install', 'api-catalog-package', 'discovery-package', 'gateway-package', 'caching-service-package' ]
 
 ext.enablers = [ext.javaEnabler, ext.springBootEnabler]
 ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
