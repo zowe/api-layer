@@ -20,6 +20,9 @@ import java.util.Optional;
 
 public class TokenUtils {
 
+    private TokenUtils() {
+    }
+
     /**
      * Get the JWT token from the authorization header in the http request
      * <p>
@@ -32,10 +35,8 @@ public class TokenUtils {
      */
     public static Optional<String> getJwtTokenFromRequest(@NonNull HttpServletRequest request, String cookieName) {
         Optional<String> fromCookie = getJwtTokenFromCookie(request, cookieName);
-        if (!fromCookie.isPresent()) {
-            return extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
-        }
-        return fromCookie;
+        return fromCookie.isPresent() ?
+            fromCookie : extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
     }
 
     private static Optional<String> getJwtTokenFromCookie(HttpServletRequest request, final String cookieName) {

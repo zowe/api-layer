@@ -20,7 +20,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.*;
 
-public class TokenUtilsTest {
+class TokenUtilsTest {
     private static final String COOKIE_NAME = "apimlAuthenticationToken";
     private static final String TOKEN_VALUE = "token";
 
@@ -32,7 +32,7 @@ public class TokenUtilsTest {
     }
 
     @Test
-    public void givenJwtInCookie_whenGetToken_returnToken() {
+    void givenJwtInCookie_whenGetToken_returnToken() {
         Cookie[] cookies = new Cookie[]{new Cookie(COOKIE_NAME, TOKEN_VALUE)};
         mockRequest.setCookies(cookies);
 
@@ -42,7 +42,7 @@ public class TokenUtilsTest {
     }
 
     @Test
-    public void givenJwtInAuthHeader_whenGetToken_returnToken() {
+    void givenJwtInAuthHeader_whenGetToken_returnToken() {
         mockRequest.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + TOKEN_VALUE);
 
         Optional<String> token = TokenUtils.getJwtTokenFromRequest(mockRequest, COOKIE_NAME);
@@ -51,7 +51,7 @@ public class TokenUtilsTest {
     }
 
     @Test
-    public void givenNoJwtInAuthHeader_whenGetToken_returnToken() {
+    void givenNoJwtInAuthHeader_whenGetToken_returnToken() {
         mockRequest.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX);
 
         Optional<String> token = TokenUtils.getJwtTokenFromRequest(mockRequest, COOKIE_NAME);
@@ -59,7 +59,7 @@ public class TokenUtilsTest {
     }
 
     @Test
-    public void givenJwtInInvalidAuthHeader_whenGetToken_returnEmpty() {
+    void givenJwtInInvalidAuthHeader_whenGetToken_returnEmpty() {
         mockRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bad prefix " + TOKEN_VALUE);
 
         Optional<String> token = TokenUtils.getJwtTokenFromRequest(mockRequest, COOKIE_NAME);
@@ -67,7 +67,7 @@ public class TokenUtilsTest {
     }
 
     @Test
-    public void givenNoJwt_whenGetToken_returnEmpty() {
+    void givenNoJwt_whenGetToken_returnEmpty() {
         Optional<String> token = TokenUtils.getJwtTokenFromRequest(mockRequest, COOKIE_NAME);
         assertFalse(token.isPresent());
     }
