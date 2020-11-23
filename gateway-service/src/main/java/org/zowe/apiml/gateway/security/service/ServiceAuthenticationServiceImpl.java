@@ -29,7 +29,7 @@ import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.security.common.auth.AuthenticationSchemes;
 import org.zowe.apiml.util.CacheUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -69,6 +69,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private static final String CACHE_BY_AUTHENTICATION = "serviceAuthenticationByAuthentication";
 
     private final LoadBalancerAuthenticationCommand loadBalancerCommand = new LoadBalancerAuthenticationCommand();
+    private final AuthenticationSchemes schemes = new AuthenticationSchemes();
 
     private final EurekaClient discoveryClient;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
@@ -81,7 +82,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
         final Authentication out = new Authentication();
         out.setApplid(metadata.get(AUTHENTICATION_APPLID));
-        out.setScheme(AuthenticationScheme.fromScheme(metadata.get(AUTHENTICATION_SCHEME)));
+        out.setScheme(schemes.map(metadata.get(AUTHENTICATION_SCHEME)));
         return out;
     }
 
