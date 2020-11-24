@@ -1,7 +1,7 @@
 ---
 name: discovery
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.discovery # TODO - this needs deciding on and updating
+id: org.zowe.apiml.sdk.discovery-package
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
 title: API Discovery
@@ -10,7 +10,7 @@ description: The API Discovery service acts as the registration service broker b
 license: EPL-2.0
 repository:
   type: git
-  url: https://github.com/zowe/api-layer.git # TODO - link to the subfolder?
+  url: https://github.com/zowe/api-layer.git
 build:
   branch: "{{build.branch}}"
   number: "{{build.number}}"
