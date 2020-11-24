@@ -111,13 +111,6 @@ public class GatewayConfig {
             Map<String, String> metadataMap = instance.getMetadataMap();
             metadataMap.computeIfAbsent("management.port",
                 k -> String.valueOf(metadata.getManagementPort()));
-        } else {
-            if (StringUtils.hasText(managementContextPath)) {
-                instance.setHealthCheckUrlPath(
-                    managementContextPath + instance.getHealthCheckUrlPath());
-                instance.setStatusPageUrlPath(
-                    managementContextPath + instance.getStatusPageUrlPath());
-            }
         }
         return instance;
     }
