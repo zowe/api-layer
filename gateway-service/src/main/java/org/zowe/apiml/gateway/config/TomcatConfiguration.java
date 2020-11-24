@@ -18,6 +18,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Configuration of Tomcat
@@ -53,9 +55,11 @@ public class TomcatConfiguration {
     private String trustStoreType;
     @Value("${server.ssl.ciphers}")
     private String ciphers;
+    @Value("${server.address}")
+    private String address;
 
     @Bean
-    public ServletWebServerFactory servletContainer() {
+    public ServletWebServerFactory servletContainer() throws UnknownHostException{
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
@@ -65,21 +69,20 @@ public class TomcatConfiguration {
         return tomcat;
     }
 
-    private Connector createSslConnector() {
+    private Connector createSslConnector() throws UnknownHostException{
         Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
         Http11NioProtocol protocol = (Http11NioProtocol) connector.getProtocolHandler();
 
         connector.setPort(internalPort);
         if (enableSslOnInternal) {
             connector.setScheme("https");
-
             connector.setSecure(true);
             protocol.setSSLEnabled(true);
             protocol.setSslEnabledProtocols("TLSv1.2");
             protocol.setSSLHonorCipherOrder(true);
             protocol.setCiphers(ciphers);
             protocol.setClientAuth(clientAuth);
-
+            protocol.setAddress(InetAddress.getByName(address));
             File keyStore = new File(keyStorePath);
             File trustStore = new File(trustStorePath);
 
