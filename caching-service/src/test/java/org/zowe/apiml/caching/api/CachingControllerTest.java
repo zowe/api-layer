@@ -27,7 +27,7 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
-import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -59,7 +59,7 @@ public class CachingControllerTest {
         mockRequest = new MockHttpServletRequest();
         mockStorage = mock(Storage.class);
         mockZaasClient = mock(ZaasClient.class);
-        when(mockZaasClient.query(any())).thenReturn(TOKEN);
+        when(mockZaasClient.query(any(HttpServletRequest.class))).thenReturn(TOKEN);
 
         TOKEN.setUserId(SERVICE_ID);
         underTest = new CachingController(mockStorage, mockZaasClient, messageService);
@@ -208,7 +208,7 @@ public class CachingControllerTest {
     void givenNoToken_whenQueryToken_thenResponseBadRequest() throws ZaasClientException {
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided",
             mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED));
+        when(mockZaasClient.query(any(HttpServletRequest.class))).thenThrow(new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED));
 
         ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
@@ -219,7 +219,7 @@ public class CachingControllerTest {
     void givenInvalidToken_whenQueryToken_thenResponseUnauthorized() throws ZaasClientException {
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken",
             mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN));
+        when(mockZaasClient.query(any(HttpServletRequest.class))).thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN));
 
         ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
@@ -230,7 +230,7 @@ public class CachingControllerTest {
     void givenExpiredToken_whenQueryToken_thenResponseUnauthorized() throws ZaasClientException {
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.expiredToken",
             mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION));
+        when(mockZaasClient.query(any(HttpServletRequest.class))).thenThrow(new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION));
 
         ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
@@ -242,7 +242,7 @@ public class CachingControllerTest {
         ZaasClientException zaasException = new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, "This is an error");
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.gatewayUnavailable",
             mockRequest.getRequestURL().toString(), zaasException.getMessage()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(zaasException);
+        when(mockZaasClient.query(any(HttpServletRequest.class))).thenThrow(zaasException);
 
         ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
@@ -255,58 +255,10 @@ public class CachingControllerTest {
         ZaasClientException zaasException = new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, errCause);
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.common.internalRequestError",
             mockRequest.getRequestURL().toString(), zaasException.getMessage(), zaasException.getCause()).mapToView();
-        when(mockZaasClient.query(any())).thenThrow(zaasException);
+        when(mockZaasClient.query(any(HttpServletRequest.class))).thenThrow(zaasException);
 
         ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
-    void givenToken_whenTokenQueryReturnsNull_thenResponseUnauthorized() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken",
-            mockRequest.getRequestURL().toString()).mapToView();
-        when(mockZaasClient.query(any())).thenReturn(null);
-
-        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
-    void givenToken_whenTokenQueryReturnsExpiredToken_thenResponseUnauthorized() throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.expiredToken",
-            mockRequest.getRequestURL().toString()).mapToView();
-        ZaasToken expiredToken = new ZaasToken();
-        expiredToken.setExpired(true);
-        when(mockZaasClient.query(any())).thenReturn(expiredToken);
-
-        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @ParameterizedTest
-    @MethodSource("cookieTestProvider")
-    void givenCookieWithWrongAuthentication_whenQueryToken_thenResponseUnauthorized
-        (String cookieName, String cookieValue, String queryToken) throws ZaasClientException {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.security.query.invalidToken",
-            mockRequest.getRequestURL().toString()).mapToView();
-
-        Cookie[] cookies = new Cookie[]{new Cookie(cookieName, cookieValue)};
-        mockRequest.setCookies(cookies);
-        when(mockZaasClient.query(queryToken)).thenReturn(null);
-
-        ResponseEntity<?> response = underTest.getAllValues(mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    private static Stream<Arguments> cookieTestProvider() {
-        return Stream.of(
-            Arguments.of("my", "cookie", null),
-            Arguments.of("apimlAuthenticationToken", "bad_token", "bad_token"),
-            Arguments.of("apimlAuthenticationToken", "", null)
-        );
     }
 }

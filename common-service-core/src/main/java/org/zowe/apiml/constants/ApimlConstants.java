@@ -21,4 +21,5 @@ public final class ApimlConstants {
     //Authentication constants
     public static final String BASIC_AUTHENTICATION_PREFIX = "Basic";
     public static final String BEARER_AUTHENTICATION_PREFIX = "Bearer";
+    public static final String COOKIE_AUTH_NAME = "apimlAuthenticationToken";
 }
