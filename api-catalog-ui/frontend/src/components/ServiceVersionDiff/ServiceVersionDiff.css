@@ -1,3 +1,26 @@
+.api-diff-container {
+	margin: auto;
+	padding-top: 20px;
+}
+
+.api-diff-form {
+	margin: auto;
+	display: flex;
+	width: fit-content;
+}
+
+.api-diff-form>p {
+	margin-top: auto;
+	padding-left: 8px;
+	padding-right: 8px;
+	font-size: x-large;
+	color: #58606e;
+}
+
+.api-diff-form>button {
+	margin-left: 8px;
+}
+
 .article {
 	padding: 20px;
 	max-width: 960px;

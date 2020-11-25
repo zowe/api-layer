@@ -2,14 +2,19 @@ import { REQUEST_VERSION_DIFF, RECEIVE_VERSION_DIFF } from "../actions/service-v
 
 
 const defaultState = {
-    diffText: undefined
+    diffText: undefined,
+    oldVersion: undefined,
+    newVersion: undefined
 }
 
 const serviceVersionDiffReducer = (state = defaultState, action) => {
     switch (action.type) {
         case REQUEST_VERSION_DIFF:
-            //TODO:: Do we want to do anything on the request? we could set loading and show a loading indicator?
-            return state;
+            return {
+                ...state,
+                oldVersion: action.oldVersion,
+                newVersion: action.newVersion
+            }
         case RECEIVE_VERSION_DIFF:
             return {
                 ...state,

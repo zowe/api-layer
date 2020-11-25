@@ -109,6 +109,8 @@ public class APIServiceStatusService {
         ChangedOpenApi diff = OpenApiCompare.fromContents(doc1, doc2);
         HtmlRender render = new HtmlRender();
         String result = render.render(diff);
+        //Remove external stylesheet
+        result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
         return new ResponseEntity<>(result, createHeaders(), HttpStatus.OK);
     }
 

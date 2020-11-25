@@ -52,7 +52,7 @@ describe('>>> ServiceTab component tests', () => {
         expect(serviceTab.find('Text').at(4).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
         expect(serviceTab.find('Text').at(5).prop('children')).toEqual('v1');
         expect(serviceTab.find('Text').at(6).prop('children')).toEqual('v2');
-        expect(serviceTab.find('span').first().prop('style').background).toEqual('#d0d0d0');    //Check default api version is pre selected
+        expect(serviceTab.find('span').first().prop('style').backgroundColor).toEqual('#fff');    //Check default api version is pre selected
 
     });
 
@@ -61,13 +61,13 @@ describe('>>> ServiceTab component tests', () => {
         const serviceTab = shallow(<ServiceTab match={params} selectedService={selectedService} tiles={[tiles]} selectService={selectService}/>);
         serviceTab.setState({selectedVersion: "v1"})
 
-        expect(serviceTab.find('span').first().prop('style').background).toEqual('#d0d0d0');
-        expect(serviceTab.find('span').at(1).prop('style').background).toEqual(undefined);
+        expect(serviceTab.find('span').first().prop('style').backgroundColor).toEqual('#fff');
+        expect(serviceTab.find('span').at(1).prop('style').backgroundColor).toEqual(undefined);
 
         serviceTab.find('span').at(1).simulate('click')
 
-        expect(serviceTab.find('span').at(1).prop('style').background).toEqual('#d0d0d0');
-        expect(serviceTab.find('span').first().prop('style').background).toEqual(undefined);
+        expect(serviceTab.find('span').at(1).prop('style').backgroundColor).toEqual('#fff');
+        expect(serviceTab.find('span').first().prop('style').backgroundColor).toEqual(undefined);
         
     });
 

@@ -48,8 +48,12 @@ export default class ServiceTab extends Component {
         let apiVersions = [];
         if(currentService && currentService.apiVersions) {
             apiVersions = currentService.apiVersions.map(version => {
+                //Pre select default version or if only one version exists select that
                 let selectedStyle = {};
-                if (selectedVersion === version || (currentService.defaultApiVersion === version && selectedVersion === null)) {
+                if(selectedVersion === null && (currentService.defaultApiVersion === version || currentService.apiVersions.length === 1)){
+                    selectedStyle = { backgroundColor: '#fff' };
+                }
+                if (selectedVersion === version) {
                     selectedStyle = { backgroundColor: '#fff' };
                 }
                 return <span 
@@ -66,8 +70,9 @@ export default class ServiceTab extends Component {
                         className="nav-tab" 
                         onClick={ () => { this.setState({selectedVersion: 'diff'})}}
                         style={selectedVersion === 'diff' ? { backgroundColor: '#fff'} : {} }
+                        key="diff"
                     >
-                        <Text>Diff</Text>
+                        <Text>Compare</Text>
                     </span>
                 );
             }
