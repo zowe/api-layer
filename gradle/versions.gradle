@@ -27,7 +27,7 @@ ext {
     commonsLang3Version = '3.7'
     commonsTextVersion = '1.8'
     gradleGitPropertiesVersion = '1.5.1'
-    jettyWebSocketClientVersion = '9.4.34.v20201102'
+    jettyWebSocketClientVersion = '9.4.35.v20201120'
     junitVersion = '4.12'
     junitVintageVersion = '5.5.2'
     eurekaClientVersion = '1.9.13'
@@ -129,6 +129,7 @@ ext {
         apache_commons_lang3               : "org.apache.commons:commons-lang3:${commonsLang3Version}",
         apache_commons_text                : "org.apache.commons:commons-text:${commonsTextVersion}",
         jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
+        jetty_websocket_common             : "org.eclipse.jetty.websocket:websocket-common:${jettyWebSocketClientVersion}",
         jetty_util                         : "org.eclipse.jetty:jetty-util:${jettyWebSocketClientVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
         netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
