@@ -23,21 +23,17 @@ import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
-import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
 @Import(DefaultZaasClientConfiguration.class)
 public class CachingController {
-    private static final String TOKEN_COOKIE_PREFIX = "apimlAuthenticationToken";
     private static final String KEY_NOT_IN_CACHE_MESSAGE = "org.zowe.apiml.cache.keyNotInCache";
 
     private final Storage storage;
@@ -51,7 +47,7 @@ public class CachingController {
     public ResponseEntity<Object> getValue(@PathVariable String key, HttpServletRequest request) {
         String serviceId;
         try {
-            ZaasToken token = queryTokenFromRequest(request);
+            ZaasToken token = zaasClient.query(request);
             serviceId = token.getUserId();
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
@@ -78,7 +74,7 @@ public class CachingController {
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
         String serviceId;
         try {
-            ZaasToken token = queryTokenFromRequest(request);
+            ZaasToken token = zaasClient.query(request);
             serviceId = token.getUserId();
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
@@ -94,7 +90,7 @@ public class CachingController {
     public ResponseEntity<Object> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
         String serviceId;
         try {
-            ZaasToken token = queryTokenFromRequest(request);
+            ZaasToken token = zaasClient.query(request);
             serviceId = token.getUserId();
 
             checkForInvalidPayload(keyValue);
@@ -121,7 +117,7 @@ public class CachingController {
     public ResponseEntity<Object> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
         String serviceId;
         try {
-            ZaasToken token = queryTokenFromRequest(request);
+            ZaasToken token = zaasClient.query(request);
             serviceId = token.getUserId();
 
             checkForInvalidPayload(keyValue);
@@ -148,7 +144,7 @@ public class CachingController {
     public ResponseEntity<Object> delete(@PathVariable String key, HttpServletRequest request) {
         String serviceId;
         try {
-            ZaasToken token = queryTokenFromRequest(request);
+            ZaasToken token = zaasClient.query(request);
             serviceId = token.getUserId();
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
@@ -194,33 +190,6 @@ public class CachingController {
     private ResponseEntity<Object> noKeyProvidedResponse(String serviceId) {
         Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided", serviceId);
         return new ResponseEntity<>(message.mapToView(), HttpStatus.BAD_REQUEST);
-    }
-
-    private ZaasToken queryTokenFromRequest(HttpServletRequest request) throws ZaasClientException {
-        String jwtToken = getJwtTokenFromCookie(request);
-        ZaasToken zaasToken = zaasClient.query(jwtToken);
-
-        if (zaasToken == null) {
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is null");
-        }
-        if (zaasToken.isExpired()) {
-            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, "Queried token is expired");
-        }
-
-        return zaasToken;
-    }
-
-    private String getJwtTokenFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-        return Arrays.stream(cookies)
-            .filter(cookie -> cookie.getName().equals(TOKEN_COOKIE_PREFIX))
-            .filter(cookie -> !cookie.getValue().isEmpty())
-            .findFirst()
-            .map(Cookie::getValue)
-            .orElse(null);
     }
 
     private ResponseEntity<Object> handleZaasClientException(ZaasClientException e, HttpServletRequest request) {
