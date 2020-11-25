@@ -38,6 +38,7 @@ import static org.awaitility.Awaitility.await;
 public class ApiMediationLayerStartupChecker {
     private final GatewayServiceConfiguration gatewayConfiguration;
     private final List<Service> servicesToCheck = new ArrayList<>();
+    private final String healthEndpoint = "/application/health";
 
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
@@ -77,7 +78,7 @@ public class ApiMediationLayerStartupChecker {
 
     private DocumentContext getDocumentAsContext() {
         try {
-            HttpGet request = HttpRequestUtils.getRequest("/application/health");
+            HttpGet request = HttpRequestUtils.getRequest(healthEndpoint);
             final HttpResponse response = HttpClientUtils.client().execute(request);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 log.warn("Unexpected HTTP status code: {}", response.getStatusLine().getStatusCode());
@@ -101,11 +102,11 @@ public class ApiMediationLayerStartupChecker {
             }
 
             boolean areAllServicesUp = true;
-            for(Service toCheck: servicesToCheck) {
+            for (Service toCheck : servicesToCheck) {
                 boolean isUp = isServiceUp(context, toCheck.path);
                 logDebug(toCheck.name + " is {}", isUp);
 
-                if(!isUp) {
+                if (!isUp) {
                     areAllServicesUp = false;
                 }
             }
@@ -119,10 +120,19 @@ public class ApiMediationLayerStartupChecker {
                 amountOfActiveGateways.equals(gatewayConfiguration.getInstances());
             log.debug("There is {} gateways", amountOfActiveGateways);
 
+            // Consider properly the case with multiple gateway services running on different ports.
+            if (gatewayConfiguration.getInternalPorts() != null && !gatewayConfiguration.getInternalPorts().isEmpty()) {
+                String[] internalPorts = gatewayConfiguration.getInternalPorts().split(",");
+                for (String port : internalPorts) {
+                    log.debug("Trying to access the Gateway at port {}", port);
+                    HttpRequestUtils.getResponse(healthEndpoint, HttpStatus.SC_OK, Integer.parseInt(port));
+                }
+            }
+
             return areAllServicesUp &&
                 isValidAmountOfGatewaysUp &&
                 isTestApplicationUp;
-        } catch (PathNotFoundException e) {
+        } catch (PathNotFoundException | IOException e) {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;
         }
@@ -133,7 +143,7 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private void logDebug(String logMessage, boolean state) {
-        log.debug(logMessage, state ? "UP": "DOWN");
+        log.debug(logMessage, state ? "UP" : "DOWN");
     }
 
     @AllArgsConstructor
