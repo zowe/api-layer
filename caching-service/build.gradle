@@ -51,16 +51,13 @@ dependencies {
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
-    implementation libraries.spring_boot_starter_websocket
-
-    implementation libraries.bootstrap
-    implementation libraries.jquery
 
     implementation libraries.gson
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test
+    testCompile libraries.hamcrest
 }
 
 
