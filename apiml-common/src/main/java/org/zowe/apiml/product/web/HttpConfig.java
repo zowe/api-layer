@@ -134,7 +134,9 @@ public class HttpConfig {
     @Bean
     public SslContextFactory.Server jettySslContextFactory() {
         SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-        sslContextFactory.setKeyStorePath(SecurityUtils.replaceFourSlashes(keyStore));
+        if (keyStore != null) {
+            sslContextFactory.setKeyStorePath(SecurityUtils.replaceFourSlashes(keyStore));
+        }
         sslContextFactory.setProtocol(protocol);
         sslContextFactory.setKeyStorePassword(keyStorePassword == null ? null : String.valueOf(keyStorePassword));
         sslContextFactory.setKeyStoreType(keyStoreType);
