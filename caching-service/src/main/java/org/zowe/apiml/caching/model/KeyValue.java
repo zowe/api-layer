@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.caching.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -19,4 +20,10 @@ import lombok.RequiredArgsConstructor;
 public class KeyValue {
     private final String key;
     private final String value;
+
+    @JsonCreator
+    public KeyValue() {
+        key = "";
+        value = "";
+    }
 }

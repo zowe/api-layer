@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.caching.service.inmemory;
 
+import com.google.common.annotations.VisibleForTesting;
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Storage;
 
@@ -16,13 +18,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class InMemoryStorage implements Storage {
     private Map<String, Map<String, KeyValue>> storage = new ConcurrentHashMap<>();
 
     public InMemoryStorage() {
+        log.info("Using in-memory storage for the cached data");
     }
 
+    @VisibleForTesting
     protected InMemoryStorage(Map<String, Map<String, KeyValue>> storage) {
+        log.info("Using in-memory storage for the cached data");
         this.storage = storage;
     }
 
