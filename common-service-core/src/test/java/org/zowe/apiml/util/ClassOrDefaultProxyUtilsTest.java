@@ -11,7 +11,6 @@ package org.zowe.apiml.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.commons.math.ode.ExtendedFirstOrderDifferentialEquations;
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -65,7 +64,7 @@ public class ClassOrDefaultProxyUtilsTest {
 
         //not found constructor falls back to backup instead of exception
         ti = ClassOrDefaultProxyUtils.createProxyByConstructor(TestInterface1.class, ConstructorTestImplementation.class.getName(),
-            TestImplementation1B::new, new Class[]{ExtendedFirstOrderDifferentialEquations.class}, new Object[]{5});
+            TestImplementation1B::new, new Class[]{org.hamcrest.Matchers.class}, new Object[]{5});
         assertFalse(((ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) ti).isUsingBaseImplementation());
 
     }
