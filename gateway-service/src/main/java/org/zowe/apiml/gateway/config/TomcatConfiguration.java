@@ -59,7 +59,7 @@ public class TomcatConfiguration {
     private String address;
 
     @Bean
-    public ServletWebServerFactory servletContainer() throws UnknownHostException{
+    public ServletWebServerFactory servletContainer() throws UnknownHostException {
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
@@ -69,7 +69,7 @@ public class TomcatConfiguration {
         return tomcat;
     }
 
-    private Connector createSslConnector() throws UnknownHostException{
+    private Connector createSslConnector() throws UnknownHostException {
         Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
         Http11NioProtocol protocol = (Http11NioProtocol) connector.getProtocolHandler();
 
