@@ -10,6 +10,8 @@
 package org.zowe.apiml.gateway.config;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import static org.junit.Assert.assertEquals;
@@ -20,9 +22,12 @@ class GatewayConfigTest {
     private static final String PORT = "8888";
     private static final String SCHEME = "https";
 
+    @Mock
+    ConfigurableEnvironment env;
+
     @Test
     void shouldReturnGatewayProperties() {
-        GatewayConfigProperties gatewayConfigProperties = new GatewayConfig().getGatewayConfigProperties(HOST, PORT, SCHEME);
+        GatewayConfigProperties gatewayConfigProperties = new GatewayConfig(env).getGatewayConfigProperties(HOST, PORT, SCHEME);
         assertEquals(HOST + ":" + PORT, gatewayConfigProperties.getHostname());
         assertEquals(SCHEME, gatewayConfigProperties.getScheme());
     }

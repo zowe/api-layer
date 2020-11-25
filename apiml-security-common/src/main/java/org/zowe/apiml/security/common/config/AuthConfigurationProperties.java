@@ -13,6 +13,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
@@ -60,7 +61,7 @@ public class AuthConfigurationProperties {
     //Cookie properties
     @Data
     public static class CookieProperties {
-        private String cookieName = "apimlAuthenticationToken";
+        private String cookieName = ApimlConstants.COOKIE_AUTH_NAME;
         private boolean cookieSecure = true;
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
