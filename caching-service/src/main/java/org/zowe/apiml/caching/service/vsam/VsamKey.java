@@ -11,6 +11,7 @@
 package org.zowe.apiml.caching.service.vsam;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.caching.config.VsamConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 
@@ -45,11 +46,11 @@ public class VsamKey {
     }
 
     public String getKey(String serviceId, String key) {
-        return VsamUtils.padToLength(serviceId.hashCode() + ":" + key.hashCode(), keyLength);
+        return StringUtils.rightPad(serviceId.hashCode() + ":" + key.hashCode(), keyLength);
     }
 
     public String getKey(String serviceId, KeyValue keyValue) {
-        return VsamUtils.padToLength(serviceId.hashCode() + ":" + keyValue.getKey().hashCode(), keyLength);
+        return StringUtils.rightPad(serviceId.hashCode() + ":" + keyValue.getKey().hashCode(), keyLength);
     }
 
     public byte[] getKeyBytes(String serviceId, String key) throws UnsupportedEncodingException {
@@ -61,7 +62,7 @@ public class VsamKey {
     }
 
     public String getKeySidOnly(String serviceId) {
-        return VsamUtils.padToLength(String.valueOf(serviceId.hashCode()), keyLength);
+        return StringUtils.rightPad(String.valueOf(serviceId.hashCode()), keyLength);
     }
 
     public byte[] getKeyBytesSidOnly(String serviceId) throws UnsupportedEncodingException {

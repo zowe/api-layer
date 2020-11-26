@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.service.vsam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.caching.config.VsamConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 
@@ -65,7 +66,7 @@ public class VsamRecord {
 
     public byte[] getBytes() throws VsamRecordException {
         try {
-            byte[] bytes = VsamUtils.padToLength(key.getKey(serviceId, keyValue.getKey()) + mapper.writeValueAsString(keyValue), config.getRecordLength())
+            byte[] bytes = StringUtils.rightPad(key.getKey(serviceId, keyValue.getKey()) + mapper.writeValueAsString(keyValue), config.getRecordLength())
                 .getBytes(config.getEncoding());
             if (bytes.length > config.getRecordLength()) {
                 throw new VsamRecordException("Record length exceeds the configured Vsam record length: ");
