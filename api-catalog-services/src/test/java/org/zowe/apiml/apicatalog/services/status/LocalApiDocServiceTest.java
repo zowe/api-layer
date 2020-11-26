@@ -399,12 +399,15 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenNoDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnNull() {
+    public void givenNoDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnHighestVersion() {
+        Map<String, String> metadata = getMetadataWithMultipleApiInfo();
+        metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
+
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getStandardMetadata(), false));
+            .thenReturn(getStandardInstance(metadata, false));
 
         String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
-        assertNull(defaultVersion);
+        assertEquals("v2", defaultVersion);
     }
 
     @Test
