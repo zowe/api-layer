@@ -12,5 +12,5 @@ package org.zowe.apiml.gateway.ws;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 public interface SslContextFactoryProvider {
-    SslContextFactory getSslFactory();
+    SslContextFactory.Server getSslFactory();
 }
