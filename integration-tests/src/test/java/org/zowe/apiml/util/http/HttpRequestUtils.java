@@ -29,15 +29,22 @@ public class HttpRequestUtils {
     private HttpRequestUtils() {}
 
     /**
-     * Execute the endpoint and check the response for a return code
+     * Execute the GET request to the endpoint and check the response for a return code
      * @param endpoint execute thus
      * @param returnCode check for this
      * @return response
-     * @throws URISyntaxException oops
      * @throws IOException oops
      */
     public static HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
-        HttpGet request = getRequest(endpoint);
+        int port = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+
+        return getResponse(endpoint, returnCode, port);
+    }
+
+    public static HttpResponse getResponse(String endpoint, int returnCode, int port) throws IOException {
+        HttpGet request = new HttpGet(
+            getUriFromGateway(endpoint, port)
+        );
 
         // When
         HttpResponse response = HttpClientUtils.client().execute(request);
@@ -54,11 +61,10 @@ public class HttpRequestUtils {
         return new HttpGet(uri);
     }
 
-    public static URI getUriFromGateway(String endpoint) {
+    public static URI getUriFromGateway(String endpoint, int port) {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String scheme = gatewayServiceConfiguration.getScheme();
         String host = gatewayServiceConfiguration.getHost();
-        int port = gatewayServiceConfiguration.getPort();
         URI uri = null;
         try {
             uri = new URIBuilder()
@@ -73,5 +79,9 @@ public class HttpRequestUtils {
         }
 
         return uri;
+    }
+
+    public static URI getUriFromGateway(String endpoint) {
+        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort());
     }
 }
