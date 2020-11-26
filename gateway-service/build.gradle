@@ -63,6 +63,7 @@ dependencies {
     compile libraries.spring_cloud_starter_eureka
     compile libraries.spring_cloud_starter_ribbon
     compile libraries.jetty_websocket_client
+    compile libraries.jetty_websocket_common
     compile libraries.jetty_util
     compile libraries.jjwt
     compile libraries.nimbusJoseJwt

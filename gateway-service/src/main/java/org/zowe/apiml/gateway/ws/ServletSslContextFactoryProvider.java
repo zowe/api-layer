@@ -15,15 +15,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ServletSslContextFactoryProvider implements SslContextFactoryProvider {
-    private final SslContextFactory sslContextFactory;
+    private final SslContextFactory.Server sslContextFactory;
 
     @Autowired
-    public ServletSslContextFactoryProvider(SslContextFactory sslContextFactory) {
+    public ServletSslContextFactoryProvider(SslContextFactory.Server sslContextFactory) {
         this.sslContextFactory = sslContextFactory;
     }
 
     @Override
-    public SslContextFactory getSslFactory() {
+    public SslContextFactory.Server getSslFactory() {
         return sslContextFactory;
     }
 }
