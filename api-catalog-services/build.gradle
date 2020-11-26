@@ -59,6 +59,7 @@ dependencies {
     compile libraries.spring_boot_starter_thymeleaf
     compile libraries.apache_velocity
     compile libraries.openapidiff
+    compile libraries.jetty_util
 
     compile libraries.springFox
 

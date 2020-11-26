@@ -43,7 +43,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     private final Map<String, WebSocketRoutedSession> routedSessions;
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
     private final DiscoveryClient discovery;
-    private final SslContextFactory jettySslContextFactory;
+    private final SslContextFactory.Server jettySslContextFactory;
     private final WebSocketRoutedSessionFactory webSocketRoutedSessionFactory;
     private static final String SEPARATOR = "/";
 

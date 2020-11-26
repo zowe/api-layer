@@ -79,6 +79,17 @@ spring:
 server:
     internal:
         enabled: false
+        port: ${server.port}
+        ssl:
+            keyAlias: ${server.ssl.keyAlias:localhost}
+            keyPassword: ${server.ssl.keyPassword:password}
+            keyStoreType: ${server.ssl.keyStoreType:PKCS12}
+            keyStore: ${server.ssl.keyStore:keystore}
+            trustStoreType: ${server.ssl.trustStoreType:PKCS12}
+            trustStore: ${server.ssl.trustStore:trustore}
+            keyStorePassword: ${server.ssl.keyStorePassword:password}
+            trustStorePassword: ${server.ssl.trustStorePassword:password}
+            clientAuth: ${server.ssl.clientAuth}
     max-http-header-size: 48000
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
@@ -157,8 +168,8 @@ eureka:
     instance:
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
-        port: ${server.port}
-        securePort: ${server.port}
+        port: ${server.internal.port}
+        securePort: ${server.internal.port}
         nonSecurePortEnabled: false # must be set to false if you are using SSL
         securePortEnabled: ${server.ssl.enabled}
         preferIpAddress: ${apiml.service.preferIpAddress}
