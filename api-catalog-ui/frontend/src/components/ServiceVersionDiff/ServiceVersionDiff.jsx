@@ -51,7 +51,7 @@ export default class ServiceVersionDiff extends Component {
                         style={selectorStyle} />
                     <Button onClick={() => { getDiff(serviceId, selectedVersion1.text, selectedVersion2.text) }}>Go</Button>
                 </div>
-                <div dangerouslySetInnerHTML={{__html: diffText}} />
+                <div className="api-diff-content" dangerouslySetInnerHTML={{__html: diffText}} />
             </div>
         )
     }

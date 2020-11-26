@@ -56,7 +56,7 @@ describe('>>> Detail page test', () => {
 
         cy.get('.tabs-container')
             .should('exist')
-            .should('have.length', 1)
+            .should('have.length', 2)
             .within($el => {
                 cy.get('a').should('contain', 'apicatalog');
             });
@@ -94,7 +94,7 @@ describe('>>> Detail page test', () => {
 
         cy.get('.tabs-container')
             .should('exist')
-            .should('have.length', 1)
+            .should('have.length', 2)
             .within($el => {
                 cy.get('a').should('contain', 'gateway');
             });

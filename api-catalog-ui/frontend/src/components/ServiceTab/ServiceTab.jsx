@@ -61,7 +61,7 @@ export default class ServiceTab extends Component {
                     key={version} 
                     style={selectedStyle}
                     onClick={ () => { this.setState({selectedVersion: version}); }}>
-                        <Text>{version}</Text>
+                        <Text className="version-text">{version}</Text>
                     </span>
             });
             if(apiVersions.length >= 2){
@@ -72,7 +72,7 @@ export default class ServiceTab extends Component {
                         style={selectedVersion === 'diff' ? { backgroundColor: '#fff'} : {} }
                         key="diff"
                     >
-                        <Text>Compare</Text>
+                        <Text className="version-text">Compare</Text>
                     </span>
                 );
             }
