@@ -14,21 +14,26 @@ export default class ServiceTab extends Component {
     }
 
     render() {
-        const { 
+        const {
             match : {
                 params: {tileID, serviceId},
             },
-            tiles, 
+            tiles,
             selectedService,
             selectedTile,
             selectService,
         } = this.props;
         const { selectedVersion } = this.state;
-        let currentService = null;	
+        let basePath = '';
+        if (selectedService.basePath) {
+            const version = selectedVersion ? selectedVersion : selectedService.defaultApiVersion;
+            basePath = selectedService.basePath.replace('{api-version}', version);
+        }
+        let currentService = null;
         let invalidService = true;
         tiles[0].services.forEach(service => {
             if (service.serviceId === serviceId) {
-                
+
                 if (service.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
                     selectService(service, tileID);
                 }
@@ -36,7 +41,7 @@ export default class ServiceTab extends Component {
                 currentService = service;
             }
         });
-        const message = 'The API documentation was retrieved but could not be displayed.';        
+        const message = 'The API documentation was retrieved but could not be displayed.';
         const hasHomepage =
             selectedService.homePageUrl !== null &&
             selectedService.homePageUrl !== undefined &&
@@ -47,11 +52,11 @@ export default class ServiceTab extends Component {
         let apiVersions = [];
         if(currentService && currentService.apiVersions) {
             let versionSelectorStyle = {
-                marginRight: '10px', 
-                padding: '7px', 
-                display: 'inline-block', 
-                border: '1px solid #000000', 
-                borderRadius: '6px', 
+                marginRight: '10px',
+                padding: '7px',
+                display: 'inline-block',
+                border: '1px solid #000000',
+                borderRadius: '6px',
                 cursor: 'pointer'
             };
             apiVersions = currentService.apiVersions.map(version => {
@@ -61,9 +66,9 @@ export default class ServiceTab extends Component {
                 } else {
                     versionStyle = versionSelectorStyle;
                 }
-                return <span 
+                return <span
                     class="version-selector"
-                    key={version} 
+                    key={version}
                     onClick={ ()=>{ this.setState({selectedVersion: version}); }}
                     style={versionStyle}>
                         <Text>{version}</Text>
@@ -125,11 +130,11 @@ export default class ServiceTab extends Component {
                                     </Tooltip>
                                     <br/>
                                     <Tooltip
-                                        key={selectedService.basePath}
+                                        key={basePath}
                                         content="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
                                         placement="bottom"
                                     >
-                                        <Text style={{ fontSize: '13px' }}>API Base Path: {selectedService.basePath}</Text>
+                                        <Text style={{ fontSize: '13px' }}>API Base Path: {basePath}</Text>
                                     </Tooltip>
                                     <br/>
                                     <Tooltip
