@@ -14,12 +14,8 @@ import lombok.Getter;
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
+import java.lang.reflect.*;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -52,6 +48,25 @@ public class ClassOrDefaultProxyUtilsTest {
         voidResponse = null;
         ti.method3();
         assertEquals("response_1b_3", voidResponse);
+    }
+
+    @Test
+    public void specificConstructorCanBeInvoked() {
+        TestInterface1 ti;
+
+        ti = ClassOrDefaultProxyUtils.createProxyByConstructor(TestInterface1.class, ConstructorTestImplementation.class.getName(),
+                TestImplementation1B::new, new Class[]{String.class}, new Object[]{"Spejbl"});
+        assertEquals("Spejbl", ti.method1());
+
+        ti = ClassOrDefaultProxyUtils.createProxyByConstructor(TestInterface1.class, ConstructorTestImplementation.class.getName(),
+                TestImplementation1B::new, new Class[]{int.class}, new Object[]{5});
+        assertEquals("Zeryk_5", ti.method2("dummy", 0));
+
+        //not found constructor falls back to backup instead of exception
+        ti = ClassOrDefaultProxyUtils.createProxyByConstructor(TestInterface1.class, ConstructorTestImplementation.class.getName(),
+            TestImplementation1B::new, new Class[]{org.hamcrest.Matchers.class}, new Object[]{5});
+        assertFalse(((ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) ti).isUsingBaseImplementation());
+
     }
 
     @Test
@@ -303,6 +318,33 @@ public class ClassOrDefaultProxyUtilsTest {
 
         public void method3() {
             voidResponse = "response_1a_3";
+        }
+
+    }
+
+    public static class ConstructorTestImplementation {
+
+        private String name = "Zeryk";
+        private int number = 5;
+
+        public ConstructorTestImplementation(String string) {
+            this.name = string;
+        }
+
+        public ConstructorTestImplementation(int nePetkuNe) {
+            this.number = nePetkuNe;
+        }
+
+        public String method1() {
+            return name;
+        }
+
+        public String method2(String x, int y) {
+            return name + "_" + number;
+        }
+
+        public void method3() {
+
         }
 
     }
