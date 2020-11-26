@@ -95,11 +95,7 @@ public class APIDocRetrievalService {
         }
 
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
-        ApiInfo defaultApiInfo = getApiInfoSetAsDefault(apiInfoList);
-
-        if (defaultApiInfo == null) {
-            return null;
-        }
+        ApiInfo defaultApiInfo = getDefaultApiInfo(apiInfoList);
 
         return "v" + getMajorVersion(defaultApiInfo);
     }
@@ -169,13 +165,19 @@ public class APIDocRetrievalService {
         InstanceInfo instanceInfo = getInstanceInfo(serviceId);
 
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        ApiInfo defaultApiInfo = getDefaultApiInfo(apiInfoList);
+
+        return buildApiDocInfo(serviceId, defaultApiInfo, instanceInfo);
+    }
+
+    private ApiInfo getDefaultApiInfo(List<ApiInfo> apiInfoList) {
         ApiInfo defaultApiInfo = getApiInfoSetAsDefault(apiInfoList);
 
         if (defaultApiInfo == null) {
             defaultApiInfo = getHighestApiVersion(apiInfoList);
         }
 
-        return buildApiDocInfo(serviceId, defaultApiInfo, instanceInfo);
+        return defaultApiInfo;
     }
 
     private ApiInfo getApiInfoSetAsDefault(List<ApiInfo> apiInfoList) {
