@@ -115,10 +115,10 @@ public class AuthenticationController {
     }
 
     private Key getKeyForSigning() {
-        try {
+        try (FileInputStream keystore = new FileInputStream(new File("keystore/localhost/localhost.keystore.p12"))) {
             KeyStore ks = KeyStore.getInstance("PKCS12");
             ks.load(
-                new FileInputStream(new File("keystore/localhost/localhost.keystore.p12")),
+                keystore,
                 "password".toCharArray()
             );
             return ks.getKey("localhost", "password".toCharArray());

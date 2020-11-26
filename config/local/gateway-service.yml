@@ -32,15 +32,8 @@ server:
         enabled: true
         port: 10017
         ssl:
-            keyAlias: localhost
-            keyPassword: password
-            keyStore: keystore/localhost/localhost.keystore.p12
-            keyStorePassword: password
-            trustStore: keystore/localhost/localhost.truststore.p12
-            trustStorePassword: password
-            keyStoreType: PKCS12
-            trustStoreType: PKCS12
-            clientAuth: want
+            keyAlias: localhost-multi
+            keyStore: keystore/localhost/localhost-multi.keystore.p12
     ssl:
         keyAlias: localhost
         keyPassword: password

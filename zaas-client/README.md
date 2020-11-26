@@ -20,6 +20,7 @@ This java library provides you the `ZaasClient` interface:
         String login(String userId, String password) throws ZaasClientException;
         String login(String authorizationHeader) throws ZaasClientException;
         ZaasToken query(String token) throws ZaasClientException;
+        ZaasToken query(HttpServletRequest request) throws ZaasClientException;
         String passTicket(String jwtToken, String applicationId) throws ZaasClientException;
         void logout(String token) throws ZaasClientException, ZaasConfigurationException;
     }
@@ -60,7 +61,14 @@ which enables your application to add following functions:
 
     In return you will receive the `ZaasToken` Object in JSON format.
 
-    This method will automatically use the truststore file to add a security layer, which you configured in the `ConfigProperties`         class.
+    This method will automatically use the truststore file to add a security layer, which you configured in the `ConfigProperties` class.
+    
+    The `query` method is overloaded so you can provide the `HttpServletRequest` object that contains the token in the `apimlAuthenticationToken`
+    cookie or in an Authorization header, and then receive the `ZaasToken` Object in JSON format.    
+
+    ```java
+    ZaasToken query(HttpServletRequest request) throws ZaasClientException;
+    ```
 
 - **Invalidate the JWT token (logout)**
 
