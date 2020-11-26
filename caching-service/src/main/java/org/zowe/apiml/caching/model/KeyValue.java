@@ -14,6 +14,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Data POJO that represents entry in caching service
+ */
 @RequiredArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Data
