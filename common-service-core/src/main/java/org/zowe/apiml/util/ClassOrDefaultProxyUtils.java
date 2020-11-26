@@ -14,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.*;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -67,16 +64,35 @@ public final class ClassOrDefaultProxyUtils {
      * @return Proxy object implementing interfaceClass and ClassOrDefaultProxyState
      */
     public static <T> T createProxy(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, ExceptionMapping<? extends Exception> ... exceptionMappings) {
+        return createProxyByConstructor(interfaceClass, implementationClassName, defaultImplementation, new Class[]{}, new Object[]{}, exceptionMappings);
+    }
+
+    /**
+     * Same as createProxy but with option to specify constructor signature and supply parameters
+     *
+     * @param interfaceClass Interface of created proxy
+     * @param implementationClassName Full name of prefer implementation
+     * @param defaultImplementation Supplier to fetch implementation to use, if the prefer one is missing
+     * @param <T> Common interface for prefer and default implementation
+     * @param constructorSignature Signature of requested constructor
+     * @param constructorParams Parameters for requested constructor
+     * @param exceptionMappings handlers to map exception to custom class
+     * @return Proxy object implementing interfaceClass and ClassOrDefaultProxyState
+     */
+    public static <T> T createProxyByConstructor(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, Class[] constructorSignature, Object[] constructorParams, ExceptionMapping<? extends Exception> ... exceptionMappings) {
         ObjectUtil.requireNotNull(interfaceClass, "interfaceClass can't be null");
         ObjectUtil.requireNotEmpty(implementationClassName, "implementationClassName can't be empty");
         ObjectUtil.requireNotNull(defaultImplementation, "defaultImplementation can't be null");
+        ObjectUtil.requireNotNull(constructorSignature, "constructorSignature can't be null");
+        ObjectUtil.requireNotNull(constructorParams, "constructorParams can't be null");
 
         try {
             final Class<?> implementationClazz = Class.forName(implementationClassName);
-            final Object implementation = implementationClazz.getDeclaredConstructor().newInstance();
+            final Object implementation = implementationClazz.getDeclaredConstructor(constructorSignature).newInstance(constructorParams);
             return makeProxy(interfaceClass, implementation, true, exceptionMappings);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            log.warn("Implementation {} is not available, it will continue with default one {} : " + e.getLocalizedMessage(), implementationClassName, defaultImplementation);
+            log.warn("Implementation {} is not available with constructor signature {}, it will continue with default one {} : " + e.getLocalizedMessage(),
+                implementationClassName, constructorSignature,  defaultImplementation);
         }
 
         return makeProxy(interfaceClass, defaultImplementation.get(), false, exceptionMappings);

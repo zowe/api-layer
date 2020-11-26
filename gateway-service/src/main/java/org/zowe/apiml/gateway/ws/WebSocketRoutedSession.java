@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.springframework.http.HttpHeaders;
@@ -37,7 +38,7 @@ public class WebSocketRoutedSession {
     private final WebSocketSession webSocketClientSession;
     private final WebSocketSession webSocketServerSession;
 
-    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory jettySslContextFactory) {
+    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory.Server jettySslContextFactory) {
         log.debug("Creating WebSocketRoutedSession jettySslContextFactory={}", jettySslContextFactory);
         this.webSocketServerSession = webSocketServerSession;
         this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl, jettySslContextFactory);
@@ -68,22 +69,20 @@ public class WebSocketRoutedSession {
         return webSocketServerSession;
     }
 
-    private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory sslContextFactory) {
+    private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory.Server sslContextFactory) {
         try {
             log.debug("createWebSocketClientSession(session={},targetUrl={},jettySslContextFactory={})",
-                    webSocketClientSession, targetUrl, sslContextFactory);
-            JettyWebSocketClient client = new JettyWebSocketClient(new WebSocketClient(sslContextFactory));
+                webSocketClientSession, targetUrl, sslContextFactory);
+            JettyWebSocketClient client = new JettyWebSocketClient(new WebSocketClient(new HttpClient(sslContextFactory)));
             client.start();
             URI targetURI = new URI(targetUrl);
             WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
             ListenableFuture<WebSocketSession> futureSession = client
                 .doHandshake(new WebSocketProxyClientHandler(webSocketServerSession), headers, targetURI);
             return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
-        }
-        catch (IllegalStateException e) {
+        } catch (IllegalStateException e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, true);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
         }
     }
