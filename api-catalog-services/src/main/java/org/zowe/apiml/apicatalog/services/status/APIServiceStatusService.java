@@ -18,6 +18,7 @@ import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
 import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
 import org.zowe.apiml.apicatalog.services.status.event.model.ContainerStatusChangeEvent;
 import org.zowe.apiml.apicatalog.services.status.event.model.STATUS_EVENT_TYPE;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDiffNotAvailableException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Applications;
 import lombok.NonNull;
@@ -106,12 +107,16 @@ public class APIServiceStatusService {
     public ResponseEntity<String> getApiDiffInfo(@NonNull String serviceId, String apiVersion1, String apiVersion2) {
         String doc1 = cachedApiDocService.getApiDocForService(serviceId, apiVersion1);
         String doc2 = cachedApiDocService.getApiDocForService(serviceId, apiVersion2);
-        ChangedOpenApi diff = OpenApiCompare.fromContents(doc1, doc2);
-        HtmlRender render = new HtmlRender();
-        String result = render.render(diff);
-        //Remove external stylesheet
-        result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
-        return new ResponseEntity<>(result, createHeaders(), HttpStatus.OK);
+        try {
+            ChangedOpenApi diff = OpenApiCompare.fromContents(doc1, doc2);
+            HtmlRender render = new HtmlRender();
+            String result = render.render(diff);
+            //Remove external stylesheet
+            result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
+            return new ResponseEntity<>(result, createHeaders(), HttpStatus.OK);
+        } catch (NullPointerException e) {
+            throw new ApiDiffNotAvailableException(String.format("No Diff available for %s and versions %s and %s", serviceId, apiVersion1, apiVersion2));
+        }
     }
 
     /**
