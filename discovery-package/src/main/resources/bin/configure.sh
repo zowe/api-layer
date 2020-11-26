@@ -9,6 +9,11 @@
 #
 # Copyright IBM Corporation 2019, 2020
 ################################################################################
+
+# Source main utils script
+. ${ROOT_DIR}/bin/utils/utils.sh
+ensure_java_is_on_path
+
 # TODO - do we need 2 zosmf entries?
 # Add static definition for zosmf
 cat <<EOF >${STATIC_DEF_CONFIG_DIR}/zosmf.ebcidic.yml

@@ -18,7 +18,7 @@ build:
   timestamp: "{{build.timestamp}}"
 commands:
   start: bin/start.sh
-  # Note: component has no configure script
+  configure: bin/configure.sh
   validate: bin/validate.sh
 apimlServices:
   dynamic:
