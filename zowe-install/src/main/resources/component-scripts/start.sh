@@ -27,6 +27,8 @@
 
 # Script is ran from run-zowe.sh context so use ROOT_DIR to make a full path to each script
 
+# Please note - the build will soon be updated to use scripts from the separate packages, so please ensure these are updated as well
+
 . "${ROOT_DIR}"/components/api-mediation/bin/setup.sh
 
 . "${ROOT_DIR}"/components/api-mediation/bin/start-discovery.sh &

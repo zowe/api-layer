@@ -1,0 +1,44 @@
+ext {
+    artifactName = 'caching-service-package'
+    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
+}
+
+configurations {
+    cachingServiceJar
+    zip
+}
+
+dependencies {
+    cachingServiceJar(project(path: ":caching-service", configuration: "bootArchives"))
+}
+
+task packageCachingService(type: Zip) {
+    archiveName = artifactName + pullNo + ".zip"
+    includeEmptyDirs = true
+    def resourceDir = 'src/main/resources/'
+
+    into('/') {
+        from "$resourceDir/manifest.yaml"
+    }
+
+    into('bin/') {
+        from configurations.cachingServiceJar
+        from "$resourceDir/bin/start.sh"
+        from "$resourceDir/bin/validate.sh"
+    }
+}
+
+jar.dependsOn(packageCachingService)
+build.dependsOn(packageCachingService)
+
+artifacts {
+    zip packageCachingService
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+        }
+    }
+}
