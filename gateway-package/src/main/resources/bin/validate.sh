@@ -13,7 +13,7 @@
 INITIAL_ERRORS_FOUND=$ERRORS_FOUND
 
 # Source main utils script
-. ${ZOWE_ROOT_DIR}/bin/utils/utils.sh
+. ${ROOT_DIR}/bin/utils/utils.sh
 
 validate_port_is_available ${GATEWAY_PORT}
 validate_zowe_prefix
