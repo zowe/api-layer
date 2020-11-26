@@ -50,7 +50,7 @@ public class VsamKey {
     }
 
     public String getKey(String serviceId, KeyValue keyValue) {
-        return StringUtils.rightPad(serviceId.hashCode() + ":" + keyValue.getKey().hashCode(), keyLength);
+        return getKey(serviceId, keyValue.getKey());
     }
 
     public byte[] getKeyBytes(String serviceId, String key) throws UnsupportedEncodingException {
