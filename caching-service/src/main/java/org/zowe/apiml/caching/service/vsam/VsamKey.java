@@ -16,6 +16,13 @@ import org.zowe.apiml.caching.model.KeyValue;
 
 import java.io.UnsupportedEncodingException;
 
+
+/**
+ * Key for VSAM record
+ * Composed of ServiceId hash : Record key hash
+ *
+ * Takes configuration from {@link VsamConfig}
+ */
 public class VsamKey {
 
     private final VsamConfig config;

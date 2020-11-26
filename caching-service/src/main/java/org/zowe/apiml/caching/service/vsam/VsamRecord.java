@@ -17,6 +17,16 @@ import org.zowe.apiml.caching.model.KeyValue;
 
 import java.io.UnsupportedEncodingException;
 
+/**
+ * Represents a record data structure in VSAM file.
+ *
+ * The structure is composed of {@link VsamKey} and {@link KeyValue}, serialized to JSON format.
+ * Configuration is driven from {@link VsamConfig}
+ *
+ * Constructors provide ways to create record from raw bytes or from POJOs.
+ * Provides methods to serialize to bytes in platform's encoding.
+ */
+
 public class VsamRecord {
 
     private final VsamConfig config;
