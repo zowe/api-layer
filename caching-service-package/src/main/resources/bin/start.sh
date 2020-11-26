@@ -52,7 +52,7 @@ stop_jobs()
 
 trap 'stop_jobs' INT
 
-CACHING_CODE=AM
+CACHING_CODE=CS
 _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m -Xquickstart \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
