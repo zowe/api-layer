@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
+import org.openapitools.openapidiff.core.OpenApiCompare;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
@@ -25,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDiffNotAvailableException;
 
 import java.util.*;
 
@@ -47,6 +49,9 @@ public class ApiServiceStatusServiceTest {
 
     @Mock
     private CachedApiDocService cachedApiDocService;
+
+    @Mock
+    private OpenApiCompareProducer openApiCompareProducer;
 
     @InjectMocks
     private APIServiceStatusService apiServiceStatusService;
@@ -107,9 +112,16 @@ public class ApiServiceStatusServiceTest {
     public void testGetCachedApiDiffForService() {
         String apiDoc = "{}";
         when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
+        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenReturn(OpenApiCompare.fromContents(apiDoc, apiDoc));
         ResponseEntity<String> actualResponse = apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
         assertTrue(actualResponse.getBody().contains("Api Change Log"));
         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+    }
+
+    @Test(expected = ApiDiffNotAvailableException.class)
+    public void givenInvalidAPIs_whenDifferenceIsProduced_thenTheProperExceptionIsRaised() {
+        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenThrow(new NullPointerException());
+        apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
     }
 
     @Test

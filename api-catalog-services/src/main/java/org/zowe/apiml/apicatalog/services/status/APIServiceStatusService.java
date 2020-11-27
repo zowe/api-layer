@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
-import org.openapitools.openapidiff.core.OpenApiCompare;
+import lombok.AllArgsConstructor;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
 import org.openapitools.openapidiff.core.output.HtmlRender;
 import org.zowe.apiml.apicatalog.model.APIContainer;
@@ -23,7 +23,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Applications;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,21 +35,13 @@ import java.util.List;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class APIServiceStatusService {
 
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final CachedApiDocService cachedApiDocService;
-
-
-    @Autowired
-    public APIServiceStatusService(CachedProductFamilyService cachedProductFamilyService,
-                                   CachedServicesService cachedServicesService,
-                                   CachedApiDocService cachedApiDocService) {
-        this.cachedProductFamilyService = cachedProductFamilyService;
-        this.cachedServicesService = cachedServicesService;
-        this.cachedApiDocService = cachedApiDocService;
-    }
+    private final OpenApiCompareProducer openApiCompareProducer;
 
     /**
      * Return a cached snapshot of services and instances as a response
@@ -108,7 +99,7 @@ public class APIServiceStatusService {
         String doc1 = cachedApiDocService.getApiDocForService(serviceId, apiVersion1);
         String doc2 = cachedApiDocService.getApiDocForService(serviceId, apiVersion2);
         try {
-            ChangedOpenApi diff = OpenApiCompare.fromContents(doc1, doc2);
+            ChangedOpenApi diff = openApiCompareProducer.fromContents(doc1, doc2);
             HtmlRender render = new HtmlRender();
             String result = render.render(diff);
             //Remove external stylesheet
