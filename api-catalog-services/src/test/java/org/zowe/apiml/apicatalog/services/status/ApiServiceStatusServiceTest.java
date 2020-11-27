@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
-import org.mockito.Mockito;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;

@@ -98,7 +98,7 @@ public class APIServiceStatusService {
     }
 
     /**
-     * Return the the diff of two api versions
+     * Return the diff of two api versions
      * @param serviceId the unique service id
      * @param apiVersion1 the old version of the api
      * @param apiVersion2 the new version of the api

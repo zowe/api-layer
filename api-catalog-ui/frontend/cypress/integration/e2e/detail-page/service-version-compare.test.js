@@ -1,7 +1,7 @@
 const PATH_TO_VERSION_SELECTORS = '.api-diff-form > span > span > div > div > span'
 const PATH_TO_VERSION_SELECTOR_ITEMS = '.api-diff-form > span > div > div > div > span > span > span'
 
-describe('>>> Service version comapre Test', () => {
+describe('>>> Service version compare Test', () => {
     beforeEach(() => {
         cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
 
