@@ -112,7 +112,8 @@ public class ApiServiceStatusServiceTest {
     public void testGetCachedApiDiffForService() {
         String apiDoc = "{}";
         when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
-        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenReturn(OpenApiCompare.fromContents(apiDoc, apiDoc));
+        OpenApiCompareProducer actualProducer = new OpenApiCompareProducer();
+        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenReturn(actualProducer.fromContents(apiDoc, apiDoc));
         ResponseEntity<String> actualResponse = apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
         assertTrue(actualResponse.getBody().contains("Api Change Log"));
         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
