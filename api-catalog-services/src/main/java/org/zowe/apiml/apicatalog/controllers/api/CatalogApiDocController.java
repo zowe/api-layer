@@ -69,4 +69,28 @@ public class CatalogApiDocController {
         @PathVariable(value = "apiVersion") String apiVersion) {
         return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiVersion);
     }
+
+    @GetMapping(value = "/{serviceId}/{apiVersion1}/{apiVersion2}", produces = MediaType.TEXT_HTML_VALUE)
+    @ApiOperation(value = "Retrieve diff of two api versions for a specific service",
+        notes = "Returns an HTML document which details the difference between two versions of a API service",
+        authorizations = {
+            @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
+        },
+        response = String.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "OK"),
+        @ApiResponse(code = 401, message = "Unauthorized"),
+        @ApiResponse(code = 403, message = "Forbidden"),
+        @ApiResponse(code = 404, message = "URI not found"),
+        @ApiResponse(code = 500, message = "An unexpected condition occurred"),
+    })
+    public ResponseEntity<String> getApiDiff(
+        @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
+        @PathVariable(value = "serviceId") String serviceId,
+        @ApiParam(name = "apiVersion1", value = "The major version of the API documentation (v1, v2, etc.)", required = true, example = "v1")
+        @PathVariable(value = "apiVersion1") String apiVersion1,
+        @ApiParam(name = "apiVersion2", value = "The major version of the API documentation (v1, v2, etc.)", required = true, example = "v2")
+        @PathVariable(value = "apiVersion2") String apiVersion2) {
+        return this.apiServiceStatusService.getApiDiffInfo(serviceId, apiVersion1, apiVersion2);
+    }
 }

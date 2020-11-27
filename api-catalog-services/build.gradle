@@ -44,6 +44,7 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
+    compile group: 'io.swagger', name: 'swagger-models', version: '1.6.2'
     compile libraries.spring_boot_starter_web
     compile libraries.spring_boot_starter_actuator
     compile libraries.spring_boot_configuration_processor
@@ -57,6 +58,7 @@ dependencies {
     compile libraries.apache_commons_lang3
     compile libraries.spring_boot_starter_thymeleaf
     compile libraries.apache_velocity
+    compile libraries.openapidiff
     compile libraries.jetty_util
 
     compile libraries.springFox

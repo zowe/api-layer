@@ -38,4 +38,18 @@ public class CatalogApiDocControllerTest {
         Assert.assertNotNull(res);
         Assert.assertEquals("Some API Doc", res.getBody());
     }
+
+    @Test
+    public void testGetApiDiff() {
+        APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
+        CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
+        String responseString = "<html>Some Diff</html>";
+        ResponseEntity<String> response = new ResponseEntity<>("<html>Some Diff</html>", HttpStatus.OK);
+
+        when(apiServiceStatusService.getApiDiffInfo("service", "v1", "v2")).thenReturn(response);
+        ResponseEntity<String> res = catalogApiDocController.getApiDiff("service", "v1", "v2");
+        Assert.assertNotNull(res);
+        Assert.assertEquals(responseString, res.getBody());
+
+    }
 }

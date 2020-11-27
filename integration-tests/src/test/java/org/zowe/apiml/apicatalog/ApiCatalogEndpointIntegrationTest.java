@@ -17,9 +17,11 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
+import org.hamcrest.CoreMatchers;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -46,6 +48,8 @@ public class ApiCatalogEndpointIntegrationTest {
     private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2 = "/apicatalog/api/v1/apidoc/discoverableclient/v2";
     private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v2";
     private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
+    private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/v1/v2";
+    private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION = "/apicatalog/api/v1/apidoc/discoverableclient/v1/v3";
 
     private String baseHost;
 
@@ -224,6 +228,25 @@ public class ApiCatalogEndpointIntegrationTest {
         JSONArray errors = JsonPath.parse(jsonResponse).read("$.errors");
 
         assertEquals("[]", errors.toString());
+    }
+
+    @Test
+    void whenCallGetApiDiff_thenReturnDiff() throws Exception {
+        final HttpResponse response = getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT, HttpStatus.SC_OK);
+
+        //When
+        final String textResponse = EntityUtils.toString(response.getEntity());
+        Assert.assertThat(textResponse, CoreMatchers.startsWith("<!DOCTYPE html><html lang=\"en\">"));
+        Assert.assertThat(textResponse, CoreMatchers.containsString("<header><h1>Api Change Log</h1></header>"));
+        Assert.assertThat(textResponse, CoreMatchers.containsString(
+            "<div><h2>What&#x27;s New</h2><hr><ol><li><span class=\"GET\">GET</span>/greeting/{yourName} <span>Get a greeting</span></li></ol></div>"));
+        Assert.assertThat(textResponse, CoreMatchers.containsString(
+            "<div><h2>What&#x27;s Deleted</h2><hr><ol><li><span class=\"GET\">GET</span><del>/{yourName}/greeting</del><span> Get a greeting</span></li>"));
+    }
+
+    @Test
+    void whenCallGetApiDiffWithWrongVersion_thenReturnNotFound() throws Exception {
+        getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION, HttpStatus.SC_NOT_FOUND);
     }
 
     // Execute the endpoint and check the response for a return code

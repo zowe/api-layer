@@ -25,11 +25,13 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDiffNotAvailableException;
 
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -46,6 +48,9 @@ public class ApiServiceStatusServiceTest {
 
     @Mock
     private CachedApiDocService cachedApiDocService;
+
+    @Mock
+    private OpenApiCompareProducer openApiCompareProducer;
 
     @InjectMocks
     private APIServiceStatusService apiServiceStatusService;
@@ -93,7 +98,7 @@ public class ApiServiceStatusServiceTest {
     }
 
     @Test
-    public void getCachedApiDocInfoForService() {
+    public void testGetCachedApiDocInfoForService() {
         String apiDoc = "this is the api doc";
         when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
@@ -102,6 +107,22 @@ public class ApiServiceStatusServiceTest {
         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
     }
 
+    @Test
+    public void testGetCachedApiDiffForService() {
+        String apiDoc = "{}";
+        when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
+        OpenApiCompareProducer actualProducer = new OpenApiCompareProducer();
+        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenReturn(actualProducer.fromContents(apiDoc, apiDoc));
+        ResponseEntity<String> actualResponse = apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
+        assertTrue(actualResponse.getBody().contains("Api Change Log"));
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+    }
+
+    @Test(expected = ApiDiffNotAvailableException.class)
+    public void givenInvalidAPIs_whenDifferenceIsProduced_thenTheProperExceptionIsRaised() {
+        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenThrow(new NullPointerException());
+        apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
+    }
 
     @Test
     public void testGetRecentlyChangedEvents() {
