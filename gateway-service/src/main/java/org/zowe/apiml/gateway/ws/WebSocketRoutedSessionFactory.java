@@ -20,5 +20,5 @@ public interface WebSocketRoutedSessionFactory {
      * @param sslContextFactory Factory producing the current SSL Context.
      * @return Valid routed session handling the client session
      */
-    WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, SslContextFactory.Server sslContextFactory);
+    WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, SslContextFactory sslContextFactory);
 }

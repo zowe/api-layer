@@ -117,9 +117,11 @@ public class HttpConfig {
             factory.setSystemSslProperties();
 
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-        } catch (HttpsConfigError e) {
+        }
+        catch (HttpsConfigError e) {
             System.exit(1); // NOSONAR
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             apimlLog.log("org.zowe.apiml.common.unknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
@@ -132,11 +134,8 @@ public class HttpConfig {
     }
 
     @Bean
-    public SslContextFactory.Server jettySslContextFactory() {
-        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-        if (keyStore != null) {
-            sslContextFactory.setKeyStorePath(SecurityUtils.replaceFourSlashes(keyStore));
-        }
+    public SslContextFactory jettySslContextFactory() {
+        SslContextFactory sslContextFactory = new SslContextFactory(SecurityUtils.replaceFourSlashes(keyStore));
         sslContextFactory.setProtocol(protocol);
         sslContextFactory.setKeyStorePassword(keyStorePassword == null ? null : String.valueOf(keyStorePassword));
         sslContextFactory.setKeyStoreType(keyStoreType);

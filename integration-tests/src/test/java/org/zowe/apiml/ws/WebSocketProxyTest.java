@@ -10,6 +10,7 @@
 package org.zowe.apiml.ws;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -35,11 +36,16 @@ import static org.junit.Assert.assertTrue;
 
 @TestsNotMeantForZowe
 class WebSocketProxyTest {
-    private final GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private GatewayServiceConfiguration serviceConfiguration;
 
     private final static int WAIT_TIMEOUT_MS = 10000;
     private final static String UPPERCASE_URL = "/ws/v1/discoverableclient/uppercase";
     private final static String HEADER_URL = "/ws/v1/discoverableclient/header";
+
+    @BeforeEach
+    void setUp() {
+        serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    }
 
     private TextWebSocketHandler appendResponseHandler(StringBuilder target, int countToNotify) {
         final AtomicInteger counter = new AtomicInteger(countToNotify);
@@ -75,7 +81,7 @@ class WebSocketProxyTest {
     }
 
     private WebSocketSession appendingWebSocketSession(String url, WebSocketHttpHeaders headers, StringBuilder response, int countToNotify)
-        throws Exception {
+            throws Exception {
         StandardWebSocketClient client = new StandardWebSocketClient();
         client.getUserProperties().put(SSL_CONTEXT_PROPERTY, HttpClientUtils.ignoreSslContext());
         URI uri = UriComponentsBuilder.fromUriString(url).build().encode().toUri();
@@ -83,7 +89,7 @@ class WebSocketProxyTest {
     }
 
     private WebSocketSession appendingWebSocketSession(String url, StringBuilder response, int countToNotify)
-        throws Exception {
+            throws Exception {
         return appendingWebSocketSession(url, null, response, countToNotify);
     }
 
@@ -152,19 +158,20 @@ class WebSocketProxyTest {
     @WebsocketTest
     void shouldFailIfServiceIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
-        appendingWebSocketSession(discoverableClientGatewayUrl("/ws/v1/wrong-service/uppercase"), response, 1);
+        WebSocketSession session = appendingWebSocketSession(
+                discoverableClientGatewayUrl("/ws/v1/wrong-service/uppercase"), response, 1);
 
         synchronized (response) {
             response.wait(WAIT_TIMEOUT_MS);
         }
 
         assertEquals("CloseStatus[code=1003, reason=Requested service wrong-service is not known by the gateway]",
-            response.toString());
+                response.toString());
     }
 
     @Test
     @WebsocketTest
-    void shouldFailIfUrlFormatIsNotCorrect() throws Exception {
+    void shouldFailIfUrlFormatIsNotCorrent() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong"), response, 1);
 

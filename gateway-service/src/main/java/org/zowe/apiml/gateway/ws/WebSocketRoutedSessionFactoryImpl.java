@@ -17,7 +17,7 @@ import org.springframework.web.socket.WebSocketSession;
  */
 public class WebSocketRoutedSessionFactoryImpl implements WebSocketRoutedSessionFactory {
     @Override
-    public WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, SslContextFactory.Server sslContextFactory) {
+    public WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, SslContextFactory sslContextFactory) {
         return new WebSocketRoutedSession(webSocketSession, targetUrl, sslContextFactory);
     }
 }
