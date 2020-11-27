@@ -141,6 +141,7 @@ public class HttpConfig {
         sslContextFactory.setKeyStorePassword(keyStorePassword == null ? null : String.valueOf(keyStorePassword));
         sslContextFactory.setKeyStoreType(keyStoreType);
         sslContextFactory.setCertAlias(keyAlias);
+        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$");
 
         if (trustStore != null) {
             sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
