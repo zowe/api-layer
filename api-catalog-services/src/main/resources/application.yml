@@ -70,10 +70,10 @@ apiml:
         version:  1.0.0
 
     service-registry:
-        serviceFetchDelayInMillis:  3000
-        cacheRefreshUpdateThresholdInMillis: 6000
-        cacheRefreshInitialDelayInMillis: 6000
-        cacheRefreshRetryDelayInMillis: 6000
+        serviceFetchDelayInMillis:  10000
+        cacheRefreshUpdateThresholdInMillis: 20000
+        cacheRefreshInitialDelayInMillis: 20000
+        cacheRefreshRetryDelayInMillis: 20000
 
 ##############################################################################################
 
