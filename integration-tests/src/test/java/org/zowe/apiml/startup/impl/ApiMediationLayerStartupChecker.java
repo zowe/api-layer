@@ -119,7 +119,9 @@ public class ApiMediationLayerStartupChecker {
             boolean isValidAmountOfGatewaysUp = amountOfActiveGateways != null &&
                 amountOfActiveGateways.equals(gatewayConfiguration.getInstances());
             log.debug("There is {} gateways", amountOfActiveGateways);
-
+            if(!isValidAmountOfGatewaysUp) {
+                return false;
+            }
             // Consider properly the case with multiple gateway services running on different ports.
             if (gatewayConfiguration.getInternalPorts() != null && !gatewayConfiguration.getInternalPorts().isEmpty()) {
                 String[] internalPorts = gatewayConfiguration.getInternalPorts().split(",");
@@ -130,7 +132,6 @@ public class ApiMediationLayerStartupChecker {
             }
 
             return areAllServicesUp &&
-                isValidAmountOfGatewaysUp &&
                 isTestApplicationUp;
         } catch (PathNotFoundException | IOException e) {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
