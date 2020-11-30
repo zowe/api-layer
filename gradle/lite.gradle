@@ -1,0 +1,41 @@
+/**
+ * This gradle file add task `liteLibJarAll` which combines lite jar library files into one.
+ * It is helpful if project contains multiple application with different set of dependencies.
+ *
+ * For using this task is required build lite jars of application before and then it is possible
+ * to use this big library file for each application. It can reduce amount of data for packaging
+ * and deployment.
+ **/
+
+def getBaseNameLite() {
+    def base;
+    if (hasProperty("customBaseName")) {
+        base = customBaseName
+    } else {
+        base = project.name
+    }
+    return base + "-lite-lib-all"
+}
+
+def getLiteLibJar(file, output) {
+    if (!file.exists()) return
+    if (file.isDirectory()) {
+        file.listFiles().each { getLiteLibJar(it, output) }
+    } else if (file.name.contains("-lite-lib-") && file.name.endsWith(".jar")) {
+        output.add(zipTree(file))
+    }
+}
+
+def getLiteLibJars() {
+    def libraries = []
+    rootProject.subprojects.findAll( { getLiteLibJar(it.buildDir, libraries) } )
+    return libraries
+}
+
+task liteLibJarAll(type: Jar) {
+    baseName = getBaseNameLite()
+    entryCompression = ZipEntryCompression.STORED
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from getLiteLibJars()
+}

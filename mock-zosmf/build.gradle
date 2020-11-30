@@ -15,6 +15,7 @@ normalization {
 
 apply plugin: 'org.springframework.boot'
 apply plugin: 'com.gorylenko.gradle-git-properties'
+apply from: "$projectDir/gradle/lite.gradle"
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -38,9 +39,9 @@ gitProperties {
 }
 
 dependencies {
-    compile libraries.jjwt
-    compile libraries.jjwt_impl
-    compile libraries.jjwt_jackson
+    implementation libraries.jjwt
+    implementation libraries.jjwt_impl
+    implementation libraries.jjwt_jackson
 
     implementation libraries.springFox
     implementation libraries.spring_boot_starter
