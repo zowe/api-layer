@@ -81,6 +81,6 @@ describe('>>> Service version compare Test', () => {
         cy.get('.api-diff-content > div > div > h2').should('exist');
         cy.get('.api-diff-content > div > div > h2').should('contain.text', 'What\'s New');
         cy.get('.api-diff-content > div > div > ol > li >span').should('exist');
-        cy.get('.api-diff-content > div > div > ol > li >span').should('include.text', '/greeting/{yourName}');
+        cy.get('.api-diff-content > div > div > ol > li >span').should('include.text', 'Get a greeting');
     });
 });
