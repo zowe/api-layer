@@ -15,6 +15,7 @@ import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.RandomPort;
 import org.zowe.apiml.util.service.VirtualService;
@@ -39,6 +40,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  * The test repeats calls until it sees that request has been retried from mentioned header.
  */
 @TestsNotMeantForZowe
+@NotForMainframeTest
 class ServiceHaMode {
     private static final int TIMEOUT = 30;
 
