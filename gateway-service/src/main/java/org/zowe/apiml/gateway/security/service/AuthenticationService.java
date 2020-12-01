@@ -159,7 +159,7 @@ public class AuthenticationService {
             try {
                 restTemplate.delete(url);
             } catch (HttpClientErrorException e) {
-                log.error("Error", e);
+                log.debug("Problem invalidating token on another instance url " + url, e);
             }
 
         }
