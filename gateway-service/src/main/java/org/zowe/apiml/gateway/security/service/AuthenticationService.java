@@ -123,8 +123,13 @@ public class AuthenticationService {
         /*
          * until ehCache is not distributed, send to other instances invalidation request
          */
-        if (distribute && !invalidateTokenOnAnotherInstance(jwtToken)) {
-            return Boolean.FALSE;
+        boolean isInvalidatedOnAnotherInstance = false;
+        if (distribute) {
+            isInvalidatedOnAnotherInstance = invalidateTokenOnAnotherInstance(jwtToken);
+            if (!isInvalidatedOnAnotherInstance) {
+                return Boolean.FALSE;
+            }
+
         }
 
         // invalidate token in z/OSMF
@@ -135,7 +140,9 @@ public class AuthenticationService {
                 if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
                 break;
             case ZOSMF:
-                zosmfService.invalidate(JWT, jwtToken);
+                if (!isInvalidatedOnAnotherInstance) {
+                    zosmfService.invalidate(JWT, jwtToken);
+                }
                 break;
             default:
                 throw new TokenFormatNotValidException("Unknown token type.");
