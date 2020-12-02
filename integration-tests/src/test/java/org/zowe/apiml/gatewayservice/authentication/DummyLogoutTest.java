@@ -21,7 +21,8 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 
 @AuthenticationTest
 class DummyLogoutTest extends LogoutTest {
-    private static AuthenticationProviders providers = new AuthenticationProviders(SecurityUtils.getGateWayUrl("/authentication"));
+
+    private static AuthenticationProviders providers = new AuthenticationProviders("/authentication",internalPorts.split(","));
 
     // Change to dummy and run the same test as for the zOSMF
     @BeforeAll

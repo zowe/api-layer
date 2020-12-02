@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.AuthenticationTest;
+import org.zowe.apiml.util.config.ConfigReader;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
@@ -28,7 +29,8 @@ abstract class LogoutTest {
     protected final static String LOGOUT_ENDPOINT = "/auth/logout";
     protected final static String QUERY_ENDPOINT = "/auth/query";
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
-    protected static AuthenticationProviders providers = new AuthenticationProviders(Login.authenticationEndpointPath);
+    protected static final String internalPorts = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getInternalPorts();
+    protected static AuthenticationProviders providers = new AuthenticationProviders("/authentication", internalPorts.split(","));
 
     @BeforeEach
     void setUp() {

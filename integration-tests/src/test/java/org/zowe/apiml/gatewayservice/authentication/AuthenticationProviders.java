@@ -10,6 +10,10 @@
 package org.zowe.apiml.gatewayservice.authentication;
 
 import lombok.RequiredArgsConstructor;
+import org.zowe.apiml.gatewayservice.SecurityUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -18,15 +22,24 @@ import static org.hamcrest.core.Is.is;
 
 @RequiredArgsConstructor
 public class AuthenticationProviders {
-    private final String authenticationEndpointPath;
+
+    public AuthenticationProviders(String path, String... ports) {
+        for (String port : ports) {
+            authenticationEndpointPathList.add(SecurityUtils.getGatewayUrl(path, Integer.parseInt(port)));
+        }
+    }
+
+    private final List<String> authenticationEndpointPathList = new ArrayList<>();
 
     protected void switchProvider(String provider) {
-        given()
-            .contentType(JSON)
-            .body("{\"provider\": \"" + provider + "\"}")
-        .when()
-            .post(authenticationEndpointPath)
-        .then()
-            .statusCode(is(SC_NO_CONTENT));
+        authenticationEndpointPathList.forEach(authenticationEndpointPath -> {
+            given()
+                .contentType(JSON)
+                .body("{\"provider\": \"" + provider + "\"}")
+                .when()
+                .post(authenticationEndpointPath)
+                .then()
+                .statusCode(is(SC_NO_CONTENT));
+        });
     }
 }
