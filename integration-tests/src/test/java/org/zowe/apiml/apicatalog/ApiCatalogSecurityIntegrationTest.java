@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.springframework.http.HttpHeaders;
-import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -27,7 +26,6 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @RunWith(value = Parameterized.class)
