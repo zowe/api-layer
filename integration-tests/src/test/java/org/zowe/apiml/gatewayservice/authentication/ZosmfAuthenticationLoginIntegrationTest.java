@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
-@AuthenticationTest
+@Tag("zosmf-auth")
 class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private String scheme;
     private String host;
@@ -51,7 +51,6 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
 
-        providers.switchProvider("zosmf");
     }
 
     @BeforeEach

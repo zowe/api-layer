@@ -56,7 +56,7 @@ jar {
 
 test.enabled = false
 
-apply plugin : 'java'
+apply plugin: 'java'
 
 test {
     testLogging.showStandardStreams = true
@@ -170,11 +170,12 @@ task runAllIntegrationTests(type: Test) {
 
     dependsOn startUpCheck, runAllIntegrationTestsNormal
     tasks.findByName('runAllIntegrationTestsNormal').mustRunAfter 'startUpCheck'
-
+    String itags = System.getProperty("includeTags") ?
+        System.getProperty("includeTags") : 'dummy-auth'
     systemProperties System.properties
     useJUnitPlatform {
         includeTags(
-            'AuthenticationTest'
+            itags
         )
     }
     outputs.upToDateWhen { false }

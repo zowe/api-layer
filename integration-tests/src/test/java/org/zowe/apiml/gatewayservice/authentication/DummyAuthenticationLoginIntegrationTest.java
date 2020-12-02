@@ -11,15 +11,15 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.categories.AuthenticationTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
-@AuthenticationTest
+@Tag("dummy-auth")
 class DummyAuthenticationLoginIntegrationTest extends Login {
     @BeforeAll
     static void switchToTestedProvider() {

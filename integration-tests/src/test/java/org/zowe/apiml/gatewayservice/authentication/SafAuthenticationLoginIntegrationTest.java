@@ -11,6 +11,7 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.AuthenticationTest;
@@ -25,14 +26,13 @@ import static org.hamcrest.core.IsNot.not;
  * <p>
  * Also verify that the invalid credentials will be properly rejected.
  */
-@AuthenticationTest
+@Tag("saf-auth")
 class SafAuthenticationLoginIntegrationTest extends Login {
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
 
-        providers.switchProvider("saf");
     }
 
     @Test

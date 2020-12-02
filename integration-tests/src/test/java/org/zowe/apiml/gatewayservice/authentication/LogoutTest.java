@@ -23,24 +23,18 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-@AuthenticationTest
 abstract class LogoutTest {
 
     protected final static String LOGOUT_ENDPOINT = "/auth/logout";
     protected final static String QUERY_ENDPOINT = "/auth/query";
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
+
     protected static final String internalPorts = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getInternalPorts();
-    protected static AuthenticationProviders providers = new AuthenticationProviders("/authentication", internalPorts.split(","));
 
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-    }
-
-    @AfterAll
-    static void switchToOriginalProvider() {
-        providers.switchProvider(null);
     }
 
     protected void assertIfLogged(String jwt, boolean logged) {
