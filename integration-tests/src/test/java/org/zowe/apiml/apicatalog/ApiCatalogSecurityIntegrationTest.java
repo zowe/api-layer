@@ -100,17 +100,28 @@ public class ApiCatalogSecurityIntegrationTest {
         String url = String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
             CATALOG_SERVICE_ID, endpoint);
 
+        String statusCodes = "";
+        // Retry multiple times the call with a short delay to prevent flaky failures.
         for (int i = 0; i < 3; i++) {
-            // At least once from three calls.
             int statusCode = callToProtected(url);
+            // If at least one success the test succeeds.
             if (statusCode == SC_OK) {
                 return;
             }
+
+            statusCodes += statusCode + ",";
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
-        fail("Unable to access the Catalog endpoint: " + url);
+        fail("Unable to access the Catalog endpoint: " + url + " Status Codes: " + statusCodes);
     }
 
+    // Retry the call to the same endpoint.
     private int callToProtected(String url) {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
