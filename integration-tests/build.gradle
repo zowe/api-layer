@@ -158,7 +158,10 @@ task runAllIntegrationTestsNormal(type: Test) {
             'EnvironmentCheck',
             'AdditionalLocalTest',
             'NotForMainframeTest',
-            'AuthenticationTest'
+            'zosmf-auth',
+            'saf-auth',
+            'dummy-auth'
+
         )
 
     }
