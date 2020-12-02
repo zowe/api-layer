@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.controllers.AuthController;
@@ -154,8 +155,13 @@ public class AuthenticationService {
         for (final InstanceInfo instanceInfo : application.getInstances()) {
             if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
 
-            final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
-            restTemplate.delete(url, jwtToken);
+            final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/" + jwtToken;
+            try {
+                restTemplate.delete(url);
+            } catch (HttpClientErrorException e) {
+                log.debug("Problem invalidating token on another instance url " + url, e);
+            }
+
         }
 
         return Boolean.TRUE;
