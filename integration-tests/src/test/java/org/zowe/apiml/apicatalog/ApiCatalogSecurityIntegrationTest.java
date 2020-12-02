@@ -27,6 +27,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @RunWith(value = Parameterized.class)
@@ -96,16 +97,28 @@ public class ApiCatalogSecurityIntegrationTest {
 
     @Test
     public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
+        for(int i = 0; i < 3; i++) {
+            // At least once from three calls.
+            int statusCode = callToProtected();
+            if (statusCode == SC_OK) {
+                return;
+            }
+        }
+
+        fail("Unable to access the ");
+    }
+
+    private int callToProtected() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
-        given()
+        return given()
             .cookie(COOKIE, token)
         .when()
             .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
                 CATALOG_SERVICE_ID, endpoint))
         .then()
-            .statusCode(is(SC_OK));
-
+            .extract()
+            .statusCode();
     }
 
     @Test
