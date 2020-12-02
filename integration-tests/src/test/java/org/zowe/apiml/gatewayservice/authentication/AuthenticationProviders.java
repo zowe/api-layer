@@ -32,7 +32,7 @@ public class AuthenticationProviders {
     private final List<String> authenticationEndpointPathList = new ArrayList<>();
 
     protected void switchProvider(String provider) {
-        for(String authenticationEndpointPath : authenticationEndpointPathList) {
+        for (String authenticationEndpointPath : authenticationEndpointPathList) {
             given()
                 .contentType(JSON)
                 .body("{\"provider\": \"" + provider + "\"}")
