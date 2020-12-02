@@ -96,46 +96,6 @@ public class ApiCatalogSecurityIntegrationTest {
     }
 
     @Test
-    public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
-        String url = String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
-            CATALOG_SERVICE_ID, endpoint);
-
-        String statusCodes = "";
-        String tokens = "";
-        // Retry multiple times the call with a short delay to prevent flaky failures.
-        for (int i = 0; i < 3; i++) {
-            String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
-            int statusCode = callToProtected(token, url);
-            // If at least one success the test succeeds.
-            if (statusCode == SC_OK) {
-                return;
-            }
-
-            statusCodes += statusCode + ",";
-            tokens += token + ",\n";
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        fail("Unable to access the Catalog endpoint: " + url + " Status Codes: " + statusCodes + " Tokens: " + tokens);
-    }
-
-    // Retry the call to the same endpoint.
-    private int callToProtected(String token, String url) {
-        return given()
-            .cookie(COOKIE, token)
-            .when()
-            .get(url)
-            .then()
-            .extract()
-            .statusCode();
-    }
-
-    @Test
     public void accessProtectedEndpointWithInvalidBasicAuth() {
         String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
 
