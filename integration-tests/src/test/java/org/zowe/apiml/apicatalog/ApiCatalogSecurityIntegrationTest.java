@@ -101,15 +101,18 @@ public class ApiCatalogSecurityIntegrationTest {
             CATALOG_SERVICE_ID, endpoint);
 
         String statusCodes = "";
+        String tokens = "";
         // Retry multiple times the call with a short delay to prevent flaky failures.
         for (int i = 0; i < 3; i++) {
-            int statusCode = callToProtected(url);
+            String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+            int statusCode = callToProtected(token, url);
             // If at least one success the test succeeds.
             if (statusCode == SC_OK) {
                 return;
             }
 
             statusCodes += statusCode + ",";
+            tokens += token + ",\n";
 
             try {
                 Thread.sleep(1000);
@@ -118,13 +121,11 @@ public class ApiCatalogSecurityIntegrationTest {
             }
         }
 
-        fail("Unable to access the Catalog endpoint: " + url + " Status Codes: " + statusCodes);
+        fail("Unable to access the Catalog endpoint: " + url + " Status Codes: " + statusCodes + " Tokens: " + tokens);
     }
 
     // Retry the call to the same endpoint.
-    private int callToProtected(String url) {
-        String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
-
+    private int callToProtected(String token, String url) {
         return given()
             .cookie(COOKIE, token)
             .when()
