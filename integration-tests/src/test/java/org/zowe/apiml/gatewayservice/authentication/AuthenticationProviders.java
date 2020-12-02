@@ -32,7 +32,7 @@ public class AuthenticationProviders {
     private final List<String> authenticationEndpointPathList = new ArrayList<>();
 
     protected void switchProvider(String provider) {
-        authenticationEndpointPathList.forEach(authenticationEndpointPath -> {
+        for(String authenticationEndpointPath : authenticationEndpointPathList) {
             given()
                 .contentType(JSON)
                 .body("{\"provider\": \"" + provider + "\"}")
@@ -40,6 +40,6 @@ public class AuthenticationProviders {
                 .post(authenticationEndpointPath)
                 .then()
                 .statusCode(is(SC_NO_CONTENT));
-        });
+        }
     }
 }
