@@ -26,7 +26,6 @@ class DummyAuthenticationLoginIntegrationTest extends Login {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
 
-        providers.switchProvider("dummy");
     }
 
     protected String getUsername() {
