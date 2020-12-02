@@ -37,7 +37,10 @@ import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
@@ -308,8 +311,8 @@ public class AuthenticationServiceTest {
         tokenAuthentication = authService.validateJwtToken(jwt1);
         assertFalse(tokenAuthentication.isAuthenticated());
         verify(restTemplate, times(2)).delete(anyString(), (Object[]) any());
-        verify(restTemplate).delete("https://hostname1:10433/gateway/auth/invalidate/{}", jwt1);
-        verify(restTemplate).delete("http://hostname2:10001/gateway/auth/invalidate/{}", jwt1);
+        verify(restTemplate).delete("https://hostname1:10433/gateway/auth/invalidate/" + jwt1);
+        verify(restTemplate).delete("http://hostname2:10001/gateway/auth/invalidate/" + jwt1);
         verify(restTemplate, times(1))
             .exchange(eq(zosmfUrl + "/zosmf/services/authenticate"), eq(HttpMethod.DELETE), any(), eq(String.class));
     }
@@ -455,7 +458,7 @@ public class AuthenticationServiceTest {
 
     @Test
     void testGetLtpaTokenException() {
-        for (String jwtToken : new String[] {"header.body.sign", "wrongJwtToken", ""}) {
+        for (String jwtToken : new String[]{"header.body.sign", "wrongJwtToken", ""}) {
             try {
                 authService.getLtpaToken(jwtToken);
                 fail();
