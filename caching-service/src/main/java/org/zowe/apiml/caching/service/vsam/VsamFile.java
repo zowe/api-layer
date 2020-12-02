@@ -32,7 +32,7 @@ public class VsamFile implements Closeable, ZFile {
     private ZFile zfile;
     private VsamConfig vsamConfig;
     private String options = "ab+,type=record";
-    private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^\\/\\/");
+    private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^\\/\\/\\'.*'");
 
     public VsamFile(VsamConfig config) {
         if (config == null) {
