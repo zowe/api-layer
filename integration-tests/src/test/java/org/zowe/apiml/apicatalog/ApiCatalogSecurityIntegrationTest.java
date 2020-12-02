@@ -96,7 +96,6 @@ public class ApiCatalogSecurityIntegrationTest {
     }
 
     @Test
-    @NotForMainframeTest
     public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
