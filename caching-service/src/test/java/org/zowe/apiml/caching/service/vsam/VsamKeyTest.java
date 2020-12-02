@@ -17,8 +17,7 @@ import org.zowe.apiml.caching.model.KeyValue;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -81,5 +80,19 @@ class VsamKeyTest {
         assertDoesNotThrow(() -> new VsamKey(config));
     }
 
+    @Test
+    void hasValidFileName() {
+        when(config.getFileName()).thenReturn("//CACHE");
+        assertThrows(UnsupportedOperationException.class, () -> new VsamFile(config));
+    }
+
+    @Test
+    void hasInvalidFileName() {
+        when(config.getFileName()).thenReturn("wrong");
+        Exception exception = assertThrows(IllegalStateException.class,
+            () -> new VsamFile(config),
+            "Expected exception is not IllegalStateException");
+        assertEquals("VsamFile does not exist", exception.getMessage());
+    }
 
 }

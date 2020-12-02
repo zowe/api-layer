@@ -17,6 +17,7 @@ import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 import org.zowe.apiml.zfile.*;
 
 import java.io.Closeable;
+import java.util.regex.Pattern;
 
 /**
  * ZFile wrapper providing convenience methods and implementing Closeable interface
@@ -31,6 +32,7 @@ public class VsamFile implements Closeable, ZFile {
     private ZFile zfile;
     private VsamConfig vsamConfig;
     private String options = "ab+,type=record";
+    private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^\\/\\/");
 
     public VsamFile(VsamConfig config) {
         if (config == null) {
@@ -91,6 +93,9 @@ public class VsamFile implements Closeable, ZFile {
 
     @SuppressWarnings({"squid:S1130", "squid:S1192"})
     private ZFile openZfile() throws ZFileException {
+        if (!REGEX_CORRECT_FILENAME.matcher(vsamConfig.getFileName()).find()) {
+            throw new IllegalStateException("VsamFile does not exist");
+        }
         return ClassOrDefaultProxyUtils.createProxyByConstructor(ZFile.class, "com.ibm.jzos.ZFile",
             ZFileDummyImpl::new,
             new Class[] {String.class, String.class},
