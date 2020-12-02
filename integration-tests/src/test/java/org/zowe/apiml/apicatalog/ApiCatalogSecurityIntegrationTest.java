@@ -97,26 +97,28 @@ public class ApiCatalogSecurityIntegrationTest {
 
     @Test
     public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
-        for(int i = 0; i < 3; i++) {
+        String url = String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
+            CATALOG_SERVICE_ID, endpoint);
+
+        for (int i = 0; i < 3; i++) {
             // At least once from three calls.
-            int statusCode = callToProtected();
+            int statusCode = callToProtected(url);
             if (statusCode == SC_OK) {
                 return;
             }
         }
 
-        fail("Unable to access the ");
+        fail("Unable to access the Catalog endpoint: " + url);
     }
 
-    private int callToProtected() {
+    private int callToProtected(String url) {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
         return given()
             .cookie(COOKIE, token)
-        .when()
-            .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
-                CATALOG_SERVICE_ID, endpoint))
-        .then()
+            .when()
+            .get(url)
+            .then()
             .extract()
             .statusCode();
     }
