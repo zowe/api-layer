@@ -51,9 +51,6 @@ abstract class Login {
     protected final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     protected final static String BASE_PATH = "/api/v1/gateway";
-    protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/authentication", SCHEME, HOST, PORT, BASE_PATH);
-    protected static final String internalPorts = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getInternalPorts();
-
     protected final static String LOGIN_ENDPOINT = "/auth/login";
     public static final String LOGIN_ENDPOINT_URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT);
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
