@@ -27,6 +27,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @RunWith(value = Parameterized.class)
@@ -96,16 +97,41 @@ public class ApiCatalogSecurityIntegrationTest {
 
     @Test
     public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
+        String url = String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
+            CATALOG_SERVICE_ID, endpoint);
+
+        String statusCodes = "";
+        // Retry multiple times the call with a short delay to prevent flaky failures.
+        for (int i = 0; i < 3; i++) {
+            int statusCode = callToProtected(url);
+            // If at least one success the test succeeds.
+            if (statusCode == SC_OK) {
+                return;
+            }
+
+            statusCodes += statusCode + ",";
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        fail("Unable to access the Catalog endpoint: " + url + " Status Codes: " + statusCodes);
+    }
+
+    // Retry the call to the same endpoint.
+    private int callToProtected(String url) {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
-        given()
+        return given()
             .cookie(COOKIE, token)
-        .when()
-            .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
-                CATALOG_SERVICE_ID, endpoint))
-        .then()
-            .statusCode(is(SC_OK));
-
+            .when()
+            .get(url)
+            .then()
+            .extract()
+            .statusCode();
     }
 
     @Test
