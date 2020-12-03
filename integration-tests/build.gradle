@@ -159,8 +159,7 @@ task runAllIntegrationTestsNormal(type: Test) {
             'AdditionalLocalTest',
             'NotForMainframeTest',
             'zOSMFAuthTest',
-            'SAFAuthTest',
-            'DummyAuthTest'
+            'SAFAuthTest'
         )
 
     }
