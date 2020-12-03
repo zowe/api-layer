@@ -11,6 +11,7 @@ package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -47,6 +48,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Tag("zOSMFAuthTest")
     //@formatter:off
     public void doZosmfCallWithValidToken() {
         String dsname1 = "SYS1.PARMLIB";
@@ -55,15 +57,16 @@ public class ZosmfSsoIntegrationTest {
         given()
             .header("Authorization", "Bearer " + token)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
     }
 
     @Test
+    @Tag("zOSMFAuthTest")
     void doZosmfCallWithValidCookie() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
@@ -71,9 +74,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .cookie("apimlAuthenticationToken", token)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
@@ -89,9 +92,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .cookie(SecurityUtils.ZOSMF_TOKEN, ltpa)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
@@ -105,9 +108,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
@@ -121,9 +124,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .header("Authorization", "Bearer " + invalidToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED));
     }
 
@@ -135,9 +138,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .cookie("apimlAuthenticationToken", invalidToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED));
     }
 
@@ -145,9 +148,9 @@ public class ZosmfSsoIntegrationTest {
     void doZosmfCallWithoutToken() {
         given()
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED));
     }
 
@@ -158,9 +161,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .header("Authorization", "Bearer " + emptyToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED));
     }
 
@@ -172,9 +175,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .cookie("apimlAuthenticationToken", emptyToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED));
     }
     //@formatter:on

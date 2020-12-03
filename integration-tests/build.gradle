@@ -172,7 +172,7 @@ task runAllIntegrationTests(type: Test) {
     dependsOn startUpCheck, runAllIntegrationTestsNormal
     tasks.findByName('runAllIntegrationTestsNormal').mustRunAfter 'startUpCheck'
     String itags = System.getProperty("includeTags") ?
-        System.getProperty("includeTags") : 'DummyAuthTest'
+        System.getProperty("includeTags") : 'zOSMFAuthTest'
     systemProperties System.properties
     useJUnitPlatform {
         includeTags(
