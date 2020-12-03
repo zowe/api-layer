@@ -11,7 +11,6 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.AdditionalLocalTest;
