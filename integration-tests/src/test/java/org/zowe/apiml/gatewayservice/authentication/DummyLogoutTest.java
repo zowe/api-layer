@@ -19,7 +19,7 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-@Tag("dummy-auth")
+@Tag("DummyAuthTest")
 class DummyLogoutTest extends LogoutTest {
 
     // Change to dummy and run the same test as for the zOSMF

@@ -158,10 +158,9 @@ task runAllIntegrationTestsNormal(type: Test) {
             'EnvironmentCheck',
             'AdditionalLocalTest',
             'NotForMainframeTest',
-            'zosmf-auth',
-            'saf-auth',
-            'dummy-auth'
-
+            'zOSMFAuthTest',
+            'SAFAuthTest',
+            'DummyAuthTest'
         )
 
     }
@@ -174,7 +173,7 @@ task runAllIntegrationTests(type: Test) {
     dependsOn startUpCheck, runAllIntegrationTestsNormal
     tasks.findByName('runAllIntegrationTestsNormal').mustRunAfter 'startUpCheck'
     String itags = System.getProperty("includeTags") ?
-        System.getProperty("includeTags") : 'dummy-auth'
+        System.getProperty("includeTags") : 'DummyAuthTest'
     systemProperties System.properties
     useJUnitPlatform {
         includeTags(

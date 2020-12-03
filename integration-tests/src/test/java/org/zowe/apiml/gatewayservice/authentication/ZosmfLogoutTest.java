@@ -18,7 +18,7 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-@Tag("zosmf-auth")
+@Tag("zOSMFAuthTest")
 @SuppressWarnings({"squid:S2187"})
 class ZosmfLogoutTest extends LogoutTest {
 

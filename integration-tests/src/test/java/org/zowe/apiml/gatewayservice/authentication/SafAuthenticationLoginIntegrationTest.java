@@ -25,7 +25,7 @@ import static org.hamcrest.core.IsNot.not;
  * <p>
  * Also verify that the invalid credentials will be properly rejected.
  */
-@Tag("saf-auth")
+@Tag("SAFAuthTest")
 class SafAuthenticationLoginIntegrationTest extends Login {
     @BeforeAll
     static void switchToTestedProvider() {

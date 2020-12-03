@@ -18,7 +18,7 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-@Tag("saf-auth")
+@Tag("SAFAuthTest")
 class SafLogoutTest extends LogoutTest {
 
     // Change to saf and run the same test as for the zOSMF
