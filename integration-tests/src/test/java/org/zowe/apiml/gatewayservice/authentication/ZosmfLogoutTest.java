@@ -11,14 +11,14 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.zOSMFAuthTest;
 
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-@Tag("zOSMFAuthTest")
+@zOSMFAuthTest
 @SuppressWarnings({"squid:S2187"})
 class ZosmfLogoutTest extends LogoutTest {
 

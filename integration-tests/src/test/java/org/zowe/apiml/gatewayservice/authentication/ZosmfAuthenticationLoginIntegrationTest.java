@@ -13,10 +13,10 @@ import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
+import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.EnvironmentConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -33,7 +33,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
-@Tag("zOSMFAuthTest")
+@zOSMFAuthTest
 class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private String scheme;
     private String host;
@@ -42,13 +42,6 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
     private final static String ZOSMF_BASE_PATH = "/api/" + ZOSMF_SERVICE_ID;
 
-    private String username;
-    private String password;
-    private String zosmfHost;
-    private int zosmfPort;
-    private String zosmfAuthEndpoint;
-    private String zosmfProtectedEndpoint;
-    private String zosmfScheme;
 
     @BeforeAll
     static void setupClients() {
@@ -64,14 +57,6 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         host = serviceConfiguration.getHost();
         port = serviceConfiguration.getPort();
 
-        EnvironmentConfiguration config = ConfigReader.environmentConfiguration();
-        username = config.getCredentials().getUser();
-        password = config.getCredentials().getPassword();
-        zosmfHost = config.getZosmfServiceConfiguration().getHost();
-        zosmfPort = config.getZosmfServiceConfiguration().getPort();
-        zosmfAuthEndpoint = "/zosmf/services/authenticate";
-        zosmfProtectedEndpoint = "/zosmf/restfiles/ds?dslevel=sys1.p*";
-        zosmfScheme = config.getZosmfServiceConfiguration().getScheme();
     }
 
     /**

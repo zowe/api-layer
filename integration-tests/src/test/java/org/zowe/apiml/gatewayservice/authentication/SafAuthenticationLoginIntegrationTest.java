@@ -11,9 +11,9 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.util.categories.SAFAuthTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -25,7 +25,7 @@ import static org.hamcrest.core.IsNot.not;
  * <p>
  * Also verify that the invalid credentials will be properly rejected.
  */
-@Tag("SAFAuthTest")
+@SAFAuthTest
 class SafAuthenticationLoginIntegrationTest extends Login {
     @BeforeAll
     static void switchToTestedProvider() {
