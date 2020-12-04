@@ -11,34 +11,25 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
-import org.zowe.apiml.util.categories.AuthenticationTest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-@AuthenticationTest
 abstract class LogoutTest {
 
     protected final static String LOGOUT_ENDPOINT = "/auth/logout";
     protected final static String QUERY_ENDPOINT = "/auth/query";
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
-    protected static AuthenticationProviders providers = new AuthenticationProviders(Login.authenticationEndpointPath);
 
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-    }
-
-    @AfterAll
-    static void switchToOriginalProvider() {
-        providers.switchProvider(null);
     }
 
     protected void assertIfLogged(String jwt, boolean logged) {
