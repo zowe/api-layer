@@ -27,6 +27,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -35,6 +36,7 @@ import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -278,6 +280,35 @@ public class AuthenticationServiceTest {
         when(out.getPort()).thenReturn(port);
         when(out.getSecurePort()).thenReturn(securePort);
         return out;
+    }
+
+    @Test
+    void invalidateTokenWithMultipleInstances() {
+        final String jwtToken = "zosmfJwtToken";
+        final String ltpaToken = "zosmfLtpaToken";
+        final ZosmfService zosmfService = getSpiedZosmfService();
+        final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
+        doReturn(true).when(zosmfService).authenticationEndpointExists(HttpMethod.DELETE);
+        doReturn(new QueryResponse(
+            "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
+        )).when(authService).parseJwtToken(jwtToken);
+        doReturn(ltpaToken).when(authService).getLtpaToken(jwtToken);
+        Application application = mock(Application.class);
+        ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
+        InstanceInfo instanceInfo = mock(InstanceInfo.class);
+        InstanceInfo instanceInfo2 = mock(InstanceInfo.class);
+        when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(application);
+        when(discoveryClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
+        when(applicationInfoManager.getInfo()).thenReturn(instanceInfo);
+        when(instanceInfo.getInstanceId()).thenReturn("instanceId");
+        when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo2));
+        when(instanceInfo2.getInstanceId()).thenReturn("insncId2");
+        when(instanceInfo2.getSecurePort()).thenReturn(100);
+        when(instanceInfo2.getHostName()).thenReturn("localhost");
+        Mockito.doNothing().when(restTemplate).delete("");
+        Mockito.doThrow(new BadCredentialsException("")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, jwtToken);
+        assertTrue(authService.invalidateJwtToken(jwtToken, true));
+
     }
 
     @Test
