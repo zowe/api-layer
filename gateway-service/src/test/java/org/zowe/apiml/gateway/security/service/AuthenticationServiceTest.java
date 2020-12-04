@@ -283,6 +283,23 @@ public class AuthenticationServiceTest {
     }
 
     @Test
+    void invalidateTokenIfDistributedButNoInstancesAvailable_thenReturnFalse() {
+        final String jwtToken = "zosmfJwtToken";
+        final String ltpaToken = "zosmfLtpaToken";
+        final ZosmfService zosmfService = getSpiedZosmfService();
+        final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
+        doReturn(true).when(zosmfService).authenticationEndpointExists(HttpMethod.DELETE);
+        doReturn(new QueryResponse(
+            "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
+        )).when(authService).parseJwtToken(jwtToken);
+        doReturn(ltpaToken).when(authService).getLtpaToken(jwtToken);
+
+        when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
+        assertFalse(authService.invalidateJwtToken(jwtToken, true));
+
+    }
+
+    @Test
     void invalidateTokenWithMultipleInstances() {
         final String jwtToken = "zosmfJwtToken";
         final String ltpaToken = "zosmfLtpaToken";
@@ -309,6 +326,28 @@ public class AuthenticationServiceTest {
         Mockito.doThrow(new BadCredentialsException("")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, jwtToken);
         assertTrue(authService.invalidateJwtToken(jwtToken, true));
 
+    }
+
+    @Test
+    void invalidateInvalidZosmfLtpaToken_thenExceptionIsThrown() {
+        final String jwtToken = "zosmfJwtToken";
+        final String ltpaToken = "zosmfLtpaToken";
+        final ZosmfService zosmfService = getSpiedZosmfService();
+        final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
+        doReturn(true).when(zosmfService).authenticationEndpointExists(HttpMethod.DELETE);
+        doReturn(new QueryResponse(
+            "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
+        )).when(authService).parseJwtToken(jwtToken);
+        doReturn(ltpaToken).when(authService).getLtpaToken(jwtToken);
+
+        Mockito.doThrow(new BadCredentialsException("Username or password are invalid.")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, jwtToken);
+
+        Exception exception = assertThrows(BadCredentialsException.class, () -> {
+            authService.invalidateJwtToken(jwtToken, false);
+        });
+
+        assertTrue(exception.getMessage().equals("Username or password are invalid."));
+        verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, jwtToken);
     }
 
     @Test
@@ -444,6 +483,7 @@ public class AuthenticationServiceTest {
         assertTrue(authService.invalidateJwtToken(jwtToken, false));
         verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.LTPA, ltpaToken);
     }
+
 
     @Test
     void testValidateZosmfJwtToken() {
