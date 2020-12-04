@@ -17,12 +17,15 @@ import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.*;
+import org.apache.http.ssl.PrivateKeyDetails;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.categories.AuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import javax.net.ssl.SSLContext;
@@ -42,14 +45,12 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 
-@AuthenticationTest
+
 abstract class Login {
     protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     protected final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     protected final static String BASE_PATH = "/api/v1/gateway";
-    protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/authentication", SCHEME, HOST, PORT, BASE_PATH);
-    protected static AuthenticationProviders providers = new AuthenticationProviders(authenticationEndpointPath);
     protected final static String LOGIN_ENDPOINT = "/auth/login";
     public static final String LOGIN_ENDPOINT_URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT);
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
@@ -103,10 +104,6 @@ abstract class Login {
         tlsWithoutCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3)));
     }
 
-    @AfterAll
-    static void switchToOriginalProvider() {
-        providers.switchProvider(null);
-    }
 
     @BeforeEach
     public void setUp() {
