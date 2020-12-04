@@ -93,7 +93,6 @@ services:
           - apiId: org.zowe.discoverableclient
             gatewayUrl: api/v1
             version: 1.0.0
-
 # Additional metadata that will be added to existing dynamically registered services:
 additionalServiceMetadata:
     - serviceId: staticclient  # The staticclient service metadata will be extended

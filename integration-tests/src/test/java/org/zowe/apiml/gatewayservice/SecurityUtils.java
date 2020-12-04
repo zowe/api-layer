@@ -63,7 +63,11 @@ public class SecurityUtils {
     }
 
     public static String getGateWayUrl(String path) {
-        return String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH, path);
+       return getGatewayUrl(path,gatewayPort);
+    }
+
+    public static String getGatewayUrl(String path, int port ) {
+        return String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, port, GATEWAY_BASE_PATH, path);
     }
 
     public static String gatewayToken(String username, String password) {
