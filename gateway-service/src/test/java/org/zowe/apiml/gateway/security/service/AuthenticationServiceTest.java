@@ -346,7 +346,7 @@ public class AuthenticationServiceTest {
             authService.invalidateJwtToken(jwtToken, false);
         });
 
-        assertTrue(exception.getMessage().equals("Username or password are invalid."));
+        assertEquals(exception.getMessage(), "Username or password are invalid.");
         verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, jwtToken);
     }
 
