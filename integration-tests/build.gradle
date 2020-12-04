@@ -221,7 +221,8 @@ task runCITests(type: Test) {
             'EnvironmentCheck',
             'SlowTests',
             'AdditionalLocalTest',
-            'MainframeDependentTests'
+            'MainframeDependentTests',
+            'SAFAuthTest'
         )
     }
 }
@@ -239,7 +240,8 @@ task runCITestsInternalPort(type: Test) {
             'EnvironmentCheck',
             'SlowTests',
             'AdditionalLocalTest',
-            'MainframeDependentTests'
+            'MainframeDependentTests',
+            'SAFAuthTest'
         )
     }
 }

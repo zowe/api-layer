@@ -29,6 +29,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -140,8 +141,12 @@ public class AuthenticationService {
                 if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
                 break;
             case ZOSMF:
-                if (!isInvalidatedOnAnotherInstance) {
+                try {
                     zosmfService.invalidate(JWT, jwtToken);
+                } catch (BadCredentialsException e) {
+                    if (!isInvalidatedOnAnotherInstance) {
+                        throw e;
+                    }
                 }
                 break;
             default:
