@@ -207,15 +207,15 @@ pipeline {
             ])
         }
 
-        success {
-            archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'build/libs/*.jar'
-            archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'api-layer.tar.gz'
+        always {
+            archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'build/libs/*.jar', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'api-layer.tar.gz', allowEmptyArchive: true
         }
     }
 }
