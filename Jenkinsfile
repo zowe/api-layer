@@ -205,9 +205,7 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: "Unit Tests Report - api-catalog-services"
             ])
-        }
 
-        always {
             archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar', allowEmptyArchive: true
             archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar', allowEmptyArchive: true
             archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar', allowEmptyArchive: true
