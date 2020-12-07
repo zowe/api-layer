@@ -22,4 +22,4 @@ validate_java_home
 validate_zosmf_host_and_port "${ZOSMF_HOST}" "${ZOSMF_PORT}"
 validate_directories_are_accessible "${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
 
-return $ERRORS_FOUND-$INITIAL_ERRORS_FOUND
+return $(($ERRORS_FOUND-$INITIAL_ERRORS_FOUND))
