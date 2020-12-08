@@ -131,7 +131,7 @@ task runIntegrationTestInstances(dependsOn: liteLibJarAll) {
         } else {
             ext.process = new ProcessBuilder()
                 .directory(projectDir)
-                .command("npm", "run", "api-layer-ci", ">", "integration-instances.log")
+                .command("npm", "run", "api-layer-ci")
                 .start()
         }
 
