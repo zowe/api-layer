@@ -121,24 +121,17 @@ task environmentCheck(dependsOn: ":integration-tests:environmentCheck") {
     group "Integration tests"
 }
 
-task runIntegrationTestInstances(dependsOn: liteLibJarAll) {
+task runIntegrationTestInstances(type:Exec, dependsOn: liteLibJarAll) {
     doFirst {
         if (System.properties['os.name'].toLowerCase().contains('windows')) {
-            ext.process = new ProcessBuilder()
-                .directory(projectDir)
-                .command("npm.cmd", "run", "api-layer-ci")
-                .start()
+            commandLine "npm.cmd", "run", "api-layer-ci"
         } else {
-            ext.process = new ProcessBuilder()
-                .directory(projectDir)
-                .command("npm", "run", "api-layer-ci")
-                .start()
+            commandLine "npm", "run", "api-layer-ci"
         }
-
     }
 }
 
-task runCITests(dependsOn: [":integration-tests:runCITests"]) {
+task runCITests(dependsOn: [":integration-tests:runCITests", "runIntegrationTestInstances"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
 }
