@@ -20,4 +20,4 @@ validate_zowe_prefix
 validate_variables_are_set "KEYSTORE,KEYSTORE_PASSWORD,KEY_ALIAS,VERIFY_CERTIFICATES"
 validate_java_home
 
-return $ERRORS_FOUND-$INITIAL_ERRORS_FOUND
+return $(($ERRORS_FOUND-$INITIAL_ERRORS_FOUND))
