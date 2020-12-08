@@ -1,6 +1,16 @@
 # API Mediation Layer Changelog
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
+## `1.18.0`
+
+- Feature: Configure more detailed logging outside of Spool. [#709](https://github.com/zowe/api-layer/issues/709)
+- Feature: HA: Componentize start script per APIML service. Individual API Mediation Layer components can be launched and restarted individually. [#862](https://github.com/zowe/api-layer/issues/862)
+- Feature: HA: Distinguish between internal and external traffic. The second connector uses a different certificate than the first one to allow distinguishing between the internal and external traffic. [#910](https://github.com/zowe/api-layer/issues/910)
+- Feature: Update API Base Path field in catalog to have the version that is selected to be shown and set default API version to highest API if no version is explicitly configured as the default. [#943](https://github.com/zowe/api-layer/issues/943)
+- Feature: API Catalog versioning enhancement by adding API diff tab to the API Catalog so the user can compare versions of two APIs. [#923](https://github.com/zowe/api-layer/issues/923)
+- Bugfix: ZaasJwtService Enhancement for the JWT parsing and error handling. [#897](https://github.com/zowe/api-layer/issues/897)
+- Bugfix: Upgrade dependencies for Enablers [#933](https://github.com/zowe/api-layer/issues/933)
+
 ## `1.17.0`
 
 - Feature: Multiple versions of one API are now presented in the Catalog if configured to do so. Users can now switch between different versions within the Catalog to see differences in API documentation between versions. [#844](https://github.com/zowe/api-layer/issues/844)
