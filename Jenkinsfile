@@ -93,16 +93,43 @@ pipeline {
             }
         }
 
-        stage('Build and Test') {
+        stage('Build') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
                         withSonarQubeEnv('sonarcloud-server') {
-                            sh './gradlew --info --scan build liteLibJarAll coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD}'
-                            sh 'npm run api-layer-ci > integration-instances.log &'
-                            sh './gradlew --info --scan runCITests runCITestsInternalPort -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017'
+                            sh './gradlew --info --scan clean build liteLibJarAll coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD}'
                         }
                     }
+                }
+            }
+        }
+
+        stage('Store artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'integration-instances.log', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'build/libs/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar', allowEmptyArchive: true
+            }
+        }
+
+        stage('Run') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    sh 'npm run api-layer-ci > integration-instances.log &'
+                }
+            }
+        }
+
+        stage('Integration Tests') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    sh './gradlew --info --scan runCITests runCITestsInternalPort -Penabler=v1 -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017'
                 }
             }
         }
@@ -182,7 +209,6 @@ pipeline {
     post {
         always {
             junit allowEmptyResults: true, testResults: '**/test-results/**/*.xml'
-            archiveArtifacts artifacts: 'integration-instances.log', allowEmptyArchive: true
             publishHTML (target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
@@ -208,13 +234,6 @@ pipeline {
                 reportName: "Unit Tests Report - api-catalog-services"
             ])
 
-            archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'build/libs/*.jar', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar', allowEmptyArchive: true
             archiveArtifacts artifacts: 'api-layer.tar.gz', allowEmptyArchive: true
         }
     }
