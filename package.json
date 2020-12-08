@@ -7,7 +7,7 @@
     },
     "scripts": {
         "api-layer": "concurrently --names \"GS,DS,AC,DC,ZO,CS\" -c cyan,yellow,white,blue,green npm:gateway-service npm:discovery-service npm:api-catalog-service npm:discoverable-client npm:mock-zosmf npm:caching-service",
-        "api-layer-ci": "concurrently --names \"GS,DS,AC,DC,ZO,CS\" -c cyan,yellow,white,blue,green npm:gateway-service-ci npm:discovery-service-thin npm:api-catalog-service-thin npm:discoverable-client-thin npm:mock-zosmf-thin npm:caching-service-thin",
+        "api-layer-ci": "concurrently --names \"GS,DS,AC,DC,ZO,CS\" -c cyan,yellow,white,blue,green npm:gateway-service-ci npm:discovery-service-thin npm:api-catalog-service-thin npm:discoverable-client-thin npm:mock-zosmf npm:caching-service-thin",
         "api-layer-core": "concurrently --names \"GW,DS,AC\" -c cyan,yellow,white npm:gateway-service npm:discovery-service npm:api-catalog-service",
         "api-layer-thin": "concurrently --names \"GW,DS,AC,DC,ZO,CS\" -c cyan,yellow,white,blue,green npm:gateway-service-thin npm:discovery-service-thin npm:api-catalog-service-thin npm:discoverable-client npm:mock-zosmf npm:caching-service",
         "api-layer-without-gateway": "concurrently --names \"DS,AC,DC\" -c yellow,white,blue npm:discovery-service npm:api-catalog-service npm:discoverable-client",
@@ -37,7 +37,6 @@
         "api-catalog-service-1": "java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local-multi/api-catalog-service.yml",
         "discoverable-client-1": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local-multi/discoverable-client.yml",
         "mock-zosmf": "java -jar mock-zosmf/build/libs/mock-zosmf.jar",
-        "mock-zosmf-thin": "java -Dloader.path=build/libs/api-layer-lite-lib-all-1.19.0-SNAPSHOT.jar -cp mock-zosmf/build/libs/mock-zosmf-lite-1.19.0-SNAPSHOT.jar org.springframework.boot.loader.PropertiesLauncher",
         "test": "./gradlew runAllIntegrationTests",
         "//": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\"",
         "register-certificates-win": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\" & sudo . cmd /C \"certutil -enterprise -delstore Root \"Zowe Development Instances Certificate Authority\"  &  certutil -enterprise -f -v -AddStore Root \"keystore/local_ca/localca.cer\" || pause\""
