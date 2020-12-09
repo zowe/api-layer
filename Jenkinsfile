@@ -73,7 +73,7 @@ properties(opts)
 
 pipeline {
     agent {
-        label 'ibm-jenkins-slave-nvm'
+        label 'zowe-jenkins-agent'
     }
 
     options {
