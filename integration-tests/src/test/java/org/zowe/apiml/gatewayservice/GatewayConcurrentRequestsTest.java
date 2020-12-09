@@ -33,6 +33,7 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 class GatewayConcurrentRequestsTest {
 
     @Test
+    @SlowTests
     void givenGatewayWithConcurrentConnections_whenMakeThreeConnections_thenThreeConcurrentConnections() throws Exception {
         URI uri = new URIBuilder(getUriFromGateway("/api/v1/discoverableclient/greeting"))
             .setParameter("delayMs", "10000").build();
