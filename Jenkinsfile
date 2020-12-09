@@ -89,7 +89,7 @@ pipeline {
             }
         }
 
-        stage('Build Clean') {
+        stage('Clean') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
@@ -101,7 +101,7 @@ pipeline {
             }
         }
 
-        stage('Build Clean') {
+        stage('Build') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
@@ -113,7 +113,7 @@ pipeline {
             }
         }
 
-        stage('Build Clean') {
+        stage('liteLibJarAll') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
