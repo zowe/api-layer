@@ -91,37 +91,19 @@ pipeline {
 
         stage('Clean') {
             steps {
-                timeout(time: 20, unit: 'MINUTES') {
-                    withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
-                        withSonarQubeEnv('sonarcloud-server') {
-                            sh './gradlew --info --scan clean'
-                        }
-                    }
-                }
+                sh './gradlew --info --scan clean'
             }
         }
 
         stage('Build') {
             steps {
-                timeout(time: 20, unit: 'MINUTES') {
-                    withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
-                        withSonarQubeEnv('sonarcloud-server') {
-                            sh './gradlew --info --scan build'
-                        }
-                    }
-                }
+                sh './gradlew --info --scan build'
             }
         }
 
         stage('liteLibJarAll') {
             steps {
-                timeout(time: 20, unit: 'MINUTES') {
-                    withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
-                        withSonarQubeEnv('sonarcloud-server') {
-                            sh './gradlew --info --scan liteLibJarAll'
-                        }
-                    }
-                }
+                sh './gradlew --info --scan liteLibJarAll'
             }
         }
 
