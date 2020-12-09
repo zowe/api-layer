@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.vsam;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.config.VsamConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Storage;
@@ -44,6 +45,7 @@ public class VsamStorage implements Storage {
     }
 
     @Override
+    @Retryable (value = {IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue create(String serviceId, KeyValue toCreate) {
         log.info("Writing record: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
         KeyValue result = null;
@@ -75,6 +77,7 @@ public class VsamStorage implements Storage {
     }
 
     @Override
+    @Retryable (value = {IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         log.info("Updating Record: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
         VsamRecord result = null;
@@ -91,6 +94,7 @@ public class VsamStorage implements Storage {
     }
 
     @Override
+    @Retryable (value = {IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue delete(String serviceId, String toDelete) {
 
         log.info("Deleting Record: {}|{}|{}", serviceId, toDelete, "-");

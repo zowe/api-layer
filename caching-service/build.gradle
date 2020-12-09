@@ -51,6 +51,7 @@ dependencies {
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
+    compile libraries.spring_retry
 
     implementation libraries.gson
     compileOnly libraries.lombok
