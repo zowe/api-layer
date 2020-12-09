@@ -11,7 +11,6 @@ package org.zowe.apiml.security;
 
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -40,7 +39,6 @@ import java.util.Objects;
 
 @Slf4j
 @Data
-@NoArgsConstructor
 public class HttpsFactory {
 
     private HttpsConfig config;
@@ -64,6 +62,8 @@ public class HttpsFactory {
 
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
                 Objects.requireNonNull(socketFactoryRegistry));
+        connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerRoute());
+        connectionManager.setMaxTotal(config.getMaxTotalConnections());
         return HttpClientBuilder.create().setConnectionManager(connectionManager).disableCookieManagement()
                 .disableAuthCaching().build();
     }
