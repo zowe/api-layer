@@ -80,10 +80,6 @@ pipeline {
         timestamps ()
     }
 
-    parameters {
-        booleanParam(name: 'PUBLISH_PR_ARTIFACTS', defaultValue: 'false', description: 'If true it will publish the pull requests artifacts', )
-    }
-
     stages {
         stage ('Install') {
             steps {
@@ -93,36 +89,21 @@ pipeline {
             }
         }
 
+        stage('Clean') {
+            steps {
+                sh './gradlew --info --scan clean'
+            }
+        }
+
         stage('Build') {
             steps {
-                timeout(time: 20, unit: 'MINUTES') {
-                    withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
-                        withSonarQubeEnv('sonarcloud-server') {
-                            sh './gradlew --info --scan clean build liteLibJarAll coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD}'
-                        }
-                    }
-                }
+                sh './gradlew --info --scan build'
             }
         }
 
-        stage('Store artifacts') {
+        stage('liteLibJarAll') {
             steps {
-                archiveArtifacts artifacts: 'integration-instances.log', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'build/libs/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar', allowEmptyArchive: true
-            }
-        }
-
-        stage('Run') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    sh 'npm run api-layer-ci > integration-instances.log &'
-                }
+                sh './gradlew --info --scan liteLibJarAll'
             }
         }
 
@@ -134,76 +115,18 @@ pipeline {
             }
         }
 
-        stage('Publish coverage reports') {
+        stage('Store artifacts') {
             steps {
-                   publishHTML(target: [
-                       allowMissing         : false,
-                       alwaysLinkToLastBuild: false,
-                       keepAll              : true,
-                       reportDir            : 'build/reports/jacoco/jacocoFullReport/html',
-                       reportFiles          : 'index.html',
-                       reportName           : "Java Coverage Report"
-                   ])
-                    publishHTML(target: [
-                        allowMissing         : false,
-                        alwaysLinkToLastBuild: false,
-                        keepAll              : true,
-                        reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
-                        reportFiles          : 'index.html',
-                        reportName           : "UI JavaScript Test Coverage"
-                    ])
+                archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'build/libs/*.jar', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar', allowEmptyArchive: true
             }
         }
 
-        stage('Package api-layer source code') {
-            steps {
-                sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
-            }
-        }
-
-        stage('Publish snapshot version to Artifactory for master') {
-            when {
-                expression {
-                    return BRANCH_NAME.equals(MASTER_BRANCH);
-                }
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                 sh '''
-                 ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
-                 '''
-                }
-            }
-        }
-
-        stage('Publish snapshot version to Artifactory for Pull Request') {
-            when {
-                expression {
-                    return BRANCH_NAME.contains("PR-") && params.PUBLISH_PR_ARTIFACTS;
-                }
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh '''
-                    sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
-                    ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD  -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD -PpullRequest=$env.BRANCH_NAME
-                    '''
-                }
-            }
-        }
-
-        stage('Publish UI test results') {
-            steps {
-                publishHTML(target: [
-                    allowMissing         : false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll              : true,
-                    reportDir            : 'api-catalog-ui/frontend/test-results',
-                    reportFiles          : 'test-report-unit.html',
-                    reportName           : "UI Unit Test Results"
-                ])
-            }
-        }
     }
 
     post {
