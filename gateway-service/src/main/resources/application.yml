@@ -47,7 +47,7 @@ apiml:
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
         auth:
-            provider: zosmf
+            provider: dummy
             jwtKeyAlias: jwtsecret
         x509:
             enabled: false

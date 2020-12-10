@@ -144,7 +144,7 @@ class EurekaInstancesIntegrationTest {
         given()
             .auth().basic(username, password)
         .when()
-            .get(getDiscoveryUriWithPath("/application/beans"))
+            .get(getDiscoveryUriWithPath("/application/info"))
         .then()
             .statusCode(is(HttpStatus.SC_OK));
     }
@@ -157,7 +157,7 @@ class EurekaInstancesIntegrationTest {
         given()
             .cookie(COOKIE, jwtToken)
         .when()
-            .get(getDiscoveryUriWithPath("/application/beans"))
+            .get(getDiscoveryUriWithPath("/application/info"))
         .then()
             .statusCode(is(HttpStatus.SC_OK));
 

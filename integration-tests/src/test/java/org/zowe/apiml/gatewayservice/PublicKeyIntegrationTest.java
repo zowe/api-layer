@@ -13,6 +13,7 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,6 +81,7 @@ public class PublicKeyIntegrationTest {
     @Test
     void testCurrentPublicKeys() throws ParseException {
         String response = given()
+            .accept(ContentType.JSON)
             .when()
             .get(GATEWAY_URL + CURRENT_PUBLIC_KEY_ENDPOINT)
             .then()
