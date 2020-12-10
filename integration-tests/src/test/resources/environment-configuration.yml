@@ -33,3 +33,5 @@ zosmfServiceConfiguration:
     host: river.zowe.org
     port: 10443
     serviceId: zosmf
+auxiliaryUserList:
+    value: USER1,password;USER2,password

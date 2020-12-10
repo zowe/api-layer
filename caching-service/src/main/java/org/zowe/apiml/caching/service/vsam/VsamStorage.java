@@ -54,8 +54,11 @@ public class VsamStorage implements Storage {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toCreate);
 
-            VsamRecord returned = file.create(record);
-            result = returned.getKeyValue();
+            Optional<VsamRecord> returned = file.create(record);
+            if (returned.isPresent()) {
+                result = returned.get().getKeyValue();
+            }
+
         }
 
         return result;
@@ -64,33 +67,38 @@ public class VsamStorage implements Storage {
     @Override
     public KeyValue read(String serviceId, String key) {
         log.info("Reading Record: {}|{}|{}", serviceId, key, "-");
-        VsamRecord result = null;
+        KeyValue result = null;
 
         try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.READ)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(key, ""));
 
-            result = file.read(record);
+            Optional<VsamRecord> returned = file.read(record);
+            if (returned.isPresent()) {
+                result = returned.get().getKeyValue();
+            }
         }
 
-        return result.getKeyValue(); //TODO Optional, nullpointer
+        return result;
     }
 
     @Override
     @Retryable (value = {IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         log.info("Updating Record: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
-        VsamRecord result = null;
+        KeyValue result = null;
 
         try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toUpdate);
 
-            result = file.update(record);
-
+            Optional<VsamRecord> returned = file.update(record);
+            if (returned.isPresent()) {
+                result = returned.get().getKeyValue();
+            }
         }
 
-        return result.getKeyValue();
+        return result;
     }
 
     @Override
@@ -98,16 +106,19 @@ public class VsamStorage implements Storage {
     public KeyValue delete(String serviceId, String toDelete) {
 
         log.info("Deleting Record: {}|{}|{}", serviceId, toDelete, "-");
-        VsamRecord result = null;
+        KeyValue result = null;
 
         try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(toDelete, ""));
 
-            result = file.delete(record);
+            Optional<VsamRecord> returned = file.delete(record);
+            if (returned.isPresent()) {
+                result = returned.get().getKeyValue();
+            }
         }
 
-        return result.getKeyValue();
+        return result;
     }
 
     @Override

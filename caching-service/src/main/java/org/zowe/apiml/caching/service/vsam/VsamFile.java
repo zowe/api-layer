@@ -18,8 +18,7 @@ import org.zowe.apiml.zfile.*;
 
 import java.io.Closeable;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -121,7 +120,7 @@ public class VsamFile implements Closeable {
 
     }
 
-    public VsamRecord create(VsamRecord record) {
+    public Optional<VsamRecord> create(VsamRecord record) {
         if (record == null) {
             throw new IllegalArgumentException("Record cannot be null");
         }
@@ -133,7 +132,7 @@ public class VsamFile implements Closeable {
             if (!found) {
                 log.info("Writing Record: {}", record);
                 zfile.write(record.getBytes());
-
+                return Optional.of(record);
             } else {
                 log.error("The record already exists and will not be created. Use update instead.");
             }
@@ -143,10 +142,10 @@ public class VsamFile implements Closeable {
             log.error(VSAM_RECORD_ERROR_MESSAGE, e);
         }
 
-        return record;
+        return Optional.empty();
     }
 
-    public VsamRecord read(VsamRecord record) {
+    public Optional<VsamRecord> read(VsamRecord record) {
         if (record == null) {
             throw new IllegalArgumentException("Record cannot be null");
         }
@@ -162,8 +161,10 @@ public class VsamFile implements Closeable {
                 log.info("ConvertedStringValue: {}", new String(recBuf, vsamConfig.getEncoding()));
                 VsamRecord returned = new VsamRecord(vsamConfig, record.getServiceId(), recBuf); //TODO add serviceid to keyvalue
                 log.info("VsamRecord read: {}", returned);
-                return returned;
-            } //TODO else, return value
+                return Optional.of(returned);
+            } else {
+                log.error("No record found with requested key");
+            }
         } catch (ZFileException e) {
             log.error(e.toString());
         } catch (UnsupportedEncodingException e) {
@@ -171,10 +172,10 @@ public class VsamFile implements Closeable {
         } catch (VsamRecordException e) {
             log.error(VSAM_RECORD_ERROR_MESSAGE, e);
         }
-        return null; //TODO optional
+        return Optional.empty();
     }
 
-    public VsamRecord update(VsamRecord record) {
+    public Optional<VsamRecord> update(VsamRecord record) {
         if (record == null) {
             throw new IllegalArgumentException("Record cannot be null");
         }
@@ -192,7 +193,7 @@ public class VsamFile implements Closeable {
                 log.info("Will update record: {}", record);
                 int nUpdated = zfile.update(record.getBytes());
                 log.info("ZFile.update return value: {}", nUpdated);
-                return record;
+                return Optional.of(record);
             } else {
                 log.error("No record updated because no record found with key");
             }
@@ -205,10 +206,10 @@ public class VsamFile implements Closeable {
             log.error(VSAM_RECORD_ERROR_MESSAGE, e);
         }
 
-        return null;
+        return Optional.empty();
     }
 
-    public VsamRecord delete(VsamRecord record) {
+    public Optional<VsamRecord> delete(VsamRecord record) {
         if (record == null) {
             throw new IllegalArgumentException("Record cannot be null");
         }
@@ -224,7 +225,7 @@ public class VsamFile implements Closeable {
                 VsamRecord returned = new VsamRecord(vsamConfig, record.getServiceId(), recBuf);
                 zfile.delrec();
                 log.info("Deleted vsam record: {}", returned);
-                return returned;
+                return Optional.of(returned);
             } else {
                 log.error("No record deleted because no record found with key");
             }
@@ -235,7 +236,7 @@ public class VsamFile implements Closeable {
             log.error(VSAM_RECORD_ERROR_MESSAGE, e);
         }
 
-        return null;
+        return Optional.empty();
     }
 
     public List<VsamRecord> readForService(String serviceId) {
@@ -251,7 +252,8 @@ public class VsamFile implements Closeable {
         try {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
 
-            log.info("Attempt to find key in KEY_GE mode: {}", key.getKeySidOnly(serviceId));
+            String keyGe = key.getKeySidOnly(serviceId);
+            log.info("Attempt to find key in KEY_GE mode: {}", keyGe);
 
             found = zfile.locate(key.getKeyBytesSidOnly(serviceId),
                 ZFileConstants.LOCATE_KEY_GE);
@@ -260,12 +262,17 @@ public class VsamFile implements Closeable {
 
             int overflowProtection = 10000;
 
+            //String lastServiceIdKey = "";
+
             while (found) {
                 int nread = zfile.read(recBuf);
                 log.trace("RecBuf: {}", recBuf);
                 log.info("nread: {}", nread);
 
-                log.info("ConvertedStringValue: {}", new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE));
+                String convertedStringValue = new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
+
+                VsamRecord record = new VsamRecord(vsamConfig, serviceId, recBuf);
+                log.info("Read record: {}", record);
 
                 if (nread < 0) {
                     log.info("nread is < 0, stopping the retrieval");
@@ -273,8 +280,31 @@ public class VsamFile implements Closeable {
                     continue;
                 }
 
-                VsamRecord record = new VsamRecord(vsamConfig, serviceId, recBuf);
-                log.info("Read record: {}", record);
+                log.trace("convertedStringValue: >{}<", convertedStringValue);
+                log.trace("keyGe: >{}<", keyGe);
+                if (!convertedStringValue.trim().startsWith(keyGe.trim())) {
+                    log.info("read record does not start with serviceId's keyGe, stopping the retrieval");
+                    found = false;
+                    continue;
+                } else {
+                    log.info("read record starts with serviceId's keyGe, retrieving this record");
+                }
+
+//                String serviceIdRead = new String(record.getKeyBytes(), vsamConfig.getEncoding()).split(":")[0];
+//                log.info("Read serviceIdRead: {}", serviceIdRead);
+//
+//                if (lastServiceIdKey == "") {
+//                    lastServiceIdKey = serviceIdRead;
+//                    log.info("Assigning first serviceIdRead: {}", serviceIdRead);
+//                }
+//
+//                if (serviceIdRead != lastServiceIdKey) {
+//                    log.info("serviceIdRead {} is different from last serviceId {}, stopping the retrieval", serviceIdRead, lastServiceIdKey);
+//                    found = false;
+//                    continue;
+//                }
+
+                //lastServiceIdKey = new String(record.getKeyBytes(), vsamConfig.getEncoding());
 
                 returned.add(record);
 
