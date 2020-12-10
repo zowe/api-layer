@@ -121,12 +121,18 @@ task environmentCheck(dependsOn: ":integration-tests:environmentCheck") {
     group "Integration tests"
 }
 
-task runIntegrationTestInstances(type:Exec, dependsOn: liteLibJarAll) {
+task runIntegrationTestInstances(dependsOn: liteLibJarAll) {
     doFirst {
         if (System.properties['os.name'].toLowerCase().contains('windows')) {
-            commandLine "npm.cmd", "run", "api-layer-ci"
+            ext.process = new ProcessBuilder()
+                .directory(projectDir)
+                .command("npm.cmd", "run", "api-layer-ci", ">", "integration-instances.log")
+                .start()
         } else {
-            commandLine "npm", "run", "api-layer-ci"
+            ext.process = new ProcessBuilder()
+                .directory(projectDir)
+                .command("npm", "run", "api-layer-ci", ">", "integration-instances.log")
+                .start()
         }
     }
 }
