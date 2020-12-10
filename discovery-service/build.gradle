@@ -39,6 +39,12 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
+configurations.all {
+    resolutionStrategy {
+        force (libraries.jetty_websocket_client)
+    }
+}
+
 dependencies {
     implementation(project(':security-service-client-spring'))
 

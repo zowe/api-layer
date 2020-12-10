@@ -15,7 +15,6 @@ normalization {
 
 apply plugin: 'org.springframework.boot'
 apply plugin: 'com.gorylenko.gradle-git-properties'
-apply from: "$projectDir/gradle/lite.gradle"
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file

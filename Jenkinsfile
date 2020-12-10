@@ -107,6 +107,14 @@ pipeline {
             }
         }
 
+        stage('Integration Tests') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    sh './gradlew --info --scan runCITests runCITestsInternalPort -Penabler=v1 -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017'
+                }
+            }
+        }
+
         stage('Store artifacts') {
             steps {
                 archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar', allowEmptyArchive: true
@@ -118,6 +126,7 @@ pipeline {
                 archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar', allowEmptyArchive: true
             }
         }
+
     }
 
     post {
