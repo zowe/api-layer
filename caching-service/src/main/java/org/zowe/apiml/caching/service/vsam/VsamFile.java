@@ -25,8 +25,7 @@ import java.util.regex.Pattern;
  * ZFile wrapper providing convenience methods and implementing Closeable interface
  * This class is intended for serialized access to VSAM file.
  * Concurrency is to be handled by retrying.
- * <p>
- * Creates a proxy of com.ibm.jzos.ZFileException and wraps it's methods
+ * Creates a proxy of com.ibm.jzos.ZFileException and provides high level methods for CRUD operations
  */
 
 @Slf4j
@@ -124,7 +123,6 @@ public class VsamFile implements Closeable {
         if (record == null) {
             throw new IllegalArgumentException("Record cannot be null");
         }
-        //TODO LOGGING
         try {
             boolean found = zfile.locate(record.getKeyBytes(),
                 ZFileConstants.LOCATE_KEY_EQ);
@@ -159,7 +157,7 @@ public class VsamFile implements Closeable {
                 zfile.read(recBuf);
                 log.trace("RecBuf: {}", recBuf);
                 log.info("ConvertedStringValue: {}", new String(recBuf, vsamConfig.getEncoding()));
-                VsamRecord returned = new VsamRecord(vsamConfig, record.getServiceId(), recBuf); //TODO add serviceid to keyvalue
+                VsamRecord returned = new VsamRecord(vsamConfig, record.getServiceId(), recBuf);
                 log.info("VsamRecord read: {}", returned);
                 return Optional.of(returned);
             } else {
@@ -262,8 +260,6 @@ public class VsamFile implements Closeable {
 
             int overflowProtection = 10000;
 
-            //String lastServiceIdKey = "";
-
             while (found) {
                 int nread = zfile.read(recBuf);
                 log.trace("RecBuf: {}", recBuf);
@@ -289,22 +285,6 @@ public class VsamFile implements Closeable {
                 } else {
                     log.info("read record starts with serviceId's keyGe, retrieving this record");
                 }
-
-//                String serviceIdRead = new String(record.getKeyBytes(), vsamConfig.getEncoding()).split(":")[0];
-//                log.info("Read serviceIdRead: {}", serviceIdRead);
-//
-//                if (lastServiceIdKey == "") {
-//                    lastServiceIdKey = serviceIdRead;
-//                    log.info("Assigning first serviceIdRead: {}", serviceIdRead);
-//                }
-//
-//                if (serviceIdRead != lastServiceIdKey) {
-//                    log.info("serviceIdRead {} is different from last serviceId {}, stopping the retrieval", serviceIdRead, lastServiceIdKey);
-//                    found = false;
-//                    continue;
-//                }
-
-                //lastServiceIdKey = new String(record.getKeyBytes(), vsamConfig.getEncoding());
 
                 returned.add(record);
 
