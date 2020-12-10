@@ -53,6 +53,7 @@ dependencies {
 
     implementation group: 'io.swagger', name: 'swagger-models', version: '1.6.2'
     implementation libraries.spring_boot_starter_web
+    implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_configuration_processor
     implementation libraries.spring_cloud_starter_eureka
