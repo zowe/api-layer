@@ -55,6 +55,8 @@ dependencies {
     implementation libraries.spring_cloud_starter_eureka_server
     implementation libraries.jackson_dataformat_yaml
     implementation libraries.jetty_util
+    implementation libraries.jetty_websocket_client
+    implementation libraries.jetty_websocket_common
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok

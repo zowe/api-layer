@@ -68,6 +68,8 @@ dependencies {
     implementation libraries.apache_velocity
     implementation libraries.openapidiff
     implementation libraries.jetty_util
+    implementation libraries.jetty_websocket_client
+    implementation libraries.jetty_websocket_common
 
     implementation libraries.springFox
 
