@@ -15,7 +15,7 @@ import lombok.Value;
 
 @Builder
 @Value
-@ToString(exclude = { "trustStorePassword", "keyStorePassword", "keyPassword" })
+@ToString(exclude = {"trustStorePassword", "keyStorePassword", "keyPassword"})
 public class HttpsConfig {
 
     @Builder.Default
@@ -34,5 +34,8 @@ public class HttpsConfig {
     private boolean clientAuth;
     @Builder.Default
     private boolean verifySslCertificatesOfServices = true;
-
+    @Builder.Default
+    private int maxConnectionsPerRoute = 10;
+    @Builder.Default
+    private int maxTotalConnections = 100;
 }
