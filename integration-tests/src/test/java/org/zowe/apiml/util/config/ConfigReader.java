@@ -58,6 +58,7 @@ public class ConfigReader {
                         AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
+
                         configuration = new EnvironmentConfiguration(
                             credentials,
                             gatewayServiceConfiguration,
@@ -85,7 +86,7 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setPort(Integer.parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
                     configuration.getDiscoveryServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
-                    configuration.getAuxiliaryUserList().setValue(System.getProperty("auxiliaryUserList.value", configuration.getAuxiliaryUserList().getValue()));
+                    configuration.getAuxiliaryUserList().setValue(System.getProperty("auxiliaryUserList.value", "user,password"));
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);
