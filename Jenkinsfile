@@ -168,7 +168,8 @@ pipeline {
             }
         }
 
-        stage('Publish UI test results') {
+        // Temporarily disable because disabled JS coverage
+        /* stage('Publish UI test results') {
             steps {
                 publishHTML(target: [
                     allowMissing         : false,
@@ -179,7 +180,7 @@ pipeline {
                     reportName           : "UI Unit Test Results"
                 ])
             }
-        }
+        } */
     }
 
     post {
