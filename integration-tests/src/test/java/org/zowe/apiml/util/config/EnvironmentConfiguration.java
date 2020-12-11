@@ -9,9 +9,7 @@
  */
 package org.zowe.apiml.util.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
@@ -23,4 +21,5 @@ public class EnvironmentConfiguration {
     private DiscoverableClientConfiguration discoverableClientConfiguration;
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
+    private AuxiliaryUserList auxiliaryUserList;
 }

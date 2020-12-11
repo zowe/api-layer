@@ -76,6 +76,12 @@ public class HttpConfig {
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
 
+    @Value("${server.maxConnectionsPerRoute:#{10}}")
+    private Integer maxConnectionsPerRoute;
+
+    @Value("${server.maxTotalConnections:#{100}}")
+    private Integer maxTotalConnections;
+
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
@@ -94,7 +100,8 @@ public class HttpConfig {
                 HttpsConfig.builder()
                     .protocol(protocol)
                     .trustStore(trustStore).trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
-                    .verifySslCertificatesOfServices(verifySslCertificatesOfServices);
+                    .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
+                    .maxConnectionsPerRoute(maxConnectionsPerRoute).maxTotalConnections(maxTotalConnections);
 
             HttpsConfig httpsConfig = httpsConfigSupplier.get()
                 .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)

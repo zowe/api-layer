@@ -16,39 +16,38 @@ import org.junit.jupiter.api.*;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 @TestsNotMeantForZowe
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CachingApiIntegrationTest {
 
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private static String jwtToken;
+    private static String jwtToken = SecurityUtils.gatewayToken();
+    private final EnvironmentConfiguration environmentConfiguration = ConfigReader.environmentConfiguration();;
 
     @BeforeAll
     static void setup() {
         RestAssured.useRelaxedHTTPSValidation();
-        jwtToken = generateToken();
     }
 
 
     @Test
-    @Order(1)
+    @Disabled
     void givenMultipleConcurrentCalls_correctResponseInTheEnd() throws InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(8);
         AtomicInteger ai = new AtomicInteger(20);
@@ -96,22 +95,25 @@ class CachingApiIntegrationTest {
 
 
     @Test
-    @Order(2)
     void givenValidKeyValue_whenCallingCreateEndpoint_thenStoreIt() {
-        KeyValue keyValue = new KeyValue("testKey", "testValue");
+        try {
+            KeyValue keyValue = new KeyValue("testKey", "testValue");
 
-        given()
-            .contentType(JSON)
-            .body(keyValue)
-            .cookie(COOKIE_NAME, jwtToken)
-            .when()
-            .post(CACHING_PATH)
-            .then()
-            .statusCode(is(SC_CREATED));
+            given()
+                .contentType(JSON)
+                .body(keyValue)
+                .cookie(COOKIE_NAME, jwtToken)
+                .when()
+                .post(CACHING_PATH)
+                .then()
+                .statusCode(is(SC_CREATED));
+        } finally {
+            deteleValueUnderServiceIdWithoutValidation("testKey", jwtToken);
+        }
+
     }
 
     @Test
-    @Order(3)
     void givenEmptyBody_whenCallingCreateEndpoint_thenReturn400() {
         given()
             .contentType(JSON)
@@ -123,45 +125,81 @@ class CachingApiIntegrationTest {
     }
 
     @Test
-    @Order(4)
     void givenValidKeyParameter_whenCallingGetEndpoint_thenReturnKeyValueEntry() {
-        given()
-            .contentType(JSON)
-            .cookie(COOKIE_NAME, jwtToken)
-            .when()
-            .get(CACHING_PATH + "/testKey")
-            .then()
-            .body(not(isEmptyString()))
-            .statusCode(is(SC_OK));
+
+        try {
+            loadValueUnderServiceId(new KeyValue("testKey", "testValue"), jwtToken);
+
+            given()
+                .contentType(JSON)
+                .cookie(COOKIE_NAME, jwtToken)
+                .when()
+                .get(CACHING_PATH + "/testKey")
+                .then()
+                .body(not(isEmptyString()))
+                .statusCode(is(SC_OK));
+        } finally {
+            deteleValueUnderServiceIdWithoutValidation("testKey", jwtToken);
+        }
     }
 
     @Test
-    @Order(5)
     void givenValidKeyParameter_whenCallingGetAllEndpoint_thenAllTheStoredEntries() {
-        KeyValue keyValue = new KeyValue("testKey2", "testValue2");
 
-        given()
-            .contentType(JSON)
-            .body(keyValue)
-            .cookie(COOKIE_NAME, jwtToken)
-            .when()
-            .post(CACHING_PATH)
-            .then()
-            .statusCode(is(SC_CREATED));
+        List<Credentials> testUsers = environmentConfiguration.getAuxiliaryUserList().getCredentials();
+        assertThat(testUsers, hasSize(greaterThanOrEqualTo(2)));
 
-        given()
-            .contentType(JSON)
-            .cookie(COOKIE_NAME, jwtToken)
-            .when()
-            .get(CACHING_PATH)
-            .then()
-            .body("testKey", Matchers.is(not(isEmptyString())),
-                "testKey2", Matchers.is(not(isEmptyString())))
-            .statusCode(is(SC_OK));
+        testUsers.sort((o1, o2) -> o1.getUser().hashCode() - o2.getUser().hashCode());
+        Credentials testUserLowerHashcode = testUsers.get(0);
+        Credentials testUserHigherHashcode = testUsers.get(1);
+
+        System.out.println("TestUserLowerHashcode: " + testUserLowerHashcode.getUser());
+        System.out.println("TestUserHigherHashcode: " + testUserHigherHashcode.getUser());
+
+        String jwtToken1 = SecurityUtils.gatewayToken(testUserLowerHashcode.getUser(), testUserLowerHashcode.getPassword());
+        String jwtToken2 = SecurityUtils.gatewayToken(testUserHigherHashcode.getUser(), testUserHigherHashcode.getPassword());
+
+        assertThat(jwtToken1, is(not(isEmptyString())));
+        assertThat(jwtToken2, is(not(isEmptyString())));
+
+        KeyValue keyValue1 = new KeyValue("testKey1", "testValue1");
+        KeyValue keyValue2 = new KeyValue("testKey2", "testValue2");
+        KeyValue keyValue3 = new KeyValue("testKey3", "testValue3");
+        KeyValue keyValue4 = new KeyValue("testKey4", "testValue4");
+
+        try {
+            loadValueUnderServiceId(keyValue1, jwtToken1);
+            loadValueUnderServiceId(keyValue2, jwtToken1);
+
+            loadValueUnderServiceId(keyValue3, jwtToken2);
+            loadValueUnderServiceId(keyValue4, jwtToken2);
+
+            given().log().uri()
+                .contentType(JSON)
+                .cookie(COOKIE_NAME, jwtToken1)
+                .when()
+                .get(CACHING_PATH)
+                .then().log().all()
+                .body("testKey1", is(not(isEmptyString())),
+                    "testKey2", is(not(isEmptyString())),
+                    "testKey3", isEmptyOrNullString(),
+                    "testKey4", isEmptyOrNullString())
+                .statusCode(is(SC_OK));
+
+        } finally {
+            deteleValueUnderServiceIdWithoutValidation("testKey1", jwtToken1);
+            deteleValueUnderServiceIdWithoutValidation("testKey2", jwtToken1);
+            deteleValueUnderServiceIdWithoutValidation("testKey3", jwtToken1);
+            deteleValueUnderServiceIdWithoutValidation("testKey4", jwtToken1);
+
+            deteleValueUnderServiceIdWithoutValidation("testKey1", jwtToken2);
+            deteleValueUnderServiceIdWithoutValidation("testKey2", jwtToken2);
+            deteleValueUnderServiceIdWithoutValidation("testKey3", jwtToken2);
+            deteleValueUnderServiceIdWithoutValidation("testKey4", jwtToken2);
+        }
     }
 
     @Test
-    @Order(6)
     void givenNonExistingKeyParameter_whenCallingGetEndpoint_thenReturnKeyNotFound() {
         given()
             .contentType(JSON)
@@ -174,50 +212,93 @@ class CachingApiIntegrationTest {
     }
 
     @Test
-    @Order(7)
     void givenValidKeyParameter_whenCallingUpdateEndpoint_thenReturnUpdateValue() {
-        KeyValue newValue = new KeyValue("testKey", "newValue");
 
-        given()
-            .contentType(JSON)
-            .body(newValue)
-            .cookie(COOKIE_NAME, jwtToken)
-            .when()
-            .put(CACHING_PATH)
-            .then()
-            .statusCode(is(SC_NO_CONTENT));
+        try {
+            loadValueUnderServiceId(new KeyValue("testKey", "testValue"), jwtToken);
 
-        given()
-            .contentType(JSON)
-            .cookie(COOKIE_NAME, jwtToken)
-            .when()
-            .get(CACHING_PATH + "/testKey")
-            .then()
-            .body("value", Matchers.is("newValue"))
-            .statusCode(is(SC_OK));
+            KeyValue newValue = new KeyValue("testKey", "newValue");
+
+            given()
+                .contentType(JSON)
+                .body(newValue)
+                .cookie(COOKIE_NAME, jwtToken)
+                .when()
+                .put(CACHING_PATH)
+                .then()
+                .statusCode(is(SC_NO_CONTENT));
+
+            given()
+                .contentType(JSON)
+                .cookie(COOKIE_NAME, jwtToken)
+                .when()
+                .get(CACHING_PATH + "/testKey")
+                .then()
+                .body("value", Matchers.is("newValue"))
+                .statusCode(is(SC_OK));
+        } finally {
+            deteleValueUnderServiceIdWithoutValidation("testKey", jwtToken);
+        }
     }
 
     @Test
-    @Order(8)
     void givenValidKeyParameter_whenCallingDeleteEndpoint_thenDeleteKeyValueFromStore() {
-        given()
-            .contentType(JSON)
-            .cookie(COOKIE_NAME, jwtToken)
-            .when()
-            .delete(CACHING_PATH + "/testKey")
-            .then()
-            .statusCode(is(SC_NO_CONTENT));
 
+        try {
+            loadValueUnderServiceId(new KeyValue("testKey", "testValue"), jwtToken);
+
+            given()
+                .contentType(JSON)
+                .cookie(COOKIE_NAME, jwtToken)
+                .when()
+                .delete(CACHING_PATH + "/testKey")
+                .then()
+                .statusCode(is(SC_NO_CONTENT));
+
+            given()
+                .contentType(JSON)
+                .cookie(COOKIE_NAME, jwtToken)
+                .when()
+                .get(CACHING_PATH + "/testKey")
+                .then()
+                .statusCode(is(SC_NOT_FOUND));
+        } finally {
+            deteleValueUnderServiceIdWithoutValidation("testkey", jwtToken);
+        }
+
+    }
+
+    @Test
+    void givenInvalidParameter_whenCallingDeleteEndpoint_thenNotFound() {
         given()
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .get(CACHING_PATH + "/testKey")
+            .delete(CACHING_PATH + "/invalidKey")
             .then()
             .statusCode(is(SC_NOT_FOUND));
     }
 
     private static String generateToken() {
         return SecurityUtils.gatewayToken();
+    }
+
+    private static void loadValueUnderServiceId(KeyValue value, String jwtToken) {
+        given()
+            .contentType(JSON)
+            .body(value)
+            .cookie(COOKIE_NAME, jwtToken)
+            .when()
+            .post(CACHING_PATH)
+            .then()
+            .statusCode(is(SC_CREATED));
+    }
+
+    private static void deteleValueUnderServiceIdWithoutValidation(String value, String jwtToken) {
+        given()
+            .contentType(JSON)
+            .cookie(COOKIE_NAME, jwtToken)
+            .when()
+            .delete(CACHING_PATH + "/" + value);
     }
 }
