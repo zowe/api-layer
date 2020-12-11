@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.config;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,14 +34,12 @@ import org.zowe.apiml.product.routing.transform.TransformService;
 import java.util.Map;
 
 @Configuration
+@RequiredArgsConstructor
 public class GatewayConfig {
 
-    private final ConfigurableEnvironment env;
     private static final String SEPARATOR = ":";
 
-    public GatewayConfig(ConfigurableEnvironment env) {
-        this.env = env;
-    }
+    private final ConfigurableEnvironment env;
 
     @Bean
     public GatewayConfigProperties getGatewayConfigProperties(@Value("${apiml.gateway.hostname}") String hostname,
