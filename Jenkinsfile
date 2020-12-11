@@ -104,6 +104,16 @@ pipeline {
             }
         }
 
+        stage('Archive') {
+            steps {
+                archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
+                archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar'
+                archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
+                archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
+                archiveArtifacts artifacts: 'build/libs/**/*.jar'
+            }
+        }
+
         stage('Test') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
@@ -218,16 +228,6 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: "Unit Tests Report - api-catalog-services"
             ])
-        }
-
-        success {
-            archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'api-layer.tar.gz'
         }
     }
 }
