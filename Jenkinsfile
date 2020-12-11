@@ -203,6 +203,7 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: "Unit Tests Report - api-catalog-services"
             ])
+            archiveArtifacts artifacts: 'integration-instances.log', allowEmptyArchive: true
         }
 
         success {
