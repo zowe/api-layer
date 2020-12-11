@@ -49,8 +49,8 @@ class TransformApiDocServiceTest {
 
     @Test
     void testTransformApiDoc_whenThereIsNotApiDocMatch() {
+        ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC4", null);
         Exception exception = Assertions.assertThrows(UnexpectedTypeException.class, () -> {
-            ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC4", null);
             transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
         });
         Assertions.assertEquals("Response is not a Swagger or OpenAPI type object.", exception.getMessage());

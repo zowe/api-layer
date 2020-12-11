@@ -123,8 +123,9 @@ class InstanceRetrievalServiceTest {
                 String.class
             )).thenReturn(new ResponseEntity<>("{}", HttpStatus.OK));
 
+        String serviceId = CoreService.API_CATALOG.getServiceId();
         assertThrows(InstanceInitializationException.class, () -> {
-            instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
+            instanceRetrievalService.getInstanceInfo(serviceId);
         });
     }
 

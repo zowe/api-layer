@@ -120,7 +120,7 @@ class InstanceInitializeServiceTest {
         Exception exception = Assertions.assertThrows(RetryException.class, () -> {
             instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
         });
-        Assertions.assertEquals(exception.getMessage(), "ERROR");
+        Assertions.assertEquals("ERROR", exception.getMessage());
     }
 
     @Test
@@ -131,7 +131,7 @@ class InstanceInitializeServiceTest {
         Exception exception = Assertions.assertThrows(RetryException.class, () -> {
             instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
         });
-        Assertions.assertEquals(exception.getMessage(), "ERROR");
+        Assertions.assertEquals("ERROR", exception.getMessage());
     }
 
     private Map<String, InstanceInfo> createInstances() {
