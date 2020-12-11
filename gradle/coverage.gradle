@@ -70,5 +70,5 @@ task jacocoFullReport(type: JacocoReport) {
 }
 
 task coverage() {
-    dependsOn jacocoFullReport, ":api-catalog-ui:javaScriptCoverage"
+    dependsOn jacocoFullReport // temporarily disabled, ":api-catalog-ui:javaScriptCoverage"
 }
