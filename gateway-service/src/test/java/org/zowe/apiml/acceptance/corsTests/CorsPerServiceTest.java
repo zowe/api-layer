@@ -11,7 +11,9 @@ package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
+
 import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.annotation.DirtiesContext;
@@ -49,7 +51,7 @@ import static org.mockito.Mockito.*;
 @AcceptanceTest
 @ActiveProfiles("test")
 @DirtiesContext
-@Ignore
+@Disabled
 @DisabledIf(
     expression = "${environment.older}",
     loadContext = true
