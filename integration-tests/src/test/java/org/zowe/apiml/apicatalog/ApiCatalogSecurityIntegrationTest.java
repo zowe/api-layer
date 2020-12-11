@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.springframework.http.HttpHeaders;
-import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -92,20 +91,6 @@ public class ApiCatalogSecurityIntegrationTest {
                 CATALOG_SERVICE_ID, endpoint))
         .then()
             .statusCode(is(SC_OK));
-    }
-
-    @Test
-    public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
-        String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
-
-        given()
-            .cookie(COOKIE, token)
-        .when()
-            .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
-                CATALOG_SERVICE_ID, endpoint))
-        .then()
-            .statusCode(is(SC_OK));
-
     }
 
     @Test

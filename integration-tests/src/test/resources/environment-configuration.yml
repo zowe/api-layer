@@ -1,12 +1,12 @@
 credentials:
     # Mainframe credentials are required - see /integration-tests/README.md for instructions
-    user: user
-    password: user
+    user: USER
+    password: validPassword
 gatewayServiceConfiguration:
     scheme: https
     host: localhost
     port: 10010
-    internalPorts: 10010,10017
+    internalPorts: 10017
     externalPort: 10010
     instances: 1
 discoveryServiceConfiguration:
@@ -33,3 +33,5 @@ zosmfServiceConfiguration:
     host: river.zowe.org
     port: 10443
     serviceId: zosmf
+auxiliaryUserList:
+    value: USER1,password;USER2,password

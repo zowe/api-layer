@@ -152,6 +152,7 @@ class IntegratedZaasClientTest {
             .when()
             .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGOUT)
             .then()
+            .body(is("Invalid token provided"))
             .statusCode(is(SC_BAD_REQUEST));
     }
 
@@ -163,6 +164,7 @@ class IntegratedZaasClientTest {
             .when()
             .post(ZAAS_CLIENT_URI + LOGOUT)
             .then()
+            .body(is("Invalid token provided"))
             .statusCode(is(SC_BAD_REQUEST));
     }
 

@@ -73,7 +73,7 @@ properties(opts)
 
 pipeline {
     agent {
-        label 'ibm-jenkins-slave-nvm'
+        label 'zowe-jenkins-agent'
     }
 
     options {
@@ -97,7 +97,14 @@ pipeline {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
                         withSonarQubeEnv('sonarcloud-server') {
-                            sh './gradlew --info --scan build coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017'
+
+                            sh './gradlew --info --scan build coverage sonarqube \
+                            -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true \
+                            -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} \
+                            -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword \
+                            -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017 \
+                            -DauxiliaryUserList.value="USER1,validPassword;USER2,validPassword"'
+
                         }
                     }
                 }
@@ -149,8 +156,8 @@ pipeline {
                        reportFiles          : 'index.html',
                        reportName           : "Java Coverage Report"
                    ])
-                    publishHTML(target: [
-                        allowMissing         : false,
+                   publishHTML(target: [
+                        allowMissing         : true,
                         alwaysLinkToLastBuild: false,
                         keepAll              : true,
                         reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
@@ -200,7 +207,7 @@ pipeline {
         stage('Publish UI test results') {
             steps {
                 publishHTML(target: [
-                    allowMissing         : false,
+                    allowMissing         : true,
                     alwaysLinkToLastBuild: false,
                     keepAll              : true,
                     reportDir            : 'api-catalog-ui/frontend/test-results',

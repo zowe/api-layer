@@ -60,11 +60,11 @@ public class CompoundAuthProvider implements AuthenticationProvider {
         return authProvidersMap.get(loginProvider.getAuthProviderBeanName());
     }
 
-    public String getLoginAuthProviderName() {
+    public synchronized String getLoginAuthProviderName() {
         return loginProvider.getValue();
     }
 
-    public void setLoginAuthProvider(String provider) {
+    public synchronized void setLoginAuthProvider(String provider) {
         if ((environment != null) && Arrays.asList(environment.getActiveProfiles()).contains("diag")) {
             LoginProvider newProvider = LoginProvider.getLoginProvider(provider);
             if (newProvider == null) {
