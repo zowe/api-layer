@@ -32,12 +32,13 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.config.service.security.MockedSecurityContext;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
-import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
@@ -94,7 +95,13 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         RequestContext.testSetCurrentContext(null);
         serviceAuthenticationService.evictCacheAllService();
 
-        serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(discoveryClient, authenticationSchemeFactory, authenticationService, cacheManager, new CacheUtils());
+        serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(
+                discoveryClient,
+                new EurekaMetadataParser(),
+                authenticationSchemeFactory,
+                authenticationService,
+                cacheManager,
+                new CacheUtils());
     }
 
     @AfterEach

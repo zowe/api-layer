@@ -49,7 +49,7 @@ public class APIDocRetrievalService {
 
     /**
      * Retrieves the available API versions for a registered service.
-     * Takes the versions available in each 'apiml.service.apiInfo' element.
+     * Takes the versions available in each 'apiml.serviceapiInfo' element.
      *
      * @param serviceId the unique service ID
      * @return a list of API version strings

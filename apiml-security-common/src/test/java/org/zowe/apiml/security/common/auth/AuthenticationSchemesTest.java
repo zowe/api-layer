@@ -9,6 +9,8 @@ package org.zowe.apiml.security.common.auth;/*
  */
 
 import org.junit.Test;
+import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.auth.AuthenticationSchemes;
 
 import static org.junit.Assert.*;
 

@@ -11,6 +11,8 @@ package org.zowe.apiml.security.common.auth;/*
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -33,7 +35,6 @@ public class AuthenticationTest {
 
         a = new Authentication(null, "");
         assertFalse(a.isEmpty());
-
 
         a = new Authentication(null, null);
         assertTrue(a.isEmpty());

@@ -10,7 +10,6 @@
 package org.zowe.apiml.discovery.staticdef;
 
 import com.netflix.appinfo.InstanceInfo;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.message.core.Message;
@@ -25,8 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 class ServiceDefinitionProcessorTest {
@@ -655,7 +655,7 @@ class ServiceDefinitionProcessorTest {
 
         Map<String, String> md = sod.getMetadata();
 
-        assertEquals(13, md.size());
+        assertEquals(15, md.size());
 
         assertEquals(CURRENT_VERSION, md.get(VERSION));
         assertEquals("testServiceTitle", md.get(SERVICE_TITLE));
@@ -666,8 +666,10 @@ class ServiceDefinitionProcessorTest {
         assertEquals("api/v2", md.get("apiml.routes.api-v2.gatewayUrl"));
 
         // api info
+        assertEquals("apiId1",md.get("apiml.apiInfo.api-v1.apiId"));
         assertEquals("api/v1", md.get("apiml.apiInfo.api-v1.gatewayUrl"));
         assertEquals("https://localhost:10012/discoverableclient/api-doc", md.get("apiml.apiInfo.api-v1.swaggerUrl"));
+        assertEquals("apiId2",md.get("apiml.apiInfo.api-v2.apiId"));
         assertEquals("api/v2", md.get("apiml.apiInfo.api-v2.gatewayUrl"));
         assertEquals("https://localhost:10012/discoverableclient2/api-doc", md.get("apiml.apiInfo.api-v2.swaggerUrl"));
 

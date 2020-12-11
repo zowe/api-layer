@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
@@ -21,12 +22,19 @@ import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationServi
 import org.zowe.apiml.util.CacheUtils;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 @TestConfiguration
 public class MockedSecurityContext {
+
     @Bean
     public EurekaClient getDiscoveryClient() {
         return mock(EurekaClient.class);
+    }
+
+    @Bean
+    public EurekaMetadataParser getEurekaMetadataParser() {
+        return spy(new EurekaMetadataParser());
     }
 
     @Bean
@@ -41,6 +49,14 @@ public class MockedSecurityContext {
 
     @Bean
     public ServiceAuthenticationService getServiceAuthenticationService(@Autowired CacheManager cacheManager, CacheUtils cacheUtils) {
-        return new ServiceAuthenticationServiceImpl(getDiscoveryClient(), getAuthenticationSchemeFactory(), getAuthenticationService(), cacheManager, cacheUtils);
+        return new ServiceAuthenticationServiceImpl(
+                getDiscoveryClient(),
+                getEurekaMetadataParser(),
+                getAuthenticationSchemeFactory(),
+                getAuthenticationService(),
+                cacheManager,
+                cacheUtils
+        );
     }
+
 }
