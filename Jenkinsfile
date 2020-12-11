@@ -114,19 +114,7 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                timeout(time: 20, unit: 'MINUTES') {
-                    withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
-                        sh '''
-                        tail -f integration-instances.log &
-                        npm run api-layer-ci > integration-instances.log &
-                        ./gradlew --info --scan runCITests runCITestsInternalPort -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
-                        '''
-                    }
-                }
-            }
-        }
+
 
         stage('Publish coverage reports') {
             steps {
