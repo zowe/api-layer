@@ -115,18 +115,76 @@ pipeline {
             }
         }
 
-        stage('Store artifacts') {
+        stage('Publish coverage reports') {
             steps {
-                archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'build/libs/*.jar', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar', allowEmptyArchive: true
+                publishHTML(target: [
+                    allowMissing         : false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll              : true,
+                    reportDir            : 'build/reports/jacoco/jacocoFullReport/html',
+                    reportFiles          : 'index.html',
+                    reportName           : "Java Coverage Report"
+                ])
+                    publishHTML(target: [
+                        allowMissing         : false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll              : true,
+                        reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
+                        reportFiles          : 'index.html',
+                        reportName           : "UI JavaScript Test Coverage"
+                    ])
             }
         }
 
+        stage('Package api-layer source code') {
+            steps {
+                sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
+            }
+        }
+
+        stage('Publish snapshot version to Artifactory for master') {
+            when {
+                expression {
+                    return BRANCH_NAME.equals(MASTER_BRANCH);
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh '''
+                    ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
+                    '''
+                }
+            }
+        }
+
+        stage('Publish snapshot version to Artifactory for Pull Request') {
+            when {
+                expression {
+                    return BRANCH_NAME.contains("PR-") && params.PUBLISH_PR_ARTIFACTS;
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh '''
+                    sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
+                    ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD  -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD -PpullRequest=$env.BRANCH_NAME
+                    '''
+                }
+            }
+        }
+
+        stage('Publish UI test results') {
+            steps {
+                publishHTML(target: [
+                    allowMissing         : false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll              : true,
+                    reportDir            : 'api-catalog-ui/frontend/test-results',
+                    reportFiles          : 'test-report-unit.html',
+                    reportName           : "UI Unit Test Results"
+                ])
+            }
+        }
     }
 
     post {
