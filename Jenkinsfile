@@ -107,7 +107,7 @@ pipeline {
         stage('Run') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
-                     sh 'npm run api-layer &'
+                     sh 'npm run api-layer-ci &'
                 }
             }
         }
