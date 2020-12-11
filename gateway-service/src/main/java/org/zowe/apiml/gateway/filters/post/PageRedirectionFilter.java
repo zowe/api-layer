@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters.post;
 import com.netflix.util.Pair;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
@@ -34,12 +35,15 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * <li>The url can be matched to gateway url</li>
  * </ul>
  */
+@RequiredArgsConstructor
 public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesUser {
 
-    private final DiscoveryClient discovery;
-    private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
-    private final TransformService transformService;
     private static final int MAX_ENTRIES = 1000;
+
+    private final DiscoveryClient discovery;
+    private final TransformService transformService;
+
+    private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
 
     private final Map<String, String> routeTable = Collections.synchronizedMap(
         new LinkedHashMap<String, String>(MAX_ENTRIES + 1, .75F, true) {
@@ -49,11 +53,6 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
             }
         }
     );
-
-    public PageRedirectionFilter(DiscoveryClient discovery, TransformService transformService) {
-        this.discovery = discovery;
-        this.transformService = transformService;
-    }
 
     /**
      * @return true if status code is 3XX

@@ -26,13 +26,13 @@ import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.transform.TransformService;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
@@ -47,7 +47,7 @@ class ServicesInfoServiceTest {
 
     // Client test configuration
     private final static String CLIENT_SERVICE_ID = "testclient";
-    private final static String CLIENT_INSTANCE_ID = "testclient:10";
+    private final static String CLIENT_INSTANCE_ID = CLIENT_SERVICE_ID + ":";
     private final static String CLIENT_HOSTNAME = "client";
     private final static String CLIENT_IP = "192.168.0.1";
     private static final int CLIENT_PORT = 10;
@@ -116,14 +116,16 @@ class ServicesInfoServiceTest {
         assertEquals(CLIENT_AUTHENTICATION_APPLID, serviceInfo.getApiml().getAuthentication().get(0).getApplid());
         assertEquals(CLIENT_AUTHENTICATION_SSO, serviceInfo.getApiml().getAuthentication().get(0).supportsSso());
 
-        assertEquals(InstanceInfo.InstanceStatus.UP, serviceInfo.getInstances().get(CLIENT_INSTANCE_ID).getStatus());
-        assertEquals(CLIENT_HOSTNAME, serviceInfo.getInstances().get(CLIENT_INSTANCE_ID).getHostname());
-        assertEquals(CLIENT_IP, serviceInfo.getInstances().get(CLIENT_INSTANCE_ID).getIpAddr());
-        assertEquals(CLIENT_PORT, serviceInfo.getInstances().get(CLIENT_INSTANCE_ID).getPort());
-        assertEquals(CLIENT_SCHEME, serviceInfo.getInstances().get(CLIENT_INSTANCE_ID).getProtocol());
-        assertEquals(CLIENT_HOMEPAGE, serviceInfo.getInstances().get(CLIENT_INSTANCE_ID).getHomePageUrl());
-        assertEquals(CLIENT_HOMEPAGE + CLIENT_RELATIVE_HEALTH_URL, serviceInfo.getInstances().get(CLIENT_INSTANCE_ID).getHealthCheckUrl());
-        assertEquals(CLIENT_STATUS_URL, serviceInfo.getInstances().get(CLIENT_INSTANCE_ID).getStatusPageUrl());
+        String instanceId = serviceInfo.getInstances().entrySet().stream().iterator().next().getKey();
+        assertTrue(instanceId.contains(CLIENT_INSTANCE_ID));
+        assertEquals(InstanceInfo.InstanceStatus.UP, serviceInfo.getInstances().get(instanceId).getStatus());
+        assertEquals(CLIENT_HOSTNAME, serviceInfo.getInstances().get(instanceId).getHostname());
+        assertEquals(CLIENT_IP, serviceInfo.getInstances().get(instanceId).getIpAddr());
+        assertEquals(CLIENT_PORT, serviceInfo.getInstances().get(instanceId).getPort());
+        assertEquals(CLIENT_SCHEME, serviceInfo.getInstances().get(instanceId).getProtocol());
+        assertEquals(CLIENT_HOMEPAGE, serviceInfo.getInstances().get(instanceId).getHomePageUrl());
+        assertEquals(CLIENT_HOMEPAGE + CLIENT_RELATIVE_HEALTH_URL, serviceInfo.getInstances().get(instanceId).getHealthCheckUrl());
+        assertEquals(CLIENT_STATUS_URL, serviceInfo.getInstances().get(instanceId).getStatusPageUrl());
     }
 
     @Test
@@ -182,6 +184,7 @@ class ServicesInfoServiceTest {
         InstanceInfo instance3 = createBasicTestInstance(InstanceInfo.InstanceStatus.DOWN);
         InstanceInfo instance4 = createBasicTestInstance(InstanceInfo.InstanceStatus.OUT_OF_SERVICE);
         List<InstanceInfo> instances = Arrays.asList(instance1, instance2, instance3, instance4);
+
         when(eurekaClient.getApplication(CLIENT_SERVICE_ID)).thenReturn(new Application(CLIENT_SERVICE_ID, instances));
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
@@ -190,15 +193,64 @@ class ServicesInfoServiceTest {
         assertEquals(InstanceInfo.InstanceStatus.DOWN, serviceInfo.getStatus());
     }
 
+    @Test
+    // Not complete - should also try multiple API Ids
+    // Rename
+    void serviceDetailsAreUsedForInstanceWithHighestApiVersion() {
+        InstanceInfo instance1 = createMultipleApisInstance(1, Collections.singletonList("1.0.0"));
+        InstanceInfo instance2 = createMultipleApisInstance(2, Arrays.asList("0.0.0", "3.0.1"));
+        InstanceInfo instance3 = createMultipleApisInstance(3, Arrays.asList("1.1.0", "2.0.0", "1.0.99"));
+        List<InstanceInfo> instances = Arrays.asList(instance1, instance2, instance3);
+
+        when(eurekaClient.getApplication(CLIENT_SERVICE_ID)).thenReturn(new Application(CLIENT_SERVICE_ID, instances));
+
+        ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
+
+        assertEquals(CLIENT_SERVICE_ID, serviceInfo.getServiceId());
+        assertEquals("Client: 2", serviceInfo.getApiml().getService().getTitle());
+        assertEquals("Test client: 2", serviceInfo.getApiml().getService().getDescription());
+
+        assertEquals(4,serviceInfo.getApiml().getApiInfo().size());
+        assertThat(serviceInfo.getApiml().getApiInfo(), hasItem(hasProperty("version", is("1.0.0"))));
+    }
+
+    private InstanceInfo createMultipleApisInstance(int clientNumber, List<String> versions) {
+        Map<String, String> metadata = new HashMap<>();
+        ApiInfo apiInfo;
+
+        for (String version : versions) {
+            apiInfo = ApiInfo.builder()
+                    .apiId(CLIENT_API_ID)
+                    .version(version)
+                    .gatewayUrl("v" + version.replaceAll("\\.", "-"))
+                    .build();
+            metadata.putAll(EurekaMetadataParser.generateMetadata(CLIENT_SERVICE_ID, apiInfo));
+        }
+
+        metadata.put(SERVICE_TITLE, "Client: " + clientNumber);
+        metadata.put(SERVICE_DESCRIPTION, "Test client: " + clientNumber);
+
+        return createBasicTestInstance(metadata);
+    }
+
     private InstanceInfo createBasicTestInstance() {
-        return createBasicTestInstance(InstanceInfo.InstanceStatus.UP);
+        return createBasicTestInstance(InstanceInfo.InstanceStatus.UP, Collections.emptyMap());
+    }
+
+    private InstanceInfo createBasicTestInstance(Map<String, String> metadata) {
+        return createBasicTestInstance(InstanceInfo.InstanceStatus.UP, metadata);
     }
 
     private InstanceInfo createBasicTestInstance(InstanceInfo.InstanceStatus status) {
+        return createBasicTestInstance(status, Collections.emptyMap());
+    }
+
+    private InstanceInfo createBasicTestInstance(InstanceInfo.InstanceStatus status, Map<String, String> metadata) {
         return InstanceInfo.Builder.newBuilder()
                 .setAppName(CLIENT_SERVICE_ID)
-                .setInstanceId(CLIENT_INSTANCE_ID)
+                .setInstanceId(CLIENT_INSTANCE_ID + Math.random())
                 .setStatus(status)
+                .setMetadata(metadata)
                 .build();
     }
 
@@ -221,7 +273,7 @@ class ServicesInfoServiceTest {
 
         return InstanceInfo.Builder.newBuilder()
                 .setAppName(CLIENT_SERVICE_ID)
-                .setInstanceId(CLIENT_INSTANCE_ID)
+                .setInstanceId(CLIENT_INSTANCE_ID + Math.random())
                 .setHostName(CLIENT_HOSTNAME)
                 .setIPAddr(CLIENT_IP)
                 .enablePort(InstanceInfo.PortType.SECURE, true)

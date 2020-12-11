@@ -25,10 +25,7 @@ import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
@@ -155,28 +152,24 @@ public class ServicesInfoService {
     }
 
     private List<ServiceInfo.ApiInfoExtended> filterByIdAndMajorVersion(List<ServiceInfo.ApiInfoExtended> completeList) {
-        List<ServiceInfo.ApiInfoExtended> result = new ArrayList<>();
-        for (ServiceInfo.ApiInfoExtended newInfo : completeList) {
-            if (newInfo.getApiId() == null || newInfo.getVersion() == null) {
-                result.add(newInfo);
-                continue;
-            }
+        if (completeList.isEmpty()) return Collections.emptyList();
 
-            boolean add = true;
-            Version newVersion = getVersion(newInfo.getVersion());
-            for (ServiceInfo.ApiInfoExtended oldInfo : result) {
-                if (newInfo.getApiId().equals(oldInfo.getApiId())) {
-                    Version oldVersion = getVersion(oldInfo.getVersion());
-                    if (newVersion.getMajorVersion() == oldVersion.getMajorVersion()) {
-                        add = false;
-                        if (newVersion.compareTo(oldVersion) < 0) {
-                            result.add(newInfo);
-                            result.remove(oldInfo);
-                        }
-                    }
-                }
+        completeList.sort(Comparator
+                .comparing(ServiceInfo.ApiInfoExtended::getApiId)
+                .thenComparing(ServiceInfo.ApiInfoExtended::getVersion, Comparator.comparing(this::getVersion))
+        );
+
+        List<ServiceInfo.ApiInfoExtended> result = new ArrayList<>();
+        ServiceInfo.ApiInfoExtended lastApiInfo = null;
+        for (ServiceInfo.ApiInfoExtended apiInfo : completeList) {
+            if (lastApiInfo == null ||
+                    !apiInfo.getApiId().equals(lastApiInfo.getApiId()) ||
+                    (apiInfo.getApiId().equals(lastApiInfo.getApiId()) &&
+                            getVersion(apiInfo.getVersion()).getMajorVersion() > getVersion(lastApiInfo.getVersion()).getMajorVersion())
+            ) {
+                result.add(apiInfo);
+                lastApiInfo = apiInfo;
             }
-            if (add) result.add(newInfo);
         }
 
         return result;
