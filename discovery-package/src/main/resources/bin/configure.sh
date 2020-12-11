@@ -35,9 +35,9 @@ services:
       authentication:
           scheme: zosmf
       apiInfo:
-        - apiId: com.ibm.zosmf
+        - apiId: ibm.zosmf
           gatewayUrl: api/v1
-          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
+          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
       customMetadata:
           apiml:
               enableUrlEncodedCharacters: true
@@ -55,9 +55,9 @@ services:
       authentication:
           scheme: zosmf
       apiInfo:
-        - apiId: com.ibm.zosmf
+        - apiId: ibm.zosmf
           gatewayUrl: api/v1
-          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
+          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
           swaggerUrl: https://${ZOSMF_HOST}:${ZOSMF_PORT}/zosmf/api/docs
       customMetadata:
           apiml:
