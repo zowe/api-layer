@@ -37,6 +37,7 @@ public class VsamFile implements Closeable {
 
     public static final String VSAM_RECORD_ERROR_MESSAGE = "VsamRecordException occured: {}";
     public static final String RECORD_FOUND_MESSAGE = "Record found: {}";
+    public static final String RECORD_CANNOT_BE_NULL_MESSAGE = "Record cannot be null";
     public static final String UNSUPPORTED_ENCODING_MESSAGE = "Unsupported encoding: {}";
 
     private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^\\/\\/\\'.*'");
@@ -64,8 +65,6 @@ public class VsamFile implements Closeable {
             if (performWarmup) {
                 log.info("Warming up VSAM file");
                 warmUpVsamFile();
-            } else {
-
             }
 
         } catch (ZFileException | VsamRecordException e) {
@@ -121,7 +120,7 @@ public class VsamFile implements Closeable {
 
     public Optional<VsamRecord> create(VsamRecord record) {
         if (record == null) {
-            throw new IllegalArgumentException("Record cannot be null");
+            throw new IllegalArgumentException(RECORD_CANNOT_BE_NULL_MESSAGE);
         }
         try {
             boolean found = zfile.locate(record.getKeyBytes(),
@@ -145,7 +144,7 @@ public class VsamFile implements Closeable {
 
     public Optional<VsamRecord> read(VsamRecord record) {
         if (record == null) {
-            throw new IllegalArgumentException("Record cannot be null");
+            throw new IllegalArgumentException(RECORD_CANNOT_BE_NULL_MESSAGE);
         }
 
         try {
@@ -175,7 +174,7 @@ public class VsamFile implements Closeable {
 
     public Optional<VsamRecord> update(VsamRecord record) {
         if (record == null) {
-            throw new IllegalArgumentException("Record cannot be null");
+            throw new IllegalArgumentException(RECORD_CANNOT_BE_NULL_MESSAGE);
         }
 
         try {
@@ -209,7 +208,7 @@ public class VsamFile implements Closeable {
 
     public Optional<VsamRecord> delete(VsamRecord record) {
         if (record == null) {
-            throw new IllegalArgumentException("Record cannot be null");
+            throw new IllegalArgumentException(RECORD_CANNOT_BE_NULL_MESSAGE);
         }
 
         try {
