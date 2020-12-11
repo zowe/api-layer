@@ -120,8 +120,8 @@ pipeline {
                        reportFiles          : 'index.html',
                        reportName           : "Java Coverage Report"
                    ])
-                    publishHTML(target: [
-                        allowMissing         : false,
+                   publishHTML(target: [
+                        allowMissing         : true,
                         alwaysLinkToLastBuild: false,
                         keepAll              : true,
                         reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
@@ -168,11 +168,10 @@ pipeline {
             }
         }
 
-        // Temporarily disable because disabled JS coverage
-        /* stage('Publish UI test results') {
+        stage('Publish UI test results') {
             steps {
                 publishHTML(target: [
-                    allowMissing         : false,
+                    allowMissing         : true,
                     alwaysLinkToLastBuild: false,
                     keepAll              : true,
                     reportDir            : 'api-catalog-ui/frontend/test-results',
@@ -180,7 +179,7 @@ pipeline {
                     reportName           : "UI Unit Test Results"
                 ])
             }
-        } */
+        }
     }
 
     post {
