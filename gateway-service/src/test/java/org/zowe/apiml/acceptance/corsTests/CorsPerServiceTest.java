@@ -11,8 +11,6 @@ package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
-
-import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -69,9 +67,9 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
             .header(new Header("Origin", "https://foo.bar.org"))
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
-        .when()
+            .when()
             .options(basePath + serviceWithDefaultConfiguration.getPath())
-        .then()
+            .then()
             .statusCode(is(SC_FORBIDDEN))
             .header("Access-Control-Allow-Origin", is(nullValue()));
 
@@ -90,9 +88,9 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
             .header(new Header("Origin", "https://foo.bar.org"))
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
-        .when()
+            .when()
             .get(basePath + serviceWithDefaultConfiguration.getPath())
-        .then()
+            .then()
             .statusCode(is(SC_FORBIDDEN))
             .header("Access-Control-Allow-Origin", is(nullValue()));
 
@@ -112,9 +110,9 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
             .header(new Header("Origin", "https://foo.bar.org"))
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
-        .when()
+            .when()
             .options(basePath + serviceWithCustomConfiguration.getPath())
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is("https://foo.bar.org"))
             .header("Access-Control-Allow-Methods", is("GET,HEAD,POST,DELETE,PUT,OPTIONS"))
@@ -126,9 +124,9 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
         // Actual request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
-        .when()
+            .when()
             .post(basePath + serviceWithCustomConfiguration.getPath())
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
 
@@ -148,9 +146,9 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
         // Preflight request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
-        .when()
+            .when()
             .get(basePath + serviceWithCustomConfiguration.getPath())
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
 
