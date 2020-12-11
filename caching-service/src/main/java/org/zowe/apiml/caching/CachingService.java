@@ -11,10 +11,12 @@ package org.zowe.apiml.caching;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.retry.annotation.EnableRetry;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 
 @SpringBootApplication
 @EnableApiDiscovery
+@EnableRetry
 public class CachingService {
 
     public static void main(String[] args) {

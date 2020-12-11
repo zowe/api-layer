@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.config.VsamConfig;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,15 +30,14 @@ class VsamFileTest {
     @Test
     void hasValidFileName() {
         when(config.getFileName()).thenReturn("//'DATASET.NAME'");
-        assertThrows(UnsupportedOperationException.class, () -> new VsamFile(config));
+        assertThrows(UnsupportedOperationException.class, () -> new VsamFile(config, VsamConfig.VsamOptions.READ));
     }
 
     @Test
     void hasInvalidFileName() {
         when(config.getFileName()).thenReturn("wrong");
-        Exception exception = assertThrows(IllegalStateException.class,
-            () -> new VsamFile(config),
-            "Expected exception is not IllegalStateException");
-        assertEquals("VsamFile does not exist", exception.getMessage());
+        Exception exception = assertThrows(IllegalArgumentException.class,
+            () -> new VsamFile(config, VsamConfig.VsamOptions.READ),
+            "Expected exception is not IllegalArgumentException");
     }
 }
