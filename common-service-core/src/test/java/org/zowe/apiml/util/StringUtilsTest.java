@@ -99,7 +99,7 @@ public class StringUtilsTest {
             "      serviceUrl: /greeting/api-doc\n" +
             "\n" +
             "apiInfo:\n" +
-            "    - apiId: org.zowe.greeting\n" +
+            "    - apiId: zowe.apiml.greeting\n" +
             "      gatewayUrl: api/v1\n" +
             "      swaggerUrl: http://localhost:8080/helloworld/api-doc\n" +
             "\n" +

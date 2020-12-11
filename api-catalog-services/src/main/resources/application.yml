@@ -123,7 +123,7 @@ eureka:
                         serviceUrl: /apicatalog
 
                 apiInfo:
-                    - apiId: org.zowe.apicatalog
+                    - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
                       swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
