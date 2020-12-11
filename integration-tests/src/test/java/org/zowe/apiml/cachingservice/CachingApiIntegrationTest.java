@@ -12,7 +12,8 @@ package org.zowe.apiml.cachingservice;
 
 import io.restassured.RestAssured;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -47,7 +48,6 @@ class CachingApiIntegrationTest {
 
 
     @Test
-    @Disabled
     void givenMultipleConcurrentCalls_correctResponseInTheEnd() throws InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(8);
         AtomicInteger ai = new AtomicInteger(20);
