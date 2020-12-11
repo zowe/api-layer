@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PlatformReturnedHelperTest {
+class PlatformReturnedHelperTest {
 
     private static final Object OBJECT_RET = new Object();
     private static final String ERROR_MESSAGE = "error message";
