@@ -18,10 +18,8 @@ import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.constants.CoreService;
@@ -36,7 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ApiDocV3ServiceTest {
 
@@ -52,15 +51,12 @@ public class ApiDocV3ServiceTest {
     private GatewayClient gatewayClient;
     private ApiDocV3Service apiDocV3Service;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         GatewayConfigProperties gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
         apiDocV3Service = new ApiDocV3Service(gatewayClient);
     }
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void givenOpenApiValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
@@ -114,9 +110,10 @@ public class ApiDocV3ServiceTest {
         ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
         ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
-        exceptionRule.expect(UnexpectedTypeException.class);
-        exceptionRule.expectMessage("No swagger supplied");
-        apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+        Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
+            apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+        });
+        assertEquals("[No swagger supplied]", exception.getMessage());
     }
 
     @Test
@@ -125,9 +122,10 @@ public class ApiDocV3ServiceTest {
         ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
         ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
-        exceptionRule.expect(UnexpectedTypeException.class);
-        exceptionRule.expectMessage("attribute openapi is not of type `object`");
-        apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+        Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
+            apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+        });
+        assertEquals("[attribute openapi is not of type `object`]", exception.getMessage());
     }
 
     /**

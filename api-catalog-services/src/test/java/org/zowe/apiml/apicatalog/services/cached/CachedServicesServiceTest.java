@@ -12,8 +12,8 @@ package org.zowe.apiml.apicatalog.services.cached;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
@@ -24,7 +24,7 @@ public class CachedServicesServiceTest {
         CachedServicesService cachedServicesService = new CachedServicesService();
         cachedServicesService.clearAllServices();
         Applications services = cachedServicesService.getAllCachedServices();
-        Assert.assertNull(services);
+        Assertions.assertNull(services);
     }
 
     @Test
@@ -32,7 +32,7 @@ public class CachedServicesServiceTest {
         CachedServicesService cachedServicesService = new CachedServicesService();
         cachedServicesService.clearAllServices();
         Applications applications = cachedServicesService.getAllCachedServices();
-        Assert.assertNull(applications);
+        Assertions.assertNull(applications);
 
         InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.DOWN, null);
         Application application = new Application("service");
@@ -40,7 +40,7 @@ public class CachedServicesServiceTest {
         cachedServicesService.updateService("service", application);
 
         applications = cachedServicesService.getAllCachedServices();
-        Assert.assertNotNull(applications.getRegisteredApplications());
+        Assertions.assertNotNull(applications.getRegisteredApplications());
     }
 
     @Test
@@ -48,7 +48,7 @@ public class CachedServicesServiceTest {
         CachedServicesService cachedServicesService = new CachedServicesService();
         cachedServicesService.clearAllServices();
         Applications applications = cachedServicesService.getAllCachedServices();
-        Assert.assertNull(applications);
+        Assertions.assertNull(applications);
 
         InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.DOWN, null);
         Application application = new Application("service");
@@ -56,8 +56,8 @@ public class CachedServicesServiceTest {
         cachedServicesService.updateService("service", application);
 
         Application service = cachedServicesService.getService("service");
-        Assert.assertNotNull(service);
-        Assert.assertEquals("service", service.getName());
+        Assertions.assertNotNull(service);
+        Assertions.assertEquals("service", service.getName());
     }
 
     private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status,

@@ -13,10 +13,9 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV2Service;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV3Service;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
 
 import javax.validation.UnexpectedTypeException;
 import java.util.function.Function;
@@ -30,10 +29,7 @@ public class TransformApiDocServiceTest {
     private Function<String, AbstractApiDocService> beanApiDocFactory;
     private TransformApiDocService transformApiDocService;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void setup() {
         ApiDocV2Service apiDocV2Service = mock(ApiDocV2Service.class);
         ApiDocV3Service apiDocV3Service = mock(ApiDocV3Service.class);
@@ -53,11 +49,11 @@ public class TransformApiDocServiceTest {
 
     @Test
     public void testTransformApiDoc_whenThereIsNotApiDocMatch() {
-        exceptionRule.expect(UnexpectedTypeException.class);
-        exceptionRule.expectMessage("Response is not a Swagger or OpenAPI type object");
-
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC4", null);
-        transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
+        Exception exception = Assertions.assertThrows(UnexpectedTypeException.class, () -> {
+            ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC4", null);
+            transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
+        });
+        Assertions.assertEquals("Response is not a Swagger or OpenAPI type object.", exception.getMessage());
     }
 
     @Test

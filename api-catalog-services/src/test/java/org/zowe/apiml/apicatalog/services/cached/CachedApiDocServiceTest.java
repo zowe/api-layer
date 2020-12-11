@@ -9,12 +9,13 @@
  */
 package org.zowe.apiml.apicatalog.services.cached;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
@@ -26,10 +27,12 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class CachedApiDocServiceTest {
     private CachedApiDocService cachedApiDocService;
 
@@ -39,7 +42,7 @@ public class CachedApiDocServiceTest {
     @Mock
     TransformApiDocService transformApiDocService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         cachedApiDocService = new CachedApiDocService(apiDocRetrievalService, transformApiDocService);
         cachedApiDocService.resetCache();
@@ -60,8 +63,8 @@ public class CachedApiDocServiceTest {
 
         String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
 
-        Assert.assertNotNull(apiDoc);
-        Assert.assertEquals(expectedApiDoc, apiDoc);
+        assertNotNull(apiDoc);
+        assertEquals(expectedApiDoc, apiDoc);
     }
 
     @Test
@@ -81,8 +84,8 @@ public class CachedApiDocServiceTest {
 
         String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
 
-        Assert.assertNotNull(apiDoc);
-        Assert.assertEquals(expectedApiDoc, apiDoc);
+        assertNotNull(apiDoc);
+        assertEquals(expectedApiDoc, apiDoc);
 
         cachedApiDocService.updateApiDocForService(serviceId, version, updatedApiDoc);
 
@@ -95,8 +98,8 @@ public class CachedApiDocServiceTest {
 
         apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
 
-        Assert.assertNotNull(apiDoc);
-        Assert.assertEquals(updatedApiDoc, apiDoc);
+        assertNotNull(apiDoc);
+        assertEquals(updatedApiDoc, apiDoc);
     }
 
     @Test
@@ -118,7 +121,7 @@ public class CachedApiDocServiceTest {
         when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(expectedVersions);
 
         List<String> versions = cachedApiDocService.getApiVersionsForService(serviceId);
-        Assert.assertEquals(expectedVersions, versions);
+        assertEquals(expectedVersions, versions);
     }
 
     @Test
@@ -130,14 +133,14 @@ public class CachedApiDocServiceTest {
         when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(initialVersions);
 
         List<String> versions = cachedApiDocService.getApiVersionsForService(serviceId);
-        Assert.assertEquals(initialVersions, versions);
+        assertEquals(initialVersions, versions);
 
         cachedApiDocService.updateApiVersionsForService(serviceId, updatedVersions);
 
         when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(updatedVersions);
 
         versions = cachedApiDocService.getApiVersionsForService(serviceId);
-        Assert.assertEquals(updatedVersions, versions);
+        assertEquals(updatedVersions, versions);
     }
 
     @Test
@@ -161,7 +164,7 @@ public class CachedApiDocServiceTest {
         when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo)).thenReturn(expectedApiDoc);
 
         String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
-        Assert.assertEquals(expectedApiDoc, apiDoc);
+        assertEquals(expectedApiDoc, apiDoc);
     }
 
     @Test
@@ -176,7 +179,7 @@ public class CachedApiDocServiceTest {
         when(transformApiDocService.transformApiDoc(serviceId, initialApiDocInfo)).thenReturn(initialApiDoc);
 
         String apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
-        Assert.assertEquals(initialApiDoc, apiDoc);
+        assertEquals(initialApiDoc, apiDoc);
 
         cachedApiDocService.updateDefaultApiDocForService(serviceId, updatedApiDoc);
 
@@ -184,7 +187,7 @@ public class CachedApiDocServiceTest {
         when(transformApiDocService.transformApiDoc(serviceId, updatedApiDocInfo)).thenReturn(updatedApiDoc);
 
         apiDoc = cachedApiDocService.getDefaultApiDocForService(serviceId);
-        Assert.assertEquals(updatedApiDoc, apiDoc);
+        assertEquals(updatedApiDoc, apiDoc);
     }
 
     @Test

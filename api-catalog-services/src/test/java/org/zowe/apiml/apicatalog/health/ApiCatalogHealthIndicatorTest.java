@@ -10,7 +10,8 @@
 package org.zowe.apiml.apicatalog.health;
 
 import org.zowe.apiml.product.constants.CoreService;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
@@ -18,7 +19,6 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 import java.util.Collections;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +36,7 @@ public class ApiCatalogHealthIndicatorTest {
 
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
-        assertEquals(Status.UP, builder.build().getStatus());
+        Assertions.assertEquals(Status.UP, builder.build().getStatus());
     }
 
     @Test
@@ -45,6 +45,6 @@ public class ApiCatalogHealthIndicatorTest {
 
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
-        assertEquals(Status.DOWN, builder.build().getStatus());
+        Assertions.assertEquals(Status.DOWN, builder.build().getStatus());
     }
 }

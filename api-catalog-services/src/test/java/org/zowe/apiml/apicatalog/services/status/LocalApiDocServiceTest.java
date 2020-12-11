@@ -10,13 +10,13 @@
 package org.zowe.apiml.apicatalog.services.status;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
@@ -33,11 +33,13 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class LocalApiDocServiceTest {
     private static final String SERVICE_ID = "service";
     private static final String ZOSMF_ID = "ibmzosmf";
@@ -61,10 +63,7 @@ public class LocalApiDocServiceTest {
 
     private APIDocRetrievalService apiDocRetrievalService;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void setup() {
         GatewayClient gatewayClient = new GatewayClient(getProperties());
         apiDocRetrievalService = new APIDocRetrievalService(
@@ -141,10 +140,10 @@ public class LocalApiDocServiceTest {
 
     @Test
     public void testFailedRetrievalOfAPIDocWhenServiceNotFound() {
-        exceptionRule.expect(ApiDocNotFoundException.class);
-        exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + ".");
-
-        apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
+            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        });
+        assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
     }
 
     @Test
@@ -158,10 +157,10 @@ public class LocalApiDocServiceTest {
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
-        exceptionRule.expect(ApiDocNotFoundException.class);
-        exceptionRule.expectMessage("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.");
-
-        apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
+            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        });
+        assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
     }
 
     @Test
@@ -175,10 +174,10 @@ public class LocalApiDocServiceTest {
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
-        exceptionRule.expect(ApiDocNotFoundException.class);
-        exceptionRule.expectMessage("No API Documentation defined for service " + SERVICE_ID + ".");
-
-        apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
+            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        });
+        assertEquals("No API Documentation defined for service " + SERVICE_ID + ".", exception.getMessage());
     }
 
     @Test
@@ -383,10 +382,10 @@ public class LocalApiDocServiceTest {
     public void givenNoApiVersions_whenRetrieveVersions_thenThrowException() {
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
 
-        exceptionRule.expect(ApiVersionNotFoundException.class);
-        exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + ".");
-
-        apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
+        Exception exception = assertThrows(ApiVersionNotFoundException.class, () -> {
+            apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
+        });
+        assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
     }
 
     @Test
@@ -414,10 +413,10 @@ public class LocalApiDocServiceTest {
     public void givenNoApiInfo_whenRetrieveDefaultVersion_thenThrowException() {
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
 
-        exceptionRule.expect(ApiVersionNotFoundException.class);
-        exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + ".");
-
-        apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+        Exception exception = assertThrows(ApiVersionNotFoundException.class, () -> {
+            apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+        });
+        assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
     }
 
     private HttpEntity<Object> getObjectHttpEntity() {

@@ -11,7 +11,7 @@ package org.zowe.apiml.apicatalog.security;
 
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -19,7 +19,7 @@ import org.springframework.mock.web.MockHttpSession;
 
 import javax.servlet.http.Cookie;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ApiCatalogLogoutSuccessHandlerTest {
 

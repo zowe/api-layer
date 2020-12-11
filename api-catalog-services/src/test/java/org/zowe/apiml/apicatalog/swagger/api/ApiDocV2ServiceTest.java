@@ -14,12 +14,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.models.*;
 import org.hamcrest.collection.IsMapContaining;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.constants.CoreService;
@@ -35,9 +35,11 @@ import java.util.HashMap;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ApiDocV2ServiceTest {
 
     private static final String SERVICE_ID = "serviceId";
@@ -53,7 +55,7 @@ public class ApiDocV2ServiceTest {
     private GatewayConfigProperties gatewayConfigProperties;
     private GatewayClient gatewayClient;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
@@ -61,19 +63,16 @@ public class ApiDocV2ServiceTest {
 
     }
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
     public void givenSwaggerJsonNotAsExpectedFormat_whenConvertToSwagger_thenThrowIOException() throws IOException {
         String apiDocContent = "Failed content";
 
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, null);
 
-        exceptionRule.expect(UnexpectedTypeException.class);
-        exceptionRule.expectMessage("Response is not a Swagger type object.");
-
-        apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+        Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
+            apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+        });
+        assertEquals("Response is not a Swagger type object.", exception.getMessage());
     }
 
     @Test

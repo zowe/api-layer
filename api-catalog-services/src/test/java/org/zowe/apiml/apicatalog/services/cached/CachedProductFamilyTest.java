@@ -11,13 +11,14 @@ package org.zowe.apiml.apicatalog.services.cached;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -28,14 +29,18 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @SuppressWarnings({"squid:S2925"}) // replace with proper wait test library
-@RunWith(MockitoJUnitRunner.Silent.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class CachedProductFamilyTest {
     private final Integer cacheRefreshUpdateThresholdInMillis = 2000;
 
@@ -44,7 +49,7 @@ public class CachedProductFamilyTest {
     @Mock
     private final TransformService transformService = new TransformService(new GatewayClient());
 
-    @Before
+    @BeforeEach
     public void setup() {
         service = new CachedProductFamilyService(
             null,
@@ -92,7 +97,7 @@ public class CachedProductFamilyTest {
         Thread.sleep(10);
 
         Collection<APIContainer> containers = service.getRecentlyUpdatedContainers();
-        Assert.assertTrue(containers.isEmpty());
+        assertTrue(containers.isEmpty());
     }
 
     @Test
@@ -110,9 +115,11 @@ public class CachedProductFamilyTest {
         assertEquals("service2", containerService.getServiceId());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCreationOfContainerWithoutInstance() {
-        service.getContainer("demoapp", null);
+        assertThrows(NullPointerException.class, () -> {
+            service.getContainer("demoapp", null);
+        });
         assertEquals(0, service.getContainerCount());
         assertEquals(0, service.getAllContainers().size());
     }
@@ -139,7 +146,7 @@ public class CachedProductFamilyTest {
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
-        Assert.assertTrue(equals);
+        assertTrue(equals);
     }
 
     @Test
@@ -188,7 +195,7 @@ public class CachedProductFamilyTest {
         service.updateContainerFromInstance(serviceId, createApp(serviceId, catalogId,
             "1.0.1", newTitle));
 
-        Assert.assertEquals(container.getTitle(), newTitle);
+        assertEquals(container.getTitle(), newTitle);
     }
 
     @Test
@@ -242,7 +249,7 @@ public class CachedProductFamilyTest {
         service.addServiceToContainer("demoapp", instance2);
 
         APIContainer container = service.retrieveContainer("demoapp");
-        Assert.assertNotNull(container);
+        assertNotNull(container);
 
         service.calculateContainerServiceTotals(container);
         assertEquals("DOWN", container.getStatus());
@@ -272,7 +279,7 @@ public class CachedProductFamilyTest {
         service.addServiceToContainer("demoapp", instance2);
 
         APIContainer container = service.retrieveContainer("demoapp");
-        Assert.assertNotNull(container);
+        assertNotNull(container);
 
         service.calculateContainerServiceTotals(container);
         assertEquals("WARNING", container.getStatus());

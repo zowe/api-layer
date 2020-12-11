@@ -27,14 +27,18 @@ import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class AbstractApiDocServiceTest {
 
@@ -43,7 +47,7 @@ public class AbstractApiDocServiceTest {
 
     private AbstractApiDocService abstractApiDocService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         GatewayClient gatewayClient = new GatewayClient(getProperties());
         abstractApiDocService = new DummyApiDocService(gatewayClient);
