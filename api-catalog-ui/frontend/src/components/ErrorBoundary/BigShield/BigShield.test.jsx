@@ -15,7 +15,7 @@ const pauseErrorLogging = codeToRun => {
 
     console.error = logger;
 };
-describe('>>> BigShield component tests', () => {
+xdescribe('>>> BigShield component tests', () => {
     it('Should catches error and renders message', () => {
         const errorMessage = "An unexpected browser error occurredYou are seeing this page because an unexpected error occurred while rendering your page.The Dashboard is broken, you cannot navigate away from this page.Display the error stackDisplay the component stack\n" +
             "    in Child (at BigShield.test.jsx:27)\n" +
