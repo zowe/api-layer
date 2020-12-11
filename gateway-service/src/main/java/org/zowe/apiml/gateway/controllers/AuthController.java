@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -59,9 +60,14 @@ public class AuthController {
         final int index = uri.indexOf(endpoint);
 
         final String jwtToken = uri.substring(index + endpoint.length());
-        final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
+        try {
+            final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
+            response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
+        } catch (TokenNotValidException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        }
 
-        response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
+
     }
 
     @GetMapping(path = DISTRIBUTE_PATH)

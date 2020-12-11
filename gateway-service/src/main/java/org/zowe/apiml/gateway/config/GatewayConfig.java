@@ -13,6 +13,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.commons.util.IdUtils;
 import org.springframework.cloud.commons.util.InetUtils;
 import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
 import org.springframework.cloud.netflix.eureka.metadata.ManagementMetadata;
@@ -23,18 +24,18 @@ import org.springframework.cloud.netflix.zuul.filters.route.SimpleHostRoutingFil
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.PropertyResolver;
 import org.springframework.util.StringUtils;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.util.Map;
-
-import static org.springframework.cloud.commons.util.IdUtils.getDefaultInstanceId;
 
 @Configuration
 public class GatewayConfig {
 
 
     private ConfigurableEnvironment env;
+    private static final String SEPARATOR = ":";
 
     public GatewayConfig(ConfigurableEnvironment env) {
         this.env = env;
@@ -42,14 +43,14 @@ public class GatewayConfig {
 
     @Bean
     public GatewayConfigProperties getGatewayConfigProperties(@Value("${apiml.gateway.hostname}") String hostname,
-            @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
+                                                              @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
         return GatewayConfigProperties.builder().scheme(scheme).hostname(hostname + ":" + port).build();
     }
 
     @Bean
     @Autowired
     public SimpleHostRoutingFilter simpleHostRoutingFilter2(ProxyRequestHelper helper, ZuulProperties zuulProperties,
-            @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore) {
+                                                            @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore) {
         return new SimpleHostRoutingFilter(helper, zuulProperties, secureHttpClientWithoutKeystore);
     }
 
@@ -65,7 +66,7 @@ public class GatewayConfig {
 
         String serverContextPath = env.getProperty("server.servlet.context-path", "/");
         int serverPort = Integer
-            .parseInt(env.getProperty("eureka.instance.port", env.getProperty("port", "8080")));
+            .parseInt(env.getProperty("server.internal.port", env.getProperty("port", "8080")));
 
         Integer managementPort = env.getProperty("management.server.port", Integer.class);
 
@@ -73,9 +74,9 @@ public class GatewayConfig {
             .getProperty("management.server.servlet.context-path");
 
         EurekaInstanceConfigBean instance = new EurekaInstanceConfigBean(inetUtils);
-
         instance.setNonSecurePort(serverPort);
-        instance.setInstanceId(getDefaultInstanceId(env));
+        instance.setInstanceId(getInstanceId(env));
+
         instance.setPreferIpAddress(preferIpAddress);
         instance.setSecurePortEnabled(isSecurePortEnabled);
         if (StringUtils.hasText(ipAddress)) {
@@ -117,5 +118,16 @@ public class GatewayConfig {
 
     private String getProperty(String property) {
         return this.env.containsProperty(property) ? this.env.getProperty(property) : "";
+    }
+
+    public static String getInstanceId(PropertyResolver resolver) {
+        String hostname = resolver.getProperty("spring.cloud.client.hostname");
+        String appName = resolver.getProperty("spring.application.name");
+
+        String namePart = IdUtils.combineParts(hostname, SEPARATOR, appName);
+
+        String indexPart = resolver.getProperty("server.internal.port");
+
+        return IdUtils.combineParts(namePart, SEPARATOR, indexPart);
     }
 }

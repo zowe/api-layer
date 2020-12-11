@@ -56,7 +56,7 @@ jar {
 
 test.enabled = false
 
-apply plugin : 'java'
+apply plugin: 'java'
 
 test {
     testLogging.showStandardStreams = true
@@ -158,7 +158,8 @@ task runAllIntegrationTestsNormal(type: Test) {
             'EnvironmentCheck',
             'AdditionalLocalTest',
             'NotForMainframeTest',
-            'AuthenticationTest'
+            'zOSMFAuthTest',
+            'SAFAuthTest'
         )
 
     }
@@ -170,11 +171,12 @@ task runAllIntegrationTests(type: Test) {
 
     dependsOn startUpCheck, runAllIntegrationTestsNormal
     tasks.findByName('runAllIntegrationTestsNormal').mustRunAfter 'startUpCheck'
-
+    String itags = System.getProperty("includeTags") ?
+        System.getProperty("includeTags") : 'zOSMFAuthTest'
     systemProperties System.properties
     useJUnitPlatform {
         includeTags(
-            'AuthenticationTest'
+            itags
         )
     }
     outputs.upToDateWhen { false }
@@ -219,7 +221,8 @@ task runCITests(type: Test) {
             'EnvironmentCheck',
             'SlowTests',
             'AdditionalLocalTest',
-            'MainframeDependentTests'
+            'MainframeDependentTests',
+            'SAFAuthTest'
         )
     }
 }
@@ -237,7 +240,8 @@ task runCITestsInternalPort(type: Test) {
             'EnvironmentCheck',
             'SlowTests',
             'AdditionalLocalTest',
-            'MainframeDependentTests'
+            'MainframeDependentTests',
+            'SAFAuthTest'
         )
     }
 }
