@@ -18,7 +18,7 @@ public class MockPlatformClassFactory implements PlatformClassFactory {
 
     @Override
     public Class<?> getPlatformReturnedClass() throws ClassNotFoundException {
-        return Class.forName("org.zowe.apiml.gateway.security.login.saf.PlatformReturned");
+        return Class.forName("org.zowe.apiml.security.common.auth.saf.PlatformReturned");
     }
 
     @Override
