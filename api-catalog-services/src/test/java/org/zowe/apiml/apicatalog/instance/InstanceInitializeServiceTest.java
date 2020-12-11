@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @ExtendWith(MockitoExtension.class)
-public class InstanceInitializeServiceTest {
+class InstanceInitializeServiceTest {
 
     @Mock
     private CachedServicesService cachedServicesService;
@@ -55,7 +55,7 @@ public class InstanceInitializeServiceTest {
     private InstanceInitializeService instanceInitializeService;
 
     @Test
-    public void testRetrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
+    void testRetrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
         Map<String, InstanceInfo> instanceInfoMap = createInstances();
 
         String catalogId = CoreService.API_CATALOG.getServiceId();
@@ -102,7 +102,7 @@ public class InstanceInitializeServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenCatalogNotFound() throws CannotRegisterServiceException {
+    void shouldThrowExceptionWhenCatalogNotFound() throws CannotRegisterServiceException {
         String catalogId = CoreService.API_CATALOG.getServiceId();
         when(instanceRetrievalService.getInstanceInfo(catalogId)).thenReturn(null);
 
@@ -113,7 +113,7 @@ public class InstanceInitializeServiceTest {
     }
 
     @Test
-    public void shouldThrowRetryExceptionOnInstanceInitializationException() throws CannotRegisterServiceException {
+    void shouldThrowRetryExceptionOnInstanceInitializationException() throws CannotRegisterServiceException {
         String catalogId = CoreService.API_CATALOG.getServiceId();
         when(instanceRetrievalService.getInstanceInfo(catalogId)).thenThrow(new InstanceInitializationException("ERROR"));
 
@@ -124,7 +124,7 @@ public class InstanceInitializeServiceTest {
     }
 
     @Test
-    public void shouldThrowRetryExceptionOnGatewayNotAvailableException() throws CannotRegisterServiceException {
+    void shouldThrowRetryExceptionOnGatewayNotAvailableException() throws CannotRegisterServiceException {
         String catalogId = CoreService.API_CATALOG.getServiceId();
         when(instanceRetrievalService.getInstanceInfo(catalogId)).thenThrow(new GatewayNotAvailableException("ERROR"));
 

@@ -22,7 +22,7 @@ import java.util.Map;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SubstituteSwaggerGeneratorTest {
+class SubstituteSwaggerGeneratorTest {
     private static final String GATEWAY_SCHEME = "https";
     private static final String GATEWAY_HOST = "localhost:8080";
     private static final String DOC_URL = "https://doc.ca.com/api";
@@ -32,7 +32,7 @@ public class SubstituteSwaggerGeneratorTest {
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     @Test
-    public void testParseApiInfo() {
+    void testParseApiInfo() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "api/v1");
         metadata.put(API_INFO + ".1." + API_INFO_DOCUMENTATION_URL, DOC_URL);
@@ -48,7 +48,7 @@ public class SubstituteSwaggerGeneratorTest {
     }
 
     @Test
-    public void testParseApiInfoWithGatewayUrlSlashes() {
+    void testParseApiInfoWithGatewayUrlSlashes() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "/api/v1/");
         metadata.put(API_INFO + ".1." + API_INFO_DOCUMENTATION_URL, DOC_URL);

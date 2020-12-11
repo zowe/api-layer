@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ApiDocV2ServiceTest {
+class ApiDocV2ServiceTest {
 
     private static final String SERVICE_ID = "serviceId";
     private static final String SWAGGER_LOCATION_LINK = "[Swagger/OpenAPI JSON Document]";
@@ -56,7 +56,7 @@ public class ApiDocV2ServiceTest {
     private GatewayClient gatewayClient;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
         apiDocV2Service = new ApiDocV2Service(gatewayClient);
@@ -64,7 +64,7 @@ public class ApiDocV2ServiceTest {
     }
 
     @Test
-    public void givenSwaggerJsonNotAsExpectedFormat_whenConvertToSwagger_thenThrowIOException() throws IOException {
+    void givenSwaggerJsonNotAsExpectedFormat_whenConvertToSwagger_thenThrowIOException() throws IOException {
         String apiDocContent = "Failed content";
 
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, null);
@@ -76,7 +76,7 @@ public class ApiDocV2ServiceTest {
     }
 
     @Test
-    public void givenSwaggerValidJson_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
+    void givenSwaggerValidJson_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -124,7 +124,7 @@ public class ApiDocV2ServiceTest {
     }
 
     @Test
-    public void givenApiInfoNullAndBasePathAsNotRoot_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
+    void givenApiInfoNullAndBasePathAsNotRoot_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -146,7 +146,7 @@ public class ApiDocV2ServiceTest {
     }
 
     @Test
-    public void givenApiInfoNullAndBasePathAsRoot_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
+    void givenApiInfoNullAndBasePathAsRoot_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
         Swagger dummySwaggerObject = getDummySwaggerObject("/", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -168,7 +168,7 @@ public class ApiDocV2ServiceTest {
     }
 
     @Test
-    public void givenApimlHiddenTag_whenApiDocTransform_thenShouldBeSameDescriptionAndPaths() throws IOException {
+    void givenApimlHiddenTag_whenApiDocTransform_thenShouldBeSameDescriptionAndPaths() throws IOException {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", true);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -193,7 +193,7 @@ public class ApiDocV2ServiceTest {
     }
 
     @Test
-    public void givenMultipleRoutedService_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
+    void givenMultipleRoutedService_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -242,7 +242,7 @@ public class ApiDocV2ServiceTest {
     }
 
     @Test
-    public void givenServiceUrlAsRoot_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
+    void givenServiceUrlAsRoot_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 

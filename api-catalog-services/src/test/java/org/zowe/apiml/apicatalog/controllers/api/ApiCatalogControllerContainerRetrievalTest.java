@@ -31,13 +31,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {ApiCatalogController.class}, secure = false)
-public class ApiCatalogControllerContainerRetrievalTest {
+class ApiCatalogControllerContainerRetrievalTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    public void getContainers() throws Exception {
+    void getContainers() throws Exception {
         this.mockMvc.perform(get("/containers"))
             .andExpect(status().is5xxServerError())
             .andExpect(jsonPath("$.messages[?(@.messageNumber == 'ZWEAC104E')].messageContent",

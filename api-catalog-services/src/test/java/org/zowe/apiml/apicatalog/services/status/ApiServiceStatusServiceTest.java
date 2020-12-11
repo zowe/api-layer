@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ApiServiceStatusServiceTest {
+class ApiServiceStatusServiceTest {
 
     @Mock
     private CachedProductFamilyService cachedProductFamilyService;
@@ -60,21 +60,21 @@ public class ApiServiceStatusServiceTest {
     private APIServiceStatusService apiServiceStatusService;
 
     @Test
-    public void getCachedApplicationState() {
+    void getCachedApplicationState() {
         when(cachedServicesService.getAllCachedServices()).thenReturn(new Applications());
         ResponseEntity<Applications> responseEntity = apiServiceStatusService.getCachedApplicationStateResponse();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
-    public void addFirstContainer() {
+    void addFirstContainer() {
         when(cachedServicesService.getAllCachedServices()).thenReturn(new Applications());
         ResponseEntity<Applications> responseEntity = apiServiceStatusService.getCachedApplicationStateResponse();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
-    public void testGetContainerStatusAsEvents() {
+    void testGetContainerStatusAsEvents() {
         List<APIContainer> containers = new ArrayList<>(createContainers());
         when(cachedProductFamilyService.getAllContainers()).thenReturn(containers);
         doNothing().when(this.cachedProductFamilyService).calculateContainerServiceTotals(any(APIContainer.class));
@@ -102,7 +102,7 @@ public class ApiServiceStatusServiceTest {
     }
 
     @Test
-    public void testGetCachedApiDocInfoForService() {
+    void testGetCachedApiDocInfoForService() {
         String apiDoc = "this is the api doc";
         when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
@@ -112,7 +112,7 @@ public class ApiServiceStatusServiceTest {
     }
 
     @Test
-    public void testGetCachedApiDiffForService() {
+    void testGetCachedApiDiffForService() {
         String apiDoc = "{}";
         when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
         OpenApiCompareProducer actualProducer = new OpenApiCompareProducer();
@@ -123,7 +123,7 @@ public class ApiServiceStatusServiceTest {
     }
 
     @Test
-    public void givenInvalidAPIs_whenDifferenceIsProduced_thenTheProperExceptionIsRaised() {
+    void givenInvalidAPIs_whenDifferenceIsProduced_thenTheProperExceptionIsRaised() {
         when(openApiCompareProducer.fromContents(anyString(), anyString())).thenThrow(new NullPointerException());
         assertThrows(ApiDiffNotAvailableException.class, () -> {
             apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
@@ -131,7 +131,7 @@ public class ApiServiceStatusServiceTest {
     }
 
     @Test
-    public void testGetRecentlyChangedEvents() {
+    void testGetRecentlyChangedEvents() {
         List<APIContainer> containers = createContainers();
         when(cachedProductFamilyService.getRecentlyUpdatedContainers()).thenReturn(containers);
         doNothing().when(this.cachedProductFamilyService).calculateContainerServiceTotals(any(APIContainer.class));

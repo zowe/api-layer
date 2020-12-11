@@ -41,7 +41,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @SuppressWarnings({"squid:S2925"}) // replace with proper wait test library
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class CachedProductFamilyTest {
+class CachedProductFamilyTest {
     private final Integer cacheRefreshUpdateThresholdInMillis = 2000;
 
     private CachedProductFamilyService service;
@@ -50,7 +50,7 @@ public class CachedProductFamilyTest {
     private final TransformService transformService = new TransformService(new GatewayClient());
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         service = new CachedProductFamilyService(
             null,
             transformService,
@@ -58,7 +58,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testRetrievalOfRecentlyUpdatedContainers() {
+    void testRetrievalOfRecentlyUpdatedContainers() {
         service.getContainer("demoapp", createApp("service1", "demoapp"));
         service.getContainer("demoapp2", createApp("service2", "demoapp2"));
 
@@ -67,7 +67,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
+    void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
         // To speed up the test, create instance which consider even 5 milliseconds as old.
         service = new CachedProductFamilyService(
             null,
@@ -85,7 +85,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
+    void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
         // To speed up the test, create instance which consider even 5 milliseconds as old.
         service = new CachedProductFamilyService(
             null,
@@ -101,7 +101,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testRetrievalOfContainerServices() {
+    void testRetrievalOfContainerServices() {
         InstanceInfo instance1 = createApp("service1", "demoapp");
         service.getContainer("demoapp", instance1);
 
@@ -116,7 +116,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testCreationOfContainerWithoutInstance() {
+    void testCreationOfContainerWithoutInstance() {
         assertThrows(NullPointerException.class, () -> {
             service.getContainer("demoapp", null);
         });
@@ -125,7 +125,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testGetMultipleContainersForASingleService() {
+    void testGetMultipleContainersForASingleService() {
         InstanceInfo instance = createApp("service1", "demoapp");
         service.getContainer("demoapp1", instance);
         service.getContainer("demoapp2", instance);
@@ -137,7 +137,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testCallCreationOfContainerThatAlreadyExistsButNothingHasChangedSoNoUpdate() {
+    void testCallCreationOfContainerThatAlreadyExistsButNothingHasChangedSoNoUpdate() {
         InstanceInfo instance = createApp("service1", "demoapp");
         APIContainer originalContainer = service.getContainer("demoapp", instance);
         Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
@@ -150,7 +150,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testCallCreationOfContainerThatAlreadyExistsInstanceInfoHasChangedSoUpdateLastChangeTime() throws InterruptedException {
+    void testCallCreationOfContainerThatAlreadyExistsInstanceInfoHasChangedSoUpdateLastChangeTime() throws InterruptedException {
         APIContainer originalContainer = service.getContainer("demoapp", createApp("service", "demoapp"));
         Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
 
@@ -184,7 +184,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void givenInstanceIsIsInContainer_WhenNewVersionIsProvided_ThenContainerMetadataIsUpdated() {
+    void givenInstanceIsIsInContainer_WhenNewVersionIsProvided_ThenContainerMetadataIsUpdated() {
         // Create the initial container
         String serviceId = "apptoupdate",
             catalogId = "demoapp";
@@ -199,7 +199,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testCalculationOfContainerTotalsWithAllServicesUp() {
+    void testCalculationOfContainerTotalsWithAllServicesUp() {
         CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
 
         InstanceInfo instance1 = createApp("service", "demoapp");
@@ -228,7 +228,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testCalculationOfContainerTotalsWithAllServicesDown() {
+    void testCalculationOfContainerTotalsWithAllServicesDown() {
         CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
 
         InstanceInfo instance1 = createApp("service1", "demoapp", InstanceInfo.InstanceStatus.DOWN);
@@ -258,7 +258,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testCalculationOfContainerTotalsWithSomeServicesDown() {
+    void testCalculationOfContainerTotalsWithSomeServicesDown() {
         CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
 
         InstanceInfo instance1 = createApp("service1", "demoapp", InstanceInfo.InstanceStatus.UP);
@@ -288,7 +288,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew()
+    void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew()
         throws URLTransformationException {
 
         HashMap<String, String> metadata = new HashMap<>();
@@ -326,7 +326,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void givenInstanceIsInTheCache_whenCallSaveContainerFromInstance_thenUpdate()
+    void givenInstanceIsInTheCache_whenCallSaveContainerFromInstance_thenUpdate()
         throws InterruptedException, URLTransformationException {
 
         HashMap<String, String> metadata = new HashMap<>();

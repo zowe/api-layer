@@ -22,14 +22,14 @@ import java.util.Collections;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ApiCatalogHealthIndicatorTest {
+class ApiCatalogHealthIndicatorTest {
 
     private final DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
     private final ApiCatalogHealthIndicator apiCatalogHealthIndicator = new ApiCatalogHealthIndicator(discoveryClient);
     private final Health.Builder builder = new Health.Builder();
 
     @Test
-    public void testStatusIsUpWhenGatewayIsAvailable() {
+    void testStatusIsUpWhenGatewayIsAvailable() {
         when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
             Collections.singletonList(
                 new DefaultServiceInstance(CoreService.GATEWAY.getServiceId(), "host", 10010, true)));
@@ -40,7 +40,7 @@ public class ApiCatalogHealthIndicatorTest {
     }
 
     @Test
-    public void testStatusIsDownWhenGatewayIsNotAvailable() {
+    void testStatusIsDownWhenGatewayIsNotAvailable() {
         when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Collections.emptyList());
 
         apiCatalogHealthIndicator.doHealthCheck(builder);

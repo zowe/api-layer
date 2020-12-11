@@ -38,7 +38,7 @@ import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ApiCatalogControllerTests {
+class ApiCatalogControllerTests {
     private final String pathToContainers = "/containers";
 
     @Mock
@@ -54,7 +54,7 @@ public class ApiCatalogControllerTests {
     private ApiCatalogController apiCatalogController;
 
     @Test
-    public void whenGetAllContainers_givenNothing_thenReturnContainersWithState() {
+    void whenGetAllContainers_givenNothing_thenReturnContainersWithState() {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 
@@ -74,7 +74,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void givenNoContainersAreAvailable_whenAllContainersAreRequested_thenReturnNoContent() {
+    void givenNoContainersAreAvailable_whenAllContainersAreRequested_thenReturnNoContent() {
         given(cachedProductFamilyService.getAllContainers()).willReturn(null);
 
         RestAssuredMockMvc.standaloneSetup(apiCatalogController);
@@ -86,7 +86,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void givenContainerWithGivenIdIsUnavailable_whenRequested_thenReturnOk() {
+    void givenContainerWithGivenIdIsUnavailable_whenRequested_thenReturnOk() {
         String containerId = "service1";
         given(cachedProductFamilyService.getContainerById(containerId)).willReturn(null);
 
@@ -99,7 +99,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void whenGetSingleContainer_thenPopulateApiDocForServices() throws ContainerStatusRetrievalThrowable {
+    void whenGetSingleContainer_thenPopulateApiDocForServices() throws ContainerStatusRetrievalThrowable {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 
@@ -131,7 +131,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void whenGetSingleContainer_thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
+    void whenGetSingleContainer_thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 
@@ -162,7 +162,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void whenGetSingleContainer_thenPopulateApiVersionsForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
+    void whenGetSingleContainer_thenPopulateApiVersionsForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 

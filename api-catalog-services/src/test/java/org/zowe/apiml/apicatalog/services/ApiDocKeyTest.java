@@ -13,10 +13,10 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocCacheKey;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ApiDocKeyTest {
+class ApiDocKeyTest {
 
     @Test
-    public void testCreationOfObjectAndValuesSet() {
+    void testCreationOfObjectAndValuesSet() {
         ApiDocCacheKey apiDocCacheKey = new ApiDocCacheKey("service", "1.0.0");
         Assertions.assertNotNull(apiDocCacheKey);
         Assertions.assertEquals("service", apiDocCacheKey.getServiceId());
@@ -28,7 +28,7 @@ public class ApiDocKeyTest {
     }
 
     @Test
-    public void testEqualsAndHasCode() {
+    void testEqualsAndHasCode() {
         ApiDocCacheKey apiDocCacheKey = new ApiDocCacheKey("service", "1.0.0");
         ApiDocCacheKey apiDocCacheKey1 = new ApiDocCacheKey("service1", "2.0.0");
         Assertions.assertNotEquals(apiDocCacheKey, apiDocCacheKey1);

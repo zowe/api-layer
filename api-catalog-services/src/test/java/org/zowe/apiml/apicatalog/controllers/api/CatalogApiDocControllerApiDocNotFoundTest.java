@@ -33,13 +33,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {CatalogApiDocController.class}, secure = false)
 @DirtiesContext
-public class CatalogApiDocControllerApiDocNotFoundTest {
+class CatalogApiDocControllerApiDocNotFoundTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    public void getApiDocAnfFailThenThrowApiDocNotFoundException() throws Exception {
+    void getApiDocAnfFailThenThrowApiDocNotFoundException() throws Exception {
         this.mockMvc.perform(get("/apidoc/service2/v1"))
             .andExpect(status().isInternalServerError())
             .andExpect(jsonPath("$.messages[?(@.messageNumber == 'ZWEAC103E')].messageContent",

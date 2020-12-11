@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
 @TestPropertySource(locations = "/application.yml")
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
 @Import(InstanceRetrievalServiceTest.TestConfig.class)
-public class InstanceRetrievalServiceTest {
+class InstanceRetrievalServiceTest {
 
     private static final String APPS_ENDPOINT = "apps/";
     private static final String DELTA_ENDPOINT = "delta";
@@ -63,19 +63,19 @@ public class InstanceRetrievalServiceTest {
     private String discoveryServiceAllAppsUrl;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         instanceRetrievalService = new InstanceRetrievalService(discoveryConfigProperties, restTemplate);
         discoveryServiceAllAppsUrl = discoveryConfigProperties.getLocations() + APPS_ENDPOINT;
     }
 
     @Test
-    public void testGetInstanceInfo_whenServiceIdIsUNKNOWN() {
+    void testGetInstanceInfo_whenServiceIdIsUNKNOWN() {
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(UNKNOWN);
         assertNull(instanceInfo);
     }
 
     @Test
-    public void testGetInstanceInfo_whenResponseCodeIsNotSuccess() {
+    void testGetInstanceInfo_whenResponseCodeIsNotSuccess() {
         when(
             restTemplate.exchange(
                 discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
@@ -89,7 +89,7 @@ public class InstanceRetrievalServiceTest {
     }
 
     @Test
-    public void testGetInstanceInfo_whenResponseHasNullBody() {
+    void testGetInstanceInfo_whenResponseHasNullBody() {
         when(
             restTemplate.exchange(
                 discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
@@ -103,7 +103,7 @@ public class InstanceRetrievalServiceTest {
     }
 
     @Test
-    public void testGetInstanceInfo_whenResponseCodeIsSuccessWithUnParsedJsonText() {
+    void testGetInstanceInfo_whenResponseCodeIsSuccessWithUnParsedJsonText() {
         mockRetrieveApplicationService(
             discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
             "UNPARSED_JSON"
@@ -114,7 +114,7 @@ public class InstanceRetrievalServiceTest {
     }
 
     @Test
-    public void testGetInstanceInfo_whenUnexpectedErrorHappened() {
+    void testGetInstanceInfo_whenUnexpectedErrorHappened() {
         when(
             restTemplate.exchange(
                 discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
@@ -129,7 +129,7 @@ public class InstanceRetrievalServiceTest {
     }
 
     @Test
-    public void testGetInstanceInfo() throws JsonProcessingException {
+    void testGetInstanceInfo() throws JsonProcessingException {
         InstanceInfo expectedInstanceInfo = getStandardInstance(
             CoreService.API_CATALOG.getServiceId(),
             InstanceInfo.InstanceStatus.UP
@@ -157,7 +157,7 @@ public class InstanceRetrievalServiceTest {
     }
 
     @Test
-    public void testGetAllInstancesFromDiscovery_whenResponseCodeIsNotSuccess() {
+    void testGetAllInstancesFromDiscovery_whenResponseCodeIsNotSuccess() {
         when(
             restTemplate.exchange(
                 discoveryServiceAllAppsUrl,
@@ -172,7 +172,7 @@ public class InstanceRetrievalServiceTest {
     }
 
     @Test
-    public void testGetAllInstancesFromDiscovery_whenResponseCodeIsSuccessWithUnParsedJsonText() {
+    void testGetAllInstancesFromDiscovery_whenResponseCodeIsSuccessWithUnParsedJsonText() {
         mockRetrieveApplicationService(
             discoveryServiceAllAppsUrl,
             "UNPARSED_JSON"
@@ -184,7 +184,7 @@ public class InstanceRetrievalServiceTest {
     }
 
     @Test
-    public void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithoutFilter() throws JsonProcessingException {
+    void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithoutFilter() throws JsonProcessingException {
         Map<String, InstanceInfo> instanceInfoMap = createInstances();
 
 
@@ -211,7 +211,7 @@ public class InstanceRetrievalServiceTest {
     }
 
     @Test
-    public void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithDeltaFilter() throws JsonProcessingException {
+    void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithDeltaFilter() throws JsonProcessingException {
         String discoveryServiceAppsUrl = discoveryConfigProperties.getLocations() + APPS_ENDPOINT + DELTA_ENDPOINT;
 
         Map<String, InstanceInfo> instanceInfoMap = createInstances();

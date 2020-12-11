@@ -22,7 +22,7 @@ import java.util.function.Function;
 
 import static org.mockito.Mockito.*;
 
-public class TransformApiDocServiceTest {
+class TransformApiDocServiceTest {
 
     private final String SERVICE_ID = "SERVICE_1";
 
@@ -30,7 +30,7 @@ public class TransformApiDocServiceTest {
     private TransformApiDocService transformApiDocService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         ApiDocV2Service apiDocV2Service = mock(ApiDocV2Service.class);
         ApiDocV3Service apiDocV3Service = mock(ApiDocV3Service.class);
 
@@ -48,7 +48,7 @@ public class TransformApiDocServiceTest {
     }
 
     @Test
-    public void testTransformApiDoc_whenThereIsNotApiDocMatch() {
+    void testTransformApiDoc_whenThereIsNotApiDocMatch() {
         Exception exception = Assertions.assertThrows(UnexpectedTypeException.class, () -> {
             ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC4", null);
             transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
@@ -57,7 +57,7 @@ public class TransformApiDocServiceTest {
     }
 
     @Test
-    public void testTransformApiDoc_whenSwaggerDocIsPresent() {
+    void testTransformApiDoc_whenSwaggerDocIsPresent() {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC2", null);
         transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
 
@@ -72,7 +72,7 @@ public class TransformApiDocServiceTest {
     }
 
     @Test
-    public void testTransformApiDoc_whenOpenDocIsPresent() {
+    void testTransformApiDoc_whenOpenDocIsPresent() {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC3", null);
         transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
 

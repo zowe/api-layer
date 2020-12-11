@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class AbstractApiDocServiceTest {
+class AbstractApiDocServiceTest {
 
     private static final String GATEWAY_SCHEME = "http";
     private static final String GATEWAY_HOST = "gateway:10000";
@@ -48,25 +48,25 @@ public class AbstractApiDocServiceTest {
     private AbstractApiDocService abstractApiDocService;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         GatewayClient gatewayClient = new GatewayClient(getProperties());
         abstractApiDocService = new DummyApiDocService(gatewayClient);
     }
 
     @Test
-    public void shouldGetShortEndpoint() {
+    void shouldGetShortEndpoint() {
         String shortEndpoint = abstractApiDocService.getShortEndPoint("/apicatalog/api/v1", "/apicatalog");
         assertEquals("/apicatalog", shortEndpoint);
     }
 
     @Test
-    public void shouldGetEndpoint() {
+    void shouldGetEndpoint() {
         String endpoint = abstractApiDocService.getEndPoint("/api/v1/api-doc", "/apicatalog");
         assertEquals("/api/v1/api-doc/apicatalog", endpoint);
     }
 
     @Test
-    public void shouldGetEndpointPairs() {
+    void shouldGetEndpointPairs() {
         RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog/api/v1");
         Pair endpointPairs = abstractApiDocService.getEndPointPairs("/apicatalog", "apicatalog", routedService);
         ImmutablePair expectedPairs = new ImmutablePair("/apicatalog", "/apicatalog/api/v1/apicatalog");
@@ -74,13 +74,13 @@ public class AbstractApiDocServiceTest {
     }
 
     @Test
-    public void shouldReturnNull_whenGetRoutedServiceByApiInfo_IfApiInfoIsNull() {
+    void shouldReturnNull_whenGetRoutedServiceByApiInfo_IfApiInfoIsNull() {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, null, null);
         assertNull(abstractApiDocService.getRoutedServiceByApiInfo(apiDocInfo, "/"));
     }
 
     @Test
-    public void preparePath() {
+    void preparePath() {
         List<Server> servers = new ArrayList<>();
         servers.add(0, new Server().url("/apicatalog"));
         ApiDocPath<PathItem> apiDocPath = new ApiDocPath<>();

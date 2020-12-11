@@ -31,19 +31,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {StaticAPIRefreshController.class}, secure = false)
-public class StaticAPIRefreshControllerTest {
+class StaticAPIRefreshControllerTest {
 
     private static final String API_REFRESH_ENDPOINT = "/static-api/refresh";
 
     @Autowired
     private MockMvc mockMvc;
 
-
     @Autowired
     private StaticAPIService staticAPIService;
 
     @Test
-    public void givenServiceNotFoundException_whenCallRefreshAPI_thenResponseShouldBe503WithSpecificMessage() throws Exception {
+    void givenServiceNotFoundException_whenCallRefreshAPI_thenResponseShouldBe503WithSpecificMessage() throws Exception {
         when(staticAPIService.refresh()).thenThrow(
             new ServiceNotFoundException("Exception")
         );
@@ -58,7 +57,7 @@ public class StaticAPIRefreshControllerTest {
     }
 
     @Test
-    public void givenRestClientException_whenCallRefreshAPI_thenResponseShouldBe500WithSpecificMessage() throws Exception {
+    void givenRestClientException_whenCallRefreshAPI_thenResponseShouldBe500WithSpecificMessage() throws Exception {
         when(staticAPIService.refresh()).thenThrow(
             new RestClientException("Exception")
         );
@@ -73,7 +72,7 @@ public class StaticAPIRefreshControllerTest {
     }
 
     @Test
-    public void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() throws Exception {
+    void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() throws Exception {
         when(staticAPIService.refresh()).thenReturn(
             new StaticAPIResponse(200, "This is body")
         );

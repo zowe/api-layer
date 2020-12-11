@@ -18,17 +18,17 @@ import org.springframework.http.ResponseEntity;
 
 import static org.mockito.Mockito.when;
 
-public class CatalogApiDocControllerTest {
+class CatalogApiDocControllerTest {
 
     @Test
-    public void testCreationOfClass() {
+    void testCreationOfClass() {
         APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
         CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
         Assertions.assertNotNull(catalogApiDocController);
     }
 
     @Test
-    public void testGetApiDocInfo() {
+    void testGetApiDocInfo() {
         APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
         CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
         ResponseEntity<String> response = new ResponseEntity<>("Some API Doc", HttpStatus.OK);
@@ -40,7 +40,7 @@ public class CatalogApiDocControllerTest {
     }
 
     @Test
-    public void testGetApiDiff() {
+    void testGetApiDiff() {
         APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
         CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
         String responseString = "<html>Some Diff</html>";

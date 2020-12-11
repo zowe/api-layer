@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class InstanceRefreshServiceTest {
+class InstanceRefreshServiceTest {
 
     private final ContainerServiceMockUtil containerServiceMockUtil = new ContainerServiceMockUtil();
 
@@ -65,13 +65,13 @@ public class InstanceRefreshServiceTest {
 
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         instanceRefreshService.start();
         addApiCatalogToCache();
     }
 
     @Test
-    public void testServiceAddedToDiscoveryThatIsNotInCache() {
+    void testServiceAddedToDiscoveryThatIsNotInCache() {
         ContainerServiceState cachedState = containerServiceMockUtil.createContainersServicesAndInstances();
         containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications());
 
@@ -108,7 +108,7 @@ public class InstanceRefreshServiceTest {
     }
 
     @Test
-    public void testServiceRemovedFromDiscoveryThatIsInCache() {
+    void testServiceRemovedFromDiscoveryThatIsInCache() {
         ContainerServiceState cachedState = containerServiceMockUtil.createContainersServicesAndInstances();
         containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications());
 
@@ -144,7 +144,7 @@ public class InstanceRefreshServiceTest {
     }
 
     @Test
-    public void testServiceModifiedFromDiscoveryThatIsInCache() {
+    void testServiceModifiedFromDiscoveryThatIsInCache() {
         ContainerServiceState cachedState = containerServiceMockUtil.createContainersServicesAndInstances();
         containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications());
 
@@ -189,7 +189,7 @@ public class InstanceRefreshServiceTest {
     }
 
     @Test
-    public void testRefreshCacheFromDiscovery_whenGatewayClientIsNotInitialized() {
+    void testRefreshCacheFromDiscovery_whenGatewayClientIsNotInitialized() {
         when(gatewayClient.isInitialized()).thenReturn(false);
 
         instanceRefreshService.refreshCacheFromDiscovery();
@@ -199,7 +199,7 @@ public class InstanceRefreshServiceTest {
     }
 
     @Test
-    public void testRefreshCacheFromDiscovery_whenApiCatalogIsNotInCache() {
+    void testRefreshCacheFromDiscovery_whenApiCatalogIsNotInCache() {
         when(cachedServicesService.getService(CoreService.API_CATALOG.getServiceId())).thenReturn(null);
 
         instanceRefreshService.refreshCacheFromDiscovery();

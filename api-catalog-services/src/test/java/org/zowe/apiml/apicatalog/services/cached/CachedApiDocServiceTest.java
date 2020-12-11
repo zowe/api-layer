@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class CachedApiDocServiceTest {
+class CachedApiDocServiceTest {
     private CachedApiDocService cachedApiDocService;
 
     @Mock
@@ -43,13 +43,13 @@ public class CachedApiDocServiceTest {
     TransformApiDocService transformApiDocService;
 
     @BeforeEach
-    public void setUp() {
+    private void setUp() {
         cachedApiDocService = new CachedApiDocService(apiDocRetrievalService, transformApiDocService);
         cachedApiDocService.resetCache();
     }
 
     @Test
-    public void givenValidApiDoc_whenRetrieving_thenReturnIt() {
+    void givenValidApiDoc_whenRetrieving_thenReturnIt() {
         String serviceId = "Service";
         String version = "v1";
         String expectedApiDoc = "This is some api doc";
@@ -68,7 +68,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenValidApiDoc_whenUpdating_thenRetrieve() {
+    void givenValidApiDoc_whenUpdating_thenRetrieve() {
         String serviceId = "Service";
         String version = "v1";
         String expectedApiDoc = "This is some api doc";
@@ -103,7 +103,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenInvalidApiDoc_whenRetrieving_thenThrowException() {
+    void givenInvalidApiDoc_whenRetrieving_thenThrowException() {
         String serviceId = "Service";
         String version = "v1";
 
@@ -114,7 +114,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenValidApiVersions_whenRetrieving_thenReturnIt() {
+    void givenValidApiVersions_whenRetrieving_thenReturnIt() {
         String serviceId = "service";
         List<String> expectedVersions = Arrays.asList("1.0.0", "2.0.0");
 
@@ -125,7 +125,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenValidApiVersions_whenUpdating_thenRetrieve() {
+    void givenValidApiVersions_whenUpdating_thenRetrieve() {
         String serviceId = "service";
         List<String> initialVersions = Arrays.asList("1.0.0", "2.0.0");
         List<String> updatedVersions = Arrays.asList("1.0.0", "2.0.0", "3.0.0");
@@ -144,7 +144,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenInvalidApiVersion_whenRetrieving_thenThrowException() {
+    void givenInvalidApiVersion_whenRetrieving_thenThrowException() {
         String serviceId = "service";
 
         when(apiDocRetrievalService.retrieveApiVersions(serviceId)).thenReturn(Collections.emptyList());
@@ -155,7 +155,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenValidApiDocs_whenRetrievingDefault_thenReturnLatestApi() {
+    void givenValidApiDocs_whenRetrievingDefault_thenReturnLatestApi() {
         String serviceId = "service";
         String expectedApiDoc = "This is some api doc";
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null);
@@ -168,7 +168,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenValidApiDocs_whenUpdatingDefault_thenRetrieveDefault() {
+    void givenValidApiDocs_whenUpdatingDefault_thenRetrieveDefault() {
         String serviceId = "service";
         String initialApiDoc = "This is some api doc";
         String updatedApiDoc = "This is some updated api doc";
@@ -191,7 +191,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenInvalidApiDoc_whenRetrievingDefault_thenThrowException() {
+    void givenInvalidApiDoc_whenRetrievingDefault_thenThrowException() {
         String serviceId = "service";
 
         Exception exception = assertThrows(ApiDocNotFoundException.class,
@@ -201,7 +201,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnIt() {
+    void givenDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnIt() {
         String serviceId = "service";
         String expected = "v1";
         when(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).thenReturn(expected);
@@ -211,7 +211,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenDefaultApiVersion_whenUpdateDefaultVersion_thenRetrieveDefault() {
+    void givenDefaultApiVersion_whenUpdateDefaultVersion_thenRetrieveDefault() {
         String serviceId = "service";
         String initialVersion = "v1";
         String updatedVersion = "v2";
@@ -228,7 +228,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void givenErrorRetrievingDefaultApiVersion_whenGetDefaultVersion_thenThrowException() {
+    void givenErrorRetrievingDefaultApiVersion_whenGetDefaultVersion_thenThrowException() {
         String serviceId = "service";
 
         when(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).thenThrow(new RuntimeException("error"));

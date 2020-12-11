@@ -17,10 +17,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
-public class CachedServicesServiceTest {
+class CachedServicesServiceTest {
 
     @Test
-    public void testReturningNoServices() {
+    void testReturningNoServices() {
         CachedServicesService cachedServicesService = new CachedServicesService();
         cachedServicesService.clearAllServices();
         Applications services = cachedServicesService.getAllCachedServices();
@@ -28,7 +28,7 @@ public class CachedServicesServiceTest {
     }
 
     @Test
-    public void testReturningOneService() {
+    void testReturningOneService() {
         CachedServicesService cachedServicesService = new CachedServicesService();
         cachedServicesService.clearAllServices();
         Applications applications = cachedServicesService.getAllCachedServices();
@@ -44,7 +44,7 @@ public class CachedServicesServiceTest {
     }
 
     @Test
-    public void testGetAService() {
+    void testGetAService() {
         CachedServicesService cachedServicesService = new CachedServicesService();
         cachedServicesService.clearAllServices();
         Applications applications = cachedServicesService.getAllCachedServices();

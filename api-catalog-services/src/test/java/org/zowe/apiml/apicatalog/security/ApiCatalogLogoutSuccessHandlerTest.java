@@ -21,10 +21,10 @@ import javax.servlet.http.Cookie;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ApiCatalogLogoutSuccessHandlerTest {
+class ApiCatalogLogoutSuccessHandlerTest {
 
     @Test
-    public void testOnLogoutSuccess() {
+    void testOnLogoutSuccess() {
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         MockHttpSession mockHttpSession = new MockHttpSession();
         httpServletRequest.setSession(mockHttpSession);

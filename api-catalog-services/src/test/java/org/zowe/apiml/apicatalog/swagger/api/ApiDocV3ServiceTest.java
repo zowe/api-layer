@@ -37,7 +37,7 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ApiDocV3ServiceTest {
+class ApiDocV3ServiceTest {
 
     private static final String HIDDEN_TAG = "apimlHidden";
     private static final String SERVICE_ID = "serviceId";
@@ -52,14 +52,14 @@ public class ApiDocV3ServiceTest {
     private ApiDocV3Service apiDocV3Service;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         GatewayConfigProperties gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
         apiDocV3Service = new ApiDocV3Service(gatewayClient);
     }
 
     @Test
-    public void givenOpenApiValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
+    void givenOpenApiValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
         List<Server> servers = new ArrayList<>();
         servers.add(0, new Server().url("/api/v1/apicatalog"));
         servers.add(1, new Server().url("http://localhost:8080/apicatalog"));
@@ -105,7 +105,7 @@ public class ApiDocV3ServiceTest {
     }
 
     @Test
-    public void givenEmptyJson_whenApiDocTransform_thenThrowException() {
+    void givenEmptyJson_whenApiDocTransform_thenThrowException() {
         String invalidJson = "";
         ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
         ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
@@ -117,7 +117,7 @@ public class ApiDocV3ServiceTest {
     }
 
     @Test
-    public void givenInvalidJson_whenApiDocTransform_thenThrowException() {
+    void givenInvalidJson_whenApiDocTransform_thenThrowException() {
         String invalidJson = "nonsense";
         ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
         ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
@@ -132,7 +132,7 @@ public class ApiDocV3ServiceTest {
      * GH #637
      */
     @Test
-    public void givenValidApidoc_whenTransformed_thenDontCapitalizeEnums() {
+    void givenValidApidoc_whenTransformed_thenDontCapitalizeEnums() {
         ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
         String content = "{\"openapi\":\"3.0.1\",\"info\":{\"title\":\"ZoweKotlinSampleRESTAPI\",\"description\":\"SampleKotlinSpringBootRESTAPIforZowe.\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"https://localhost:10090\",\"description\":\"Generatedserverurl\"}],\"paths\":{\"/api/v1/greeting\":{\"get\":{\"tags\":[\"Greeting\"],\"summary\":\"Returnsagreetingforthenamepassed\",\"operationId\":\"getGreeting\",\"parameters\":[{\"name\":\"name\",\"in\":\"query\",\"description\":\"Personorobjecttobegreeted\",\"required\":false,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"Successfulgreeting\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/Greeting\"}}}},\"404\":{\"description\":\"Notfound\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ApiMessage\"}}}}}}}},\"components\":{\"schemas\":{\"Greeting\":{\"required\":[\"content\",\"id\",\"languageTag\"],\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\",\"description\":\"GeneratedsequenceIDofthemessage\",\"format\":\"int64\"},\"content\":{\"type\":\"string\",\"description\":\"Thegreetingmessage\"},\"languageTag\":{\"type\":\"string\",\"description\":\"Thelocalelanguagetagusedforthismessage\"}}},\"ApiMessage\":{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/Message\"}}}},\"Message\":{\"type\":\"object\",\"properties\":{\"messageType\":{\"type\":\"string\",\"enum\":[\"ERROR\",\"WARNING\",\"INFO\",\"DEBUG\",\"TRACE\"]},\"messageNumber\":{\"type\":\"string\"},\"messageContent\":{\"type\":\"string\"},\"messageAction\":{\"type\":\"string\"},\"messageReason\":{\"type\":\"string\"},\"messageKey\":{\"type\":\"string\"},\"messageParameters\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"messageInstanceId\":{\"type\":\"string\"},\"messageComponent\":{\"type\":\"string\"},\"messageSource\":{\"type\":\"string\"}}}}}}";
         RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
