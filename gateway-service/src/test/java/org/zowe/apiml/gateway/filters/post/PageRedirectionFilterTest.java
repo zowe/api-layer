@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.filters.post;
 
+import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
@@ -20,6 +21,7 @@ import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -61,8 +63,9 @@ class PageRedirectionFilterTest {
         ctx.setResponse(response);
 
         GatewayConfigProperties gatewayConfigProperties = getGatewayConfigProperties(ctx);
+        TransformService transformService = new TransformService(new GatewayClient(gatewayConfigProperties));
 
-        this.filter = new PageRedirectionFilter(this.discoveryClient, gatewayConfigProperties);
+        this.filter = new PageRedirectionFilter(this.discoveryClient, transformService);
     }
 
     @Test
@@ -81,7 +84,7 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-            new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
         response.setStatus(302);
@@ -92,12 +95,12 @@ class PageRedirectionFilterTest {
         this.filter.run();
 
         Optional<Pair<String, String>> locationHeader = ctx.getZuulResponseHeaders()
-            .stream()
-            .filter(stringPair -> LOCATION.equals(stringPair.first()))
-            .findFirst();
+                .stream()
+                .filter(stringPair -> LOCATION.equals(stringPair.first()))
+                .findFirst();
 
         verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
-            "/" + SERVICE_ID + "/" + currentService.getGatewayUrl() + relativePath);
+                "/" + SERVICE_ID + "/" + currentService.getGatewayUrl() + relativePath);
     }
 
 
@@ -110,7 +113,7 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-            new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
         response.setStatus(304);
@@ -122,9 +125,9 @@ class PageRedirectionFilterTest {
         this.filter.run();
 
         Optional<Pair<String, String>> locationHeader = ctx.getZuulResponseHeaders()
-            .stream()
-            .filter(stringPair -> LOCATION.equals(stringPair.first()))
-            .findFirst();
+                .stream()
+                .filter(stringPair -> LOCATION.equals(stringPair.first()))
+                .findFirst();
 
         verifyLocationNotUpdated(locationHeader.map(Pair::second).orElse(null), location);
     }
@@ -145,10 +148,10 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(OTHER_SERVICE_ID, otherRoutedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-            new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
         when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Collections.singletonList(
-            new DefaultServiceInstance(OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
+                new DefaultServiceInstance(OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
         ));
         when(discoveryClient.getServices()).thenReturn(Arrays.asList(SERVICE_ID, OTHER_SERVICE_ID));
 
@@ -161,12 +164,12 @@ class PageRedirectionFilterTest {
         this.filter.run();
 
         Optional<Pair<String, String>> locationHeader = ctx.getZuulResponseHeaders()
-            .stream()
-            .filter(stringPair -> LOCATION.equals(stringPair.first()))
-            .findFirst();
+                .stream()
+                .filter(stringPair -> LOCATION.equals(stringPair.first()))
+                .findFirst();
 
         this.verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
-            "/" + OTHER_SERVICE_ID + "/" + otherService.getGatewayUrl() + relativePath);
+                "/" + OTHER_SERVICE_ID + "/" + otherService.getGatewayUrl() + relativePath);
     }
 
 
@@ -185,10 +188,10 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(OTHER_SERVICE_ID, otherRoutedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-            new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
         when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Collections.singletonList(
-            new DefaultServiceInstance(OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
+                new DefaultServiceInstance(OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
         ));
         when(discoveryClient.getServices()).thenReturn(Arrays.asList(SERVICE_ID, OTHER_SERVICE_ID));
 
@@ -201,9 +204,9 @@ class PageRedirectionFilterTest {
         this.filter.run();
 
         Optional<Pair<String, String>> locationHeader = ctx.getZuulResponseHeaders()
-            .stream()
-            .filter(stringPair -> LOCATION.equals(stringPair.first()))
-            .findFirst();
+                .stream()
+                .filter(stringPair -> LOCATION.equals(stringPair.first()))
+                .findFirst();
 
         this.verifyLocationNotUpdated(locationHeader.map(Pair::second).orElse(null), location);
     }
@@ -218,7 +221,7 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-            new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
         response.setStatus(302);
@@ -229,12 +232,12 @@ class PageRedirectionFilterTest {
         this.filter.run();
 
         Optional<Pair<String, String>> locationHeader = ctx.getZuulResponseHeaders()
-            .stream()
-            .filter(stringPair -> LOCATION.equals(stringPair.first()))
-            .findFirst();
+                .stream()
+                .filter(stringPair -> LOCATION.equals(stringPair.first()))
+                .findFirst();
 
         verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
-            "/" + SERVICE_ID + "/" + currentService.getGatewayUrl() + relativePath);
+                "/" + SERVICE_ID + "/" + currentService.getGatewayUrl() + relativePath);
     }
 
 
@@ -248,7 +251,7 @@ class PageRedirectionFilterTest {
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-            new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
+                new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
         response.setStatus(302);
@@ -268,19 +271,19 @@ class PageRedirectionFilterTest {
         ctx.setResponse(response);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
-            new DefaultServiceInstance(SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
+                new DefaultServiceInstance(SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
         ));
 
         ctx.addZuulResponseHeader(LOCATION, location);
         this.filter.run();
 
         Optional<Pair<String, String>> locationHeader = ctx.getZuulResponseHeaders()
-            .stream()
-            .filter(stringPair -> LOCATION.equals(stringPair.first()))
-            .findFirst();
+                .stream()
+                .filter(stringPair -> LOCATION.equals(stringPair.first()))
+                .findFirst();
 
         verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
-            "/" + SERVICE_ID + "/" + currentService.getGatewayUrl() + relativePath);
+                "/" + SERVICE_ID + "/" + currentService.getGatewayUrl() + relativePath);
     }
 
     private String mockLocationSameServer(String relativeUrl) {
@@ -299,7 +302,7 @@ class PageRedirectionFilterTest {
         RequestContext ctx = RequestContext.getCurrentContext();
         URI uri = new URI(originalLocation);
         uri = new URI(ctx.getRequest().getScheme(), uri.getUserInfo(), ctx.getRequest().getLocalName(), ctx.getRequest().getLocalPort(),
-            relativeUrl, uri.getQuery(), uri.getFragment());
+                relativeUrl, uri.getQuery(), uri.getFragment());
         assertEquals(uri.toString(), actualLocation, "Location header is not updated as expected");
     }
 
@@ -309,8 +312,8 @@ class PageRedirectionFilterTest {
 
     private GatewayConfigProperties getGatewayConfigProperties(RequestContext ctx) {
         return GatewayConfigProperties.builder()
-            .scheme(ctx.getRequest().getScheme())
-            .hostname(ctx.getRequest().getLocalName() + ":" + ctx.getRequest().getLocalPort())
-            .build();
+                .scheme(ctx.getRequest().getScheme())
+                .hostname(ctx.getRequest().getLocalName() + ":" + ctx.getRequest().getLocalPort())
+                .build();
     }
 }

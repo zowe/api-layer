@@ -26,15 +26,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.util.StringUtils;
+import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.Map;
 
 @Configuration
 public class GatewayConfig {
 
-
-    private ConfigurableEnvironment env;
+    private final ConfigurableEnvironment env;
     private static final String SEPARATOR = ":";
 
     public GatewayConfig(ConfigurableEnvironment env) {
@@ -45,6 +46,11 @@ public class GatewayConfig {
     public GatewayConfigProperties getGatewayConfigProperties(@Value("${apiml.gateway.hostname}") String hostname,
                                                               @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
         return GatewayConfigProperties.builder().scheme(scheme).hostname(hostname + ":" + port).build();
+    }
+
+    @Bean
+    public TransformService transformService(GatewayConfigProperties gatewayConfigProperties) {
+        return new TransformService(new GatewayClient(gatewayConfigProperties));
     }
 
     @Bean

@@ -9,19 +9,17 @@
  */
 package org.zowe.apiml.gateway.filters.post;
 
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.zowe.apiml.product.routing.RoutedServices;
-import org.zowe.apiml.product.routing.RoutedServicesUser;
-import org.zowe.apiml.product.routing.ServiceType;
-import org.zowe.apiml.product.routing.transform.TransformService;
-import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import com.netflix.util.Pair;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.product.routing.RoutedServices;
+import org.zowe.apiml.product.routing.RoutedServicesUser;
+import org.zowe.apiml.product.routing.ServiceType;
+import org.zowe.apiml.product.routing.transform.TransformService;
+import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
 
@@ -52,17 +50,9 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
         }
     );
 
-    /**
-     * Constructor
-     *
-     * @param discovery               discovery client
-     * @param gatewayConfigProperties gateway config properties
-     */
-    public PageRedirectionFilter(DiscoveryClient discovery, GatewayConfigProperties gatewayConfigProperties) {
+    public PageRedirectionFilter(DiscoveryClient discovery, TransformService transformService) {
         this.discovery = discovery;
-        transformService = new TransformService(
-            new GatewayClient(gatewayConfigProperties)
-        );
+        this.transformService = transformService;
     }
 
     /**

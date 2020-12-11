@@ -21,7 +21,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
-import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;

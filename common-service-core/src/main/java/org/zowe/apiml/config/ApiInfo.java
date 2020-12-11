@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.io.IOException;
 
@@ -26,6 +27,7 @@ import java.io.IOException;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@SuperBuilder
 public class ApiInfo {
 
     public ApiInfo(String apiId, String gatewayUrl, String version, String swaggerUrl, String documentationUrl) {
