@@ -28,7 +28,6 @@ import static org.junit.Assert.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class EurekaMetadataParserTest {
-
     private final EurekaMetadataParser eurekaMetadataParser = new EurekaMetadataParser();
 
     @Rule
@@ -41,17 +40,16 @@ public class EurekaMetadataParserTest {
         metadata.put(API_INFO + ".2." + API_INFO_GATEWAY_URL, "gatewayUrl2");
         metadata.put(API_INFO + ".2." + API_INFO_SWAGGER_URL, "swagger");
         metadata.put(API_INFO + ".2." + API_INFO_DOCUMENTATION_URL, "doc");
-        metadata.put(API_INFO + ".1." + API_INFO_API_ID, "org.zowe.test");
+        metadata.put(API_INFO + ".1." + API_INFO_API_ID, "zowe.apiml.test");
         metadata.put(API_INFO + ".1." + API_INFO_VERSION, "1.0.0");
         metadata.put(API_INFO + ".1." + API_INFO_IS_DEFAULT, "true");
         metadata.put(API_INFO + ".1.badArgument", "garbage");
-
 
         List<ApiInfo> info = eurekaMetadataParser.parseApiInfo(metadata);
 
         assertEquals(2, info.size());
         assertEquals("gatewayUrl", info.get(0).getGatewayUrl());
-        assertEquals("org.zowe.test", info.get(0).getApiId());
+        assertEquals("zowe.apiml.test", info.get(0).getApiId());
         assertEquals("1.0.0", info.get(0).getVersion());
         assertTrue(info.get(0).isDefaultApi());
         assertEquals("gatewayUrl2", info.get(1).getGatewayUrl());
@@ -87,7 +85,6 @@ public class EurekaMetadataParserTest {
         assertEquals(expectedRoutes.toString(), routes.toString());
     }
 
-
     @Test
     public void testParseToListRoute() {
         Map<String, String> metadata = new HashMap<>();
@@ -122,32 +119,32 @@ public class EurekaMetadataParserTest {
         assertEquals("List route is not empty", 0, actualRoutes.size());
     }
 
-
     @Test
     public void generateFullMetadata() {
         String serviceId = "test service";
+        String apiId = "zowe.apiml.test";
         String gatewayUrl = "api/v1";
         String version = "1.0.0";
         String swaggerUrl = "https://service/api-doc";
         String documentationUrl = "https://www.zowe.org";
         String metadataPrefix = API_INFO + ".api-v1.";
 
-        ApiInfo apiInfo = new ApiInfo("org.zowe", gatewayUrl, version, swaggerUrl, documentationUrl);
+        ApiInfo apiInfo = new ApiInfo(apiId, gatewayUrl, version, swaggerUrl, documentationUrl);
         Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+
+        String metaApiId = metadata.get(metadataPrefix + API_INFO_API_ID);
+        assertEquals(apiId, metaApiId);
+
         String metaVersion = metadata.get(metadataPrefix + API_INFO_VERSION);
-        assertNotNull(metaVersion);
         assertEquals(version, metaVersion);
 
         String metaGatewayUrl = metadata.get(metadataPrefix + API_INFO_GATEWAY_URL);
-        assertNotNull(metaGatewayUrl);
         assertEquals(gatewayUrl, metaGatewayUrl);
 
         String metaSwaggerUrl = metadata.get(metadataPrefix + API_INFO_SWAGGER_URL);
-        assertNotNull(metaSwaggerUrl);
         assertEquals(swaggerUrl, metaSwaggerUrl);
 
         String metaDocumentationUrl = metadata.get(metadataPrefix + API_INFO_DOCUMENTATION_URL);
-        assertNotNull(metaDocumentationUrl);
         assertEquals(documentationUrl, metaDocumentationUrl);
     }
 
@@ -185,7 +182,6 @@ public class EurekaMetadataParserTest {
         EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
     }
 
-
     @Test
     public void generateMetadataWithIncorrectDocumentationUrl() {
         String serviceId = "test service";
@@ -198,5 +194,4 @@ public class EurekaMetadataParserTest {
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, null, documentationUrl);
         EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
     }
-
 }
