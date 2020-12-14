@@ -5,7 +5,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 - Feature: Configure more detailed logging outside of Spool. [#709](https://github.com/zowe/api-layer/issues/709)
 - Feature: HA: Componentize the start script per API ML service. Individual API Mediation Layer components can be launched and restarted individually. [#862](https://github.com/zowe/api-layer/issues/862)
-- Feature: HA: Distinguish between internal and external services communication. The second connector, intended for the internal services communication, uses a different certificate than the first connector, making it possible to distinguish between the internal and external traffic. [#910](https://github.com/zowe/api-layer/issues/910)
+- Feature: HA: It is now possible to distinguish between internal and external traffic through port separation, whereby each port uses a unique certificate; one presenting an internal certificate, and the other an external certificate. [#910](https://github.com/zowe/api-layer/issues/910)
 - Feature: API version is now automatically set to the version tab selected in the API Catalog so users can easily grab the Base Path. [#943](https://github.com/zowe/api-layer/issues/943)
 - Feature: A new enhancement to the API Catalog versioning has been introduced with the addition of the API differences tab. This feature enables users to compare versions of two APIs. [#923](https://github.com/zowe/api-layer/issues/923)
 - Bugfix: ZaasJwtService enhancement on JWT parsing and error handling. [#897](https://github.com/zowe/api-layer/issues/897)
