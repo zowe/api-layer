@@ -16,7 +16,7 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.config.RandomPort;
+import org.zowe.apiml.util.config.RandomPorts;
 import org.zowe.apiml.util.service.VirtualService;
 
 import java.util.List;
@@ -51,9 +51,11 @@ class ServiceHaMode {
     @Test
     void givenTwoServices_whenOneServiceGoesDown_verifyThatGatewayRetriesToTheLiveOne() throws Exception {
 
+        List<Integer> ports = RandomPorts.generateUniquePorts(2);
+
         try (
-            VirtualService service1 = new VirtualService("testHaModeService", (new RandomPort()).getPort());
-            VirtualService service2 = new VirtualService("testHaModeService", (new RandomPort()).getPort());
+            VirtualService service1 = new VirtualService("testHaModeService", ports.get(0));
+            VirtualService service2 = new VirtualService("testHaModeService", ports.get(1));
             ) {
 
             service1.start();
