@@ -14,14 +14,14 @@ def getBaseNameLite() {
     } else {
         base = project.name
     }
-    return base + "-lite-lib-all.jar"
+    return base + "-lite-lib-all"
 }
 
 def getLiteLibJar(file, output) {
     if (!file.exists()) return
     if (file.isDirectory()) {
         file.listFiles().each { getLiteLibJar(it, output) }
-    } else if (file.name.contains("-lite-lib-") && file.name.endsWith(".jar")) {
+    } else if (file.name.contains("-lite-lib") && file.name.endsWith(".jar")) {
         output.add(zipTree(file))
     }
 }
@@ -33,7 +33,7 @@ def getLiteLibJars() {
 }
 
 task liteLibJarAll(type: Jar) {
-    archiveName = getBaseNameLite()
+    archiveName = getBaseNameLite() + ".jar"
     entryCompression = ZipEntryCompression.STORED
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 

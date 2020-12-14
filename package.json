@@ -14,7 +14,6 @@
         "api-layer-without-discovery": "concurrently --names \"GW,AC,DC\" -c cyan,white,blue npm:gateway-service npm:api-catalog-service npm:discoverable-client",
         "api-layer-without-catalog": "concurrently --names \"GW,DS,DC\" -c cyan,yellow,blue npm:gateway-service npm:discovery-service npm:discoverable-client",
         "caching-service": "java -jar caching-service/build/libs/caching-service.jar",
-        "caching-service-thin": "java -Dloader.path=build/libs/api-layer-lite-lib-all.jar -cp caching-service/build/libs/caching-service-lite.jar org.springframework.boot.loader.PropertiesLauncher",
         "gateway-service": "java -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local/gateway-service.yml --apiml.security.ssl.verifySslCertificatesOfServices=true",
         "gateway-service-ci": "java -Dloader.path=build/libs/api-layer-lite-lib-all.jar -cp gateway-service/build/libs/gateway-service-lite.jar org.springframework.boot.loader.PropertiesLauncher --spring.config.additional-location=file:./config/local/gateway-service.yml --apiml.security.ssl.verifySslCertificatesOfServices=true --spring.profiles.include=diag --apiml.security.x509.enabled=true",
         "gateway-service-thin": "java -Dloader.path=build/libs/api-layer-lite-lib-all.jar -cp gateway-service/build/libs/gateway-service-lite.jar org.springframework.boot.loader.PropertiesLauncher --spring.config.additional-location=file:./config/local/gateway-service.yml --apiml.security.ssl.verifySslCertificatesOfServices=true",
