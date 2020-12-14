@@ -11,7 +11,6 @@ package org.zowe.apiml.gatewayservice;
 
 
 import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
-import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -73,8 +72,6 @@ public class SecurityUtils {
 
     public static String gatewayToken(String username, String password) {
         LoginRequest loginRequest = new LoginRequest(username, password);
-
-        RestAssured.useRelaxedHTTPSValidation();
 
         return given()
             .contentType(JSON)
