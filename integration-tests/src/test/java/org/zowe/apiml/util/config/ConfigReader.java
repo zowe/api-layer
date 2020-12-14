@@ -55,14 +55,18 @@ public class ConfigReader {
                             .trustStorePassword(PASSWORD)
                             .build();
 
+                        AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
+
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
+
                         configuration = new EnvironmentConfiguration(
                             credentials,
                             gatewayServiceConfiguration,
                             discoveryServiceConfiguration,
                             discoverableClientConfiguration,
                             tlsConfiguration,
-                            zosmfServiceConfiguration);
+                            zosmfServiceConfiguration,
+                            auxiliaryUserList);
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
@@ -81,6 +85,8 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setHost(System.getProperty("discovery.host", configuration.getDiscoveryServiceConfiguration().getHost()));
                     configuration.getDiscoveryServiceConfiguration().setPort(Integer.parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
                     configuration.getDiscoveryServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
+
+                    configuration.getAuxiliaryUserList().setValue(System.getProperty("auxiliaryUserList.value", String.valueOf(configuration.getAuxiliaryUserList().getValue())));
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);
