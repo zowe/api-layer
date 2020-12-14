@@ -13,13 +13,12 @@ package org.zowe.apiml.apicatalog.instance;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Assertions;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.retry.RetryException;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
 import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
@@ -33,13 +32,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.hamcrest.Matchers.isA;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class InstanceInitializeServiceTest {
+@ExtendWith(MockitoExtension.class)
+class InstanceInitializeServiceTest {
 
     @Mock
     private CachedServicesService cachedServicesService;
@@ -57,12 +54,8 @@ public class InstanceInitializeServiceTest {
     @InjectMocks
     private InstanceInitializeService instanceInitializeService;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-
     @Test
-    public void testRetrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
+    void testRetrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
         Map<String, InstanceInfo> instanceInfoMap = createInstances();
 
         String catalogId = CoreService.API_CATALOG.getServiceId();
@@ -94,7 +87,7 @@ public class InstanceInitializeServiceTest {
             .filter(f -> f.getName().equals(catalogId.toUpperCase()))
             .findFirst();
 
-        assertTrue(catalogApplication.isPresent());
+        Assertions.assertTrue(catalogApplication.isPresent());
         verify(cachedServicesService).updateService(catalogApplication.get().getName(), catalogApplication.get());
 
 
@@ -109,36 +102,36 @@ public class InstanceInitializeServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenCatalogNotFound() throws CannotRegisterServiceException {
+    void shouldThrowExceptionWhenCatalogNotFound() throws CannotRegisterServiceException {
         String catalogId = CoreService.API_CATALOG.getServiceId();
         when(instanceRetrievalService.getInstanceInfo(catalogId)).thenReturn(null);
 
-        exception.expect(CannotRegisterServiceException.class);
-        exception.expectCause(isA(RetryException.class));
-
-        instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+        Exception exception = Assertions.assertThrows(CannotRegisterServiceException.class, () -> {
+            instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+        });
+        Assertions.assertTrue(exception.getCause() instanceof RetryException);
     }
 
     @Test
-    public void shouldThrowRetryExceptionOnInstanceInitializationException() throws CannotRegisterServiceException {
+    void shouldThrowRetryExceptionOnInstanceInitializationException() throws CannotRegisterServiceException {
         String catalogId = CoreService.API_CATALOG.getServiceId();
         when(instanceRetrievalService.getInstanceInfo(catalogId)).thenThrow(new InstanceInitializationException("ERROR"));
 
-        exception.expect(RetryException.class);
-        exception.expectMessage("ERROR");
-
-        instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+        Exception exception = Assertions.assertThrows(RetryException.class, () -> {
+            instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+        });
+        Assertions.assertEquals("ERROR", exception.getMessage());
     }
 
     @Test
-    public void shouldThrowRetryExceptionOnGatewayNotAvailableException() throws CannotRegisterServiceException {
+    void shouldThrowRetryExceptionOnGatewayNotAvailableException() throws CannotRegisterServiceException {
         String catalogId = CoreService.API_CATALOG.getServiceId();
         when(instanceRetrievalService.getInstanceInfo(catalogId)).thenThrow(new GatewayNotAvailableException("ERROR"));
 
-        exception.expect(RetryException.class);
-        exception.expectMessage("ERROR");
-
-        instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+        Exception exception = Assertions.assertThrows(RetryException.class, () -> {
+            instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+        });
+        Assertions.assertEquals("ERROR", exception.getMessage());
     }
 
     private Map<String, InstanceInfo> createInstances() {

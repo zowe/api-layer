@@ -10,13 +10,13 @@
 package org.zowe.apiml.apicatalog.services.status;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
@@ -33,12 +33,14 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class LocalApiDocServiceTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class LocalApiDocServiceTest {
     private static final String SERVICE_ID = "service";
     private static final String ZOSMF_ID = "ibmzosmf";
     private static final String SERVICE_HOST = "service";
@@ -61,11 +63,8 @@ public class LocalApiDocServiceTest {
 
     private APIDocRetrievalService apiDocRetrievalService;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         GatewayClient gatewayClient = new GatewayClient(getProperties());
         apiDocRetrievalService = new APIDocRetrievalService(
             restTemplate,
@@ -74,7 +73,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void testRetrievalOfAPIDoc() {
+    void testRetrievalOfAPIDoc() {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
@@ -99,7 +98,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenZosmfId_whenDocIsRequested_ValidDocIsProduced() {
+    void givenZosmfId_whenDocIsRequested_ValidDocIsProduced() {
         String responseBody = "api-doc [ null, null ] body";
         String expectedResponseBody = "api-doc [ true, false ] body";
 
@@ -125,7 +124,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenZosmfId_whenIncorrectResponseFromServer_thenReturnDefaultDoc() {
+    void givenZosmfId_whenIncorrectResponseFromServer_thenReturnDefaultDoc() {
         String responseBody = "Server not found";
 
         when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
@@ -140,15 +139,15 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void testFailedRetrievalOfAPIDocWhenServiceNotFound() {
-        exceptionRule.expect(ApiDocNotFoundException.class);
-        exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + ".");
-
-        apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+    void testFailedRetrievalOfAPIDocWhenServiceNotFound() {
+        Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
+            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        });
+        assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
     }
 
     @Test
-    public void testFailedRetrievalOfAPIDocWhenServerError() {
+    void testFailedRetrievalOfAPIDocWhenServerError() {
         String responseBody = "Server not found";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
@@ -158,14 +157,14 @@ public class LocalApiDocServiceTest {
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
-        exceptionRule.expect(ApiDocNotFoundException.class);
-        exceptionRule.expectMessage("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.");
-
-        apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
+            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        });
+        assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
     }
 
     @Test
-    public void testFailedRetrievalOfAPIDocWhenMetadataNotDefined() {
+    void testFailedRetrievalOfAPIDocWhenMetadataNotDefined() {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
@@ -175,14 +174,14 @@ public class LocalApiDocServiceTest {
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
-        exceptionRule.expect(ApiDocNotFoundException.class);
-        exceptionRule.expectMessage("No API Documentation defined for service " + SERVICE_ID + ".");
-
-        apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
+            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        });
+        assertEquals("No API Documentation defined for service " + SERVICE_ID + ".", exception.getMessage());
     }
 
     @Test
-    public void shouldGenerateSubstituteSwaggerIfSwaggerUrlNull() {
+    void shouldGenerateSubstituteSwaggerIfSwaggerUrlNull() {
         String generatedResponseBody = "{\n" +
             "    \"swagger\": \"2.0\",\n" +
             "    \"info\": {\n" +
@@ -236,7 +235,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void shouldCreateApiDocUrlFromRouting() {
+    void shouldCreateApiDocUrlFromRouting() {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
@@ -255,7 +254,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void shouldCreateApiDocUrlFromRoutingAndUseHttp() {
+    void shouldCreateApiDocUrlFromRoutingAndUseHttp() {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
@@ -274,7 +273,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenDefaultApiDoc_whenRetrieveDefault_thenReturnIt() {
+    void givenDefaultApiDoc_whenRetrieveDefault_thenReturnIt() {
         String responseBody = "api-doc body";
         Map<String, String> metadata = getMetadataWithMultipleApiInfo();
 
@@ -300,7 +299,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenNoDefaultApiDoc_whenRetrieveDefault_thenReturnHighestVersion() {
+    void givenNoDefaultApiDoc_whenRetrieveDefault_thenReturnHighestVersion() {
         String responseBody = "api-doc body";
         Map<String, String> metadata = getMetadataWithMultipleApiInfo();
         metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
@@ -327,7 +326,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenNoDefaultApiDocAndDifferentVersionFormat_whenRetrieveDefault_thenReturnHighestVersion() {
+    void givenNoDefaultApiDocAndDifferentVersionFormat_whenRetrieveDefault_thenReturnHighestVersion() {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
@@ -352,7 +351,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenNoApiDocs_whenRetrieveDefault_thenReturnNull() {
+    void givenNoApiDocs_whenRetrieveDefault_thenReturnNull() {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
@@ -371,7 +370,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenApiVersions_whenRetrieveVersions_thenReturnThem() {
+    void givenApiVersions_whenRetrieveVersions_thenReturnThem() {
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
             .thenReturn(getStandardInstance(getStandardMetadata(), false));
 
@@ -380,17 +379,17 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenNoApiVersions_whenRetrieveVersions_thenThrowException() {
+    void givenNoApiVersions_whenRetrieveVersions_thenThrowException() {
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
 
-        exceptionRule.expect(ApiVersionNotFoundException.class);
-        exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + ".");
-
-        apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
+        Exception exception = assertThrows(ApiVersionNotFoundException.class, () -> {
+            apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
+        });
+        assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
     }
 
     @Test
-    public void givenDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnIt() {
+    void givenDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnIt() {
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
             .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfo(), false));
 
@@ -399,7 +398,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenNoDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnHighestVersion() {
+    void givenNoDefaultApiVersion_whenRetrieveDefaultVersion_thenReturnHighestVersion() {
         Map<String, String> metadata = getMetadataWithMultipleApiInfo();
         metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
 
@@ -411,13 +410,13 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void givenNoApiInfo_whenRetrieveDefaultVersion_thenThrowException() {
+    void givenNoApiInfo_whenRetrieveDefaultVersion_thenThrowException() {
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
 
-        exceptionRule.expect(ApiVersionNotFoundException.class);
-        exceptionRule.expectMessage("Could not load instance information for service " + SERVICE_ID + ".");
-
-        apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+        Exception exception = assertThrows(ApiVersionNotFoundException.class, () -> {
+            apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+        });
+        assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
     }
 
     private HttpEntity<Object> getObjectHttpEntity() {

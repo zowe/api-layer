@@ -11,13 +11,14 @@ package org.zowe.apiml.apicatalog.services.cached;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -28,15 +29,19 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @SuppressWarnings({"squid:S2925"}) // replace with proper wait test library
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class CachedProductFamilyTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class CachedProductFamilyTest {
     private final Integer cacheRefreshUpdateThresholdInMillis = 2000;
 
     private CachedProductFamilyService service;
@@ -44,8 +49,8 @@ public class CachedProductFamilyTest {
     @Mock
     private final TransformService transformService = new TransformService(new GatewayClient());
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         service = new CachedProductFamilyService(
             null,
             transformService,
@@ -53,7 +58,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testRetrievalOfRecentlyUpdatedContainers() {
+    void testRetrievalOfRecentlyUpdatedContainers() {
         service.getContainer("demoapp", createApp("service1", "demoapp"));
         service.getContainer("demoapp2", createApp("service2", "demoapp2"));
 
@@ -62,7 +67,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
+    void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
         // To speed up the test, create instance which consider even 5 milliseconds as old.
         service = new CachedProductFamilyService(
             null,
@@ -80,7 +85,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
+    void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
         // To speed up the test, create instance which consider even 5 milliseconds as old.
         service = new CachedProductFamilyService(
             null,
@@ -92,11 +97,11 @@ public class CachedProductFamilyTest {
         Thread.sleep(10);
 
         Collection<APIContainer> containers = service.getRecentlyUpdatedContainers();
-        Assert.assertTrue(containers.isEmpty());
+        assertTrue(containers.isEmpty());
     }
 
     @Test
-    public void testRetrievalOfContainerServices() {
+    void testRetrievalOfContainerServices() {
         InstanceInfo instance1 = createApp("service1", "demoapp");
         service.getContainer("demoapp", instance1);
 
@@ -110,15 +115,17 @@ public class CachedProductFamilyTest {
         assertEquals("service2", containerService.getServiceId());
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testCreationOfContainerWithoutInstance() {
-        service.getContainer("demoapp", null);
+    @Test
+    void testCreationOfContainerWithoutInstance() {
+        assertThrows(NullPointerException.class, () -> {
+            service.getContainer("demoapp", null);
+        });
         assertEquals(0, service.getContainerCount());
         assertEquals(0, service.getAllContainers().size());
     }
 
     @Test
-    public void testGetMultipleContainersForASingleService() {
+    void testGetMultipleContainersForASingleService() {
         InstanceInfo instance = createApp("service1", "demoapp");
         service.getContainer("demoapp1", instance);
         service.getContainer("demoapp2", instance);
@@ -130,7 +137,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testCallCreationOfContainerThatAlreadyExistsButNothingHasChangedSoNoUpdate() {
+    void testCallCreationOfContainerThatAlreadyExistsButNothingHasChangedSoNoUpdate() {
         InstanceInfo instance = createApp("service1", "demoapp");
         APIContainer originalContainer = service.getContainer("demoapp", instance);
         Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
@@ -139,11 +146,11 @@ public class CachedProductFamilyTest {
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
-        Assert.assertTrue(equals);
+        assertTrue(equals);
     }
 
     @Test
-    public void testCallCreationOfContainerThatAlreadyExistsInstanceInfoHasChangedSoUpdateLastChangeTime() throws InterruptedException {
+    void testCallCreationOfContainerThatAlreadyExistsInstanceInfoHasChangedSoUpdateLastChangeTime() throws InterruptedException {
         APIContainer originalContainer = service.getContainer("demoapp", createApp("service", "demoapp"));
         Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
 
@@ -177,7 +184,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void givenInstanceIsIsInContainer_WhenNewVersionIsProvided_ThenContainerMetadataIsUpdated() {
+    void givenInstanceIsIsInContainer_WhenNewVersionIsProvided_ThenContainerMetadataIsUpdated() {
         // Create the initial container
         String serviceId = "apptoupdate",
             catalogId = "demoapp";
@@ -188,11 +195,11 @@ public class CachedProductFamilyTest {
         service.updateContainerFromInstance(serviceId, createApp(serviceId, catalogId,
             "1.0.1", newTitle));
 
-        Assert.assertEquals(container.getTitle(), newTitle);
+        assertEquals(container.getTitle(), newTitle);
     }
 
     @Test
-    public void testCalculationOfContainerTotalsWithAllServicesUp() {
+    void testCalculationOfContainerTotalsWithAllServicesUp() {
         CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
 
         InstanceInfo instance1 = createApp("service", "demoapp");
@@ -221,7 +228,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testCalculationOfContainerTotalsWithAllServicesDown() {
+    void testCalculationOfContainerTotalsWithAllServicesDown() {
         CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
 
         InstanceInfo instance1 = createApp("service1", "demoapp", InstanceInfo.InstanceStatus.DOWN);
@@ -242,7 +249,7 @@ public class CachedProductFamilyTest {
         service.addServiceToContainer("demoapp", instance2);
 
         APIContainer container = service.retrieveContainer("demoapp");
-        Assert.assertNotNull(container);
+        assertNotNull(container);
 
         service.calculateContainerServiceTotals(container);
         assertEquals("DOWN", container.getStatus());
@@ -251,7 +258,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testCalculationOfContainerTotalsWithSomeServicesDown() {
+    void testCalculationOfContainerTotalsWithSomeServicesDown() {
         CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
 
         InstanceInfo instance1 = createApp("service1", "demoapp", InstanceInfo.InstanceStatus.UP);
@@ -272,7 +279,7 @@ public class CachedProductFamilyTest {
         service.addServiceToContainer("demoapp", instance2);
 
         APIContainer container = service.retrieveContainer("demoapp");
-        Assert.assertNotNull(container);
+        assertNotNull(container);
 
         service.calculateContainerServiceTotals(container);
         assertEquals("WARNING", container.getStatus());
@@ -281,7 +288,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew()
+    void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew()
         throws URLTransformationException {
 
         HashMap<String, String> metadata = new HashMap<>();
@@ -319,7 +326,7 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void givenInstanceIsInTheCache_whenCallSaveContainerFromInstance_thenUpdate()
+    void givenInstanceIsInTheCache_whenCallSaveContainerFromInstance_thenUpdate()
         throws InterruptedException, URLTransformationException {
 
         HashMap<String, String> metadata = new HashMap<>();

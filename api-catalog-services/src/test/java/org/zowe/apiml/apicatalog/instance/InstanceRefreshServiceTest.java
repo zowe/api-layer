@@ -20,12 +20,14 @@ import org.zowe.apiml.product.gateway.GatewayClient;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,8 +42,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class InstanceRefreshServiceTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class InstanceRefreshServiceTest {
 
     private final ContainerServiceMockUtil containerServiceMockUtil = new ContainerServiceMockUtil();
 
@@ -61,14 +64,14 @@ public class InstanceRefreshServiceTest {
     private InstanceRetrievalService instanceRetrievalService;
 
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         instanceRefreshService.start();
         addApiCatalogToCache();
     }
 
     @Test
-    public void testServiceAddedToDiscoveryThatIsNotInCache() {
+    void testServiceAddedToDiscoveryThatIsNotInCache() {
         ContainerServiceState cachedState = containerServiceMockUtil.createContainersServicesAndInstances();
         containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications());
 
@@ -105,7 +108,7 @@ public class InstanceRefreshServiceTest {
     }
 
     @Test
-    public void testServiceRemovedFromDiscoveryThatIsInCache() {
+    void testServiceRemovedFromDiscoveryThatIsInCache() {
         ContainerServiceState cachedState = containerServiceMockUtil.createContainersServicesAndInstances();
         containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications());
 
@@ -141,7 +144,7 @@ public class InstanceRefreshServiceTest {
     }
 
     @Test
-    public void testServiceModifiedFromDiscoveryThatIsInCache() {
+    void testServiceModifiedFromDiscoveryThatIsInCache() {
         ContainerServiceState cachedState = containerServiceMockUtil.createContainersServicesAndInstances();
         containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications());
 
@@ -186,7 +189,7 @@ public class InstanceRefreshServiceTest {
     }
 
     @Test
-    public void testRefreshCacheFromDiscovery_whenGatewayClientIsNotInitialized() {
+    void testRefreshCacheFromDiscovery_whenGatewayClientIsNotInitialized() {
         when(gatewayClient.isInitialized()).thenReturn(false);
 
         instanceRefreshService.refreshCacheFromDiscovery();
@@ -196,7 +199,7 @@ public class InstanceRefreshServiceTest {
     }
 
     @Test
-    public void testRefreshCacheFromDiscovery_whenApiCatalogIsNotInCache() {
+    void testRefreshCacheFromDiscovery_whenApiCatalogIsNotInCache() {
         when(cachedServicesService.getService(CoreService.API_CATALOG.getServiceId())).thenReturn(null);
 
         instanceRefreshService.refreshCacheFromDiscovery();
