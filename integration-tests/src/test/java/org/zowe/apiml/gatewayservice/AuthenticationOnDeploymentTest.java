@@ -18,7 +18,6 @@ import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.config.RandomPort;
 import org.zowe.apiml.util.config.RandomPorts;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
@@ -36,7 +35,6 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
-import static org.zowe.apiml.util.config.RandomPort.available;
 
 /**
  * This test requires to allow endpoint routes on gateway (ie profile dev)

@@ -16,7 +16,6 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.config.RandomPort;
 import org.zowe.apiml.util.config.RandomPorts;
 import org.zowe.apiml.util.service.VirtualService;
 
