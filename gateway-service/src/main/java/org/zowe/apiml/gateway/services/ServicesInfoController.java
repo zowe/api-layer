@@ -32,7 +32,7 @@ public class ServicesInfoController {
     public ResponseEntity<ServiceInfo> getService(@PathVariable String serviceId) {
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(serviceId);
         HttpStatus status = (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) ?
-                HttpStatus.BAD_REQUEST : HttpStatus.OK;
+                HttpStatus.NOT_FOUND : HttpStatus.OK;
 
         return new ResponseEntity<>(serviceInfo, status);
     }
