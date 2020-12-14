@@ -29,7 +29,6 @@ dependencies {
     compile(project(':zaas-client'))
     compile(project(':caching-service'))
 
-    testCompile libraries.junit
     testCompile libraries.hamcrest
     testCompile libraries.rest_assured
     testCompile libraries.awaitility

@@ -10,37 +10,37 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static org.mockito.Mockito.when;
 
-public class CatalogApiDocControllerTest {
+class CatalogApiDocControllerTest {
 
     @Test
-    public void testCreationOfClass() {
+    void testCreationOfClass() {
         APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
         CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
-        Assert.assertNotNull(catalogApiDocController);
+        Assertions.assertNotNull(catalogApiDocController);
     }
 
     @Test
-    public void testGetApiDocInfo() {
+    void testGetApiDocInfo() {
         APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
         CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
         ResponseEntity<String> response = new ResponseEntity<>("Some API Doc", HttpStatus.OK);
 
         when(apiServiceStatusService.getServiceCachedApiDocInfo("service", "1.0.0")).thenReturn(response);
         ResponseEntity<String> res = catalogApiDocController.getApiDocInfo("service", "1.0.0");
-        Assert.assertNotNull(res);
-        Assert.assertEquals("Some API Doc", res.getBody());
+        Assertions.assertNotNull(res);
+        Assertions.assertEquals("Some API Doc", res.getBody());
     }
 
     @Test
-    public void testGetApiDiff() {
+    void testGetApiDiff() {
         APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
         CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
         String responseString = "<html>Some Diff</html>";
@@ -48,8 +48,8 @@ public class CatalogApiDocControllerTest {
 
         when(apiServiceStatusService.getApiDiffInfo("service", "v1", "v2")).thenReturn(response);
         ResponseEntity<String> res = catalogApiDocController.getApiDiff("service", "v1", "v2");
-        Assert.assertNotNull(res);
-        Assert.assertEquals(responseString, res.getBody());
+        Assertions.assertNotNull(res);
+        Assertions.assertEquals(responseString, res.getBody());
 
     }
 }

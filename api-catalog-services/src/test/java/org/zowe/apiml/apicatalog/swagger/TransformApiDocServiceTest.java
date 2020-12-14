@@ -13,28 +13,24 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV2Service;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV3Service;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
 
 import javax.validation.UnexpectedTypeException;
 import java.util.function.Function;
 
 import static org.mockito.Mockito.*;
 
-public class TransformApiDocServiceTest {
+class TransformApiDocServiceTest {
 
     private final String SERVICE_ID = "SERVICE_1";
 
     private Function<String, AbstractApiDocService> beanApiDocFactory;
     private TransformApiDocService transformApiDocService;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         ApiDocV2Service apiDocV2Service = mock(ApiDocV2Service.class);
         ApiDocV3Service apiDocV3Service = mock(ApiDocV3Service.class);
 
@@ -52,16 +48,16 @@ public class TransformApiDocServiceTest {
     }
 
     @Test
-    public void testTransformApiDoc_whenThereIsNotApiDocMatch() {
-        exceptionRule.expect(UnexpectedTypeException.class);
-        exceptionRule.expectMessage("Response is not a Swagger or OpenAPI type object");
-
+    void testTransformApiDoc_whenThereIsNotApiDocMatch() {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC4", null);
-        transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
+        Exception exception = Assertions.assertThrows(UnexpectedTypeException.class, () -> {
+            transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
+        });
+        Assertions.assertEquals("Response is not a Swagger or OpenAPI type object.", exception.getMessage());
     }
 
     @Test
-    public void testTransformApiDoc_whenSwaggerDocIsPresent() {
+    void testTransformApiDoc_whenSwaggerDocIsPresent() {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC2", null);
         transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
 
@@ -76,7 +72,7 @@ public class TransformApiDocServiceTest {
     }
 
     @Test
-    public void testTransformApiDoc_whenOpenDocIsPresent() {
+    void testTransformApiDoc_whenOpenDocIsPresent() {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC3", null);
         transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
 
