@@ -12,6 +12,8 @@ package org.zowe.apiml.gateway.services;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,8 +30,7 @@ import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.jupiter.api.Assertions.*;
@@ -193,13 +194,26 @@ class ServicesInfoServiceTest {
         assertEquals(InstanceInfo.InstanceStatus.DOWN, serviceInfo.getStatus());
     }
 
+
+    /**
+     * Check versioning when multiple APIs are present
+     * <p>
+     * Service section contains details about an instance with the highest version regardless of API
+     * API info section contains all major versions. Only the lowest major version is selected.
+     */
     @Test
-    // Not complete - should also try multiple API Ids
-    // Rename
-    void serviceDetailsAreUsedForInstanceWithHighestApiVersion() {
-        InstanceInfo instance1 = createMultipleApisInstance(1, Collections.singletonList("1.0.0"));
-        InstanceInfo instance2 = createMultipleApisInstance(2, Arrays.asList("0.0.0", "3.0.1"));
-        InstanceInfo instance3 = createMultipleApisInstance(3, Arrays.asList("1.1.0", "2.0.0", "1.0.99"));
+    void checkApisVersioning() {
+        InstanceInfo instance1 = createMultipleApisInstance(1, Arrays.asList(
+                new ImmutablePair<>("api1", "1.0.0"),
+                new ImmutablePair<>("api3", null)));
+        InstanceInfo instance2 = createMultipleApisInstance(2, Arrays.asList(
+                new ImmutablePair<>(null, "2.7.0"),
+                new ImmutablePair<>("api1", "0.0.0"),
+                new ImmutablePair<>("api2", "3.0.1")));
+        InstanceInfo instance3 = createMultipleApisInstance(3, Arrays.asList(
+                new ImmutablePair<>("api1", "1.0.1"),
+                new ImmutablePair<>("api3", "2.0.0"),
+                new ImmutablePair<>("api1", "1.0-99")));
         List<InstanceInfo> instances = Arrays.asList(instance1, instance2, instance3);
 
         when(eurekaClient.getApplication(CLIENT_SERVICE_ID)).thenReturn(new Application(CLIENT_SERVICE_ID, instances));
@@ -210,19 +224,43 @@ class ServicesInfoServiceTest {
         assertEquals("Client: 2", serviceInfo.getApiml().getService().getTitle());
         assertEquals("Test client: 2", serviceInfo.getApiml().getService().getDescription());
 
-        assertEquals(4,serviceInfo.getApiml().getApiInfo().size());
-        assertThat(serviceInfo.getApiml().getApiInfo(), hasItem(hasProperty("version", is("1.0.0"))));
+        assertEquals(6, serviceInfo.getApiml().getApiInfo().size());
+        assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
+                hasProperty("apiId", is("api1")),
+                hasProperty("version", is("0.0.0"))
+        )));
+        assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
+                hasProperty("apiId", is("api1")),
+                hasProperty("version", is("1.0.0"))
+        )));
+        assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
+                hasProperty("apiId", is("api2")),
+                hasProperty("version", is("3.0.1"))
+        )));
+        assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
+                hasProperty("apiId", is("api3")),
+                hasProperty("version", is(nullValue()))
+        )));
+        assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
+                hasProperty("apiId", is("api3")),
+                hasProperty("version", is("2.0.0"))
+        )));
+        assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
+                hasProperty("apiId", is(nullValue())),
+                hasProperty("version", is("2.7.0"))
+        )));
     }
 
-    private InstanceInfo createMultipleApisInstance(int clientNumber, List<String> versions) {
+    private InstanceInfo createMultipleApisInstance(int clientNumber, List<Pair<String, String>> versions) {
         Map<String, String> metadata = new HashMap<>();
         ApiInfo apiInfo;
 
-        for (String version : versions) {
+        for (Pair<String, String> version : versions) {
+            String gatewayUrl = (version.getRight() == null) ? null : "v" + version.getRight().replaceAll("\\.", "-");
             apiInfo = ApiInfo.builder()
-                    .apiId(CLIENT_API_ID)
-                    .version(version)
-                    .gatewayUrl("v" + version.replaceAll("\\.", "-"))
+                    .apiId(version.getLeft())
+                    .version(version.getRight())
+                    .gatewayUrl(gatewayUrl)
                     .build();
             metadata.putAll(EurekaMetadataParser.generateMetadata(CLIENT_SERVICE_ID, apiInfo));
         }

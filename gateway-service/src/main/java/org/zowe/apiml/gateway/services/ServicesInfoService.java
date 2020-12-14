@@ -155,7 +155,7 @@ public class ServicesInfoService {
         if (completeList.isEmpty()) return Collections.emptyList();
 
         completeList.sort(Comparator
-                .comparing(ServiceInfo.ApiInfoExtended::getApiId)
+                .comparing(ServiceInfo.ApiInfoExtended::getApiId, Comparator.nullsFirst(Comparator.naturalOrder()))
                 .thenComparing(ServiceInfo.ApiInfoExtended::getVersion, Comparator.comparing(this::getVersion))
         );
 
@@ -193,9 +193,17 @@ public class ServicesInfoService {
         if (version == null) return Version.unknownVersion();
 
         String[] versions = version.split("\\.");
-        int major = (versions.length >= 1) ? Integer.parseInt(versions[0]) : 0;
-        int minor = (versions.length >= 2) ? Integer.parseInt(versions[1]) : 0;
-        int patch = (versions.length >= 3) ? Integer.parseInt(versions[2]) : 0;
+
+        int major = 0;
+        int minor = 0;
+        int patch = 0;
+        try {
+            major = (versions.length >= 1) ? Integer.parseInt(versions[0]) : 0;
+            minor = (versions.length >= 2) ? Integer.parseInt(versions[1]) : 0;
+            patch = (versions.length >= 3) ? Integer.parseInt(versions[2]) : 0;
+        } catch (NumberFormatException ex) {
+            log.debug("Incorrect version {}", version);
+        }
 
         return new Version(major, minor, patch, null, null, null);
     }
