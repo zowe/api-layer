@@ -74,6 +74,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     }
 
     @Test
+    @MainframeDependentTests
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
 
         Cookie cookie = given().config(clientCertValid)
