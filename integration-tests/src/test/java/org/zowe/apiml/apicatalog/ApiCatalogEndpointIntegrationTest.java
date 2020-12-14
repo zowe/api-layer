@@ -225,6 +225,8 @@ public class ApiCatalogEndpointIntegrationTest {
 
         // When
         final String jsonResponse = EntityUtils.toString(response.getEntity());
+
+        System.out.println(jsonResponse);
         JSONArray errors = JsonPath.parse(jsonResponse).read("$.errors");
 
         assertEquals("[]", errors.toString());
@@ -268,6 +270,8 @@ public class ApiCatalogEndpointIntegrationTest {
     private HttpResponse getStaticApiRefreshResponse(String endpoint, int returnCode) throws IOException {
         URI uri = HttpRequestUtils.getUriFromGateway(endpoint);
         HttpPost request = new HttpPost(uri);
+        request.addHeader("Accept", "application/json");
+
         String cookie = HttpSecurityUtils.getCookieForGateway();
         HttpSecurityUtils.addCookie(request, cookie);
 
