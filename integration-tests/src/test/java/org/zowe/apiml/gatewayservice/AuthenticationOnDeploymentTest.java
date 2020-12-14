@@ -19,6 +19,7 @@ import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.RandomPort;
+import org.zowe.apiml.util.config.RandomPorts;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
@@ -66,7 +67,7 @@ class AuthenticationOnDeploymentTest {
     void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
 
-        List<Integer> ports = generateUniquePorts(2);
+        List<Integer> ports = RandomPorts.generateUniquePorts(2);
 
         try (
             final VirtualService service1 = new VirtualService("testService", ports.get(0));
@@ -149,7 +150,7 @@ class AuthenticationOnDeploymentTest {
     @Test
     void testReregistration() throws Exception {
 
-        List<Integer> ports = generateUniquePorts(3);
+        List<Integer> ports = RandomPorts.generateUniquePorts(3);
 
         try (
             final VirtualService service1 = new VirtualService("testService3", ports.get(0));
@@ -200,7 +201,7 @@ class AuthenticationOnDeploymentTest {
         String serviceId = "testservice4";
         String host = InetAddress.getLocalHost().getHostName();
 
-        List<Integer> ports = generateUniquePorts(3);
+        List<Integer> ports = RandomPorts.generateUniquePorts(3);
 
         try (
             final VirtualService service1 = new VirtualService(serviceId, ports.get(0));
@@ -271,41 +272,5 @@ class AuthenticationOnDeploymentTest {
             }
 
         }
-    }
-
-    private List<Integer> generateUniquePorts(int size) {
-        // Populate the array with random ports
-
-        Integer[] result = new Integer[size];
-        //     While the
-        while (portsNotSatisfied(result)) {
-            result = new Integer[size];
-            generateCandidates(result);
-        }
-
-        return Arrays.asList(result);
-    }
-
-    private void generateCandidates(Integer[] candidatePorts) {
-        for ( int i = 0; i < candidatePorts.length; i++) {
-            candidatePorts[i] = (new RandomPort()).getPort();
-        }
-    }
-
-    private boolean portsNotSatisfied(Integer[] ports) {
-        return !portsAreDistinct(ports) || !portsAreAvailable(ports);
-    }
-
-    private boolean portsAreAvailable(Integer[] ports) {
-        for (Integer port : ports) {
-            if (!available(port)) return false;
-        }
-
-        return true;
-    }
-
-    private boolean portsAreDistinct(Integer[] ports) {
-        Set<Integer> s = new HashSet<>(Arrays.asList(ports));
-        return (s.size() == ports.length);
     }
 }
