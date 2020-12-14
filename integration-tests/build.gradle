@@ -125,6 +125,7 @@ task runLocalIntegrationTests(type: Test) {
             'EnvironmentCheck',
             'SlowTests',
             'MainframeDependentTests',
+            'zOSMFAuthTest',
             'AdditionalLocalTest'
         )
     }
