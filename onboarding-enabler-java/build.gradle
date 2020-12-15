@@ -13,7 +13,6 @@ dependencies {
     compileOnly libraries.javax_servlet_api
     compileOnly libraries.javax_inject
 
-    testCompile libraries.junit
     testCompile libraries.mockito_core
     testCompile libraries.spring4Mvc
     testCompile libraries.spring4Test

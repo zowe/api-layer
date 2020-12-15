@@ -12,7 +12,8 @@ package org.zowe.apiml.cachingservice;
 
 import io.restassured.RestAssured;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -47,9 +48,9 @@ class CachingApiIntegrationTest {
 
 
     @Test
-    @Disabled
     void givenMultipleConcurrentCalls_correctResponseInTheEnd() throws InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(8);
+
         AtomicInteger ai = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
             service.execute(() -> {
@@ -62,15 +63,24 @@ class CachingApiIntegrationTest {
 
             });
         }
+
+        service.shutdown();
+        service.awaitTermination(30L, TimeUnit.SECONDS);
+
         given()
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .get(CACHING_PATH).then()
+            .get(CACHING_PATH).then().body("20", is(not(isEmptyString())))
+            .body("21", is(not(isEmptyString())))
+            .body("22", is(not(isEmptyString())))
             .statusCode(200);
+
+        ExecutorService deleteService = Executors.newFixedThreadPool(8);
+
         AtomicInteger ai2 = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
-            service.execute(() -> {
+            deleteService.execute(() -> {
                 given()
                     .contentType(JSON)
                     .cookie(COOKIE_NAME, jwtToken)
@@ -80,8 +90,8 @@ class CachingApiIntegrationTest {
             });
         }
 
-        service.shutdown();
-        service.awaitTermination(30L, TimeUnit.SECONDS);
+        deleteService.shutdown();
+        deleteService.awaitTermination(30L, TimeUnit.SECONDS);
 
         given()
             .contentType(JSON)
