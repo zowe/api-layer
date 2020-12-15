@@ -31,7 +31,6 @@ dependencies {
     implementation libraries.jersey_container_servlet_core
     implementation libraries.jersey_media_json_jackson
 
-    testCompile libraries.junit
     testCompile libraries.jersey_test_provider_jdk_http
     testCompile libraries.spring4Test
     testCompile libraries.mockito_core

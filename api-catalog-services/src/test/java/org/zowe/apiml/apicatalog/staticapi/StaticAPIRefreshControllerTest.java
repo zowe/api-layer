@@ -9,14 +9,14 @@
  */
 package org.zowe.apiml.apicatalog.staticapi;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestClientException;
 import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
@@ -29,21 +29,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {StaticAPIRefreshController.class}, secure = false)
-public class StaticAPIRefreshControllerTest {
+class StaticAPIRefreshControllerTest {
 
     private static final String API_REFRESH_ENDPOINT = "/static-api/refresh";
 
     @Autowired
     private MockMvc mockMvc;
 
-
     @Autowired
     private StaticAPIService staticAPIService;
 
     @Test
-    public void givenServiceNotFoundException_whenCallRefreshAPI_thenResponseShouldBe503WithSpecificMessage() throws Exception {
+    void givenServiceNotFoundException_whenCallRefreshAPI_thenResponseShouldBe503WithSpecificMessage() throws Exception {
         when(staticAPIService.refresh()).thenThrow(
             new ServiceNotFoundException("Exception")
         );
@@ -58,7 +57,7 @@ public class StaticAPIRefreshControllerTest {
     }
 
     @Test
-    public void givenRestClientException_whenCallRefreshAPI_thenResponseShouldBe500WithSpecificMessage() throws Exception {
+    void givenRestClientException_whenCallRefreshAPI_thenResponseShouldBe500WithSpecificMessage() throws Exception {
         when(staticAPIService.refresh()).thenThrow(
             new RestClientException("Exception")
         );
@@ -73,7 +72,7 @@ public class StaticAPIRefreshControllerTest {
     }
 
     @Test
-    public void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() throws Exception {
+    void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() throws Exception {
         when(staticAPIService.refresh()).thenReturn(
             new StaticAPIResponse(200, "This is body")
         );

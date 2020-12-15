@@ -28,8 +28,7 @@ ext {
     commonsTextVersion = '1.8'
     gradleGitPropertiesVersion = '1.5.1'
     jettyWebSocketClientVersion = '9.4.35.v20201120'
-    junitVersion = '4.12'
-    junitVintageVersion = '5.5.2'
+    junitJupiterVersion = '5.5.2'
     eurekaClientVersion = '1.9.13'
     netflixServoVersion = '0.12.28'
     logbackVersion = '1.2.3'
@@ -136,9 +135,8 @@ ext {
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
         netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
 
-        junit                              : "junit:junit:${junitVersion}",
-        junitVintage                       : "org.junit.vintage:junit-vintage-engine:${junitVintageVersion}",
-        junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitVintageVersion}",
+        junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
+        junitVintage                       : "org.junit.vintage:junit-vintage-engine:${junitJupiterVersion}",
         mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
         mockito_jupiter                    : "org.mockito:mockito-junit-jupiter:${mockitoCoreVersion}",
 

@@ -19,7 +19,7 @@ public class SafPlatformClassFactory implements PlatformClassFactory {
     private final ApimlLogger apimlLog = ApimlLogger.of(SafPlatformClassFactory.class, YamlMessageServiceInstance.getInstance());
 
     @Override
-    public Class<?> getPlatformUserClass() throws ClassNotFoundException {
+    public Class<?> getPlatformUserClass() {
         Object platformUser = getPlatformUser();
         if (!((ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) platformUser).isUsingBaseImplementation()) {
             apimlLog.log("org.zowe.apiml.security.loginEndpointInDummyMode", MockPlatformUser.VALID_USERID, MockPlatformUser.VALID_PASSWORD);
@@ -33,7 +33,7 @@ public class SafPlatformClassFactory implements PlatformClassFactory {
         try {
             aClass = Class.forName("com.ibm.os390.security.PlatformReturned");
         } catch (ClassNotFoundException e) {
-            aClass = Class.forName("org.zowe.apiml.gateway.security.login.saf.PlatformReturned");
+            aClass = Class.forName("org.zowe.apiml.security.common.auth.saf.PlatformReturned");
         }
         return aClass;
     }
