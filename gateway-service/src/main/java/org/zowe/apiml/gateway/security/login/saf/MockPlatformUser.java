@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.login.saf;
 
+import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
+
 public class MockPlatformUser implements PlatformUser {
     public static final String VALID_USERID = "USER";
     public static final String VALID_PASSWORD = "validPassword";
