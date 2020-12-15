@@ -18,24 +18,42 @@ def getBaseNameLite() {
 }
 
 def getLiteLibJar(file, output) {
+
     if (!file.exists()) return
     if (file.isDirectory()) {
         file.listFiles().each { getLiteLibJar(it, output) }
     } else if (file.name.contains("-lite-lib") && file.name.endsWith(".jar")) {
+        logger.info("Processing: " + file.getAbsolutePath())
+        logger.info("ZipTree: " + zipTree(file))
         output.add(zipTree(file))
     }
+
 }
 
-def getLiteLibJars() {
-    def libraries = []
-    rootProject.subprojects.findAll( { getLiteLibJar(it.buildDir, libraries) } )
-    return libraries
+def getLiteLibJarOutput(file) {
+    def output = []
+    if (!file.exists()) return
+    if (file.isDirectory()) {
+        file.listFiles().each { getLiteLibJar(it, output) }
+    } else if (file.name.contains("-lite-lib") && file.name.endsWith(".jar")) {
+        logger.info("Processing: " + file.getAbsolutePath())
+        logger.info("ZipTree: " + zipTree(file))
+        output.add(zipTree(file))
+    }
+    return output
 }
 
 task liteLibJarAll(type: Jar) {
+
     archiveName = getBaseNameLite() + ".jar"
     entryCompression = ZipEntryCompression.STORED
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    from getLiteLibJars()
+    from { rootProject.subprojects.collectMany {getLiteLibJarOutput(it.buildDir)}.collect() }
 }
+
+build.dependsOn(liteLibJarAll)
+liteLibJarAll.dependsOn(":gateway-service:build")
+liteLibJarAll.dependsOn(":discovery-service:build")
+liteLibJarAll.dependsOn(":api-catalog-services:build")
+liteLibJarAll.dependsOn(":gateway-service:build")
