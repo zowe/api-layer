@@ -106,6 +106,12 @@ configurations {
     all*.exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-kotlin'
 }
 
+task buildCore(dependsOn: [':gateway-service:build', ':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',
+                           ':discoverable-client:build', ':zaas-client:build']) {
+    description "Build core components"
+    group "build"
+}
+
 task runIntegrationTests(dependsOn: ":integration-tests:runIntegrationTests") {
     description "Run integration tests"
     group "Integration tests"
@@ -121,7 +127,23 @@ task environmentCheck(dependsOn: ":integration-tests:environmentCheck") {
     group "Integration tests"
 }
 
-task runCITests(dependsOn: [":integration-tests:runCITests"]) {
+task runIntegrationTestInstances(dependsOn: buildCore) {
+    doFirst {
+        if (System.properties['os.name'].toLowerCase().contains('windows')) {
+            ext.process = new ProcessBuilder()
+                .directory(projectDir)
+                .command("npm.cmd", "run", "api-layer-ci")
+                .start()
+        } else {
+            ext.process = new ProcessBuilder()
+                .directory(projectDir)
+                .command("npm", "run", "api-layer-ci", ">", "integration-instances.log")
+                .start()
+        }
+    }
+}
+
+task runCITests(dependsOn: [":integration-tests:runCITests", "runIntegrationTestInstances"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
 }

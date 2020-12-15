@@ -92,55 +92,18 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build and Test') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
                         withSonarQubeEnv('sonarcloud-server') {
-
-                            sh './gradlew --info --scan build coverage sonarqube \
+                            sh './gradlew --info --scan build coverage sonarqube runCITests runCITestsInternalPort \
                             -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true \
                             -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} \
                             -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword \
                             -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017 \
                             -DauxiliaryUserList.value="USER1,validPassword;USER2,validPassword"'
-
                         }
-                    }
-                }
-            }
-        }
-         stage('Build Lite lib') {
-                    steps {
-                        timeout(time: 20, unit: 'MINUTES') {
-                            withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
-                                withSonarQubeEnv('sonarcloud-server') {
-                                    sh './gradlew --info --scan liteLibJarAll  -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} -DexternalJenkinsToggle="true"'
-                                }
-                            }
-                        }
-                    }
-                }
-
-        stage('Archive') {
-            steps {
-                archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
-                archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar'
-                archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
-                archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
-                archiveArtifacts artifacts: 'build/libs/**/*.jar'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                timeout(time: 20, unit: 'MINUTES') {
-                    withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
-                        sh '''
-                        tail -f integration-instances.log &
-                        npm run api-layer-ci > integration-instances.log &
-                        ./gradlew --info --scan runCITests runCITestsInternalPort -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
-                        '''
                     }
                 }
             }
@@ -221,7 +184,7 @@ pipeline {
     post {
         always {
             junit allowEmptyResults: true, testResults: '**/test-results/**/*.xml'
-            archiveArtifacts artifacts: 'integration-instances.log', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/integration-instances.log', allowEmptyArchive: true
             publishHTML (target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
@@ -246,6 +209,16 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: "Unit Tests Report - api-catalog-services"
             ])
+        }
+
+        success {
+            archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'caching-service/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'api-layer.tar.gz'
         }
     }
 }
