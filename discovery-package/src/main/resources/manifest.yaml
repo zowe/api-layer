@@ -23,3 +23,5 @@ commands:
 apimlServices:
   dynamic:
     - serviceId: discovery
+  static:
+    - file: zosmf-static-definition.yaml.template
