@@ -481,9 +481,151 @@
                 }
             },
             "ServiceInfo": {
+                "type": "object",
                 "properties": {
-                    "zowe": {
-                        "$ref": "#/components/schemas/VersionInfoDetails"
+                    "apiml": {
+                        "type": "object",
+                        "properties": {
+                            "apiInfo": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "apiId": {
+                                            "type": "string",
+                                            "example": "zowe.apiml.apiml.gateway"
+                                        },
+                                        "basePath": {
+                                            "type": "string",
+                                            "example": "/gateway/api/v1"
+                                        },
+                                        "baseUrl": {
+                                            "type": "string",
+                                            "example": "https://localhost:10010/gateway/api/v1"
+                                        },
+                                        "defaultApi": {
+                                            "type": "boolean"
+                                        },
+                                        "documentationUrl": {
+                                            "type": "string",
+                                            "example": "https://zowe.github.io/docs-site/"
+                                        },
+                                        "gatewayUrl": {
+                                            "type": "string",
+                                            "example": "api/v1"
+                                        },
+                                        "swaggerUrl": {
+                                            "type": "string",
+                                            "example": "https://localhost:10010/api-doc"
+                                        },
+                                        "version": {
+                                            "type": "string",
+                                            "example": "1.0.0"
+                                        }
+                                    }
+                                }
+                            },
+                            "authentication": {
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "applid": {
+                                            "type": "string",
+                                            "example": "TSTAPPL"
+                                        },
+                                        "scheme": {
+                                            "type": "string",
+                                            "example": "zoweJwt"
+                                        },
+                                        "supportsSso": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            },
+                            "service": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string",
+                                        "example": "API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security."
+                                    },
+                                    "homePageUrl": {
+                                        "type": "string",
+                                        "example": "https://localhost:10010/"
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "API Gateway"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "instances": {
+                        "type": "object",
+                        "properties": {
+                            "localhost:gateway:10017": {
+                                "type": "object",
+                                "properties": {
+                                    "healthCheckUrl": {
+                                        "type": "string",
+                                        "example": "https://localhost:10010/application/health"
+                                    },
+                                    "homePageUrl": {
+                                        "type": "string",
+                                        "example": "https://localhost:10010/"
+                                    },
+                                    "hostname": {
+                                        "type": "string",
+                                        "example": "localhost"
+                                    },
+                                    "ipAddr": {
+                                        "type": "string",
+                                        "example": "127.0.0.1"
+                                    },
+                                    "metadata": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "key": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "port": {
+                                        "type": "integer",
+                                        "format": "int32",
+                                        "example": 10017
+                                    },
+                                    "protocol": {
+                                        "type": "string",
+                                        "example": "https"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "UP"
+                                    },
+                                    "statusPageUrl": {
+                                        "type": "string",
+                                        "example": "https://localhost:10010/application/info"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "serviceId": {
+                        "type": "string",
+                        "example": "gateway"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "UP"
                     }
                 }
             },

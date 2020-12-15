@@ -146,7 +146,7 @@ public class ServicesInfoService {
                                 .homePageUrl(instanceInfo.getHomePageUrl())
                                 .healthCheckUrl(getHealthCheckUrl(instanceInfo))
                                 .statusPageUrl(instanceInfo.getStatusPageUrl())
-                                .metadata(instanceInfo.getMetadata())
+                                .customMetadata(getCustomMetadata(instanceInfo.getMetadata()))
                                 .build()
                 ));
     }
@@ -214,6 +214,12 @@ public class ServicesInfoService {
         } else {
             return InstanceInfo.InstanceStatus.DOWN;
         }
+    }
+
+    private Map<String, String> getCustomMetadata(Map<String, String> metadata) {
+        return metadata.entrySet().stream()
+                .filter(entry -> !entry.getKey().startsWith("apiml."))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private String getBasePath(ApiInfo apiInfo, InstanceInfo instanceInfo) {

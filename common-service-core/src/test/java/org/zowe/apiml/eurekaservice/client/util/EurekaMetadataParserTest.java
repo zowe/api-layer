@@ -9,32 +9,27 @@
  */
 package org.zowe.apiml.eurekaservice.client.util;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.zowe.apiml.auth.AuthenticationScheme.ZOSMF;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
-public class EurekaMetadataParserTest {
+class EurekaMetadataParserTest {
+
     private final EurekaMetadataParser eurekaMetadataParser = new EurekaMetadataParser();
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
-    public void testParseApiInfo() {
+    void testParseApiInfo() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "gatewayUrl");
         metadata.put(API_INFO + ".2." + API_INFO_GATEWAY_URL, "gatewayUrl2");
@@ -59,7 +54,7 @@ public class EurekaMetadataParserTest {
     }
 
     @Test
-    public void testParseRoutes() {
+    void testParseRoutes() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
@@ -76,17 +71,17 @@ public class EurekaMetadataParserTest {
 
         RoutedServices expectedRoutes = new RoutedServices();
         expectedRoutes.addRoutedService(
-            new RoutedService("api-v1", "api/v1", "/"));
+                new RoutedService("api-v1", "api/v1", "/"));
         expectedRoutes.addRoutedService(
-            new RoutedService("api-v2", "api/v2", "/test"));
+                new RoutedService("api-v2", "api/v2", "/test"));
         expectedRoutes.addRoutedService(
-            new RoutedService("api-v5", "api/v5", "/test"));
+                new RoutedService("api-v5", "api/v5", "/test"));
 
         assertEquals(expectedRoutes.toString(), routes.toString());
     }
 
     @Test
-    public void testParseToListRoute() {
+    void testParseToListRoute() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
@@ -101,26 +96,26 @@ public class EurekaMetadataParserTest {
 
         List<RoutedService> actualRoutes = eurekaMetadataParser.parseToListRoute(metadata);
         List<RoutedService> expectedListRoute = Arrays.asList(
-            new RoutedService("api-v1", "api/v1", "/"),
-            new RoutedService("api-v2", "api/v2", "/test"),
-            new RoutedService("api-v5", "api/v5", "/test")
+                new RoutedService("api-v1", "api/v1", "/"),
+                new RoutedService("api-v2", "api/v2", "/test"),
+                new RoutedService("api-v5", "api/v5", "/test")
         );
 
-        assertEquals("List route size is different", 3, actualRoutes.size());
+        assertEquals(3, actualRoutes.size(), "List route size is different");
         assertThat(actualRoutes, containsInAnyOrder(expectedListRoute.toArray()));
     }
 
     @Test
-    public void testParseToListRoute_whenMetadatakeyElementsIsDifferentFrom4() {
+    void testParseToListRoute_whenMetadataKeyElementsIsDifferentFrom4() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put(ROUTES + ".api-v1.test." + ROUTES_GATEWAY_URL, "api/v1");
 
         List<RoutedService> actualRoutes = eurekaMetadataParser.parseToListRoute(metadata);
-        assertEquals("List route is not empty", 0, actualRoutes.size());
+        assertEquals(0, actualRoutes.size(), "List route is not empty");
     }
 
     @Test
-    public void generateFullMetadata() {
+    void generateFullMetadata() {
         String serviceId = "test service";
         String apiId = "zowe.apiml.test";
         String gatewayUrl = "api/v1";
@@ -149,7 +144,7 @@ public class EurekaMetadataParserTest {
     }
 
     @Test
-    public void generateMetadataWithNoGatewayUrl() {
+    void generateMetadataWithNoGatewayUrl() {
         String serviceId = "test service";
         String version = "1.0.0";
 
@@ -161,7 +156,7 @@ public class EurekaMetadataParserTest {
     }
 
     @Test
-    public void generateNoMetadata() {
+    void generateNoMetadata() {
         String serviceId = "test service";
 
         ApiInfo apiInfo = new ApiInfo(); // isDefaultApi defaults to false
@@ -170,28 +165,57 @@ public class EurekaMetadataParserTest {
     }
 
     @Test
-    public void generateMetadataWithIncorrectSwaggerUrl() {
+    void generateMetadataWithIncorrectSwaggerUrl() {
         String serviceId = "test service";
         String gatewayUrl = "api/v1";
         String swaggerUrl = "www.badAddress";
 
-        exceptionRule.expect(MetadataValidationException.class);
-        exceptionRule.expectMessage("The Swagger URL \"" + swaggerUrl + "\" for service " + serviceId + " is not valid");
-
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, swaggerUrl, null);
-        EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+
+        Exception exception = assertThrows(MetadataValidationException.class, () ->
+                EurekaMetadataParser.generateMetadata(serviceId, apiInfo)
+        );
+
+        assertTrue(exception.getMessage().contains("The Swagger URL \"" + swaggerUrl + "\" for service " + serviceId + " is not valid"));
     }
 
     @Test
-    public void generateMetadataWithIncorrectDocumentationUrl() {
+    void generateMetadataWithIncorrectDocumentationUrl() {
         String serviceId = "test service";
         String gatewayUrl = "api/v1";
         String documentationUrl = "www.badAddress";
 
-        exceptionRule.expect(MetadataValidationException.class);
-        exceptionRule.expectMessage("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid");
-
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, null, documentationUrl);
-        EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+
+        Exception exception = assertThrows(MetadataValidationException.class, () ->
+                EurekaMetadataParser.generateMetadata(serviceId, apiInfo));
+
+        assertTrue(exception.getMessage().contains("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid"));
     }
+
+    @Test
+    void whenFullInfo_testAuthenticationParser() {
+        String applid = "applid";
+
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(AUTHENTICATION_SCHEME, ZOSMF.getScheme());
+        metadata.put(AUTHENTICATION_APPLID, applid);
+        metadata.put(AUTHENTICATION_SSO, Boolean.TRUE.toString());
+
+        Authentication authentication = eurekaMetadataParser.parseAuthentication(metadata);
+
+        assertEquals(ZOSMF, authentication.getScheme());
+        assertEquals(applid, authentication.getApplid());
+        assertTrue(authentication.supportsSso());
+    }
+
+    @Test
+    void whenNseoInfo_testAuthenticationParser() {
+        Authentication authentication = eurekaMetadataParser.parseAuthentication(Collections.emptyMap());
+
+        assertNull(authentication.getScheme());
+        assertNull(authentication.getApplid());
+        assertFalse(authentication.supportsSso());
+    }
+
 }

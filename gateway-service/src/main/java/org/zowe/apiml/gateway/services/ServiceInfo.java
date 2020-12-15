@@ -50,7 +50,7 @@ public class ServiceInfo {
         private String homePageUrl;
         private String healthCheckUrl;
         private String statusPageUrl;
-        private Map<String, String> metadata;
+        private Map<String, String> customMetadata;
     }
 
     @Data
