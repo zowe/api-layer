@@ -226,7 +226,6 @@ public class ApiCatalogEndpointIntegrationTest {
         // When
         final String jsonResponse = EntityUtils.toString(response.getEntity());
 
-        System.out.println(jsonResponse);
         JSONArray errors = JsonPath.parse(jsonResponse).read("$.errors");
 
         assertEquals("[]", errors.toString());
