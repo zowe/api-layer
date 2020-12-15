@@ -27,42 +27,46 @@ import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AbstractApiDocServiceTest {
+
+class AbstractApiDocServiceTest {
 
     private static final String GATEWAY_SCHEME = "http";
     private static final String GATEWAY_HOST = "gateway:10000";
 
     private AbstractApiDocService abstractApiDocService;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         GatewayClient gatewayClient = new GatewayClient(getProperties());
         abstractApiDocService = new DummyApiDocService(gatewayClient);
     }
 
     @Test
-    public void shouldGetShortEndpoint() {
+    void shouldGetShortEndpoint() {
         String shortEndpoint = abstractApiDocService.getShortEndPoint("/apicatalog/api/v1", "/apicatalog");
         assertEquals("/apicatalog", shortEndpoint);
     }
 
     @Test
-    public void shouldGetEndpoint() {
+    void shouldGetEndpoint() {
         String endpoint = abstractApiDocService.getEndPoint("/api/v1/api-doc", "/apicatalog");
         assertEquals("/api/v1/api-doc/apicatalog", endpoint);
     }
 
     @Test
-    public void shouldGetEndpointPairs() {
+    void shouldGetEndpointPairs() {
         RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog/api/v1");
         Pair endpointPairs = abstractApiDocService.getEndPointPairs("/apicatalog", "apicatalog", routedService);
         ImmutablePair expectedPairs = new ImmutablePair("/apicatalog", "/apicatalog/api/v1/apicatalog");
@@ -70,13 +74,13 @@ public class AbstractApiDocServiceTest {
     }
 
     @Test
-    public void shouldReturnNull_whenGetRoutedServiceByApiInfo_IfApiInfoIsNull() {
+    void shouldReturnNull_whenGetRoutedServiceByApiInfo_IfApiInfoIsNull() {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, null, null);
         assertNull(abstractApiDocService.getRoutedServiceByApiInfo(apiDocInfo, "/"));
     }
 
     @Test
-    public void preparePath() {
+    void preparePath() {
         List<Server> servers = new ArrayList<>();
         servers.add(0, new Server().url("/apicatalog"));
         ApiDocPath<PathItem> apiDocPath = new ApiDocPath<>();

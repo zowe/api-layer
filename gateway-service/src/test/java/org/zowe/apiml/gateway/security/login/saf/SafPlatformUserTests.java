@@ -9,14 +9,24 @@
  */
 package org.zowe.apiml.gateway.security.login.saf;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.zowe.apiml.gateway.security.login.saf.MockPlatformUser.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SafPlatformUserTests {
-    private static SafPlatformUser safPlatformUser = new SafPlatformUser(new MockPlatformClassFactory());
+
+    private static SafPlatformUser safPlatformUser;
+
+    @BeforeAll
+    void setUp() throws ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException {
+        safPlatformUser = new SafPlatformUser(new MockPlatformClassFactory());
+    }
 
     @Test
     void returnsNullForValidAuthentication() {

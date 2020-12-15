@@ -12,12 +12,14 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
@@ -34,8 +36,9 @@ import java.util.Set;
 
 import static org.mockito.BDDMockito.given;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class ApiCatalogControllerTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class ApiCatalogControllerTests {
     private final String pathToContainers = "/containers";
 
     @Mock
@@ -51,7 +54,7 @@ public class ApiCatalogControllerTests {
     private ApiCatalogController apiCatalogController;
 
     @Test
-    public void whenGetAllContainers_givenNothing_thenReturnContainersWithState() {
+    void whenGetAllContainers_givenNothing_thenReturnContainersWithState() {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 
@@ -71,7 +74,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void givenNoContainersAreAvailable_whenAllContainersAreRequested_thenReturnNoContent() {
+    void givenNoContainersAreAvailable_whenAllContainersAreRequested_thenReturnNoContent() {
         given(cachedProductFamilyService.getAllContainers()).willReturn(null);
 
         RestAssuredMockMvc.standaloneSetup(apiCatalogController);
@@ -83,7 +86,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void givenContainerWithGivenIdIsUnavailable_whenRequested_thenReturnOk() {
+    void givenContainerWithGivenIdIsUnavailable_whenRequested_thenReturnOk() {
         String containerId = "service1";
         given(cachedProductFamilyService.getContainerById(containerId)).willReturn(null);
 
@@ -96,7 +99,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void whenGetSingleContainer_thenPopulateApiDocForServices() throws ContainerStatusRetrievalThrowable {
+    void whenGetSingleContainer_thenPopulateApiDocForServices() throws ContainerStatusRetrievalThrowable {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 
@@ -117,18 +120,18 @@ public class ApiCatalogControllerTests {
         given(this.cachedApiDocService.getDefaultApiVersionForService("service2")).willReturn(defaultApiVersion);
 
         ResponseEntity<List<APIContainer>> containers = this.apiCatalogController.getAPIContainerById("api-one");
-        Assert.assertNotNull(containers.getBody());
-        Assert.assertEquals(1, containers.getBody().size());
+        Assertions.assertNotNull(containers.getBody());
+        Assertions.assertEquals(1, containers.getBody().size());
         containers.getBody().forEach(apiContainer ->
             apiContainer.getServices().forEach(apiService -> {
-                Assert.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                Assert.assertEquals(apiVersions, apiService.getApiVersions());
-                Assert.assertEquals(defaultApiVersion, apiService.getDefaultApiVersion());
+                Assertions.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                Assertions.assertEquals(apiVersions, apiService.getApiVersions());
+                Assertions.assertEquals(defaultApiVersion, apiService.getDefaultApiVersion());
             }));
     }
 
     @Test
-    public void whenGetSingleContainer_thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
+    void whenGetSingleContainer_thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 
@@ -144,22 +147,22 @@ public class ApiCatalogControllerTests {
         given(this.cachedApiDocService.getDefaultApiDocForService("service2")).willThrow(new RuntimeException());
         given(this.cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
         ResponseEntity<List<APIContainer>> containers = this.apiCatalogController.getAPIContainerById("api-one");
-        Assert.assertNotNull(containers.getBody());
-        Assert.assertEquals(1, containers.getBody().size());
+        Assertions.assertNotNull(containers.getBody());
+        Assertions.assertEquals(1, containers.getBody().size());
         containers.getBody().forEach(apiContainer ->
             apiContainer.getServices().forEach(apiService -> {
                 if (apiService.getServiceId().equals("service1")) {
-                    Assert.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                    Assert.assertEquals(apiService.getApiVersions(), apiVersions);
+                    Assertions.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                    Assertions.assertEquals(apiService.getApiVersions(), apiVersions);
                 }
                 if (apiService.getServiceId().equals("service2")) {
-                    Assert.assertNull(apiService.getApiDoc());
+                    Assertions.assertNull(apiService.getApiDoc());
                 }
             }));
     }
 
     @Test
-    public void whenGetSingleContainer_thenPopulateApiVersionsForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
+    void whenGetSingleContainer_thenPopulateApiVersionsForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 
@@ -176,17 +179,17 @@ public class ApiCatalogControllerTests {
         given(this.cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
         given(this.cachedApiDocService.getApiVersionsForService("service2")).willThrow(new RuntimeException());
         ResponseEntity<List<APIContainer>> containers = this.apiCatalogController.getAPIContainerById("api-one");
-        Assert.assertNotNull(containers.getBody());
-        Assert.assertEquals(1, containers.getBody().size());
+        Assertions.assertNotNull(containers.getBody());
+        Assertions.assertEquals(1, containers.getBody().size());
         containers.getBody().forEach(apiContainer ->
             apiContainer.getServices().forEach(apiService -> {
                 if (apiService.getServiceId().equals("service1")) {
-                    Assert.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                    Assert.assertEquals(apiService.getApiVersions(), apiVersions);
+                    Assertions.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                    Assertions.assertEquals(apiService.getApiVersions(), apiVersions);
                 }
                 if (apiService.getServiceId().equals("service2")) {
-                    Assert.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                    Assert.assertNull(apiService.getApiVersions());
+                    Assertions.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                    Assertions.assertNull(apiService.getApiVersions());
                 }
             }));
     }

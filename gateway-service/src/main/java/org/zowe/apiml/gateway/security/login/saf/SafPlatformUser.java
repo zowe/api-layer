@@ -10,37 +10,37 @@
 package org.zowe.apiml.gateway.security.login.saf;
 
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
+import org.zowe.apiml.security.common.auth.saf.PlatformReturnedHelper;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Method;
 
 public class SafPlatformUser implements PlatformUser {
-    private final PlatformClassFactory platformClassFactory;
 
-    public SafPlatformUser(PlatformClassFactory platformClassFactory) {
+    private final PlatformClassFactory platformClassFactory;
+    private final PlatformReturnedHelper<Object> platformReturnedHelper;
+    private final MethodHandle authenticateMethodHandle;
+
+    public SafPlatformUser(PlatformClassFactory platformClassFactory)
+        throws IllegalAccessException, ClassNotFoundException, NoSuchFieldException, NoSuchMethodException
+    {
         this.platformClassFactory = platformClassFactory;
+        this.platformReturnedHelper = new PlatformReturnedHelper<>((Class<Object>) platformClassFactory.getPlatformReturnedClass());
+
+        Method method = platformClassFactory.getPlatformUserClass()
+            .getMethod("authenticate", String.class, String.class);
+        authenticateMethodHandle = MethodHandles.lookup().unreflect(method);
     }
 
     @Override
     public PlatformReturned authenticate(String userid, String password) {
         try {
-            Object safReturned = platformClassFactory.getPlatformUserClass()
-                    .getMethod("authenticate", String.class, String.class)
-                    .invoke(platformClassFactory.getPlatformUser(), userid, password);
-            if (safReturned == null) {
-                return null;
-            } else {
-                Class<?> returnedClass = platformClassFactory.getPlatformReturnedClass();
-                return PlatformReturned.builder().success(returnedClass.getField("success").getBoolean(safReturned))
-                        .rc(returnedClass.getField("rc").getInt(safReturned))
-                        .errno(returnedClass.getField("errno").getInt(safReturned))
-                        .errno2(returnedClass.getField("errno2").getInt(safReturned))
-                        .errnoMsg((String) returnedClass.getField("errnoMsg").get(safReturned))
-                        .stringRet((String) returnedClass.getField("stringRet").get(safReturned))
-                        .objectRet(returnedClass.getField("objectRet").get(safReturned)).build();
-            }
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-                | SecurityException | ClassNotFoundException | NoSuchFieldException e) {
-            throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
+            Object safReturned = authenticateMethodHandle.invokeWithArguments(platformClassFactory.getPlatformUser(), userid, password);
+            return platformReturnedHelper.convert(safReturned);
+        } catch (Throwable t) {
+            throw new AuthenticationServiceException("A failure occurred when authenticating.", t);
         }
     }
 
