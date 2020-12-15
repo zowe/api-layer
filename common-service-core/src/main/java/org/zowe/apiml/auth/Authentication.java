@@ -26,6 +26,7 @@ public class Authentication {
 
     private AuthenticationScheme scheme;
     private String applid;
+
     @JsonIgnore
     @Getter(AccessLevel.NONE)
     private Boolean supportsSso;
@@ -38,6 +39,8 @@ public class Authentication {
 
     @JsonProperty
     public boolean supportsSso() {
+        if (scheme == null) return supportsSso != null && supportsSso;
+
         switch (scheme) {
             case ZOWE_JWT:
             case HTTP_BASIC_PASSTICKET:

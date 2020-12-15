@@ -10,18 +10,15 @@
 
 package org.zowe.apiml.auth;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(JUnit4.class)
-public class AuthenticationTest {
+class AuthenticationTest {
 
     @Test
-    public void testIsEmpty() {
+    void testIsEmpty() {
         Authentication a;
 
         a = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
@@ -38,6 +35,45 @@ public class AuthenticationTest {
 
         a = new Authentication(null, null);
         assertTrue(a.isEmpty());
+    }
+
+    @Test
+    void testSupportSso() {
+        Authentication authentication = Authentication.builder()
+                .supportsSso(null)
+                .scheme(AuthenticationScheme.ZOSMF)
+                .build();
+        assertTrue(authentication.supportsSso());
+
+        authentication = Authentication.builder()
+                .supportsSso(true)
+                .scheme(AuthenticationScheme.ZOSMF)
+                .build();
+        assertTrue(authentication.supportsSso());
+
+        authentication = Authentication.builder()
+                .supportsSso(false)
+                .scheme(AuthenticationScheme.ZOSMF)
+                .build();
+        assertFalse(authentication.supportsSso());
+
+        authentication = Authentication.builder()
+                .supportsSso(null)
+                .scheme(AuthenticationScheme.BYPASS)
+                .build();
+        assertFalse(authentication.supportsSso());
+
+        authentication = Authentication.builder()
+                .supportsSso(true)
+                .scheme(AuthenticationScheme.BYPASS)
+                .build();
+        assertTrue(authentication.supportsSso());
+
+        authentication = Authentication.builder()
+                .supportsSso(false)
+                .scheme(AuthenticationScheme.BYPASS)
+                .build();
+        assertFalse(authentication.supportsSso());
     }
 
 }
