@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.login.saf;
+package org.zowe.apiml.security.common.auth.saf;
 
 import lombok.Builder;
 import lombok.Data;

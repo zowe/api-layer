@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 
 @Component
 @Slf4j
@@ -55,7 +56,11 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     @Override
     public void afterPropertiesSet() {
         if (platformUser == null) {
+            try {
                 platformUser = new SafPlatformUser(new SafPlatformClassFactory());
+            } catch (ClassNotFoundException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException e) {
+                throw new IllegalArgumentException("Unknown structure of SAF platform classes", e);
+            }
         }
     }
 }

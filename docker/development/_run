@@ -11,7 +11,7 @@ git pull
 
 # Install dependencies
 cd /var/src/api-layer/api-catalog-ui/frontend
-pnpm install
+npm install
 
 # Build
 cd /var/src/api-layer
