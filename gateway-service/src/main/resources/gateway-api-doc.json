@@ -579,6 +579,31 @@
                         "type": "string",
                         "description": "The status of the instance in the Discovery Service. Possible values: UP, DOWN, STARTING, OUT_OF_SERVICE, UNKNOWN",
                         "example": "UP"
+                    },
+                    "ipAddr": {
+                        "type": "string",
+                        "description": "IP address of the system where the instance is running",
+                        "example": "192.168.1.139"
+                    },
+                    "port": {
+                        "type": "integer",
+                        "description": "Port of the instance",
+                        "example": "10080"
+                    },
+                    "protocol": {
+                        "type": "string",
+                        "description": "protocol that is used by the instance (`https` or `http`)",
+                        "example": "https"
+                    },
+                    "healthCheckUrl": {
+                        "type": "string",
+                        "description": "Specifies the health check endpoint of this instance",
+                        "example": "https://sys1.acme.net:10080/actuator/health"
+                    },
+                    "statusPageUrl": {
+                        "type": "string",
+                        "description": "Specifies the status endpoint of this instance",
+                        "example": "https://sys1.acme.net:10080/actuator/info"
                     }
                 }
             },
