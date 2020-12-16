@@ -93,7 +93,7 @@ dependencies {
 }
 
 bootJar {
-    archiveFileName = "gateway-service.jar"
+    archiveFileName = "gateway-service-lite.jar"
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }

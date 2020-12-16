@@ -83,7 +83,7 @@ dependencies {
 }
 
 bootJar {
-    archiveName "api-catalog-services.jar"
+    archiveName "api-catalog-services-lite.jar"
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }

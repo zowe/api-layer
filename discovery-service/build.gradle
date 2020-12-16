@@ -73,7 +73,7 @@ dependencies {
 
 
 bootJar {
-    archiveName "discovery-service.jar"
+    archiveName "discovery-service-lite.jar"
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
