@@ -16,18 +16,17 @@ repositories {
 }
 
 dependencies {
-    compile libraries.http_client
-    compile libraries.eureka_client
-    compile libraries.jackson_dataformat_yaml
-    compile libraries.jackson_databind
-    compile libraries.json_path
-    compile libraries.spring_boot_starter_websocket
-    compile libraries.spring_boot_starter_actuator
-    compile libraries.json
-    compile libraries.jjwt
-    compile(project(':apiml-security-common'))
-    compile(project(':zaas-client'))
-    compile(project(':caching-service'))
+    testCompile libraries.http_client
+    testCompile libraries.eureka_client
+    testCompile libraries.jackson_dataformat_yaml
+    testCompile libraries.jackson_databind
+    testCompile libraries.json_path
+    testCompile libraries.spring_boot_starter_websocket
+    testCompile libraries.spring_boot_starter_actuator
+    testCompile libraries.json
+    testCompile libraries.jjwt
+    testCompile(project(':apiml-security-common'))
+    testCompile(project(':zaas-client'))
 
     testCompile libraries.hamcrest
     testCompile libraries.rest_assured
