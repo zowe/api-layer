@@ -63,7 +63,7 @@ dependencies {
 }
 
 
-bootJar.archiveName = "${bootJar.baseName}-lite.jar"
+bootJar.archiveName = "${bootJar.baseName}.jar"
 
 jar {
     enabled = true
