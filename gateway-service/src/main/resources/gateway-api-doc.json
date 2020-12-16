@@ -588,7 +588,7 @@
                     "port": {
                         "type": "integer",
                         "description": "Port of the instance",
-                        "example": "10080"
+                        "example": 10080
                     },
                     "protocol": {
                         "type": "string",
