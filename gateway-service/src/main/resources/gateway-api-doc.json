@@ -555,7 +555,12 @@
               "type": "array",
               "description": "Dictionary of the instances of the service. The key is the instance ID.",
               "items": {
-                "$ref": "#/components/schemas/InstanceInfo"
+                "type": "object",
+                "properties": {
+                  "instanceId": {
+                    "$ref": "#/components/schemas/InstanceInfo"
+                  }
+                }
               }
             },
             "serviceId": {
