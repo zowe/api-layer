@@ -32,9 +32,7 @@ public class Authentication {
     private Boolean supportsSso;
 
     public Authentication(AuthenticationScheme scheme, String applid) {
-        this.scheme = scheme;
-        this.applid = applid;
-        this.supportsSso = null;
+        this(scheme, applid, null);
     }
 
     @JsonProperty

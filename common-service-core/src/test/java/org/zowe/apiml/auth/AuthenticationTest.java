@@ -19,22 +19,11 @@ class AuthenticationTest {
 
     @Test
     void testIsEmpty() {
-        Authentication a;
-
-        a = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
-        assertFalse(a.isEmpty());
-
-        a = new Authentication(AuthenticationScheme.ZOSMF, null);
-        assertFalse(a.isEmpty());
-
-        a = new Authentication(null, "applid");
-        assertFalse(a.isEmpty());
-
-        a = new Authentication(null, "");
-        assertFalse(a.isEmpty());
-
-        a = new Authentication(null, null);
-        assertTrue(a.isEmpty());
+        assertFalse(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid").isEmpty());
+        assertFalse(new Authentication(AuthenticationScheme.ZOSMF, null).isEmpty());
+        assertFalse(new Authentication(null, "applid").isEmpty());
+        assertFalse(new Authentication(null, "").isEmpty());
+        assertTrue(new Authentication(null, null).isEmpty());
     }
 
     @Test

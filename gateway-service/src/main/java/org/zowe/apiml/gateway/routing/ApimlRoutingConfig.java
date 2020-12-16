@@ -61,7 +61,6 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    @Autowired
     public PageRedirectionFilter pageRedirectionFilter(DiscoveryClient discovery,
                                                        TransformService transformService) {
         return new PageRedirectionFilter(discovery, transformService);

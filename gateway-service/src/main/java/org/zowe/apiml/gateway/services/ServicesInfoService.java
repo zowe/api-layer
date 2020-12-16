@@ -159,7 +159,7 @@ public class ServicesInfoService {
                 .thenComparing(ServiceInfo.ApiInfoExtended::getVersion, Comparator.comparing(this::getVersion))
         );
 
-        List<ServiceInfo.ApiInfoExtended> result = new ArrayList<>();
+        List<ServiceInfo.ApiInfoExtended> result = new ArrayList<>(completeList.size());
         ServiceInfo.ApiInfoExtended lastApiInfo = null;
         for (ServiceInfo.ApiInfoExtended apiInfo : completeList) {
             if (lastApiInfo == null ||
