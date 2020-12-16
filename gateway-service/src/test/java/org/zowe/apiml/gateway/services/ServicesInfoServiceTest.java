@@ -93,6 +93,7 @@ class ServicesInfoServiceTest {
     }
 
     @Test
+    @SuppressWarnings({"java:S5961"}) // Splitting asserts to multiple tests would make it less readable
     void whenInstanceProvidesFullInfo_thenReturnAllDetails() {
         when(eurekaClient.getApplication(CLIENT_SERVICE_ID))
                 .thenReturn(new Application(CLIENT_SERVICE_ID, Collections.singletonList(createFullTestInstance())));
