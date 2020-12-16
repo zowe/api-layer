@@ -71,7 +71,7 @@ jar {
     doFirst {
         manifest {
             attributes "Class-Path": libClassPathEntries.join(" "),
-                "Main-Class": "org.zowe.apiml.client.DiscoverableClientSampleApplication"
+                "Main-Class": "org.zowe.apiml.client.MockZosmfApplication"
         }
     }
 }

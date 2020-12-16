@@ -70,6 +70,7 @@ class StaticAPIServiceTest {
     private HttpEntity<?> getHttpEntity(String discoveryServiceUrl) {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");
         HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Accept", "application/json");
         if (isHttp) {
             String basicToken = "Basic " + Base64.getEncoder().encodeToString( "null:null".getBytes());
             httpHeaders.add("Authorization", basicToken);
