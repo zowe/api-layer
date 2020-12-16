@@ -67,7 +67,7 @@ bootJar.archiveName = "${bootJar.baseName}.jar"
 
 jar {
     enabled = true
-    archiveName = "${jar.baseName}-thin.jar"
+    archiveName = "${jar.baseName}-lite.jar"
 
     def libClassPathEntries = configurations.runtimeClasspath.files.collect {
         "lib/" + it.getName()
