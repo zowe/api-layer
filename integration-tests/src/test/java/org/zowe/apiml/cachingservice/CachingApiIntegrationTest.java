@@ -111,13 +111,13 @@ class CachingApiIntegrationTest {
         try {
             KeyValue keyValue = new KeyValue("testKey", "testValue");
 
-            given().log().all()
+            given()
                 .contentType(JSON)
                 .body(keyValue)
                 .cookie(COOKIE_NAME, jwtToken)
                 .when()
                 .post(CACHING_PATH)
-                .then().log().all()
+                .then()
                 .statusCode(is(SC_CREATED));
         } finally {
             deteleValueUnderServiceIdWithoutValidation("testKey", jwtToken);
