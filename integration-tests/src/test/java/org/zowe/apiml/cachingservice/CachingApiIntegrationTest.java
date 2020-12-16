@@ -10,11 +10,13 @@
 
 package org.zowe.apiml.cachingservice;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.restassured.RestAssured;
+import lombok.Data;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.*;
@@ -310,5 +312,18 @@ class CachingApiIntegrationTest {
             .cookie(COOKIE_NAME, jwtToken)
             .when()
             .delete(CACHING_PATH + "/" + value);
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @Data
+    private static class KeyValue {
+        private final String key;
+        private final String value;
+
+        @JsonCreator
+        public KeyValue(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
     }
 }
