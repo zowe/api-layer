@@ -198,9 +198,9 @@ public class ServicesInfoService {
         int minor = 0;
         int patch = 0;
         try {
-            major = (versions.length >= 1) ? Integer.parseInt(versions[0]) : 0;
-            minor = (versions.length >= 2) ? Integer.parseInt(versions[1]) : 0;
-            patch = (versions.length >= 3) ? Integer.parseInt(versions[2]) : 0;
+            if (versions.length >= 1) major = Integer.parseInt(versions[0]);
+            if (versions.length >= 2) minor = Integer.parseInt(versions[1]);
+            if (versions.length >= 3) patch = Integer.parseInt(versions[2]);
         } catch (NumberFormatException ex) {
             log.debug("Incorrect version {}", version);
         }

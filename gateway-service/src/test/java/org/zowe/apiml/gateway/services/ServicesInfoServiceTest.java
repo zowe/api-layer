@@ -71,6 +71,8 @@ class ServicesInfoServiceTest {
     private static final AuthenticationScheme CLIENT_AUTHENTICATION_SCHEME = AuthenticationScheme.ZOSMF;
     private static final String CLIENT_AUTHENTICATION_APPLID = "authid";
     private static final boolean CLIENT_AUTHENTICATION_SSO = true;
+    private static final String CLIENT_CUSTOM_METADATA_KEY = "custom.test.key";
+    private static final String CLIENT_CUSTOM_METADATA_VALUE = "value";
 
     @Mock
     private EurekaClient eurekaClient;
@@ -127,6 +129,8 @@ class ServicesInfoServiceTest {
         assertEquals(CLIENT_HOMEPAGE, serviceInfo.getInstances().get(instanceId).getHomePageUrl());
         assertEquals(CLIENT_HOMEPAGE + CLIENT_RELATIVE_HEALTH_URL, serviceInfo.getInstances().get(instanceId).getHealthCheckUrl());
         assertEquals(CLIENT_STATUS_URL, serviceInfo.getInstances().get(instanceId).getStatusPageUrl());
+        assertEquals(1, serviceInfo.getInstances().get(instanceId).getCustomMetadata().size());
+        assertEquals(CLIENT_CUSTOM_METADATA_VALUE, serviceInfo.getInstances().get(instanceId).getCustomMetadata().get(CLIENT_CUSTOM_METADATA_KEY));
     }
 
     @Test
@@ -308,6 +312,7 @@ class ServicesInfoServiceTest {
         metadata.put(ROUTES + ".ui-v1." + ROUTES_GATEWAY_URL, CLIENT_ROUTE_UI);
         metadata.put(AUTHENTICATION_SCHEME, CLIENT_AUTHENTICATION_SCHEME.getScheme());
         metadata.put(AUTHENTICATION_APPLID, CLIENT_AUTHENTICATION_APPLID);
+        metadata.put(CLIENT_CUSTOM_METADATA_KEY, CLIENT_CUSTOM_METADATA_VALUE);
 
         return InstanceInfo.Builder.newBuilder()
                 .setAppName(CLIENT_SERVICE_ID)

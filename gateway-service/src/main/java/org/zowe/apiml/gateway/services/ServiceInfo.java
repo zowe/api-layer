@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
@@ -64,9 +65,11 @@ public class ServiceInfo {
 
     @Data
     @SuperBuilder
+    @EqualsAndHashCode(callSuper = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ApiInfoExtended extends ApiInfo {
         private String baseUrl;
         private String basePath;
     }
+
 }

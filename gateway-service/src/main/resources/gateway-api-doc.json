@@ -493,7 +493,7 @@
                                     "properties": {
                                         "apiId": {
                                             "type": "string",
-                                            "example": "zowe.apiml.apiml.gateway"
+                                            "example": "zowe.apiml.gateway"
                                         },
                                         "basePath": {
                                             "type": "string",
