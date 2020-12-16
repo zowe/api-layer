@@ -1,0 +1,58 @@
+/**
+ * This gradle file add task `liteLibJarAll` which combines lite jar library files into one.
+ * It is helpful if project contains multiple application with different set of dependencies.
+ *
+ * For `liteLibJarAll` to be used, lite jars of each application must be built first. Then
+ * this task will provide a big library file that contains libraries for all applications.
+ * This will reduce the size of data when packaging and deploying.
+ **/
+
+def getBaseNameLite() {
+    def base;
+    if (hasProperty("customBaseName")) {
+        base = customBaseName
+    } else {
+        base = project.name
+    }
+    return base + "-lite-lib-all"
+}
+
+def getLiteLibJar(file, output) {
+
+    if (!file.exists()) return
+    if (file.isDirectory()) {
+        file.listFiles().each { getLiteLibJar(it, output) }
+    } else if (file.name.contains("-lite-lib") && file.name.endsWith(".jar")) {
+        logger.info("Processing: " + file.getAbsolutePath())
+        logger.info("ZipTree: " + zipTree(file))
+        output.add(zipTree(file))
+    }
+
+}
+
+def getLiteLibJarOutput(file) {
+    def output = []
+    if (!file.exists()) return
+    if (file.isDirectory()) {
+        file.listFiles().each { getLiteLibJar(it, output) }
+    } else if (file.name.contains("-lite-lib") && file.name.endsWith(".jar")) {
+        logger.info("Processing: " + file.getAbsolutePath())
+        logger.info("ZipTree: " + zipTree(file))
+        output.add(zipTree(file))
+    }
+    return output
+}
+
+task liteLibJarAll(type: Jar) {
+
+    archiveName = getBaseNameLite() + ".jar"
+    entryCompression = ZipEntryCompression.STORED
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from { rootProject.subprojects.collectMany {getLiteLibJarOutput(it.buildDir)}.collect() }
+}
+
+build.dependsOn(liteLibJarAll)
+liteLibJarAll.dependsOn(":gateway-service:build")
+liteLibJarAll.dependsOn(":discovery-service:build")
+liteLibJarAll.dependsOn(":api-catalog-services:build")
