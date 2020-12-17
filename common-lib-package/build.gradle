@@ -1,0 +1,43 @@
+ext {
+    artifactName = 'api-layer-lite-lib-all'
+    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
+}
+
+configurations {
+    zip
+}
+
+task copyJar {
+    doLast {
+        copy {
+            from "${project.projectDir}build/libs/$artifactName" + ".jar"
+            into('bin/')
+        }
+    }
+}
+
+task packageCommonLib(type: Zip) {
+    archiveName = artifactName + pullNo + ".zip"
+    includeEmptyDirs = true
+    def resourceDir = 'src/main/resources/'
+
+    into('/') {
+        from "$resourceDir/manifest.yaml"
+    }
+}
+
+packageCommonLib.dependsOn(copyJar)
+jar.dependsOn(packageCommonLib)
+build.dependsOn(packageCommonLib)
+
+artifacts {
+    zip packageCommonLib
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+        }
+    }
+}
