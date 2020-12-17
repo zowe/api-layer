@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.services;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@ConditionalOnExpression("${apiml.feature.serviceInfo.enabled:false}") // Remove when secured with an authorization
 @RequiredArgsConstructor
 @RequestMapping(ServicesInfoController.SERVICES_URL)
 public class ServicesInfoController {

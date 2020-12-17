@@ -210,7 +210,7 @@ class EurekaMetadataParserTest {
     }
 
     @Test
-    void whenNseoInfo_testAuthenticationParser() {
+    void whenNoInfo_testAuthenticationParser() {
         Authentication authentication = eurekaMetadataParser.parseAuthentication(Collections.emptyMap());
 
         assertNull(authentication.getScheme());

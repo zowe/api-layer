@@ -11,6 +11,8 @@
 package org.zowe.apiml.auth;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,41 +28,36 @@ class AuthenticationTest {
         assertTrue(new Authentication(null, null).isEmpty());
     }
 
-    @Test
-    void testSupportSso() {
+    @ParameterizedTest(name = "{index} - metadata configuration: {0} and authentication scheme: {1}")
+    @CsvSource({
+            ", ZOSMF",
+            "true, ZOSMF",
+            ", HTTP_BASIC_PASSTICKET",
+            "true, HTTP_BASIC_PASSTICKET",
+            ", ZOWE_JWT",
+            "true , ZOWE_JWT",
+            "true, BYPASS"
+    })
+    void testSupportSso(Boolean supportSso, AuthenticationScheme authenticationScheme) {
         Authentication authentication = Authentication.builder()
-                .supportsSso(null)
-                .scheme(AuthenticationScheme.ZOSMF)
+                .supportsSso(supportSso)
+                .scheme(authenticationScheme)
                 .build();
         assertTrue(authentication.supportsSso());
+    }
 
-        authentication = Authentication.builder()
-                .supportsSso(true)
-                .scheme(AuthenticationScheme.ZOSMF)
-                .build();
-        assertTrue(authentication.supportsSso());
-
-        authentication = Authentication.builder()
-                .supportsSso(false)
-                .scheme(AuthenticationScheme.ZOSMF)
-                .build();
-        assertFalse(authentication.supportsSso());
-
-        authentication = Authentication.builder()
-                .supportsSso(null)
-                .scheme(AuthenticationScheme.BYPASS)
-                .build();
-        assertFalse(authentication.supportsSso());
-
-        authentication = Authentication.builder()
-                .supportsSso(true)
-                .scheme(AuthenticationScheme.BYPASS)
-                .build();
-        assertTrue(authentication.supportsSso());
-
-        authentication = Authentication.builder()
-                .supportsSso(false)
-                .scheme(AuthenticationScheme.BYPASS)
+    @ParameterizedTest(name = "{index} - metadata configuration: {0} and authentication scheme: {1}")
+    @CsvSource({
+            "false, ZOSMF",
+            "false, HTTP_BASIC_PASSTICKET",
+            "false, ZOWE_JWT",
+            ", BYPASS",
+            "false, BYPASS"
+    })
+    void testNotSupportSso(Boolean supportSso, AuthenticationScheme authenticationScheme) {
+        Authentication authentication = Authentication.builder()
+                .supportsSso(supportSso)
+                .scheme(authenticationScheme)
                 .build();
         assertFalse(authentication.supportsSso());
     }
