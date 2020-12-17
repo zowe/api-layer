@@ -11,16 +11,13 @@ package org.zowe.apiml.security;
 
 import lombok.NonNull;
 import org.apache.http.config.Registry;
-import org.apache.http.conn.*;
+import org.apache.http.conn.ConnectionRequest;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.pool.PoolStats;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
-
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Used for custom pooling http connection management.
