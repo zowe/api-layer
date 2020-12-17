@@ -47,6 +47,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.security.x509.externalMapperUser=ZWESVUSR \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -cp ${ROOT_DIR}"/components/api-mediation/gateway-service.jar":/usr/include/java_classes/IRRRacf.jar \
-    org.springframework.boot.loader.PropertiesLauncher &
+    -Dloader.path=/usr/include/java_classes/IRRRacf.jar \
+    -jar ${ROOT_DIR}"/components/api-mediation/gateway-service.jar" &
 export GATEWAY_PID=$?
