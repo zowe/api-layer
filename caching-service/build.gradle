@@ -63,4 +63,11 @@ dependencies {
 }
 
 
-bootJar.archiveName = "${bootJar.baseName}-lite.jar"
+//bootJar.archiveName = "${bootJar.baseName}.jar"
+
+bootJar {
+    archiveFileName = "caching-service-lite.jar"
+    manifest {
+        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
+    }
+}
