@@ -20,6 +20,20 @@ messages:
       reason: "An unexpected exception occurred while retrieving the Gateway service instance from the Discovery Service."
       action: "Check that both the service and the Gateway can register with Discovery. If the services are not registering, investigate the reason why. If no cause can be determined, create an issue."
 
+    - key: org.zowe.apiml.common.gatewayRouteConnectionLimitReached
+      number: ZWEAO105
+      type: WARNING
+      text: "Gateway HTTP Client per-route connection limit of %s has been reached for the '%s' route."
+      reason: "Too many concurrent connection requests to the same route were made."
+      action: "Further connections will be queued until there is room in the connection pool. You may also increase the per-route connection limit via the gateway start-up script."
+
+    - key: org.zowe.apiml.common.totalConnectionLimitReached
+      number: ZWEAO106
+      type: WARNING
+      text: "Gateway HTTP Client total connection limit of %s has been reached."
+      reason: "Too many concurrent connection requests were made."
+      action: "Further connections will be queued until there is room in the connection pool. You may also increase the total connection limit via the gateway start-up script"
+
     # HTTP,Protocol messages
     # 400-499
 
