@@ -43,18 +43,20 @@ public class ServicesInfoService {
 
     public ServiceInfo getServiceInfo(String serviceId) {
         Application application = eurekaClient.getApplication(serviceId);
-        if (application == null)
+        if (application == null) {
             return ServiceInfo.builder()
                     .serviceId(serviceId)
                     .status(InstanceInfo.InstanceStatus.UNKNOWN)
                     .build();
+        }
 
         List<InstanceInfo> appInstances = application.getInstances();
-        if (appInstances == null || appInstances.isEmpty())
+        if (appInstances == null || appInstances.isEmpty()) {
             return ServiceInfo.builder()
                     .serviceId(serviceId)
                     .status(InstanceInfo.InstanceStatus.DOWN)
                     .build();
+        }
 
         return ServiceInfo.builder()
                 .serviceId(serviceId)
