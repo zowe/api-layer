@@ -91,8 +91,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.x509.externalMapperUser=ZWESVUSR \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -cp ${JAR_FILE}:/usr/include/java_classes/IRRRacf.jar \
-    org.springframework.boot.loader.PropertiesLauncher &
+    -Dloader.path=/usr/include/java_classes/IRRRacf.jar \
+    -jar ${JAR_FILE} &
 pid=$?
 
 wait
