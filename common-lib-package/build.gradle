@@ -31,6 +31,7 @@ task packageCommonLib(type: Zip) {
     }
 }
 
+jar.dependsOn(packageCommonLib)
 build.dependsOn(packageCommonLib)
 packageCommonLib.dependsOn(":liteLibJarAll")
 
