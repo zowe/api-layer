@@ -32,6 +32,7 @@ task packageCommonLib(type: Zip) {
 }
 
 build.dependsOn(packageCommonLib)
+packageCommonLib.dependsOn(":liteLibJarAll")
 
 artifacts {
     zip packageCommonLib
