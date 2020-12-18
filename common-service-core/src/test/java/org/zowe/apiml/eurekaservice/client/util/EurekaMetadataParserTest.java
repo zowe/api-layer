@@ -10,18 +10,19 @@
 package org.zowe.apiml.eurekaservice.client.util;
 
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.auth.AuthenticationScheme.ZOSMF;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 class EurekaMetadataParserTest {
@@ -191,31 +192,6 @@ class EurekaMetadataParserTest {
                 EurekaMetadataParser.generateMetadata(serviceId, apiInfo));
 
         assertTrue(exception.getMessage().contains("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid"));
-    }
-
-    @Test
-    void whenFullInfo_testAuthenticationParser() {
-        String applid = "applid";
-
-        Map<String, String> metadata = new HashMap<>();
-        metadata.put(AUTHENTICATION_SCHEME, ZOSMF.getScheme());
-        metadata.put(AUTHENTICATION_APPLID, applid);
-        metadata.put(AUTHENTICATION_SSO, Boolean.TRUE.toString());
-
-        Authentication authentication = eurekaMetadataParser.parseAuthentication(metadata);
-
-        assertEquals(ZOSMF, authentication.getScheme());
-        assertEquals(applid, authentication.getApplid());
-        assertTrue(authentication.supportsSso());
-    }
-
-    @Test
-    void whenNoInfo_testAuthenticationParser() {
-        Authentication authentication = eurekaMetadataParser.parseAuthentication(Collections.emptyMap());
-
-        assertNull(authentication.getScheme());
-        assertNull(authentication.getApplid());
-        assertFalse(authentication.supportsSso());
     }
 
 }

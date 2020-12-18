@@ -9,9 +9,6 @@
  */
 package org.zowe.apiml.eurekaservice.client.util;
 
-import org.apache.commons.lang3.BooleanUtils;
-import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.auth.AuthenticationSchemes;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -33,7 +30,6 @@ public class EurekaMetadataParser {
     private static final String THREE_STRING_MERGE_FORMAT = "%s.%s.%s";
 
     private final ApimlLogger apimlLog = ApimlLogger.of(EurekaMetadataParser.class, YamlMessageServiceInstance.getInstance());
-    private final AuthenticationSchemes schemes = new AuthenticationSchemes();
 
     /**
      * Parse eureka metadata and construct ApiInfo with the values found
@@ -215,14 +211,6 @@ public class EurekaMetadataParser {
         } catch (MalformedURLException e) {
             throw new MetadataValidationException(exceptionSupplier.get(), e);
         }
-    }
-
-    public Authentication parseAuthentication(Map<String, String> eurekaMetadata) {
-        return Authentication.builder()
-                .applid(eurekaMetadata.get(AUTHENTICATION_APPLID))
-                .scheme(schemes.map(eurekaMetadata.get(AUTHENTICATION_SCHEME)))
-                .supportsSso(BooleanUtils.toBooleanObject(eurekaMetadata.get(AUTHENTICATION_SSO)))
-                .build();
     }
 
 }
