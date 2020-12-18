@@ -36,6 +36,15 @@ task liteJar(type: BootJar) {
     with bootJar
 }
 
+configurations {
+    liteJarConfiguration
+}
+
+artifacts {
+    liteJarConfiguration(liteJar) {
+        builtBy(liteJar)
+    }
+}
 task liteLibJar(type: Jar) {
     archiveName = getBaseNameLite() + "-lib.jar"
     entryCompression = ZipEntryCompression.STORED
