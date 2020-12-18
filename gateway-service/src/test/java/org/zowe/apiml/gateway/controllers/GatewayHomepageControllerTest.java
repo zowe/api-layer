@@ -50,7 +50,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, providers, buildInfo);
+            discoveryClient, providers, buildInfo, API_CATALOG_ID);
     }
 
 
@@ -75,7 +75,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, providers, buildInfo);
+            discoveryClient, providers, buildInfo, API_CATALOG_ID);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);

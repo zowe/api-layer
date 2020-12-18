@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
@@ -37,18 +38,23 @@ public class GatewayHomepageController {
     private BuildInfo buildInfo;
     private String buildString;
 
+    private String apiCatalogServiceId;
+
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     Providers providers) {
-        this(discoveryClient, providers, new BuildInfo());
+                                     Providers providers,
+                                     @Value("${apiml.catalog.serviceId:apicatalog}") String apiCatalogServiceId) {
+        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId);
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
-                                     BuildInfo buildInfo) {
+                                     BuildInfo buildInfo,
+                                     String apiCatalogServiceId) {
         this.discoveryClient = discoveryClient;
         this.providers = providers;
         this.buildInfo = buildInfo;
+        this.apiCatalogServiceId = apiCatalogServiceId;
 
         initializeBuildInfos();
     }
@@ -119,7 +125,7 @@ public class GatewayHomepageController {
         boolean linkEnabled = false;
         boolean authServiceEnabled = authorizationServiceUp();
 
-        List<ServiceInstance> serviceInstances = discoveryClient.getInstances("apicatalog");
+        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(apiCatalogServiceId);
         if (serviceInstances != null && authServiceEnabled) {
             long catalogCount = serviceInstances.size();
             if (catalogCount == 1) {
