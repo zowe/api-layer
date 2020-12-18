@@ -14,25 +14,26 @@ import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static java.time.Duration.ofMillis;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.mockito.Mockito.*;
 
-
-@RunWith(SpringRunner.class)
-public class GatewayInstanceInitializerTest {
+@ExtendWith(SpringExtension.class)
+class GatewayInstanceInitializerTest {
 
     private static final String SERVICE_ID = CoreService.GATEWAY.getServiceId();
 
@@ -47,23 +48,25 @@ public class GatewayInstanceInitializerTest {
 
     private Application application;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         application = new Application(
             SERVICE_ID,
             Collections.singletonList(getStandardInstance(SERVICE_ID, "https://localhost:9090/"))
         );
     }
 
-    @Test(timeout = 2000)
-    public void testInit() {
-        when(
-            eurekaClient.getApplication(SERVICE_ID)
-        ).thenReturn(application);
-
-        gatewayInstanceInitializer.init();
-
-        while (!gatewayClient.isInitialized()) ;
+    @Test
+    void testInit() {
+        assertTimeout(ofMillis(2000), () -> {
+            when(
+                eurekaClient.getApplication(SERVICE_ID)
+            ).thenReturn(application);
+    
+            gatewayInstanceInitializer.init();
+    
+            while (!gatewayClient.isInitialized()) ;
+        });
 
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         assertNotNull(gatewayConfigProperties);
@@ -72,7 +75,7 @@ public class GatewayInstanceInitializerTest {
     }
 
     @Configuration
-    public static class TestConfig {
+    static class TestConfig {
 
         private static final int INITIAL_DELAY = 1;
         private static final int PERIOD = 10;
