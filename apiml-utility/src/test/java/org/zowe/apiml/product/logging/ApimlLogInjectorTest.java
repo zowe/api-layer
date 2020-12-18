@@ -11,44 +11,40 @@ package org.zowe.apiml.product.logging;
 
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @Import(ApimlLogInjectorTest.TestConfig.class)
-public class ApimlLogInjectorTest {
+class ApimlLogInjectorTest {
 
     @Autowired
     private TestComponent testComponent;
 
     @Test
-    public void testInject() {
+    void testInject() {
         assertNotNull(testComponent.apimlLogger);
         assertNull(testComponent.apimlLogger2);
     }
-
 
     private static class TestComponent {
 
         @InjectApimlLogger
         private ApimlLogger apimlLogger;
 
-
         private ApimlLogger apimlLogger2;
-
     }
 
-
     @SpringBootConfiguration
-    public static class TestConfig {
+    static class TestConfig {
 
         @Bean
         public ApimlLogInjector apimlLogInjector() {

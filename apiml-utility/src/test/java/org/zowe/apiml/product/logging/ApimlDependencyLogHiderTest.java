@@ -12,34 +12,34 @@ package org.zowe.apiml.product.logging;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.spi.FilterReply;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ApimlDependencyLogHiderTest {
+class ApimlDependencyLogHiderTest {
 
     private final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.zowe.apiml.logger");
     private ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         System.getProperties().setProperty("spring.profiles.include", "");
     }
 
     @Test
-    public void testDecide_whenApplicationRunningInDebugMode() {
+    void testDecide_whenApplicationRunningInDebugMode() {
         System.getProperties().setProperty("spring.profiles.include", "debug");
         ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();
 
         FilterReply actualFilterReply = apimlDependencyLogHider.decide(null, logger, null,
             "Message text", null, null);
 
-        assertEquals("Log levels are not same", FilterReply.NEUTRAL, actualFilterReply);
+        assertEquals(FilterReply.NEUTRAL, actualFilterReply, "Log levels are not same");
     }
 
 
@@ -50,12 +50,12 @@ public class ApimlDependencyLogHiderTest {
         FilterReply actualFilterReply = apimlDependencyLogHider.decide(null, logger, null,
             "Message text", null, null);
 
-        assertEquals("Log levels are not same", FilterReply.NEUTRAL, actualFilterReply);
+        assertEquals(FilterReply.NEUTRAL, actualFilterReply, "Log levels are not same");
     }
 
 
     @Test
-    public void testDecide_whenIgnoredMessagesArePresent() {
+    void testDecide_whenIgnoredMessagesArePresent() {
         logger.setLevel(Level.INFO);
 
         Map<String, Boolean> logMessages = new HashMap<>();
@@ -71,12 +71,12 @@ public class ApimlDependencyLogHiderTest {
                 logMessage, null, null);
 
             FilterReply expectedFilterReply = shouldBeIgnored ? FilterReply.DENY : FilterReply.NEUTRAL;
-            assertEquals("Log levels are not same", expectedFilterReply, actualFilterReply);
+            assertEquals(expectedFilterReply, actualFilterReply, "Log levels are not same");
         });
     }
 
     @Test
-    public void testDecide_whenIgnoredMessagesArePresentWithException() {
+    void testDecide_whenIgnoredMessagesArePresentWithException() {
         logger.setLevel(Level.ERROR);
 
         String format = "Error during filtering";
@@ -86,7 +86,7 @@ public class ApimlDependencyLogHiderTest {
             format, null, filterException);
 
         FilterReply expectedFilterReply =  FilterReply.DENY;
-        assertEquals("Log levels are not same", expectedFilterReply, actualFilterReply);
+        assertEquals(expectedFilterReply, actualFilterReply, "Log levels are not same");
     }
 
 }
