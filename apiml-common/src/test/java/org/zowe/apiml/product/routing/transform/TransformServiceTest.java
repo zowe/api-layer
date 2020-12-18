@@ -21,7 +21,7 @@ import org.zowe.apiml.product.routing.ServiceType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class TransformServiceTest {
+class TransformServiceTest {
 
     private static final String UI_PREFIX = "ui";
     private static final String API_PREFIX = "api";
@@ -32,7 +32,7 @@ public class TransformServiceTest {
     private GatewayClient gatewayClient;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder()
             .scheme("https")
             .hostname("localhost")
@@ -41,7 +41,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenHomePageAndUIRoute_whenTransform_thenUseNewUrl() throws URLTransformationException {
+    void givenHomePageAndUIRoute_whenTransform_thenUseNewUrl() throws URLTransformationException {
         String url = "https://localhost:8080/ui";
 
         RoutedServices routedServices = new RoutedServices();
@@ -62,7 +62,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenHomePage_whenRouteNotFound_thenThrowException() throws URLTransformationException {
+    void givenHomePage_whenRouteNotFound_thenThrowException() throws URLTransformationException {
         String url = "https://localhost:8080/u";
 
         RoutedServices routedServices = new RoutedServices();
@@ -72,7 +72,7 @@ public class TransformServiceTest {
         routedServices.addRoutedService(routedService2);
 
         TransformService transformService = new TransformService(gatewayClient);
-        
+
         Exception exception = assertThrows(URLTransformationException.class, () -> {
             transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices);
         });
@@ -80,7 +80,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenHomePageAndWSRoute_whenTransform_thenUseNewUrl() throws URLTransformationException {
+    void givenHomePageAndWSRoute_whenTransform_thenUseNewUrl() throws URLTransformationException {
         String url = "https://localhost:8080/ws";
 
         RoutedServices routedServices = new RoutedServices();
@@ -101,7 +101,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenHomePageAndAPIRoute_whenTransform_thenUseNewUrl() throws URLTransformationException {
+    void givenHomePageAndAPIRoute_whenTransform_thenUseNewUrl() throws URLTransformationException {
         String url = "https://localhost:8080/api";
 
         RoutedServices routedServices = new RoutedServices();
@@ -123,7 +123,7 @@ public class TransformServiceTest {
 
 
     @Test
-    public void givenInvalidHomePage_thenThrowException() throws URLTransformationException {
+    void givenInvalidHomePage_thenThrowException() throws URLTransformationException {
         String url = "https:localhost:8080/wss";
 
         TransformService transformService = new TransformService(gatewayClient);
@@ -135,7 +135,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenEmptyGatewayClient_thenThrowException() throws URLTransformationException {
+    void givenEmptyGatewayClient_thenThrowException() throws URLTransformationException {
         String url = "https:localhost:8080/wss";
 
         GatewayClient emptyGatewayClient = new GatewayClient();
@@ -149,7 +149,7 @@ public class TransformServiceTest {
 
 
     @Test
-    public void givenHomePage_whenPathIsNotValid_thenThrowException() throws URLTransformationException {
+    void givenHomePage_whenPathIsNotValid_thenThrowException() throws URLTransformationException {
         String url = "https://localhost:8080/wss";
 
         RoutedServices routedServices = new RoutedServices();
@@ -167,7 +167,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenEmptyPathInHomePage_whenTransform_thenUseNewUrl() throws URLTransformationException {
+    void givenEmptyPathInHomePage_whenTransform_thenUseNewUrl() throws URLTransformationException {
         String url = "https://localhost:8080/";
 
         RoutedServices routedServices = new RoutedServices();
@@ -189,7 +189,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenServiceUrl_whenItsRoot_thenKeepHomePagePathSame() throws URLTransformationException {
+    void givenServiceUrl_whenItsRoot_thenKeepHomePagePathSame() throws URLTransformationException {
         String url = "https://locahost:8080/test";
         RoutedServices routedServices = new RoutedServices();
         RoutedService routedService1 = new RoutedService(SERVICE_ID, UI_PREFIX, "/");
@@ -210,7 +210,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenUrlContainingPathAndQuery_whenTransform_thenKeepQueryPartInTheNewUrl() throws URLTransformationException {
+    void givenUrlContainingPathAndQuery_whenTransform_thenKeepQueryPartInTheNewUrl() throws URLTransformationException {
         String url = "https://locahost:8080/ui/service/login.do?action=secure";
         String path = "/login.do?action=secure";
         RoutedServices routedServices = new RoutedServices();
@@ -232,7 +232,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenServiceAndApiRoute_whenGetApiBasePath_thenReturnApiPath() throws URLTransformationException {
+    void givenServiceAndApiRoute_whenGetApiBasePath_thenReturnApiPath() throws URLTransformationException {
         String url = "https://localhost:8080/" + SERVICE_ID;
 
         String serviceUrl = String.format("/%s/%s", SERVICE_ID, API_PREFIX);
@@ -250,7 +250,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenServiceAndApiRouteWithVersion_whenGetApiBasePath_thenReturnApiPath() throws URLTransformationException {
+    void givenServiceAndApiRouteWithVersion_whenGetApiBasePath_thenReturnApiPath() throws URLTransformationException {
         String url = "https://localhost:8080/" + SERVICE_ID;
 
         String serviceUrl = String.format("/%s/%s/%s", SERVICE_ID, API_PREFIX, "v1");
@@ -266,7 +266,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenInvalidUriPath_whenGetApiBasePath_thenThrowError() throws URLTransformationException {
+    void givenInvalidUriPath_whenGetApiBasePath_thenThrowError() throws URLTransformationException {
         String url = "https:localhost:8080/wss";
 
         TransformService transformService = new TransformService(null);
@@ -278,7 +278,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void givenNoRoutes_whenGetApiBasePath_thenThrowError() throws URLTransformationException {
+    void givenNoRoutes_whenGetApiBasePath_thenThrowError() throws URLTransformationException {
         String url = "https://localhost:8080/u";
 
         RoutedServices routedServices = new RoutedServices();

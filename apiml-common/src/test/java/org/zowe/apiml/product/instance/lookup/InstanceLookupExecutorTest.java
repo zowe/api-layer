@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class InstanceLookupExecutorTest {
+class InstanceLookupExecutorTest {
 
     private static final int INITIAL_DELAY = 1;
     private static final int PERIOD = 10;
@@ -48,7 +48,7 @@ public class InstanceLookupExecutorTest {
     private CountDownLatch latch;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         instanceLookupExecutor = new InstanceLookupExecutor(eurekaClient, INITIAL_DELAY, PERIOD);
         instances = Collections.singletonList(
             getInstance(SERVICE_ID));
@@ -57,7 +57,7 @@ public class InstanceLookupExecutorTest {
 
 
     @Test
-    public void testRun_whenNoApplicationRegisteredInDiscovery() throws InterruptedException {
+    void testRun_whenNoApplicationRegisteredInDiscovery() throws InterruptedException {
         assertTimeout(ofMillis(2000), () -> {
             instanceLookupExecutor.run(
                 SERVICE_ID, null,
@@ -78,7 +78,7 @@ public class InstanceLookupExecutorTest {
 
 
     @Test
-    public void testRun_whenNoInstancesExistInDiscovery() throws InterruptedException {
+    void testRun_whenNoInstancesExistInDiscovery() throws InterruptedException {
         assertTimeout(ofMillis(2000), () -> {
             when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(new Application(SERVICE_ID, Collections.emptyList()));
@@ -101,7 +101,7 @@ public class InstanceLookupExecutorTest {
     }
 
     @Test
-    public void testRun_whenUnexpectedExceptionHappened() throws InterruptedException {
+    void testRun_whenUnexpectedExceptionHappened() throws InterruptedException {
         assertTimeout(ofMillis(2000), () -> {
             when(eurekaClient.getApplication(SERVICE_ID))
                 .thenThrow(new InstanceInitializationException("Unexpected Exception"));
@@ -122,7 +122,7 @@ public class InstanceLookupExecutorTest {
     }
 
     @Test
-    public void testRun_whenInstanceExistInDiscovery() throws InterruptedException {
+    void testRun_whenInstanceExistInDiscovery() throws InterruptedException {
         assertTimeout(ofMillis(2000), () -> {
             when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(new Application(SERVICE_ID, instances));
@@ -153,7 +153,7 @@ public class InstanceLookupExecutorTest {
             new HashMap<>());
     }
 
-    public InstanceInfo createInstance(String serviceId, String instanceId,
+    InstanceInfo createInstance(String serviceId, String instanceId,
                                        InstanceInfo.InstanceStatus status,
                                        InstanceInfo.ActionType actionType,
                                        HashMap<String, String> metadata) {

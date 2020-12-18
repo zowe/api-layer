@@ -26,13 +26,13 @@ import static org.mockito.Mockito.when;
 import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 
 
-public class VersionServiceTest {
+class VersionServiceTest {
     private static final String ZOWE_MANIFEST_FIELD = "zoweManifest";
 
     private VersionService versionService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         BuildInfo buildInfo = mock(BuildInfo.class);
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(new Properties(), new Properties());
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
@@ -41,7 +41,7 @@ public class VersionServiceTest {
     }
 
     @Test
-    public void shouldReturnSpecificApimlVersion() {
+    void shouldReturnSpecificApimlVersion() {
         BuildInfo buildInfo = mock(BuildInfo.class);
 
         Properties buildProperties = new Properties();
@@ -64,7 +64,7 @@ public class VersionServiceTest {
     }
 
     @Test
-    public void shouldReturnUnknownInApimlVersionWhenNoVersion() {
+    void shouldReturnUnknownInApimlVersionWhenNoVersion() {
         VersionInfo version = versionService.getVersion();
         assertNotNull(version.getApiml());
         assertEquals("Unknown", version.getApiml().getVersion());
@@ -73,7 +73,7 @@ public class VersionServiceTest {
     }
 
     @Test
-    public void shouldReturnSpecificZoweVersion() throws FileNotFoundException {
+    void shouldReturnSpecificZoweVersion() throws FileNotFoundException {
         File file = ResourceUtils.getFile(CLASSPATH_URL_PREFIX + "zowe.version/zowe-manifest.json");
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, file.getAbsolutePath());
 
@@ -85,7 +85,7 @@ public class VersionServiceTest {
     }
 
     @Test
-    public void shouldReturnSpecificZoweVersionWhenEncodedJson() throws FileNotFoundException {
+    void shouldReturnSpecificZoweVersionWhenEncodedJson() throws FileNotFoundException {
         File file = ResourceUtils.getFile(CLASSPATH_URL_PREFIX + "zowe.version/zowe-manifest-encoded.json");
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, file.getAbsolutePath());
 
@@ -97,7 +97,7 @@ public class VersionServiceTest {
     }
 
     @Test
-    public void shouldReturnUnknownZoweVersionWhenNoBuildAndVersion() throws FileNotFoundException {
+    void shouldReturnUnknownZoweVersionWhenNoBuildAndVersion() throws FileNotFoundException {
         File file = ResourceUtils.getFile(CLASSPATH_URL_PREFIX + "zowe.version/zowe-manifest-no-build-info.json");
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, file.getAbsolutePath());
 
@@ -109,7 +109,7 @@ public class VersionServiceTest {
     }
 
     @Test
-    public void shouldReturnNullInZoweVersionWhenInvalidJson() throws FileNotFoundException {
+    void shouldReturnNullInZoweVersionWhenInvalidJson() throws FileNotFoundException {
         File file = ResourceUtils.getFile(CLASSPATH_URL_PREFIX + "zowe.version/zowe-manifest-invalid.json");
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, file.getAbsolutePath());
 
@@ -118,7 +118,7 @@ public class VersionServiceTest {
     }
 
     @Test
-    public void shouldReturnNullInZoweVersionWhenFileNotFound() {
+    void shouldReturnNullInZoweVersionWhenFileNotFound() {
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, "zowe-manifesto.json");
 
         VersionInfo version = versionService.getVersion();

@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class GatewayClientTest {
+class GatewayClientTest {
 
     private final GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder()
         .scheme("https")
@@ -24,12 +24,12 @@ public class GatewayClientTest {
     private final GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
 
     @Test
-    public void testGetGatewayConfigProperties_whenItIsNotNull() {
+    void testGetGatewayConfigProperties_whenItIsNotNull() {
         assertEquals(gatewayClient.getGatewayConfigProperties(), gatewayConfigProperties);
     }
 
     @Test
-    public void testGetGatewayConfigProperties_whenItNull() {
+    void testGetGatewayConfigProperties_whenItNull() {
         gatewayClient.setGatewayConfigProperties(null);
         assertThrows(GatewayNotAvailableException.class, () -> {
             gatewayClient.getGatewayConfigProperties();
@@ -37,7 +37,7 @@ public class GatewayClientTest {
     }
 
     @Test
-    public void testIsInitialized() {
+    void testIsInitialized() {
         assertTrue(gatewayClient.isInitialized());
         gatewayClient.setGatewayConfigProperties(null);
         assertFalse(gatewayClient.isInitialized());

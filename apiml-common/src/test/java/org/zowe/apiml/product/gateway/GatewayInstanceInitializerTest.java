@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-public class GatewayInstanceInitializerTest {
+class GatewayInstanceInitializerTest {
 
     private static final String SERVICE_ID = CoreService.GATEWAY.getServiceId();
 
@@ -49,7 +49,7 @@ public class GatewayInstanceInitializerTest {
     private Application application;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         application = new Application(
             SERVICE_ID,
             Collections.singletonList(getStandardInstance(SERVICE_ID, "https://localhost:9090/"))
@@ -57,7 +57,7 @@ public class GatewayInstanceInitializerTest {
     }
 
     @Test
-    public void testInit() {
+    void testInit() {
         assertTimeout(ofMillis(2000), () -> {
             when(
                 eurekaClient.getApplication(SERVICE_ID)
@@ -67,7 +67,7 @@ public class GatewayInstanceInitializerTest {
     
             while (!gatewayClient.isInitialized()) ;
         });
-        
+
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         assertNotNull(gatewayConfigProperties);
         assertEquals("https", gatewayConfigProperties.getScheme());
@@ -75,7 +75,7 @@ public class GatewayInstanceInitializerTest {
     }
 
     @Configuration
-    public static class TestConfig {
+    static class TestConfig {
 
         private static final int INITIAL_DELAY = 1;
         private static final int PERIOD = 10;
