@@ -43,7 +43,7 @@ public class GatewayHomepageController {
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
-                                     @Value("${apiml.catalog.serviceId:apicatalog}") String apiCatalogServiceId) {
+                                     @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
         this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId);
     }
 
@@ -119,6 +119,12 @@ public class GatewayHomepageController {
     }
 
     private void initializeCatalogAttributes(Model model) {
+        boolean isAnyCatalogAvailable = (apiCatalogServiceId != null && !apiCatalogServiceId.isEmpty());
+        model.addAttribute("isAnyCatalogAvailable", isAnyCatalogAvailable);
+        if(!isAnyCatalogAvailable) {
+            return;
+        }
+
         String catalogLink = null;
         String catalogStatusText = "The API Catalog is not running";
         String catalogIconName = "warning";

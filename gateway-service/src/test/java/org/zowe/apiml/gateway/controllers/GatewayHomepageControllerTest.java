@@ -35,6 +35,7 @@ class GatewayHomepageControllerTest {
     private DiscoveryClient discoveryClient;
 
     private GatewayHomepageController gatewayHomepageController;
+    private BuildInfo buildInfo;
 
     private final String API_CATALOG_ID = "apicatalog";
     private final String AUTHORIZATION_SERVICE_ID = "zosmf";
@@ -44,7 +45,7 @@ class GatewayHomepageControllerTest {
         discoveryClient = mock(DiscoveryClient.class);
         providers = mock(Providers.class);
 
-        BuildInfo buildInfo = mock(BuildInfo.class);
+        buildInfo = mock(BuildInfo.class);
 
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(new Properties(), new Properties());
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
@@ -52,7 +53,6 @@ class GatewayHomepageControllerTest {
         gatewayHomepageController = new GatewayHomepageController(
             discoveryClient, providers, buildInfo, API_CATALOG_ID);
     }
-
 
     @Test
     void givenBuildVersionNull_whenHomePageCalled_thenBuildInfoShouldStaticText() {
@@ -98,6 +98,17 @@ class GatewayHomepageControllerTest {
         gatewayHomepageController.home(model);
 
         assertCatalogIsDownMessageShown(model.asMap());
+    }
+
+    @Test
+    void givenApiCatalogueIsEmpty_whenHomePageIsCalled_thenThereIsNoMessageAroundTheCatalog() {
+        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, providers, buildInfo, null);
+        Model model = new ConcurrentModel();
+        underTest.home(model);
+
+        Map<String,Object> preparedModel = model.asMap();
+        assertThat(preparedModel, hasEntry("isAnyCatalogAvailable", false));
+        assertThat(preparedModel, not(hasKey("catalogLink")));
     }
 
     @Test
