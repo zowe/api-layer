@@ -11,23 +11,23 @@ package org.zowe.apiml.security.common.login;
 
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class SuccessfulLoginHandlerTest {
+class SuccessfulLoginHandlerTest {
     private AuthConfigurationProperties authConfigurationProperties;
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private SuccessfulLoginHandler successfulLoginHandler;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();
 
@@ -36,7 +36,7 @@ public class SuccessfulLoginHandlerTest {
     }
 
     @Test
-    public void testOnAuthenticationSuccess() {
+    void testOnAuthenticationSuccess() {
         successfulLoginHandler.onAuthenticationSuccess(
             httpServletRequest,
             httpServletResponse,

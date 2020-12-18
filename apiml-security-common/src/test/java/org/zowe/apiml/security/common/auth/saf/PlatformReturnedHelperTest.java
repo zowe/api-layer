@@ -10,9 +10,16 @@
 package org.zowe.apiml.security.common.auth.saf;
 
 import lombok.Builder;
+
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 class PlatformReturnedHelperTest {
 
@@ -67,7 +74,7 @@ class PlatformReturnedHelperTest {
     }
 
     @Builder
-    public static class TestPlatformReturned {
+    static class TestPlatformReturned {
 
         boolean success;
         int rc;
