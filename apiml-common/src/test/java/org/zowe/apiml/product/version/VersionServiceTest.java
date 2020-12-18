@@ -9,8 +9,8 @@
  */
 package org.zowe.apiml.product.version;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ResourceUtils;
 
@@ -18,7 +18,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
@@ -29,7 +31,7 @@ public class VersionServiceTest {
 
     private VersionService versionService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         BuildInfo buildInfo = mock(BuildInfo.class);
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(new Properties(), new Properties());

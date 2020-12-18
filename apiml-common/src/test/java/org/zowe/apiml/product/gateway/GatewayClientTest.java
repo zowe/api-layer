@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.product.gateway;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class GatewayClientTest {
@@ -28,10 +28,12 @@ public class GatewayClientTest {
         assertEquals(gatewayClient.getGatewayConfigProperties(), gatewayConfigProperties);
     }
 
-    @Test(expected = GatewayNotAvailableException.class)
+    @Test
     public void testGetGatewayConfigProperties_whenItNull() {
         gatewayClient.setGatewayConfigProperties(null);
-        gatewayClient.getGatewayConfigProperties();
+        assertThrows(GatewayNotAvailableException.class, () -> {
+            gatewayClient.getGatewayConfigProperties();
+        });
     }
 
     @Test

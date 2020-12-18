@@ -10,17 +10,16 @@
 
 package org.zowe.apiml.product.routing.transform;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TransformServiceTest {
 
@@ -32,10 +31,7 @@ public class TransformServiceTest {
 
     private GatewayClient gatewayClient;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void setup() {
         GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder()
             .scheme("https")
@@ -76,9 +72,11 @@ public class TransformServiceTest {
         routedServices.addRoutedService(routedService2);
 
         TransformService transformService = new TransformService(gatewayClient);
-        exception.expect(URLTransformationException.class);
-        exception.expectMessage("Not able to select route for url https://localhost:8080/u of the service service. Original url used.");
-        transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices);
+        
+        Exception exception = assertThrows(URLTransformationException.class, () -> {
+            transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices);
+        });
+        assertEquals("Not able to select route for url https://localhost:8080/u of the service service. Original url used.", exception.getMessage());
     }
 
     @Test
@@ -130,9 +128,10 @@ public class TransformServiceTest {
 
         TransformService transformService = new TransformService(gatewayClient);
 
-        exception.expect(URLTransformationException.class);
-        exception.expectMessage("The URI " + url + " is not valid.");
-        transformService.transformURL(null, null, url, null);
+        Exception exception = assertThrows(URLTransformationException.class, () -> {
+            transformService.transformURL(null, null, url, null);
+        });
+        assertEquals("The URI " + url + " is not valid.", exception.getMessage());
     }
 
     @Test
@@ -142,9 +141,10 @@ public class TransformServiceTest {
         GatewayClient emptyGatewayClient = new GatewayClient();
         TransformService transformService = new TransformService(emptyGatewayClient);
 
-        exception.expect(URLTransformationException.class);
-        exception.expectMessage("Gateway not found yet, transform service cannot perform the request");
-        transformService.transformURL(null, null, url, null);
+        Exception exception = assertThrows(URLTransformationException.class, () -> {
+            transformService.transformURL(null, null, url, null);
+        });
+        assertEquals("Gateway not found yet, transform service cannot perform the request", exception.getMessage());
     }
 
 
@@ -160,9 +160,10 @@ public class TransformServiceTest {
 
         TransformService transformService = new TransformService(gatewayClient);
 
-        exception.expect(URLTransformationException.class);
-        exception.expectMessage("The path /wss of the service URL https://localhost:8080/wss is not valid.");
-        transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices);
+        Exception exception = assertThrows(URLTransformationException.class, () -> {
+            transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices);
+        });
+        assertEquals("The path /wss of the service URL https://localhost:8080/wss is not valid.", exception.getMessage());
     }
 
     @Test
@@ -270,9 +271,10 @@ public class TransformServiceTest {
 
         TransformService transformService = new TransformService(null);
 
-        exception.expect(URLTransformationException.class);
-        exception.expectMessage("The URI " + url + " is not valid.");
-        transformService.retrieveApiBasePath(null, url, null);
+        Exception exception = assertThrows(URLTransformationException.class, () -> {
+            transformService.retrieveApiBasePath(null, url, null);
+        });
+        assertEquals("The URI " + url + " is not valid.", exception.getMessage());
     }
 
     @Test
@@ -286,8 +288,10 @@ public class TransformServiceTest {
         routedServices.addRoutedService(routedService2);
 
         TransformService transformService = new TransformService(null);
-        exception.expect(URLTransformationException.class);
-        exception.expectMessage("Not able to select API base path for the service " + SERVICE_ID + ". Original url used.");
-        transformService.retrieveApiBasePath(SERVICE_ID, url, routedServices);
+
+        Exception exception = assertThrows(URLTransformationException.class, () -> {
+            transformService.retrieveApiBasePath(SERVICE_ID, url, routedServices);
+        });
+        assertEquals("Not able to select API base path for the service " + SERVICE_ID + ". Original url used.", exception.getMessage());
     }
 }
