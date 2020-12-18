@@ -44,7 +44,7 @@ class ApimlDependencyLogHiderTest {
 
 
     @Test
-    public void testDecide_whenLoggerLevelIsLowThanInfo() {
+    void testDecide_whenLoggerLevelIsLowThanInfo() {
         logger.setLevel(Level.DEBUG);
 
         FilterReply actualFilterReply = apimlDependencyLogHider.decide(null, logger, null,
