@@ -21,7 +21,7 @@ ext.enablers = [ext.javaEnabler, ext.springBootEnabler]
 ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
 
 ext.publishTasksList = projectsToPublish.collect {
-    it.equals(springBootEnabler) ? "publishEnablers" : ":" + it + ":publishToMavenLocal"
+    it.equals(springBootEnabler) ? "publishEnablers" : ":" + it + ":publish"
 }
 
 configure(subprojects.findAll { it.name in projectsToPublish }) {
@@ -98,12 +98,12 @@ task publishEnablerV1(type: Exec) {
     def username  = project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
     def password = project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
 
-    commandLine './gradlew.bat', springBootEnabler + ':publishToMavenLocal', '-Penabler=v1', '-Pzowe.deploy.username=' + username, '-Pzowe.deploy.password=' + password
+    commandLine './gradlew', springBootEnabler + ':publish', '-Penabler=v1', '-Pzowe.deploy.username=' + username, '-Pzowe.deploy.password=' + password
     mustRunAfter 'publishEnablerV2'
 }
 
 task publishEnablerV2 {
-    dependsOn springBootEnabler + ':publishToMavenLocal'
+    dependsOn springBootEnabler + ':publish'
 }
 
 task publishEnablers {
