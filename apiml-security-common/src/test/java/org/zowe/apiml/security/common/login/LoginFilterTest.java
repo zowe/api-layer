@@ -10,13 +10,11 @@
 package org.zowe.apiml.security.common.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -38,10 +36,15 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class LoginFilterTest {
+
+@ExtendWith(MockitoExtension.class)
+class LoginFilterTest {
     private static final String VALID_JSON = "{\"username\": \"user\", \"password\": \"pwd\"}";
     private static final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";
     private static final String VALID_AUTH_HEADER = "Basic dXNlcjpwd2Q=";
@@ -64,11 +67,8 @@ public class LoginFilterTest {
     @Mock
     private AuthenticationManager authenticationManager;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         loginFilter = new LoginFilter("TEST_ENDPOINT",
             authenticationSuccessHandler,
             authenticationFailureHandler,
@@ -78,7 +78,7 @@ public class LoginFilterTest {
     }
 
     @Test
-    public void shouldCallAuthenticationManagerAuthenticateWithAuthHeader() throws ServletException {
+    void shouldCallAuthenticationManagerAuthenticateWithAuthHeader() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, VALID_AUTH_HEADER);
@@ -92,7 +92,7 @@ public class LoginFilterTest {
     }
 
     @Test
-    public void shouldCallAuthenticationManagerAuthenticateWithJson() throws ServletException {
+    void shouldCallAuthenticationManagerAuthenticateWithJson() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.setContent(VALID_JSON.getBytes());
@@ -106,62 +106,62 @@ public class LoginFilterTest {
     }
 
     @Test
-    public void shouldFailWithJsonEmptyCredentials() throws ServletException {
+    void shouldFailWithJsonEmptyCredentials() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.setContent(EMPTY_JSON.getBytes());
         httpServletResponse = new MockHttpServletResponse();
 
-        exception.expect(AuthenticationCredentialsNotFoundException.class);
-        exception.expectMessage("Username or password not provided.");
-
-        loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        Exception exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+            loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        });
+        assertEquals("Username or password not provided.", exception.getMessage());
     }
 
     @Test
-    public void shouldFailWithoutAuth() throws ServletException {
+    void shouldFailWithoutAuth() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
 
-        exception.expect(AuthenticationCredentialsNotFoundException.class);
-        exception.expectMessage("Login object has wrong format.");
-
-        loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        Exception exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+            loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        });
+        assertEquals("Login object has wrong format.", exception.getMessage());
     }
 
     @Test
-    public void shouldFailWithWrongHttpMethod() throws ServletException {
+    void shouldFailWithWrongHttpMethod() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
 
-        exception.expect(AuthMethodNotSupportedException.class);
-        exception.expectMessage("GET");
-
-        loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        Exception exception = assertThrows(AuthMethodNotSupportedException.class, () -> {
+            loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        });
+        assertEquals("GET", exception.getMessage());
     }
 
     @Test
-    public void shouldFailWithIncorrectCredentialsFormat() throws ServletException {
+    void shouldFailWithIncorrectCredentialsFormat() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, INVALID_AUTH_HEADER);
         httpServletResponse = new MockHttpServletResponse();
 
-        exception.expect(AuthenticationCredentialsNotFoundException.class);
-        exception.expectMessage("Login object has wrong format.");
-
-        loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        Exception exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+            loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        });
+        assertEquals("Login object has wrong format.", exception.getMessage());
     }
 
     @Test
-    public void shouldFailWithGatewayNotAvailable() throws IOException, ServletException {
+    void shouldFailWithGatewayNotAvailable() throws IOException, ServletException {
         testFailWithResourceAccessError(new GatewayNotAvailableException("API Gateway service not available"), ErrorType.GATEWAY_NOT_AVAILABLE);
     }
 
     @Test
-    public void shouldFailWithServiceNotAccessible() throws IOException, ServletException {
+    void shouldFailWithServiceNotAccessible() throws IOException, ServletException {
         testFailWithResourceAccessError(new ServiceNotAccessibleException("Authentication service not available"), ErrorType.SERVICE_UNAVAILABLE);
     }
 

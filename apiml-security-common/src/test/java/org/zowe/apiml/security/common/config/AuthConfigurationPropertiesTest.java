@@ -10,23 +10,23 @@
 
 package org.zowe.apiml.security.common.config;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationServiceException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AuthConfigurationPropertiesTest {
+class AuthConfigurationPropertiesTest {
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
 
-    @Test(expected = AuthenticationServiceException.class)
-    public void shouldThrowWhenZosmfIsNotConfigured() {
+    @Test
+    void shouldThrowWhenZosmfIsNotConfigured() {
         authConfigurationProperties.setZosmfServiceId(null);
-        authConfigurationProperties.validatedZosmfServiceId();
-
+        assertThrows(AuthenticationServiceException.class, () -> authConfigurationProperties.validatedZosmfServiceId());
     }
 
     @Test
-    public void shouldReturnWhenZosmfIsConfigured() {
+    void shouldReturnWhenZosmfIsConfigured() {
         authConfigurationProperties.setZosmfServiceId("ZOSMF_SID");
         assertEquals("ZOSMF_SID", authConfigurationProperties.validatedZosmfServiceId());
     }
