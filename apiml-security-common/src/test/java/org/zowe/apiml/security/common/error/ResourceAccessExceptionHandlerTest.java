@@ -13,11 +13,11 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -26,10 +26,11 @@ import org.springframework.web.client.HttpServerErrorException;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ResourceAccessExceptionHandlerTest {
+@ExtendWith(MockitoExtension.class)
+class ResourceAccessExceptionHandlerTest {
 
     private final MessageService messageService = new YamlMessageService("/security-service-messages.yml");
 
@@ -40,8 +41,8 @@ public class ResourceAccessExceptionHandlerTest {
     @Mock
     private ObjectMapper objectMapper;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(messageService, objectMapper);
 
         httpServletRequest = new MockHttpServletRequest();
@@ -50,16 +51,20 @@ public class ResourceAccessExceptionHandlerTest {
         httpServletResponse = new MockHttpServletResponse();
     }
 
-    @Test(expected = HttpServerErrorException.class)
-    public void shouldRethrowException() throws ServletException {
-        resourceAccessExceptionHandler.handleException(httpServletRequest, httpServletResponse, new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+    @Test
+    void shouldRethrowException() throws ServletException {
+        assertThrows(HttpServerErrorException.class, () -> {
+            resourceAccessExceptionHandler.handleException(httpServletRequest, httpServletResponse, new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+        });
     }
 
-    @Test(expected = ServletException.class)
-    public void shouldThrowServletExceptionOnIOException() throws Exception {
+    @Test
+    void shouldThrowServletExceptionOnIOException() throws Exception {
         Message message = messageService.createMessage(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), httpServletRequest.getRequestURI());
         doThrow(new IOException("Error in writing response")).when(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
 
-        resourceAccessExceptionHandler.writeErrorResponse(message.mapToView(), HttpStatus.NOT_FOUND, httpServletResponse);
+        assertThrows(ServletException.class, () -> {
+            resourceAccessExceptionHandler.writeErrorResponse(message.mapToView(), HttpStatus.NOT_FOUND, httpServletResponse);
+        });
     }
 }

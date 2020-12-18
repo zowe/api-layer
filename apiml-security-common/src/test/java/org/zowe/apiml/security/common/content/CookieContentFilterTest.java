@@ -12,8 +12,8 @@ package org.zowe.apiml.security.common.content;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -28,10 +28,16 @@ import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class CookieContentFilterTest {
+class CookieContentFilterTest {
 
     private CookieContentFilter cookieContentFilter;
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
@@ -42,8 +48,8 @@ public class CookieContentFilterTest {
     private final AuthenticationFailureHandler failureHandler = mock(AuthenticationFailureHandler.class);
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler = mock(ResourceAccessExceptionHandler.class);
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         cookieContentFilter = new CookieContentFilter(authenticationManager,
             failureHandler,
             resourceAccessExceptionHandler,
@@ -51,7 +57,7 @@ public class CookieContentFilterTest {
     }
 
     @Test
-    public void authenticationWithValidTokenInsideCookie() throws ServletException, IOException {
+    void authenticationWithValidTokenInsideCookie() throws ServletException, IOException {
         String token = "token";
 
         TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
@@ -67,7 +73,7 @@ public class CookieContentFilterTest {
     }
 
     @Test
-    public void shouldSkipFilter() throws ServletException, IOException {
+    void shouldSkipFilter() throws ServletException, IOException {
         String[] endpoints = {"/gateway"};
 
         request.setContextPath(endpoints[0]);
@@ -86,7 +92,7 @@ public class CookieContentFilterTest {
     }
 
     @Test
-    public void shouldNotAuthenticateWithBadCredentials() throws ServletException, IOException {
+    void shouldNotAuthenticateWithBadCredentials() throws ServletException, IOException {
         String token = "token";
         AuthenticationException exception = new BadCredentialsException("Token not valid");
 
@@ -105,7 +111,7 @@ public class CookieContentFilterTest {
     }
 
     @Test
-    public void shouldNotAuthenticateWithNoGateway() throws ServletException, IOException {
+    void shouldNotAuthenticateWithNoGateway() throws ServletException, IOException {
         String token = "token";
         RuntimeException exception = new RuntimeException("No Gateway");
 
@@ -124,7 +130,7 @@ public class CookieContentFilterTest {
     }
 
     @Test
-    public void shouldNotFilterWithNoCookie() throws ServletException, IOException {
+    void shouldNotFilterWithNoCookie() throws ServletException, IOException {
         cookieContentFilter.doFilter(request, response, filterChain);
 
         verify(authenticationManager, never()).authenticate(any());
@@ -134,14 +140,14 @@ public class CookieContentFilterTest {
     }
 
     @Test
-    public void shouldReturnEmptyIfNoCookies() {
+    void shouldReturnEmptyIfNoCookies() {
         Optional<AbstractAuthenticationToken> content = cookieContentFilter.extractContent(request);
 
         assertEquals(Optional.empty(), content);
     }
 
     @Test
-    public void shouldExtractContent() {
+    void shouldExtractContent() {
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), "cookie");
         request.setCookies(cookie);
 
@@ -155,7 +161,7 @@ public class CookieContentFilterTest {
     }
 
     @Test
-    public void shouldReturnEmptyIfCookieValueIsEmpty() {
+    void shouldReturnEmptyIfCookieValueIsEmpty() {
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), "");
         request.setCookies(cookie);
 
