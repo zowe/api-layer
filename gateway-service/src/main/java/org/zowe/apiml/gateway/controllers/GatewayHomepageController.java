@@ -121,7 +121,7 @@ public class GatewayHomepageController {
     private void initializeCatalogAttributes(Model model) {
         boolean isAnyCatalogAvailable = (apiCatalogServiceId != null && !apiCatalogServiceId.isEmpty());
         model.addAttribute("isAnyCatalogAvailable", isAnyCatalogAvailable);
-        if(!isAnyCatalogAvailable) {
+        if (!isAnyCatalogAvailable) {
             return;
         }
 
