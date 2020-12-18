@@ -180,8 +180,8 @@ class GatewayHomepageControllerTest {
 
     private void discoveryReturnValidApiCatalog() {
         Map<String, String> metadataMap = new HashMap<>();
-        metadataMap.put("apiml.routes.ui_v1.gatewayUrl", "ui/v1");
-        metadataMap.put("apiml.routes.ui_v1.serviceUrl", "/apicatalog");
+        metadataMap.put("apiml.routes.ui-v1.gatewayUrl", "/ui/v1");
+        metadataMap.put("apiml.routes.ui-v1.serviceUrl", "/apicatalog");
         ServiceInstance apiCatalogServiceInstance = new DefaultServiceInstance("instanceId", "serviceId",
             "host", 10000, true, metadataMap);
 
