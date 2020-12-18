@@ -105,3 +105,11 @@ bootRun {
     }
     systemProperties = System.properties
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact bootJar
+        }
+    }
+}

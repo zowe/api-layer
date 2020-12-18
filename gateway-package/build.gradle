@@ -9,7 +9,7 @@ configurations {
 }
 
 dependencies {
-    gatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
+    gatewayServiceJar(project(path: ":gateway-service", configuration: "liteJarConfiguration"))
 }
 
 task packageApiGateway(type: Zip) {
@@ -41,4 +41,8 @@ publishing {
             artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
         }
     }
+}
+
+jar {
+    enabled false
 }
