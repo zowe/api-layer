@@ -26,6 +26,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 
@@ -53,9 +54,8 @@ class ResourceAccessExceptionHandlerTest {
 
     @Test
     void shouldRethrowException() throws ServletException {
-        assertThrows(HttpServerErrorException.class, () -> {
-            resourceAccessExceptionHandler.handleException(httpServletRequest, httpServletResponse, new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-        });
+        HttpServerErrorException response = assertDoesNotThrow(() -> new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertThrows(HttpServerErrorException.class, () -> resourceAccessExceptionHandler.handleException(httpServletRequest, httpServletResponse, response));
     }
 
     @Test
