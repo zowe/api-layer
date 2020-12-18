@@ -12,6 +12,8 @@ package org.zowe.apiml.security.common.auth.saf;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 /**
@@ -21,12 +23,16 @@ import lombok.Data;
  * https://www.ibm.com/support/knowledgecenter/en/SSYKE2_8.0.0/com.ibm.java.zsecurity.api.80.doc/com.ibm.os390.security/com/ibm/os390/security/PlatformReturned.html
  */
 @SuppressWarnings({"squid:S1104"})
-public class PlatformReturned {
+public class PlatformReturned implements Serializable {
+
+    private static final long serialVersionUID = 937186147365898634L;
+
     public boolean success;
     public int rc;
     public int errno;
     public int errno2;
     public String errnoMsg;
     public String stringRet;
-    public Object objectRet;
+    public transient Object objectRet;
+
 }

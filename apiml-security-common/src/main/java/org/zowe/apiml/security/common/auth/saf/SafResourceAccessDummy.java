@@ -70,7 +70,7 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
     }
 
     private void set(ResourceUser resourceUser, AccessLevel accessLevel) {
-        AccessLevel currentLevel = resourceUserToAccessLevel.get(accessLevel);
+        AccessLevel currentLevel = resourceUserToAccessLevel.get(resourceUser);
         if ((currentLevel == null) || (currentLevel.compareTo(accessLevel) < 0)) {
             currentLevel = accessLevel;
         }

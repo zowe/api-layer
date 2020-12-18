@@ -54,14 +54,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = SafMethodSecurityExpressionController.TestController.class)
+@WebMvcTest(controllers = SafMethodSecurityExpressionControllerTest.TestController.class)
 @ContextConfiguration(classes = {
     SecurityControllerExceptionHandler.class,
-    SafMethodSecurityExpressionController.SecurityConfiguration.class,
+    SafMethodSecurityExpressionControllerTest.SecurityConfiguration.class,
     SafSecurityConfigurationProperties.class,
-    SafMethodSecurityExpressionController.TestController.class
+    SafMethodSecurityExpressionControllerTest.TestController.class
 })
-class SafMethodSecurityExpressionController {
+class SafMethodSecurityExpressionControllerTest {
 
     private final static String PASSWORD = "user";
     private final static String USERNAME = "user";
