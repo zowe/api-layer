@@ -161,7 +161,7 @@
     <h1>API Mediation Layer</h1>
     <ul class="status">
         <li class="list-item">
-            <div class="wrap"><img class="status-icon"
+            <div class="wrap" th:if="${isAnyCatalogAvailable == true}"><img class="status-icon"
                                    th:src="@{${'/images/icon-notification-intent-' + catalogIconName + '.png'}}"
                                    alt="API Catalog status icon"/>
                 <a class="active"

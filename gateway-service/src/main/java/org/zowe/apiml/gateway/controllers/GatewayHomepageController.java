@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
@@ -37,18 +38,23 @@ public class GatewayHomepageController {
     private BuildInfo buildInfo;
     private String buildString;
 
+    private String apiCatalogServiceId;
+
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     Providers providers) {
-        this(discoveryClient, providers, new BuildInfo());
+                                     Providers providers,
+                                     @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
+        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId);
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
-                                     BuildInfo buildInfo) {
+                                     BuildInfo buildInfo,
+                                     String apiCatalogServiceId) {
         this.discoveryClient = discoveryClient;
         this.providers = providers;
         this.buildInfo = buildInfo;
+        this.apiCatalogServiceId = apiCatalogServiceId;
 
         initializeBuildInfos();
     }
@@ -113,13 +119,19 @@ public class GatewayHomepageController {
     }
 
     private void initializeCatalogAttributes(Model model) {
+        boolean isAnyCatalogAvailable = (apiCatalogServiceId != null && !apiCatalogServiceId.isEmpty());
+        model.addAttribute("isAnyCatalogAvailable", isAnyCatalogAvailable);
+        if (!isAnyCatalogAvailable) {
+            return;
+        }
+
         String catalogLink = null;
         String catalogStatusText = "The API Catalog is not running";
         String catalogIconName = "warning";
         boolean linkEnabled = false;
         boolean authServiceEnabled = authorizationServiceUp();
 
-        List<ServiceInstance> serviceInstances = discoveryClient.getInstances("apicatalog");
+        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(apiCatalogServiceId);
         if (serviceInstances != null && authServiceEnabled) {
             long catalogCount = serviceInstances.size();
             if (catalogCount == 1) {
@@ -137,9 +149,9 @@ public class GatewayHomepageController {
     }
 
     private String getCatalogLink(ServiceInstance catalogInstance) {
-        String gatewayUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, ROUTES_GATEWAY_URL));
-        String serviceUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, ROUTES_SERVICE_URL));
-        return serviceUrl + "/" + gatewayUrl;
+        String gatewayUrl = catalogInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_GATEWAY_URL));
+        String serviceUrl = catalogInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_SERVICE_URL));
+        return serviceUrl + gatewayUrl;
     }
 
     private boolean authorizationServiceUp() {
