@@ -10,8 +10,8 @@
 package org.zowe.apiml.security.common.content;
 
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -27,10 +27,18 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class BasicContentFilterTest {
+
+class BasicContentFilterTest {
     private final static String PRINCIPAL = "user";
     private final static String PASSWORD = "password";
     private final static String BASIC_AUTH = "Basic dXNlcjpwYXNzd29yZA==";
@@ -43,8 +51,8 @@ public class BasicContentFilterTest {
     private final AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler = mock(ResourceAccessExceptionHandler.class);
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         basicContentFilter = new BasicContentFilter(
             authenticationManager,
             authenticationFailureHandler,
@@ -52,7 +60,7 @@ public class BasicContentFilterTest {
     }
 
     @Test
-    public void authenticationWithBasicAuthHeader() throws ServletException, IOException {
+    void authenticationWithBasicAuthHeader() throws ServletException, IOException {
         request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, PASSWORD);
 
@@ -65,7 +73,7 @@ public class BasicContentFilterTest {
     }
 
     @Test
-    public void shouldSkipFilter() throws ServletException, IOException {
+    void shouldSkipFilter() throws ServletException, IOException {
         String[] endpoints = {"/gateway"};
 
         request.setContextPath(endpoints[0]);
@@ -84,7 +92,7 @@ public class BasicContentFilterTest {
 
 
     @Test
-    public void shouldNotAuthenticateWithBadCredentials() throws ServletException, IOException {
+    void shouldNotAuthenticateWithBadCredentials() throws ServletException, IOException {
         request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, PASSWORD);
         AuthenticationException exception = new BadCredentialsException("Token not valid");
@@ -100,7 +108,7 @@ public class BasicContentFilterTest {
     }
 
     @Test
-    public void shouldNotAuthenticateWithNoGateway() throws ServletException, IOException {
+    void shouldNotAuthenticateWithNoGateway() throws ServletException, IOException {
         request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, PASSWORD);
         RuntimeException exception = new RuntimeException("No Gateway");
@@ -116,7 +124,7 @@ public class BasicContentFilterTest {
     }
 
     @Test
-    public void shouldNotFilterWithNoCookie() throws ServletException, IOException {
+    void shouldNotFilterWithNoCookie() throws ServletException, IOException {
         basicContentFilter.doFilter(request, response, filterChain);
 
         verify(authenticationManager, never()).authenticate(any());
@@ -126,7 +134,7 @@ public class BasicContentFilterTest {
     }
 
     @Test
-    public void extractContentFromRequestWithValidBasicAuth() {
+    void extractContentFromRequestWithValidBasicAuth() {
         request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
@@ -136,7 +144,7 @@ public class BasicContentFilterTest {
     }
 
     @Test
-    public void extractContentFromRequestWithNonsenseBasicAuth() {
+    void extractContentFromRequestWithNonsenseBasicAuth() {
         request.addHeader(HttpHeaders.AUTHORIZATION, "Basic dXNlG4m3oFthR0n3syZA==");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
@@ -146,7 +154,7 @@ public class BasicContentFilterTest {
     }
 
     @Test
-    public void extractContentFromRequestWithNonsense() {
+    void extractContentFromRequestWithNonsense() {
         request.addHeader(HttpHeaders.AUTHORIZATION, "Duck");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
@@ -154,7 +162,7 @@ public class BasicContentFilterTest {
     }
 
     @Test
-    public void extractContentFromRequestWithIncompleteBasicAuth() {
+    void extractContentFromRequestWithIncompleteBasicAuth() {
         request.addHeader(HttpHeaders.AUTHORIZATION, "Basic dXNlcj11c2Vy");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
@@ -164,7 +172,7 @@ public class BasicContentFilterTest {
     }
 
     @Test
-    public void extractContentFromRequestWithEmptyRealm() {
+    void extractContentFromRequestWithEmptyRealm() {
         request.addHeader(HttpHeaders.AUTHORIZATION, "Basic ");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
@@ -172,7 +180,7 @@ public class BasicContentFilterTest {
     }
 
     @Test
-    public void extractContentFromRequestWithoutAuthHeader() {
+    void extractContentFromRequestWithoutAuthHeader() {
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
         assertFalse(token.isPresent());
