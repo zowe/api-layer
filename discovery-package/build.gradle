@@ -43,3 +43,7 @@ publishing {
         }
     }
 }
+
+jar {
+    enabled false
+}
