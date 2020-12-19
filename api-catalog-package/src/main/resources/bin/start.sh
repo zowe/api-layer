@@ -25,7 +25,8 @@
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
-JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services.jar"
+JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
+COMMON_LIB="${ROOT_DIR}/components/common-lib/api-layer-lite-lib-all.jar"
 
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
@@ -81,6 +82,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Dloader.path=${COMMON_LIB} \
     -jar "${JAR_FILE}" &
 pid=$?
 

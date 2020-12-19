@@ -9,29 +9,29 @@
  */
 package org.zowe.apiml.product.instance.lookup;
 
-
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.instance.InstanceNotFoundException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.*;
+import static java.time.Duration.ofMillis;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class InstanceLookupExecutorTest {
+@ExtendWith(MockitoExtension.class)
+class InstanceLookupExecutorTest {
 
     private static final int INITIAL_DELAY = 1;
     private static final int PERIOD = 10;
@@ -47,8 +47,8 @@ public class InstanceLookupExecutorTest {
     private InstanceInfo lastInstanceInfo;
     private CountDownLatch latch;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         instanceLookupExecutor = new InstanceLookupExecutor(eurekaClient, INITIAL_DELAY, PERIOD);
         instances = Collections.singletonList(
             getInstance(SERVICE_ID));
@@ -56,17 +56,19 @@ public class InstanceLookupExecutorTest {
     }
 
 
-    @Test(timeout = 2000)
-    public void testRun_whenNoApplicationRegisteredInDiscovery() throws InterruptedException {
-        instanceLookupExecutor.run(
-            SERVICE_ID, null,
-            (exception, isStopped) -> {
-                lastException = exception;
-                latch.countDown();
-            }
-        );
+    @Test
+    void testRun_whenNoApplicationRegisteredInDiscovery() throws InterruptedException {
+        assertTimeout(ofMillis(2000), () -> {
+            instanceLookupExecutor.run(
+                SERVICE_ID, null,
+                (exception, isStopped) -> {
+                    lastException = exception;
+                    latch.countDown();
+                }
+            );
 
-        latch.await();
+            latch.await();
+        });
 
         assertNotNull(lastException);
         assertTrue(lastException instanceof InstanceNotFoundException);
@@ -75,20 +77,22 @@ public class InstanceLookupExecutorTest {
     }
 
 
-    @Test(timeout = 2000)
-    public void testRun_whenNoInstancesExistInDiscovery() throws InterruptedException {
-        when(eurekaClient.getApplication(SERVICE_ID))
-            .thenReturn(new Application(SERVICE_ID, Collections.emptyList()));
+    @Test
+    void testRun_whenNoInstancesExistInDiscovery() throws InterruptedException {
+        assertTimeout(ofMillis(2000), () -> {
+            when(eurekaClient.getApplication(SERVICE_ID))
+                .thenReturn(new Application(SERVICE_ID, Collections.emptyList()));
 
-        instanceLookupExecutor.run(
-            SERVICE_ID, null,
-            (exception, isStopped) -> {
-                lastException = exception;
-                latch.countDown();
-            }
-        );
+            instanceLookupExecutor.run(
+                SERVICE_ID, null,
+                (exception, isStopped) -> {
+                    lastException = exception;
+                    latch.countDown();
+                }
+            );
 
-        latch.await();
+            latch.await();
+        });
 
         assertNotNull(lastException);
         assertTrue(lastException instanceof InstanceNotFoundException);
@@ -96,39 +100,43 @@ public class InstanceLookupExecutorTest {
             lastException.getMessage());
     }
 
-    @Test(timeout = 2000)
-    public void testRun_whenUnexpectedExceptionHappened() throws InterruptedException {
-        when(eurekaClient.getApplication(SERVICE_ID))
-            .thenThrow(new InstanceInitializationException("Unexpected Exception"));
+    @Test
+    void testRun_whenUnexpectedExceptionHappened() throws InterruptedException {
+        assertTimeout(ofMillis(2000), () -> {
+            when(eurekaClient.getApplication(SERVICE_ID))
+                .thenThrow(new InstanceInitializationException("Unexpected Exception"));
 
-        instanceLookupExecutor.run(
-            SERVICE_ID, null,
-            (exception, isStopped) -> {
-                lastException = exception;
-                latch.countDown();
-            }
-        );
+            instanceLookupExecutor.run(
+                SERVICE_ID, null,
+                (exception, isStopped) -> {
+                    lastException = exception;
+                    latch.countDown();
+                }
+            );
 
-        latch.await();
+            latch.await();
+        });
 
         assertNotNull(lastException);
         assertTrue(lastException instanceof InstanceInitializationException);
     }
 
-    @Test(timeout = 2000)
-    public void testRun_whenInstanceExistInDiscovery() throws InterruptedException {
-        when(eurekaClient.getApplication(SERVICE_ID))
-            .thenReturn(new Application(SERVICE_ID, instances));
+    @Test
+    void testRun_whenInstanceExistInDiscovery() throws InterruptedException {
+        assertTimeout(ofMillis(2000), () -> {
+            when(eurekaClient.getApplication(SERVICE_ID))
+                .thenReturn(new Application(SERVICE_ID, instances));
 
-        instanceLookupExecutor.run(
-            SERVICE_ID,
-            instanceInfo -> {
-                lastInstanceInfo = instanceInfo;
-                latch.countDown();
-            }, null
-        );
+            instanceLookupExecutor.run(
+                SERVICE_ID,
+                instanceInfo -> {
+                    lastInstanceInfo = instanceInfo;
+                    latch.countDown();
+                }, null
+            );
 
-        latch.await();
+            latch.await();
+        });
 
         assertNull(lastException);
         assertNotNull(lastInstanceInfo);
@@ -145,7 +153,7 @@ public class InstanceLookupExecutorTest {
             new HashMap<>());
     }
 
-    public InstanceInfo createInstance(String serviceId, String instanceId,
+    InstanceInfo createInstance(String serviceId, String instanceId,
                                        InstanceInfo.InstanceStatus status,
                                        InstanceInfo.ActionType actionType,
                                        HashMap<String, String> metadata) {

@@ -79,6 +79,13 @@ project(":caching-service-package") {
 }
 
 // Packaging project; sonar does not apply
+project(":common-lib-package") {
+    sonarqube {
+        skipProject = true
+    }
+}
+
+// Packaging project; sonar does not apply
 project(":zowe-install") {
     sonarqube {
         skipProject = true
