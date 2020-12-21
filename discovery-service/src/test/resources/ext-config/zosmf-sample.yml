@@ -27,10 +27,10 @@ services:
         - gatewayUrl: ui
           serviceRelativeUrl: /
       apiInfo:
-        - apiId: com.ibm.zosmf
+        - apiId: ibm.zosmf
           gatewayUrl: api
           version: 2.3.0
-          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
+          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
 
 catalogUiTiles:
     zosmf:
