@@ -17,9 +17,11 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.Assert;
 
-public class ApimlPoolingHttpClientConnectionManagerTest {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class ApimlPoolingHttpClientConnectionManagerTest {
     private HttpRoute route;
     private Object state;
 
@@ -36,8 +38,13 @@ public class ApimlPoolingHttpClientConnectionManagerTest {
     }
 
     @Test
-    public void whenRequestConnection_thenReturnConnectionRequest() {
+    void whenRequestConnection_thenReturnConnectionRequest() {
         ConnectionRequest connectionRequest = connectionManager.requestConnection(route, state);
-        Assert.notNull(connectionRequest, "Received null connection request");
+        assertNotNull(connectionRequest);
+    }
+
+    @Test
+    void givenNoSocketRegistry_whenCreateConnection_thenThrowError() {
+        assertThrows(IllegalArgumentException.class, () -> new ApimlPoolingHttpClientConnectionManager(null));
     }
 }
