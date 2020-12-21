@@ -24,7 +24,7 @@ messages:
       number: ZWEAO105
       type: WARNING
       text: "Gateway HTTP Client per-route connection limit of %s has been reached for the '%s' route."
-      reason: "Too many concurrent connection requests to the same route were made."
+      reason: "Too many concurrent connection requests were made to the same route."
       action: "Further connections will be queued until there is room in the connection pool. You may also increase the per-route connection limit via the gateway start-up script."
 
     - key: org.zowe.apiml.common.totalConnectionLimitReached
