@@ -27,9 +27,9 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class EurekaMetadataParser {
 
-    private ApimlLogger apimlLog = ApimlLogger.of(EurekaMetadataParser.class, YamlMessageServiceInstance.getInstance());
-
     private static final String THREE_STRING_MERGE_FORMAT = "%s.%s.%s";
+
+    private final ApimlLogger apimlLog = ApimlLogger.of(EurekaMetadataParser.class, YamlMessageServiceInstance.getInstance());
 
     /**
      * Parse eureka metadata and construct ApiInfo with the values found
@@ -172,6 +172,10 @@ public class EurekaMetadataParser {
         Map<String, String> metadata = new HashMap<>();
         String encodedGatewayUrl = UrlUtils.getEncodedUrl(apiInfo.getGatewayUrl());
 
+        if (apiInfo.getApiId() != null) {
+            metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_API_ID), apiInfo.getApiId());
+        }
+
         if (apiInfo.getGatewayUrl() != null) {
             metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_GATEWAY_URL), apiInfo.getGatewayUrl());
         }
@@ -208,4 +212,5 @@ public class EurekaMetadataParser {
             throw new MetadataValidationException(exceptionSupplier.get(), e);
         }
     }
+
 }
