@@ -7,17 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+package org.zowe.apiml.security.common.auth;
 
-package org.zowe.apiml.auth;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-public class AuthenticationSchemesTest {
+import static org.junit.jupiter.api.Assertions.*;
+class AuthenticationSchemesTest {
 
     @Test
-    public void testFromScheme() {
+    void testFromScheme() {
         AuthenticationSchemes underTest = new AuthenticationSchemes();
         for (AuthenticationScheme as : AuthenticationScheme.values()) {
             AuthenticationScheme as2 = underTest.map(as.getScheme());

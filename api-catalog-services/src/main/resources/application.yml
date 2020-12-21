@@ -115,11 +115,11 @@ eureka:
                         version: ${apiml.catalog.version}
 
                 routes:
-                    ui_v1:
-                        gatewayUrl: "ui/v1"
+                    ui-v1:
+                        gatewayUrl: "/ui/v1"
                         serviceUrl: /apicatalog
-                    api_v1:
-                        gatewayUrl: "api/v1"
+                    api-v1:
+                        gatewayUrl: "/api/v1"
                         serviceUrl: /apicatalog
 
                 apiInfo:

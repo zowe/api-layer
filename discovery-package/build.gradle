@@ -18,7 +18,7 @@ task packageDiscovery(type: Zip) {
     def resourceDir = 'src/main/resources/'
 
     into('/') {
-        from "$resourceDir/manifest.yaml"
+        from "$resourceDir/manifest.yaml", "$resourceDir/zosmf-static-definition.yaml.template"
     }
 
     into('bin/') {

@@ -20,6 +20,8 @@ import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Collections;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -42,7 +44,7 @@ class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());
@@ -56,7 +58,7 @@ class GatewayHealthIndicatorTest {
             Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());
@@ -72,7 +74,7 @@ class GatewayHealthIndicatorTest {
             Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());
@@ -89,9 +91,29 @@ class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());
+    }
+
+    @Test
+    void givenCustomCatalogProvider_whenHealthIsRequested_thenStatusIsUp() {
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailable()).thenReturn(true);
+        String customCatalogServiceId = "customCatalog";
+
+        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
+        when(discoveryClient.getInstances(customCatalogServiceId)).thenReturn(
+            Collections.singletonList(new DefaultServiceInstance(customCatalogServiceId, "host", 10014, true)));
+        when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
+            Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
+
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, customCatalogServiceId);
+        Health.Builder builder = new Health.Builder();
+        gatewayHealthIndicator.doHealthCheck(builder);
+
+        String code = (String) builder.build().getDetails().get(CoreService.API_CATALOG.getServiceId());
+        assertThat(code, is("UP"));
     }
 }
