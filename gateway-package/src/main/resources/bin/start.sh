@@ -25,7 +25,8 @@
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
-JAR_FILE="${LAUNCH_COMPONENT}/gateway-service.jar"
+JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
+COMMON_LIB="${ROOT_DIR}/components/common-lib/api-layer-lite-lib-all.jar"
 
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
@@ -91,7 +92,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.x509.externalMapperUser=ZWESVUSR \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=/usr/include/java_classes/IRRRacf.jar \
+    -Dloader.path=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar \
     -jar ${JAR_FILE} &
 pid=$?
 

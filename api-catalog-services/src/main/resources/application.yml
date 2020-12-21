@@ -99,6 +99,7 @@ eureka:
         hostname: ${apiml.service.hostname}
         statusPageUrlPath: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/info
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
+        secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
         homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}
         port: ${apiml.service.port}
         securePort: ${apiml.service.port}
@@ -114,15 +115,15 @@ eureka:
                         version: ${apiml.catalog.version}
 
                 routes:
-                    ui_v1:
-                        gatewayUrl: "ui/v1"
+                    ui-v1:
+                        gatewayUrl: "/ui/v1"
                         serviceUrl: /apicatalog
-                    api_v1:
-                        gatewayUrl: "api/v1"
+                    api-v1:
+                        gatewayUrl: "/api/v1"
                         serviceUrl: /apicatalog
 
                 apiInfo:
-                    - apiId: org.zowe.apicatalog
+                    - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
                       swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs

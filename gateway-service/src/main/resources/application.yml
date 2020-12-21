@@ -36,6 +36,8 @@ apiml:
         preferIpAddress: false
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
 
+    catalog:
+        serviceId: apicatalog
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
@@ -196,7 +198,7 @@ eureka:
                         gatewayUrl: /api/v1
                         serviceUrl: /gateway
                 apiInfo:
-                    - apiId: org.zowe.apiml.gateway
+                    - apiId: zowe.apiml.gateway
                       gatewayUrl: api/v1
                       swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
                       documentationUrl: https://zowe.github.io/docs-site/

@@ -1,22 +1,3 @@
-#!/bin/sh
-
-################################################################################
-# This program and the accompanying materials are made available under the terms of the
-# Eclipse Public License v2.0 which accompanies this distribution, and is available at
-# https://www.eclipse.org/legal/epl-v20.html
-#
-# SPDX-License-Identifier: EPL-2.0
-#
-# Copyright IBM Corporation 2019, 2020
-################################################################################
-
-# Source main utils script
-. ${ROOT_DIR}/bin/utils/utils.sh
-ensure_java_is_on_path
-
-# TODO - do we need 2 zosmf entries?
-# Add static definition for zosmf
-cat <<EOF >${STATIC_DEF_CONFIG_DIR}/zosmf.ebcidic.yml
 # Static definition for z/OSMF
 #
 # Once configured you can access z/OSMF via the API gateway:
@@ -35,9 +16,9 @@ services:
       authentication:
           scheme: zosmf
       apiInfo:
-        - apiId: com.ibm.zosmf
+        - apiId: ibm.zosmf
           gatewayUrl: api/v1
-          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
+          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
       customMetadata:
           apiml:
               enableUrlEncodedCharacters: true
@@ -55,9 +36,9 @@ services:
       authentication:
           scheme: zosmf
       apiInfo:
-        - apiId: com.ibm.zosmf
+        - apiId: ibm.zosmf
           gatewayUrl: api/v1
-          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
+          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
           swaggerUrl: https://${ZOSMF_HOST}:${ZOSMF_PORT}/zosmf/api/docs
       customMetadata:
           apiml:
@@ -66,7 +47,3 @@ catalogUiTiles:
     zosmf:
         title: z/OSMF services
         description: IBM z/OS Management Facility REST services
-EOF
-iconv -f IBM-1047 -t IBM-850 ${STATIC_DEF_CONFIG_DIR}/zosmf.ebcidic.yml > $STATIC_DEF_CONFIG_DIR/zosmf.yml
-rm ${STATIC_DEF_CONFIG_DIR}/zosmf.ebcidic.yml
-chmod 770 $STATIC_DEF_CONFIG_DIR/zosmf.yml

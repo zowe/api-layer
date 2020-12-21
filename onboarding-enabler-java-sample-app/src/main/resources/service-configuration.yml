@@ -18,7 +18,7 @@ routes:
       serviceUrl: /
 
 apiInfo:
-    - apiId: org.zowe.apiml.enablerJavaSampleApp
+    - apiId: zowe.apiml.enabler.java.sample
       gatewayUrl: api/v1
       swaggerUrl: https://localhost:10016/enablerJavaSampleApp/openapi.json
 

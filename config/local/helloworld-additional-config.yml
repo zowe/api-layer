@@ -32,7 +32,7 @@ routes:
       serviceUrl: /greeting/api-doc
 
 apiInfo:
-    - apiId: org.zowe.greeting
+    - apiId: zowe.apiml.greeting
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:8080/apiml-plugin-poc_plain-java-enabler/api-doc
 

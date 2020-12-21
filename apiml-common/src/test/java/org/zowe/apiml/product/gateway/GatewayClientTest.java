@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.product.gateway;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
-public class GatewayClientTest {
+class GatewayClientTest {
 
     private final GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder()
         .scheme("https")
@@ -24,18 +24,20 @@ public class GatewayClientTest {
     private final GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
 
     @Test
-    public void testGetGatewayConfigProperties_whenItIsNotNull() {
+    void testGetGatewayConfigProperties_whenItIsNotNull() {
         assertEquals(gatewayClient.getGatewayConfigProperties(), gatewayConfigProperties);
     }
 
-    @Test(expected = GatewayNotAvailableException.class)
-    public void testGetGatewayConfigProperties_whenItNull() {
+    @Test
+    void testGetGatewayConfigProperties_whenItNull() {
         gatewayClient.setGatewayConfigProperties(null);
-        gatewayClient.getGatewayConfigProperties();
+        assertThrows(GatewayNotAvailableException.class, () -> {
+            gatewayClient.getGatewayConfigProperties();
+        });
     }
 
     @Test
-    public void testIsInitialized() {
+    void testIsInitialized() {
         assertTrue(gatewayClient.isInitialized());
         gatewayClient.setGatewayConfigProperties(null);
         assertFalse(gatewayClient.isInitialized());

@@ -1,4 +1,4 @@
-package org.zowe.apiml.security.common.auth;/*
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -7,19 +7,17 @@ package org.zowe.apiml.security.common.auth;/*
  *
  * Copyright Contributors to the Zowe Project.
  */
+package org.zowe.apiml.security.common.auth;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(JUnit4.class)
-public class AuthenticationTest {
+class AuthenticationTest {
 
     @Test
-    public void testIsEmpty() {
+    void testIsEmpty() {
         Authentication a;
 
         a = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");

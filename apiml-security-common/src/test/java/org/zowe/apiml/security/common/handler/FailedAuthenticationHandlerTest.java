@@ -10,7 +10,7 @@
 package org.zowe.apiml.security.common.handler;
 
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,10 +21,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 
-public class FailedAuthenticationHandlerTest {
+class FailedAuthenticationHandlerTest {
 
     @Test
-    public void testOnAuthenticationFailure() throws ServletException {
+    void testOnAuthenticationFailure() throws ServletException {
         AuthExceptionHandler authExceptionHandler = mock(AuthExceptionHandler.class);
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();

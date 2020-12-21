@@ -102,3 +102,5 @@ gateway-service/jwt*.tmp
 .zowe-api-dev
 user-zowe-api.json
 lastJob.json
+invalidated*.data
+invalidated*.index
