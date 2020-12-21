@@ -9,7 +9,7 @@ configurations {
 }
 
 dependencies {
-    discoveryServiceJar(project(path: ":discovery-service", configuration: "bootArchives"))
+    discoveryServiceJar(project(path: ":discovery-service", configuration: "liteJarConfiguration"))
 }
 
 task packageDiscovery(type: Zip) {

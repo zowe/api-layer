@@ -1,0 +1,52 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
+ext {
+    artifactName = 'common-lib-package'
+    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
+}
+
+configurations {
+    zip
+}
+
+task packageCommonLib(type: Zip) {
+    archiveName = artifactName + pullNo + ".zip"
+    includeEmptyDirs = true
+    def resourceDir = 'src/main/resources/'
+
+    into('/') {
+        from "$resourceDir/manifest.yaml"
+    }
+
+    into('bin/') {
+        from "${project.rootDir}/build/libs/api-layer-lite-lib-all" + ".jar"
+    }
+}
+
+jar.dependsOn(packageCommonLib)
+build.dependsOn(packageCommonLib)
+packageCommonLib.dependsOn(":liteLibJarAll")
+
+artifacts {
+    zip packageCommonLib
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+        }
+    }
+}
+
+jar {
+    enabled false
+}

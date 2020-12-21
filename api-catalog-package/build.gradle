@@ -9,7 +9,7 @@ configurations {
 }
 
 dependencies {
-    catalogServiceJar(project(path: ":api-catalog-services", configuration: "bootArchives"))
+    catalogServiceJar(project(path: ":api-catalog-services", configuration: "liteJarConfiguration"))
 }
 
 task packageApiCatalog(type: Zip) {
