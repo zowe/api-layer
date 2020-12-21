@@ -13,53 +13,53 @@ package org.zowe.apiml.product.logging;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.core.spi.FilterReply;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
-public class LogLevelInfoFilterTest {
+class LogLevelInfoFilterTest {
 
     private LogLevelInfoFilter filterInstance;
     private static final String APIML_MARKER = "APIML-LOGGER";
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         System.getProperties().setProperty("spring.profiles.include", "");
         filterInstance = new LogLevelInfoFilter();
     }
 
     @Test
-    public void createActiveFilterInNormalMode() {
+    void createActiveFilterInNormalMode() {
         FilterReply reply = filterInstance.decide(null, (ch.qos.logback.classic.Logger) log, Level.INFO, "", null,
                 null);
-        assertEquals("Filter does not filter INFO level messages", FilterReply.DENY, reply);
+        assertEquals(FilterReply.DENY, reply, "Filter does not filter INFO level messages");
     }
 
     @Test
-    public void createInactiveFilterInDebugMode() {
+    void createInactiveFilterInDebugMode() {
         System.getProperties().setProperty("spring.profiles.include", "blueberries,debug,diag");
         LogLevelInfoFilter filter = new LogLevelInfoFilter();
         FilterReply reply = filter.decide(null, (ch.qos.logback.classic.Logger) log, Level.INFO, "", null, null);
-        assertEquals("Filter should not filter when service not in debug mode", FilterReply.NEUTRAL, reply);
+        assertEquals(FilterReply.NEUTRAL, reply, "Filter should not filter when service not in debug mode");
     }
 
     @Test
-    public void createInactiveFilterInDebugModeWithDevProfile() {
+    void createInactiveFilterInDebugModeWithDevProfile() {
         System.getProperties().setProperty("spring.profiles.include", "blueberries,dev,diag");
         LogLevelInfoFilter filter = new LogLevelInfoFilter();
         FilterReply reply = filter.decide(null, (ch.qos.logback.classic.Logger) log, Level.INFO, "", null, null);
-        assertEquals("Filter should not filter when service not in debug mode", FilterReply.NEUTRAL, reply);
+        assertEquals(FilterReply.NEUTRAL, reply, "Filter should not filter when service not in debug mode");
     }
 
     @Test
-    public void filtersLevelTest() {
+    void filtersLevelTest() {
 
         Map<Level, Boolean> filteringMap = new HashMap<>();
         filteringMap.put(Level.TRACE, true);
@@ -70,13 +70,13 @@ public class LogLevelInfoFilterTest {
 
         filteringMap.forEach((level, shouldFilter) -> {
             FilterReply reply = filterInstance.decide(null, (ch.qos.logback.classic.Logger) log, level, "", null, null);
-            assertEquals("Logging level " + level.toString() + " not filtered correctly",
-                    shouldFilter ? FilterReply.DENY : FilterReply.NEUTRAL, reply);
+            assertEquals(shouldFilter ? FilterReply.DENY : FilterReply.NEUTRAL, reply,
+                "Logging level " + level.toString() + " not filtered correctly");
         });
     }
 
     @Test
-    public void filtersLevelTestWithMarker() {
+    void filtersLevelTestWithMarker() {
         Marker marker = MarkerFactory.getMarker(APIML_MARKER);
         Map<Level, Boolean> filteringMap = new HashMap<>();
         filteringMap.put(Level.TRACE, false);
@@ -88,13 +88,13 @@ public class LogLevelInfoFilterTest {
         filteringMap.forEach((level, shouldFilter) -> {
             FilterReply reply = filterInstance.decide(marker, (ch.qos.logback.classic.Logger) log, level, "", null,
                     null);
-            assertEquals("Logging level with apiml marker " + level.toString() + " not filtered correctly",
-                    shouldFilter ? FilterReply.DENY : FilterReply.NEUTRAL, reply);
+            assertEquals(shouldFilter ? FilterReply.DENY : FilterReply.NEUTRAL, reply,
+                "Logging level with apiml marker " + level.toString() + " not filtered correctly");
         });
     }
 
     @Test
-    public void packageFilterTest() {
+    void packageFilterTest() {
         Map<String, Boolean> loggerMap = new HashMap<>();
         loggerMap.put("org.zowe.apiml.product.logging.LogLevelFilterTest", true);
         loggerMap.put("org.zowe.apiml.security.common.config.AuthConfigurationProperties", true);
@@ -106,8 +106,8 @@ public class LogLevelInfoFilterTest {
             org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(loggerName);
             FilterReply reply = filterInstance.decide(null, (ch.qos.logback.classic.Logger) logger, Level.DEBUG, "",
                     null, null);
-            assertEquals("Logger of name " + logger.getName() + " is not filtered correctly",
-                    shouldFilter ? FilterReply.DENY : FilterReply.NEUTRAL, reply);
+            assertEquals(shouldFilter ? FilterReply.DENY : FilterReply.NEUTRAL, reply,
+                "Logger of name " + logger.getName() + " is not filtered correctly");
         });
 
     }
