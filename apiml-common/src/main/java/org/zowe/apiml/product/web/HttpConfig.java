@@ -165,11 +165,10 @@ public class HttpConfig {
     }
 
     /**
-     * Returns RestTemplate without keystore. The purpose is to call z/OSMF (or other systems), which accept login by
-     * certificate. In case of login into z/OSMF can certificate has higher priority. It breaks credentials
-     * verification.
+     * Returns RestTemplate with keystore. This RestTemplate makes calls to other systems with a certificate to sign to
+     * other systems by certificate. It is necessary to call systems like DiscoverySystem etc.
      *
-     * @return default RestTemplate, which doesn't use certificate from keystore
+     * @return RestTemplate, which uses certificate from keystore to authenticate
      */
     @Bean
     @Primary
@@ -180,10 +179,11 @@ public class HttpConfig {
     }
 
     /**
-     * Returns RestTemplate with keystore. This RestTemplate makes calls to other systems with a certificate to sign to
-     * other systems by certificate. It is necessary to call systems like DiscoverySystem etc.
+     * Returns RestTemplate without keystore. The purpose is to call z/OSMF (or other systems), which accept login by
+     * certificate. In case of login into z/OSMF can certificate has higher priority. It breaks credentials
+     * verification.
      *
-     * @return RestTemplate, which uses certificate from keystore to authenticate
+     * @return default RestTemplate, which doesn't use certificate from keystore
      */
     @Bean
     @Qualifier("restTemplateWithoutKeystore")
@@ -193,7 +193,7 @@ public class HttpConfig {
     }
 
     /**
-     * @return HttpClient which doesn't use a certificate to authenticate
+     * @return HttpClient which use a certificate to authenticate
      */
     @Bean
     @Primary

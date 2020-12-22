@@ -36,6 +36,7 @@ import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Data
@@ -63,6 +64,7 @@ public class HttpsFactory {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
                 Objects.requireNonNull(socketFactoryRegistry));
         connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerRoute());
+        connectionManager.closeIdleConnections(20, TimeUnit.SECONDS);
         connectionManager.setMaxTotal(config.getMaxTotalConnections());
         return HttpClientBuilder.create()
             .setConnectionManager(connectionManager).disableCookieManagement()
