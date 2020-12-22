@@ -23,7 +23,7 @@ services:
           serviceRelativeUrl: /ws
       # List of APIs provided by the service (currently only one is supported):
       apiInfo:
-        - apiId: org.zowe.discoverableclient
+        - apiId: zowe.apiml.discoverableclient
           gatewayUrl: api/v1
           swaggerUrl: https://localhost:10012/discoverableclient/v2/api-docs
       customMetadata:
@@ -51,7 +51,7 @@ services:
           applid: TSTAPPL  # APPLID to generate PassTickets for this service
       # List of APIs provided by the service (currently only one is supported):
       apiInfo:
-        - apiId: org.zowe.discoverableclient
+        - apiId: zowe.apiml.discoverableclient
           gatewayUrl: api/v1
           version: 1.0.0
 
@@ -70,7 +70,7 @@ services:
       authentication:
           scheme: bypass
       apiInfo:
-          - apiId: org.zowe.discoverableclient
+          - apiId: zowe.apiml.discoverableclient
             gatewayUrl: api/v1
             version: 1.0.0
 
@@ -90,7 +90,7 @@ services:
           scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
           applid: ZOWEAPPL  # APPLID to generate PassTickets for this service
       apiInfo:
-          - apiId: org.zowe.discoverableclient
+          - apiId: zowe.apiml.discoverableclient
             gatewayUrl: api/v1
             version: 1.0.0
 # Additional metadata that will be added to existing dynamically registered services:

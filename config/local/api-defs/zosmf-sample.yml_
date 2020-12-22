@@ -29,10 +29,10 @@ services:
       authentication:
           scheme: zosmf                                           # This service expects z/OSMF LTPA token
       apiInfo:                                                    # List of APIs provided by the z/OSMF service (currenly only one is supported):
-        - apiId: com.ibm.zosmf
+        - apiId: ibm.zosmf
           gatewayUrl: api
           version: 2.x.0
-          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
+          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
           swaggerUrl:                                             # scheme://hostname:port/contextPath/api/docs
 
 catalogUiTiles:                                                   # z/OSMF services tile
