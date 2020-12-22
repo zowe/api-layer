@@ -32,8 +32,7 @@ public class SafResourceAccessConfig {
             return new SafResourceAccessEndpoint(restTemplate);
         }
 
-        // TODO: Dummy - another PR
-        throw new IllegalArgumentException("No implementation is ready");
+        return new SafResourceAccessDummy();
     }
 
 }
