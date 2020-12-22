@@ -20,7 +20,6 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -35,7 +34,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.Objects;
 
 @Slf4j
 @Data
@@ -55,17 +53,16 @@ public class HttpsFactory {
     public CloseableHttpClient createSecureHttpClient() {
         Registry<ConnectionSocketFactory> socketFactoryRegistry;
         RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
-                .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
+            .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
 
         socketFactoryRegistryBuilder.register("https", createSslSocketFactory());
         socketFactoryRegistry = socketFactoryRegistryBuilder.build();
 
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
-                Objects.requireNonNull(socketFactoryRegistry));
+        ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry);
         connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerRoute());
         connectionManager.setMaxTotal(config.getMaxTotalConnections());
         return HttpClientBuilder.create().setConnectionManager(connectionManager).disableCookieManagement()
-                .disableAuthCaching().build();
+            .disableAuthCaching().build();
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {
@@ -100,12 +97,12 @@ public class HttpsFactory {
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.common.errorInitSsl", e.getMessage());
             throw new HttpsConfigError("Error initializing SSL/TLS context: " + e.getMessage(), e,
-                    ErrorCode.SSL_CONTEXT_INITIALIZATION_FAILED, config);
+                ErrorCode.SSL_CONTEXT_INITIALIZATION_FAILED, config);
         }
     }
 
     private void loadTrustMaterial(SSLContextBuilder sslContextBuilder)
-            throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+        throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         if (config.getTrustStore() != null) {
             sslContextBuilder.setKeyStoreType(config.getTrustStoreType()).setProtocol(config.getProtocol());
 
@@ -113,7 +110,7 @@ public class HttpsFactory {
                 if (config.getTrustStorePassword() == null) {
                     apimlLog.log("org.zowe.apiml.common.truststorePasswordNotDefined");
                     throw new HttpsConfigError("server.ssl.trustStorePassword configuration parameter is not defined",
-                            ErrorCode.TRUSTSTORE_PASSWORD_NOT_DEFINED, config);
+                        ErrorCode.TRUSTSTORE_PASSWORD_NOT_DEFINED, config);
                 }
 
                 log.info("Loading trust store file: " + config.getTrustStore());
@@ -128,8 +125,8 @@ public class HttpsFactory {
             if (config.isTrustStoreRequired()) {
                 apimlLog.log("org.zowe.apiml.common.truststoreNotDefined");
                 throw new HttpsConfigError(
-                        "server.ssl.trustStore configuration parameter is not defined but trust store is required",
-                        ErrorCode.TRUSTSTORE_NOT_DEFINED, config);
+                    "server.ssl.trustStore configuration parameter is not defined but trust store is required",
+                    ErrorCode.TRUSTSTORE_NOT_DEFINED, config);
             } else {
                 log.info("No trust store is defined");
             }
@@ -141,7 +138,7 @@ public class HttpsFactory {
     }
 
     private void loadKeyMaterial(SSLContextBuilder sslContextBuilder) throws NoSuchAlgorithmException,
-            KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
+        KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
         if (config.getKeyStore() != null) {
             sslContextBuilder.setKeyStoreType(config.getKeyStoreType()).setProtocol(config.getProtocol());
 
@@ -160,16 +157,16 @@ public class HttpsFactory {
     }
 
     private void loadKeystoreMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
-            NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+        NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         if (config.getKeyStore() == null) {
             apimlLog.log("org.zowe.apiml.common.keystoreNotDefined");
             throw new HttpsConfigError("server.ssl.keyStore configuration parameter is not defined",
-                    ErrorCode.KEYSTORE_NOT_DEFINED, config);
+                ErrorCode.KEYSTORE_NOT_DEFINED, config);
         }
         if (config.getKeyStorePassword() == null) {
             apimlLog.log("org.zowe.apiml.common.keystorePasswordNotDefined");
             throw new HttpsConfigError("server.ssl.keyStorePassword configuration parameter is not defined",
-                    ErrorCode.KEYSTORE_PASSWORD_NOT_DEFINED, config);
+                ErrorCode.KEYSTORE_PASSWORD_NOT_DEFINED, config);
         }
         log.info("Loading key store file: " + config.getKeyStore());
         File keyStoreFile = new File(config.getKeyStore());
@@ -177,10 +174,10 @@ public class HttpsFactory {
     }
 
     private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
-            NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+        NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         log.info("Loading trust key ring: " + config.getKeyStore());
-        sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()),config.getKeyStorePassword(),
-                config.getKeyPassword(), null);
+        sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()), config.getKeyStorePassword(),
+            config.getKeyPassword(), null);
     }
 
     private synchronized SSLContext createSecureSslContext() {
@@ -194,10 +191,10 @@ public class HttpsFactory {
                 validateSslConfig();
                 return secureSslContext;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
-                    | UnrecoverableKeyException | KeyManagementException e) {
+                | UnrecoverableKeyException | KeyManagementException e) {
                 apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
                 throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
-                        ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
+                    ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
         } else {
             return secureSslContext;
@@ -216,7 +213,7 @@ public class HttpsFactory {
 
     private ConnectionSocketFactory createSecureSslSocketFactory() {
         return new SSLConnectionSocketFactory(createSecureSslContext(),
-                SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+            SSLConnectionSocketFactory.getDefaultHostnameVerifier());
     }
 
     public SSLContext createSslContext() {
