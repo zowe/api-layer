@@ -1,46 +1,55 @@
-package org.zowe.apiml.util;/*
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License v2.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v20.html
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Copyright Contributors to the Zowe Project.
- */
+/*
+* This program and the accompanying materials are made available under the terms of the
+* Eclipse Public License v2.0 which accompanies this distribution, and is available at
+* https://www.eclipse.org/legal/epl-v20.html
+*
+* SPDX-License-Identifier: EPL-2.0
+*
+* Copyright Contributors to the Zowe Project.
+*/
+package org.zowe.apiml.util;
 
 import net.sf.ehcache.Element;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.zowe.apiml.cache.CompositeKey;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(net.sf.ehcache.Cache.class)
-public class CacheUtilsTest {
+class CacheUtilsTest {
 
     private CacheUtils underTest;
     private int removeCounter;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         underTest = new CacheUtils();
     }
 
     @Test
-    public void testEvictSubset() {
+    void testEvictSubset() {
         CacheManager cacheManager = mock(CacheManager.class);
 
         // cache1 is not ehCache
@@ -50,7 +59,7 @@ public class CacheUtilsTest {
 
         Cache cache2 = mock(Cache.class);
         when(cacheManager.getCache("cache2")).thenReturn(cache2);
-        net.sf.ehcache.Cache ehCache2 = PowerMockito.mock(net.sf.ehcache.Cache.class);
+        net.sf.ehcache.Cache ehCache2 = mock(net.sf.ehcache.Cache.class);
 
         when(cache2.getNativeCache()).thenReturn(ehCache2);
         List<Object> keys = Arrays.asList(
@@ -100,9 +109,9 @@ public class CacheUtilsTest {
     }
 
     @Test
-    public void givenUnknownCacheName_whenGetAllRecords_thenThrowsException() {
+    void givenUnknownCacheName_whenGetAllRecords_thenThrowsException() {
         CacheManager cacheManager = mock(CacheManager.class);
-        IllegalArgumentException iae = Assertions.assertThrows(
+        IllegalArgumentException iae = assertThrows(
             IllegalArgumentException.class,
             () -> underTest.getAllRecords(cacheManager, "unknownCacheName")
         );
@@ -110,12 +119,12 @@ public class CacheUtilsTest {
     }
 
     @Test
-    public void givenUnsupportedCacheManager_whenGetAllRecords_thenThrowsException() {
+    void givenUnsupportedCacheManager_whenGetAllRecords_thenThrowsException() {
         CacheManager cacheManager = mock(CacheManager.class);
         Cache cache = mock(Cache.class);
         when(cacheManager.getCache("knownCacheName")).thenReturn(cache);
         when(cache.getNativeCache()).thenReturn(new Object());
-        IllegalArgumentException iae = Assertions.assertThrows(
+        IllegalArgumentException iae = assertThrows(
             IllegalArgumentException.class,
             () -> underTest.getAllRecords(cacheManager, "knownCacheName")
         );
@@ -131,10 +140,10 @@ public class CacheUtilsTest {
     }
 
     @Test
-    public void givenValidCacheManager_whenGetAllRecords_thenReadAllStoredRecords() {
+    void givenValidCacheManager_whenGetAllRecords_thenReadAllStoredRecords() {
         CacheManager cacheManager = mock(CacheManager.class);
         Cache cache = mock(Cache.class);
-        net.sf.ehcache.Cache ehCache = PowerMockito.mock(net.sf.ehcache.Cache.class);
+        net.sf.ehcache.Cache ehCache = mock(net.sf.ehcache.Cache.class);
 
         Map<Integer, String> entries = new HashMap<>();
         entries.put(1, "a");

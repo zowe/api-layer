@@ -9,17 +9,15 @@ package org.zowe.apiml.passticket;/*
  */
 
 import org.apache.http.HttpStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-@RunWith(JUnit4.class)
-public class AbstractIRRPassTicketExceptionTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class AbstractIRRPassTicketExceptionTest {
 
     @Test
-    public void testErrorCode() {
+    void testErrorCode() {
         TestException te;
 
         te = new TestException(-1, -1, -1);

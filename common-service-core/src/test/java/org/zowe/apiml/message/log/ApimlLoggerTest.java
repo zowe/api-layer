@@ -1,4 +1,4 @@
-package org.zowe.apiml.message.log;/*
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -7,24 +7,27 @@ package org.zowe.apiml.message.log;/*
  *
  * Copyright Contributors to the Zowe Project.
  */
+package org.zowe.apiml.message.log;
 
 import org.zowe.apiml.message.core.MessageType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-@RunWith(JUnit4.class)
-public class ApimlLoggerTest {
+class ApimlLoggerTest {
 
     @Test
-    public void testEmpty() {
+    void testEmpty() {
         ApimlLogger apimlLogger = ApimlLogger.empty();
         Logger logger = (Logger) ReflectionTestUtils.getField(apimlLogger, "logger");
         assertEquals(ApimlLogger.class.getName(), logger.getName());
@@ -34,7 +37,7 @@ public class ApimlLoggerTest {
     }
 
     @Test
-    public void testLogLevel() {
+    void testLogLevel() {
         ApimlLogger apimlLogger = new ApimlLogger(ApimlLoggerTest.class, null);
 
         Logger logger = mock(Logger.class);

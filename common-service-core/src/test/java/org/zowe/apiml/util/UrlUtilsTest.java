@@ -9,22 +9,22 @@
  */
 package org.zowe.apiml.util;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class UrlUtilsTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+class UrlUtilsTest {
 
     @Test
-    public void testTrimSlashes() {
+    void testTrimSlashes() {
         assertEquals("abc", UrlUtils.trimSlashes("abc"));
         assertEquals("abc", UrlUtils.trimSlashes("abc/"));
         assertEquals("abc", UrlUtils.trimSlashes("/abc"));
@@ -35,7 +35,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void getEncodedUrlTest() {
+    void getEncodedUrlTest() {
         assertEquals("api-v1", UrlUtils.getEncodedUrl("api/v1"));
         assertEquals("-api-v1", UrlUtils.getEncodedUrl("/api/v1"));
         assertEquals("-api-v1-", UrlUtils.getEncodedUrl("/api/v1/"));
@@ -44,7 +44,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void removeFirstAndLastSlash() {
+    void removeFirstAndLastSlash() {
         assertNull(UrlUtils.removeFirstAndLastSlash(null));
 
         String whiteSpace = "       ";
@@ -55,7 +55,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void addFirstSlash() {
+    void addFirstSlash() {
         assertNull(UrlUtils.addFirstSlash(null));
 
         String whiteSpace = "       ";
@@ -66,7 +66,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void removeLastSlash() {
+    void removeLastSlash() {
         assertNull(UrlUtils.removeLastSlash(null));
 
         String whiteSpace = "       ";
@@ -76,53 +76,24 @@ public class UrlUtilsTest {
         assertEquals("/blah", UrlUtils.removeLastSlash(hasSlashes));
     }
 
-    @Test
-    public void testGetHostIPAddress_DoesNotExist() throws UnknownHostException {
-        thrown.expect(UnknownHostException.class);
-
-        String fqdn = "Does-Not-Exist";
-        String ipAddress = UrlUtils.getHostIPAddress(fqdn);
-        assertNull(ipAddress);
+    
+    @ParameterizedTest
+    @ValueSource(strings = {"Does-Not-Exist", "httpp://www.google.com", "http://www.google.co"})
+    void testGetHostIPAddress_UnknownHost(String fqdn) throws UnknownHostException {
+        assertThrows(UnknownHostException.class, () -> UrlUtils.getHostIPAddress(fqdn));
     }
 
     @Test
-    public void testGetHostIPAddress_Ok() throws UnknownHostException {
+    void testGetHostIPAddress_Ok() throws UnknownHostException {
         String fqdn = "www.google.com";
         String ipAddress = UrlUtils.getHostIPAddress(fqdn);
         assertNotNull(ipAddress);
     }
 
     @Test
-    public void testGetIPAddressFromUrl_Ok() throws UnknownHostException, MalformedURLException {
+    void testGetIPAddressFromUrl_Ok() throws UnknownHostException, MalformedURLException {
         String fqdn = "https://www.google.com";
         String ipAddress = UrlUtils.getIpAddressFromUrl(fqdn);
         assertNotNull(ipAddress);
-    }
-
-    @Test
-    public void testGetIPAddressFromUrl_BAD_PROTOCOL() throws UnknownHostException {
-        thrown.expect(UnknownHostException.class);
-
-        String fqdn = "httpp://www.google.com";
-        String ipAddress = UrlUtils.getHostIPAddress(fqdn);
-        assertNull(ipAddress);
-    }
-
-    @Test
-    public void testGetIPAddressFromUrl_NULL_Address() throws UnknownHostException {
-        thrown.expect(UnknownHostException.class);
-
-        String fqdn = "http://www.google.co";
-        String ipAddress = UrlUtils.getHostIPAddress(fqdn);
-        assertNull(ipAddress);
-    }
-
-    @Test
-    public void testValidateUrl_OK() throws UnknownHostException {
-        thrown.expect(UnknownHostException.class);
-
-        String fqdn = "http://www.google.co";
-        String ipAddress = UrlUtils.getHostIPAddress(fqdn);
-        assertNull(ipAddress);
     }
 }
