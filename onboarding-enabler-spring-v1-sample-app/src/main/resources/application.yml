@@ -43,7 +43,7 @@ apiml:
             -   gateway-url: "api/v1/api-doc" # Intentionally using old format to retrieve Api-doc for testing purposes
                 service-url: ${apiml.service.contextPath}/api-doc
         apiInfo:
-            -   apiId: org.zowe.discoverableclient
+            -   apiId: zowe.apiml.discoverableclient
                 version: 1.0.0
                 gatewayUrl: api/v1
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs

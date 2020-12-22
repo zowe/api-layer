@@ -22,7 +22,7 @@ routes:
       serviceUrl: /hellospring/ui
 
 apiInfo:
-    - apiId: org.zowe.hellospring
+    - apiId: zowe.apiml.hellospring
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hellospring/api-doc
 

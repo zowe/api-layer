@@ -18,8 +18,15 @@ build:
   timestamp: "{{build.timestamp}}"
 commands:
   start: bin/start.sh
-  configure: bin/configure.sh
   validate: bin/validate.sh
+# if we need to automatically tag file encoding on z/OS during installation
+autoEncoding:
+# tag all files
+- "."
 apimlServices:
   dynamic:
     - serviceId: apicatalog
+desktopIframePlugins:
+  - id: org.zowe.api.catalog
+    icon: assets/api-catalog.png
+    url: /ui/v1/apicatalog

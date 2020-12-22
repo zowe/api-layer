@@ -14,24 +14,24 @@ import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.mock;
 
 @Slf4j
-public class ApimlRollingFileAppenderTest {
+class ApimlRollingFileAppenderTest {
     ApimlRollingFileAppender<Object> underTest;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         underTest = new ApimlRollingFileAppender<>();
     }
 
     @Test
-    public void givenLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheParamtersAreVerified() {
+    void givenLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheParamtersAreVerified() {
         System.setProperty("spring.profiles.include", "debug");
         System.setProperty("apiml.logs.location", "validLocation");
 
@@ -40,7 +40,7 @@ public class ApimlRollingFileAppenderTest {
     }
 
     @Test
-    public void givenNullLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
+    void givenNullLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
         System.setProperty("apiml.logs.location", "validLocation");
         System.setProperty("spring.profiles.include", "");
 
@@ -49,7 +49,7 @@ public class ApimlRollingFileAppenderTest {
     }
 
     @Test
-    public void givenLogLevelAndNullWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
+    void givenLogLevelAndNullWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
         System.setProperty("apiml.logs.location", "");
         System.setProperty("spring.profiles.include", "debug");
 
@@ -58,7 +58,7 @@ public class ApimlRollingFileAppenderTest {
     }
 
     @Test
-    public void givenLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerStarts() {
+    void givenLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerStarts() {
         System.setProperty("spring.profiles.include", "debug");
         System.setProperty("apiml.logs.location", "validLocation");
 

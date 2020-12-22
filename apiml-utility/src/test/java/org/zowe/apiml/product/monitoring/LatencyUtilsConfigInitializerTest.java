@@ -10,19 +10,19 @@
 
 package org.zowe.apiml.product.monitoring;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class LatencyUtilsConfigInitializerTest {
+class LatencyUtilsConfigInitializerTest {
     private static final String PROPERTY_KEY = "LatencyUtils.useActualTime";
     private final ConfigurableApplicationContext applicationContext = new GenericApplicationContext();
 
     @Test
-    public void shouldSetSystemPropertyWhenPropertyNotSet() {
+    void shouldSetSystemPropertyWhenPropertyNotSet() {
         System.getProperties().remove(PROPERTY_KEY);
         assertNull(System.getProperties().getProperty(PROPERTY_KEY));
 
@@ -33,7 +33,7 @@ public class LatencyUtilsConfigInitializerTest {
     }
 
     @Test
-    public void shouldNotSetSystemPropertyWhenPropertyIsSetFromBefore() {
+    void shouldNotSetSystemPropertyWhenPropertyIsSetFromBefore() {
         System.getProperties().remove(PROPERTY_KEY);
         String value = "RandomValue";
         System.getProperties().setProperty(PROPERTY_KEY, value);
