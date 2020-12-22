@@ -34,7 +34,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 
@@ -69,7 +68,7 @@ public class HttpsFactory {
         return HttpClientBuilder.create()
             .setConnectionManager(connectionManager).disableCookieManagement()
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
-                .disableAuthCaching().build();
+            .disableAuthCaching().build();
 
     }
 
