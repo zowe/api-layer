@@ -29,8 +29,7 @@ public class SafResourceAccessConfig {
 
         // TODO: endpoint in another PR
 
-        // TODO: dummy in another PR
-        throw new IllegalArgumentException("No implementation is ready");
+        return new SafResourceAccessDummy();
     }
 
 }
