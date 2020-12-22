@@ -26,6 +26,7 @@
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
 JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
+# script assumes it's in the gateway component directory and common_lib needs to be relative path
 COMMON_LIB="../common-lib/bin/api-layer-lite-lib-all.jar"
 
 # API Mediation Layer Debug Mode
