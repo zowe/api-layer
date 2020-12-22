@@ -64,7 +64,9 @@ public class HttpsFactory {
                 Objects.requireNonNull(socketFactoryRegistry));
         connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerRoute());
         connectionManager.setMaxTotal(config.getMaxTotalConnections());
-        return HttpClientBuilder.create().setConnectionManager(connectionManager).disableCookieManagement()
+        return HttpClientBuilder.create()
+            .setConnectionManager(connectionManager).disableCookieManagement()
+            .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
                 .disableAuthCaching().build();
     }
 
