@@ -53,13 +53,13 @@ apiml:
             -   gateway-url: "ws/v1"
                 service-url: ${apiml.service.contextPath}/ws
         apiInfo:
-            -   apiId: org.zowe.discoverableclient
+            -   apiId: zowe.apiml.discoverableclient
                 version: 1.0.0
                 gatewayUrl: api/v1
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
                 documentationUrl: https://www.zowe.org
                 defaultApi: true
-            -   apiId: org.zowe.discoverableclient
+            -   apiId: zowe.apiml.discoverableclient
                 version: 2.0.0
                 gatewayUrl: api/v2
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs?group=apiv2

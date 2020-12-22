@@ -26,7 +26,7 @@
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
 JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
-COMMON_LIB="${ROOT_DIR}/components/common-lib/api-layer-lite-lib-all.jar"
+COMMON_LIB="${ROOT_DIR}/components/common-lib/bin/api-layer-lite-lib-all.jar"
 
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
