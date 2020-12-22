@@ -103,8 +103,8 @@ server:
         ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
         keyStoreType: PKCS12
         trustStoreType: PKCS12
-    maxConnectionsPerRoute: 100 # Default number of concurrent connections for one route
-    maxTotalConnections: 1000 # Maximum total concurrent connections
+    maxConnectionsPerRoute: 100
+    maxTotalConnections: 1000
 
 zuul:
     sslHostnameValidationEnabled: false
@@ -118,6 +118,8 @@ zuul:
     host:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
+        maxTotalConnetions: ${server.maxConnectionsPerRoute}
+        maxPerRouteConnections: ${server.maxTotalConnections}
     forceOriginalQueryStringEncoding: true
     retryable: true
     decodeUrl: false # Flag to indicate whether to decode the matched URL or use it as is
@@ -131,6 +133,8 @@ ribbon:
     MaxAutoRetriesNextServer: 5
     OkToRetryOnAllOperations: false
     GZipPayload: false # this stops Gateway from deflating gzip responses from services
+    MaxConnectionsPerHost: ${server.maxConnectionsPerRoute}
+    MaxTotalConnections: ${server.maxTotalConnections}
 
 http:
     connection:
@@ -153,7 +157,7 @@ hystrix:
                         timeoutInMilliseconds: ${apiml.gateway.timeoutMillis}
                     strategy: SEMAPHORE
                     semaphore:
-                        maxConcurrentRequests: 100000
+                        maxConcurrentRequests: ${server.maxTotalConnections}
 
 management:
     endpoints:
