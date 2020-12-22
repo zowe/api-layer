@@ -79,7 +79,7 @@ project(":caching-service-package") {
 }
 
 // Packaging project; sonar does not apply
-project(":common-lib-package") {
+project(":apiml-common-lib-package") {
     sonarqube {
         skipProject = true
     }
