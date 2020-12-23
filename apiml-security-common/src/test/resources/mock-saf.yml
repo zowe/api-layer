@@ -1,0 +1,21 @@
+# This file is used by the SafResourceAccessDummy class for testing and when the service is running outside of z/OS
+# It defines what are the access levels for SAF resources and users
+#
+# There are to special values of access level:
+#  - `FAILURE` - the check request will fail with an internal error
+#  - `NONE` - there is no access to the resource but the resource is defined
+#
+# This file is stored in `src/main/resources/mock-saf.yml` which means that it will be used by the service and its unit tests.
+# If you can create a different file in `src/test/resources/mock-saf.yml` then unit tests will use different definitions.
+safAccess:
+    ZOWE:
+        APIML.RES:
+            READ:
+                - ZOWE
+        APIML.RESOURCE:
+            READ:
+                - user
+    CLASS:
+        RESOURCE:
+            READ:
+                - user

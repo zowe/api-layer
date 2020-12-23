@@ -22,6 +22,13 @@ messages:
     # HTTP,Protocol messages
     # 400-499
 
+    - key: org.zowe.apiml.security.forbidden
+      number: ZWEAT403
+      type: ERROR
+      text: "The user is not authorized to the target resource: %s"
+      reason: "The service has accepted the authentication of the user but the user does not have access right to the resource."
+      action: "Contact your security administrator to give you access."
+
     # TLS,Certificate messages
     # 500-599
 
