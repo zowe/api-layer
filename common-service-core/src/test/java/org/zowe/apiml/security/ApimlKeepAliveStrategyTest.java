@@ -21,13 +21,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ApimlKeepAliveStrategyTest {
+class ApimlKeepAliveStrategyTest {
 
     @Test
-    void givenKeepAliveHeader_thenReturnTimeFromHeader() {
+    void givenMultipleKeepAliveHeaders_thenOnlyTimeoutValueIsReturned() {
         HttpResponse response = mock(HttpResponse.class);
         Header header = new BasicHeader(HTTP.CONN_KEEP_ALIVE, "timeout=10");
-        Header[] headers = {header};
+        Header header1 = new BasicHeader(HTTP.CONN_KEEP_ALIVE, "20");
+        Header[] headers = {header,header1};
         HeaderIterator headerIterator = new BasicHeaderIterator(headers, HTTP.CONN_KEEP_ALIVE);
         when(response.headerIterator(HTTP.CONN_KEEP_ALIVE)).thenReturn(headerIterator);
         ApimlKeepAliveStrategy strategy = ApimlKeepAliveStrategy.INSTANCE;
