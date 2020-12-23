@@ -44,7 +44,7 @@ public class SafResourceAccessSaf implements SafResourceAccessVerifying {
     }
 
     private void init() throws ClassNotFoundException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException {
-        platformReturnedHelper = new PlatformReturnedHelper(getPlatformReturnedClass());
+        platformReturnedHelper = new PlatformReturnedHelper<>((Class<Object>) getPlatformReturnedClass());
         checkPermission = getCheckPermissionMethodHandle(getPlatformClass());
     }
 
@@ -81,7 +81,7 @@ public class SafResourceAccessSaf implements SafResourceAccessVerifying {
         } catch (RuntimeException re) {
             throw re;
         } catch (Throwable t) {
-            throw new RuntimeException(t);
+            throw new IllegalStateException(t);
         }
     }
 

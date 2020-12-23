@@ -47,7 +47,7 @@ class SafResourceAccessSafTest {
                 return JzosMock.class;
             }
             @Override
-            protected Class<?> getPlatformReturnedClass() throws ClassNotFoundException {
+            protected Class<?> getPlatformReturnedClass() {
                 return TestPlatformReturned.class;
             }
         });
