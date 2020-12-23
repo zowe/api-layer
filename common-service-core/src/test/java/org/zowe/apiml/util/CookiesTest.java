@@ -23,7 +23,9 @@ import java.net.HttpCookie;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class CookiesTest {
 
@@ -36,7 +38,7 @@ class CookiesTest {
     Cookies underTest;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         request = mock(HttpRequest.class);
         underTest = Cookies.of(request);
     }

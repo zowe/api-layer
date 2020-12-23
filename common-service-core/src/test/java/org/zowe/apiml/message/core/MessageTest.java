@@ -12,128 +12,125 @@ package org.zowe.apiml.message.core;
 import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.template.MessageTemplate;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.IllegalFormatConversionException;
 import java.util.MissingFormatArgumentException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MessageTest {
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
+class MessageTest {
 
     private Message message;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         message = Message.of("org.zowe.apiml.common.serviceTimeout",
             createMessageTemplate("No response received within the allowed time: %s"),
             new Object[]{"3000"});
     }
 
     @Test
-    public void testRequestedKeyParam_whenItIsNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("requestedKey can't be null");
-
-        Message.of(null, null, null);
+    void testRequestedKeyParam_whenItIsNull() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            Message.of(null, null, null);
+        });
+        assertEquals("requestedKey can't be null", exception.getMessage());
     }
 
     @Test
-    public void testMessageTemplateParam_whenItIsNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("messageTemplate can't be null");
-
-        Message.of("key", null, null);
+    void testMessageTemplateParam_whenItIsNull() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            Message.of("key", null, null);
+        });
+        assertEquals("messageTemplate can't be null", exception.getMessage());
     }
 
     @Test
-    public void testMessageParameters_whenItIsNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("messageParameters can't be null");
-
-        Message.of("key", new MessageTemplate(), null);
+    void testMessageParameters_whenItIsNull() {
+        MessageTemplate mt = new MessageTemplate();
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> Message.of("key", mt, null));
+        assertEquals("messageParameters can't be null", exception.getMessage());
     }
 
-    @Test(expected = MissingFormatArgumentException.class)
-    public void testCheckConvertValidation_whenThereAreMoreParamThanRequested() {
-        Message.of("org.zowe.apiml.common.serviceTimeout",
-            createMessageTemplate("No response received within the allowed time: %s %s"),
-            new Object[]{"3000"});
-    }
-
-
-    @Test(expected = IllegalFormatConversionException.class)
-    public void testCheckConvertValidation_whenThereIsWrongFormatThanRequested() {
-        Message.of("org.zowe.apiml.common.serviceTimeout",
-            createMessageTemplate("No response received within the allowed time: %d"),
-            new Object[]{"3000"});
+    @Test
+    void testCheckConvertValidation_whenThereAreMoreParamThanRequested() {
+        MessageTemplate mt = createMessageTemplate("No response received within the allowed time: %s %s");
+        assertThrows(MissingFormatArgumentException.class, () -> {
+            Message.of("org.zowe.apiml.common.serviceTimeout", mt, new Object[]{"3000"});
+        });
     }
 
 
     @Test
-    public void testGetConvertedText() {
+    void testCheckConvertValidation_whenThereIsWrongFormatThanRequested() {
+        MessageTemplate mt = createMessageTemplate("No response received within the allowed time: %d");
+        assertThrows(IllegalFormatConversionException.class, () -> {
+            Message.of("org.zowe.apiml.common.serviceTimeout", mt, new Object[]{"3000"});
+        });
+    }
+
+
+    @Test
+    void testGetConvertedText() {
         String actualConvertedText = message.getConvertedText();
         String expectedConvertedText = "No response received within the allowed time: 3000";
-        assertEquals("Converted text is different", expectedConvertedText, actualConvertedText);
+        assertEquals(expectedConvertedText, actualConvertedText, "Converted text is different");
     }
 
     @Test
-    public void testGetConvertedText_whenTextContainsHTMLEntities() {
+    void testGetConvertedText_whenTextContainsHTMLEntities() {
         message = Message.of("org.zowe.apiml.common.serviceTimeout",
             createMessageTemplate("No response  <b>received</b> within the allowed time: %s"),
             new Object[]{"3000"});
 
         String actualConvertedText = message.getConvertedText();
         String expectedConvertedText = "No response  &lt;b&gt;received&lt;/b&gt; within the allowed time: 3000";
-        assertEquals("Converted text is different", expectedConvertedText, actualConvertedText);
+        assertEquals(expectedConvertedText, actualConvertedText, "Converted text is different");
     }
 
     @Test
-    public void testMapToReadableText() {
+    void testMapToReadableText() {
         String actualReadableText = message.mapToReadableText();
         String expectedReadableText = "No response received within the allowed time: 3000";
-        assertTrue("Readable text is different", actualReadableText.contains(expectedReadableText));
+        assertTrue(actualReadableText.contains(expectedReadableText), "Readable text is different");
     }
 
 
     @Test
-    public void testMapToView() {
+    void testMapToView() {
         ApiMessageView actualApiMessageView = message.mapToView();
-        assertEquals("ApiMessageView doesn't contain single message", 1, actualApiMessageView.getMessages().size());
+        assertEquals(1, actualApiMessageView.getMessages().size(), "ApiMessageView doesn't contain single message");
 
         String expectedReadableText = "No response received within the allowed time: 3000";
         ApiMessageView expectedApiMessageView = new ApiMessageView(Collections.singletonList(
             new ApiMessage("org.zowe.apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText)
         ));
 
-        assertEquals("ApiMessageView is different", expectedApiMessageView, actualApiMessageView);
+        assertEquals(expectedApiMessageView, actualApiMessageView, "ApiMessageView is different");
     }
 
 
     @Test
-    public void testMapToApiMessage() {
+    void testMapToApiMessage() {
         ApiMessage actualApiMessage = message.mapToApiMessage();
 
         String expectedReadableText = "No response received within the allowed time: 3000";
         ApiMessage expectedApiMessage = new ApiMessage("org.zowe.apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText);
 
-        assertEquals("ApiMessage is different", expectedApiMessage, actualApiMessage);
+        assertEquals(expectedApiMessage, actualApiMessage, "ApiMessage is different");
     }
 
 
     @Test
-    public void testMapToLogMessage() {
+    void testMapToLogMessage() {
         String actualLogMessage = message.mapToLogMessage();
         String expectedLogMessage = "No response received within the allowed time: 3000";
-        assertTrue("Log Message is different", actualLogMessage.contains(expectedLogMessage));
+        assertTrue(actualLogMessage.contains(expectedLogMessage), "Log Message is different");
     }
 
 
