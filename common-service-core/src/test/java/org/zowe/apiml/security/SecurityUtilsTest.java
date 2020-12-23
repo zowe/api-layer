@@ -9,8 +9,8 @@
  */
 package org.zowe.apiml.security;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -22,9 +22,14 @@ import java.security.cert.CertificateException;
 import java.util.Base64;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class SecurityUtilsTest {
+class SecurityUtilsTest {
 
     private static final String KEY_ALIAS = "localhost";
     private static final String JWT_KEY_ALIAS = "jwtsecret";
@@ -33,84 +38,81 @@ public class SecurityUtilsTest {
 
     private HttpsConfig.HttpsConfigBuilder httpsConfigBuilder;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         httpsConfigBuilder = SecurityTestUtils.correctHttpsSettings();
     }
 
     @Test
-    public void testReadSecret() {
+    void testReadSecret() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
         String secretKey = SecurityUtils.readSecret(httpsConfig);
         assertNotNull(secretKey);
     }
 
-    @Test(expected = HttpsConfigError.class)
-    public void testReadSecretWithIncorrectKeyAlias() {
+    @Test
+    void testReadSecretWithIncorrectKeyAlias() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(WRONG_PARAMETER).build();
-        String secretKey = SecurityUtils.readSecret(httpsConfig);
-        assertNull(secretKey);
+        assertThrows(HttpsConfigError.class, () -> SecurityUtils.readSecret(httpsConfig));
+
     }
 
     @Test
-    public void testLoadKey() {
+    void testLoadKey() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).build();
         Key secretKey = SecurityUtils.loadKey(httpsConfig);
         assertNotNull(secretKey);
     }
 
-    @Test(expected = HttpsConfigError.class)
-    public void testLoadKeyWithIncorrectKeyPassword() {
+    @Test
+    void testLoadKeyWithIncorrectKeyPassword() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).keyPassword(WRONG_PARAMETER.toCharArray()).build();
-        Key secretKey = SecurityUtils.loadKey(httpsConfig);
-        assertNull(secretKey);
+        assertThrows(HttpsConfigError.class, () -> SecurityUtils.loadKey(httpsConfig));
     }
 
     @Test
-    public void testLoadPublicKey() {
+    void testLoadPublicKey() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).build();
         PublicKey publicKey = SecurityUtils.loadPublicKey(httpsConfig);
         assertNotNull(publicKey);
     }
 
-    @Test(expected = HttpsConfigError.class)
-    public void testLoadPublicKeyWithBadKeyStore() {
+    @Test
+    void testLoadPublicKeyWithBadKeyStore() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyStore("/localhost.truststore.p12").build();
-        PublicKey publicKey = SecurityUtils.loadPublicKey(httpsConfig);
-        assertNull(publicKey);
+        assertThrows(HttpsConfigError.class, () -> SecurityUtils.loadPublicKey(httpsConfig));
     }
 
     @Test
-    public void testFindPrivateKeyByPublic() {
+    void testFindPrivateKeyByPublic() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         byte[] publicKey = loadPublicKeyFromFile();
         Key secretKey = SecurityUtils.findPrivateKeyByPublic(httpsConfig, publicKey);
         assertNotNull(secretKey);
     }
 
-    @Test(expected = HttpsConfigError.class)
-    public void testFindPrivateKeyByPublicWithIncorrectKeyPassword() {
+    @Test
+    void testFindPrivateKeyByPublicWithIncorrectKeyPassword() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyPassword(WRONG_PARAMETER.toCharArray()).build();
         byte[] publicKey = loadPublicKeyFromFile();
-        Key secretKey = SecurityUtils.findPrivateKeyByPublic(httpsConfig, publicKey);
-        assertNull(secretKey);
+        assertThrows(HttpsConfigError.class, () -> SecurityUtils.findPrivateKeyByPublic(httpsConfig, publicKey));
     }
 
     @Test
-    public void testLoadKeyStore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    void testLoadKeyStore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         KeyStore keyStore = SecurityUtils.loadKeyStore(httpsConfig);
         assertTrue(keyStore.size() > 0);
     }
 
     @Test
-    public void testReplaceFourSlashes() {
+    void testReplaceFourSlashes() {
         String newUrl = SecurityUtils.replaceFourSlashes("safkeyring:////userId/keyRing");
         assertEquals("safkeyring://userId/keyRing", newUrl);
     }
 
     @Test
-    public void testGenerateKeyPair() {
+    void testGenerateKeyPair() {
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         assertNotNull(keyPair);
     }
@@ -122,26 +124,26 @@ public class SecurityUtilsTest {
             publicKey = Base64.getDecoder().decode(keyInBase64);
         } catch (IOException | URISyntaxException e) {
             fail("Error reading secret key from file " + PUBLIC_KEY_FILE + ": " + e.getMessage());
-        }
+    }
         return publicKey;
     }
 
     @Test
-    public void loadCertificateChainNoKeystore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    void loadCertificateChainNoKeystore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         HttpsConfig httpsConfig = HttpsConfig.builder().build();
         Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
         assertEquals(0, certificates.length);
     }
 
     @Test
-    public void loadCertificateChain() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    void loadCertificateChain() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
         Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
         assertTrue(certificates.length > 0);
     }
 
     @Test
-    public void loadCertificateChainBase64() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    void loadCertificateChainBase64() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
         Set<String> certificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
         assertFalse(certificatesBase64.isEmpty());

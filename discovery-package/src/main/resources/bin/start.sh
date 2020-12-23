@@ -26,7 +26,8 @@
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
 JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
-COMMON_LIB="${ROOT_DIR}/components/common-lib/bin/api-layer-lite-lib-all.jar"
+# script assumes it's in the discovery component directory and common_lib needs to be relative path
+COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=

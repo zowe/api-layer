@@ -13,79 +13,74 @@ package org.zowe.apiml.message.core;
 import org.zowe.apiml.message.dummy.DummyMessageService;
 import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.message.template.MessageTemplates;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AbstractMessageServiceTest {
+class AbstractMessageServiceTest {
 
     private final AbstractMessageService abstractMessageService = new DummyMessageService("path");
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
     @Test
-    public void shouldCreateMessage() {
+    void shouldCreateMessage() {
         Message message = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout", "3000");
-        assertEquals("Message texts are different",
-            "No response received within the allowed time: 3000", message.getConvertedText());
+        assertEquals("No response received within the allowed time: 3000", message.getConvertedText(), "Message texts are different");
     }
 
     @Test
-    public void shouldReturnInvalidMessage_IfKeyInvalid() {
+    void shouldReturnInvalidMessage_IfKeyInvalid() {
         Message message = abstractMessageService.createMessage("invalidKey", "parameter");
         String expectedMessage = "Internal error: Invalid message key 'invalidKey' provided. No default message found. Please contact support of further assistance.";
-        assertEquals("Message texts are different", expectedMessage, message.getConvertedText());
+        assertEquals(expectedMessage, message.getConvertedText(), "Message texts are different");
     }
 
     @Test
-    public void shouldReturnInvalidMessageTextFormat_IfTheFormatIsIllegal() {
+    void shouldReturnInvalidMessageTextFormat_IfTheFormatIsIllegal() {
         Message message = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout.illegalFormat", "3000");
         String expectedMessageText = "Internal error: Invalid message text format. Please contact support for further assistance.";
-        assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
+        assertEquals(expectedMessageText, message.getConvertedText(), "Message texts are different");
 
         message = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout.missingFormat", "3000");
-        assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
+        assertEquals(expectedMessageText, message.getConvertedText(), "Message texts are different");
     }
 
     @Test
-    public void shouldReturnInvalidMessageTextFormat_IfTheParamIsMissing() {
+    void shouldReturnInvalidMessageTextFormat_IfTheParamIsMissing() {
         Message message = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout.missingFormat", "3000");
         String expectedMessageText = "Internal error: Invalid message text format. Please contact support for further assistance.";
-        assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
+        assertEquals(expectedMessageText, message.getConvertedText(), "Message texts are different");
     }
 
     @Test
-    public void shouldCreateMessages_IfMultipleParametersArePassed() {
+    void shouldCreateMessages_IfMultipleParametersArePassed() {
         List<Object[]> parameters = new ArrayList<>();
         parameters.add(new Object[]{"2000"});
         parameters.add(new Object[]{"3000"});
         List<Message> messages = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout", parameters);
-        assertEquals("Message texts are different", "No response received within the allowed time: 2000", messages.get(0).getConvertedText());
-        assertEquals("Message texts are different", "No response received within the allowed time: 3000", messages.get(1).getConvertedText());
+        assertEquals("No response received within the allowed time: 2000", messages.get(0).getConvertedText(), "Message texts are different");
+        assertEquals("No response received within the allowed time: 3000", messages.get(1).getConvertedText(), "Message texts are different");
     }
 
     @Test
-    public void shouldNotCreateMessages_IfEmptyParametersArePassed() {
+    void shouldNotCreateMessages_IfEmptyParametersArePassed() {
         List<Object[]> parameters = new ArrayList<>();
         List<Message> messages = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout", parameters);
-        assertEquals("Generated different number of messages than expected", 0, messages.size());
+        assertEquals(0, messages.size(), "Generated different number of messages than expected");
     }
 
     @Test
-    public void shouldNotCreateMessages_IfEmptyParameterListIsPassed() {
+    void shouldNotCreateMessages_IfEmptyParameterListIsPassed() {
         Message messages = abstractMessageService.createMessage("org.zowe.apiml.common.stringParamMessage", new ArrayList<String>());
-        assertEquals("Unexpected message format for empty parameters list", "This message has one param: []", messages.getConvertedText());
+        assertEquals("This message has one param: []", messages.getConvertedText(), "Unexpected message format for empty parameters list");
     }
 
     @Test
-    public void shouldThrowException_IfThereAreDuplicatedMessageNumbers() {
+    void shouldThrowException_IfThereAreDuplicatedMessageNumbers() {
         MessageTemplate message = new MessageTemplate();
         message.setKey("org.zowe.apiml.common.serviceTimeout");
         message.setNumber("ZWEAM700");
@@ -99,10 +94,10 @@ public class AbstractMessageServiceTest {
             Arrays.asList(message, message2)
         );
 
-        exception.expect(DuplicateMessageException.class);
-        exception.expectMessage("Message template with number [ZWEAM700] already exists");
-
-        abstractMessageService.addMessageTemplates(messages);
+        Exception exception = assertThrows(DuplicateMessageException.class, () -> {
+            abstractMessageService.addMessageTemplates(messages);
+        });
+        assertEquals("Message template with number [ZWEAM700] already exists", exception.getMessage());
     }
 
 }

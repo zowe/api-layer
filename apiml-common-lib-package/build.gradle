@@ -9,7 +9,7 @@
  */
 
 ext {
-    artifactName = 'common-lib-package'
+    artifactName = 'apiml-common-lib-package'
     pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
 }
 

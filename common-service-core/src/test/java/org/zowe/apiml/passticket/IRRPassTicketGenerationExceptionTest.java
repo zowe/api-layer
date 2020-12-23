@@ -8,16 +8,14 @@ package org.zowe.apiml.passticket;/*
  * Copyright Contributors to the Zowe Project.
  */
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-@RunWith(JUnit4.class)
-public class IRRPassTicketGenerationExceptionTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class IRRPassTicketGenerationExceptionTest {
 
     @Test
-    public void testInit() {
+    void testInit() {
         IRRPassTicketGenerationException exception = new IRRPassTicketGenerationException(8, 16, 32);
         assertEquals(8, exception.getSafRc());
         assertEquals(16, exception.getRacfRc());
