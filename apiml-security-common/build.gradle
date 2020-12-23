@@ -14,5 +14,6 @@ dependencies {
     testCompile libraries.spring_boot_starter_test
 
     testCompileOnly libraries.lombok
+    testCompile libraries.gson
     testAnnotationProcessor libraries.lombok
 }
