@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
 
+    @SuppressWarnings("squid:S1075")
     private static final String PATH_VRIABLE_SUFFIX = "/{userId}/{class}/{entity}/{level}";
 
     @Value("${apiml.security.safEndpoint.url}")
