@@ -9,15 +9,15 @@
  */
 package org.zowe.apiml.client.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GreetingTest {
+class GreetingTest {
     @Test
-    public void getName() {
+    void getName() {
 
         final Date date = new Date();
         final String name = "Dude";
