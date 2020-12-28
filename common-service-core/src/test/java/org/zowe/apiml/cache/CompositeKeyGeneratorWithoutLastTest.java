@@ -8,16 +8,14 @@ package org.zowe.apiml.cache;/*
  * Copyright Contributors to the Zowe Project.
  */
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-@RunWith(JUnit4.class)
-public class CompositeKeyGeneratorWithoutLastTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CompositeKeyGeneratorWithoutLastTest {
 
     @Test
-    public void testGenerate() {
+    void testGenerate() {
         CompositeKeyGeneratorWithoutLast kg = new CompositeKeyGeneratorWithoutLast();
 
         assertEquals(

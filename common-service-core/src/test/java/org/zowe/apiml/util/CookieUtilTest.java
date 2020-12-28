@@ -9,18 +9,15 @@
  */
 package org.zowe.apiml.util;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-
-@RunWith(JUnit4.class)
-public class CookieUtilTest {
+class CookieUtilTest {
 
     @Test
-    public void testSetCookie() {
+    void testSetCookie() {
         assertEquals("a=bc", CookieUtil.setCookie(null, "a", "bc"));
         assertEquals("a=bc", CookieUtil.setCookie("", "a", "bc"));
         assertEquals("a=1;b=2;c=4", CookieUtil.setCookie("a=1;c=3;b=2", "c", "4"));
@@ -30,7 +27,7 @@ public class CookieUtilTest {
     }
 
     @Test
-    public void removeCookie() {
+    void removeCookie() {
         String c = "a=1;b=2";
         assertSame(c, CookieUtil.removeCookie(c, "c"));
         assertEquals("", CookieUtil.removeCookie("a=b", "a"));

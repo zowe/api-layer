@@ -9,39 +9,44 @@
  */
 package org.zowe.apiml.passticket;
 
+import org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.*;
-import static org.junit.Assert.*;
 
-@RunWith(JUnit4.class)
-public class PassTicketServiceTest {
+class PassTicketServiceTest {
 
     private static final String TEST_USERID = "userId";
 
     private PassTicketService passTicketService;
+    private DefaultPassTicketImpl dpti = new DefaultPassTicketImpl();
 
     private static String evaluated;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         passTicketService = new PassTicketService();
     }
 
     @Test
-    public void testIsUsingSafImplementation() {
+    void testIsUsingSafImplementation() {
         IRRPassTicket irrPassTicket = (IRRPassTicket) ReflectionTestUtils.getField(passTicketService, "irrPassTicket");
         ClassOrDefaultProxyUtils.ClassOrDefaultProxyState stateInterface = (ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) irrPassTicket;
         assertEquals(stateInterface.isUsingBaseImplementation(), passTicketService.isUsingSafImplementation());
     }
 
     @Test
-    public void testInit() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
+    void testInit() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
         PassTicketService passTicketService = new PassTicketService();
         ReflectionTestUtils.setField(passTicketService, "irrPassTicket", new IRRPassTicket() {
             @Override
@@ -66,7 +71,7 @@ public class PassTicketServiceTest {
     }
 
     @Test
-    public void testProxy() throws IRRPassTicketGenerationException {
+    void testProxy() throws IRRPassTicketGenerationException {
         IRRPassTicket irrPassTicket = ClassOrDefaultProxyUtils.createProxy(
             IRRPassTicket.class,
             "notExistingClass",
@@ -84,97 +89,92 @@ public class PassTicketServiceTest {
     }
 
     @Test
-    public void testDefaultPassTicketImpl() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
-        PassTicketService.DefaultPassTicketImpl dpti = new PassTicketService.DefaultPassTicketImpl();
-
-        try {
+    void testDefaultPassTicketImpl_EvaluatePassticket() {
+        IRRPassTicketEvaluationException e = assertThrows(IRRPassTicketEvaluationException.class, () -> {
             dpti.evaluate(TEST_USERID, "applId", "passticket");
-            fail();
-        } catch (IRRPassTicketEvaluationException e) {
-            assertEquals(8, e.getSafRc());
-            assertEquals(16, e.getRacfRc());
-            assertEquals(32, e.getRacfRsn());
-        }
+        });
+        assertEquals(8, e.getSafRc());
+        assertEquals(16, e.getRacfRc());
+        assertEquals(32, e.getRacfRsn());
+    }
 
-        String passTicket1 = dpti.generate(TEST_USERID, "applId");
-        String passTicket2 = dpti.generate(TEST_USERID, "applId");
+    @Test
+    void testDefaultPassTicketImpl_EvaluateTwoPassTickets() {
+        String passTicket1 = assertDoesNotThrow(() -> dpti.generate(TEST_USERID, "applId"));
+        String passTicket2 = assertDoesNotThrow(() -> dpti.generate(TEST_USERID, "applId"));
 
         assertNotNull(passTicket1);
         assertNotNull(passTicket2);
         assertNotEquals(passTicket1, passTicket2);
 
-        dpti.evaluate(TEST_USERID, "applId", passTicket1);
-        dpti.evaluate(TEST_USERID, "applId", passTicket2);
+        assertDoesNotThrow(() -> dpti.evaluate(TEST_USERID, "applId", passTicket1));
+        assertDoesNotThrow(() -> dpti.evaluate(TEST_USERID, "applId", passTicket2));
 
-        try {
+        // different user, should throw exception
+        assertThrows(IRRPassTicketEvaluationException.class, () -> dpti.evaluate("userx", "applId", passTicket1));
+        // different applId, should throw exception
+        assertThrows(IRRPassTicketEvaluationException.class, () -> dpti.evaluate(TEST_USERID, "applIdx", passTicket1));
+    }
+
+    @Test
+    void testDefaultPassTicketImpl_EvaluateWrongPassticket() {
+        IRRPassTicketEvaluationException e = assertThrows(IRRPassTicketEvaluationException.class, () -> {
             dpti.evaluate(TEST_USERID, "applId", "wrongPassTicket");
-            fail();
-        } catch (IRRPassTicketEvaluationException e) {
-            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32, e.getErrorCode());
-        }
+        });
+        assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32, e.getErrorCode());
+    }
 
-        try {
+    @Test
+    void testDefaultPassTicketImpl_EvaluateAnyPassticket() {
+        IRRPassTicketEvaluationException e = assertThrows(IRRPassTicketEvaluationException.class, () -> {
             dpti.evaluate("anyUser", UNKNOWN_APPLID, "anyPassTicket");
-            fail();
-        } catch (IRRPassTicketEvaluationException e) {
-            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, e.getErrorCode());
-        }
+        });
+        assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, e.getErrorCode());
+    }
 
-        dpti.evaluate(ZOWE_DUMMY_USERID, "anyApplId", ZOWE_DUMMY_PASS_TICKET_PREFIX);
-        dpti.evaluate(ZOWE_DUMMY_USERID, "anyApplId", ZOWE_DUMMY_PASS_TICKET_PREFIX + "xyz");
+    @Test
+    void testDefaultPassTicketImpl_EvaluateDummyPassticket() {
+        assertDoesNotThrow(() -> dpti.evaluate(ZOWE_DUMMY_USERID, "anyApplId", ZOWE_DUMMY_PASS_TICKET_PREFIX));
+        assertDoesNotThrow(() -> dpti.evaluate(ZOWE_DUMMY_USERID, "anyApplId", ZOWE_DUMMY_PASS_TICKET_PREFIX + "xyz"));
 
-        try {
+        assertThrows(IRRPassTicketEvaluationException.class, () -> {
             dpti.evaluate("unknownUser", "anyApplId", ZOWE_DUMMY_PASS_TICKET_PREFIX);
-            fail();
-        } catch (IRRPassTicketEvaluationException e) {
-        }
-        try {
+        });
+
+        assertThrows(IRRPassTicketEvaluationException.class, () -> {
             dpti.evaluate(ZOWE_DUMMY_USERID, "anyApplId", "wrongPassticket");
-            fail();
-        } catch (IRRPassTicketEvaluationException e) {
-        }
+        });
+    }
 
-        try {
-            dpti.evaluate("userx", "applId", passTicket1);
-            fail();
-        } catch (IRRPassTicketEvaluationException e) {
-            // different user, should throw exception
-        }
-
-        try {
-            dpti.evaluate(TEST_USERID, "applIdx", passTicket1);
-            fail();
-        } catch (IRRPassTicketEvaluationException e) {
-            // different applId, should throw exception
-        }
-
-        try {
+    @Test
+    void testDefaultPassTicketImpl_GenerateUnknownUser() {
+        IRRPassTicketGenerationException e = assertThrows(IRRPassTicketGenerationException.class, () -> {
             dpti.generate(PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER, "anyApplId");
-            fail();
-        } catch (IRRPassTicketGenerationException e) {
-            assertEquals(8, e.getSafRc());
-            assertEquals(8, e.getRacfRc());
-            assertEquals(16, e.getRacfRsn());
-            assertNotNull(e.getErrorCode());
-            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16, e.getErrorCode());
-            assertEquals(
-                "Error on generation of PassTicket: Not authorized to use this service."
-                , e.getMessage()
-            );
-        }
+        });
+        assertEquals(8, e.getSafRc());
+        assertEquals(8, e.getRacfRc());
+        assertEquals(16, e.getRacfRsn());
+        assertNotNull(e.getErrorCode());
+        assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16, e.getErrorCode());
+        assertEquals("Error on generation of PassTicket: Not authorized to use this service.", e.getMessage());
+    }
 
-        assertEquals(ZOWE_DUMMY_PASS_TICKET_PREFIX, dpti.generate(DUMMY_USER, "anyApplid"));
+    @Test
+    void testDefaultPassTicketImpl_GenerateDummyUser() {
+        String passTicket = assertDoesNotThrow(() -> dpti.generate(DUMMY_USER, "anyApplid"));
+        assertEquals(ZOWE_DUMMY_PASS_TICKET_PREFIX, passTicket);
+    }
 
-        try {
+    @Test
+    void testDefaultPassTicketImpl_GenerateAnyUser() {
+        IRRPassTicketGenerationException e = assertThrows(IRRPassTicketGenerationException.class, () -> {
             dpti.generate("anyUser", UNKNOWN_APPLID);
-            fail();
-        } catch (IRRPassTicketGenerationException e) {
-            assertEquals(8, e.getSafRc());
-            assertEquals(16, e.getRacfRc());
-            assertEquals(28, e.getRacfRsn());
-            assertNotNull(e.getErrorCode());
-            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, e.getErrorCode());
-        }
+        });
+        assertEquals(8, e.getSafRc());
+        assertEquals(16, e.getRacfRc());
+        assertEquals(28, e.getRacfRsn());
+        assertNotNull(e.getErrorCode());
+        assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, e.getErrorCode());
     }
 
     public static class Impl implements IRRPassTicket {

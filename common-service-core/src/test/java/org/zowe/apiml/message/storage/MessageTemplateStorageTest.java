@@ -12,20 +12,20 @@ package org.zowe.apiml.message.storage;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.message.template.MessageTemplates;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class MessageTemplateStorageTest {
+class MessageTemplateStorageTest {
     private final MessageTemplateStorage messageTemplateStorage = new MessageTemplateStorage();
 
 
     @Test
-    public void testAddMessageTemplates() {
+    void testAddMessageTemplates() {
         MessageTemplates messageTemplates = new MessageTemplates(Collections.singletonList(
             new MessageTemplate("key", "number", MessageType.ERROR, "error message")
         ));
@@ -33,14 +33,13 @@ public class MessageTemplateStorageTest {
         messageTemplateStorage.addMessageTemplates(messageTemplates);
 
         Optional<MessageTemplate> optionalMessageTemplate = messageTemplateStorage.getMessageTemplate("key");
-        assertTrue("Message template is null", optionalMessageTemplate.isPresent());
-        assertEquals("Message template is not equal",
-            messageTemplates.getMessages().get(0), optionalMessageTemplate.get());
+        assertTrue(optionalMessageTemplate.isPresent(), "Message template is null");
+        assertEquals(messageTemplates.getMessages().get(0), optionalMessageTemplate.get(), "Message template is not equal");
     }
 
 
     @Test
-    public void testAddMessageTemplates_whenDuplicatedKeyMessagesArePresent() {
+    void testAddMessageTemplates_whenDuplicatedKeyMessagesArePresent() {
         MessageTemplates messageTemplates = new MessageTemplates(Collections.singletonList(
             new MessageTemplate("key", "number", MessageType.ERROR, "error message")
         ));
@@ -54,8 +53,7 @@ public class MessageTemplateStorageTest {
         messageTemplateStorage.addMessageTemplates(messageTemplates);
 
         Optional<MessageTemplate> optionalMessageTemplate = messageTemplateStorage.getMessageTemplate("key");
-        assertTrue("Message template is null", optionalMessageTemplate.isPresent());
-        assertEquals("Message template text is not equal",
-            messageTemplates.getMessages().get(0).getText(), optionalMessageTemplate.get().getText());
+        assertTrue(optionalMessageTemplate.isPresent(), "Message template is null");
+        assertEquals(messageTemplates.getMessages().get(0).getText(), optionalMessageTemplate.get().getText(), "Message template text is not equal");
     }
 }
