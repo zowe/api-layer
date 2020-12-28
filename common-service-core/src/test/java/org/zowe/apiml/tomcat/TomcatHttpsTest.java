@@ -9,9 +9,9 @@
  */
 package org.zowe.apiml.tomcat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
@@ -29,19 +29,19 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class TomcatHttpsTest {
+class TomcatHttpsTest {
     private static final String EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN = "excepted SSLHandshakeException exception not thrown";
     private static final String EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN = "excepted HttpsConfigError exception not thrown";
     private static final String UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE = "unable to find valid certification path";
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         System.clearProperty("javax.net.ssl.keyStore");
         System.clearProperty("javax.net.ssl.keyStorePassword");
         System.clearProperty("javax.net.ssl.keyStoreType");
@@ -51,13 +51,13 @@ public class TomcatHttpsTest {
     }
 
    @Test
-    public void correctConfigurationShouldWork() throws IOException, LifecycleException {
+    void correctConfigurationShouldWork() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().build();
         startTomcatAndDoHttpsRequest(httpsConfig);
     }
 
     @Test
-    public void noTrustStoreShouldFail() throws IOException, LifecycleException {
+    void noTrustStoreShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsKeyStoreSettings().build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
@@ -69,7 +69,7 @@ public class TomcatHttpsTest {
     }
 
     @Test
-    public void trustStoreWithDifferentCertificateAuthorityShouldFail() throws IOException, LifecycleException {
+    void trustStoreWithDifferentCertificateAuthorityShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings()
                 .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
         try {
@@ -81,14 +81,14 @@ public class TomcatHttpsTest {
     }
 
     @Test
-    public void trustStoreWithDifferentCertificateAuthorityShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
+    void trustStoreWithDifferentCertificateAuthorityShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().verifySslCertificatesOfServices(false)
                 .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
         startTomcatAndDoHttpsRequest(httpsConfig);
     }
 
     @Test
-    public void trustStoreInInvalidFormatShouldFail() throws IOException, LifecycleException {
+    void trustStoreInInvalidFormatShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings()
                 .trustStore(SecurityTestUtils.pathFromRepository("README.md")).build();
         try {
@@ -100,7 +100,7 @@ public class TomcatHttpsTest {
     }
 
     @Test
-    public void wrongKeyAliasShouldFail() throws IOException, LifecycleException {
+    void wrongKeyAliasShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsKeyStoreSettings().keyAlias("wrong").build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
@@ -111,13 +111,13 @@ public class TomcatHttpsTest {
     }
 
     @Test
-    public void correctConfigurationWithClientAuthenticationShouldWork() throws IOException, LifecycleException {
+    void correctConfigurationWithClientAuthenticationShouldWork() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().clientAuth(true).build();
         startTomcatAndDoHttpsRequest(httpsConfig);
     }
 
     @Test
-    public void wrongClientCertificateShouldFail() throws IOException, LifecycleException {
+    void wrongClientCertificateShouldFail() throws IOException, LifecycleException {
         HttpsConfig serverConfig = SecurityTestUtils.correctHttpsSettings().clientAuth(true).build();
         HttpsConfig clientConfig = SecurityTestUtils.correctHttpsSettings().keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
         try {
@@ -129,7 +129,7 @@ public class TomcatHttpsTest {
     }
 
     @Test
-    public void wrongClientCertificateShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
+    void wrongClientCertificateShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
         HttpsConfig serverConfig = SecurityTestUtils.correctHttpsSettings().clientAuth(true).verifySslCertificatesOfServices(false).build();
         HttpsConfig clientConfig = SecurityTestUtils.correctHttpsSettings().keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
         startTomcatAndDoHttpsRequest(serverConfig, clientConfig);

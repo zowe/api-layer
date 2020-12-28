@@ -11,20 +11,29 @@ package org.zowe.apiml.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.junit.Test;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.lang.reflect.*;
-import java.util.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import static org.junit.Assert.*;
-
-public class ClassOrDefaultProxyUtilsTest {
+class ClassOrDefaultProxyUtilsTest {
 
     private static String voidResponse;
 
     @Test
-    public void testBasics() {
+    void testBasics() {
         TestInterface1 ti;
 
         // create foreign class (without interface implementation) by string
@@ -51,7 +60,7 @@ public class ClassOrDefaultProxyUtilsTest {
     }
 
     @Test
-    public void specificConstructorCanBeInvoked() {
+    void specificConstructorCanBeInvoked() {
         TestInterface1 ti;
 
         ti = ClassOrDefaultProxyUtils.createProxyByConstructor(TestInterface1.class, ConstructorTestImplementation.class.getName(),
@@ -70,7 +79,7 @@ public class ClassOrDefaultProxyUtilsTest {
     }
 
     @Test
-    public void testOverride() {
+    void testOverride() {
         TestInterface2 ti;
 
         // create foreign class (without interface implementation) by string
@@ -84,7 +93,7 @@ public class ClassOrDefaultProxyUtilsTest {
     }
 
     @Test
-    public void testExceptionMapping() {
+    void testExceptionMapping() {
         TestInterfaceException tie;
 
         tie = ClassOrDefaultProxyUtils.createProxy(
@@ -113,7 +122,7 @@ public class ClassOrDefaultProxyUtilsTest {
     }
 
     @Test
-    public void testExceptionMappingUnkwnown() {
+    void testExceptionMappingUnkwnown() {
         TestInterfaceException tie;
 
         tie = ClassOrDefaultProxyUtils.createProxy(
@@ -143,7 +152,7 @@ public class ClassOrDefaultProxyUtilsTest {
     }
 
     @Test
-    public void testMissingMethod() {
+    void testMissingMethod() {
         try {
             ClassOrDefaultProxyUtils.createProxy(
                 TestInterface1.class,
@@ -175,7 +184,7 @@ public class ClassOrDefaultProxyUtilsTest {
     }
 
     @Test
-    public void testSyntentic() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    void testSyntentic() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         new InnerClass().name = "toCompilarMakeASyntheticMethod";
 
         TestInterface1Super ti = ClassOrDefaultProxyUtils.createProxy(TestInterface1Super.class, "unknownClassName", InnerClass::new);
@@ -188,13 +197,13 @@ public class ClassOrDefaultProxyUtilsTest {
     }
 
     @Test
-    public void testImplementationWithExtends() {
+    void testImplementationWithExtends() {
         TestInterface2 ti = ClassOrDefaultProxyUtils.createProxy(TestInterface2.class, "unknownClassName", Extends::new);
         assertEquals("method1Response", ti.method1());
     }
 
     @Test
-    public void testWrongMapping() {
+    void testWrongMapping() {
         TestInterface1 ti = ClassOrDefaultProxyUtils.createProxy(TestInterface1.class, "unknownClassName", TestImplementation1B::new);
         ((Map<String, Object>) ReflectionTestUtils.getField(ReflectionTestUtils.getField(ti, "h"), "mapping")).clear();
         try {
@@ -206,7 +215,7 @@ public class ClassOrDefaultProxyUtilsTest {
     }
 
     @Test
-    public void testExceptionMappingSourceMethod() {
+    void testExceptionMappingSourceMethod() {
         try {
             new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerException.class, "getOurStackTraceX");
             fail();
@@ -223,7 +232,7 @@ public class ClassOrDefaultProxyUtilsTest {
     }
 
     @Test
-    public void testCannotConstructException() throws NullPointerExceptionPrivate, NullPointerExceptionException {
+    void testCannotConstructException() throws NullPointerExceptionPrivate, NullPointerExceptionException {
         try {
             new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerExceptionPrivate.class, "getMessage").apply(new NullPointerException("x"));
             fail();

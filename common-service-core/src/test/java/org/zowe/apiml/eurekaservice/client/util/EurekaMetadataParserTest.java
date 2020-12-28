@@ -106,7 +106,7 @@ class EurekaMetadataParserTest {
     }
 
     @Test
-    void testParseToListRoute_whenMetadataKeyElementsIsDifferentFrom4() {
+    void testParseToListRoute_whenMetadatakeyElementsIsDifferentFrom4() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put(ROUTES + ".api-v1.test." + ROUTES_GATEWAY_URL, "api/v1");
 
@@ -171,12 +171,10 @@ class EurekaMetadataParserTest {
         String swaggerUrl = "www.badAddress";
 
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, swaggerUrl, null);
-
-        Exception exception = assertThrows(MetadataValidationException.class, () ->
-                EurekaMetadataParser.generateMetadata(serviceId, apiInfo)
-        );
-
-        assertTrue(exception.getMessage().contains("The Swagger URL \"" + swaggerUrl + "\" for service " + serviceId + " is not valid"));
+        Exception exception = assertThrows(MetadataValidationException.class, () -> {
+            EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+        });
+        assertEquals("The Swagger URL \"" + swaggerUrl + "\" for service " + serviceId + " is not valid", exception.getMessage());
     }
 
     @Test
@@ -186,11 +184,10 @@ class EurekaMetadataParserTest {
         String documentationUrl = "www.badAddress";
 
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, null, documentationUrl);
-
-        Exception exception = assertThrows(MetadataValidationException.class, () ->
-                EurekaMetadataParser.generateMetadata(serviceId, apiInfo));
-
-        assertTrue(exception.getMessage().contains("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid"));
+        Exception exception = assertThrows(MetadataValidationException.class, () -> {
+            EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+        });
+        assertEquals("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid", exception.getMessage());
     }
 
     @Test
