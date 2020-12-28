@@ -290,6 +290,14 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "headers": {
+                            "Content-version": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "description": "Specifies a version of the response"
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -335,6 +343,14 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "headers": {
+                            "Content-version": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "description": "Specifies a version of the response"
+                            }
+                        },
                         "content": {
                             "application/json": {
                                 "schema": {

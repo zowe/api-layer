@@ -22,6 +22,8 @@ import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_URL;
+import static org.zowe.apiml.gateway.services.ServicesInfoService.CURRENT_VERSION;
+import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER;
 
 @ExtendWith(MockitoExtension.class)
 class ServicesInfoControllerTest {
@@ -49,6 +51,7 @@ class ServicesInfoControllerTest {
                 .get(SERVICES_URL)
         .then()
                 .statusCode(HttpStatus.OK.value())
+                .header(VERSION_HEADER, CURRENT_VERSION)
                 .body("size()", is(2));
         //@formatter:on
     }
@@ -64,6 +67,7 @@ class ServicesInfoControllerTest {
                 .get(SERVICES_URL + "/" + SERVICE_ID)
         .then()
                 .statusCode(HttpStatus.OK.value())
+                .header(VERSION_HEADER, CURRENT_VERSION)
                 .body("status", is(InstanceInfo.InstanceStatus.UP.toString()))
                 .body("serviceId", is(SERVICE_ID));
         //@formatter:on

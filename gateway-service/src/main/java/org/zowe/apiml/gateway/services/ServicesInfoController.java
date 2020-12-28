@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static org.zowe.apiml.gateway.services.ServicesInfoService.CURRENT_VERSION;
+import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER;
+
 @RestController
 @ConditionalOnExpression("${apiml.feature.serviceInfo.enabled:false}") // Remove when secured with an authorization
 @RequiredArgsConstructor
@@ -34,7 +37,10 @@ public class ServicesInfoController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<ServiceInfo>> getServices() {
-        return new ResponseEntity<>(servicesInfoService.getServicesInfo(), HttpStatus.OK);
+        return ResponseEntity
+                .ok()
+                .header(VERSION_HEADER, CURRENT_VERSION)
+                .body(servicesInfoService.getServicesInfo());
     }
 
     @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -43,7 +49,10 @@ public class ServicesInfoController {
         HttpStatus status = (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) ?
                 HttpStatus.NOT_FOUND : HttpStatus.OK;
 
-        return new ResponseEntity<>(serviceInfo, status);
+        return ResponseEntity
+                .status(status)
+                .header(VERSION_HEADER, CURRENT_VERSION)
+                .body(serviceInfo);
     }
 
 }

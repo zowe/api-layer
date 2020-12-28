@@ -36,6 +36,9 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 @RequiredArgsConstructor
 public class ServicesInfoService {
 
+    public static final String VERSION_HEADER = "Content-Version";
+    public static final String CURRENT_VERSION = "1";
+
     private final EurekaClient eurekaClient;
     private final GatewayConfigProperties gatewayConfigProperties;
     private final EurekaMetadataParser eurekaMetadataParser;

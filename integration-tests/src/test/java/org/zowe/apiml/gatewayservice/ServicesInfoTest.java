@@ -32,6 +32,9 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.GATEWAY_TOKEN_COOKIE_N
         // Remove when secured with an authorization
 class ServicesInfoTest {
 
+    public static final String VERSION_HEADER = "Content-Version";
+    public static final String CURRENT_VERSION = "1";
+
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()
@@ -80,6 +83,7 @@ class ServicesInfoTest {
                 .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT))
         .then()
                 .statusCode(is(SC_OK))
+                .header(VERSION_HEADER, CURRENT_VERSION)
                 .body("serviceId", hasItems("gateway", "discovery","apicatalog"));
         //@formatter:on
     }
@@ -94,6 +98,7 @@ class ServicesInfoTest {
                 .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, API_CATALOG_SERVICE))
        .then()
                 .statusCode(is(SC_OK))
+                .header(VERSION_HEADER, CURRENT_VERSION)
                 .body("apiml.apiInfo[0].apiId", equalTo("zowe.apiml.apicatalog"))
                 .body("apiml.apiInfo[0].basePath", equalTo("/apicatalog/api/v1"));
         //@formatter:on
@@ -109,6 +114,7 @@ class ServicesInfoTest {
                 .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, "gateway"))
        .then()
                 .statusCode(is(SC_OK))
+                .header(VERSION_HEADER, CURRENT_VERSION)
                 .body("apiml.apiInfo[0].apiId", equalTo("zowe.apiml.gateway"));
         //@formatter:on
     }
