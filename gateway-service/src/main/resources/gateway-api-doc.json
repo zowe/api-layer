@@ -273,6 +273,40 @@
                 }
             }
         },
+        "/services": {
+            "get": {
+                "tags": ["Services"],
+                "summary": "Returns detailed information about all services",
+                "description": "Use this endpoint to obtain detailed information about all services, their APIs, and instances.",
+                "operationId": "servicesUsingGET",
+                "security": [
+                    {
+                        "CookieAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ServiceInfo"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
         "/services/{serviceId}": {
             "get": {
                 "tags": ["Services"],

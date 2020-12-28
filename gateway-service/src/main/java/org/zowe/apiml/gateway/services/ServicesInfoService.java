@@ -41,14 +41,30 @@ public class ServicesInfoService {
     private final EurekaMetadataParser eurekaMetadataParser;
     private final TransformService transformService;
 
+    public List<ServiceInfo> getServicesInfo() {
+        List<ServiceInfo> servicesInfo = new ArrayList<>();
+        for (Application application : eurekaClient.getApplications().getRegisteredApplications()) {
+            servicesInfo.add(getServiceInfo(application));
+        }
+
+        return servicesInfo;
+    }
+
     public ServiceInfo getServiceInfo(String serviceId) {
         Application application = eurekaClient.getApplication(serviceId);
+
         if (application == null) {
             return ServiceInfo.builder()
                     .serviceId(serviceId)
                     .status(InstanceInfo.InstanceStatus.UNKNOWN)
                     .build();
         }
+
+        return getServiceInfo(application);
+    }
+
+    private ServiceInfo getServiceInfo(Application application) {
+        String serviceId = application.getName().toLowerCase();
 
         List<InstanceInfo> appInstances = application.getInstances();
         if (appInstances == null || appInstances.isEmpty()) {

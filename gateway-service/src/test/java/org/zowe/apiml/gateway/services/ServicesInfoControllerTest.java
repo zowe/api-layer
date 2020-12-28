@@ -16,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
+import java.util.Arrays;
+
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
@@ -26,17 +28,34 @@ class ServicesInfoControllerTest {
 
     private static final String SERVICE_ID = "service";
 
+    private final ServiceInfo serviceInfo = ServiceInfo.builder()
+            .serviceId(SERVICE_ID)
+            .status(InstanceInfo.InstanceStatus.UP)
+            .build();
+
     @Mock
     private ServicesInfoService servicesInfoService;
 
     @Test
-    void whenServiceIsUp_thenReturnOK() {
-        when(servicesInfoService.getServiceInfo(SERVICE_ID)).thenReturn(
-                ServiceInfo.builder()
-                        .serviceId(SERVICE_ID)
-                        .status(InstanceInfo.InstanceStatus.UP).
-                        build()
+    void whenGetAllServices_thenReturnList() {
+        when(servicesInfoService.getServicesInfo()).thenReturn(
+                Arrays.asList(serviceInfo, serviceInfo)
         );
+
+        //@formatter:off
+        given()
+                .standaloneSetup(new ServicesInfoController(servicesInfoService))
+        .when()
+                .get(SERVICES_URL)
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .body("size()", is(2));
+        //@formatter:on
+    }
+
+    @Test
+    void whenServiceIsUp_thenReturnOK() {
+        when(servicesInfoService.getServiceInfo(SERVICE_ID)).thenReturn(serviceInfo);
 
         //@formatter:off
         given()
@@ -52,19 +71,15 @@ class ServicesInfoControllerTest {
 
     @Test
     void whenServiceDoesNotExist_thenReturnNotFound() {
-        when(servicesInfoService.getServiceInfo(SERVICE_ID)).thenReturn(
-                ServiceInfo.builder()
-                        .serviceId(SERVICE_ID)
-                        .status(InstanceInfo.InstanceStatus.UNKNOWN).
-                        build()
-        );
+        serviceInfo.setStatus(InstanceInfo.InstanceStatus.UNKNOWN);
+        when(servicesInfoService.getServiceInfo(SERVICE_ID)).thenReturn(serviceInfo);
 
         //@formatter:off
         given()
                 .standaloneSetup(new ServicesInfoController(servicesInfoService))
         .when()
                 .get(SERVICES_URL + "/" + SERVICE_ID)
-       .then()
+        .then()
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .body("status", is(InstanceInfo.InstanceStatus.UNKNOWN.toString()))
                 .body("serviceId", is(SERVICE_ID));

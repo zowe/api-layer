@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @ConditionalOnExpression("${apiml.feature.serviceInfo.enabled:false}") // Remove when secured with an authorization
 @RequiredArgsConstructor
@@ -29,6 +31,11 @@ public class ServicesInfoController {
     public static final String SERVICES_URL = "/gateway/services";
 
     private final ServicesInfoService servicesInfoService;
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<ServiceInfo>> getServices() {
+        return new ResponseEntity<>(servicesInfoService.getServicesInfo(), HttpStatus.OK);
+    }
 
     @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<ServiceInfo> getService(@PathVariable String serviceId) {
