@@ -276,9 +276,21 @@
         "/services": {
             "get": {
                 "tags": ["Services"],
-                "summary": "Returns detailed information about all services",
-                "description": "Use this endpoint to obtain detailed information about all services, their APIs, and instances.",
+                "summary": "Returns detailed information about all or selected services",
+                "description": "Use this endpoint to obtain detailed information about all services, their APIs, and instances. You can select services only for the specific API ID.",
                 "operationId": "servicesUsingGET",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apiId",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The API ID of requested services",
+                        "required": false,
+                        "example": "zowe.apiml.gateway"
+                    }
+                ],
                 "security": [
                     {
                         "CookieAuth": []
@@ -315,6 +327,7 @@
                 }
             }
         },
+
         "/services/{serviceId}": {
             "get": {
                 "tags": ["Services"],

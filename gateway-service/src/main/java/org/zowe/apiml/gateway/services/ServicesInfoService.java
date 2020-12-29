@@ -15,6 +15,7 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
@@ -51,6 +52,20 @@ public class ServicesInfoService {
         }
 
         return servicesInfo;
+    }
+
+    public List<ServiceInfo> getServicesInfo(String apiId) {
+        List<ServiceInfo> servicesInfo = getServicesInfo();
+
+        if (apiId == null) return servicesInfo;
+
+        return servicesInfo.stream()
+                .filter(serviceInfo -> {
+                    if (serviceInfo.getApiml() == null || serviceInfo.getApiml().getApiInfo() == null) return false;
+                    return serviceInfo.getApiml().getApiInfo().stream().anyMatch(apiInfo ->
+                            StringUtils.equals(apiInfo.getApiId(), apiId));
+                })
+                .collect(Collectors.toList());
     }
 
     public ServiceInfo getServiceInfo(String serviceId) {

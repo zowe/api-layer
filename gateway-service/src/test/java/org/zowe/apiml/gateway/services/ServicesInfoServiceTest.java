@@ -111,12 +111,29 @@ class ServicesInfoServiceTest {
                 .thenReturn(new Applications(null, 1L, applications));
 
         List<ServiceInfo> servicesInfo = servicesInfoService.getServicesInfo();
+        List<ServiceInfo> servicesInfo2 = servicesInfoService.getServicesInfo(null);
 
+        assertEquals(servicesInfo, servicesInfo2);
         assertEquals(2, servicesInfo.size());
         assertThat(servicesInfo, contains(
                 hasProperty(SERVICE_SERVICE_ID, is(CLIENT_SERVICE_ID)),
                 hasProperty(SERVICE_SERVICE_ID, is(clientServiceId2))
         ));
+    }
+
+    @Test
+    void whenListingServicesByApiId_thenReturnList() {
+        List<Application> applications = Arrays.asList(
+                new Application(CLIENT_SERVICE_ID, Collections.singletonList(createFullTestInstance())),
+                new Application("testclient2")
+        );
+        when(eurekaClient.getApplications())
+                .thenReturn(new Applications(null, 1L, applications));
+
+        List<ServiceInfo> servicesInfo = servicesInfoService.getServicesInfo(CLIENT_API_ID);
+
+        assertEquals(1, servicesInfo.size());
+        assertEquals(CLIENT_SERVICE_ID, servicesInfo.get(0).getServiceId());
     }
 
     // Splitting asserts to multiple tests would make it less readable

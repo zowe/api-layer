@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.Is.is;
@@ -40,7 +41,7 @@ class ServicesInfoControllerTest {
 
     @Test
     void whenGetAllServices_thenReturnList() {
-        when(servicesInfoService.getServicesInfo()).thenReturn(
+        when(servicesInfoService.getServicesInfo(null)).thenReturn(
                 Arrays.asList(serviceInfo, serviceInfo)
         );
 
@@ -53,6 +54,40 @@ class ServicesInfoControllerTest {
                 .statusCode(HttpStatus.OK.value())
                 .header(VERSION_HEADER, CURRENT_VERSION)
                 .body("size()", is(2));
+        //@formatter:on
+    }
+
+    @Test
+    void whenFilterByApiId_thenReturnList() {
+        String apiId = "apiId";
+        when(servicesInfoService.getServicesInfo(apiId)).thenReturn(
+                Arrays.asList(serviceInfo, serviceInfo)
+        );
+
+        //@formatter:off
+        given()
+                .standaloneSetup(new ServicesInfoController(servicesInfoService))
+        .when()
+                .get(String.format("%s?apiId=%s",SERVICES_URL, apiId))
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .header(VERSION_HEADER, CURRENT_VERSION)
+                .body("size()", is(2));
+        //@formatter:on
+    }
+
+    @Test
+    void whenApiIdDoesNotExists_thenReturn404() {
+        String apiId = "apiId";
+        when(servicesInfoService.getServicesInfo(apiId)).thenReturn(Collections.emptyList());
+
+        //@formatter:off
+        given()
+                .standaloneSetup(new ServicesInfoController(servicesInfoService))
+        .when()
+                .get(String.format("%s?apiId=%s",SERVICES_URL, apiId))
+        .then()
+                .statusCode(HttpStatus.NOT_FOUND.value());
         //@formatter:on
     }
 

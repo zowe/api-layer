@@ -15,10 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -36,11 +33,14 @@ public class ServicesInfoController {
     private final ServicesInfoService servicesInfoService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<ServiceInfo>> getServices() {
+    public ResponseEntity<List<ServiceInfo>> getServices(@RequestParam(required = false) String apiId) {
+        List<ServiceInfo> services = servicesInfoService.getServicesInfo(apiId);
+        HttpStatus status = (services.isEmpty()) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
+
         return ResponseEntity
-                .ok()
+                .status(status)
                 .header(VERSION_HEADER, CURRENT_VERSION)
-                .body(servicesInfoService.getServicesInfo());
+                .body(services);
     }
 
     @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
