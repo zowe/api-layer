@@ -1,4 +1,4 @@
-package org.zowe.apiml.cache;/*
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -7,15 +7,18 @@ package org.zowe.apiml.cache;/*
  *
  * Copyright Contributors to the Zowe Project.
  */
+package org.zowe.apiml.cache;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class CompositeKeyTest {
+class CompositeKeyTest {
 
     @Test
-    public void testInit() {
+    void testInit() {
         CompositeKey ck;
 
         ck = new CompositeKey();
@@ -52,16 +55,16 @@ public class CompositeKeyTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         CompositeKey c1 = new CompositeKey();
 
         assertEquals(c1, c1);
-        assertNotEquals(c1, null);
-        assertNotEquals(c1, new CompositeKey() {});
+        assertNotEquals(null, c1);
+        assertNotEquals(new CompositeKey() {}, c1);
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         assertEquals(
             new CompositeKey("a", "b", new String[] {"c", "d"}).hashCode(),
             new CompositeKey("a", "b", new String[] {"c", "d"}).hashCode()
@@ -74,7 +77,7 @@ public class CompositeKeyTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("CompositeKey []", new CompositeKey().toString());
         assertEquals("CompositeKey []", new CompositeKey((Object[]) null).toString());
         assertEquals("CompositeKey [a]", new CompositeKey("a").toString());

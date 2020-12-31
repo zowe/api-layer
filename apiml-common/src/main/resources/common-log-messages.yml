@@ -23,16 +23,16 @@ messages:
     - key: org.zowe.apiml.common.gatewayRouteConnectionLimitReached
       number: ZWEAO105
       type: WARNING
-      text: "Gateway HTTP Client per-route connection limit of %s has been reached for the '%s' route."
+      text: "Gateway HTTP Client per-route connection limit (maxConnectionsPerRoute) of %s has been reached for the '%s' route."
       reason: "Too many concurrent connection requests were made to the same route."
-      action: "Further connections will be queued until there is room in the connection pool. You may also increase the per-route connection limit via the gateway start-up script."
+      action: "Further connections will be queued until there is room in the connection pool. You may also increase the per-route connection limit via the gateway start-up script by setting the Gateway configuration for maxConnectionsPerRoute."
 
     - key: org.zowe.apiml.common.totalConnectionLimitReached
       number: ZWEAO106
       type: WARNING
-      text: "Gateway HTTP Client total connection limit of %s has been reached."
+      text: "Gateway HTTP Client total connection limit (maxTotalConnections) of %s has been reached."
       reason: "Too many concurrent connection requests were made."
-      action: "Further connections will be queued until there is room in the connection pool. You may also increase the total connection limit via the gateway start-up script"
+      action: "Further connections will be queued until there is room in the connection pool. You may also increase the total connection limit via the gateway start-up script by setting the Gateway configuration for maxTotalConnections."
 
     # HTTP,Protocol messages
     # 400-499
