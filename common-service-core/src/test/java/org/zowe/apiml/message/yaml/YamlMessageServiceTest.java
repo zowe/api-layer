@@ -12,34 +12,35 @@ package org.zowe.apiml.message.yaml;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageLoadException;
 import org.zowe.apiml.message.core.MessageService;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class YamlMessageServiceTest {
+class YamlMessageServiceTest {
 
 
     @Test
-    public void testLoadMessages() {
+    void testLoadMessages() {
         MessageService messageService = new YamlMessageService("/test-messages.yml");
         Message message = messageService.createMessage("org.zowe.apiml.common.serviceTimeout", "3000");
-        assertEquals("Keys are different", "org.zowe.apiml.common.serviceTimeout", message.getMessageTemplate().getKey());
+        assertEquals("org.zowe.apiml.common.serviceTimeout", message.getMessageTemplate().getKey(), "Keys are different");
 
         message = messageService.createMessage("org.zowe.apiml.test.noArguments");
-        assertEquals("Keys are different", "org.zowe.apiml.test.noArguments", message.getMessageTemplate().getKey());
+        assertEquals("org.zowe.apiml.test.noArguments", message.getMessageTemplate().getKey(), "Keys are different");
     }
 
 
-    @Test(expected = MessageLoadException.class)
-    public void testLoadMessages_whenFormatIsDifferentInYamlFile() {
-        new YamlMessageService("/test-wrong-format-messages.yml");
+    @Test
+    void testLoadMessages_whenFormatIsDifferentInYamlFile() {
+        assertThrows(MessageLoadException.class, () -> new YamlMessageService("/test-wrong-format-messages.yml"));
     }
 
 
-    @Test(expected = MessageLoadException.class)
-    public void testLoadMessages_whenYamlFileIsNotExist() {
-        new YamlMessageService("/non-existing-file.yml");
+    @Test
+    void testLoadMessages_whenYamlFileIsNotExist() {
+        assertThrows(MessageLoadException.class, () -> new YamlMessageService("/non-existing-file.yml"));
     }
 
 }

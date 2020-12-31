@@ -10,14 +10,14 @@
 package org.zowe.apiml.client.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zowe.apiml.client.configuration.ApplicationConfiguration;
@@ -33,10 +33,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {ZaasClientTestController.class})
 @Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class, AnnotationConfigContextLoader.class})
-public class ZaasClientTestControllerTest {
+class ZaasClientTestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -48,7 +48,7 @@ public class ZaasClientTestControllerTest {
     private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
 
     @Test
-    public void forwardLoginTest_successfulLogin() throws Exception {
+    void forwardLoginTest_successfulLogin() throws Exception {
         LoginRequest loginRequest = new LoginRequest("username", "password");
         when(zaasClient.login("username", "password")).thenReturn("token");
 
@@ -60,7 +60,7 @@ public class ZaasClientTestControllerTest {
     }
 
     @Test
-    public void forwardLoginTest_invalidCredentials() throws Exception {
+    void forwardLoginTest_invalidCredentials() throws Exception {
         LoginRequest loginRequest = new LoginRequest("incorrectUser", "incorrectPass");
         when(zaasClient.login("incorrectUser", "incorrectPass"))
             .thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION));
@@ -74,7 +74,7 @@ public class ZaasClientTestControllerTest {
     }
 
     @Test
-    public void givenValidToken_whenPerformingLogout_thenSuccessLogout() throws Exception {
+    void givenValidToken_whenPerformingLogout_thenSuccessLogout() throws Exception {
         String token = "token";
         this.mockMvc.perform(
             post("/api/v1/zaasClient/logout")
@@ -84,7 +84,7 @@ public class ZaasClientTestControllerTest {
     }
 
     @Test
-    public void givenNoToken_whenPerformingLogout_thenFailLogout() throws Exception {
+    void givenNoToken_whenPerformingLogout_thenFailLogout() throws Exception {
         this.mockMvc.perform(
             post("/api/v1/zaasClient/logout")
                 .contentType(MediaType.APPLICATION_JSON_UTF8))

@@ -11,24 +11,24 @@
 package org.zowe.apiml.client.api;
 
 import org.zowe.apiml.client.model.UploadFileResponse;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
-public class MultipartControllerTest {
+class MultipartControllerTest {
     private MultipartController multipartController;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         multipartController = new MultipartController();
     }
 
     @Test
-    public void shouldSubmitWithPostAndReturnString() {
+    void shouldSubmitWithPostAndReturnString() {
         MockMultipartFile file = new MockMultipartFile("file", "hello.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
         UploadFileResponse uploadFileResponse = multipartController.uploadFileWithPost(file);
 
@@ -38,7 +38,7 @@ public class MultipartControllerTest {
     }
 
     @Test
-    public void shouldSubmitWithPutAndReturnString() {
+    void shouldSubmitWithPutAndReturnString() {
         MockMultipartFile file = new MockMultipartFile("file", "hello.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
         UploadFileResponse uploadFileResponse = multipartController.uploadFileWithPut(file);
 

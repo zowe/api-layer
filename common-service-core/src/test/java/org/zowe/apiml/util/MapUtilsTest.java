@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -18,13 +18,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class MapUtilsTest {
+
+class MapUtilsTest {
 
     @Test
-    public void givenMap_whenFlattenedWithRootKey_shouldReturnMapKeysWithRootKey() {
+    void givenMap_whenFlattenedWithRootKey_shouldReturnMapKeysWithRootKey() {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("key", null);
         Map<String, String> resultMap = MapUtils.flattenMap("apiml", testMap);
@@ -32,7 +34,7 @@ public class MapUtilsTest {
     }
 
     @Test
-    public void givenMapWithNullValue_whenFlattened_shouldReturnValueEmptyString() {
+    void givenMapWithNullValue_whenFlattened_shouldReturnValueEmptyString() {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("key", null);
         Map<String, String> resultMap = MapUtils.flattenMap(null, testMap);
@@ -40,7 +42,7 @@ public class MapUtilsTest {
     }
 
     @Test
-    public void givenMapWithPrimitiveValues_whenFlattened_shouldReturnCorrectValues() {
+    void givenMapWithPrimitiveValues_whenFlattened_shouldReturnCorrectValues() {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("key1", true);
         testMap.put("key2", 23);
@@ -54,7 +56,7 @@ public class MapUtilsTest {
     }
 
     @Test
-    public void givenMapWithNestedMap_whenFlattened_shouldReturnFlattened() {
+    void givenMapWithNestedMap_whenFlattened_shouldReturnFlattened() {
         Map<String, Object> nestedLvl2 = new HashMap<>();
         nestedLvl2.put("keyzzz", "valuezzz");
 
@@ -72,8 +74,8 @@ public class MapUtilsTest {
         assertThat(resultMap, hasEntry("primaryKey.key3.keyzzz", "valuezzz"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void givenMapWithNestedList_whenFlattened_shouldReturnException() {
+    @Test
+    void givenMapWithNestedList_whenFlattened_shouldReturnException() {
         List<Object> nested = new ArrayList<>();
         nested.add("value1");
         nested.add("value2");
@@ -81,24 +83,25 @@ public class MapUtilsTest {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("primaryKey", nested);
 
-        MapUtils.flattenMap(null, testMap);
+        assertThrows(IllegalArgumentException.class, () -> MapUtils.flattenMap(null, testMap));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void givenMapWithNestedArray_whenFlattened_shouldReturnException() {
+    @Test
+    void givenMapWithNestedArray_whenFlattened_shouldReturnException() {
         String[] nested = {"value1", "value2"};
 
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("primaryKey", nested);
 
-        MapUtils.flattenMap(null, testMap);
+        assertThrows(IllegalArgumentException.class, () -> MapUtils.flattenMap(null, testMap));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void givenMapWithAnythingElseThanExpected_whenFlattened_shouldReturnException() {
+    @Test
+    void givenMapWithAnythingElseThanExpected_whenFlattened_shouldReturnException() {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("key1", new BigDecimal(0));
-        MapUtils.flattenMap(null, testMap);
+
+        assertThrows(IllegalArgumentException.class, () -> MapUtils.flattenMap(null, testMap));
     }
 
 }

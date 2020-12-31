@@ -12,13 +12,13 @@ package org.zowe.apiml.client.api;
 import org.zowe.apiml.client.configuration.ApplicationConfiguration;
 import org.zowe.apiml.client.model.Pet;
 import org.zowe.apiml.client.service.PetService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -32,10 +32,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {PetController.class}, secure = false)
 @Import(ApplicationConfiguration.class)
-public class PetControllerGetAllTest {
+class PetControllerGetAllTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -43,7 +43,7 @@ public class PetControllerGetAllTest {
     private PetService petService;
 
     @Test
-    public void getAllPets() throws Exception {
+    void getAllPets() throws Exception {
         int id = 1;
         String name = "Falco";
         List<Pet> pets = singletonList(new Pet((long) id, name));
@@ -56,7 +56,7 @@ public class PetControllerGetAllTest {
     }
 
     @Test
-    public void getAllPetsForNoPetsFromService() throws Exception {
+    void getAllPetsForNoPetsFromService() throws Exception {
         when(petService.getAll()).thenReturn(new ArrayList<>());
 
         this.mockMvc.perform(get("/api/v1/pets"))
@@ -65,7 +65,7 @@ public class PetControllerGetAllTest {
     }
 
     @Test
-    public void getAllPetsForNullPetsFromService() throws Exception {
+    void getAllPetsForNullPetsFromService() throws Exception {
         when(petService.getAll()).thenReturn(null);
 
         this.mockMvc.perform(get("/api/v1/pets"))

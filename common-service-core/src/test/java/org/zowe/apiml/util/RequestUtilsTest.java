@@ -35,7 +35,7 @@ class RequestUtilsTest {
     RequestUtils wrapper;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         request = mock(HttpRequest.class);
         wrapper = RequestUtils.of(request);
     }
@@ -61,7 +61,7 @@ class RequestUtilsTest {
     }
 
     @Test
-    public void givenRequestWithHeaders_whenSetExistingHeader_thenHeaderOverwritten() {
+    void givenRequestWithHeaders_whenSetExistingHeader_thenHeaderOverwritten() {
         doReturn(new Header[] { contentLenght, pragma}).when(request).getAllHeaders();
         ArgumentCaptor<Header[]> argument = ArgumentCaptor.forClass(Header[].class);
 

@@ -9,32 +9,29 @@
  */
 package org.zowe.apiml.util;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
 
-public class ObjectUtilTest {
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
+class ObjectUtilTest {
 
     @Test
-    public void testRequireNotNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Parameter can't be null");
-
-        ObjectUtil.requireNotNull(null, "Parameter can't be null");
+    void testRequireNotNull() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> ObjectUtil.requireNotNull(null, "Parameter can't be null"));
+        assertEquals("Parameter can't be null", exception.getMessage());
     }
 
     @Test
-    public void testRequireNotEmpty() {
+    void testRequireNotEmpty() {
         try {
             ObjectUtil.requireNotEmpty(null, "Parameter can't be empty");
             fail();
@@ -55,7 +52,7 @@ public class ObjectUtilTest {
     private ThreadLocal<Map<String, String>> threadContext = new ThreadLocal();
 
     @Test
-    public void testSetApiMlContextMap_Ok() {
+    void testSetApiMlContextMap_Ok() {
         Map map = ObjectUtil.getThreadContextMap(threadContext);
         assertNotNull(map);
 
@@ -66,7 +63,7 @@ public class ObjectUtilTest {
 
 
     @Test
-    public void testMapMerge_FULL() {
+    void testMapMerge_FULL() {
         Map<String, Object> defaultConfigPropertiesMap = getMap1();
         Map<String, Object> additionalConfigPropertiesMap = getMap2();
 
@@ -88,7 +85,7 @@ public class ObjectUtilTest {
     }
 
     @Test
-    public void testMapMerge_PART_serviceid_keystore_truststore() {
+    void testMapMerge_PART_serviceid_keystore_truststore() {
 
         Map<String, Object> defaultConfigPropertiesMap = getMap1();
         Map<String, Object> additionalConfigPropertiesMap = getMap2();
@@ -195,7 +192,7 @@ public class ObjectUtilTest {
     }
 
     @Test
-    public void testMapMerge_PART_serviceid_ciphers() {
+    void testMapMerge_PART_serviceid_ciphers() {
         Map<String, Object> defaultConfigPropertiesMap = getMap1();
         Map<String, Object> additionalConfigPropertiesMap = getMap2();
 
@@ -214,7 +211,7 @@ public class ObjectUtilTest {
     }
 
     @Test
-    public void testGetMethodIdentifier() throws NoSuchMethodException {
+    void testGetMethodIdentifier() throws NoSuchMethodException {
         assertEquals("testGetMethodIdentifier()", ObjectUtil.getMethodIdentifier(ObjectUtilTest.class.getDeclaredMethod("testGetMethodIdentifier")));
         assertEquals("testMethod1(class java.lang.String,int,class java.lang.Object)", ObjectUtil.getMethodIdentifier(ObjectUtilTest.class.getDeclaredMethod("testMethod1", String.class, int.class, Object.class)));
     }

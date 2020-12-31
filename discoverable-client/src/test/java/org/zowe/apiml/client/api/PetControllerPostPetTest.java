@@ -14,14 +14,14 @@ import org.zowe.apiml.client.configuration.SpringComponentsConfiguration;
 import org.zowe.apiml.client.model.Pet;
 import org.zowe.apiml.client.service.PetService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.core.Is.is;
@@ -33,10 +33,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {PetController.class}, secure = false)
 @Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
-public class PetControllerPostPetTest {
+class PetControllerPostPetTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -46,7 +46,7 @@ public class PetControllerPostPetTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void addPetWithValidObject() throws Exception {
+    void addPetWithValidObject() throws Exception {
         String name = "Linux";
         int id = 1;
         Pet pet = new Pet(null, name);
