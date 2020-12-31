@@ -12,7 +12,6 @@ package org.zowe.apiml.security.common.auth.saf;
 import lombok.Builder;
 import lombok.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -28,7 +27,6 @@ import java.util.Map;
  * the file from applications classpath. It is highly recommended to locate empty file `mock-saf` in each application
  * using this feature to allow start application without any other action.
  */
-@Component
 public class SafResourceAccessDummy implements SafResourceAccessVerifying {
 
     private static final String SAF_ACCESS = "safAccess";
