@@ -9,16 +9,16 @@
  */
 package org.zowe.apiml.client.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class PetTest {
+class PetTest {
     @Test
-    public void testSetName() {
+    void testSetName() {
         Pet pet = new Pet(1L, "Falco");
         String name = "Big Falco";
         pet.setName(name);
@@ -27,7 +27,7 @@ public class PetTest {
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         Pet firstPet = new Pet(1L, "Falco");
         Pet secondPet = new Pet(2L, "Molly");
 
@@ -35,7 +35,7 @@ public class PetTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         Pet firstPet = new Pet(1L, "Falco");
         Pet secondPet = new Pet(2L, "Molly");
 

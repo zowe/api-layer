@@ -9,11 +9,9 @@
  */
 package org.zowe.apiml.client.service;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.context.annotation.Bean;
@@ -21,56 +19,53 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.client.model.DiscoverableClientConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "/application.yml")
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
 @Import(ApiMediationClientServiceTest.TestConfig.class)
-public class ApiMediationClientServiceTest {
+class ApiMediationClientServiceTest {
 
     private ApiMediationClientService apiMediationClientService;
 
     @Autowired
     private DiscoverableClientConfig discoverableClientConfig;
 
-    @Rule
-    public final ExpectedException exceptionRule = ExpectedException.none();
-
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         apiMediationClientService = new ApiMediationClientService(discoverableClientConfig);
     }
 
     @Test
-    public void registerTest() throws ServiceDefinitionException {
+    void registerTest() throws ServiceDefinitionException {
         assertTrue(apiMediationClientService.register());
     }
 
     @Test
-    public void registerTest_duplicate() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
-        apiMediationClientService.register();
-        apiMediationClientService.register();
+    void registerTest_duplicate() throws ServiceDefinitionException {
+        assertTrue(apiMediationClientService.register());
+        assertThrows(ServiceDefinitionException.class, () -> apiMediationClientService.register());
     }
 
     @Test
-    public void isRegisteredTest_notRegistered() {
+    void isRegisteredTest_notRegistered() {
         assertFalse(apiMediationClientService.isRegistered());
     }
 
     @Test
-    public void unregisterTest() {
+    void unregisterTest() {
         assertTrue(apiMediationClientService.unregister());
     }
 
     @Test
-    public void unregisterTest_notRegistered() {
+    void unregisterTest_notRegistered() {
         assertTrue(apiMediationClientService.unregister());
     }
 
