@@ -10,6 +10,7 @@
 package org.zowe.apiml.security.common.auth.saf;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -62,4 +63,13 @@ class SafResourceAccessEndpointTest {
         assertEquals(response, safResourceAccessEndpoint.hasSafResourceAccess(authentication, CLASS, RESOURCE, LEVEL));
     }
 
+    @Test
+    void givenFaultyResponse_whenRestTemplateMethodReturnsNull_thenFalse() {
+        doReturn(
+            null
+        ).when(restTemplate).getForObject(
+            TEST_URI_ARGS, SafResourceAccessEndpoint.Response.class, USER_ID, CLASS, RESOURCE, LEVEL
+        );
+        assertEquals(false, safResourceAccessEndpoint.hasSafResourceAccess(authentication, CLASS, RESOURCE, LEVEL));
+    }
 }

@@ -9,9 +9,7 @@
  */
 package org.zowe.apiml.security.common.auth.saf;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestTemplate;
@@ -31,7 +29,7 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
     public boolean hasSafResourceAccess(Authentication authentication, String resourceClass, String resourceName, String accessLevel) {
         Response response = restTemplate.getForObject(endpointUrl + PATH_VRIABLE_SUFFIX, Response.class,
             authentication.getName(), resourceClass, resourceName, accessLevel);
-        return !response.isError() && response.isAuthorized();
+        return response == null ? false : !response.isError() && response.isAuthorized();
     }
 
     @Data
