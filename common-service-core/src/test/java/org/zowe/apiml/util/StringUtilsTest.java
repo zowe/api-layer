@@ -9,17 +9,19 @@
  */
 package org.zowe.apiml.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class StringUtilsTest {
+class StringUtilsTest {
 
     @Test
-    public void removeFirstAndLastOccurrenceTest() {
+    void removeFirstAndLastOccurrenceTest() {
         assertNull(StringUtils.removeFirstAndLastOccurrence(null, "any-string"));
 
         String whiteSpace = "       ";
@@ -30,7 +32,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void removeLastOccurrenceTest() {
+    void removeLastOccurrenceTest() {
         assertNull(StringUtils.removeLastOccurrence(null, "any-string"));
 
         String whiteSpace = "       ";
@@ -42,7 +44,7 @@ public class StringUtilsTest {
 
 
     @Test
-    public void prependSubstringTest() {
+    void prependSubstringTest() {
         assertNull(StringUtils.prependSubstring(null, "any-string"));
 
         assertNull(StringUtils.prependSubstring("", null));
@@ -62,7 +64,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testResolveExpressions() {
+    void testResolveExpressions() {
 
         String expression = "serviceId: ${apiml.serviceId}\n" +
             "title: Hello Spring REST API\n" +

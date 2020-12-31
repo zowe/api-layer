@@ -35,8 +35,6 @@ dependencies {
     testCompile(libraries.logback_classic)
     testCompile(libraries.tomcat_embed_core)
     testCompile(libraries.mockito_core)
-    testCompile(libraries.powermock_api_mockito2)
-    testCompile(libraries.power_mock_junit4)
 
     testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok

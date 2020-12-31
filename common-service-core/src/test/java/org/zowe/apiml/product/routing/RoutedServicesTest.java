@@ -10,18 +10,18 @@
 package org.zowe.apiml.product.routing;
 
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class RoutedServicesTest {
+class RoutedServicesTest {
 
     private RoutedServices routedServices;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         routedServices = new RoutedServices();
         RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
         RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
@@ -32,7 +32,7 @@ public class RoutedServicesTest {
     }
 
     @Test
-    public void testFindServiceByGatewayUrl() {
+    void testFindServiceByGatewayUrl() {
         RoutedService routedServiceApiV1 = routedServices.findServiceByGatewayUrl("api/v1");
 
         assertEquals("api_v1", routedServiceApiV1.getSubServiceId());
@@ -48,7 +48,7 @@ public class RoutedServicesTest {
 
 
     @Test
-    public void testBestMatchingServiceUrlByAllServiceTypes() {
+    void testBestMatchingServiceUrlByAllServiceTypes() {
         RoutedService routedService = routedServices.getBestMatchingServiceUrl("/apicatalog", ServiceType.ALL);
         assertNotNull(routedService);
 
@@ -70,7 +70,7 @@ public class RoutedServicesTest {
     }
 
     @Test
-    public void testBestMatchingServiceUrlBySpecificServiceTypes() {
+    void testBestMatchingServiceUrlBySpecificServiceTypes() {
         RoutedService routedService = routedServices.getBestMatchingServiceUrl("/apicatalog", ServiceType.API);
 
         assertEquals("api_v1", routedService.getSubServiceId());
@@ -97,7 +97,7 @@ public class RoutedServicesTest {
     }
 
     @Test
-    public void testBestMatchingApiUrl() {
+    void testBestMatchingApiUrl() {
         RoutedService routedService = routedServices.getBestMatchingApiUrl("/apicatalog");
 
         assertEquals("api_v1", routedService.getSubServiceId());

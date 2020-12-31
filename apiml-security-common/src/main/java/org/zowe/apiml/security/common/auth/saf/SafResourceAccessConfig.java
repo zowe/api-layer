@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
-
 import java.io.IOException;
 
 @Configuration
@@ -26,13 +25,19 @@ public class SafResourceAccessConfig {
 
     @Bean
     public SafResourceAccessVerifying safResourceAccessVerifying(RestTemplate restTemplate) throws IOException {
-        // TODO: SAF using JZOS - another PR
 
         if (endpointEnabled) {
             return new SafResourceAccessEndpoint(restTemplate);
         }
 
+        try {
+            return new SafResourceAccessSaf();
+        } catch (Exception e) {
+            log.debug("API PlatformAccessControl is not available", e);
+        }
+
         return new SafResourceAccessDummy();
+
     }
 
 }
