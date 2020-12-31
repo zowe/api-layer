@@ -13,29 +13,29 @@ import org.zowe.apiml.client.configuration.ApplicationConfiguration;
 import org.zowe.apiml.client.configuration.SpringComponentsConfiguration;
 import org.zowe.apiml.client.model.RedirectLocation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {PageRedirectionController.class}, secure = false)
 @Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
-public class PageRedirectionControllerTest {
+class PageRedirectionControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    public void redirectToLocation() throws Exception {
+    void redirectToLocation() throws Exception {
         RedirectLocation redirectLocation = new RedirectLocation("https://hostA:8080/some/path");
         String payload = mapper.writeValueAsString(redirectLocation);
 

@@ -15,14 +15,14 @@ import org.zowe.apiml.client.model.Pet;
 import org.zowe.apiml.client.service.PetService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasItem;
@@ -36,10 +36,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {PetController.class}, secure = false)
 @Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
-public class PetControllerPutTest {
+class PetControllerPutTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -49,7 +49,7 @@ public class PetControllerPutTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void putExistingPet() throws Exception {
+    void putExistingPet() throws Exception {
         int id = 1;
         String name = "Falco";
         Pet pet = new Pet((long) id, name);
@@ -68,7 +68,7 @@ public class PetControllerPutTest {
     }
 
     @Test
-    public void putNotExistingPet() throws Exception {
+    void putNotExistingPet() throws Exception {
         int id = 404;
         String name = "Falco";
         Pet pet = new Pet((long) id, name);
@@ -85,7 +85,7 @@ public class PetControllerPutTest {
     }
 
     @Test
-    public void putPetWithMissingId() throws Exception {
+    void putPetWithMissingId() throws Exception {
         int id = 1;
         String idField = "id";
         String name = "Falco";
@@ -105,7 +105,7 @@ public class PetControllerPutTest {
     }
 
     @Test
-    public void putPetWithExtraField() throws Exception {
+    void putPetWithExtraField() throws Exception {
         int id = 4;
         String name = "Falco";
         String field = "extraField";
@@ -126,7 +126,7 @@ public class PetControllerPutTest {
     }
 
     @Test
-    public void putPetWithInvalidId() throws Exception {
+    void putPetWithInvalidId() throws Exception {
         String pathId = "invalidvalue";
         int bodyId = 1;
         String name = "Big Falco";
@@ -143,7 +143,7 @@ public class PetControllerPutTest {
     }
 
     @Test
-    public void putPetWithDifferentIdInBodyAndPath() throws Exception {
+    void putPetWithDifferentIdInBodyAndPath() throws Exception {
         int pathId = 2;
         int bodyId = 1;
         String name = "Big Falco";
@@ -160,7 +160,7 @@ public class PetControllerPutTest {
     }
 
     @Test
-    public void putPetWithInvalidIdInBody() throws Exception {
+    void putPetWithInvalidIdInBody() throws Exception {
         int pathId = 1;
         String idField = "id";
         String bodyId = "invalidvalue";

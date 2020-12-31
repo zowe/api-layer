@@ -12,13 +12,13 @@ package org.zowe.apiml.client.api;
 import org.zowe.apiml.client.configuration.ApplicationConfiguration;
 import org.zowe.apiml.client.model.Pet;
 import org.zowe.apiml.client.service.PetService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasItem;
@@ -31,10 +31,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {PetController.class}, secure = false)
 @Import(ApplicationConfiguration.class)
-public class PetControllerGetOneTest {
+class PetControllerGetOneTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -42,7 +42,7 @@ public class PetControllerGetOneTest {
     private PetService petService;
 
     @Test
-    public void getExistingPet() throws Exception {
+    void getExistingPet() throws Exception {
         int id = 1;
         String name = "Falco";
         Pet pet = new Pet((long) id, name);
@@ -55,7 +55,7 @@ public class PetControllerGetOneTest {
     }
 
     @Test
-    public void getNotExistingPet() throws Exception {
+    void getNotExistingPet() throws Exception {
         int id = 404;
         String message = String.format("The pet with id '%s' is not found.", id);
         when(petService.getById((long) id)).thenReturn(null);
@@ -66,7 +66,7 @@ public class PetControllerGetOneTest {
     }
 
     @Test
-    public void getPetByInvalidId() throws Exception {
+    void getPetByInvalidId() throws Exception {
         String id = "invalidvalue";
         String message = String.format("The pet id '%s' is invalid: it is not an integer.", id);
 

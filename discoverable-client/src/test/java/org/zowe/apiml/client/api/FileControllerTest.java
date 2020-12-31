@@ -9,13 +9,11 @@
  */
 package org.zowe.apiml.client.api;
 
-//import org.zowe.apiml.enable.config.OnboardingEnablerConfig;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-//import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 
@@ -23,15 +21,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {FileController.class}, secure = false)
 //@ContextConfiguration(classes = OnboardingEnablerConfig.class)
-public class FileControllerTest {
+class FileControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    public void callFileDownloadEndpoint() throws Exception {
+    void callFileDownloadEndpoint() throws Exception {
         this.mockMvc.perform(get("/api/v1/get-file"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition","attachment;filename=api-catalog.png"));
