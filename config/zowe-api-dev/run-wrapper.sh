@@ -7,11 +7,13 @@ export ZOWE_PREFIX=ZOWEJ
 export DISCOVERY_CODE=DS
 export CATALOG_CODE=AC
 export GATEWAY_CODE=GW
+export CACHING_CODE=CS
 export ZOWE_EXPLORER_HOST=$systemHostname
 export ZOWE_IP_ADDRESS=0.0.0.0
 export DISCOVERY_PORT=$((basePort+1))
 export CATALOG_PORT=$((basePort+2))
 export DISCOVERABLECLIENT_PORT=$((basePort+3))
+export CACHING_SERVICE_PORT=$((basePort+4))
 export GATEWAY_PORT=$basePort
 export STATIC_DEF_CONFIG_DIR=$dir/apidef
 export VERIFY_CERTIFICATES=true
@@ -32,12 +34,6 @@ echo "basePort "$basePort
 echo " "
 env
 echo "******************* /ENVIRONMENT  *******************"
-
-
-echo "Inflating dependencies"
-cd $dir/components/api-mediation/lib
-jar -xvf libraries.zip
-echo " "
 
 echo "Running API Mediation Layer"
 cd $dir
