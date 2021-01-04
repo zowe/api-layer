@@ -11,15 +11,15 @@ package org.zowe.apiml.client.api;
 
 import org.zowe.apiml.client.configuration.PassTicketConfiguration;
 import org.zowe.apiml.passticket.PassTicketService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -27,13 +27,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import javax.servlet.ServletException;
 import java.util.Base64;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = { PassTicketTestController.class }, secure = false)
 @Import(PassTicketTestControllerTest.Context.class)
-public class PassTicketTestControllerTest {
+class PassTicketTestControllerTest {
 
     private MockMvc mockMvc;
 
@@ -48,27 +49,28 @@ public class PassTicketTestControllerTest {
     private static final String BAD_PASSTICKET_AUTH_HEADER = "Basic "
             + Base64.getEncoder().encodeToString(("user:bad").getBytes());
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         passTicketTestController = new PassTicketTestController(passTicketService);
         ReflectionTestUtils.setField(passTicketTestController, "defaultApplId", "ZOWEAPPL");
         mockMvc = MockMvcBuilders.standaloneSetup(passTicketTestController).build();
     }
 
     @Test
-    public void callToPassTicketTestEndpointWithCorrectTicket() throws Exception {
+    void callToPassTicketTestEndpointWithCorrectTicket() throws Exception {
         this.mockMvc.perform(get("/api/v1/passticketTest").header("Authorization", ZOWE_PASSTICKET_AUTH_HEADER))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void callToPassTicketTestEndpointWithoutTicketFails() throws Exception {
+    void callToPassTicketTestEndpointWithoutTicketFails() throws Exception {
         this.mockMvc.perform(get("/api/v1/passticketTest")).andExpect(status().isBadRequest());
     }
 
-    @Test(expected = ServletException.class)
-    public void callToPassTicketTestEndpointWitBadTicketFails() throws Exception {
-        this.mockMvc.perform(get("/api/v1/passticketTest").header("Authorization", BAD_PASSTICKET_AUTH_HEADER));
+    @Test
+    void callToPassTicketTestEndpointWitBadTicketFails() throws Exception {
+        assertThrows(ServletException.class, () -> 
+            this.mockMvc.perform(get("/api/v1/passticketTest").header("Authorization", BAD_PASSTICKET_AUTH_HEADER)));
     }
 
     @Configuration

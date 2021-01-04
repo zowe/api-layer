@@ -9,11 +9,11 @@
  */
 package org.zowe.apiml.client.api;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.core.Is.is;
@@ -21,14 +21,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {GreetingController.class}, secure = false)
-public class GreetingControllerTest {
+class GreetingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    public void callGreetingEndpoint() throws Exception {
+    void callGreetingEndpoint() throws Exception {
         String name = "Petr";
 
         this.mockMvc.perform(get("/api/v1/greeting?name=" + name))
@@ -37,7 +37,7 @@ public class GreetingControllerTest {
     }
 
     @Test
-    public void callGreetingEndpointWithDelay() throws Exception {
+    void callGreetingEndpointWithDelay() throws Exception {
         String name = "Petr";
 
         this.mockMvc.perform(get("/api/v1/greeting?name=" + name + "&delayMs=100"))
@@ -46,7 +46,7 @@ public class GreetingControllerTest {
     }
 
     @Test
-    public void callPlainGreeting() throws Exception {
+    void callPlainGreeting() throws Exception {
 
         this.mockMvc.perform(get("/api/v1/greeting"))
             .andExpect(status().isOk())
@@ -54,7 +54,7 @@ public class GreetingControllerTest {
     }
 
     @Test
-    public void callCustomGreetingEndpoint() throws Exception {
+    void callCustomGreetingEndpoint() throws Exception {
         String name = "Petr";
 
         this.mockMvc.perform(get("/api/v1/" + name + "/greeting"))

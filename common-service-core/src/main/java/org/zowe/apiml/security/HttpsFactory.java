@@ -34,6 +34,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.concurrent.TimeUnit;
+
 
 @Slf4j
 @Data
@@ -60,9 +62,14 @@ public class HttpsFactory {
 
         ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry);
         connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerRoute());
+        connectionManager.closeIdleConnections(20, TimeUnit.SECONDS);
         connectionManager.setMaxTotal(config.getMaxTotalConnections());
-        return HttpClientBuilder.create().setConnectionManager(connectionManager).disableCookieManagement()
+
+        return HttpClientBuilder.create()
+            .setConnectionManager(connectionManager).disableCookieManagement()
+            .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .disableAuthCaching().build();
+
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {
