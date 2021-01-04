@@ -9,13 +9,13 @@ Verification of SAF resource can be provided via three providers:
 - JZOS
 - _the lowest priority_: dummy implementation (defined in a file)
 
-**note**: The first available by priority will be used.
+**note**: The first available based on priority will be used.
 
 ## Checking providers
 
 ### REST endpoint call
 
-This provider is once way how to enable the feature outside the mainframe (ie. running in Docker).
+This provider is one way how to enable the feature outside the mainframe (ie. running in Docker).
 
 - Method: `GET`
 - URL: `{base path}/{userId}/{class}/{entity}/{level}`
@@ -34,7 +34,7 @@ This provider is once way how to enable the feature outside the mainframe (ie. r
 
 `apiml.security.safEndpoint.enabled`
 - `true` or `false`, 'false' as default
-- to enable endpoint
+- to enable provider via an endpoint
 
 `apiml.security.safEndpoint.url`
 - base path of endpoint's URL (`{base path}/{userId}/{class}/{entity}/{level}`) 
@@ -66,9 +66,8 @@ Structure of YML file:
 **notes**:
 - Classes and resources are mapped into a map, user IDs into list.
 - load method does not support formatting with dots, like {CLASS}.{RESOURCE}, each element has to be separated
-- safAccess is not required to define empty file
+- field `safAccess` is not required to define empty file (without any definition)
 - classes and resources cannot be defined without user ID list
-- method could be called multiple times, definition are added to current (loaded)
 - when a user has multiple definition of same class and resource, just the highest access level is loaded
 
 ## Protecting Access to REST API Endpoints
