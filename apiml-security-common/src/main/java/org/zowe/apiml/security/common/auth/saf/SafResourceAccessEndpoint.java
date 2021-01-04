@@ -17,19 +17,18 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
 
-    @SuppressWarnings("squid:S1075")
-    private static final String PATH_VRIABLE_SUFFIX = "/{userId}/{class}/{entity}/{level}";
+    private static final String URL_VARIABLE_SUFFIX = "/{userId}/{class}/{entity}/{level}";
 
-    @Value("${apiml.security.safEndpoint.url}")
+    @Value("${apiml.security.safEndpoint.url:'http://localhost:8542/saf-auth'}")
     private String endpointUrl;
 
     private final RestTemplate restTemplate;
 
     @Override
     public boolean hasSafResourceAccess(Authentication authentication, String resourceClass, String resourceName, String accessLevel) {
-        Response response = restTemplate.getForObject(endpointUrl + PATH_VRIABLE_SUFFIX, Response.class,
+        Response response = restTemplate.getForObject(endpointUrl + URL_VARIABLE_SUFFIX, Response.class,
             authentication.getName(), resourceClass, resourceName, accessLevel);
-        return response == null ? false : !response.isError() && response.isAuthorized();
+        return response != null && !response.isError() && response.isAuthorized();
     }
 
     @Data
