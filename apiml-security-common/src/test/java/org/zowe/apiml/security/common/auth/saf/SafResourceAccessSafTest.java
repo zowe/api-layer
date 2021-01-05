@@ -51,7 +51,7 @@ class SafResourceAccessSafTest {
                 return TestPlatformReturned.class;
             }
         });
-    };
+    }
 
     @ParameterizedTest
     @CsvSource(delimiter = ',', value = {
@@ -61,6 +61,7 @@ class SafResourceAccessSafTest {
         "true,111,0,org.zowe.apiml.security.common.auth.saf.AccessControlError",
         "true,111,0x0d9,",
         "true,111,0x0cf,",
+        "true,111,0x0f9,"
     })
     void testHasSafResourceAccess_whenErrorHappened_thenFalse(
         boolean success, int errno, int errno2, Class<Exception> exceptionClass
