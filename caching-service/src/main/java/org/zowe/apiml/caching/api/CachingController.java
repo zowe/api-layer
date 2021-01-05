@@ -147,7 +147,7 @@ public class CachingController {
 
             keyValueOperation.storageRequest(serviceId, keyValue);
 
-            return new ResponseEntity<>(null, successStatus);
+            return new ResponseEntity<>(successStatus);
         } catch (StorageException exception) {
             return exceptionToResponse(exception);
         }
@@ -158,7 +158,7 @@ public class CachingController {
     }
 
     private void invalidPayload(KeyValue keyValue, String message) {
-        throw new StorageException(Messages.INVALID_PAYLOAD.getKey(), Messages.INVALID_PAYLOAD.getStatus(), keyValue, message);
+        throw new StorageException(Messages.INVALID_PAYLOAD.getKey(), Messages.INVALID_PAYLOAD.getStatus(), keyValue.toString(), message);
     }
 
     private void checkForInvalidPayload(KeyValue keyValue) {

@@ -15,10 +15,10 @@ import org.springframework.http.HttpStatus;
 @Getter
 public class StorageException extends RuntimeException {
     private final String key;
-    private final Object[] parameters;
+    private final String[] parameters;
     private final HttpStatus status;
 
-    public StorageException(String key, HttpStatus status, Object... messageParameters) {
+    public StorageException(String key, HttpStatus status, String... messageParameters) {
         super(key);
 
         this.key = key;

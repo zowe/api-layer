@@ -66,16 +66,18 @@ public class InMemoryStorageTest {
 
     @Test
     void givenThereIsNoServiceCache_whenValueIsUpdated_thenNullIsReturned() {
+        KeyValue keyValue = new KeyValue("username", "Name 1");
         assertThrows(StorageException.class, () -> {
-            underTest.update(serviceId, new KeyValue("username", "Name 1"));
+            underTest.update(serviceId, keyValue);
         });
     }
 
     @Test
     void givenThereIsNoKey_whenValueIsUpdated_thenNullIsReturned() {
         testingStorage.put(serviceId, new HashMap<>());
+        KeyValue keyValue = new KeyValue("bad key", "Name 1");
         assertThrows(StorageException.class, () -> {
-            underTest.update(serviceId, new KeyValue("bad key", "Name 1"));
+            underTest.update(serviceId, keyValue);
         });
     }
 
