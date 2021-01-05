@@ -9,21 +9,21 @@
  */
 package org.zowe.apiml.client.ws;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class WebSocketServerHandlerTest {
+class WebSocketServerHandlerTest {
 
     @Test
-    public void handleMessageTest() throws Exception {
+    void handleMessageTest() throws Exception {
         WebSocketServerHandler handler = new WebSocketServerHandler();
         WebSocketSession session = mock(WebSocketSession.class);
 
@@ -36,7 +36,7 @@ public class WebSocketServerHandlerTest {
     }
 
     @Test
-    public void handleByeMessage() throws Exception {
+    void handleByeMessage() throws Exception {
         WebSocketServerHandler handler = new WebSocketServerHandler();
         WebSocketSession session = mock(WebSocketSession.class);
 

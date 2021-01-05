@@ -12,17 +12,18 @@ package org.zowe.apiml.client.impl;
 import org.zowe.apiml.client.exception.PetNotFoundException;
 import org.zowe.apiml.client.model.Pet;
 import org.zowe.apiml.client.service.impl.PetServiceImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class PetServiceImplTest {
+class PetServiceImplTest {
     @Test
-    public void testPetSave() {
+    void testPetSave() {
         PetServiceImpl petService = new PetServiceImpl();
         Long id = 1L;
         String name = "Falco";
@@ -35,7 +36,7 @@ public class PetServiceImplTest {
     }
 
     @Test
-    public void testGetPetById() {
+    void testGetPetById() {
         PetServiceImpl petService = new PetServiceImpl();
         petService.init();
         Long id = 1L;
@@ -47,7 +48,7 @@ public class PetServiceImplTest {
     }
 
     @Test
-    public void testGetAll() {
+    void testGetAll() {
         PetServiceImpl petService = new PetServiceImpl();
         petService.init();
         int expectedSize = 4;
@@ -58,7 +59,7 @@ public class PetServiceImplTest {
     }
 
     @Test
-    public void testUpdateNotExistingPet() {
+    void testUpdateNotExistingPet() {
         Pet pet = new Pet(404L, "Not Existing");
         PetServiceImpl petService = new PetServiceImpl();
 
@@ -68,7 +69,7 @@ public class PetServiceImplTest {
     }
 
     @Test
-    public void testUpdateOfExistingPEt() {
+    void testUpdateOfExistingPEt() {
         String name = "Big Falco";
         Pet pet = new Pet(1L, name);
         PetServiceImpl petService = new PetServiceImpl();
@@ -79,16 +80,16 @@ public class PetServiceImplTest {
         assertThat(updatedPet.getName(), is(name));
     }
 
-    @Test(expected = PetNotFoundException.class)
-    public void testDeleteNotExistingPet() {
+    @Test
+    void testDeleteNotExistingPet() {
         Long id = 404L;
         PetServiceImpl petService = new PetServiceImpl();
 
-        petService.deleteById(id);
+        assertThrows(PetNotFoundException.class, () -> petService.deleteById(id));
     }
 
     @Test
-    public void testDeleteExistingPet() {
+    void testDeleteExistingPet() {
         Long id = 1L;
         int expectedSize = 3;
         PetServiceImpl petService = new PetServiceImpl();

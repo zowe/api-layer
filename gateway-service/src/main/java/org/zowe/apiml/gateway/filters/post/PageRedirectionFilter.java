@@ -46,12 +46,12 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
 
     private final Map<String, String> routeTable = Collections.synchronizedMap(
-        new LinkedHashMap<String, String>(MAX_ENTRIES + 1, .75F, true) {
-            @Override
-            public boolean removeEldestEntry(Map.Entry eldest) {
-                return size() > MAX_ENTRIES;
+            new LinkedHashMap<String, String>(MAX_ENTRIES * 4 / 3 + 1, .75F, true) {
+                @Override
+                public boolean removeEldestEntry(Map.Entry eldest) {
+                    return size() > MAX_ENTRIES;
+                }
             }
-        }
     );
 
     /**
@@ -85,9 +85,9 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
         Optional<Pair<String, String>> locationHeader = context.getZuulResponseHeaders()
-            .stream()
-            .filter(stringPair -> LOCATION.equals(stringPair.first()))
-            .findFirst();
+                .stream()
+                .filter(stringPair -> LOCATION.equals(stringPair.first()))
+                .findFirst();
 
         if (locationHeader.isPresent()) {
             String location = locationHeader.get().second();

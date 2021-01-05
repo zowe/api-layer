@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
@@ -29,6 +30,8 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.minBy;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 
@@ -85,7 +88,7 @@ public class ServicesInfoService {
         String serviceId = application.getName().toLowerCase();
 
         List<InstanceInfo> appInstances = application.getInstances();
-        if (appInstances == null || appInstances.isEmpty()) {
+        if (ObjectUtils.isEmpty(appInstances)) {
             return ServiceInfo.builder()
                     .serviceId(serviceId)
                     .status(InstanceInfo.InstanceStatus.DOWN)
@@ -132,24 +135,20 @@ public class ServicesInfoService {
                     .collect(Collectors.toList()));
         }
 
-        return filterByIdAndMajorVersion(completeList);
+        return completeList.stream()
+                .collect(groupingBy(
+                        apiInfo -> new AbstractMap.SimpleEntry<>(apiInfo.getApiId(), getMajorVersion(apiInfo)),
+                        minBy(Comparator.comparingInt(this::getMajorVersion))
+                ))
+                .values()
+                .stream()
+                .map(Optional::get)
+                .collect(Collectors.toList());
     }
 
     private ServiceInfo.Service getService(List<InstanceInfo> appInstances) {
-        InstanceInfo instanceInfo = appInstances.get(0);
-        Version highestVersion = Version.unknownVersion();
-        for (InstanceInfo currentInfo : appInstances) {
-            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(currentInfo.getMetadata());
-            for (ApiInfo apiInfo : apiInfoList) {
-                Version version = getVersion(apiInfo.getVersion());
-                if (version.compareTo(highestVersion) > 0) {
-                    highestVersion = version;
-                    instanceInfo = currentInfo;
-                }
-            }
-        }
-
-        RoutedServices routes = eurekaMetadataParser.parseRoutes(instanceInfo.getMetadata());
+        InstanceInfo instanceInfo = getInstanceWithHighestVersion(appInstances);
+        RoutedServices routes = eurekaMetadataParser.parseRoutes(getInstanceWithHighestVersion(appInstances).getMetadata());
 
         return ServiceInfo.Service.builder()
                 .title(instanceInfo.getMetadata().get(SERVICE_TITLE))
@@ -185,30 +184,6 @@ public class ServicesInfoService {
                                 .customMetadata(getCustomMetadata(instanceInfo.getMetadata()))
                                 .build()
                 ));
-    }
-
-    private List<ServiceInfo.ApiInfoExtended> filterByIdAndMajorVersion(List<ServiceInfo.ApiInfoExtended> completeList) {
-        if (completeList.isEmpty()) return Collections.emptyList();
-
-        completeList.sort(Comparator
-                .comparing(ServiceInfo.ApiInfoExtended::getApiId, Comparator.nullsFirst(Comparator.naturalOrder()))
-                .thenComparing(ServiceInfo.ApiInfoExtended::getVersion, Comparator.comparing(this::getVersion))
-        );
-
-        List<ServiceInfo.ApiInfoExtended> result = new ArrayList<>(completeList.size());
-        ServiceInfo.ApiInfoExtended lastApiInfo = null;
-        for (ServiceInfo.ApiInfoExtended apiInfo : completeList) {
-            if (lastApiInfo == null ||
-                    !apiInfo.getApiId().equals(lastApiInfo.getApiId()) ||
-                    (apiInfo.getApiId().equals(lastApiInfo.getApiId()) &&
-                            getVersion(apiInfo.getVersion()).getMajorVersion() > getVersion(lastApiInfo.getVersion()).getMajorVersion())
-            ) {
-                result.add(apiInfo);
-                lastApiInfo = apiInfo;
-            }
-        }
-
-        return result;
     }
 
     private String getGatewayUrl(String url, String serviceId, ServiceType type, RoutedServices routes) {
@@ -279,6 +254,28 @@ public class ServicesInfoService {
 
     private String getProtocol(InstanceInfo instanceInfo) {
         return instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ? "https" : "http";
+    }
+
+    private int getMajorVersion(ServiceInfo.ApiInfoExtended apiInfo) {
+        return getVersion(apiInfo.getVersion()).getMajorVersion();
+    }
+
+    private InstanceInfo getInstanceWithHighestVersion(List<InstanceInfo> appInstances) {
+        InstanceInfo instanceInfo = appInstances.get(0);
+        Version highestVersion = Version.unknownVersion();
+
+        for (InstanceInfo currentInfo : appInstances) {
+            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(currentInfo.getMetadata());
+            for (ApiInfo apiInfo : apiInfoList) {
+                Version version = getVersion(apiInfo.getVersion());
+                if (version.compareTo(highestVersion) > 0) {
+                    highestVersion = version;
+                    instanceInfo = currentInfo;
+                }
+            }
+        }
+
+        return instanceInfo;
     }
 
 }
