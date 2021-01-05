@@ -96,7 +96,7 @@ public class CachingController {
     }
 
     private ResponseEntity<Object> exceptionToResponse(StorageException exception) {
-        Message message = messageService.createMessage(exception.getKey(), exception.getParameters());
+        Message message = messageService.createMessage(exception.getKey(), (Object[]) exception.getParameters());
         return new ResponseEntity<>(message.mapToView(), exception.getStatus());
     }
 
@@ -157,25 +157,26 @@ public class CachingController {
         throw new StorageException(Messages.KEY_NOT_PROVIDED.getKey(), Messages.KEY_NOT_PROVIDED.getStatus());
     }
 
-    private void invalidPayload(KeyValue keyValue, String message) {
-        throw new StorageException(Messages.INVALID_PAYLOAD.getKey(), Messages.INVALID_PAYLOAD.getStatus(), keyValue.toString(), message);
+    private void invalidPayload(String keyValue, String message) {
+        throw new StorageException(Messages.INVALID_PAYLOAD.getKey(), Messages.INVALID_PAYLOAD.getStatus(),
+            keyValue, message);
     }
 
     private void checkForInvalidPayload(KeyValue keyValue) {
         if (keyValue == null) {
-            invalidPayload(keyValue, "No KeyValue provided in the payload");
+            invalidPayload(null, "No KeyValue provided in the payload");
         }
 
         if (keyValue.getValue() == null) {
-            invalidPayload(keyValue, "No value provided in the payload");
+            invalidPayload(keyValue.toString(), "No value provided in the payload");
         }
 
         String key = keyValue.getKey();
         if (key == null) {
-            invalidPayload(keyValue, "No key provided in the payload");
+            invalidPayload(keyValue.toString(), "No key provided in the payload");
         }
         if (!StringUtils.isAlphanumeric(key)) {
-            invalidPayload(keyValue, "Key is not alphanumeric");
+            invalidPayload(keyValue.toString(), "Key is not alphanumeric");
         }
     }
 
