@@ -68,7 +68,7 @@ Structure of YML file:
 - load method does not support formatting with dots, like {CLASS}.{RESOURCE}, each element has to be separated
 - field `safAccess` is not required to define empty file (without any definition)
 - classes and resources cannot be defined without user ID list
-- when a user has multiple definition of same class and resource, just the highest access level is loaded
+- when a user has multiple definition of same class and resource, just the most privileged access level is loaded
 
 ## Protecting Access to REST API Endpoints
 
