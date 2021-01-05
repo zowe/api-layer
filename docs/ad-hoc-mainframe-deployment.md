@@ -30,6 +30,10 @@ Procedure is separated into 3 distinct phases
 
 objective of this phase is to setup zowe-api-dev and perform first deployment
 
+ - Build deployment artifacts.
+    - Run Gradle clean and build task. `./gradlew clean build`
+
+
  - Create `user-zowe-api.json` file in repository root folder. Fill in specific information. 
   
     *Keep ports and job identifiers unique so you do not overlap other developers deployments*
@@ -70,10 +74,6 @@ objective of this phase is to setup zowe-api-dev and perform first deployment
 
  - Run `zowe-api-dev zfs`. ZFS filesystem is be created and mounted to the `zosTargetDir`.
  
- - Build deployment artifacts.
-   - Run Gradle build task
-   - Run Gradle packageLibs task
- 
  - Run `zowe-api-dev deploy`. Binaries are be deployed. 
  
  - Run `zowe-api-dev config --name zos`. Configuration is deployed.
@@ -110,18 +110,10 @@ Wrapper script `config/zowe-api-dev/run-wrapper.sh` is launched on mainframe. Th
 
 ### Notes and Known issues
 
- - The delta algorithm that zowe-api-dev is using is not perfect. Sometimes manual delete of `.zowe-api-dev/uploadedFiles` cache is needed to force deployment.
+ - The zowe-api-dev is not perfect. Sometimes manual delete of `.zowe-api-dev/uploadedFiles` cache is needed to force specific deployment.
  - Zowe CLI sometimes fails to upload large files with error: `FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
 `. When retried, upload passes. Further optimization can be done to reduce size of our deployment.
 
 ### Deployment size optimization
 
-*Following changes are additional to standard packaging*
-
-Code packaging into jars is enhanced. 
-
-#### Thin jars package
-Next to normal BootJar Gradle task, Jar task for core services is enabled, which package thin jar without dependencies packed in. Additional jar file is created with `-thin` suffix and classpath entries in it's manifest. All relevant libraries are expected to be present in `./lib` folder. This task is executed on project build or individual module build.
-
-#### Libraries package
-Gradle task on root project level: `packageLibs` is added. It grabs all dependencies from the modules and packs into libraries.zip file. It is not included in build for performance reasons and needs to be executed manually prior deployment. It's not needed for subsequent deployments without dependencies changes.
+Subsequent deploys identify just the changed files and are significantly faster. Jars are patched with just the changed bytecode.
