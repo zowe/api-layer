@@ -17,9 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.caching.exceptions.CachingPayloadException;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
@@ -34,38 +35,9 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/api/v1")
 @Import(DefaultZaasClientConfiguration.class)
 public class CachingController {
-    private static final String KEY_NOT_IN_CACHE_MESSAGE = "org.zowe.apiml.cache.keyNotInCache";
-
     private final Storage storage;
     private final ZaasClient zaasClient;
     private final MessageService messageService;
-
-    @GetMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @ApiOperation(value = "Retrieves a specific value in the cache",
-        notes = "Value returned is for the provided {key}")
-    @ResponseBody
-    public ResponseEntity<Object> getValue(@PathVariable String key, HttpServletRequest request) {
-        String serviceId;
-        try {
-            ZaasToken token = zaasClient.query(request);
-            serviceId = token.getUserId();
-        } catch (ZaasClientException e) {
-            return handleZaasClientException(e, request);
-        }
-
-        if (key == null) {
-            return noKeyProvidedResponse(serviceId);
-        }
-
-        KeyValue readPair = storage.read(serviceId, key);
-
-        if (readPair == null) {
-            Message message = messageService.createMessage(KEY_NOT_IN_CACHE_MESSAGE, key, serviceId);
-            return new ResponseEntity<>(message.mapToView(), HttpStatus.NOT_FOUND);
-        }
-
-        return new ResponseEntity<>(readPair, HttpStatus.OK);
-    }
 
     @GetMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Retrieves all values in the cache",
@@ -74,8 +46,7 @@ public class CachingController {
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
         String serviceId;
         try {
-            ZaasToken token = zaasClient.query(request);
-            serviceId = token.getUserId();
+            serviceId = authenticate(request);
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
         }
@@ -83,58 +54,13 @@ public class CachingController {
         return new ResponseEntity<>(storage.readForService(serviceId), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @ApiOperation(value = "Create a new key in the cache",
-        notes = "A new key-value pair will be added to the cache")
+    @GetMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Retrieves a specific value in the cache",
+        notes = "Value returned is for the provided {key}")
     @ResponseBody
-    public ResponseEntity<Object> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
-        String serviceId;
-        try {
-            ZaasToken token = zaasClient.query(request);
-            serviceId = token.getUserId();
-
-            checkForInvalidPayload(keyValue);
-        } catch (ZaasClientException e) {
-            return handleZaasClientException(e, request);
-        } catch (CachingPayloadException e) {
-            return invalidPayloadResponse(e, keyValue);
-        }
-
-        KeyValue createdPair = storage.create(serviceId, keyValue);
-
-        if (createdPair == null) {
-            Message message = messageService.createMessage("org.zowe.apiml.cache.keyCollision", keyValue.getKey());
-            return new ResponseEntity<>(message.mapToView(), HttpStatus.CONFLICT);
-        }
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @PutMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @ApiOperation(value = "Update key in the cache",
-        notes = "Value at the key in the provided key-value pair will be updated to the provided value")
-    @ResponseBody
-    public ResponseEntity<Object> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
-        String serviceId;
-        try {
-            ZaasToken token = zaasClient.query(request);
-            serviceId = token.getUserId();
-
-            checkForInvalidPayload(keyValue);
-        } catch (ZaasClientException e) {
-            return handleZaasClientException(e, request);
-        } catch (CachingPayloadException e) {
-            return invalidPayloadResponse(e, keyValue);
-        }
-
-        KeyValue updatedPair = storage.update(serviceId, keyValue);
-
-        if (updatedPair == null) {
-            Message message = messageService.createMessage(KEY_NOT_IN_CACHE_MESSAGE, keyValue.getKey(), serviceId);
-            return new ResponseEntity<>(message.mapToView(), HttpStatus.NOT_FOUND);
-        }
-
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<Object> getValue(@PathVariable String key, HttpServletRequest request) {
+        return keyRequest(storage::read,
+            key, request, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -142,54 +68,116 @@ public class CachingController {
         notes = "Will delete key-value pair for the provided {key}")
     @ResponseBody
     public ResponseEntity<Object> delete(@PathVariable String key, HttpServletRequest request) {
+        return keyRequest(storage::delete,
+            key, request, HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Create a new key in the cache",
+        notes = "A new key-value pair will be added to the cache")
+    @ResponseBody
+    public ResponseEntity<Object> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+        return keyValueRequest(storage::create,
+            keyValue, request, HttpStatus.CREATED);
+    }
+
+    @PutMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Update key in the cache",
+        notes = "Value at the key in the provided key-value pair will be updated to the provided value")
+    @ResponseBody
+    public ResponseEntity<Object> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+        return keyValueRequest(storage::update,
+            keyValue, request, HttpStatus.NO_CONTENT);
+    }
+
+    private String authenticate(HttpServletRequest request) throws ZaasClientException {
+        ZaasToken token = zaasClient.query(request);
+        return token.getUserId();
+    }
+
+    private ResponseEntity<Object> exceptionToResponse(StorageException exception) {
+        Message message = messageService.createMessage(exception.getKey(), (Object[]) exception.getParameters());
+        return new ResponseEntity<>(message.mapToView(), exception.getStatus());
+    }
+
+    /**
+     * Authenticate the user.
+     * Verify validity of the data
+     * Do the storage operation passed in as Lambda
+     * Properly handle and package Exceptions.
+     */
+    private ResponseEntity<Object> keyRequest(KeyOperation keyOperation, String key, HttpServletRequest request, HttpStatus successStatus) {
         String serviceId;
         try {
-            ZaasToken token = zaasClient.query(request);
-            serviceId = token.getUserId();
+            serviceId = authenticate(request);
         } catch (ZaasClientException e) {
             return handleZaasClientException(e, request);
         }
 
-        if (key == null) {
-            return noKeyProvidedResponse(serviceId);
+        try {
+            if (key == null) {
+                keyNotInCache();
+            }
+
+            KeyValue pair = keyOperation.storageRequest(serviceId, key);
+
+            return new ResponseEntity<>(pair, successStatus);
+        } catch (StorageException exception) {
+            return exceptionToResponse(exception);
         }
-
-        KeyValue deletedPair = storage.delete(serviceId, key);
-
-        if (deletedPair == null) {
-            Message message = messageService.createMessage(KEY_NOT_IN_CACHE_MESSAGE, key, serviceId);
-            return new ResponseEntity<>(message.mapToView(), HttpStatus.NOT_FOUND);
-        }
-
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    private void checkForInvalidPayload(KeyValue keyValue) throws CachingPayloadException {
+    /**
+     * Authenticate the user.
+     * verify validity of the data.
+     * Do the storage operation passed in as Lambda
+     * Properly handle and package Exceptions.
+     */
+    private ResponseEntity<Object> keyValueRequest(KeyValueOperation keyValueOperation, KeyValue keyValue,
+                                                   HttpServletRequest request, HttpStatus successStatus) {
+        String serviceId;
+        try {
+            serviceId = authenticate(request);
+        } catch (ZaasClientException e) {
+            return handleZaasClientException(e, request);
+        }
+
+        try {
+            checkForInvalidPayload(keyValue);
+
+            keyValueOperation.storageRequest(serviceId, keyValue);
+
+            return new ResponseEntity<>(successStatus);
+        } catch (StorageException exception) {
+            return exceptionToResponse(exception);
+        }
+    }
+
+    private void keyNotInCache() {
+        throw new StorageException(Messages.KEY_NOT_PROVIDED.getKey(), Messages.KEY_NOT_PROVIDED.getStatus());
+    }
+
+    private void invalidPayload(String keyValue, String message) {
+        throw new StorageException(Messages.INVALID_PAYLOAD.getKey(), Messages.INVALID_PAYLOAD.getStatus(),
+            keyValue, message);
+    }
+
+    private void checkForInvalidPayload(KeyValue keyValue) {
         if (keyValue == null) {
-            throw new CachingPayloadException("No KeyValue provided in the payload");
+            invalidPayload(null, "No KeyValue provided in the payload");
         }
 
         if (keyValue.getValue() == null) {
-            throw new CachingPayloadException("No value provided in the payload");
+            invalidPayload(keyValue.toString(), "No value provided in the payload");
         }
 
         String key = keyValue.getKey();
         if (key == null) {
-            throw new CachingPayloadException("No key provided in the payload");
+            invalidPayload(keyValue.toString(), "No key provided in the payload");
         }
         if (!StringUtils.isAlphanumeric(key)) {
-            throw new CachingPayloadException("Key is not alphanumeric");
+            invalidPayload(keyValue.toString(), "Key is not alphanumeric");
         }
-    }
-
-    private ResponseEntity<Object> invalidPayloadResponse(CachingPayloadException e, KeyValue keyValue) {
-        Message message = messageService.createMessage("org.zowe.apiml.cache.invalidPayload", keyValue, e.getMessage());
-        return new ResponseEntity<>(message.mapToView(), HttpStatus.BAD_REQUEST);
-    }
-
-    private ResponseEntity<Object> noKeyProvidedResponse(String serviceId) {
-        Message message = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided", serviceId);
-        return new ResponseEntity<>(message.mapToView(), HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<Object> handleZaasClientException(ZaasClientException e, HttpServletRequest request) {
@@ -221,5 +209,15 @@ public class CachingController {
         }
 
         return new ResponseEntity<>(message.mapToView(), statusCode);
+    }
+
+    @FunctionalInterface
+    interface KeyOperation {
+        KeyValue storageRequest(String serviceId, String key);
+    }
+
+    @FunctionalInterface
+    interface KeyValueOperation {
+        KeyValue storageRequest(String serviceId, KeyValue keyValue);
     }
 }

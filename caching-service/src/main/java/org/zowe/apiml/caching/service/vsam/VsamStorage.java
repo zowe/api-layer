@@ -13,7 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.config.VsamConfig;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.util.ObjectUtil;
 
 import java.util.*;
@@ -61,6 +63,10 @@ public class VsamStorage implements Storage {
 
         }
 
+        if (result == null) {
+            throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey(), serviceId);
+        }
+
         return result;
     }
 
@@ -77,6 +83,10 @@ public class VsamStorage implements Storage {
             if (returned.isPresent()) {
                 result = returned.get().getKeyValue();
             }
+        }
+
+        if (result == null) {
+            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
         }
 
         return result;
@@ -96,6 +106,10 @@ public class VsamStorage implements Storage {
             if (returned.isPresent()) {
                 result = returned.get().getKeyValue();
             }
+        }
+
+        if (result == null) {
+            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
         }
 
         return result;
@@ -118,6 +132,10 @@ public class VsamStorage implements Storage {
             }
         }
 
+        if (result == null) {
+            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toDelete, serviceId);
+        }
+
         return result;
     }
 
@@ -126,7 +144,7 @@ public class VsamStorage implements Storage {
 
         log.info("Reading All Records: {}|{}|{}", serviceId, "-", "-");
         Map<String, KeyValue> result = new HashMap<>();
-        List<VsamRecord> returned = new ArrayList<>();
+        List<VsamRecord> returned;
 
         try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.READ)) {
             returned = file.readForService(serviceId);
