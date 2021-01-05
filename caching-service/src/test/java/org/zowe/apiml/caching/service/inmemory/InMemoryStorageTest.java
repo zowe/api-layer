@@ -12,13 +12,14 @@ package org.zowe.apiml.caching.service.inmemory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.StorageException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class InMemoryStorageTest {
     private InMemoryStorage underTest;
@@ -65,15 +66,17 @@ public class InMemoryStorageTest {
 
     @Test
     void givenThereIsNoServiceCache_whenValueIsUpdated_thenNullIsReturned() {
-        KeyValue result = underTest.update(serviceId, new KeyValue("username", "Name 1"));
-        assertThat(result, is(nullValue()));
+        assertThrows(StorageException.class, () -> {
+            underTest.update(serviceId, new KeyValue("username", "Name 1"));
+        });
     }
 
     @Test
     void givenThereIsNoKey_whenValueIsUpdated_thenNullIsReturned() {
         testingStorage.put(serviceId, new HashMap<>());
-        KeyValue result = underTest.update(serviceId, new KeyValue("bad key", "Name 1"));
-        assertThat(result, is(nullValue()));
+        assertThrows(StorageException.class, () -> {
+            underTest.update(serviceId, new KeyValue("bad key", "Name 1"));
+        });
     }
 
     @Test
@@ -89,8 +92,9 @@ public class InMemoryStorageTest {
 
     @Test
     void givenNoValueWasStoredForTheService_whenRequested_thenNullWillBeReturned() {
-        KeyValue result = underTest.read(serviceId, "username");
-        assertThat(result, is(nullValue()));
+        assertThrows(StorageException.class, () -> {
+            underTest.read(serviceId, "username");
+        });
     }
 
     @Test
@@ -106,14 +110,16 @@ public class InMemoryStorageTest {
     @Test
     void givenKeyDoesntExist_whenDeletionRequested_thenNullIsReturned() {
         testingStorage.put(serviceId, new HashMap<>());
-        KeyValue result = underTest.delete(serviceId, "nonexistent");
-        assertThat(result, is(nullValue()));
+        assertThrows(StorageException.class, () -> {
+            underTest.delete(serviceId, "nonexistent");
+        });
     }
 
     @Test
     void givenServiceStorageDoesntExist_whenDeletionRequest_thenNullIsReturned() {
-        KeyValue result = underTest.delete(serviceId, "nonexistent");
-        assertThat(result, is(nullValue()));
+        assertThrows(StorageException.class, () -> {
+            underTest.delete(serviceId, "nonexistent");
+        });
     }
 
     @Test

@@ -9,13 +9,17 @@
  */
 package org.zowe.apiml.caching.service.inmemory;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.StorageException;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class InMemoryStorage implements Storage {
     private Map<String, Map<String, KeyValue>> storage = new ConcurrentHashMap<>();
 
@@ -28,17 +32,24 @@ public class InMemoryStorage implements Storage {
 
     @Override
     public KeyValue create(String serviceId, KeyValue toCreate) {
+        log.info("Writing record: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
+
         storage.computeIfAbsent(serviceId, k -> new HashMap<>());
         Map<String, KeyValue> serviceStorage = storage.get(serviceId);
+        if (serviceStorage.containsKey(toCreate.getKey())) {
+            throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
+        }
         serviceStorage.put(toCreate.getKey(), toCreate);
         return toCreate;
     }
 
     @Override
     public KeyValue read(String serviceId, String key) {
+        log.info("Reading Record: {}|{}|{}", serviceId, key, "-");
+
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
-        if (serviceSpecificStorage == null) {
-            return null;
+        if (serviceSpecificStorage == null || !serviceSpecificStorage.containsKey(key)) {
+            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
         }
 
         return serviceSpecificStorage.get(key);
@@ -46,24 +57,28 @@ public class InMemoryStorage implements Storage {
 
     @Override
     public KeyValue update(String serviceId, KeyValue toUpdate) {
-        String keyToUpdate = toUpdate.getKey();
-        if (isKeyNotInCache(serviceId, keyToUpdate)) {
-            return null;
+        log.info("Updating Record: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
+
+        String key = toUpdate.getKey();
+        if (isKeyNotInCache(serviceId, key)) {
+            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
         }
 
         Map<String, KeyValue> serviceStorage = storage.get(serviceId);
-        serviceStorage.put(keyToUpdate, toUpdate);
+        serviceStorage.put(key, toUpdate);
         return toUpdate;
     }
 
     @Override
-    public KeyValue delete(String serviceId, String toDelete) {
-        if (isKeyNotInCache(serviceId, toDelete)) {
-            return null;
+    public KeyValue delete(String serviceId, String key) {
+        log.info("Deleting Record: {}|{}|{}", serviceId, key, "-");
+
+        if (isKeyNotInCache(serviceId, key)) {
+            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
         }
 
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
-        return serviceSpecificStorage.remove(toDelete);
+        return serviceSpecificStorage.remove(key);
     }
 
     @Override
