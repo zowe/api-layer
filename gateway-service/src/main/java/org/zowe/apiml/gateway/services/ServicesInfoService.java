@@ -49,7 +49,7 @@ public class ServicesInfoService {
     private final TransformService transformService;
 
     public List<ServiceInfo> getServicesInfo() {
-        List<ServiceInfo> servicesInfo = new ArrayList<>();
+        List<ServiceInfo> servicesInfo = new LinkedList<>();
         for (Application application : eurekaClient.getApplications().getRegisteredApplications()) {
             servicesInfo.add(getServiceInfo(application));
         }
