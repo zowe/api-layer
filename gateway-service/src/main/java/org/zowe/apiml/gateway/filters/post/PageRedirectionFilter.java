@@ -9,19 +9,18 @@
  */
 package org.zowe.apiml.gateway.filters.post;
 
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import com.netflix.util.Pair;
+import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.http.HttpStatus;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
 import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
-import com.netflix.util.Pair;
-import com.netflix.zuul.ZuulFilter;
-import com.netflix.zuul.context.RequestContext;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.HttpStatus;
 
 import java.util.*;
 
@@ -36,34 +35,24 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * <li>The url can be matched to gateway url</li>
  * </ul>
  */
+@RequiredArgsConstructor
 public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesUser {
 
-    private final DiscoveryClient discovery;
-    private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
-    private final TransformService transformService;
     private static final int MAX_ENTRIES = 1000;
 
-    private final Map<String, String> routeTable = Collections.synchronizedMap(
-        new LinkedHashMap<String, String>(MAX_ENTRIES + 1, .75F, true) {
-            @Override
-            public boolean removeEldestEntry(Map.Entry eldest) {
-                return size() > MAX_ENTRIES;
-            }
-        }
-    );
+    private final DiscoveryClient discovery;
+    private final TransformService transformService;
 
-    /**
-     * Constructor
-     *
-     * @param discovery               discovery client
-     * @param gatewayConfigProperties gateway config properties
-     */
-    public PageRedirectionFilter(DiscoveryClient discovery, GatewayConfigProperties gatewayConfigProperties) {
-        this.discovery = discovery;
-        transformService = new TransformService(
-            new GatewayClient(gatewayConfigProperties)
-        );
-    }
+    private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
+
+    private final Map<String, String> routeTable = Collections.synchronizedMap(
+            new LinkedHashMap<String, String>(MAX_ENTRIES * 4 / 3 + 1, .75F, true) {
+                @Override
+                public boolean removeEldestEntry(Map.Entry eldest) {
+                    return size() > MAX_ENTRIES;
+                }
+            }
+    );
 
     /**
      * @return true if status code is 3XX
@@ -96,9 +85,9 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
         Optional<Pair<String, String>> locationHeader = context.getZuulResponseHeaders()
-            .stream()
-            .filter(stringPair -> LOCATION.equals(stringPair.first()))
-            .findFirst();
+                .stream()
+                .filter(stringPair -> LOCATION.equals(stringPair.first()))
+                .findFirst();
 
         if (locationHeader.isPresent()) {
             String location = locationHeader.get().second();

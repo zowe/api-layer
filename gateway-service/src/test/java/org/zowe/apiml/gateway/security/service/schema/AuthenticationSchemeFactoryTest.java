@@ -13,8 +13,8 @@ import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
-import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;

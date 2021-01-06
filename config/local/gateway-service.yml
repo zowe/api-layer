@@ -1,5 +1,7 @@
 spring.profiles.include: diag
 apiml:
+    feature:
+        serviceInfo.enabled: true  # Remove when secured with an authorization
     service:
         hostname: localhost
         ipAddress: 127.0.0.1

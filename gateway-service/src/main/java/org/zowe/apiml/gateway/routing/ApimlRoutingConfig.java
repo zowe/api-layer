@@ -22,8 +22,8 @@ import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
 import org.zowe.apiml.gateway.filters.pre.*;
 import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
+import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.util.ArrayList;
@@ -61,10 +61,9 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    @Autowired
     public PageRedirectionFilter pageRedirectionFilter(DiscoveryClient discovery,
-                                                       GatewayConfigProperties gatewayConfigProperties) {
-        return new PageRedirectionFilter(discovery, gatewayConfigProperties);
+                                                       TransformService transformService) {
+        return new PageRedirectionFilter(discovery, transformService);
     }
 
     @Bean

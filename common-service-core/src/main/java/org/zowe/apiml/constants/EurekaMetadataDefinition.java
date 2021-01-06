@@ -15,7 +15,7 @@ public final class EurekaMetadataDefinition {
         throw new IllegalStateException("Eureka metadata constant class");
     }
 
-    public static final String CURRENT_VERSION = "2.1.0";
+    public static final String CURRENT_VERSION = "2.2.0";
 
     //v2
     public static final String VERSION = "version";
@@ -41,6 +41,7 @@ public final class EurekaMetadataDefinition {
 
     public static final String AUTHENTICATION_SCHEME = "apiml.authentication.scheme";
     public static final String AUTHENTICATION_APPLID = "apiml.authentication.applid";
+    public static final String AUTHENTICATION_SSO = "apiml.authentication.sso";
 
     //v1
     public static final String ROUTES_V1 = "routed-services";
