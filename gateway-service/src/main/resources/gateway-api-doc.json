@@ -179,10 +179,10 @@
                 "operationId": "logoutUsingPOST",
                 "security": [
                     {
-                        "CookieAuth": []
+                        "CookieAuth" : []
                     },
                     {
-                        "Bearer": []
+                        "Bearer" : []
                     }
                 ],
                 "responses": {
@@ -217,29 +217,29 @@
                 }
             }
         },
-        "/auth/keys/public/all": {
-            "get": {
-                "tags": [
+        "/auth/keys/public/all" : {
+            "get" : {
+                "tags" : [
                     "Security"
                 ],
-                "summary": "Returns all public keys to verify JWT tokens validity",
-                "description": "This endpoint return all possible JWKs, which can verify sign outside the Gateway. It can contain public keys of Zowe and z/OSMF.",
-                "operationId": "GetAllPublicKeysUsingGET",
-                "security": [
+                "summary" : "Returns all public keys to verify JWT tokens validity",
+                "description" : "This endpoint return all possible JWKs, which can verify sign outside the Gateway. It can contain public keys of Zowe and z/OSMF.",
+                "operationId" : "GetAllPublicKeysUsingGET",
+                "security" : [
                     {
-                        "CookieAuth": []
+                        "CookieAuth" : []
                     },
                     {
-                        "Bearer": []
+                        "Bearer" : []
                     }
                 ],
-                "responses": {
-                    "200": {
+                "responses" : {
+                    "200" : {
                         "description": "OK",
                         "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/JWKSet"
+                            "application/json" : {
+                                "schema" : {
+                                    "$ref" : "#/components/schemas/JWKSet"
                                 }
                             }
                         }
@@ -250,29 +250,29 @@
                 }
             }
         },
-        "/auth/keys/public/current": {
-            "get": {
-                "tags": [
+        "/auth/keys/public/current" : {
+            "get" : {
+                "tags" : [
                     "Security"
                 ],
-                "summary": "Returns public keys to verify JWT tokens, which can be generated now",
-                "description": "This endpoint return all possible JWKs, which can verify sign outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF.",
-                "operationId": "GetCurrentPublicKeysUsingGET",
-                "security": [
+                "summary" : "Returns public keys to verify JWT tokens, which can be generated now",
+                "description" : "This endpoint return all possible JWKs, which can verify sign outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF.",
+                "operationId" : "GetCurrentPublicKeysUsingGET",
+                "security" : [
                     {
-                        "CookieAuth": []
+                        "CookieAuth" : []
                     },
                     {
-                        "Bearer": []
+                        "Bearer" : []
                     }
                 ],
-                "responses": {
-                    "200": {
+                "responses" : {
+                    "200" : {
                         "description": "OK",
                         "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/JWKSet"
+                            "application/json" : {
+                                "schema" : {
+                                    "$ref" : "#/components/schemas/JWKSet"
                                 }
                             }
                         }
@@ -429,16 +429,16 @@
                     }
                 }
             },
-            "JWKSet": {
-                "properties": {
-                    "keys": {
+            "JWKSet" : {
+                "properties" : {
+                    "keys" : {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/JWK"
                         }
                     }
                 },
-                "example": {
+                "example" : {
                     "keys": [
                         {
                             "kty": "RSA",
@@ -456,48 +456,48 @@
                     ]
                 }
             },
-            "JWK": {
+            "JWK" : {
                 "properties": {
-                    "n": {
+                    "n" : {
                         "type": "string"
                     },
-                    "e": {
+                    "e" : {
                         "type": "string"
                     },
-                    "d": {
+                    "d" : {
                         "type": "string"
                     },
-                    "p": {
+                    "p" : {
                         "type": "string"
                     },
-                    "q": {
+                    "q" : {
                         "type": "string"
                     },
-                    "dp": {
+                    "dp" : {
                         "type": "string"
                     },
-                    "dq": {
+                    "dq" : {
                         "type": "string"
                     },
-                    "qi": {
+                    "qi" : {
                         "type": "string"
                     },
-                    "oth": {
+                    "oth" : {
                         "type": "object",
                         "properties": {
-                            "r": {
+                            "r" : {
                                 "type": "string"
                             },
-                            "d": {
+                            "d" : {
                                 "type": "string"
                             },
-                            "t": {
+                            "t" : {
                                 "type": "string"
                             }
                         }
                     }
                 },
-                "example": {
+                "example" : {
                     "kty": "RSA",
                     "e": "AQAB",
                     "use": "sig",
