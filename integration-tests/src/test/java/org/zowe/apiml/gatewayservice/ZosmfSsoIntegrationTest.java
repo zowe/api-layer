@@ -122,7 +122,6 @@ public class ZosmfSsoIntegrationTest {
     @zOSMFAuthTest
     void doZosmfCallWithInvalidToken() {
         String invalidToken = "token";
-        String expectedMessage = "Token is not valid";
 
         given()
             .header("Authorization", "Bearer " + invalidToken)
@@ -137,7 +136,6 @@ public class ZosmfSsoIntegrationTest {
     @zOSMFAuthTest
     void doZosmfCallWithInvalidCookie() {
         String invalidToken = "token";
-        String expectedMessage = "Token is not valid";
 
         given()
             .cookie("apimlAuthenticationToken", invalidToken)
