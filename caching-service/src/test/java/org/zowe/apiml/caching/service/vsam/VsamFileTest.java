@@ -12,7 +12,7 @@ package org.zowe.apiml.caching.service.vsam;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.caching.config.VsamConfig;
+import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;

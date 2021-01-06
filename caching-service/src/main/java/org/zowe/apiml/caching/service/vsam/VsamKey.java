@@ -12,8 +12,8 @@ package org.zowe.apiml.caching.service.vsam;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.zowe.apiml.caching.config.VsamConfig;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 
 import java.io.UnsupportedEncodingException;
 
