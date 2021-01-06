@@ -10,7 +10,7 @@
 package org.zowe.apiml.discovery.metadata;
 
 import org.junit.Test;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.auth.AuthenticationScheme;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.config;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,25 +27,29 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.util.StringUtils;
+import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.Map;
 
 @Configuration
+@RequiredArgsConstructor
 public class GatewayConfig {
 
-
-    private ConfigurableEnvironment env;
     private static final String SEPARATOR = ":";
 
-    public GatewayConfig(ConfigurableEnvironment env) {
-        this.env = env;
-    }
+    private final ConfigurableEnvironment env;
 
     @Bean
     public GatewayConfigProperties getGatewayConfigProperties(@Value("${apiml.gateway.hostname}") String hostname,
                                                               @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
         return GatewayConfigProperties.builder().scheme(scheme).hostname(hostname + ":" + port).build();
+    }
+
+    @Bean
+    public TransformService transformService(GatewayConfigProperties gatewayConfigProperties) {
+        return new TransformService(new GatewayClient(gatewayConfigProperties));
     }
 
     @Bean

@@ -119,7 +119,6 @@ public class ZosmfSsoIntegrationTest {
     @Test
     void doZosmfCallWithInvalidToken() {
         String invalidToken = "token";
-        String expectedMessage = "Token is not valid";
 
         given()
             .header("Authorization", "Bearer " + invalidToken)
@@ -133,7 +132,6 @@ public class ZosmfSsoIntegrationTest {
     @Test
     void doZosmfCallWithInvalidCookie() {
         String invalidToken = "token";
-        String expectedMessage = "Token is not valid";
 
         given()
             .cookie("apimlAuthenticationToken", invalidToken)
@@ -166,7 +164,6 @@ public class ZosmfSsoIntegrationTest {
             .then()
             .statusCode(is(SC_UNAUTHORIZED));
     }
-
 
     @Test
     void doZosmfCallWithEmptyCookie() {

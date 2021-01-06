@@ -11,7 +11,7 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.auth.AuthenticationScheme;
 
 import static org.junit.jupiter.api.Assertions.*;
 

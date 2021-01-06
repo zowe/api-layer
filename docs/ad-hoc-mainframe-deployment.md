@@ -9,7 +9,7 @@ Underlying technology is Zowe CLI.
 
 **WARNING: TECHNOLOGY AND IMPLEMENTATION IS STILL IN EXPERIMENTAL STAGE**
 
-### Prerequisities
+### Prerequisites
  - Install Zowe CLI - https://docs.zowe.org/stable/user-guide/cli-installcli.html#installing-zowe-cli
  - Install zowe-api-dev
    ```
