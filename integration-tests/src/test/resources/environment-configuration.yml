@@ -30,8 +30,8 @@ tlsConfiguration:
     trustStorePassword: password
 zosmfServiceConfiguration:
     scheme: https
-    host: river.zowe.org
-    port: 10443
-    serviceId: zosmf
+    host: localhost
+    port: 10013
+    serviceId: mockzosmf
 auxiliaryUserList:
     value: 'USER1,validPassword;USER2,validPassword'
