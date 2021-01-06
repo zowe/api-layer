@@ -9,24 +9,27 @@
  */
 package org.zowe.apiml.discovery.metadata;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
-public class MetadataTranslationServiceTest {
+class MetadataTranslationServiceTest {
 
     private static final String INSTANCE_NAME = "discoverableclient";
 
     @Test
-    public void translateMetadata() {
+    void translateMetadata() {
         Map<String, String> metadata = generateMetadataV1();
 
         MetadataTranslationService metadataTranslationService = new MetadataTranslationService();
@@ -94,7 +97,7 @@ public class MetadataTranslationServiceTest {
     }
 
     @Test
-    public void testSetZosmfAuthentication() {
+    void testSetZosmfAuthentication() {
         MetadataTranslationService metadataTranslationService = new MetadataTranslationService();
         Map<String, String> metadata = new HashMap<>();
 
@@ -120,7 +123,7 @@ public class MetadataTranslationServiceTest {
     }
 
     @Test
-    public void testDependentMethods() {
+    void testDependentMethods() {
         MetadataTranslationService metadataTranslationService = spy(new MetadataTranslationService());
         Map<String, String> metadata = new HashMap<>();
 
