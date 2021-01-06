@@ -19,7 +19,7 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
 
     private static final String URL_VARIABLE_SUFFIX = "/{userId}/{class}/{entity}/{level}";
 
-    @Value("${apiml.security.safEndpoint.url:'http://localhost:8542/saf-auth'}")
+    @Value("${apiml.security.authorization.endpoint.url:'http://localhost:8542/saf-auth'}")
     private String endpointUrl;
 
     private final RestTemplate restTemplate;
