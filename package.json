@@ -36,6 +36,7 @@
         "discoverable-client-1": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local-multi/discoverable-client.yml",
         "mock-zosmf": "java -jar mock-zosmf/build/libs/mock-zosmf.jar",
         "test": "./gradlew runAllIntegrationTests",
+        "test:local": "./gradlew runLocalIntegrationTests",
         "//": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\"",
         "register-certificates-win": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\" & sudo . cmd /C \"certutil -enterprise -delstore Root \"Zowe Development Instances Certificate Authority\"  &  certutil -enterprise -f -v -AddStore Root \"keystore/local_ca/localca.cer\" || pause\""
     },

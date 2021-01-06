@@ -23,7 +23,7 @@ import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.http.MediaType;
-import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.util.UrlUtils;
 
 import javax.servlet.Servlet;
