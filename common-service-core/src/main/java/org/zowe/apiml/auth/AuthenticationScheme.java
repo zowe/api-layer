@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.security.common.auth;
+package org.zowe.apiml.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

@@ -15,8 +15,10 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.io.IOException;
 
@@ -26,6 +28,7 @@ import java.io.IOException;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@SuperBuilder
 public class ApiInfo {
 
     public ApiInfo(String apiId, String gatewayUrl, String version, String swaggerUrl, String documentationUrl) {
@@ -59,6 +62,7 @@ public class ApiInfo {
     private String documentationUrl;
 
     @JsonDeserialize(using = StringToBooleanDeserializer.class)
+    @Builder.Default
     private boolean isDefaultApi = false;
 
     private static class StringToBooleanDeserializer extends JsonDeserializer<Boolean> {

@@ -51,7 +51,7 @@ class SafResourceAccessSafTest {
                 return TestPlatformReturned.class;
             }
         });
-    };
+    }
 
     @ParameterizedTest
     @CsvSource(delimiter = ',', value = {

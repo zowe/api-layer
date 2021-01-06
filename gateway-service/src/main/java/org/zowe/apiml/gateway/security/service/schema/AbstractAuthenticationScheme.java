@@ -9,8 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.function.Supplier;

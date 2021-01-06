@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.auth.AuthenticationScheme;
 
 
 /**
