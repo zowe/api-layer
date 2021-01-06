@@ -83,7 +83,6 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    @zOSMFAuthTest
     void doZosmfCallWithValidLtpaCookie() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
@@ -102,7 +101,6 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    @zOSMFAuthTest
     void doZosmfCallWithValidBasicHeader() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
@@ -119,9 +117,9 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    @zOSMFAuthTest
     void doZosmfCallWithInvalidToken() {
         String invalidToken = "token";
+        String expectedMessage = "Token is not valid";
 
         given()
             .header("Authorization", "Bearer " + invalidToken)
@@ -133,9 +131,9 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    @zOSMFAuthTest
     void doZosmfCallWithInvalidCookie() {
         String invalidToken = "token";
+        String expectedMessage = "Token is not valid";
 
         given()
             .cookie("apimlAuthenticationToken", invalidToken)
@@ -147,7 +145,6 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    @zOSMFAuthTest
     void doZosmfCallWithoutToken() {
         given()
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
@@ -158,7 +155,6 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    @zOSMFAuthTest
     void doZosmfCallWithEmptyHeader() {
         String emptyToken = " ";
 
@@ -171,8 +167,8 @@ public class ZosmfSsoIntegrationTest {
             .statusCode(is(SC_UNAUTHORIZED));
     }
 
+
     @Test
-    @zOSMFAuthTest
     void doZosmfCallWithEmptyCookie() {
         String emptyToken = "";
 
