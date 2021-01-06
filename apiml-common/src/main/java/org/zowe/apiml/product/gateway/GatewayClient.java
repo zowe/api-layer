@@ -10,23 +10,19 @@
 package org.zowe.apiml.product.gateway;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
 
 /**
  * Container object for {@link GatewayConfigProperties}
  */
 @Component
-@NoArgsConstructor
 @AllArgsConstructor
 @SuppressWarnings("squid:S3077")
 public class GatewayClient {
 
+    @Setter
     private volatile GatewayConfigProperties gatewayConfigProperties;
-
-    public void setGatewayConfigProperties(GatewayConfigProperties gatewayConfigProperties) {
-        this.gatewayConfigProperties = gatewayConfigProperties;
-    }
 
     /**
      * Retrieves GatewayConfigProperties object, which holds the Gateway url and schema
