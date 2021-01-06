@@ -37,7 +37,11 @@ Perform a Localhost Quick start when you need to run the tests on your local mac
 
 **Follow these steps:**
 
-1. Deploy and run all services.
+1. Start all services locally. You can do it using:
+
+    ```shell
+    npm run api-layer-ci
+    ```
 
 2. Run the following shell script:
 
