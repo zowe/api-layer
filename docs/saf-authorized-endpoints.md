@@ -6,10 +6,17 @@ Any endpoint can have limited access by checking SAF resource of logged user. Th
 
 Verification of SAF resource can be provided via three providers:
 - _the highest priority_: REST endpoint call (ZSS or similar one)
-- JZOS
-- _the lowest priority_: dummy implementation (defined in a file)
+- native
+- _the lowest priority_: dummy implementation (defined in a file
 
 **note**: The first available based on priority will be used.
+
+You can also select one specific provider via parameter `apiml.security.authorization.provider`. Use this value parameter to 
+strictly define a provider. You use values: `endpoint`, `native` or `dummy`.
+
+When `apiml.security.authorization.provider` is not set or set to empty value, provider will be selected automatically. 
+
+**note**: When endpoint provider is explicitly set attribute `apiml.security.authorization.endpoint.enabled` is ignored. 
 
 ## Checking providers
 
@@ -32,15 +39,15 @@ This provider is one way how to enable the feature outside the mainframe (ie. ru
 
 #### Configuration
 
-`apiml.security.safEndpoint.enabled`
+`apiml.security.authorization.endpoint.enabled`
 - `true` or `false`, 'false' as default
 - to enable provider via an endpoint
 
-`apiml.security.safEndpoint.url`
+`apiml.security.authorization.endpoint.url`
 - base path of endpoint's URL (`{base path}/{userId}/{class}/{entity}/{level}`) 
 - as default `http://localhost:8542/saf-auth` (default location of ZSS endpoint)
 
-### JZOS
+### Native
 
 This provider is the easiest way, how to use the feature on the mainframe.
 
@@ -77,7 +84,7 @@ The REST API endpoints can be protected by the `org.springframework.security.acc
 The modul `apiml-security-common` defines two new security expressions:
 
 - `boolean hasSafResourceAccess(String resourceClass, String resourceName, String accessLevel)` - returns `true` when user has access to the resource
-- `boolean hasSafServiceResourceAccess(String resourceNameSuffix, String accessLevel)` - similar as the previous one but the resource class and resource name prefix is taken from the service configuration under keys `apiml.security.saf.serviceResourceClass` and `apiml.security.saf.resourceNamePrefix`.
+- `boolean hasSafServiceResourceAccess(String resourceNameSuffix, String accessLevel)` - similar as the previous one but the resource class and resource name prefix is taken from the service configuration under keys `apiml.security.authorization.resourceClass` and `apiml.security.authorization.resourceNamePrefix`.
 
 So you can do following:
 
@@ -91,10 +98,10 @@ public Map<String, String> safProtectedResource(@ApiIgnore Authentication authen
 public Map<String, String> anotherSafProtectedResource(@ApiIgnore Authentication authentication) { /*...*/ }
 ```
 
-The second `@PreAuthorize` expression `hasSafServiceResourceAccess('RESOURCE', 'READ')` is effectively translated to `hasSafResourceAccess('${apiml.security.saf.serviceResourceClass}', '${apiml.security.saf.resourceNamePrefix}RESOURCE', 'READ')`. In case of default values it would be `hasSafResourceAccess('ZOWE', 'APIML.RESOURCE', 'READ')`.
+The second `@PreAuthorize` expression `hasSafServiceResourceAccess('RESOURCE', 'READ')` is effectively translated to `hasSafResourceAccess('${apiml.security.authorization.resourceClass}', '${apiml.security.authorization.resourceNamePrefix}RESOURCE', 'READ')`. In case of default values it would be `hasSafResourceAccess('ZOWE', 'APIML.RESOURCE', 'READ')`.
 
 ### Configuration
 
-Default value of `apiml.security.saf.serviceResourceClass` is `ZOWE`.
+Default value of `apiml.security.authorization.resourceClass` is `ZOWE`.
 
-Default value of `apiml.security.saf.resourceNamePrefix` is `APIML.`.
+Default value of `apiml.security.authorization.resourceNamePrefix` is `APIML.`.
