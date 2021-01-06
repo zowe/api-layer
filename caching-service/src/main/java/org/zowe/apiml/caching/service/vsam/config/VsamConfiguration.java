@@ -7,21 +7,18 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.caching.config;
+package org.zowe.apiml.caching.service.vsam.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.service.Storage;
-import org.zowe.apiml.caching.service.inmemory.InMemoryStorage;
 import org.zowe.apiml.caching.service.vsam.VsamStorage;
 
 @Configuration
 @RequiredArgsConstructor
-public class StorageConfiguration {
-
+public class VsamConfiguration {
     private final VsamConfig vsamConfig;
 
     @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "vsam")
@@ -30,9 +27,5 @@ public class StorageConfiguration {
         return new VsamStorage(vsamConfig);
     }
 
-    @ConditionalOnMissingBean(Storage.class)
-    @Bean
-    public Storage inMemory() {
-        return new InMemoryStorage();
-    }
+
 }
