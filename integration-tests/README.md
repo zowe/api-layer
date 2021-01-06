@@ -49,6 +49,12 @@ Perform a Localhost Quick start when you need to run the tests on your local mac
     ./gradlew runLocalIntegrationTests
     ```
 
+    or you can use:
+
+    ```shell
+    npm run test:local
+    ```
+
 3. (Optional) Run all local tests including all sample services with the following shell script:
 
     ```shell
@@ -68,7 +74,9 @@ The Discovery Service in HTTP mode is not integrated within the pipeline. You ca
 
 **Note:** API Catalog can call refresh of static API definitions on discovery service. Discovery service in HTTP mode protects it's endpoints with basic auth instead of client certificate. If you want this to work, you have to supply additional command line parameters to API Catalog at startup. Default values are `eureka:password`. The same set of parameters exist on Discovery service to configure the username and password for HTTP mode.
 
-    -Dapiml.discovery.userid=**** -Dapiml.discovery.password=****
+```txt
+-Dapiml.discovery.userid=**** -Dapiml.discovery.password=****
+```
 
 ## Running all tests (including slow)
 
@@ -80,10 +88,10 @@ the entire test suite to take longer to execute.
 Slow tests are annotated using @Category(SlowTests.class) as in the following example:
 
 ```java
-    @Test
-    @Category(SlowTests.class)
-    @SuppressWarnings("squid:S1160")
-    public void shouldCallLongButBelowTimeoutRequest() throws IOException {
+@Test
+@Category(SlowTests.class)
+@SuppressWarnings("squid:S1160")
+public void shouldCallLongButBelowTimeoutRequest() throws IOException {
 ```
 
 Start the suite of slow tests by executing the following shell script:
@@ -98,7 +106,7 @@ Start the suite of slow tests by executing the following shell script:
 ./gradlew :integration-tests:runIntegrationTests --tests org.zowe.apiml.gatewayservice.PassTicketTest
 ```
 
-## Running specific tests to test Zowe RC 
+## Running specific tests to test Zowe RC
 
 Run special integration tests to test a Zowe instance as part of the RC testing process.
 
@@ -107,4 +115,3 @@ Run special integration tests to test a Zowe instance as part of the RC testing 
 ```
 
 Tests annotated with `@Category(TestsNotMeantForZowe.class)` are excluded from this test suite (e.g Discoverable Client tests, PassTicket tests, etc...).
-

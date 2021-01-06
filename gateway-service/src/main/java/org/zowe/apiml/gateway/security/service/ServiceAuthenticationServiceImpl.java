@@ -22,28 +22,24 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpired;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
-import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationSchemes;
 import org.zowe.apiml.util.CacheUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
-
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
 
 /**
  * This bean is responsible for "translating" security to specific service. It decorate request with security data for
  * specific service. Implementation of security updates are defined with beans extending
  * {@link AbstractAuthenticationScheme}.
- *
+ * <p>
  * The main idea of this bean is to create command
  * {@link AuthenticationCommand}. Command is object which update the
  * request for specific scheme (defined by service). This bean is responsible for getting the right command. If it is
@@ -51,13 +47,13 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_S
  * it returns {@link LoadBalancerAuthenticationCommand}. This command write in the ZUUL context
  * UniversalAuthenticationCommand, which is used in Ribbon loadbalancer. There is a listener which work with this value.
  * After load balancer will decide which instance will be used, universal command is called and update the request.
- *
+ * <p>
  * All those operation are cached:
- *  - serviceAuthenticationByAuthentication
- *    - it caches command which can be deside only by serviceId (in pre filter)
- *  - serviceAuthenticationByAuthentication
- *    - it caches commands by {@link Authentication}, it could be in pre filters and
- *      also in loadbalancer
+ * - serviceAuthenticationByAuthentication
+ * - it caches command which can be deside only by serviceId (in pre filter)
+ * - serviceAuthenticationByAuthentication
+ * - it caches commands by {@link Authentication}, it could be in pre filters and
+ * also in loadbalancer
  */
 @Service
 @AllArgsConstructor
@@ -69,25 +65,21 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private static final String CACHE_BY_AUTHENTICATION = "serviceAuthenticationByAuthentication";
 
     private final LoadBalancerAuthenticationCommand loadBalancerCommand = new LoadBalancerAuthenticationCommand();
-    private final AuthenticationSchemes schemes = new AuthenticationSchemes();
 
     private final EurekaClient discoveryClient;
+    private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
     private final AuthenticationService authenticationService;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
 
     public Authentication getAuthentication(InstanceInfo instanceInfo) {
-        final Map<String, String> metadata = instanceInfo.getMetadata();
-
-        final Authentication out = new Authentication();
-        out.setApplid(metadata.get(AUTHENTICATION_APPLID));
-        out.setScheme(schemes.map(metadata.get(AUTHENTICATION_SCHEME)));
-        return out;
+        return eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
     }
 
     /**
      * This method is only for testing purpose, to be set authenticationService in inner classes
+     *
      * @return reference for AuthenticationService
      */
     protected AuthenticationService getAuthenticationService() {
@@ -106,9 +98,9 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Override
     @RetryIfExpired
     @CacheEvict(
-        value = CACHE_BY_SERVICE_ID,
-        condition = "#result != null && #result.isExpired()",
-        keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
+            value = CACHE_BY_SERVICE_ID,
+            condition = "#result != null && #result.isExpired()",
+            keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
     public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
@@ -159,7 +151,8 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
         private static final String INVALID_JWT_MESSAGE = "Invalid JWT token";
 
-        protected UniversalAuthenticationCommand() {}
+        protected UniversalAuthenticationCommand() {
+        }
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
@@ -210,7 +203,8 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
         private final UniversalAuthenticationCommand universal = new UniversalAuthenticationCommand();
 
-        protected LoadBalancerAuthenticationCommand() {}
+        protected LoadBalancerAuthenticationCommand() {
+        }
 
         @Override
         public void apply(InstanceInfo instanceInfo) {

@@ -12,7 +12,7 @@ package org.zowe.apiml.discovery.staticdef;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
 import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.auth.Authentication;
 
 import java.util.List;
 import java.util.Map;
