@@ -8,12 +8,12 @@ package org.zowe.apiml.discovery;/*
  * Copyright Contributors to the Zowe Project.
  */
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceCanceledEvent;
 
 import static org.mockito.Mockito.*;
 
-public class EurekaInstanceCanceledListenerTest {
+class EurekaInstanceCanceledListenerTest {
 
     private EurekaInstanceCanceledEvent createEvent(String serverId) {
         EurekaInstanceCanceledEvent out = mock(EurekaInstanceCanceledEvent.class);
@@ -23,7 +23,7 @@ public class EurekaInstanceCanceledListenerTest {
     }
 
     @Test
-    public void testListen() {
+    void testListen() {
         GatewayNotifier notifier = mock(GatewayNotifier.class);
         EurekaInstanceCanceledListener listener = new EurekaInstanceCanceledListener(notifier);
 
