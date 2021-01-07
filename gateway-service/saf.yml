@@ -17,3 +17,6 @@ safAccess:
         BPX.DAEMON:
             UPDATE:
                 - user
+        APIML.SERVICES:
+            READ:
+                - user
