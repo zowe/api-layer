@@ -48,8 +48,8 @@ public class GatewayConfig {
     }
 
     @Bean
-    public TransformService transformService(GatewayConfigProperties gatewayConfigProperties) {
-        return new TransformService(new GatewayClient(gatewayConfigProperties));
+    public TransformService transformService(GatewayClient gatewayClient) {
+        return new TransformService(gatewayClient);
     }
 
     @Bean

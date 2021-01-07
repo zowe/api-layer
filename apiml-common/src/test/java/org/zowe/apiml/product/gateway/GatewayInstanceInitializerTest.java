@@ -85,9 +85,8 @@ class GatewayInstanceInitializerTest {
 
         @Bean
         public GatewayClient gatewayClient() {
-            return new GatewayClient();
+            return new GatewayClient(null);
         }
-
 
         @Bean
         public InstanceLookupExecutor instanceLookupExecutor() {
@@ -97,7 +96,6 @@ class GatewayInstanceInitializerTest {
                 PERIOD
             );
         }
-
 
         @Bean
         public GatewayInstanceInitializer gatewayInstanceInitializer(ApplicationEventPublisher applicationEventPublisher) {
@@ -111,11 +109,11 @@ class GatewayInstanceInitializerTest {
     }
 
     private InstanceInfo getStandardInstance(String serviceId, String homePageUrl) {
-
         return InstanceInfo.Builder.newBuilder()
             .setAppName(serviceId)
             .setHostName("localhost")
             .setHomePageUrl(homePageUrl, homePageUrl)
             .build();
     }
+
 }

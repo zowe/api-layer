@@ -10,7 +10,7 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -22,13 +22,17 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.constants.ApimlConstants.BASIC_AUTHENTICATION_PREFIX;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
 
-@NotForMainframeTest // Remove when secured with an authorization
+@NotForMainframeTest
+        // Remove when secured with an authorization
 class ServicesInfoTest {
+
+    public static final String VERSION_HEADER = "Content-Version";
+    public static final String CURRENT_VERSION = "1";
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -40,12 +44,13 @@ class ServicesInfoTest {
 
     private static final String SERVICES_ENDPOINT = "gateway/api/v1/services";
     private static final String SERVICES_ENDPOINT_NOT_VERSIONED = "gateway/services";
-    private static final String API_CATALOG_SERVICE = "apicatalog";
+    private static final String API_CATALOG_SERVICE_ID = "apicatalog";
+    private static final String API_CATALOG_SERVICE_API_ID = "zowe.apiml.apicatalog";
 
-    private String token;
+    private static String token;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
@@ -53,8 +58,10 @@ class ServicesInfoTest {
 
     @ParameterizedTest(name = "cannotBeAccessedWithoutAuthentication({0})")
     @ValueSource(strings = {
-            SERVICES_ENDPOINT + "/" + API_CATALOG_SERVICE,
-            SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE
+            SERVICES_ENDPOINT,
+            SERVICES_ENDPOINT_NOT_VERSIONED,
+            SERVICES_ENDPOINT + "/" + API_CATALOG_SERVICE_ID,
+            SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
     })
     void cannotBeAccessedWithoutAuthentication(String endpoint) {
         //@formatter:off
@@ -68,14 +75,47 @@ class ServicesInfoTest {
 
     @Test
     @SuppressWarnings({"squid:S2699", "Assets are after then()"})
+    void providesAllServicesInformation() {
+        //@formatter:off
+        given()
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
+        .when()
+                .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT))
+        .then()
+                .statusCode(is(SC_OK))
+                .header(VERSION_HEADER, CURRENT_VERSION)
+                .body("serviceId", hasItems("gateway", "discovery", API_CATALOG_SERVICE_ID));
+        //@formatter:on
+    }
+
+    @Test
+    @SuppressWarnings({"squid:S2699", "Assets are after then()"})
+    void providesServicesInformationByApiId() {
+        //@formatter:off
+        given()
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
+        .when()
+                .get(String.format("%s://%s:%d/%s?apiId=%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, API_CATALOG_SERVICE_API_ID))
+        .then()
+                .statusCode(is(SC_OK))
+                .header(VERSION_HEADER, CURRENT_VERSION)
+                .body("size()", is(1))
+                .body("serviceId", hasItem(API_CATALOG_SERVICE_ID));
+        //@formatter:on
+    }
+
+    @Test
+    @SuppressWarnings({"squid:S2699", "Assets are after then()"})
     void providesApiCatalogServiceInformation() {
         //@formatter:off
         given()
                 .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
        .when()
-                .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, API_CATALOG_SERVICE))
+                .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, API_CATALOG_SERVICE_ID))
        .then()
-                .statusCode(is(SC_OK)).body("apiml.apiInfo[0].apiId", equalTo("zowe.apiml.apicatalog"))
+                .statusCode(is(SC_OK))
+                .header(VERSION_HEADER, CURRENT_VERSION)
+                .body("apiml.apiInfo[0].apiId", equalTo(API_CATALOG_SERVICE_API_ID))
                 .body("apiml.apiInfo[0].basePath", equalTo("/apicatalog/api/v1"));
         //@formatter:on
     }
@@ -89,7 +129,9 @@ class ServicesInfoTest {
        .when()
                 .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, "gateway"))
        .then()
-                .statusCode(is(SC_OK)).body("apiml.apiInfo[0].apiId", equalTo("zowe.apiml.gateway"));
+                .statusCode(is(SC_OK))
+                .header(VERSION_HEADER, CURRENT_VERSION)
+                .body("apiml.apiInfo[0].apiId", equalTo("zowe.apiml.gateway"));
         //@formatter:on
     }
 
