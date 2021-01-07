@@ -10,9 +10,7 @@
 package org.zowe.apiml.discovery;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
@@ -21,16 +19,15 @@ import org.zowe.apiml.discovery.metadata.MetadataTranslationService;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@RunWith(JUnit4.class)
-public class EurekaInstanceRegisteredListenerTest {
+class EurekaInstanceRegisteredListenerTest {
 
     @Test
-    public void getServiceId() {
+    void getServiceId() {
         MetadataTranslationService metadataTranslationService = Mockito.mock(MetadataTranslationService.class);
         MetadataDefaultsService metadataDefaultsService = Mockito.mock(MetadataDefaultsService.class);
         GatewayNotifier gatewayNotifier = mock(GatewayNotifier.class);
@@ -69,7 +66,7 @@ public class EurekaInstanceRegisteredListenerTest {
     }
 
     @Test
-    public void testListen() {
+    void testListen() {
         GatewayNotifier notifier = mock(GatewayNotifier.class);
         EurekaInstanceRegisteredListener listener = new EurekaInstanceRegisteredListener(Mockito.mock(MetadataTranslationService.class), Mockito.mock(MetadataDefaultsService.class), notifier);
 

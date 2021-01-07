@@ -61,15 +61,17 @@ public class SafResourceAccessSaf implements SafResourceAccessVerifying {
             log.error("Platform access control failed: {}", returned);
         } else {
             message = "Platform access control failed: " + errno2.explanation;
-            if (!resourceHasToExist && (errno2 == PlatformErrno2.JRSAFResourceUndefined)) {
-                return true;
-            } else if (errno2 == PlatformErrno2.JRNoResourceAccess) {
-                return false;
-            } else if (errno2 == PlatformErrno2.JRSAFResourceUndefined) {
-                return false;
+            switch (errno2) {
+                case JRSAFResourceUndefined:
+                    return !resourceHasToExist;
+                case JRSAFNoUser:
+                    // When the user is not defined RACF returns JRSAFNoUser but TSS returns JRSAFResourceUndefined.
+                case JRNoResourceAccess:
+                    return false;
+                default:
+                    log.error("Platform access control failed: {} {} {} {}",
+                        errno.shortErrorName, errno2.shortErrorName, errno2.explanation, returned);
             }
-            log.error("Platform access control failed: {} {} {} {}", errno.shortErrorName, errno2.shortErrorName, errno2.explanation,
-                returned);
         }
         throw new AccessControlError(returned, message + ": " + returned.toString());
     }

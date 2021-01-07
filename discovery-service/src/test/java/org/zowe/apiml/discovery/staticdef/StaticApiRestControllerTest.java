@@ -12,13 +12,13 @@ package org.zowe.apiml.discovery.staticdef;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 import org.zowe.apiml.discovery.config.EurekaConfig;
 import com.netflix.appinfo.InstanceInfo;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )
 @AutoConfigureMockMvc
-public class StaticApiRestControllerTest {
+class StaticApiRestControllerTest {
 
     private static final String CREDENTIALS = "eureka:password";
 
@@ -53,7 +53,7 @@ public class StaticApiRestControllerTest {
     private StaticServicesRegistrationService registrationService;
 
     @Test
-    public void listDefinitions() throws Exception {
+    void listDefinitions() throws Exception {
         String serviceName = "service";
         String basicToken = "Basic " + Base64.getEncoder().encodeToString(CREDENTIALS.getBytes());
 
@@ -73,7 +73,7 @@ public class StaticApiRestControllerTest {
     }
 
     @Test
-    public void reloadDefinitions() throws Exception {
+    void reloadDefinitions() throws Exception {
         String serviceName = "service";
         String basicToken = "Basic " + Base64.getEncoder().encodeToString(CREDENTIALS.getBytes());
 

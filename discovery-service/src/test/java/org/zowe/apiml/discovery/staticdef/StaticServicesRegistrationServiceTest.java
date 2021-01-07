@@ -14,39 +14,32 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-public class StaticServicesRegistrationServiceTest {
+class StaticServicesRegistrationServiceTest {
 
     private PeerAwareInstanceRegistry mockRegistry;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         mockRegistry = mock(PeerAwareInstanceRegistry.class);
         EurekaServerContext mockEurekaServerContext = mock(EurekaServerContext.class);
         when(mockEurekaServerContext.getRegistry()).thenReturn(mockRegistry);
         EurekaServerContextHolder.initialize(mockEurekaServerContext);
     }
-
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
 
     private StaticRegistrationResult createResult(InstanceInfo...instances) {
         StaticRegistrationResult out = new StaticRegistrationResult();
@@ -55,33 +48,30 @@ public class StaticServicesRegistrationServiceTest {
     }
 
     @Test
-    public void testFindServicesInDirectoryNoFiles() {
+    void testFindServicesInDirectoryNoFiles() throws URISyntaxException {
         EurekaServerContext mockEurekaServerContext = mock(EurekaServerContext.class);
         EurekaServerContextHolder.initialize(mockEurekaServerContext);
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 
         StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
-        StaticRegistrationResult result = registrationService.registerServices(folder.getRoot().getAbsolutePath());
+        String apiDefsDirectory = Paths.get(ClassLoader.getSystemResource("api-defs-empty/").toURI()).toAbsolutePath().toString();
+        StaticRegistrationResult result = registrationService.registerServices(apiDefsDirectory);
         assertEquals(0, result.getInstances().size());
     }
 
     @Test
-    public void testFindServicesInDirectoryOneFile() throws IOException, URISyntaxException {
-        Files.copy(
-            Paths.get(ClassLoader.getSystemResource("api-defs/staticclient.yml").toURI()).toAbsolutePath(),
-            Paths.get(folder.getRoot().getAbsolutePath(), "test.yml")
-        );
-
+    void testFindServicesInDirectoryOneFile() throws URISyntaxException {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 
         StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
-        StaticRegistrationResult result = registrationService.registerServices(folder.getRoot().getAbsolutePath());
+        String apiDefsDirectory = Paths.get(ClassLoader.getSystemResource("api-defs/").toURI()).toAbsolutePath().toString();
+        StaticRegistrationResult result = registrationService.registerServices(apiDefsDirectory);
 
         assertEquals(4, result.getInstances().size());
     }
 
     @Test
-    public void testGetStaticInstances() {
+    void testGetStaticInstances() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
         StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
 
@@ -92,7 +82,7 @@ public class StaticServicesRegistrationServiceTest {
     }
 
     @Test
-    public void testGetStaticInstancesAfterRegister() {
+    void testGetStaticInstancesAfterRegister() {
         String directory = "directory";
         String service = "service";
         ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
@@ -109,7 +99,7 @@ public class StaticServicesRegistrationServiceTest {
     }
 
     @Test
-    public void testReloadServicesWithUnregisteringService() {
+    void testReloadServicesWithUnregisteringService() {
         String service = "service";
         ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
         InstanceInfo instance = InstanceInfo.Builder.newBuilder().setInstanceId(service).setAppName(service).build();
@@ -128,7 +118,7 @@ public class StaticServicesRegistrationServiceTest {
     }
 
     @Test
-    public void testReloadServicesWithAddingNewService() {
+    void testReloadServicesWithAddingNewService() {
         String serviceA = "serviceA";
         String serviceB = "serviceB";
         ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
@@ -149,7 +139,7 @@ public class StaticServicesRegistrationServiceTest {
     }
 
     @Test
-    public void testRenewInstances() {
+    void testRenewInstances() {
         String directory = "directory";
         String service = "service";
         InstanceInfo instance = InstanceInfo.Builder.newBuilder().setInstanceId(service).setAppName(service).build();

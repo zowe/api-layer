@@ -11,8 +11,8 @@
 package org.zowe.apiml.caching.service.vsam;
 
 import lombok.extern.slf4j.Slf4j;
-import org.zowe.apiml.caching.config.VsamConfig;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 import org.zowe.apiml.zfile.*;
 
