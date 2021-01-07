@@ -15,8 +15,8 @@ import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.AwsInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import lombok.Getter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -33,7 +33,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class GatewayNotifierTest {
+class GatewayNotifierTest {
 
     private static final int TIMEOUT_ASYNC_CALL_SEC = 5;
 
@@ -43,8 +43,8 @@ public class GatewayNotifierTest {
     private MessageService messageService;
     private GatewayNotifier gatewayNotifierSync;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         EurekaServerContext context = mock(EurekaServerContext.class);
         registry = mock(AwsInstanceRegistry.class);
         when(context.getRegistry()).thenReturn(registry);
@@ -77,7 +77,7 @@ public class GatewayNotifierTest {
     }
 
     @Test
-    public void testServiceRegistrationCancelled() {
+    void testServiceRegistrationCancelled() {
         verify(restTemplate, never()).delete(anyString());
 
         List<InstanceInfo> instances = Arrays.asList(
@@ -101,7 +101,7 @@ public class GatewayNotifierTest {
     }
 
     @Test
-    public void testServiceUpdated() {
+    void testServiceUpdated() {
         verify(restTemplate, never()).delete(anyString());
 
         List<InstanceInfo> instances = Arrays.asList(
@@ -125,7 +125,7 @@ public class GatewayNotifierTest {
     }
 
     @Test
-    public void testMissingGateway() {
+    void testMissingGateway() {
         final String messageKey = "org.zowe.apiml.discovery.errorNotifyingGateway";
 
         when(registry.getApplication(anyString())).thenReturn(null);
@@ -137,7 +137,7 @@ public class GatewayNotifierTest {
     }
 
     @Test
-    public void testServiceRegistrationCancelledNotificationFailed() {
+    void testServiceRegistrationCancelledNotificationFailed() {
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
@@ -163,7 +163,7 @@ public class GatewayNotifierTest {
     }
 
     @Test
-    public void testServiceUpdatedNotificationFailed() {
+    void testServiceUpdatedNotificationFailed() {
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
@@ -193,7 +193,7 @@ public class GatewayNotifierTest {
     }
 
     @Test
-    public void testDistributeInvalidatedCredentials() {
+    void testDistributeInvalidatedCredentials() {
         InstanceInfo targetInstanceInfo = createInstanceInfo("host", 1000, 1433);
         String targetInstanceId = targetInstanceInfo.getInstanceId();
 
@@ -221,7 +221,7 @@ public class GatewayNotifierTest {
     }
 
     @Test
-    public void testAsynchronousTreatment() {
+    void testAsynchronousTreatment() {
         GatewayNotifierHandler gatewayNotifier = new GatewayNotifierHandler(restTemplate, messageService);
         gatewayNotifier.afterPropertiesSet();
 

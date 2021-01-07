@@ -10,13 +10,13 @@
 package org.zowe.apiml.discovery;
 
 import org.zowe.apiml.discovery.config.EurekaConfig;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Base64;
@@ -24,7 +24,7 @@ import java.util.Base64;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )
 @AutoConfigureMockMvc
-public class EurekaSecuredEndpointsTest {
+class EurekaSecuredEndpointsTest {
     private static final String EUREKA_ENDPOINT = "/eureka/apps";
 
     private String eurekaUserName = "eureka";
@@ -44,7 +44,7 @@ public class EurekaSecuredEndpointsTest {
     private MockMvc mvc;
 
     @Test
-    public void shouldAllowCallForEurekaUser() throws Exception {
+    void shouldAllowCallForEurekaUser() throws Exception {
         String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserName + ":" + eurekaUserPassword).getBytes());
         mvc.perform(get(EUREKA_ENDPOINT)
             .header("Authorization", basicToken)
@@ -54,7 +54,7 @@ public class EurekaSecuredEndpointsTest {
     }
 
     @Test
-    public void shouldForbidCallForNotEurekaUser() throws Exception {
+    void shouldForbidCallForNotEurekaUser() throws Exception {
         mvc.perform(get(EUREKA_ENDPOINT)
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON))
