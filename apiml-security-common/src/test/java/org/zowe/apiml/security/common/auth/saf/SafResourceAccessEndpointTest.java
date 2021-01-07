@@ -16,28 +16,33 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
 class SafResourceAccessEndpointTest {
 
     private static final String TEST_URL = "https://hostname/saf";
-    private static final String TEST_URI_ARGS = TEST_URL + "/{userId}/{class}/{entity}/{level}";
+    private static final String TEST_URI_ARGS = TEST_URL + "/{entity}/{level}";
     private static final String USER_ID = "userId";
-    private static final String CLASS = "classTest";
+    private static final String SUPPORTED_CLASS = "ZOWE";
+    private static final String UNSUPPORTED_CLASS = "testClass";
     private static final String RESOURCE = "resourceTest";
     private static final String LEVEL = "READ";
+    private static final Authentication authentication = new TokenAuthentication(USER_ID, "token");
 
     @Mock
     private RestTemplate restTemplate;
-
-    private Authentication authentication = new UsernamePasswordAuthenticationToken(USER_ID, "token");
 
     private SafResourceAccessEndpoint safResourceAccessEndpoint;
 
@@ -56,20 +61,36 @@ class SafResourceAccessEndpointTest {
     })
     void testHasSafResourceAccess_whenErrorHappened_thenFalse(boolean authorized, boolean error, boolean response) {
         doReturn(
-            new SafResourceAccessEndpoint.Response(authorized, error, "msg")
-        ).when(restTemplate).getForObject(
-            TEST_URI_ARGS, SafResourceAccessEndpoint.Response.class, USER_ID, CLASS, RESOURCE, LEVEL
+            new ResponseEntity<>(new SafResourceAccessEndpoint.Response(authorized, error, "msg"), HttpStatus.OK)
+        ).when(restTemplate).exchange(
+            eq(TEST_URI_ARGS), eq(HttpMethod.GET), any(), eq(SafResourceAccessEndpoint.Response.class), eq(RESOURCE), eq(LEVEL)
         );
-        assertEquals(response, safResourceAccessEndpoint.hasSafResourceAccess(authentication, CLASS, RESOURCE, LEVEL));
+        assertEquals(response, safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
     }
 
     @Test
     void givenFaultyResponse_whenRestTemplateMethodReturnsNull_thenFalse() {
         doReturn(
-            null
-        ).when(restTemplate).getForObject(
-            TEST_URI_ARGS, SafResourceAccessEndpoint.Response.class, USER_ID, CLASS, RESOURCE, LEVEL
+            new ResponseEntity<>((SafResourceAccessEndpoint.Response) null, HttpStatus.OK)
+        ).when(restTemplate).exchange(
+            anyString(), eq(HttpMethod.GET), any(), eq(SafResourceAccessEndpoint.Response.class), (Object[]) any()
         );
-        assertEquals(false, safResourceAccessEndpoint.hasSafResourceAccess(authentication, CLASS, RESOURCE, LEVEL));
+        assertFalse(safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
     }
+
+    @Test
+    void givenUnsupportedResouceClass_whenVerify_thenEndpointImproprietyConfigureException() {
+        assertThrows(UnsupportedResourceClassException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, UNSUPPORTED_CLASS, RESOURCE, LEVEL));
+    }
+
+    @Test
+    void givenExceptionOnRestCall_whenVerifying_thenEndpointImproprietyConfigureException() {
+        doThrow(
+            new RuntimeException()
+        ).when(restTemplate).exchange(
+            anyString(), any(), any(), eq(SafResourceAccessEndpoint.Response.class), anyString(), anyString()
+        );
+        assertThrows(EndpointImproprietyConfigureException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
+    }
+
 }
