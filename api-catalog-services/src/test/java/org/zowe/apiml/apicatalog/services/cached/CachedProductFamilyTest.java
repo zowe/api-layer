@@ -47,7 +47,7 @@ class CachedProductFamilyTest {
     private CachedProductFamilyService service;
 
     @Mock
-    private final TransformService transformService = new TransformService(new GatewayClient());
+    private final TransformService transformService = new TransformService(new GatewayClient(null));
 
     @BeforeEach
     void setup() {

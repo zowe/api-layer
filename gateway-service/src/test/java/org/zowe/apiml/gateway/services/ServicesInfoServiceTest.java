@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.services;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
+import com.netflix.discovery.shared.Applications;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,7 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -74,6 +76,11 @@ class ServicesInfoServiceTest {
     private static final String CLIENT_CUSTOM_METADATA_KEY = "custom.test.key";
     private static final String CLIENT_CUSTOM_METADATA_VALUE = "value";
 
+    // ServiceInfo properties
+    private static final String SERVICE_SERVICE_ID = "serviceId";
+    private static final String SERVICE_API_ID = "apiId";
+    private static final String SERVICE_API_VERSION = "version";
+
     @Mock
     private EurekaClient eurekaClient;
 
@@ -93,7 +100,45 @@ class ServicesInfoServiceTest {
     }
 
     @Test
-    @SuppressWarnings({"java:S5961"}) // Splitting asserts to multiple tests would make it less readable
+    void whenListingAllServices_thenReturnList() {
+        String clientServiceId2 = "testclient2";
+
+        List<Application> applications = Arrays.asList(
+                new Application(CLIENT_SERVICE_ID, Collections.singletonList(createBasicTestInstance())),
+                new Application(clientServiceId2)
+        );
+        when(eurekaClient.getApplications())
+                .thenReturn(new Applications(null, 1L, applications));
+
+        List<ServiceInfo> servicesInfo = servicesInfoService.getServicesInfo();
+        List<ServiceInfo> servicesInfo2 = servicesInfoService.getServicesInfo(null);
+
+        assertEquals(servicesInfo, servicesInfo2);
+        assertEquals(2, servicesInfo.size());
+        assertThat(servicesInfo, contains(
+                hasProperty(SERVICE_SERVICE_ID, is(CLIENT_SERVICE_ID)),
+                hasProperty(SERVICE_SERVICE_ID, is(clientServiceId2))
+        ));
+    }
+
+    @Test
+    void whenListingServicesByApiId_thenReturnList() {
+        List<Application> applications = Arrays.asList(
+                new Application(CLIENT_SERVICE_ID, Collections.singletonList(createFullTestInstance())),
+                new Application("testclient2")
+        );
+        when(eurekaClient.getApplications())
+                .thenReturn(new Applications(null, 1L, applications));
+
+        List<ServiceInfo> servicesInfo = servicesInfoService.getServicesInfo(CLIENT_API_ID);
+
+        assertEquals(1, servicesInfo.size());
+        assertEquals(CLIENT_SERVICE_ID, servicesInfo.get(0).getServiceId());
+    }
+
+    // Splitting asserts to multiple tests would make it less readable
+    @SuppressWarnings({"java:S5961"})
+    @Test
     void whenInstanceProvidesFullInfo_thenReturnAllDetails() {
         when(eurekaClient.getApplication(CLIENT_SERVICE_ID))
                 .thenReturn(new Application(CLIENT_SERVICE_ID, Collections.singletonList(createFullTestInstance())));
@@ -231,28 +276,28 @@ class ServicesInfoServiceTest {
 
         assertEquals(6, serviceInfo.getApiml().getApiInfo().size());
         assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
-                hasProperty("apiId", is("api1")),
-                hasProperty("version", is("0.0.0"))
+                hasProperty(SERVICE_API_ID, is("api1")),
+                hasProperty(SERVICE_API_VERSION, is("0.0.0"))
         )));
         assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
-                hasProperty("apiId", is("api1")),
-                hasProperty("version", is("1.0.0"))
+                hasProperty(SERVICE_API_ID, is("api1")),
+                hasProperty(SERVICE_API_VERSION, is("1.0.0"))
         )));
         assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
-                hasProperty("apiId", is("api2")),
-                hasProperty("version", is("3.0.1"))
+                hasProperty(SERVICE_API_ID, is("api2")),
+                hasProperty(SERVICE_API_VERSION, is("3.0.1"))
         )));
         assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
-                hasProperty("apiId", is("api3")),
-                hasProperty("version", is(nullValue()))
+                hasProperty(SERVICE_API_ID, is("api3")),
+                hasProperty(SERVICE_API_VERSION, is(nullValue()))
         )));
         assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
-                hasProperty("apiId", is("api3")),
-                hasProperty("version", is("2.0.0"))
+                hasProperty(SERVICE_API_ID, is("api3")),
+                hasProperty(SERVICE_API_VERSION, is("2.0.0"))
         )));
         assertThat(serviceInfo.getApiml().getApiInfo(), hasItems(allOf(
-                hasProperty("apiId", is(nullValue())),
-                hasProperty("version", is("2.7.0"))
+                hasProperty(SERVICE_API_ID, is(nullValue())),
+                hasProperty(SERVICE_API_VERSION, is("2.7.0"))
         )));
     }
 

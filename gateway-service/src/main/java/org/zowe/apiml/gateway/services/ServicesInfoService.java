@@ -15,6 +15,7 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.zowe.apiml.auth.Authentication;
@@ -39,19 +40,52 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 @RequiredArgsConstructor
 public class ServicesInfoService {
 
+    public static final String VERSION_HEADER = "Content-Version";
+    public static final String CURRENT_VERSION = "1";
+
     private final EurekaClient eurekaClient;
     private final GatewayConfigProperties gatewayConfigProperties;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final TransformService transformService;
 
+    public List<ServiceInfo> getServicesInfo() {
+        List<ServiceInfo> servicesInfo = new LinkedList<>();
+        for (Application application : eurekaClient.getApplications().getRegisteredApplications()) {
+            servicesInfo.add(getServiceInfo(application));
+        }
+
+        return servicesInfo;
+    }
+
+    public List<ServiceInfo> getServicesInfo(String apiId) {
+        List<ServiceInfo> servicesInfo = getServicesInfo();
+
+        if (apiId == null) return servicesInfo;
+
+        return servicesInfo.stream()
+                .filter(serviceInfo -> {
+                    if (serviceInfo.getApiml() == null || serviceInfo.getApiml().getApiInfo() == null) return false;
+                    return serviceInfo.getApiml().getApiInfo().stream().anyMatch(apiInfo ->
+                            StringUtils.equals(apiInfo.getApiId(), apiId));
+                })
+                .collect(Collectors.toList());
+    }
+
     public ServiceInfo getServiceInfo(String serviceId) {
         Application application = eurekaClient.getApplication(serviceId);
+
         if (application == null) {
             return ServiceInfo.builder()
                     .serviceId(serviceId)
                     .status(InstanceInfo.InstanceStatus.UNKNOWN)
                     .build();
         }
+
+        return getServiceInfo(application);
+    }
+
+    private ServiceInfo getServiceInfo(Application application) {
+        String serviceId = application.getName().toLowerCase();
 
         List<InstanceInfo> appInstances = application.getInstances();
         if (ObjectUtils.isEmpty(appInstances)) {
