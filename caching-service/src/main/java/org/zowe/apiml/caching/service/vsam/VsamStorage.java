@@ -55,7 +55,15 @@ public class VsamStorage implements Storage {
         try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toCreate);
-
+            List<VsamRecord> storedData = file.readForService(serviceId);
+            if (storedData.size() == 10000) {
+                if (vsamConfig.getGeneralConfig().getEvictionStrategy().equals("reject")) {
+                    throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus(),
+                        toCreate.getKey(), serviceId);
+                } else {
+                    storedData.remove(0);
+                }
+            }
             Optional<VsamRecord> returned = file.create(record);
             if (returned.isPresent()) {
                 result = returned.get().getKeyValue();

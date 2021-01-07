@@ -50,6 +50,13 @@ messages:
         reason: "Key is already in the cache."
         action: "Update or delete the key, or add a different key."
 
+    -   key: org.zowe.apiml.cache.insufficientStorage
+        number: ZWECS133
+        type: ERROR
+        text: "Insufficient storage space limit. Key '%s' cannot be added in the cache."
+        reason: "The storage space is full."
+        action: "Disable the 'rejected' eviction strategy."
+
     # Service specific messages (700 - 799)
     -   key: org.zowe.apiml.cache.gatewayUnavailable
         number: ZWECS700
