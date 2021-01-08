@@ -11,8 +11,10 @@ package org.zowe.apiml.caching.service.inmemory;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.caching.service.inmemory.config.InMemoryConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class InMemoryStorageTest {
     private InMemoryStorage underTest;
+    private InMemoryConfig config;
 
     private Map<String, Map<String, KeyValue>> testingStorage;
     private final String serviceId = "acme";
@@ -30,12 +33,16 @@ public class InMemoryStorageTest {
     @BeforeEach
     void setUp() {
         testingStorage = new HashMap<>();
-        underTest = new InMemoryStorage(testingStorage);
+        GeneralConfig generalConfig = new GeneralConfig();
+        generalConfig.setEvictionStrategy("reject");
+        config = new InMemoryConfig(generalConfig);
+        config.setMaxDataSize(10);
+        underTest = new InMemoryStorage(config, testingStorage);
     }
 
     @Test
     void givenDefaultStorageConstructor_whenStorageConstructed_thenCanUseStorage() {
-        underTest = new InMemoryStorage();
+        underTest = new InMemoryStorage(config);
         underTest.create(serviceId, new KeyValue("key", "value"));
 
         KeyValue result = underTest.read(serviceId, "key");
@@ -132,5 +139,20 @@ public class InMemoryStorageTest {
 
         underTest.delete(serviceId, "username");
         assertThat(serviceStorage.containsKey("username"), is(false));
+    }
+
+    @Test
+    void givenTheStorageIsFull_whenNewKeyValueIsAdded_thenTheInsufficientStorageExceptionIsRaised() {
+        GeneralConfig generalConfig = new GeneralConfig();
+        generalConfig.setEvictionStrategy("reject");
+        config = new InMemoryConfig(generalConfig);
+        config.setMaxDataSize(1);
+
+        underTest = new InMemoryStorage(config);
+                        underTest.create("customService", new KeyValue("key", "willFit"));
+        KeyValue wontFit = new KeyValue("key", "wontFit");
+        assertThrows(StorageException.class, () -> {
+            underTest.create(serviceId, wontFit);
+        });
     }
 }

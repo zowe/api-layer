@@ -19,10 +19,11 @@ import org.zowe.apiml.caching.service.inmemory.InMemoryStorage;
 @Configuration
 @RequiredArgsConstructor
 public class InMemoryConfiguration {
+    private final InMemoryConfig inMemoryConfig;
 
-    @ConditionalOnProperty(name = "caching.storage.mode", matchIfMissing = true)
+    @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "inMemory", matchIfMissing = true)
     @Bean
     public Storage inMemory() {
-        return new InMemoryStorage();
+        return new InMemoryStorage(inMemoryConfig);
     }
 }
