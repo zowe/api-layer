@@ -14,6 +14,7 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.caching.service.inmemory.config.InMemoryConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +23,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class InMemoryStorage implements Storage {
     private Map<String, Map<String, KeyValue>> storage = new ConcurrentHashMap<>();
+    private int currentSize = 0;
+    private InMemoryConfig inMemoryConfig;
 
-    public InMemoryStorage() {
+    public InMemoryStorage(InMemoryConfig inMemoryConfig) {
+        this.inMemoryConfig = inMemoryConfig;
     }
 
-    protected InMemoryStorage(Map<String, Map<String, KeyValue>> storage) {
+    protected InMemoryStorage(InMemoryConfig inMemoryConfig, Map<String, Map<String, KeyValue>> storage) {
+        this(inMemoryConfig);
         this.storage = storage;
     }
 
@@ -39,7 +44,12 @@ public class InMemoryStorage implements Storage {
         if (serviceStorage.containsKey(toCreate.getKey())) {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
         }
+        int sizeofKeyValue = getSize(toCreate);
+        verifyTotalSize(sizeofKeyValue, toCreate.getKey());
+
         serviceStorage.put(toCreate.getKey(), toCreate);
+        currentSize += sizeofKeyValue;
+
         return toCreate;
     }
 
@@ -65,6 +75,13 @@ public class InMemoryStorage implements Storage {
         }
 
         Map<String, KeyValue> serviceStorage = storage.get(serviceId);
+
+        KeyValue previousVersion = serviceStorage.get(key);
+        int changeOfSize = getSize(toUpdate) - getSize(previousVersion);
+        verifyTotalSize(changeOfSize, toUpdate.getKey());
+
+        currentSize += changeOfSize;
+
         serviceStorage.put(key, toUpdate);
         return toUpdate;
     }
@@ -78,7 +95,11 @@ public class InMemoryStorage implements Storage {
         }
 
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
-        return serviceSpecificStorage.remove(key);
+        KeyValue removed = serviceSpecificStorage.remove(key);
+
+        currentSize -= getSize(removed);
+
+        return removed;
     }
 
     @Override
@@ -89,5 +110,16 @@ public class InMemoryStorage implements Storage {
     private boolean isKeyNotInCache(String serviceId, String keyToTest) {
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
         return serviceSpecificStorage == null || serviceSpecificStorage.get(keyToTest) == null;
+    }
+
+    private void verifyTotalSize(int sizeOfNew, String key) {
+        log.info("Current Size {}. Size of newly added element: {}", currentSize, sizeOfNew);
+        if (currentSize + sizeOfNew > inMemoryConfig.getMaxDataSize()) {
+            throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus(), key);
+        }
+    }
+
+    private int getSize(KeyValue keyValue) {
+        return keyValue.getKey().length() + keyValue.getValue().length();
     }
 }
