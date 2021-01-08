@@ -23,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class InMemoryStorage implements Storage {
     private Map<String, Map<String, KeyValue>> storage = new ConcurrentHashMap<>();
-    private int currentSize = 0;
     private InMemoryConfig inMemoryConfig;
 
     public InMemoryStorage(InMemoryConfig inMemoryConfig) {
@@ -44,11 +43,10 @@ public class InMemoryStorage implements Storage {
         if (serviceStorage.containsKey(toCreate.getKey())) {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
         }
-        int sizeofKeyValue = getSize(toCreate);
-        verifyTotalSize(sizeofKeyValue, toCreate.getKey());
+
+        verifyTotalSize(toCreate.getKey());
 
         serviceStorage.put(toCreate.getKey(), toCreate);
-        currentSize += sizeofKeyValue;
 
         return toCreate;
     }
@@ -76,12 +74,6 @@ public class InMemoryStorage implements Storage {
 
         Map<String, KeyValue> serviceStorage = storage.get(serviceId);
 
-        KeyValue previousVersion = serviceStorage.get(key);
-        int changeOfSize = getSize(toUpdate) - getSize(previousVersion);
-        verifyTotalSize(changeOfSize, toUpdate.getKey());
-
-        currentSize += changeOfSize;
-
         serviceStorage.put(key, toUpdate);
         return toUpdate;
     }
@@ -95,11 +87,7 @@ public class InMemoryStorage implements Storage {
         }
 
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
-        KeyValue removed = serviceSpecificStorage.remove(key);
-
-        currentSize -= getSize(removed);
-
-        return removed;
+        return serviceSpecificStorage.remove(key);
     }
 
     @Override
@@ -112,14 +100,16 @@ public class InMemoryStorage implements Storage {
         return serviceSpecificStorage == null || serviceSpecificStorage.get(keyToTest) == null;
     }
 
-    private void verifyTotalSize(int sizeOfNew, String key) {
-        log.info("Current Size {}. Size of newly added element: {}", currentSize, sizeOfNew);
-        if (currentSize + sizeOfNew > inMemoryConfig.getMaxDataSize()) {
+    private void verifyTotalSize(String key) {
+        int currentSize = 0;
+        for(String serviceKey: storage.keySet()) {
+            currentSize += storage.get(serviceKey).size();
+        }
+
+        log.info("Current Size {}.", currentSize);
+
+        if (currentSize >= inMemoryConfig.getMaxDataSize()) {
             throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus(), key);
         }
-    }
-
-    private int getSize(KeyValue keyValue) {
-        return keyValue.getKey().length() + keyValue.getValue().length();
     }
 }

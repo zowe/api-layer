@@ -34,7 +34,7 @@ public class InMemoryStorageTest {
     void setUp() {
         testingStorage = new HashMap<>();
         config = new InMemoryConfig(new GeneralConfig());
-        config.setMaxDataSize(100000);
+        config.setMaxDataSize(10);
         underTest = new InMemoryStorage(config, testingStorage);
     }
 
@@ -142,23 +142,12 @@ public class InMemoryStorageTest {
     @Test
     void givenTheStorageIsFull_whenNewKeyValueIsAdded_thenTheInsufficientStorageExceptionIsRaised() {
         config = new InMemoryConfig(new GeneralConfig());
-        config.setMaxDataSize(10);
+        config.setMaxDataSize(1);
 
         underTest = new InMemoryStorage(config);
+        underTest.create("customService", new KeyValue("key", "willFit"));
         assertThrows(StorageException.class, () -> {
-            underTest.create(serviceId, new KeyValue("key", "reallyLongValueWhichShouldntPossiblyBeStoredInTheMemory"));
-        });
-    }
-
-    @Test
-    void givenTheStorageIsFull_whenKeyValueIsUpdated_thenTheInsufficientStorageExceptionIsRaised() {
-        config = new InMemoryConfig(new GeneralConfig());
-        config.setMaxDataSize(20);
-
-        underTest = new InMemoryStorage(config);
-        underTest.create(serviceId, new KeyValue("key", "value"));
-        assertThrows(StorageException.class, () -> {
-            underTest.update(serviceId, new KeyValue("key", "reallyLongValueWhichShouldntPossiblyBeStoredInTheMemory"));
+            underTest.create(serviceId, new KeyValue("key", "wontFit"));
         });
     }
 }
