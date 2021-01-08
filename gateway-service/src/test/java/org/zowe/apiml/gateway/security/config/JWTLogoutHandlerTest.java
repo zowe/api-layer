@@ -12,31 +12,34 @@ package org.zowe.apiml.gateway.security.config;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.security.core.Authentication;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.product.logging.LogMessageTracker;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+
+import ch.qos.logback.classic.Level;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class JWTLogoutHandlerTest {
     private static final String TOKEN = "apimlToken";
 
-    private final ExpectedException expectedException = ExpectedException.none();
-
     private AuthenticationService authenticationService;
-
     private FailedAuthenticationHandler failedAuthenticationHandler;
+
+    private final LogMessageTracker logMessageTracker = new LogMessageTracker(JWTLogoutHandler.class);
+
     @Mock
     private HttpServletRequest request;
     @Mock
@@ -116,13 +119,13 @@ class JWTLogoutHandlerTest {
     }
 
     @Test
-    void givenLogoutRequest_whenFailureHandlingError_thenThrowError() throws ServletException {
+    void givenLogoutRequest_whenFailureHandlingError_thenLogError() throws ServletException {
+        logMessageTracker.startTracking();
         when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.empty());
         Mockito.doThrow(new ServletException("msg")).when(failedAuthenticationHandler).onAuthenticationFailure(any(), any(), any());
-
-        expectedException.expect(ServletException.class);
-        expectedException.expectMessage("The response cannot be written during the logout exception handler: msg");
-
         handler.logout(request, response, authentication);
+        String expectedLogMessage = "The response cannot be written during the logout exception handler: msg";
+        assertTrue(logMessageTracker.contains(expectedLogMessage, Level.ERROR));
+        logMessageTracker.stopTracking();
     }
 }

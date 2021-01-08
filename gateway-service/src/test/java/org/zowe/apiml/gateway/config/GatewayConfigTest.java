@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GatewayConfigTest {
 
