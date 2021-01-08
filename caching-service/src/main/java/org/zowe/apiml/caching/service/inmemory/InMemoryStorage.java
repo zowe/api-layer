@@ -102,7 +102,7 @@ public class InMemoryStorage implements Storage {
 
     private void verifyTotalSize(String key) {
         int currentSize = 0;
-        for(String serviceKey: storage.keySet()) {
+        for (String serviceKey: storage.keySet()) {
             currentSize += storage.get(serviceKey).size();
         }
 
