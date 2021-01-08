@@ -44,7 +44,10 @@ public class InMemoryStorage implements Storage {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
         }
 
-        verifyTotalSize(toCreate.getKey());
+        String evictionStrategy = inMemoryConfig.getGeneralConfig().getEvictionStrategy();
+        if (evictionStrategy.equals("reject")) {
+            verifyTotalSize(toCreate.getKey());
+        }
 
         serviceStorage.put(toCreate.getKey(), toCreate);
 
