@@ -11,6 +11,7 @@ package org.zowe.apiml.security.common.auth.saf;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,10 +53,15 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
         try {
             HttpEntity<HttpHeaders> httpEntity = createHttpEntity(authentication);
             ResponseEntity<Response> responseEntity = restTemplate.exchange(
-                endpointUrl + URL_VARIABLE_SUFFIX, HttpMethod.GET, httpEntity, Response.class, resourceName, accessLevel
+                    endpointUrl + URL_VARIABLE_SUFFIX, HttpMethod.GET, httpEntity, Response.class, resourceName, accessLevel
             );
             Response response = responseEntity.getBody();
+            if (response != null && response.isError()) {
+                throw new EndpointImproprietyConfigureException("Endpoint " + endpointUrl + " is probably impropriety configured: " + response.getMessage());
+            }
             return response != null && !response.isError() && response.isAuthorized();
+        } catch (EndpointImproprietyConfigureException e) {
+            throw e;
         } catch (Exception e) {
             throw new EndpointImproprietyConfigureException("Endpoint " + endpointUrl + " is probably impropriety configured.", e);
         }
@@ -63,6 +69,7 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response {
 
         private boolean authorized;

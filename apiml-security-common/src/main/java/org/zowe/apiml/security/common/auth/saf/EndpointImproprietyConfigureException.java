@@ -13,6 +13,10 @@ public class EndpointImproprietyConfigureException extends RuntimeException {
 
     private static final long serialVersionUID = -4582785501782402751L;
 
+    public EndpointImproprietyConfigureException(String message) {
+        super(message);
+    }
+
     public EndpointImproprietyConfigureException(String message, Throwable cause) {
         super(message, cause);
     }
