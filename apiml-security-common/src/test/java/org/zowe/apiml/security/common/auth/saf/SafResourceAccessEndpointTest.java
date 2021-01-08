@@ -54,18 +54,30 @@ class SafResourceAccessEndpointTest {
 
     @ParameterizedTest
     @CsvSource(delimiter = ',', value = {
-        "false,true,false",
-        "true,true,false",
-        "false,false,false",
-        "true,false,true"
+        "false,false",
+        "true,true"
     })
-    void testHasSafResourceAccess_whenErrorHappened_thenFalse(boolean authorized, boolean error, boolean response) {
+    void testHasSafResourceAccess_whenErrorNotHappened_thenFalse(boolean authorized, boolean response) {
         doReturn(
-            new ResponseEntity<>(new SafResourceAccessEndpoint.Response(authorized, error, "msg"), HttpStatus.OK)
+            new ResponseEntity<>(new SafResourceAccessEndpoint.Response(authorized, false, "msg"), HttpStatus.OK)
         ).when(restTemplate).exchange(
             eq(TEST_URI_ARGS), eq(HttpMethod.GET), any(), eq(SafResourceAccessEndpoint.Response.class), eq(RESOURCE), eq(LEVEL)
         );
         assertEquals(response, safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = ',', value = {
+        "false",
+        "true"
+    })
+    void testHasSafResourceAccess_whenErrorHappened_thenFalse(boolean authorized) {
+        doReturn(
+                new ResponseEntity<>(new SafResourceAccessEndpoint.Response(authorized, true, "msg"), HttpStatus.OK)
+        ).when(restTemplate).exchange(
+                eq(TEST_URI_ARGS), eq(HttpMethod.GET), any(), eq(SafResourceAccessEndpoint.Response.class), eq(RESOURCE), eq(LEVEL)
+        );
+        assertThrows(EndpointImproprietyConfigureException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
     }
 
     @Test
