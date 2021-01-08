@@ -57,13 +57,13 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
             );
             Response response = responseEntity.getBody();
             if (response != null && response.isError()) {
-                throw new EndpointImproprietyConfigureException("Endpoint " + endpointUrl + " is probably impropriety configured: " + response.getMessage());
+                throw new EndpointImproprietyConfigureException("Endpoint " + endpointUrl + " is not properly configured: " + response.getMessage());
             }
             return response != null && !response.isError() && response.isAuthorized();
         } catch (EndpointImproprietyConfigureException e) {
             throw e;
         } catch (Exception e) {
-            throw new EndpointImproprietyConfigureException("Endpoint " + endpointUrl + " is probably impropriety configured.", e);
+            throw new EndpointImproprietyConfigureException("Endpoint " + endpointUrl + " is not properly configured.", e);
         }
     }
 
