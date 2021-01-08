@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
@@ -61,7 +60,7 @@ import static org.mockito.Mockito.*;
     CacheConfig.class,
     MockedAuthenticationServiceContext.class
 })
-@PrepareForTest(net.sf.ehcache.Cache.class)
+
 public class AuthenticationServiceTest {
 
     public static final String ZOSMF = "zosmf";
