@@ -150,8 +150,9 @@ public class InMemoryStorageTest {
 
         underTest = new InMemoryStorage(config);
                         underTest.create("customService", new KeyValue("key", "willFit"));
+        KeyValue wontFit = new KeyValue("key", "wontFit");
         assertThrows(StorageException.class, () -> {
-            underTest.create(serviceId, new KeyValue("key", "wontFit"));
+            underTest.create(serviceId, wontFit);
         });
     }
 }
