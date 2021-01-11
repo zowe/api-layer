@@ -13,13 +13,13 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.zowe.apiml.discovery.EurekaInstanceRegisteredListener;
 import org.zowe.apiml.discovery.GatewayNotifier;
@@ -36,12 +36,12 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 
-@RunWith(MockitoJUnitRunner.class)
-public class MetadataDefaultsServiceTest {
+@ExtendWith(MockitoExtension.class)
+class MetadataDefaultsServiceTest {
 
     @InjectMocks
     private StaticServicesRegistrationService staticServicesRegistrationService;
@@ -64,8 +64,8 @@ public class MetadataDefaultsServiceTest {
 
     private PeerAwareInstanceRegistry mockRegistry;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         mockRegistry = mock(PeerAwareInstanceRegistry.class);
         doAnswer(x -> {
             EurekaInstanceRegisteredEvent event = mock(EurekaInstanceRegisteredEvent.class);
@@ -79,7 +79,7 @@ public class MetadataDefaultsServiceTest {
     }
 
     @Test
-    public void testUpdating() {
+    void testUpdating() {
         serviceDefinitionProcessor.setLocation("api-defs");
 
         staticServicesRegistrationService.reloadServices();

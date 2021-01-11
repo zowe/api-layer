@@ -62,7 +62,7 @@ class TransformServiceTest {
     }
 
     @Test
-    void givenHomePage_whenRouteNotFound_thenThrowException() throws URLTransformationException {
+    void givenHomePage_whenRouteNotFound_thenThrowException() {
         String url = "https://localhost:8080/u";
 
         RoutedServices routedServices = new RoutedServices();
@@ -123,7 +123,7 @@ class TransformServiceTest {
 
 
     @Test
-    void givenInvalidHomePage_thenThrowException() throws URLTransformationException {
+    void givenInvalidHomePage_thenThrowException() {
         String url = "https:localhost:8080/wss";
 
         TransformService transformService = new TransformService(gatewayClient);
@@ -135,10 +135,10 @@ class TransformServiceTest {
     }
 
     @Test
-    void givenEmptyGatewayClient_thenThrowException() throws URLTransformationException {
+    void givenEmptyGatewayClient_thenThrowException() {
         String url = "https:localhost:8080/wss";
 
-        GatewayClient emptyGatewayClient = new GatewayClient();
+        GatewayClient emptyGatewayClient = new GatewayClient(null);
         TransformService transformService = new TransformService(emptyGatewayClient);
 
         Exception exception = assertThrows(URLTransformationException.class, () -> {
@@ -149,7 +149,7 @@ class TransformServiceTest {
 
 
     @Test
-    void givenHomePage_whenPathIsNotValid_thenThrowException() throws URLTransformationException {
+    void givenHomePage_whenPathIsNotValid_thenThrowException() {
         String url = "https://localhost:8080/wss";
 
         RoutedServices routedServices = new RoutedServices();
@@ -266,7 +266,7 @@ class TransformServiceTest {
     }
 
     @Test
-    void givenInvalidUriPath_whenGetApiBasePath_thenThrowError() throws URLTransformationException {
+    void givenInvalidUriPath_whenGetApiBasePath_thenThrowError() {
         String url = "https:localhost:8080/wss";
 
         TransformService transformService = new TransformService(null);
@@ -278,7 +278,7 @@ class TransformServiceTest {
     }
 
     @Test
-    void givenNoRoutes_whenGetApiBasePath_thenThrowError() throws URLTransformationException {
+    void givenNoRoutes_whenGetApiBasePath_thenThrowError() {
         String url = "https://localhost:8080/u";
 
         RoutedServices routedServices = new RoutedServices();
@@ -294,4 +294,5 @@ class TransformServiceTest {
         });
         assertEquals("Not able to select API base path for the service " + SERVICE_ID + ". Original url used.", exception.getMessage());
     }
+
 }

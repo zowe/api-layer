@@ -14,6 +14,7 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.caching.service.inmemory.config.InMemoryConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +23,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class InMemoryStorage implements Storage {
     private Map<String, Map<String, KeyValue>> storage = new ConcurrentHashMap<>();
+    private InMemoryConfig inMemoryConfig;
 
-    public InMemoryStorage() {
+    public InMemoryStorage(InMemoryConfig inMemoryConfig) {
+        this.inMemoryConfig = inMemoryConfig;
     }
 
-    protected InMemoryStorage(Map<String, Map<String, KeyValue>> storage) {
+    protected InMemoryStorage(InMemoryConfig inMemoryConfig, Map<String, Map<String, KeyValue>> storage) {
+        this(inMemoryConfig);
         this.storage = storage;
     }
 
@@ -39,7 +43,14 @@ public class InMemoryStorage implements Storage {
         if (serviceStorage.containsKey(toCreate.getKey())) {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
         }
+
+        String evictionStrategy = inMemoryConfig.getGeneralConfig().getEvictionStrategy();
+        if (evictionStrategy.equals("reject")) {
+            verifyTotalSize(toCreate.getKey());
+        }
+
         serviceStorage.put(toCreate.getKey(), toCreate);
+
         return toCreate;
     }
 
@@ -65,6 +76,7 @@ public class InMemoryStorage implements Storage {
         }
 
         Map<String, KeyValue> serviceStorage = storage.get(serviceId);
+
         serviceStorage.put(key, toUpdate);
         return toUpdate;
     }
@@ -89,5 +101,18 @@ public class InMemoryStorage implements Storage {
     private boolean isKeyNotInCache(String serviceId, String keyToTest) {
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
         return serviceSpecificStorage == null || serviceSpecificStorage.get(keyToTest) == null;
+    }
+
+    private void verifyTotalSize(String key) {
+        int currentSize = 0;
+        for (Map.Entry<String, Map<String, KeyValue>> serviceStorage: storage.entrySet()) {
+            currentSize += serviceStorage.getValue().size();
+        }
+
+        log.info("Current Size {}.", currentSize);
+
+        if (currentSize >= inMemoryConfig.getMaxDataSize()) {
+            throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus(), key);
+        }
     }
 }
