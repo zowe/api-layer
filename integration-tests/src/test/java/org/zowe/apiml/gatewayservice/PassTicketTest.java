@@ -50,7 +50,8 @@ class PassTicketTest {
     private final static String DISCOVERABLECLIENT_PASSTICKET_BASE_PATH = "/api/v1/dcpassticket";
     private final static String DISCOVERABLECLIENT_BASE_PATH = "/api/v1/discoverableclient";
     private final static String PASSTICKET_TEST_ENDPOINT = "/passticketTest";
-    private final static String TICKET_ENDPOINT = "/api/v1/gateway/auth/ticket";
+    private final static String TICKET_ENDPOINT = "/gateway/api/v1/auth/ticket";
+    private final static String TICKET_ENDPOINT_OLD_PATH_FORMAT = "/api/v1/gateway/auth/ticket";
     private final static String COOKIE = "apimlAuthenticationToken";
     private final static String REQUEST_INFO_ENDPOINT = "/request";
 
@@ -142,6 +143,30 @@ class PassTicketTest {
         .then()
             .statusCode(is(SC_OK));
 
+    }
+
+    @Test
+    @TestsNotMeantForZowe
+    void generateTicketWithOldPathFormat() {
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        String jwt = gatewayToken();
+        log.info(APPLICATION_NAME);
+        TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
+
+        // Generate ticket
+        TicketResponse ticketResponse = given()
+            .contentType(JSON)
+            .body(ticketRequest)
+            .cookie(COOKIE, jwt)
+        .when()
+            .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT_OLD_PATH_FORMAT))
+        .then()
+            .statusCode(is(SC_OK))
+            .extract().body().as(TicketResponse.class);
+
+        assertEquals(jwt, ticketResponse.getToken());
+        assertEquals(USERNAME, ticketResponse.getUserId());
+        assertEquals(APPLICATION_NAME, ticketResponse.getApplicationName());
     }
 
     @Test

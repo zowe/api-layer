@@ -25,7 +25,8 @@ public class QueryIntegrationTest {
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
-    private final static String BASE_PATH = "/api/v1/gateway";
+    private final static String BASE_PATH = "/gateway/api/v1";
+    private final static String BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
     private final static String QUERY_ENDPOINT = "/auth/query";
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -55,11 +56,33 @@ public class QueryIntegrationTest {
     }
 
     @Test
+    void doQueryWithValidTokenFromHeader_OldPathFormat(){
+        given()
+            .header("Authorization", "Bearer " + token)
+        .when()
+            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH_OLD_FORMAT, QUERY_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK))
+            .body("userId", equalTo(USERNAME));
+    }
+
+    @Test
     void doQueryWithValidTokenFromCookie() {
         given()
             .cookie(COOKIE, token)
         .when()
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK))
+            .body("userId", equalTo(USERNAME));
+    }
+
+    @Test
+    void doQueryWithValidTokenFromCookie_OldPathFormat() {
+        given()
+            .cookie(COOKIE, token)
+        .when()
+            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH_OLD_FORMAT, QUERY_ENDPOINT))
         .then()
             .statusCode(is(SC_OK))
             .body("userId", equalTo(USERNAME));
