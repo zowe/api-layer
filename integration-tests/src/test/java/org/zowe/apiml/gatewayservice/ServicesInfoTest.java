@@ -19,8 +19,7 @@ import org.zowe.apiml.util.config.ConfigReader;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.constants.ApimlConstants.BASIC_AUTHENTICATION_PREFIX;
@@ -33,10 +32,10 @@ class ServicesInfoTest {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()
-            .getScheme();
-    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()
-            .getHost();
+    private final static String NOT_AUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUnauthorized().getUser();
+    private final static String NOT_AUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getUnauthorized().getPassword();
+    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
+    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
 
     private static final String SERVICES_ENDPOINT = "gateway/api/v1/services";
@@ -129,6 +128,22 @@ class ServicesInfoTest {
                 .statusCode(is(SC_OK))
                 .header(VERSION_HEADER, CURRENT_VERSION)
                 .body("apiml.apiInfo[0].apiId", equalTo("zowe.apiml.gateway"));
+        //@formatter:on
+    }
+
+    @Test
+    @SuppressWarnings({"squid:S2699", "Assets are after then()"})
+    void whenUnauthorized_thenReturn403() {
+        String expectedMessage = "The user is not authorized to the target resource:";
+
+        //@formatter:off
+        given()
+                .auth().basic(NOT_AUTHORIZED_USERNAME, NOT_AUTHORIZED_PASSWORD)
+        .when()
+                .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT))
+        .then()
+                .statusCode(is(SC_FORBIDDEN))
+                .body("messages.find { it.messageNumber == 'ZWEAT403E' }.messageContent", startsWith(expectedMessage));
         //@formatter:on
     }
 

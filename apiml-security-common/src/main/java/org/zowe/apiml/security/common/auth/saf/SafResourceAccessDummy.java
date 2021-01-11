@@ -35,7 +35,7 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
     // Required for IDE (IntelliJ) which sets the root project directory as home dir
     private static final String[] DEFAULT_FILE_LOCATIONS = {
             "saf.yml",
-            "gateway/saf.yml",
+            "gateway-service/saf.yml",
             "discovery-service/saf.yml",
             "api-catalog-services/saf.yml"
     };

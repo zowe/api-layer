@@ -14,9 +14,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class Credentials {
     private String user;
     private String password;
+    private Unauthorized unauthorized;
+
+    public Credentials(String user, String password) {
+        this.user = user;
+        this.password = password;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Unauthorized {
+        private String user;
+        private String password;
+    }
+
 }

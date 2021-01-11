@@ -17,6 +17,8 @@ safAccess:
         BPX.DAEMON:
             UPDATE:
                 - user
+    ZOWE:
         APIML.SERVICES:
             READ:
                 - user
+                - USER
