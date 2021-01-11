@@ -10,7 +10,7 @@
 package org.zowe.apiml.caching.service.inmemory.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.service.Storage;
@@ -19,10 +19,11 @@ import org.zowe.apiml.caching.service.inmemory.InMemoryStorage;
 @Configuration
 @RequiredArgsConstructor
 public class InMemoryConfiguration {
+    private final InMemoryConfig inMemoryConfig;
 
-    @ConditionalOnMissingBean(Storage.class)
+    @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "inMemory", matchIfMissing = true)
     @Bean
     public Storage inMemory() {
-        return new InMemoryStorage();
+        return new InMemoryStorage(inMemoryConfig);
     }
 }

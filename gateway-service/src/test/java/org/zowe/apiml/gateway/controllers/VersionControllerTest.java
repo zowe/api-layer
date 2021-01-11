@@ -9,12 +9,12 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.product.version.VersionInfo;
@@ -26,21 +26,21 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-public class VersionControllerTest {
+@ExtendWith(SpringExtension.class)
+class VersionControllerTest {
     @Mock
     private VersionService versionService;
 
     private MockMvc mockMvc;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         VersionController versionController = new VersionController(versionService);
         mockMvc = MockMvcBuilders.standaloneSetup(versionController).build();
     }
 
     @Test
-    public void givenSpecificVersions_whenVersionEndpointCalled_thenVersionInfoShouldBeGivenInSuccessfulResponse() throws Exception {
+    void givenSpecificVersions_whenVersionEndpointCalled_thenVersionInfoShouldBeGivenInSuccessfulResponse() throws Exception {
         Mockito.when(versionService.getVersion()).thenReturn(getDummyVersionInfo());
         this.mockMvc.perform(get("/gateway/version"))
             .andExpect(status().isOk())
