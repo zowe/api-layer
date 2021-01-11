@@ -9,16 +9,23 @@
  */
 package org.zowe.apiml.security.common.auth.saf;
 
+import lombok.Getter;
+
 public class EndpointImproprietyConfigureException extends RuntimeException {
 
     private static final long serialVersionUID = -4582785501782402751L;
 
-    public EndpointImproprietyConfigureException(String message) {
+    @Getter
+    private final String endpoint;
+
+    public EndpointImproprietyConfigureException(String message, String endpoint) {
         super(message);
+        this.endpoint = endpoint;
     }
 
-    public EndpointImproprietyConfigureException(String message, Throwable cause) {
+    public EndpointImproprietyConfigureException(String message, String endpoint, Throwable cause) {
         super(message, cause);
+        this.endpoint = endpoint;
     }
 
 }

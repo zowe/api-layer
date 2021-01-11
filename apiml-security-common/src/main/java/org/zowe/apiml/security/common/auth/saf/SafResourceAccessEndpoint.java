@@ -28,7 +28,7 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
 
     private static final String URL_VARIABLE_SUFFIX = "/{entity}/{level}";
 
-    @Value("${apiml.security.authorization.endpoint.url:'http://localhost:8542/saf-auth'}")
+    @Value("${apiml.security.authorization.endpoint.url:http://localhost:8542/saf-auth}")
     private String endpointUrl;
 
     private final RestTemplate restTemplate;
@@ -57,13 +57,13 @@ public class SafResourceAccessEndpoint implements SafResourceAccessVerifying {
             );
             Response response = responseEntity.getBody();
             if (response != null && response.isError()) {
-                throw new EndpointImproprietyConfigureException("Endpoint " + endpointUrl + " is not properly configured: " + response.getMessage());
+                throw new EndpointImproprietyConfigureException("Endpoint " + endpointUrl + " is not properly configured: " + response.getMessage(), endpointUrl);
             }
             return response != null && !response.isError() && response.isAuthorized();
         } catch (EndpointImproprietyConfigureException e) {
             throw e;
         } catch (Exception e) {
-            throw new EndpointImproprietyConfigureException("Endpoint " + endpointUrl + " is not properly configured.", e);
+            throw new EndpointImproprietyConfigureException("Endpoint " + endpointUrl + " is not properly configured.", endpointUrl, e);
         }
     }
 
