@@ -64,6 +64,7 @@ import java.util.*;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {
+        "/gateway/api/v1",
         "/api/v1/gateway",
         "/application",
         "/gateway/services"
@@ -115,11 +116,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpoint()).permitAll()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpointOldFormat()).permitAll()
 
             // ticket endpoint
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpointOldFormat()).authenticated()
             .and().x509()
             .userDetailsService(x509UserDetailsService())
 
@@ -166,8 +169,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(x509Filter(authConfigurationProperties.getGatewayLoginEndpoint()), LoginFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509Filter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), LoginFilter.class)
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }
