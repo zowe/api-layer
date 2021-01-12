@@ -73,7 +73,7 @@ properties(opts)
 
 pipeline {
     agent {
-        label 'zowe-jenkins-agent'
+        label 'zowe-jenkins-agent-jdk11-test'
     }
 
     options {
