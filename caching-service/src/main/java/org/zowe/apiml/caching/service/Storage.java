@@ -11,6 +11,7 @@ package org.zowe.apiml.caching.service;
 
 import org.zowe.apiml.caching.model.KeyValue;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -61,4 +62,10 @@ public interface Storage {
      * @return Map with the key/value pairs or null if there is none existing.
      */
     Map<String, KeyValue> readForService(String serviceId);
+
+    /**
+     * Return all stored the key/value pairs.
+     * @return Map with the key/value pairs or null if there is none existing.
+     */
+    List<String> readRecords();
 }

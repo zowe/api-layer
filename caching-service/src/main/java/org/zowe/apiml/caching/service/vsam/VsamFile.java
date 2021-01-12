@@ -304,6 +304,49 @@ public class VsamFile implements Closeable {
         return returned;
     }
 
+    public List<String> readRecords() {
+        byte[] ignoreKey = new byte[0];
+        try {
+            ignoreKey = " ".getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        List<String> returned = new ArrayList<>();
+
+        boolean found;
+
+        try {
+            byte[] recBuf = new byte[vsamConfig.getRecordLength()];
+
+            found = zfile.locate(ignoreKey,
+                ZFileConstants.LOCATE_KEY_FIRST);
+
+            log.info(RECORD_FOUND_MESSAGE, found);
+
+            int overflowProtection = 10000;
+            int nread = zfile.read(recBuf);
+            while (nread != -1) {
+
+                log.trace("RecBuf: {}", recBuf);
+                log.info("nread: {}", nread);
+
+                String record = new String(recBuf);
+                log.info("Read record: {}", record);
+
+                returned.add(record);
+
+                overflowProtection--;
+                if (overflowProtection <= 0) {
+                    log.error("Maximum number of records retrieved, stopping the retrieval");
+                    break;
+                }
+            }
+        } catch (ZFileException e) {
+            log.error(e.toString());
+        }
+        return returned;
+    }
+
     @SuppressWarnings({"squid:S1130", "squid:S1192"})
     private ZFile openZfile() throws ZFileException {
         if (!REGEX_CORRECT_FILENAME.matcher(vsamConfig.getFileName()).find()) {
