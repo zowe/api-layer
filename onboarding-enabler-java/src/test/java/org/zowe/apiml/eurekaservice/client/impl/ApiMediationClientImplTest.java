@@ -21,28 +21,28 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import com.netflix.appinfo.InstanceInfo;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.hamcrest.core.Is.isA;
-import static org.junit.Assert.*;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-public class ApiMediationClientImplTest {
+class ApiMediationClientImplTest {
 
     private static final char[] PASSWORD = "password".toCharArray();
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
-    public void startEurekaClient() throws ServiceDefinitionException {
+    void startEurekaClient() throws ServiceDefinitionException {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0"));
         Authentication authentication = new Authentication("bypass", null);
@@ -85,22 +85,20 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void badBaseUrlFormat() throws ServiceDefinitionException {
-        exceptionRule.expect(MetadataValidationException.class);
-
+    void badBaseUrlFormat() throws ServiceDefinitionException {
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/bad-baseurl-service-configuration.yml");
 
         // Try register the services - expecting to throw ServiceDefinitionException
         ApiMediationClient client = new ApiMediationClientImpl();
-        client.register(config);
+        assertThrows(MetadataValidationException.class, () -> client.register(config));
         client.unregister();
     }
 
     @Test
     // It just tests that the https base configuration won't throw any exception.
-    public void httpsBaseUrlFormat() throws ServiceDefinitionException {
+    void httpsBaseUrlFormat() throws ServiceDefinitionException {
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/https-service-configuration.yml");
@@ -120,39 +118,30 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void badProtocolForBaseUrl() throws ServiceDefinitionException {
-        exceptionRule.expect(MetadataValidationException.class);
-
+    void badProtocolForBaseUrl() throws ServiceDefinitionException {
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/bad-protocol-baseurl-service-configuration.yml");
 
         ApiMediationClient client = new ApiMediationClientImpl();
-        client.register(config);
+        assertThrows(MetadataValidationException.class, () -> client.register(config));
         client.unregister();
     }
 
     @Test
-    public void testInitializationServiceDefinitionException() throws ServiceDefinitionException {
-        exceptionRule.expect(MetadataValidationException.class);
-
+    void testInitializationServiceDefinitionException() throws ServiceDefinitionException {
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/service-configuration.yml");
         config.setBaseUrl(null);
 
         ApiMediationClient client = new ApiMediationClientImpl();
-
-        client.register(config);
-
+        assertThrows(MetadataValidationException.class, () -> client.register(config));
         client.unregister();
     }
 
     @Test
-    public void testInitializationRuntimeException() throws ServiceDefinitionException {
-        exceptionRule.expect(MetadataValidationException.class);
-        exceptionRule.expectMessage("Routes configuration was not provided. Try to add apiml.service.routes section");
-
+    void testInitializationRuntimeException() throws ServiceDefinitionException {
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/service-configuration.yml");
@@ -160,16 +149,13 @@ public class ApiMediationClientImplTest {
 
         ApiMediationClient client = new ApiMediationClientImpl();
 
-        client.register(config);
-
+        Exception exception = assertThrows(MetadataValidationException.class, () -> client.register(config));
+        assertEquals("Routes configuration was not provided. Try to add apiml.service.routes section.", exception.getMessage());
         client.unregister();
     }
 
     @Test
-    public void testInitialization_InvalidDocumentationUrl() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
-        exceptionRule.expectCause(isA(MetadataValidationException.class));
-
+    void testInitialization_InvalidDocumentationUrl() throws ServiceDefinitionException {
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/service-configuration.yml");
@@ -177,8 +163,8 @@ public class ApiMediationClientImplTest {
 
         ApiMediationClient client = new ApiMediationClientImpl();
 
-        client.register(config);
-
+        Exception exception = assertThrows(ServiceDefinitionException.class, () -> client.register(config));
+        assertThat(exception.getCause(), instanceOf(MetadataValidationException.class));
         client.unregister();
     }
 }
