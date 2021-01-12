@@ -9,9 +9,7 @@
  */
 package org.zowe.apiml.eurekaservice.client.util;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
@@ -22,17 +20,18 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertNull;
-import static org.hamcrest.core.Is.isA;
-import static org.junit.Assert.*;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ApiMediationServiceConfigReaderTest {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
+class ApiMediationServiceConfigReaderTest {
 
     @Test
-    public void testLoadConfiguration_TwoFiles_OK() throws ServiceDefinitionException {
+    void testLoadConfiguration_TwoFiles_OK() throws ServiceDefinitionException {
 
         String internalFileName = "/service-configuration.yml";
         String additionalFileName = "/additional-service-configuration.yml";
@@ -54,16 +53,15 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void readConfigurationWithWrongFormat() throws ServiceDefinitionException {
+    void readConfigurationWithWrongFormat() throws ServiceDefinitionException {
         String file = "/bad-format-of-service-configuration.yml";
-        exceptionRule.expect(ServiceDefinitionException.class);
 
-        ApiMediationServiceConfig  config = new ApiMediationServiceConfigReader().loadConfiguration(file);
-        assertNull(config);
+        ApiMediationServiceConfigReader apimlConfigReader = new ApiMediationServiceConfigReader();
+        assertThrows(ServiceDefinitionException.class, () -> apimlConfigReader.loadConfiguration(file));
     }
 
     @Test
-    public void testMapMerge_FULL() throws ServiceDefinitionException {
+    void testMapMerge_FULL() throws ServiceDefinitionException {
         ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile( "/service-configuration.yml", null);
         ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile( "/additional-service-configuration.yml", null);
 
@@ -87,7 +85,7 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void testMapMerge_PART_serviceid_keystore_truststore() throws ServiceDefinitionException {
+    void testMapMerge_PART_serviceid_keystore_truststore() throws ServiceDefinitionException {
 
         ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile( "/service-configuration.yml", null);
         ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile( "/additional-service-configuration_serviceid-andkeystore-truststore-only.yml", null);
@@ -104,7 +102,7 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void testMapMerge_PART_serviceid_ciphers() throws ServiceDefinitionException {
+    void testMapMerge_PART_serviceid_ciphers() throws ServiceDefinitionException {
         ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile( "/service-configuration.yml", null);
         ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile( "/additional-service-configuration_serviceid-ssl-ciphers-only.yml", null);
 
@@ -118,7 +116,7 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void testGetApiMediationServiceConfigFromFile() throws ServiceDefinitionException {
+    void testGetApiMediationServiceConfigFromFile() throws ServiceDefinitionException {
         Map<String, String> properties = new HashMap<>();
         ApiMediationServiceConfig config = getApiMediationServiceConfigFromFile("/service-configuration.yml", properties);
         assertNotNull(config);
@@ -151,7 +149,7 @@ public class ApiMediationServiceConfigReaderTest {
 
 
     @Test
-    public void testSetApiMlContext_Ok() {
+    void testSetApiMlContext_Ok() {
         ServletContext context = getMockServletContext();
 
         ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
@@ -160,7 +158,7 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void testSetApiMlContextTwice_Ok() {
+    void testSetApiMlContextTwice_Ok() {
         ServletContext context = getMockServletContext();
 
         ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
@@ -170,7 +168,7 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void testLoadConfigurationFromContext_OK() throws ServiceDefinitionException {
+    void testLoadConfigurationFromContext_OK() throws ServiceDefinitionException {
         ServletContext context = getMockServletContext();
         ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
         ApiMediationServiceConfig config = reader.loadConfiguration(context);
@@ -178,7 +176,7 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void testLoadConfigurationFromSingleFile_OK() throws ServiceDefinitionException {
+    void testLoadConfigurationFromSingleFile_OK() throws ServiceDefinitionException {
         ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
         ApiMediationServiceConfig config = reader.loadConfiguration("/service-configuration.yml");
         assertNotNull(config);
@@ -202,7 +200,7 @@ public class ApiMediationServiceConfigReaderTest {
 
 
     @Test
-    public void testReadConfigurationFile_Internal_file_name_null() throws ServiceDefinitionException {
+    void testReadConfigurationFile_Internal_file_name_null() throws ServiceDefinitionException {
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -213,7 +211,7 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void testLoadConfiguration_IpAddressIsNull_OK() throws ServiceDefinitionException {
+    void testLoadConfiguration_IpAddressIsNull_OK() throws ServiceDefinitionException {
         String internalFileName = "/additional-service-configuration_ip-address-null.yml";
         String additionalFileName = "/additional-service-configuration_ip-address-null.yml";
 
@@ -225,28 +223,27 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void testLoadConfiguration_IpAddressIsNull_bad_baseUrl() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
-        exceptionRule.expectCause(isA(MalformedURLException.class));
-
+    void testLoadConfiguration_IpAddressIsNull_bad_baseUrl() throws ServiceDefinitionException {
         String internalFileName = "/additional-service-configuration_ip-address-null_bad-baseUrl.yml";
         String additionalFileName = "/additional-service-configuration_ip-address-null_bad-baseUrl.yml";
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-        // ApiMediationServiceConfig result =
-            apiMediationServiceConfigReader.loadConfiguration(internalFileName, additionalFileName);
+        
+        Exception exception = assertThrows(ServiceDefinitionException.class, 
+            () -> apiMediationServiceConfigReader.loadConfiguration(internalFileName, additionalFileName));
+
+        assertThat(exception.getCause(), instanceOf(MalformedURLException.class));
     }
 
     @Test
-    public void testLoadConfiguration_IpAddressIsNull_UnknownHost() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
-        exceptionRule.expectCause(isA(UnknownHostException.class));
-
+    void testLoadConfiguration_IpAddressIsNull_UnknownHost() throws ServiceDefinitionException {
         String internalFileName = "/additional-service-configuration_ip-address-null_UnknownHost.yml";
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-        // ApiMediationServiceConfig result =
-            apiMediationServiceConfigReader.loadConfiguration(internalFileName, null);
 
+        Exception exception = assertThrows(ServiceDefinitionException.class, 
+            () -> apiMediationServiceConfigReader.loadConfiguration(internalFileName, null));
+
+        assertThat(exception.getCause(), instanceOf(UnknownHostException.class));
     }
 }
