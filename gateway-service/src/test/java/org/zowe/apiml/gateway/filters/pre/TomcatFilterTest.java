@@ -10,12 +10,12 @@
 package org.zowe.apiml.gateway.filters.pre;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -31,11 +31,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class TomcatFilterTest {
+@ExtendWith(MockitoExtension.class)
+class TomcatFilterTest {
 
     private static final String ALLOW_ENCODED_SLASHES_FIELD = "allowEncodedSlashes";
     private static final String ENCODED_REQUEST_URI = "/api/v1/encoded%2fslash";
@@ -49,20 +50,20 @@ public class TomcatFilterTest {
     private TomcatFilter filter;
     private FilterChain filterChain;
 
-    @BeforeClass
-    public static void initMessageService() {
+    @BeforeAll
+    static void initMessageService() {
         messageService = new YamlMessageService("/gateway-messages.yml");
     }
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
         filterChain = mock(FilterChain.class);
     }
 
     @Test
-    public void shouldRejectEncodedSlashRequestsWhenConfiguredToReject() throws IOException, ServletException {
+    void shouldRejectEncodedSlashRequestsWhenConfiguredToReject() throws IOException, ServletException {
         filter = new TomcatFilter(messageService, objectMapper);
         ReflectionTestUtils.setField(filter, ALLOW_ENCODED_SLASHES_FIELD, false);
 
@@ -77,7 +78,7 @@ public class TomcatFilterTest {
     }
 
     @Test
-    public void shouldAllowNonEncodedSlashRequestsAndMoveToNextFilterWhenConfiguredToReject() throws IOException, ServletException {
+    void shouldAllowNonEncodedSlashRequestsAndMoveToNextFilterWhenConfiguredToReject() throws IOException, ServletException {
         filter = new TomcatFilter(messageService, objectMapper);
         ReflectionTestUtils.setField(filter, ALLOW_ENCODED_SLASHES_FIELD, false);
 
@@ -89,7 +90,7 @@ public class TomcatFilterTest {
     }
 
     @Test
-    public void shouldAllowAnyRequestAndMoveToNextFilterWhenConfiguredToAllow() throws IOException, ServletException {
+    void shouldAllowAnyRequestAndMoveToNextFilterWhenConfiguredToAllow() throws IOException, ServletException {
         filter = new TomcatFilter(messageService, objectMapper);
         ReflectionTestUtils.setField(filter, ALLOW_ENCODED_SLASHES_FIELD, true);
 
@@ -109,8 +110,8 @@ public class TomcatFilterTest {
         verify(filterChain).doFilter(request, response);
     }
 
-    @Test(expected = ServletException.class)
-    public void shouldThrowServletExceptionOnIOExceptionWhenWritingResponse() throws IOException, ServletException {
+    @Test
+    void shouldThrowServletExceptionOnIOExceptionWhenWritingResponse() throws IOException {
         HttpServletRequest mockedRequest = mock(HttpServletRequest.class);
         HttpServletResponse mockedResponse = mock(HttpServletResponse.class);
 
@@ -119,6 +120,7 @@ public class TomcatFilterTest {
 
         when(mockedRequest.getRequestURI()).thenReturn(ENCODED_REQUEST_URI);
         when(mockedResponse.getWriter()).thenThrow(new IOException());
-        filter.doFilter(mockedRequest, mockedResponse, filterChain);
+        
+        assertThrows(ServletException.class, () -> filter.doFilter(mockedRequest, mockedResponse, filterChain));
     }
 }

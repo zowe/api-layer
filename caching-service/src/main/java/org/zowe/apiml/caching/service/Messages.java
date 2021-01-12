@@ -19,7 +19,8 @@ public enum Messages {
     DUPLICATE_KEY("org.zowe.apiml.cache.keyCollision", HttpStatus.CONFLICT),
     KEY_NOT_PROVIDED("org.zowe.apiml.cache.keyNotProvided", HttpStatus.BAD_REQUEST),
     KEY_NOT_IN_CACHE("org.zowe.apiml.cache.keyNotInCache", HttpStatus.NOT_FOUND),
-    INVALID_PAYLOAD("org.zowe.apiml.cache.invalidPayload", HttpStatus.BAD_REQUEST);
+    INVALID_PAYLOAD("org.zowe.apiml.cache.invalidPayload", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_STORAGE("org.zowe.apiml.cache.insufficientStorage", HttpStatus.INSUFFICIENT_STORAGE);
 
     private final String key;
     private final HttpStatus status;
