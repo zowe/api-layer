@@ -9,13 +9,13 @@
  */
 package org.zowe.apiml.eurekaservice.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HealthTest {
+class HealthTest {
     @Test
-    public void healthConstructorTest() {
+    void healthConstructorTest() {
         final String status = "UP";
 
         Health health = new Health(status);
@@ -24,7 +24,7 @@ public class HealthTest {
     }
 
     @Test
-    public void healthSetterTest() {
+    void healthSetterTest() {
         final String status = "UP";
         Health health = new Health(null);
         health.setStatus(status);
