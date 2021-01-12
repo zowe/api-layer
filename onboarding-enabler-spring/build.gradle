@@ -40,6 +40,8 @@ dependencies {
 
     annotationProcessor libraries.spring_boot_configuration_processor
     testCompile libraries.gson
+
+    testImplementation libraries.junitJupiter
 }
 
 jar {

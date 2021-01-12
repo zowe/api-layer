@@ -14,27 +14,27 @@ import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @EnableAutoConfiguration
 @EnableApiDiscovery
 @ActiveProfiles("apiml-disabled")
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = {RegisterToApiLayer.class, EnableApiDiscoveryConfig.class})
-public class ApimlDisabledRegisterToApiLayerTest {
+class ApimlDisabledRegisterToApiLayerTest {
 
     @Autowired
     private ApiMediationServiceConfig apiMediationServiceConfig;
@@ -43,10 +43,10 @@ public class ApimlDisabledRegisterToApiLayerTest {
     private ApiMediationClient apiMediationClient;
 
     @Test
-    public void testOnContextRefreshedEventEvent() throws ServiceDefinitionException {
+    void testOnContextRefreshedEventEvent() throws ServiceDefinitionException {
 
-        assertNotNull("ApiMediationServiceConfig is null", apiMediationServiceConfig);
-        assertNotNull("Ssl is null", apiMediationServiceConfig.getSsl());
+        assertNotNull(apiMediationServiceConfig, "ApiMediationServiceConfig is null");
+        assertNotNull(apiMediationServiceConfig.getSsl(), "Ssl is null");
 
         verify(apiMediationClient, never()).register(apiMediationServiceConfig);
     }
