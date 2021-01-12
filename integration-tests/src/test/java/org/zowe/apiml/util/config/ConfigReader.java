@@ -71,8 +71,8 @@ public class ConfigReader {
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
                     configuration.getCredentials().setPassword(System.getProperty("credentials.password", configuration.getCredentials().getPassword()));
-                    configuration.getCredentials().getUnauthorized().setUser(System.getProperty("credentials.notAuthorized.user", configuration.getCredentials().getUnauthorized().getUser()));
-                    configuration.getCredentials().getUnauthorized().setPassword(System.getProperty("credentials.notAuthorized.password", configuration.getCredentials().getUnauthorized().getPassword()));
+                    configuration.getCredentials().getUnauthorized().setUser(System.getProperty("credentials.unauthorized.user", configuration.getCredentials().getUnauthorized().getUser()));
+                    configuration.getCredentials().getUnauthorized().setPassword(System.getProperty("credentials.unauthorized.password", configuration.getCredentials().getUnauthorized().getPassword()));
 
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
                     configuration.getGatewayServiceConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayServiceConfiguration().getHost()));
