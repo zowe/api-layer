@@ -29,7 +29,7 @@ import org.zowe.apiml.zfile.ZFileConstants;
 public class VsamConfig {
     private final GeneralConfig generalConfig;
 
-    @Value("${caching.storage.vsam.name}")
+    @Value("${caching.storage.vsam.name://CACHE}")
     private String fileName;
     @Value("${caching.storage.vsam.keyLength:32}")
     private int keyLength;
