@@ -11,9 +11,7 @@ package org.zowe.apiml.caching.service.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.model.KeyValue;
-import org.zowe.apiml.caching.service.Messages;
-import org.zowe.apiml.caching.service.Storage;
-import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.caching.service.*;
 import org.zowe.apiml.caching.service.inmemory.config.InMemoryConfig;
 
 import java.util.HashMap;
@@ -22,16 +20,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class InMemoryStorage implements Storage {
-    private Map<String, Map<String, KeyValue>> storage = new ConcurrentHashMap<>();
-    private InMemoryConfig inMemoryConfig;
+    private Map<String, Map<String, KeyValue>> storage;
+    private EvictionStrategy strategy = new DefaultEvictionStrategy();
 
     public InMemoryStorage(InMemoryConfig inMemoryConfig) {
-        this.inMemoryConfig = inMemoryConfig;
+        this(inMemoryConfig, new ConcurrentHashMap<>());
     }
 
     protected InMemoryStorage(InMemoryConfig inMemoryConfig, Map<String, Map<String, KeyValue>> storage) {
-        this(inMemoryConfig);
         this.storage = storage;
+
+        String evictionStrategy = inMemoryConfig.getGeneralConfig().getEvictionStrategy();
+        if (evictionStrategy.equals("reject")) {
+            strategy = new RejectStrategy(storage, inMemoryConfig);
+        } else if (evictionStrategy.equals("removeOldest")) {
+            strategy = new RemoveOldestStrategy(storage, inMemoryConfig);
+        }
     }
 
     @Override
@@ -44,9 +48,8 @@ public class InMemoryStorage implements Storage {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
         }
 
-        String evictionStrategy = inMemoryConfig.getGeneralConfig().getEvictionStrategy();
-        if (evictionStrategy.equals("reject")) {
-            verifyTotalSize(toCreate.getKey());
+        if(strategy.aboveThreshold()) {
+            strategy.evict(toCreate.getKey());
         }
 
         serviceStorage.put(toCreate.getKey(), toCreate);
@@ -101,18 +104,5 @@ public class InMemoryStorage implements Storage {
     private boolean isKeyNotInCache(String serviceId, String keyToTest) {
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
         return serviceSpecificStorage == null || serviceSpecificStorage.get(keyToTest) == null;
-    }
-
-    private void verifyTotalSize(String key) {
-        int currentSize = 0;
-        for (Map.Entry<String, Map<String, KeyValue>> serviceStorage: storage.entrySet()) {
-            currentSize += serviceStorage.getValue().size();
-        }
-
-        log.info("Current Size {}.", currentSize);
-
-        if (currentSize >= inMemoryConfig.getMaxDataSize()) {
-            throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus(), key);
-        }
     }
 }
