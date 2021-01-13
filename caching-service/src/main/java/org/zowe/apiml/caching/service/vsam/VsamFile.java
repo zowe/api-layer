@@ -309,7 +309,7 @@ public class VsamFile implements Closeable {
         try {
             ignoreKey = " ".getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            log.error(UNSUPPORTED_ENCODING_MESSAGE, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
         }
         List<String> returned = new ArrayList<>();
 

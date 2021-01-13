@@ -61,10 +61,4 @@ public interface Storage {
      * @return Map with the key/value pairs or null if there is none existing.
      */
     Map<String, KeyValue> readForService(String serviceId);
-
-//    /**
-//     * Return all stored the key/value pairs.
-//     * @return Map with the key/value pairs or null if there is none existing.
-//     */
-//    List<String> readRecords();
 }
