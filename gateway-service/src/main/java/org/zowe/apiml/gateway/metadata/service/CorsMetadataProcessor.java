@@ -58,8 +58,12 @@ public class CorsMetadataProcessor extends MetadataProcessor {
             UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
             final CorsConfiguration config = new CorsConfiguration();
             if (Boolean.parseBoolean(isCorsEnabledForService)) {
-                config.setAllowCredentials(true);
-                config.addAllowedOrigin(CorsConfiguration.ALL);
+                // Check if the configuration specifies allowed origins for this service
+                String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
+                // If not (default), allow all the origins
+                if (corsAllowedOriginsForService == null) corsAllowedOriginsForService = CorsConfiguration.ALL;
+                config.setAllowCredentials(true);       // TO-DO: this should NOT be done if allowing all origins 
+                config.addAllowedOrigin(corsAllowedOriginsForService);
                 config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
                 config.setAllowedMethods(allowedCorsHttpMethods);
             }
