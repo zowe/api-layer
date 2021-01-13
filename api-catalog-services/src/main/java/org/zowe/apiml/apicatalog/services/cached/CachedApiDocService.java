@@ -16,7 +16,9 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
+import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
+import org.zowe.apiml.product.instance.InstanceInitializationException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +63,11 @@ public class CachedApiDocService {
             if (apiDoc == null) {
                 throw new ApiDocNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
             }
+        } catch (InstanceInitializationException e) {
+            //If unable to get service info
+            if (apiDoc == null) {
+                throw new ServiceNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+            }
         } catch (Exception e) {
             //if there's not apiDoc in cache
             if (apiDoc == null) {
@@ -98,6 +105,11 @@ public class CachedApiDocService {
             }
             if (apiDoc == null) {
                 throw new ApiDocNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+            }
+        } catch (InstanceInitializationException e) {
+            //If unable to get service info
+            if (apiDoc == null) {
+                throw new ServiceNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
             }
         } catch (Exception e) {
             //if there's not apiDoc in cache
