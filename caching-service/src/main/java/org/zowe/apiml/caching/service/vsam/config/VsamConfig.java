@@ -37,6 +37,8 @@ public class VsamConfig {
     private int recordLength;
     @Value("${caching.storage.vsam.encoding:" + ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE + "}")
     private String encoding;
+    @Value("${caching.storage.inmemory.size:100}")
+    private int maxDataSize;
 
     public static enum VsamOptions {
         READ("rb,type=record"),
