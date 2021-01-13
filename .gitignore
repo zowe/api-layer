@@ -104,3 +104,6 @@ user-zowe-api.json
 lastJob.json
 invalidated*.data
 invalidated*.index
+
+keystore/
+keystore-repo/
