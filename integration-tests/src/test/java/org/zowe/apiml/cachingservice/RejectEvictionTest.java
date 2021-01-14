@@ -38,7 +38,7 @@ class RejectEvictionTest {
 
     @Test
     void givenStorageIsFull_whenAnotherKeyIsInserted_thenItIsRejected() {
-        int amountOfAllowedRecords = 100;
+        int amountOfAllowedRecords = 99;
         try {
             KeyValue keyValue;
 
