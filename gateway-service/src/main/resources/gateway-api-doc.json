@@ -277,7 +277,7 @@
             "get": {
                 "tags": ["Services"],
                 "summary": "Returns detailed information about all or selected services",
-                "description": "Use this endpoint to obtain detailed information about all services, their APIs, and instances. You can select services only for the specific API ID.",
+                "description": "Use this endpoint to obtain detailed information about all services, their APIs, and instances. You can also select services only for the specific API ID. This endpoint is protected by the `APIML.SERVICES` resource in the `ZOWE` class. At least `READ` access is required.",
                 "operationId": "servicesUsingGET",
                 "parameters": [
                     {
@@ -332,7 +332,7 @@
             "get": {
                 "tags": ["Services"],
                 "summary": "Returns detailed information about the requested service",
-                "description": "Use this endpoint to obtain detailed information about the service, its APIs, and its instances.",
+                "description": "Use this endpoint to obtain detailed information about the service, its APIs, and its instances. This endpoint is protected by the `APIML.SERVICES` resource in the `ZOWE` class. At least `READ` access is required.",
                 "operationId": "servicesUsingGET",
                 "parameters": [
                     {

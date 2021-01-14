@@ -32,8 +32,8 @@ class ServicesInfoTest {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-    private final static String NOT_AUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("unauthorized").get(0).getUser();
-    private final static String NOT_AUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("unauthorized").get(0).getPassword();
+    private final static String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("unauthorized").get(0).getUser();
+    private final static String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("unauthorized").get(0).getPassword();
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
@@ -138,7 +138,7 @@ class ServicesInfoTest {
 
         //@formatter:off
         given()
-                .auth().basic(NOT_AUTHORIZED_USERNAME, NOT_AUTHORIZED_PASSWORD)
+                .auth().basic(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD)
         .when()
                 .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT))
         .then()
