@@ -32,8 +32,8 @@ class ServicesInfoTest {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-    private final static String NOT_AUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUnauthorized().getUser();
-    private final static String NOT_AUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getUnauthorized().getPassword();
+    private final static String NOT_AUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("unauthorized").get(0).getUser();
+    private final static String NOT_AUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("unauthorized").get(0).getPassword();
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
