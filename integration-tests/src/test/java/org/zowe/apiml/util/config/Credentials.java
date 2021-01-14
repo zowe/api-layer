@@ -14,24 +14,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class Credentials {
+
+    private String key;
     private String user;
     private String password;
-    private Unauthorized unauthorized;
 
     public Credentials(String user, String password) {
         this.user = user;
         this.password = password;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Unauthorized {
-        private String user;
-        private String password;
     }
 
 }

@@ -2,9 +2,6 @@ credentials:
     # Mainframe credentials are required - see /integration-tests/README.md for instructions
     user: USER
     password: validPassword
-    unauthorized:
-        user: USER1
-        password: validPassword
 gatewayServiceConfiguration:
     scheme: https
     host: localhost
@@ -37,4 +34,4 @@ zosmfServiceConfiguration:
     port: 10013
     serviceId: mockzosmf
 auxiliaryUserList:
-    value: 'USER1,validPassword;USER2,validPassword'
+    value: 'caching,USER1,validPassword;caching,USER2,validPassword'
