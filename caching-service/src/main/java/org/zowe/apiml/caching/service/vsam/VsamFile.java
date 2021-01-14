@@ -344,6 +344,7 @@ public class VsamFile implements Closeable {
         } catch (ZFileException e) {
             log.error(e.toString());
         }
+        log.info("The Returned recordss: {}", returned);
         return returned;
     }
 
