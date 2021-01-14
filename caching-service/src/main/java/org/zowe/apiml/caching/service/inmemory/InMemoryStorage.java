@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InMemoryStorage implements Storage {
     private Map<String, Map<String, KeyValue>> storage;
     private EvictionStrategy strategy = new DefaultEvictionStrategy();
+    private InMemoryConfig config;
 
     public InMemoryStorage(InMemoryConfig inMemoryConfig) {
         this(inMemoryConfig, new ConcurrentHashMap<>());
@@ -29,10 +30,11 @@ public class InMemoryStorage implements Storage {
 
     protected InMemoryStorage(InMemoryConfig inMemoryConfig, Map<String, Map<String, KeyValue>> storage) {
         this.storage = storage;
+        this.config = inMemoryConfig;
 
         String evictionStrategy = inMemoryConfig.getGeneralConfig().getEvictionStrategy();
         if (evictionStrategy.equals("reject")) {
-            strategy = new RejectStrategy(storage, inMemoryConfig);
+            strategy = new RejectStrategy();
         } else if (evictionStrategy.equals("removeOldest")) {
             strategy = new RemoveOldestStrategy(storage, inMemoryConfig);
         }
@@ -48,7 +50,7 @@ public class InMemoryStorage implements Storage {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
         }
 
-        if(strategy.aboveThreshold()) {
+        if(aboveThreshold()) {
             strategy.evict(toCreate.getKey());
         }
 
@@ -104,5 +106,16 @@ public class InMemoryStorage implements Storage {
     private boolean isKeyNotInCache(String serviceId, String keyToTest) {
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
         return serviceSpecificStorage == null || serviceSpecificStorage.get(keyToTest) == null;
+    }
+
+    private boolean aboveThreshold() {
+        int currentSize = 0;
+        for (Map.Entry<String, Map<String, KeyValue>> serviceStorage: storage.entrySet()) {
+            currentSize += serviceStorage.getValue().size();
+        }
+
+        log.info("Current Size {}.", currentSize);
+
+        return currentSize >= config.getMaxDataSize();
     }
 }

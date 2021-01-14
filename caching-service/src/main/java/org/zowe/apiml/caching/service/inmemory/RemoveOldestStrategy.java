@@ -24,19 +24,11 @@ public class RemoveOldestStrategy implements EvictionStrategy {
     private final InMemoryConfig inMemoryConfig;
 
     @Override
-    public boolean aboveThreshold() {
-        int currentSize = 0;
-        for (Map.Entry<String, Map<String, KeyValue>> serviceStorage: storage.entrySet()) {
-            currentSize += serviceStorage.getValue().size();
-        }
-
-        log.info("Current Size {}.", currentSize);
-
-        return currentSize >= inMemoryConfig.getMaxDataSize();
-    }
-
-    @Override
     public void evict(String key) {
+        // Find the oldest key.
+        // I need to store the information about the age
 
+        // It needs to be in metadata.
+        // Is there any way to get this information for VSAM?
     }
 }

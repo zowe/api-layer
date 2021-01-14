@@ -11,12 +11,6 @@ package org.zowe.apiml.caching.service;
 
 public interface EvictionStrategy {
     /**
-     * Decide whether while adding new record we would get above the limit.
-     * @return true if we would get above the limit.
-     */
-    boolean aboveThreshold();
-
-    /**
      * This method is called when some item should be evicted. The strategy decides what to do with it.
      * The reject one could use this method to throw the StorageException.
      */

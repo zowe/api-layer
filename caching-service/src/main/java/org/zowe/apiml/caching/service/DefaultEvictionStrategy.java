@@ -11,11 +11,6 @@ package org.zowe.apiml.caching.service;
 
 public class DefaultEvictionStrategy implements EvictionStrategy {
     @Override
-    public boolean aboveThreshold() {
-        return false;
-    }
-
-    @Override
     public void evict(String key) {
         // Intentionally do nothing.
     }
