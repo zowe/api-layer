@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.product.web;
 
+import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.security.SecurityUtils;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.util.Set;
@@ -93,6 +95,10 @@ public class HttpConfig {
 
     private Set<String> publicKeyCertificatesBase64;
 
+    @Resource
+    private AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
+
+
     @PostConstruct
     public void init() {
         try {
@@ -117,7 +123,7 @@ public class HttpConfig {
             secureSslContext = factory.createSslContext();
             secureHostnameVerifier = factory.createHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
-
+            optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient();
 
@@ -225,4 +231,6 @@ public class HttpConfig {
     public EurekaJerseyClient eurekaJerseyClient() {
         return eurekaJerseyClientBuilder.build();
     }
+
+
 }
