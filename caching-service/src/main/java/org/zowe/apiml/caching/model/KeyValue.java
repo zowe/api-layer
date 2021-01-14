@@ -23,10 +23,14 @@ import lombok.RequiredArgsConstructor;
 public class KeyValue {
     private final String key;
     private final String value;
+    private final String serviceId;
+    private final String created;
 
     @JsonCreator
     public KeyValue() {
         key = "";
         value = "";
+        serviceId = "";
+        created = "";
     }
 }
