@@ -37,6 +37,14 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [ `uname` = "OS/390" ]; then
+    GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
+else
+    GATEWAY_LOADER_PATH=${COMMON_LIB}
+fi
+
+echo "Setting loader path: "${GATEWAY_LOADER_PATH}
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -98,7 +106,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.authorization.resourceNamePrefix=${RESOURCE_NAME_PREFIX:-APIML.} \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar \
+    -Dloader.path=${GATEWAY_LOADER_PATH} \
     -jar ${JAR_FILE} &
 pid=$?
 
