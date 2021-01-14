@@ -313,22 +313,22 @@ public class VsamFile implements Closeable {
         }
         List<String> returned = new ArrayList<>();
 
-        boolean found;
+//        boolean found;
 
         try {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
 
-            found = zfile.locate(ignoreKey,
-                ZFileConstants.LOCATE_KEY_FIRST);
+//            found = zfile.locate(ignoreKey,
+//                ZFileConstants.LOCATE_KEY_FIRST);
 
-            log.info(RECORD_FOUND_MESSAGE, found);
+//            log.info(RECORD_FOUND_MESSAGE, found);
 
             int overflowProtection = 10000;
-            int nread = zfile.read(recBuf);
-            while (nread != -1) {
+//            int nread = zfile.read(recBuf);
+            while (zfile.read(recBuf) != -1) {
 
                 log.trace("RecBuf: {}", recBuf);
-                log.info("nread: {}", nread);
+//                log.info("nread: {}", nread);
 
                 String record = new String(recBuf);
                 log.info("Read record: {}", record);
