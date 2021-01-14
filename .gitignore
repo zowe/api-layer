@@ -107,3 +107,7 @@ invalidated*.index
 
 keystore/
 keystore-repo/
+install-scripts
+pnpm-lock.yaml
+taq
+apiml-utility/target/test-output/toto-2021-01-13.log
