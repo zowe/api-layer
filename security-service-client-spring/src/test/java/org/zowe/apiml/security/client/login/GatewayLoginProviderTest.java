@@ -12,24 +12,21 @@ package org.zowe.apiml.security.client.login;
 
 import org.zowe.apiml.security.client.service.GatewaySecurityService;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.junit.Rule;
-import org.junit.Test;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class GatewayLoginProviderTest {
-
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
+class GatewayLoginProviderTest {
 
     private static final String USER = "USER";
     private static final String VALID_PASSWORD = "PASS";
@@ -40,7 +37,7 @@ public class GatewayLoginProviderTest {
     private final GatewayLoginProvider gatewayLoginProvider = new GatewayLoginProvider(gatewaySecurityService);
 
     @Test
-    public void shouldAuthenticateValidUsernamePassword() {
+    void shouldAuthenticateValidUsernamePassword() {
         when(gatewaySecurityService.login(USER, VALID_PASSWORD)).thenReturn(Optional.of(VALID_TOKEN));
 
         Authentication auth = new UsernamePasswordAuthenticationToken(USER, VALID_PASSWORD);
@@ -52,21 +49,21 @@ public class GatewayLoginProviderTest {
         assertEquals(USER, processedAuthentication.getName());
     }
 
-    @Test(expected = BadCredentialsException.class)
-    public void shouldThrowWithInvalidUsernamePassword() {
+    @Test
+    void shouldThrowWithInvalidUsernamePassword() {
         when(gatewaySecurityService.login(USER, INVALID_PASSWORD)).thenReturn(Optional.empty());
 
         Authentication auth = new UsernamePasswordAuthenticationToken(USER, INVALID_PASSWORD);
-        gatewayLoginProvider.authenticate(auth);
+        assertThrows(BadCredentialsException.class, () -> gatewayLoginProvider.authenticate(auth));
     }
 
     @Test
-    public void shouldSupportUsernamePasswordAuthentication() {
+    void shouldSupportUsernamePasswordAuthentication() {
         assertTrue(gatewayLoginProvider.supports(UsernamePasswordAuthenticationToken.class));
     }
 
     @Test
-    public void shouldNotSupportGenericAuthentication() {
+    void shouldNotSupportGenericAuthentication() {
         assertFalse(gatewayLoginProvider.supports(Authentication.class));
         assertFalse(gatewayLoginProvider.supports(TokenAuthentication.class));
     }
