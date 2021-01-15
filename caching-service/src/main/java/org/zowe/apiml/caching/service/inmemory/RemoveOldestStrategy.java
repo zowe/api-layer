@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.EvictionStrategy;
-import org.zowe.apiml.caching.service.inmemory.config.InMemoryConfig;
 
 import java.util.Map;
 
@@ -21,14 +20,33 @@ import java.util.Map;
 @Slf4j
 public class RemoveOldestStrategy implements EvictionStrategy {
     private final Map<String, Map<String, KeyValue>> storage;
-    private final InMemoryConfig inMemoryConfig;
 
     @Override
     public void evict(String key) {
-        // Find the oldest key.
-        // I need to store the information about the age
+        KeyValue oldest = null;
+        Map<String, KeyValue> mapStoringOldest = null;
+        for (Map.Entry<String, Map<String, KeyValue>> serviceStorage: storage.entrySet()) {
+            Map<String, KeyValue> services = serviceStorage.getValue();
+            for (Map.Entry<String, KeyValue> specificValue: services.entrySet()) {
+                KeyValue current = specificValue.getValue();
+                if (oldest == null) {
+                    oldest = current;
+                    mapStoringOldest = services;
+                    break;
+                }
 
-        // It needs to be in metadata.
-        // Is there any way to get this information for VSAM?
+                int oldestCreated = Integer.parseInt(oldest.getCreated());
+                int currentCreated = Integer.parseInt(current.getCreated());
+
+                if (oldestCreated > currentCreated) {
+                    oldest = current;
+                    mapStoringOldest = services;
+                }
+            }
+        }
+
+        if (oldest != null && mapStoringOldest != null) {
+            mapStoringOldest.remove(oldest.getKey());
+        }
     }
 }

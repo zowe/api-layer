@@ -33,10 +33,10 @@ public class InMemoryStorage implements Storage {
         this.config = inMemoryConfig;
 
         String evictionStrategy = inMemoryConfig.getGeneralConfig().getEvictionStrategy();
-        if (evictionStrategy.equals("reject")) {
+        if (evictionStrategy.equals(Strategies.REJECT.getKey())) {
             strategy = new RejectStrategy();
-        } else if (evictionStrategy.equals("removeOldest")) {
-            strategy = new RemoveOldestStrategy(storage, inMemoryConfig);
+        } else if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
+            strategy = new RemoveOldestStrategy(storage);
         }
     }
 
@@ -50,7 +50,7 @@ public class InMemoryStorage implements Storage {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
         }
 
-        if(aboveThreshold()) {
+        if (aboveThreshold()) {
             strategy.evict(toCreate.getKey());
         }
 

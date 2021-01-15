@@ -15,7 +15,7 @@ import org.zowe.apiml.caching.service.StorageException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class RejectStrategyTest {
+class RejectStrategyTest {
     private RejectStrategy underTest;
 
     @BeforeEach

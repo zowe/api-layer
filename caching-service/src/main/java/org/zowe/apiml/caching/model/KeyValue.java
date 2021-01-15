@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Date;
+
 /**
  * Data POJO that represents entry in caching service
  */
@@ -25,6 +27,24 @@ public class KeyValue {
     private final String value;
     private final String serviceId;
     private final String created;
+
+    public KeyValue(String key, String value) {
+        this.key = key;
+        this.value = value;
+        this.serviceId = "";
+        this.created = currentTime();
+    }
+
+    public KeyValue(String key, String value, String serviceId) {
+        this.key = key;
+        this.value = value;
+        this.serviceId = serviceId;
+        this.created = currentTime();
+    }
+
+    private String currentTime() {
+        return String.valueOf(new Date().getTime());
+    }
 
     @JsonCreator
     public KeyValue() {
