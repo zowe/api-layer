@@ -32,7 +32,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
                 if (oldest == null) {
                     oldest = current;
                     mapStoringOldest = services;
-                    break;
+                    continue;
                 }
 
                 int oldestCreated = Integer.parseInt(oldest.getCreated());
