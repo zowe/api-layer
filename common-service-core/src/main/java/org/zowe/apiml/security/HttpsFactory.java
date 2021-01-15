@@ -264,7 +264,8 @@ public class HttpsFactory {
         builder.withClientName(serviceId);
         builder.withMaxTotalConnections(10);
         builder.withMaxConnectionsPerHost(10);
-
+        builder.withConnectionIdleTimeout(10);
+        builder.withConnectionTimeout(5000);
         // See:
         // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
         if (eurekaServerUrl.startsWith("http://")) {

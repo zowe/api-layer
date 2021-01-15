@@ -9,14 +9,18 @@
  */
 package org.zowe.apiml.util.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Credentials {
+    private String key;
     private String user;
     private String password;
+
+    public Credentials(String user, String password) {
+        this.user = user;
+        this.password = password;
+    }
 }
