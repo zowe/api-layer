@@ -27,7 +27,17 @@ public class AuxiliaryUserList {
 
     public List<Credentials> getCredentials() {
         return Arrays.stream(value.split(";"))
-            .map(s -> new Credentials(s.split(",")[0], s.split(",")[1]))
+            .map(s -> new Credentials(s.split(",")[0], s.split(",")[1], s.split(",")[2]))
+            .collect(Collectors.toList());
+    }
+
+    public List<Credentials> getCredentials(String key) {
+        if (key == null || key.isEmpty()) {
+            throw new IllegalArgumentException("Key must not be null or empty");
+        }
+        return Arrays.stream(value.split(";"))
+            .map(s -> new Credentials(s.split(",")[0], s.split(",")[1], s.split(",")[2]))
+            .filter(credentials -> key.equals(credentials.getKey()))
             .collect(Collectors.toList());
     }
 }
