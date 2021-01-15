@@ -70,7 +70,7 @@ public class VsamStorage implements Storage {
 
         try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.READ)) {
 
-            VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(key, ""));
+            VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(key, "", serviceId));
 
             Optional<VsamRecord> returned = file.read(record);
             if (returned.isPresent()) {
@@ -117,7 +117,7 @@ public class VsamStorage implements Storage {
 
         try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
 
-            VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(toDelete, ""));
+            VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(toDelete, "", serviceId));
 
             Optional<VsamRecord> returned = file.delete(record);
             if (returned.isPresent()) {
