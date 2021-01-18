@@ -19,6 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,12 +59,17 @@ public class CorsMetadataProcessor extends MetadataProcessor {
             UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
             final CorsConfiguration config = new CorsConfiguration();
             if (Boolean.parseBoolean(isCorsEnabledForService)) {
+                config.setAllowCredentials(true);       // TO-DO: this should NOT be done if allowing all origins 
                 // Check if the configuration specifies allowed origins for this service
                 String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
-                // If not (default), allow all the origins
-                if (corsAllowedOriginsForService == null) corsAllowedOriginsForService = CorsConfiguration.ALL;
-                config.setAllowCredentials(true);       // TO-DO: this should NOT be done if allowing all origins 
-                config.addAllowedOrigin(corsAllowedOriginsForService);
+                if (corsAllowedOriginsForService == null) {
+                    // Origins not specified: allow everything
+                    config.addAllowedOrigin(CorsConfiguration.ALL);
+                } else {
+                    // Origins specified: split by comma, add to whitelist
+                    Arrays.stream(corsAllowedOriginsForService.split(","))
+                        .forEach(o -> config.addAllowedOrigin(o));
+                }
                 config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
                 config.setAllowedMethods(allowedCorsHttpMethods);
             }
