@@ -28,10 +28,6 @@ public class ApimlPoolingHttpClientConnectionManager extends PoolingHttpClientCo
 
     private final ApimlLogger apimlLog = ApimlLogger.of(ApimlPoolingHttpClientConnectionManager.class, YamlMessageServiceInstance.getInstance());
 
-    public ApimlPoolingHttpClientConnectionManager(@NonNull Registry<ConnectionSocketFactory> socketFactoryRegistry) {
-        super(socketFactoryRegistry);
-    }
-
     public ApimlPoolingHttpClientConnectionManager(@NonNull Registry<ConnectionSocketFactory> socketFactoryRegistry, int timeToLive) {
         super(socketFactoryRegistry, null, null, null, timeToLive, TimeUnit.MILLISECONDS);
     }

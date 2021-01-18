@@ -58,12 +58,14 @@ public class HttpsFactory {
         Registry<ConnectionSocketFactory> socketFactoryRegistry;
         RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
             .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
-        UserTokenHandler userTokenHandler = (context) -> context.getAttribute("my-token");
+        UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
 
         socketFactoryRegistryBuilder.register("https", createSslSocketFactory());
         socketFactoryRegistry = socketFactoryRegistryBuilder.build();
-        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(config.getRequestConnectionTimeout()).build();
-        ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, 10000);
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectTimeout(config.getRequestConnectionTimeout()).build();
+        ApimlPoolingHttpClientConnectionManager connectionManager =
+            new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, config.getTimeToLive());
         connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerRoute());
         connectionManager.closeIdleConnections(config.getIdleConnTimeoutSeconds(), TimeUnit.SECONDS);
         connectionManager.setMaxTotal(config.getMaxTotalConnections());

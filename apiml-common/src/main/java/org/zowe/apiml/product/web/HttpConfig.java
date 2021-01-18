@@ -90,6 +90,8 @@ public class HttpConfig {
     private int requestConnectionTimeout;
     @Value("${apiml.httpclient.conn-pool.readTimeout:#{10000}}")
     private int readTimeout;
+    @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
+    private int timeToLive;
 
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
@@ -112,10 +114,12 @@ public class HttpConfig {
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
                     .protocol(protocol)
-                    .trustStore(trustStore).trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
+                    .trustStore(trustStore).trustStoreType(trustStoreType)
+                    .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
                     .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
                     .maxConnectionsPerRoute(maxConnectionsPerRoute).maxTotalConnections(maxTotalConnections)
-                    .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout);
+                    .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
+                    .timeToLive(timeToLive);
 
             HttpsConfig httpsConfig = httpsConfigSupplier.get()
                 .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)

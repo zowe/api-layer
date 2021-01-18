@@ -41,5 +41,7 @@ public class HttpsConfig {
     @Builder.Default
     private int idleConnTimeoutSeconds = 5;
     @Builder.Default
-    private int requestConnectionTimeout = 10000;
+    private int requestConnectionTimeout = 10_000;
+    @Builder.Default
+    private int timeToLive = 10_000;
 }
