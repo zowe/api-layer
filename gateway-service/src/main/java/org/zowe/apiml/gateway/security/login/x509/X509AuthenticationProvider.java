@@ -27,8 +27,6 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
 
     @Value("${apiml.security.x509.enabled:false}")
     boolean isClientCertEnabled;
-    @Value("${apiml.security.x509.useZss:false}")
-    boolean useZss;
 
     private final X509AuthenticationMapper x509AuthenticationMapper;
     private final TokenCreationService tokenCreationService;

@@ -44,6 +44,7 @@ public class InternalServerErrorController implements ErrorController {
     public InternalServerErrorController(MessageService messageService) {
         this.messageService = messageService;
 
+        errorChecks.add(new SafEndpointCheck(messageService));
         errorChecks.add(new TlsErrorCheck(messageService));
         errorChecks.add(new TimeoutErrorCheck(messageService));
         errorChecks.add(new SecurityErrorCheck(messageService));
