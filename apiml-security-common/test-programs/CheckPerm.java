@@ -5,7 +5,8 @@ public class CheckPerm {
     static int failed = 0;
 
     static PlatformReturned checkPermission(String userid, String resourceClass, String resourceName, int accessLevel,
-            int expectedErrno, int expectedErrno2, int secondExpectedErrno, int secondExpectedErrno2) {
+                                            int expectedErrno, int expectedErrno2, int secondExpectedErrno, int secondExpectedErrno2,
+                                            int thirdExpectedErrno, int thirdExpectedErrno2) {
         System.out.print(String.format("PlatformAccessControl.checkPermission(%s, %s, %s, %d) = ", userid,
                 resourceClass, resourceName, accessLevel));
         PlatformReturned r = PlatformAccessControl.checkPermission(userid,
@@ -25,8 +26,8 @@ public class CheckPerm {
             } else if (((r.errno == expectedErrno) && (r.errno2 == expectedErrno2)) || ((r.errno == secondExpectedErrno) && (r.errno2 == secondExpectedErrno2))) {
                 System.out.println("OK - expected errno and errno2 returned");
             } else {
-                System.out.println(String.format("ERROR - unexpected errno and errno2 returned. Expected %d and 0x%04x",
-                        expectedErrno, expectedErrno2));
+                System.out.println(String.format("ERROR - unexpected errno and errno2 returned. Expected %d(0x%04x), %d(0x%04x), or %d(0x%04x)",
+                        expectedErrno, expectedErrno2, secondExpectedErrno, secondExpectedErrno2));
                 failed++;
             }
         }
@@ -52,13 +53,13 @@ public class CheckPerm {
         int okAccessLevel = Integer.parseInt(args[6]);
         int badAccessLevel = Integer.parseInt(args[7]);
 
-        checkPermission(userid, okClass, okResource, okAccessLevel, 0, 0, 0, 0);
-        checkPermission(userid, badClass, okResource, okAccessLevel, 143, 0x93800cf, -1, -1);  // Last two bytes are equal to PlatformErrno2.JRSAFResourceUndefined
-        checkPermission(userid, okClass, badResource, okAccessLevel, 143, 0x93800cf, -1, -1);  // Last two bytes are equal to PlatformErrno2.JRSAFResourceUndefined
-        checkPermission(userid, okClass, okResource, badAccessLevel, 139, 0x93800d9, -1, -1);  // Last two bytes are equal to PlatformErrno2.JRNoResourceAccess
-        checkPermission(badUserid, okClass, okResource, okAccessLevel, 139, 0x93800d9, 143, 0x93800f9);  // Last two bytes are equal to PlatformErrno2.JRNoResourceAccess (second pair of expected values is for RACF that returns JRSAFNoUser)
-        checkPermission(badUserid, okClass, badResource, okAccessLevel, 143, 0x93800cf, 143, 0x93800f9);  // Last two bytes are equal to PlatformErrno2.JRSAFResourceUndefined (second pair of expected values is for RACF that returns JRSAFNoUser)
-        checkPermission(badUserid, badClass, badResource, okAccessLevel, 143, 0x93800cf, 143, 0x93800f9);  // Last two bytes are equal to PlatformErrno2.JRSAFResourceUndefined (second pair of expected values is for RACF that returns JRSAFNoUser)
+        checkPermission(userid, okClass, okResource, okAccessLevel, 0, 0, 0, 0, 0, 0);
+        checkPermission(userid, badClass, okResource, okAccessLevel, 143, 0x93800cf, -1, -1, -1, -1);  // Last two bytes are equal to PlatformErrno2.JRSAFResourceUndefined
+        checkPermission(userid, okClass, badResource, okAccessLevel, 143, 0x93800cf, -1, -1, -1, -1);  // Last two bytes are equal to PlatformErrno2.JRSAFResourceUndefined
+        checkPermission(userid, okClass, okResource, badAccessLevel, 139, 0x93800d9, -1, -1, -1, -1);  // Last two bytes are equal to PlatformErrno2.JRNoResourceAccess
+        checkPermission(badUserid, okClass, okResource, okAccessLevel, 139, 0x93800d9, 143, 0x93800f9, -1, -1);  // Last two bytes are equal to PlatformErrno2.JRNoResourceAccess (second pair of expected values is for RACF that returns JRSAFNoUser)
+        checkPermission(badUserid, okClass, badResource, okAccessLevel, 143, 0x93800cf, 143, 0x93800f9, 139, 0x93800d9);  // Last two bytes are equal to PlatformErrno2.JRSAFResourceUndefined (second pair of expected values is for RACF that returns JRSAFNoUser, third pair is for ACF2)
+        checkPermission(badUserid, badClass, badResource, okAccessLevel, 143, 0x93800cf, 143, 0x93800f9, 139, 0x93800d9);  // Last two bytes are equal to PlatformErrno2.JRSAFResourceUndefined (second pair of expected values is for RACF that returns JRSAFNoUser, third pair is for ACF2)
         System.out.println("Total failures: " + failed);
         System.exit(failed);
     }
