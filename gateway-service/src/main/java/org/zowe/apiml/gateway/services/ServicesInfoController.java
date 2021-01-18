@@ -11,10 +11,10 @@ package org.zowe.apiml.gateway.services;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,9 +23,9 @@ import static org.zowe.apiml.gateway.services.ServicesInfoService.CURRENT_VERSIO
 import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER;
 
 @RestController
-@ConditionalOnExpression("${apiml.feature.serviceInfo.enabled:false}") // Remove when secured with an authorization
 @RequiredArgsConstructor
 @RequestMapping(ServicesInfoController.SERVICES_URL)
+@PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
 public class ServicesInfoController {
 
     public static final String SERVICES_URL = "/gateway/services";

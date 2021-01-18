@@ -84,6 +84,15 @@ public class HttpConfig {
     @Value("${server.maxTotalConnections:#{100}}")
     private Integer maxTotalConnections;
 
+    @Value("${apiml.httpclient.conn-pool.idleConnTimeoutSeconds:#{5}}")
+    private int idleConnTimeoutSeconds;
+    @Value("${apiml.httpclient.conn-pool.requestConnectionTimeout:#{10000}}")
+    private int requestConnectionTimeout;
+    @Value("${apiml.httpclient.conn-pool.readTimeout:#{10000}}")
+    private int readTimeout;
+    @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
+    private int timeToLive;
+
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
@@ -105,9 +114,12 @@ public class HttpConfig {
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
                     .protocol(protocol)
-                    .trustStore(trustStore).trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
+                    .trustStore(trustStore).trustStoreType(trustStoreType)
+                    .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
                     .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
-                    .maxConnectionsPerRoute(maxConnectionsPerRoute).maxTotalConnections(maxTotalConnections);
+                    .maxConnectionsPerRoute(maxConnectionsPerRoute).maxTotalConnections(maxTotalConnections)
+                    .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
+                    .timeToLive(timeToLive);
 
             HttpsConfig httpsConfig = httpsConfigSupplier.get()
                 .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
@@ -181,6 +193,8 @@ public class HttpConfig {
     @Qualifier("restTemplateWithKeystore")
     public RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
+        factory.setReadTimeout(readTimeout);
+        factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
 
@@ -195,6 +209,8 @@ public class HttpConfig {
     @Qualifier("restTemplateWithoutKeystore")
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
+        factory.setReadTimeout(readTimeout);
+        factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
 
