@@ -7,24 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.util.config;
+package org.zowe.apiml.caching.service;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
-@Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class Credentials {
+@Getter
+public enum Strategies {
+    REJECT("reject"),
+    REMOVE_OLDEST("removeOldest");
 
-    private String key;
-    private String user;
-    private String password;
-
-    public Credentials(String user, String password) {
-        this.user = user;
-        this.password = password;
-    }
-
+    private final String key;
 }

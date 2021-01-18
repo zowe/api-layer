@@ -123,6 +123,11 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart -X
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Dapiml.security.authorization.provider=${APIML_SECURITY_AUTHORIZATION_PROVIDER:-} \
+    -Dapiml.security.authorization.endpoint.enabled=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_ENABLED:-false} \
+    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL:-http://localhost:${ZOWE_ZSS_SERVER_PORT}/saf-auth} \
+    -Dapiml.security.authorization.resourceClass=${RESOURCE_CLASS:-ZOWE} \
+    -Dapiml.security.authorization.resourceNamePrefix=${RESOURCE_NAME_PREFIX:-APIML.} \
     -Dapiml.service.corsEnabled=true \
     -Dloader.path="components/api-mediation/lib/api-layer-lite-lib-all.jar,/usr/include/java_classes/IRRRacf.jar" \
     -jar ${ROOT_DIR}"/components/api-mediation/gateway-service-lite.jar" &

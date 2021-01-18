@@ -34,7 +34,7 @@ class ApimlPoolingHttpClientConnectionManagerTest {
 
         RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
             .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
-        connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistryBuilder.build());
+        connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistryBuilder.build(),10_000);
     }
 
     @Test
@@ -45,6 +45,6 @@ class ApimlPoolingHttpClientConnectionManagerTest {
 
     @Test
     void givenNoSocketRegistry_whenCreateConnection_thenThrowError() {
-        assertThrows(IllegalArgumentException.class, () -> new ApimlPoolingHttpClientConnectionManager(null));
+        assertThrows(IllegalArgumentException.class, () -> new ApimlPoolingHttpClientConnectionManager(null,10_000));
     }
 }

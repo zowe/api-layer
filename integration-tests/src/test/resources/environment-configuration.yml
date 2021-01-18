@@ -34,4 +34,4 @@ zosmfServiceConfiguration:
     port: 10013
     serviceId: mockzosmf
 auxiliaryUserList:
-    value: 'USER1,validPassword;USER2,validPassword'
+    value: 'caching,USER1,validPassword;caching,USER2,validPassword;unauthorized,USER1,validPassword'

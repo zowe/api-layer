@@ -17,10 +17,8 @@ import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.*;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.HttpClientErrorException;
@@ -29,10 +27,13 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-public class GatewaySecurityServiceTest {
+class GatewaySecurityServiceTest {
     private static final String USERNAME = "user";
     private static final String PASSWORD = "pass";
     private static final String TOKEN = "token";
@@ -45,11 +46,8 @@ public class GatewaySecurityServiceTest {
     private GatewaySecurityService securityService;
     private String cookie;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         gatewayConfigProperties = GatewayConfigProperties.builder()
             .scheme(GATEWAY_SCHEME)
             .hostname(GATEWAY_HOST)
@@ -71,7 +69,7 @@ public class GatewaySecurityServiceTest {
     }
 
     @Test
-    public void doSuccessfulLogin() {
+    void doSuccessfulLogin() {
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
 
@@ -94,7 +92,7 @@ public class GatewaySecurityServiceTest {
     }
 
     @Test
-    public void doLoginWithoutCookie() {
+    void doLoginWithoutCookie() {
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
 
@@ -113,7 +111,7 @@ public class GatewaySecurityServiceTest {
     }
 
     @Test
-    public void doLoginWhenGatewayUnauthorized() {
+    void doLoginWhenGatewayUnauthorized() {
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
 
@@ -126,14 +124,12 @@ public class GatewaySecurityServiceTest {
             eq(String.class)))
             .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
-        exceptionRule.expect(BadCredentialsException.class);
-        exceptionRule.expectMessage("Username or password are invalid.");
-
-        securityService.login(USERNAME, PASSWORD);
+        Exception exception = assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD));
+        assertEquals("Username or password are invalid.", exception.getMessage());
     }
 
     @Test
-    public void doSuccessfulQuery() {
+    void doSuccessfulQuery() {
         QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", new Date(), new Date(), QueryResponse.Source.ZOWE);
 
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
@@ -156,7 +152,7 @@ public class GatewaySecurityServiceTest {
     }
 
     @Test
-    public void doQueryWhenGatewayUnauthorized() {
+    void doQueryWhenGatewayUnauthorized() {
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayQueryEndpoint());
 
@@ -171,10 +167,8 @@ public class GatewaySecurityServiceTest {
             eq(QueryResponse.class)))
             .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
-        exceptionRule.expect(TokenNotValidException.class);
-        exceptionRule.expectMessage("Token is not valid.");
-
-        securityService.query("token");
+        Exception exception = assertThrows(TokenNotValidException.class, () -> securityService.query("token"));
+        assertEquals("Token is not valid.", exception.getMessage());
     }
 
     private HttpEntity createLoginRequest() {

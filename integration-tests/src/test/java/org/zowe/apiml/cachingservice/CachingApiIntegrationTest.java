@@ -158,7 +158,7 @@ class CachingApiIntegrationTest {
     @Test
     void givenValidKeyParameter_whenCallingGetAllEndpoint_thenAllTheStoredEntries() {
 
-        List<Credentials> testUsers = environmentConfiguration.getAuxiliaryUserList().getCredentials();
+        List<Credentials> testUsers = environmentConfiguration.getAuxiliaryUserList().getCredentials("caching");
         assertThat(testUsers, hasSize(greaterThanOrEqualTo(2)));
 
         testUsers.sort((o1, o2) -> o1.getUser().hashCode() - o2.getUser().hashCode());

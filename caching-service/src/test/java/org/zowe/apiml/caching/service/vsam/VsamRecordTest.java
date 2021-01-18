@@ -56,7 +56,7 @@ class VsamRecordTest {
         KeyValue kv = new KeyValue("key", "value");
         VsamRecord underTest = new VsamRecord(config, serviceId, kv);
 
-        String expectedSerialization = "{\"key\":\"key\",\"value\":\"value\"}";
+        String expectedSerialization = "{\"key\":\"key\",\"value\":\"value\",\"created\":\"" + kv.getCreated() + "\"}";
         assertThat(new String(underTest.getBytes(), ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE), containsString(expectedSerialization));
     }
 

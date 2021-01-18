@@ -50,6 +50,7 @@ public class ApiCatalogEndpointIntegrationTest {
     private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
     private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/v1/v2";
     private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION = "/apicatalog/api/v1/apidoc/discoverableclient/v1/v3";
+    private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE = "/apicatalog/api/v1/apidoc/invalidService/v1/v2";
 
     private String baseHost;
 
@@ -248,6 +249,11 @@ public class ApiCatalogEndpointIntegrationTest {
     @Test
     void whenCallGetApiDiffWithWrongVersion_thenReturnNotFound() throws Exception {
         getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION, HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test
+    void whenCallGetApiDiffWithWrongService_thenReturnNotFound() throws Exception {
+        getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE, HttpStatus.SC_NOT_FOUND);
     }
 
     // Execute the endpoint and check the response for a return code

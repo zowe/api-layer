@@ -30,14 +30,22 @@ import java.util.Map;
 public class SafResourceAccessDummy implements SafResourceAccessVerifying {
 
     private static final String SAF_ACCESS = "safAccess";
-    private static final String DEFAULT_FILE_LOCATION = "saf.yml";
+    // Issue: it will read gateway/saf.yml even for the catalog if it exists
+    // List of authorization files in the order according to the priority
+    // Required for IDE (IntelliJ) which sets the root project directory as home dir
+    private static final String[] DEFAULT_FILE_LOCATIONS = {
+            "saf.yml",
+            "gateway-service/saf.yml",
+            "discovery-service/saf.yml",
+            "api-catalog-services/saf.yml"
+    };
     private static final String DEFAULT_RESOURCE_LOCATION = "mock-saf.yml";
 
     private Map<ResourceUser, AccessLevel> resourceUserToAccessLevel = new HashMap<>();
 
     public SafResourceAccessDummy() throws IOException {
         File file = getFile();
-        if (file.exists()) {
+        if (file != null) {
             try (
                 FileInputStream fis = new FileInputStream(file);
                 BufferedInputStream bis = new BufferedInputStream(fis)
@@ -52,7 +60,12 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
     }
 
     protected File getFile() {
-        return new File(DEFAULT_FILE_LOCATION);
+        for (String fileName : DEFAULT_FILE_LOCATIONS) {
+            File file = new File(fileName);
+            if (file.exists()) return file;
+        }
+
+        return null;
     }
 
     public SafResourceAccessDummy(InputStream inputStream) {
