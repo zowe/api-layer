@@ -32,7 +32,7 @@ public class ApimlPoolingHttpClientConnectionManager extends PoolingHttpClientCo
         super(socketFactoryRegistry);
     }
 
-    public ApimlPoolingHttpClientConnectionManager(@NonNull Registry<ConnectionSocketFactory> socketFactoryRegistry, int timeToLive){
+    public ApimlPoolingHttpClientConnectionManager(@NonNull Registry<ConnectionSocketFactory> socketFactoryRegistry, int timeToLive) {
         super(socketFactoryRegistry, null, null, null, timeToLive, TimeUnit.MILLISECONDS);
     }
 
