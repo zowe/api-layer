@@ -30,7 +30,7 @@ public class SecurityControllerExceptionHandler {
     @ExceptionHandler({ AccessDeniedException.class })
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex) {
         Message message = messageService.createMessage(FORBIDDEN_MESSAGE_KEY, ex.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body(message);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body(message.mapToView());
     }
 
 }
