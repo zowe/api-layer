@@ -23,11 +23,13 @@ public class CheckPerm {
             if (r == null) {
                 System.out.println("ERROR - unexpected errno and errno2 - expected null");
                 failed++;
-            } else if (((r.errno == expectedErrno) && (r.errno2 == expectedErrno2)) || ((r.errno == secondExpectedErrno) && (r.errno2 == secondExpectedErrno2))) {
+            } else if (((r.errno == expectedErrno) && (r.errno2 == expectedErrno2))
+                || ((r.errno == secondExpectedErrno) && (r.errno2 == secondExpectedErrno2))
+                || ((r.errno == thirdExpectedErrno) && (r.errno2 == thirdExpectedErrno2))) {
                 System.out.println("OK - expected errno and errno2 returned");
             } else {
                 System.out.println(String.format("ERROR - unexpected errno and errno2 returned. Expected %d(0x%04x), %d(0x%04x), or %d(0x%04x)",
-                        expectedErrno, expectedErrno2, secondExpectedErrno, secondExpectedErrno2));
+                        expectedErrno, expectedErrno2, secondExpectedErrno, secondExpectedErrno2, thirdExpectedErrno, thirdExpectedErrno2));
                 failed++;
             }
         }
