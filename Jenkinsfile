@@ -97,6 +97,7 @@ pipeline {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
                         sh './gradlew --info --scan build'
+                        sh 'export JAVA_HOME=/usr/java/openjdk-11'
                         withSonarQubeEnv('sonarcloud-server') {
                             sh './gradlew --info --scan  \
                             coverage sonarqube runCITests runCITestsInternalPort \
