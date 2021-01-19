@@ -21,9 +21,9 @@ import java.util.*;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-public class ApiCatalogHttpHeadersIntegrationTest {
+class ApiCatalogHttpHeadersIntegrationTest {
 
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/ui/v1/apicatalog/#";
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -34,7 +34,7 @@ public class ApiCatalogHttpHeadersIntegrationTest {
     private final static String COOKIE = "apimlAuthenticationToken";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 

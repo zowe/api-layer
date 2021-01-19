@@ -10,16 +10,15 @@
 package org.zowe.apiml.apicatalog;
 
 import io.restassured.RestAssured;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;    
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -28,8 +27,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-@RunWith(value = Parameterized.class)
-public class ApiCatalogSecurityIntegrationTest {
+class ApiCatalogSecurityIntegrationTest {
 
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -47,28 +45,22 @@ public class ApiCatalogSecurityIntegrationTest {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
-    private final String endpoint;
-
-    public ApiCatalogSecurityIntegrationTest(String endpoint) {
-        this.endpoint = endpoint;
+    private static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.of(CATALOG_APIDOC_ENDPOINT),
+            Arguments.of(CATALOG_ACTUATOR_ENDPOINT)
+        );
     }
 
-    @Parameterized.Parameters(name = "{index}: Endpoint '{0}'")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-            {CATALOG_APIDOC_ENDPOINT},
-            {CATALOG_ACTUATOR_ENDPOINT}
-        });
-    }
-
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     //@formatter:off
-    @Test
-    public void accessProtectedEndpointWithoutCredentials() {
+    @ParameterizedTest
+    @MethodSource("data")
+    void accessProtectedEndpointWithoutCredentials(String endpoint) {
         String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
 
         given()
@@ -82,8 +74,9 @@ public class ApiCatalogSecurityIntegrationTest {
             );
     }
 
-    @Test
-    public void accessProtectedEndpointWithBasicAuth() {
+    @ParameterizedTest
+    @MethodSource("data")
+    void accessProtectedEndpointWithBasicAuth(String endpoint) {
         given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
         .when()
@@ -93,8 +86,9 @@ public class ApiCatalogSecurityIntegrationTest {
             .statusCode(is(SC_OK));
     }
 
-    @Test
-    public void accessProtectedEndpointWithInvalidBasicAuth() {
+    @ParameterizedTest
+    @MethodSource("data")
+    void accessProtectedEndpointWithInvalidBasicAuth(String endpoint) {
         String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
 
         given()
@@ -107,8 +101,9 @@ public class ApiCatalogSecurityIntegrationTest {
             .body("messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage));
     }
 
-    @Test
-    public void accessProtectedEndpointWithInvalidCookieCatalog() {
+    @ParameterizedTest
+    @MethodSource("data")
+    void accessProtectedEndpointWithInvalidCookieCatalog(String endpoint) {
         String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
         String invalidToken = "nonsense";
 
@@ -124,8 +119,9 @@ public class ApiCatalogSecurityIntegrationTest {
             .body("messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage));
     }
 
-    @Test
-    public void accessProtectedEndpointWithInvalidCookieGateway() {
+    @ParameterizedTest
+    @MethodSource("data")
+    void accessProtectedEndpointWithInvalidCookieGateway(String endpoint) {
         String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
         String invalidToken = "nonsense";
 

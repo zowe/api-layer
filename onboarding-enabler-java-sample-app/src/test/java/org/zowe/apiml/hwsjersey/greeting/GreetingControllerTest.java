@@ -18,7 +18,7 @@ import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
 
-
+// WARN: JerseyTest does not support Junit 5
 public class GreetingControllerTest extends JerseyTest {
 
     @Override
