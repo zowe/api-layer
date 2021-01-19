@@ -14,13 +14,13 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
 import org.zowe.apiml.util.categories.StartupCheck;
 
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @StartupCheck
-public class ApiMediationLayerStartTest {
+class ApiMediationLayerStartTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         new ApiMediationLayerStartupChecker().waitUntilReady();
     }
 
