@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
+import org.zowe.apiml.util.CachingRequests;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -58,7 +59,7 @@ class RejectEvictionTest {
                 .statusCode(is(SC_INSUFFICIENT_STORAGE));
         } finally {
             for (int i = 0; i < amountOfAllowedRecords; i++) {
-                requests.deteleValueUnderServiceIdWithoutValidation("key" + i, jwtToken);
+                requests.deleteValueUnderServiceIdWithoutValidation("key" + i, jwtToken);
             }
         }
     }

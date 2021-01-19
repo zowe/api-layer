@@ -7,8 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.cachingservice;
+package org.zowe.apiml.util;
 
+import org.zowe.apiml.cachingservice.KeyValue;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -26,21 +27,29 @@ public class CachingRequests {
 
 
     public void create(KeyValue keyValue) {
+        create(CACHING_PATH, keyValue);
+    }
+
+    public void create(URI cachingPath, KeyValue keyValue) {
         given()
             .contentType(JSON)
             .body(keyValue)
             .cookie(COOKIE_NAME, jwtToken)
-            .when()
-            .post(CACHING_PATH)
-            .then()
+        .when()
+            .post(cachingPath)
+        .then()
             .statusCode(is(SC_CREATED));
     }
 
-    public void deteleValueUnderServiceIdWithoutValidation(String value, String jwtToken) {
+    public void deleteValueUnderServiceIdWithoutValidation(String value, String jwtToken) {
+        deleteValueUnderServiceIdWithoutValidation(CACHING_PATH, value, jwtToken);
+    }
+
+    public void deleteValueUnderServiceIdWithoutValidation(URI cachingPath, String value, String jwtToken) {
         given()
             .contentType(JSON)
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .delete(CACHING_PATH + "/" + value);
+            .delete(cachingPath + "/" + value);
     }
 }
