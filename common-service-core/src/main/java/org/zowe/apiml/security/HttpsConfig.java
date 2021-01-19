@@ -38,4 +38,10 @@ public class HttpsConfig {
     private int maxConnectionsPerRoute = 10;
     @Builder.Default
     private int maxTotalConnections = 100;
+    @Builder.Default
+    private int idleConnTimeoutSeconds = 5;
+    @Builder.Default
+    private int requestConnectionTimeout = 10_000;
+    @Builder.Default
+    private int timeToLive = 10_000;
 }
