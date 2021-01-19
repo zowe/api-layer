@@ -59,24 +59,28 @@ public class CorsMetadataProcessor extends MetadataProcessor {
             UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
             final CorsConfiguration config = new CorsConfiguration();
             if (Boolean.parseBoolean(isCorsEnabledForService)) {
-                config.setAllowCredentials(true);       // TO-DO: this should NOT be done if allowing all origins 
-                // Check if the configuration specifies allowed origins for this service
-                String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
-                if (corsAllowedOriginsForService == null) {
-                    // Origins not specified: allow everything
-                    config.addAllowedOrigin(CorsConfiguration.ALL);
-                } else {
-                    // Origins specified: split by comma, add to whitelist
-                    Arrays.stream(corsAllowedOriginsForService.split(","))
-                        .forEach(o -> config.addAllowedOrigin(o));
-                }
-                config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
-                config.setAllowedMethods(allowedCorsHttpMethods);
+                setAllowedOriginsForService(metadata, config);
             }
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
                     cors.registerCorsConfiguration("/" + entry.getValue() + "/" + serviceId.toLowerCase() + "/**", config));
         }
+    }
+
+    private void setAllowedOriginsForService(Map<String, String> metadata, CorsConfiguration config) {
+        // Check if the configuration specifies allowed origins for this service
+        String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
+        if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
+            // Origins not specified: allow everything
+            config.addAllowedOrigin(CorsConfiguration.ALL);
+        } else {
+            // Origins specified: split by comma, add to whitelist
+            Arrays.stream(corsAllowedOriginsForService.split(","))
+                .forEach(config::addAllowedOrigin);
+        }
+        config.setAllowCredentials(true);
+        config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+        config.setAllowedMethods(allowedCorsHttpMethods);
     }
 }
