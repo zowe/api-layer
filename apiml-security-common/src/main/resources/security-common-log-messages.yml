@@ -42,7 +42,21 @@ messages:
       reason: "The parameter zosmfserviceId was not configured correctly and could not be validated."
       action: "Ensure that the parameter apiml.security.auth.zosmfServiceId is correctly entered with a valid z/OSMF service ID."
 
-    # Service specific messages
+    - key: org.zowe.apiml.security.common.auth.saf.endpoint.nonZoweClass
+      number: ZWEAT602
+      type: ERROR
+      text: "The SAF provider `endpoint` supports only resource class 'ZOWE', but current one is '%s'"
+      reason: "The parameter `apiml.security.authorization.provider` is set to `endpoint`"
+      action: "Change the SAF provider to another one to use this endpoint"
+
+    - key: org.zowe.apiml.security.common.auth.saf.endpoint.endpointImproprietyConfigure
+      number: ZWEAT603
+      type: ERROR
+      text: "Endpoint `%s` is not properly configured"
+      reason: "Application cannot call the endpoint to check SAF resource of user"
+      action: "Verify state of ZSS and IZS, then check if parameters `apiml.security.authorization.endpoint.*` are matching."
+
+  # Service specific messages
     # 700-999
 
     # Legacy messages

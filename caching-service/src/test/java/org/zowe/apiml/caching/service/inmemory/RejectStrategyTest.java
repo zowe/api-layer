@@ -7,25 +7,26 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.startup;
+package org.zowe.apiml.caching.service.inmemory;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
-import org.zowe.apiml.util.categories.StartupCheck;
+import org.zowe.apiml.caching.service.StorageException;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@StartupCheck
-class ApiMediationLayerStartTest {
+class RejectStrategyTest {
+    private RejectStrategy underTest;
 
     @BeforeEach
     void setUp() {
-        new ApiMediationLayerStartupChecker().waitUntilReady();
+        underTest = new RejectStrategy();
     }
 
     @Test
-    void checkApiMediationLayerStart() {
-        assertTrue(true);
+    void evictThrowsException() {
+        assertThrows(StorageException.class, () -> {
+            underTest.evict("anyValue");
+        });
     }
 }

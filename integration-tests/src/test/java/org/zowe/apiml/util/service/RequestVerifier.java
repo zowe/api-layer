@@ -16,8 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Class is using for verification request in VirtualService. If test call VerifyServlet in there, request data are
@@ -69,7 +69,7 @@ public class RequestVerifier {
     public void existAndClean(VirtualService virtualService, Predicate<HttpRequestCopy> verify) {
         synchronized (requests) {
             List<HttpRequestCopy> list = requests.get(virtualService);
-            assertNotNull("No request exists", list);
+            assertNotNull(list, "No request exists");
             for (Iterator<HttpRequestCopy> i = list.iterator(); i.hasNext(); ) {
                 HttpRequestCopy req = i.next();
                 if (verify.test(req)) {

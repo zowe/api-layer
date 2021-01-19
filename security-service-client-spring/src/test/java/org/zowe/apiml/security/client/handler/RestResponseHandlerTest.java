@@ -15,8 +15,9 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -25,8 +26,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class RestResponseHandlerTest {
+
+class RestResponseHandlerTest {
     private final static String GENERIC_LOG_MESSAGE = "Generic Log Message";
     private final static String LOG_PARAMETERS = "https://localhost:8080/api/test/url";
 
@@ -34,76 +37,100 @@ public class RestResponseHandlerTest {
     private HttpClientErrorException forbiddenException;
     private RestResponseHandler handler;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         handler = new RestResponseHandler();
         unauthorizedException = new HttpClientErrorException(HttpStatus.UNAUTHORIZED);
         forbiddenException = new HttpClientErrorException(HttpStatus.NOT_FOUND);
     }
 
-    @Test(expected = BadCredentialsException.class)
-    public void handleBadResponseWithBadCredentials() {
-        handler.handleBadResponse(unauthorizedException, ErrorType.BAD_CREDENTIALS, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+    @Test
+    void handleBadResponseWithBadCredentials() {
+        assertThrows(BadCredentialsException.class, () -> {
+            handler.handleBadResponse(unauthorizedException, ErrorType.BAD_CREDENTIALS, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 
-    @Test(expected = TokenNotValidException.class)
-    public void handleBadResponseWithTokenNotValid() {
-        handler.handleBadResponse(unauthorizedException, ErrorType.TOKEN_NOT_VALID, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+    @Test
+    void handleBadResponseWithTokenNotValid() {
+        assertThrows(TokenNotValidException.class, () -> {
+            handler.handleBadResponse(unauthorizedException, ErrorType.TOKEN_NOT_VALID, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 
-    @Test(expected = TokenNotProvidedException.class)
-    public void handleBadResponseWithTokenNotProvided() {
-        handler.handleBadResponse(unauthorizedException, ErrorType.TOKEN_NOT_PROVIDED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+    @Test
+    void handleBadResponseWithTokenNotProvided() {
+        assertThrows(TokenNotProvidedException.class, () -> {
+            handler.handleBadResponse(unauthorizedException, ErrorType.TOKEN_NOT_PROVIDED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 
-    @Test(expected = BadCredentialsException.class)
-    public void handleBadResponseWithAuthGeneral() {
-        handler.handleBadResponse(unauthorizedException, ErrorType.AUTH_GENERAL, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+    @Test
+    void handleBadResponseWithAuthGeneral() {
+        assertThrows(BadCredentialsException.class, () -> {
+            handler.handleBadResponse(unauthorizedException, ErrorType.AUTH_GENERAL, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 
-    @Test(expected = AuthenticationCredentialsNotFoundException.class)
-    public void handleBadResponseWithCredentialsNotFound() {
+    @Test
+    void handleBadResponseWithCredentialsNotFound() {
         HttpClientErrorException badRequestException = new HttpClientErrorException(HttpStatus.BAD_REQUEST);
-        handler.handleBadResponse(badRequestException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+            handler.handleBadResponse(badRequestException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 
-    @Test(expected = AuthMethodNotSupportedException.class)
-    public void handleBadResponseWithAuthMethodNotSupported() {
+    @Test
+    void handleBadResponseWithAuthMethodNotSupported() {
         HttpClientErrorException methodNotAllowedException = new HttpClientErrorException(HttpStatus.METHOD_NOT_ALLOWED);
-        handler.handleBadResponse(methodNotAllowedException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        assertThrows(AuthMethodNotSupportedException.class, () -> {
+            handler.handleBadResponse(methodNotAllowedException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 
-    @Test(expected = AuthenticationServiceException.class)
-    public void handleBadResponseWithNoLogMessage() {
-        handler.handleBadResponse(forbiddenException, null, GENERIC_LOG_MESSAGE);
+    @Test
+    void handleBadResponseWithNoLogMessage() {
+        assertThrows(AuthenticationServiceException.class, () -> {
+            handler.handleBadResponse(forbiddenException, null, GENERIC_LOG_MESSAGE);
+        });
     }
 
-    @Test(expected = AuthenticationServiceException.class)
-    public void handleBadResponseWithLogMessage() {
-        handler.handleBadResponse(forbiddenException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+    @Test
+    void handleBadResponseWithLogMessage() {
+        assertThrows(AuthenticationServiceException.class, () -> {
+            handler.handleBadResponse(forbiddenException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 
-    @Test(expected = GatewayNotAvailableException.class)
-    public void handleBadResponseWithGatewayNotAvailable() {
+    @Test
+    void handleBadResponseWithGatewayNotAvailable() {
         ResourceAccessException raException = new ResourceAccessException("Resource Access Exception");
-        handler.handleBadResponse(raException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        assertThrows(GatewayNotAvailableException.class, () -> {
+            handler.handleBadResponse(raException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 
-    @Test(expected = GatewayNotAvailableException.class)
-    public void handleBadResponseWithGatewayNotAvailableWithCause() {
+    @Test
+    void handleBadResponseWithGatewayNotAvailableWithCause() {
         ResourceAccessException raException = new ResourceAccessException("Resource Access Exception");
-        handler.handleBadResponse(raException, ErrorType.BAD_CREDENTIALS, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        assertThrows(GatewayNotAvailableException.class, () -> {
+            handler.handleBadResponse(raException, ErrorType.BAD_CREDENTIALS, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 
-    @Test(expected = ServiceNotAccessibleException.class)
-    public void handleBadResponseWithServiceUnavailable() {
+    @Test
+    void handleBadResponseWithServiceUnavailable() {
         HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE, "Authentication service unavailable");
-        handler.handleBadResponse(exception, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        assertThrows(ServiceNotAccessibleException.class, () -> {
+            handler.handleBadResponse(exception, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 
-    @Test(expected = HttpServerErrorException.class)
-    public void handleBadResponseWithHttpServerError() {
+    @Test
+    void handleBadResponseWithHttpServerError() {
         HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Some server error");
-        handler.handleBadResponse(exception, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        assertThrows(HttpServerErrorException.class, () -> {
+            handler.handleBadResponse(exception, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        });
     }
 }
