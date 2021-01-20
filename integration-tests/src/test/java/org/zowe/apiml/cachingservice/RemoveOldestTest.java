@@ -26,7 +26,7 @@ import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.core.Is.is;
 
 @NotForMainframeTest
-public class RemoveOldestTest {
+class RemoveOldestTest {
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
     private final String jwtToken = SecurityUtils.gatewayToken();
     private final CachingRequests requests = new CachingRequests();
