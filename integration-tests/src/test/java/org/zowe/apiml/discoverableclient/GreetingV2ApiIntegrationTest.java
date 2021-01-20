@@ -19,10 +19,10 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @TestsNotMeantForZowe
-public class GreetingV2ApiIntegrationTest {
+class GreetingV2ApiIntegrationTest {
     @Test
     void givenDiscoverableClient_whenCallGreetingV2_thenGetResponse() throws Exception {
         final HttpResponse response = HttpRequestUtils.getResponse("/discoverableclient/api/v2/greeting", SC_OK);
