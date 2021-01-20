@@ -16,15 +16,15 @@ import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class StaticClientRoutingEndpointsTest {
+class StaticClientRoutingEndpointsTest {
     private static final String GREET = "/api/v1/discoverableclient/greeting";
     private static final String STATIC_GREET = "/api/v1/staticclient/greeting";
 
     @Test
     @TestsNotMeantForZowe
-    public void shouldSameResponseAsDynamicService() throws Exception {
+    void shouldSameResponseAsDynamicService() throws Exception {
         // When
         final HttpResponse response = HttpRequestUtils.getResponse(GREET, SC_OK);
         final HttpResponse staticResponse = HttpRequestUtils.getResponse(STATIC_GREET, SC_OK);
