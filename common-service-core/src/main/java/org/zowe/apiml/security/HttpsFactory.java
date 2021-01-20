@@ -12,6 +12,8 @@ package org.zowe.apiml.security;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.UserTokenHandler;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -56,17 +58,20 @@ public class HttpsFactory {
         Registry<ConnectionSocketFactory> socketFactoryRegistry;
         RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
             .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
+        UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
 
         socketFactoryRegistryBuilder.register("https", createSslSocketFactory());
         socketFactoryRegistry = socketFactoryRegistryBuilder.build();
-
-        ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry);
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectTimeout(config.getRequestConnectionTimeout()).build();
+        ApimlPoolingHttpClientConnectionManager connectionManager =
+            new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, config.getTimeToLive());
         connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerRoute());
-        connectionManager.closeIdleConnections(20, TimeUnit.SECONDS);
+        connectionManager.closeIdleConnections(config.getIdleConnTimeoutSeconds(), TimeUnit.SECONDS);
         connectionManager.setMaxTotal(config.getMaxTotalConnections());
 
-        return HttpClientBuilder.create()
-            .setConnectionManager(connectionManager).disableCookieManagement()
+        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig)
+            .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .disableAuthCaching().build();
 
@@ -266,6 +271,7 @@ public class HttpsFactory {
         builder.withMaxConnectionsPerHost(10);
         builder.withConnectionIdleTimeout(10);
         builder.withConnectionTimeout(5000);
+        builder.withReadTimeout(5000);
         // See:
         // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
         if (eurekaServerUrl.startsWith("http://")) {
