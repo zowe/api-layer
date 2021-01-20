@@ -30,10 +30,10 @@ class ServicesInfoTest {
     public static final String VERSION_HEADER = "Content-Version";
     public static final String CURRENT_VERSION = "1";
 
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-    private final static String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("unauthorized").get(0).getUser();
-    private final static String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("unauthorized").get(0).getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
+    private final static String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getUser();
+    private final static String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getPassword();
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
