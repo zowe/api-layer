@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.CachingRequests;
-import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -24,7 +23,7 @@ import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_INSUFFICIENT_STORAGE;
 import static org.hamcrest.core.Is.is;
 
-@NotForMainframeTest // Remove later when implemented for VSAM as well.
+//@NotForMainframeTest // Remove later when implemented for VSAM as well.
 class RejectEvictionTest {
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
     private final String COOKIE_NAME = "apimlAuthenticationToken";

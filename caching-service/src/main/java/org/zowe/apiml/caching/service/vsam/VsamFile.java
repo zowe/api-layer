@@ -304,8 +304,8 @@ public class VsamFile implements Closeable {
         return returned;
     }
 
-    public List<String> readRecords() {
-        List<String> returned = new ArrayList<>();
+    public Integer countAllRecords() {
+        int recordsCounter = 0;
 
         try {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
@@ -315,10 +315,7 @@ public class VsamFile implements Closeable {
 
                 log.trace("RecBuf: {}", recBuf);
 
-                String record = new String(recBuf);
-                log.info("Read record: {}", record);
-
-                returned.add(record);
+                recordsCounter += 1;
 
                 overflowProtection--;
                 if (overflowProtection <= 0) {
@@ -329,7 +326,7 @@ public class VsamFile implements Closeable {
         } catch (ZFileException e) {
             log.error(e.toString());
         }
-        return returned;
+        return recordsCounter;
     }
 
     @SuppressWarnings({"squid:S1130", "squid:S1192"})

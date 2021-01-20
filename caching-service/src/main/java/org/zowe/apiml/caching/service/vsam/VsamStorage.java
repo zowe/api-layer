@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.*;
+import org.zowe.apiml.caching.service.inmemory.RejectStrategy;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.util.ObjectUtil;
 
@@ -26,14 +27,20 @@ import java.util.*;
 public class VsamStorage implements Storage {
 
     private final VsamConfig vsamConfig;
+    private EvictionStrategy strategy = new DefaultEvictionStrategy();
 
     public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer) {
-
+        String evictionStrategy = vsamConfig.getGeneralConfig().getEvictionStrategy();
         log.info("Using VSAM storage for the cached data");
 
         ObjectUtil.requireNotNull(vsamConfig.getFileName(), "Vsam filename cannot be null"); //TODO bean validation
         ObjectUtil.requireNotEmpty(vsamConfig.getFileName(), "Vsam filename cannot be empty");
         this.vsamConfig = vsamConfig;
+        if (evictionStrategy.equals(Strategies.REJECT.getKey())) {
+            strategy = new RejectStrategy();
+        } else if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
+//            strategy = new RemoveOldestStrategy(storage);
+        }
         log.info("Using Vsam configuration: {}", vsamConfig);
         vsamInitializer.storageWarmup(vsamConfig);
     }
@@ -48,9 +55,13 @@ public class VsamStorage implements Storage {
         try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toCreate);
-            List<String> storedData = file.readRecords();
-            log.error("Size storedata: " + storedData.size());
-            verifyTotalSize(toCreate, storedData);
+            int currentSize = file.countAllRecords();
+            log.info("Current Size {}.", currentSize);
+
+            if (aboveThreshold(currentSize)) {
+                log.info("Rejecting record");
+                strategy.evict(toCreate.getKey());
+            }
             Optional<VsamRecord> returned = file.create(record);
             if (returned.isPresent()) {
                 result = returned.get().getKeyValue();
@@ -64,16 +75,8 @@ public class VsamStorage implements Storage {
         return result;
     }
 
-    private void verifyTotalSize(KeyValue toCreate, List<String> storedData) {
-        if (storedData.size() >= vsamConfig.getMaxDataSize()) {
-            if (vsamConfig.getGeneralConfig().getEvictionStrategy().equals("reject")) {
-                log.error("I'm Inside reject");
-                throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(),
-                    Messages.INSUFFICIENT_STORAGE.getStatus(), toCreate.getKey());
-            } else {
-                //TODO add remove old item strategy
-            }
-        }
+    private boolean aboveThreshold(int currentSize) {
+        return currentSize >= vsamConfig.getGeneralConfig().getMaxDataSize();
     }
 
     @Override
