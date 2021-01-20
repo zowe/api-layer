@@ -48,16 +48,15 @@ public class CachingService {
     }
 
     public boolean isServiceProperlyRegistered() {
-        log.info("isServiceProperlyRegistered");
         try {
-            for(int i = 0; i < 30; i++) {
-                if(discovery.getApplications()) {
+            for (int i = 0; i < 30; i++) {
+                if (discovery.isApplicationRegistered(id)) {
                     return true;
                 }
 
                 try {
                     log.info("Sleep as it isn't registered yet.");
-                    Thread.sleep(10000);
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
                     // Do nothing
                 }

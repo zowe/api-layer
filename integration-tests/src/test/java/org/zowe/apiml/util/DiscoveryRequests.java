@@ -34,7 +34,7 @@ public class DiscoveryRequests {
     private final String host = discoveryServiceConfiguration.getHost();
     private final int port = discoveryServiceConfiguration.getPort();
 
-    public boolean getApplications() throws URISyntaxException {
+    public boolean isApplicationRegistered(String appName) throws URISyntaxException {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         JsonPath result = given()
@@ -52,8 +52,8 @@ public class DiscoveryRequests {
         AtomicBoolean isRegistered = new AtomicBoolean(false);
         appNames.stream()
             .flatMap(Collection::stream)
-            .forEach(element -> {
-                if (element.equals("cachingoldest".toUpperCase())) {
+            .forEach(application -> {
+                if (application.equals(appName.toUpperCase())) {
                     isRegistered.set(true);
                 }
             });
