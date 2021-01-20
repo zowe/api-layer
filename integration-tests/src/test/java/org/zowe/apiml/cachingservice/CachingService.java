@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.cachingservice;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Duration;
 import org.zowe.apiml.util.DiscoveryRequests;
@@ -23,10 +24,17 @@ import java.util.ArrayList;
 import static org.awaitility.Awaitility.await;
 
 @Slf4j
+@RequiredArgsConstructor
 public class CachingService {
-    private final String id = "cachingoldest";
-    private final String evictionStrategy = "removeOldest";
-    private final String port = "10023";
+    private final String id;
+    private final String evictionStrategy;
+    private final String port;
+
+    public CachingService() {
+        id = "cachingoldest";
+        evictionStrategy = "removeOldest";
+        port = "10023";
+    }
 
     private DiscoveryRequests discovery = new DiscoveryRequests();
     private Process newCachingProcess;
