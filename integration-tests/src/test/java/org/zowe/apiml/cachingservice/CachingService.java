@@ -10,6 +10,7 @@
 package org.zowe.apiml.cachingservice;
 
 import lombok.extern.slf4j.Slf4j;
+import org.awaitility.Duration;
 import org.zowe.apiml.util.DiscoveryRequests;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -18,6 +19,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 public class CachingService {
@@ -44,22 +47,17 @@ public class CachingService {
         builder1.directory(new File("../"));
         newCachingProcess = builder1.inheritIO().start();
 
-        isServiceProperlyRegistered();
+        await()
+            .atMost(Duration.ONE_MINUTE)
+        .with()
+            .pollInterval(Duration.TEN_SECONDS)
+            .until(this::isServiceProperlyRegistered);
     }
 
     public boolean isServiceProperlyRegistered() {
         try {
-            for (int i = 0; i < 30; i++) {
-                if (discovery.isApplicationRegistered(id)) {
-                    return true;
-                }
-
-                try {
-                    log.info("Sleep as it isn't registered yet.");
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    // Do nothing
-                }
+            if (discovery.isApplicationRegistered(id)) {
+                return true;
             }
         } catch (URISyntaxException e) {
             // Ignorable exception.
@@ -68,8 +66,6 @@ public class CachingService {
 
         return false;
     }
-
-    // Verify that the service is up and registered before actually using the service.
 
     public URI getBaseUrl() {
         return HttpRequestUtils.getUriFromGateway("/" + id + "/api/v1/cache");
