@@ -10,7 +10,8 @@
 package org.zowe.apiml.util;
 
 import io.restassured.RestAssured;
-import io.restassured.path.xml.XmlPath;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -18,6 +19,10 @@ import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
@@ -29,16 +34,31 @@ public class DiscoveryRequests {
     private final String host = discoveryServiceConfiguration.getHost();
     private final int port = discoveryServiceConfiguration.getPort();
 
-    public void getApplications() throws URISyntaxException {
+    public boolean getApplications() throws URISyntaxException {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        XmlPath result = given()
+        JsonPath result = given()
+            .accept(ContentType.JSON)
         .when()
             .get(getDiscoveryUriWithPath("/eureka/apps"))
         .then()
-            .statusCode(is(HttpStatus.SC_OK)).extract().body().xmlPath();
+            .statusCode(is(HttpStatus.SC_OK))
+            .extract()
+            .body()
+            .jsonPath();
 
-        System.out.println(result);
+        List<ArrayList> appNames = result.get("applications.application.instance.app");
+
+        AtomicBoolean isRegistered = new AtomicBoolean(false);
+        appNames.stream()
+            .flatMap(Collection::stream)
+            .forEach(element -> {
+                if (element.equals("cachingoldest".toUpperCase())) {
+                    isRegistered.set(true);
+                }
+            });
+
+        return isRegistered.get();
     }
 
     private URI getDiscoveryUriWithPath(String path) throws URISyntaxException {

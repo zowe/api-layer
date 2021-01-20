@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -41,7 +40,6 @@ public class SecurityUtils {
     public final static String GATEWAY_LOGOUT_ENDPOINT = "/auth/logout";
     public final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
     private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
-    private final static String zosmfAuthEndpoint = "/zosmf/services/authenticate";
 
     private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private final static ZosmfServiceConfiguration zosmfServiceConfiguration = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration();
