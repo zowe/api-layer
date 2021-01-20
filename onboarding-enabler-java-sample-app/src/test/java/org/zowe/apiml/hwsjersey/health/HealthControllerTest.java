@@ -21,6 +21,7 @@ import java.util.HashMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+// WARN: JerseyTest does not support Junit 5
 public class HealthControllerTest extends JerseyTest {
 
     @Override

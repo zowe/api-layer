@@ -19,6 +19,8 @@ import org.apache.http.pool.PoolStats;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Used for custom pooling http connection management.
  */
@@ -26,8 +28,8 @@ public class ApimlPoolingHttpClientConnectionManager extends PoolingHttpClientCo
 
     private final ApimlLogger apimlLog = ApimlLogger.of(ApimlPoolingHttpClientConnectionManager.class, YamlMessageServiceInstance.getInstance());
 
-    public ApimlPoolingHttpClientConnectionManager(@NonNull Registry<ConnectionSocketFactory> socketFactoryRegistry) {
-        super(socketFactoryRegistry);
+    public ApimlPoolingHttpClientConnectionManager(@NonNull Registry<ConnectionSocketFactory> socketFactoryRegistry, int timeToLive) {
+        super(socketFactoryRegistry, null, null, null, timeToLive, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -53,4 +55,5 @@ public class ApimlPoolingHttpClientConnectionManager extends PoolingHttpClientCo
 
         return super.requestConnection(route, state);
     }
+
 }
