@@ -48,12 +48,13 @@ public class VsamStorage implements Storage {
         try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toCreate);
-
+            List<String> storedData = file.readRecords();
+            log.error("Size storedata: " + storedData.size());
+            verifyTotalSize(toCreate, storedData);
             Optional<VsamRecord> returned = file.create(record);
             if (returned.isPresent()) {
                 result = returned.get().getKeyValue();
             }
-
         }
 
         if (result == null) {
@@ -61,6 +62,18 @@ public class VsamStorage implements Storage {
         }
 
         return result;
+    }
+
+    private void verifyTotalSize(KeyValue toCreate, List<String> storedData) {
+        if (storedData.size() >= vsamConfig.getMaxDataSize()) {
+            if (vsamConfig.getGeneralConfig().getEvictionStrategy().equals("reject")) {
+                log.error("I'm Inside reject");
+                throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(),
+                    Messages.INSUFFICIENT_STORAGE.getStatus(), toCreate.getKey());
+            } else {
+                //TODO add remove old item strategy
+            }
+        }
     }
 
     @Override
