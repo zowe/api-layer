@@ -9,68 +9,69 @@
  */
 package org.zowe.apiml.eurekaservice.client.impl;
 
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.eurekaservice.client.EurekaClientConfigProvider;
 import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
 import org.zowe.apiml.eurekaservice.client.config.*;
 import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
-import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
-import com.netflix.appinfo.InstanceInfo;
-import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 class ApiMediationClientImplTest {
 
     private static final char[] PASSWORD = "password".toCharArray();
 
-    @Test
-    void startEurekaClient() throws ServiceDefinitionException {
+    ApiMediationServiceConfig getValidConfiguration() {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0"));
         Authentication authentication = new Authentication("bypass", null);
         Ssl ssl = new Ssl(false, false, "TLSv1.2", "localhost", PASSWORD,
-            "../keystore/localhost/localhost.keystore.p12", PASSWORD, "PKCS12",
-            "../keystore/localhost/localhost.truststore.p12", PASSWORD, "PKCS12");
+                "../keystore/localhost/localhost.keystore.p12", PASSWORD, "PKCS12",
+                "../keystore/localhost/localhost.truststore.p12", PASSWORD, "PKCS12");
         List<Route> routes = new ArrayList<>();
         Route apiRoute = new Route("api/v1", "/hellospring/api/v1");
         Route apiDocRoute = new Route("api/v1/api-doc", "/hellospring/api-doc");
         routes.add(apiRoute);
         routes.add(apiDocRoute);
 
-        ApiMediationServiceConfig config = ApiMediationServiceConfig.builder()
-            .apiInfo(Collections.singletonList(apiInfo))
-            .catalog(catalogUiTile)
-            .authentication(authentication)
-            .routes(routes)
-            .description("Example for exposing a Spring REST API")
-            .title("Hello Spring REST API")
-            .serviceId("service")
-            .baseUrl("http://host:1000/service")
-            .healthCheckRelativeUrl("")
-            .homePageRelativeUrl("")
-            .statusPageRelativeUrl("")
-            .discoveryServiceUrls(Collections.singletonList("https://localhost:10011/eureka"))
-            .ssl(ssl)
-            .serviceIpAddress("127.0.0.1")
-            .build();
+        return ApiMediationServiceConfig.builder()
+                .apiInfo(Collections.singletonList(apiInfo))
+                .catalog(catalogUiTile)
+                .authentication(authentication)
+                .routes(routes)
+                .description("Example for exposing a Spring REST API")
+                .title("Hello Spring REST API")
+                .serviceId("service")
+                .baseUrl("http://host:1000/service")
+                .healthCheckRelativeUrl("")
+                .homePageRelativeUrl("")
+                .statusPageRelativeUrl("")
+                .discoveryServiceUrls(Collections.singletonList("https://localhost:10011/eureka"))
+                .ssl(ssl)
+                .serviceIpAddress("127.0.0.1")
+                .build();
+    }
+
+    @Test
+    void startEurekaClient() throws ServiceDefinitionException {
+        ApiMediationServiceConfig config = getValidConfiguration();
 
         ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
@@ -103,11 +104,11 @@ class ApiMediationClientImplTest {
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/https-service-configuration.yml");
 
-        EurekaClientProvider clientProvider = Mockito.mock(EurekaClientProvider.class);
+        EurekaClientProvider clientProvider = mock(EurekaClientProvider.class);
         EurekaInstanceConfigCreator instanceConfigCreator = new EurekaInstanceConfigCreator();
 
         EurekaClientConfig clientConfig = new EurekaClientConfiguration(config);
-        EurekaClientConfigProvider eurekaClientConfigProvider = Mockito.mock(ApiMlEurekaClientConfigProvider.class);
+        EurekaClientConfigProvider eurekaClientConfigProvider = mock(ApiMlEurekaClientConfigProvider.class);
         when(eurekaClientConfigProvider.config(config)).thenReturn(clientConfig);
 
         ApiMediationClient client = new ApiMediationClientImpl(clientProvider, eurekaClientConfigProvider, instanceConfigCreator);
@@ -167,4 +168,74 @@ class ApiMediationClientImplTest {
         assertThat(exception.getCause(), instanceOf(MetadataValidationException.class));
         client.unregister();
     }
+
+    private ApiMediationClient createApiMediationClient(DefaultCustomMetadataHelper defaultCustomMetadataHelper) {
+        return new ApiMediationClientImpl(
+                new DiscoveryClientProvider(),
+                new ApiMlEurekaClientConfigProvider(),
+                new EurekaInstanceConfigCreator(),
+                defaultCustomMetadataHelper
+        );
+    }
+
+    @Test
+    void testGivenCustomMetadata_whenRegister_thenValueIsNotChanged() throws ServiceDefinitionException {
+        ApiMediationServiceConfig config = getValidConfiguration();
+        ApiMediationClient client = createApiMediationClient(new DefaultCustomMetadataHelper());
+
+        config.setCustomMetadata(new HashMap<>(Collections.singletonMap("os.name", "OSX")));
+        client.register(config);
+        assertEquals("OSX", config.getCustomMetadata().get("os.name"));
+    }
+
+    private ZUtil getZUtilZosValue() {
+        ZUtilDummy zutil = mock(ZUtilDummy.class);
+        doReturn("jobId").when(zutil).getCurrentJobId();
+        doReturn("jobName").when(zutil).getCurrentJobname();
+        doReturn("userId").when(zutil).getCurrentUser();
+        doReturn(12345).when(zutil).getPid();
+        doReturn("sysname").when(zutil).substituteSystemSymbols("&SYSNAME.");
+        doReturn("sysclone").when(zutil).substituteSystemSymbols("&SYSCLONE.");
+        doReturn("sysplex").when(zutil).substituteSystemSymbols("&SYSPLEX.");
+        return zutil;
+    }
+
+    private DefaultCustomMetadataHelper getDefaultCustomMetadataHelper(boolean mockZos) {
+        return new DefaultCustomMetadataHelper() {
+            {
+                setZUtil(getZUtilZosValue());
+            }
+            @Override
+            protected boolean isRunningOnZos() {
+                return mockZos;
+            }
+        };
+    }
+
+    @Test
+    void testGivenZos_whenRegister_thenDefaultMetadataAreFetched() throws ServiceDefinitionException {
+        ApiMediationServiceConfig config = getValidConfiguration();
+        ApiMediationClient client = createApiMediationClient(getDefaultCustomMetadataHelper(true));
+
+        client.register(config);
+        assertEquals(System.getProperty("os.name"), config.getCustomMetadata().get("os.name"));
+        assertEquals("jobId", config.getCustomMetadata().get("zos.jobid"));
+        assertEquals("jobName", config.getCustomMetadata().get("zos.jobname"));
+        assertEquals("userId", config.getCustomMetadata().get("zos.userid"));
+        assertEquals(12345, config.getCustomMetadata().get("zos.pid"));
+        assertEquals("sysname", config.getCustomMetadata().get("zos.sysname"));
+        assertEquals("sysclone", config.getCustomMetadata().get("zos.sysclone"));
+        assertEquals("sysplex", config.getCustomMetadata().get("zos.sysplex"));
+    }
+
+    @Test
+    void testGivenNonZos_whenRegister_thenDefaultMetadataAreFetched() throws ServiceDefinitionException {
+        ApiMediationServiceConfig config = getValidConfiguration();
+        ApiMediationClient client = createApiMediationClient(getDefaultCustomMetadataHelper(false));
+
+        client.register(config);
+        assertEquals(System.getProperty("os.name"), config.getCustomMetadata().get("os.name"));
+        assertNull(config.getCustomMetadata().get("zos.jobid"));
+    }
+
 }
