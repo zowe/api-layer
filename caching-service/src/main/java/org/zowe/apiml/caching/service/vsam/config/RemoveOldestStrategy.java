@@ -66,6 +66,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
             try {
                 file.getZfile().locate(oldest.getKeyBytes(),
                     ZFileConstants.LOCATE_KEY_EQ);
+                log.info("Removing the oldest record");
                 file.getZfile().delrec();
             } catch (ZFileException | VsamRecordException e) {
                 log.error(e.toString());

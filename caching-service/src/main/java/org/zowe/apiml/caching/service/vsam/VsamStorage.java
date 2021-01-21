@@ -60,7 +60,7 @@ public class VsamStorage implements Storage {
             log.info("Current Size {}.", currentSize);
 
             if (aboveThreshold(currentSize)) {
-                log.info("Rejecting record");
+                log.info("Evicting record using the {} strategy", vsamConfig.getGeneralConfig().getEvictionStrategy());
                 strategy.evict(toCreate.getKey());
             }
             Optional<VsamRecord> returned = file.create(record);
