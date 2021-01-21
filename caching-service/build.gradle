@@ -38,6 +38,8 @@ gitProperties {
 }
 
 dependencies {
+    implementation project(':apiml-utility')
+    implementation project(':apiml-common')
     implementation project(':common-service-core')
     implementation project(':zaas-client')
 
