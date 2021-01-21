@@ -88,4 +88,4 @@ spring:
         - debug
         - diag
 
-        logbackServiceName: ZWEACS1
+    logbackServiceName: ZWEACS1
