@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.*;
+import org.zowe.apiml.caching.service.inmemory.RejectStrategy;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.util.ObjectUtil;
 
@@ -26,14 +27,20 @@ import java.util.*;
 public class VsamStorage implements Storage {
 
     private final VsamConfig vsamConfig;
+    private EvictionStrategy strategy = new DefaultEvictionStrategy();
 
     public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer) {
-
+        String evictionStrategy = vsamConfig.getGeneralConfig().getEvictionStrategy();
         log.info("Using VSAM storage for the cached data");
 
         ObjectUtil.requireNotNull(vsamConfig.getFileName(), "Vsam filename cannot be null"); //TODO bean validation
         ObjectUtil.requireNotEmpty(vsamConfig.getFileName(), "Vsam filename cannot be empty");
         this.vsamConfig = vsamConfig;
+        if (evictionStrategy.equals(Strategies.REJECT.getKey())) {
+            strategy = new RejectStrategy();
+        } else if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
+//           strategy = new RemoveOldestStrategy(storage);
+        }
         log.info("Using Vsam configuration: {}", vsamConfig);
         vsamInitializer.storageWarmup(vsamConfig);
     }
@@ -48,12 +55,17 @@ public class VsamStorage implements Storage {
         try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toCreate);
+            int currentSize = file.countAllRecords();
+            log.info("Current Size {}.", currentSize);
 
+            if (aboveThreshold(currentSize)) {
+                log.info("Rejecting record");
+                strategy.evict(toCreate.getKey());
+            }
             Optional<VsamRecord> returned = file.create(record);
             if (returned.isPresent()) {
                 result = returned.get().getKeyValue();
             }
-
         }
 
         if (result == null) {
@@ -61,6 +73,10 @@ public class VsamStorage implements Storage {
         }
 
         return result;
+    }
+
+    private boolean aboveThreshold(int currentSize) {
+        return currentSize >= vsamConfig.getGeneralConfig().getMaxDataSize();
     }
 
     @Override
@@ -86,7 +102,7 @@ public class VsamStorage implements Storage {
     }
 
     @Override
-    @Retryable (value = {IllegalStateException.class, UnsupportedOperationException.class})
+    @Retryable(value = {IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         log.info("Updating Record: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
         KeyValue result = null;

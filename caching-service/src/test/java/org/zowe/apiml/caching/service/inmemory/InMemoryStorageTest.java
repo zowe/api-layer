@@ -38,7 +38,7 @@ public class InMemoryStorageTest {
         GeneralConfig generalConfig = new GeneralConfig();
         generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
         config = new InMemoryConfig(generalConfig);
-        config.setMaxDataSize(10);
+        config.getGeneralConfig().setMaxDataSize(10);
         underTest = new InMemoryStorage(config, testingStorage);
     }
 
@@ -153,7 +153,7 @@ public class InMemoryStorageTest {
         GeneralConfig generalConfig = new GeneralConfig();
         generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
         config = new InMemoryConfig(generalConfig);
-        config.setMaxDataSize(1);
+        config.getGeneralConfig().setMaxDataSize(1);
 
         underTest = new InMemoryStorage(config);
         underTest.create("customService", new KeyValue("key", "willFit"));
@@ -168,7 +168,7 @@ public class InMemoryStorageTest {
         GeneralConfig generalConfig = new GeneralConfig();
         generalConfig.setEvictionStrategy(Strategies.REMOVE_OLDEST.getKey());
         config = new InMemoryConfig(generalConfig);
-        config.setMaxDataSize(1);
+        config.getGeneralConfig().setMaxDataSize(1);
 
         String oldestKey = "oldestKey";
         underTest = new InMemoryStorage(config);
