@@ -14,6 +14,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.*;
 import org.zowe.apiml.caching.service.inmemory.RejectStrategy;
+import org.zowe.apiml.caching.service.vsam.config.RemoveOldestStrategy;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.util.ObjectUtil;
 
@@ -39,7 +40,7 @@ public class VsamStorage implements Storage {
         if (evictionStrategy.equals(Strategies.REJECT.getKey())) {
             strategy = new RejectStrategy();
         } else if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
-//           strategy = new RemoveOldestStrategy(storage);
+           strategy = new RemoveOldestStrategy(vsamConfig);
         }
         log.info("Using Vsam configuration: {}", vsamConfig);
         vsamInitializer.storageWarmup(vsamConfig);

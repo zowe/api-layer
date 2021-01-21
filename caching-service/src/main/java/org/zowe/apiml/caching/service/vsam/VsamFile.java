@@ -277,6 +277,14 @@ public class VsamFile implements Closeable {
         return returned;
     }
 
+    public Optional<byte[]> readBytes(byte[] arrayToStoreIn) throws ZFileException {
+        if (getZfile().read(arrayToStoreIn) == -1) {
+            return Optional.empty();
+        }
+
+        return Optional.of(arrayToStoreIn);
+    }
+
     public Integer countAllRecords() {
         int recordsCounter = 0;
 
