@@ -27,11 +27,11 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 //TODO: Showing original endpoints ... is it correct?
-public class ApiCatalogLoginIntegrationTest {
+class ApiCatalogLoginIntegrationTest {
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
@@ -45,7 +45,7 @@ public class ApiCatalogLoginIntegrationTest {
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 

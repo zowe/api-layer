@@ -32,8 +32,8 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 
 /**
@@ -54,7 +54,7 @@ class AuthenticationOnDeploymentTest {
     private RequestVerifier verifier;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         verifier = RequestVerifier.getInstance();

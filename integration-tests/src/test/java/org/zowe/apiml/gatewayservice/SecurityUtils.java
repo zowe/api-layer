@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -41,7 +40,6 @@ public class SecurityUtils {
     public final static String GATEWAY_LOGOUT_ENDPOINT = "/auth/logout";
     public final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
     private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
-    private final static String zosmfAuthEndpoint = "/zosmf/services/authenticate";
 
     private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private final static ZosmfServiceConfiguration zosmfServiceConfiguration = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration();
@@ -94,33 +92,6 @@ public class SecurityUtils {
             .statusCode(is(SC_OK))
             .cookie(ZOSMF_TOKEN, not(isEmptyString()))
             .extract().cookie(ZOSMF_TOKEN);
-    }
-
-    public static void logoutItUserGatewayZosmf(String jwtToken) {
-        logoutOnGateway(jwtToken);
-    }
-
-    public static void logoutOnZosmf() {
-        if ( ! (System.getProperties().getProperty("externalJenkinsToggle") != null && System.getProperties().getProperty("externalJenkinsToggle").equalsIgnoreCase("true"))) {
-            // login with Basic and get LTPA
-            String ltpa2 =
-                given()
-                    .auth().basic(USERNAME, PASSWORD)
-                    .header("authorization", Base64.getEncoder().encodeToString((USERNAME + ":" + PASSWORD).getBytes()))
-                    .header("X-CSRF-ZOSMF-HEADER", "")
-                    .when()
-                    .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
-                    .then().statusCode(is(SC_OK))
-                    .extract().cookie("LtpaToken2");
-            // Logout LTPA
-            given()
-                .header("X-CSRF-ZOSMF-HEADER", "")
-                .cookie("LtpaToken2", ltpa2)
-                .when()
-                .delete(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
-                .then()
-                .statusCode(is(SC_NO_CONTENT));
-        }
     }
 
     public static void logoutOnGateway(String jwtToken) {
