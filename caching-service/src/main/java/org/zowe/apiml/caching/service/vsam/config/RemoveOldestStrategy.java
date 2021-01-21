@@ -28,7 +28,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
 
     @Override
     public void evict(String key) {
-        file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.READ);
+        file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE);
         removeOldestRecord();
     }
 
