@@ -39,7 +39,7 @@ public class VsamStorage implements Storage {
         if (evictionStrategy.equals(Strategies.REJECT.getKey())) {
             strategy = new RejectStrategy();
         } else if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
-//            strategy = new RemoveOldestStrategy(storage);
+//           strategy = new RemoveOldestStrategy(storage);
         }
         log.info("Using Vsam configuration: {}", vsamConfig);
         vsamInitializer.storageWarmup(vsamConfig);
