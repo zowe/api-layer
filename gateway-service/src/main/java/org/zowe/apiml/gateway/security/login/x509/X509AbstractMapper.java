@@ -9,12 +9,14 @@
  */
 package org.zowe.apiml.gateway.security.login.x509;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationServiceException;
 
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+@Slf4j
 public abstract class X509AbstractMapper implements X509AuthenticationMapper {
 
     private static final String CLIENT_AUTH_OID = "1.3.6.1.5.5.7.3.2";
@@ -33,8 +35,17 @@ public abstract class X509AbstractMapper implements X509AuthenticationMapper {
             throw new AuthenticationServiceException("Can't get extensions from certificate");
         }
         if (extendedKeyUsage == null) {
+            log.debug("X509 certificate is missing the client certificate extended usage definition");
             return false;
         }
-        return extendedKeyUsage.contains(CLIENT_AUTH_OID);
+        final boolean containsOID = extendedKeyUsage.contains(CLIENT_AUTH_OID);
+
+        if (containsOID) {
+            log.debug("X509 certificate does contain the client certificate extended usage definition.");
+        } else {
+            log.debug("X509 certificate is missing the client certificate extended usage definition.");
+        }
+
+        return containsOID;
     }
 }

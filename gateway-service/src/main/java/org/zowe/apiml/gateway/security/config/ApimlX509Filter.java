@@ -10,17 +10,13 @@
 package org.zowe.apiml.gateway.security.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -28,6 +24,7 @@ import java.util.stream.Collectors;
  * This filter processes certificates on request. It decides, which certificates are considered for client authentication
  */
 @RequiredArgsConstructor
+@Slf4j
 public class ApimlX509Filter extends X509AuthenticationFilter {
 
     private final Set<String> publicKeyCertificatesBase64;
@@ -47,6 +44,8 @@ public class ApimlX509Filter extends X509AuthenticationFilter {
         if (certs != null) {
             request.setAttribute("client.auth.X509Certificate", selectCerts(certs, certificateForClientAuth ));
             request.setAttribute("javax.servlet.request.X509Certificate", selectCerts(certs, notCertificateForClientAuth ));
+            log.debug("Filtering certificates: client.auth.X509Certificate -> {}", request.getAttribute("client.auth.X509Certificate"));
+            log.debug("Filtering certificates: javax.servlet.request.X509Certificate -> {}", request.getAttribute("javax.servlet.request.X509Certificate"));
         }
     }
 
