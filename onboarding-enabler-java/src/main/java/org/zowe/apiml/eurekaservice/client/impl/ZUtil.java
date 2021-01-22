@@ -13,6 +13,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 
+/*
+ * For API documentation see https://www.ibm.com/support/knowledgecenter/SSYKE2_8.0.0/com.ibm.java.zsecurity.api.80.doc/com.ibm.jzos/com/ibm/jzos/ZUtil.html
+ */
 public interface ZUtil {
 
     String[] environ();
