@@ -135,15 +135,14 @@ public class AuthenticationService {
 
         // invalidate token in z/OSMF
         final QueryResponse queryResponse = parseJwtToken(jwtToken);
-        boolean isInvalidated = false;
         switch (queryResponse.getSource()) {
             case ZOWE:
                 final String ltpaToken = getLtpaToken(jwtToken);
-                if (ltpaToken != null) isInvalidated = zosmfService.invalidate(LTPA, ltpaToken);
+                if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
                 break;
             case ZOSMF:
                 try {
-                  isInvalidated =  zosmfService.invalidate(JWT, jwtToken);
+                    zosmfService.invalidate(JWT, jwtToken);
                 } catch (BadCredentialsException e) {
                     if (!isInvalidatedOnAnotherInstance) {
                         throw e;
@@ -154,7 +153,7 @@ public class AuthenticationService {
                 throw new TokenFormatNotValidException("Unknown token type.");
         }
 
-        return isInvalidated;
+        return Boolean.TRUE;
     }
 
     private boolean invalidateTokenOnAnotherInstance(String jwtToken) {

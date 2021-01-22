@@ -198,7 +198,7 @@ public class ZosmfService extends AbstractZosmfService {
                 return false;
             }
         } catch (HttpServerErrorException serverError) {
-            log.warn("The check of z/OSMF JWT authentication endpoint has failed with z/OSMF internal error", serverError);
+            log.warn("z/OSMF internal error", serverError);
         }
         return false;
     }
@@ -253,7 +253,7 @@ public class ZosmfService extends AbstractZosmfService {
         }
        }
 
-    public boolean invalidate(TokenType type, String token) {
+    public void invalidate(TokenType type, String token) {
         if (logoutEndpointExists()) {
             final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
@@ -266,7 +266,7 @@ public class ZosmfService extends AbstractZosmfService {
                     new HttpEntity<>(null, headers), String.class);
 
                 if (re.getStatusCode().is2xxSuccessful())
-                    return true;
+                    return;
                 apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
                 throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
             } catch (RuntimeException re) {
@@ -274,7 +274,6 @@ public class ZosmfService extends AbstractZosmfService {
             }
         }
         log.warn("The request to invalidate an auth token was unsuccessful, z/OSMF invalidate endpoint not available");
-        return false;
     }
 
     /**
