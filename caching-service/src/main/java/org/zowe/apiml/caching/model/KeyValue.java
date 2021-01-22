@@ -51,6 +51,6 @@ public class KeyValue {
         key = "";
         value = "";
         serviceId = "";
-        created = "";
+        created = currentTime();
     }
 }

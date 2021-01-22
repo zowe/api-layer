@@ -116,6 +116,6 @@ public class InMemoryStorage implements Storage {
 
         log.info("Current Size {}.", currentSize);
 
-        return currentSize >= config.getMaxDataSize();
+        return currentSize >= config.getGeneralConfig().getMaxDataSize();
     }
 }

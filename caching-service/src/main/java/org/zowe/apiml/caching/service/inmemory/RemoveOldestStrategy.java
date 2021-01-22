@@ -35,8 +35,8 @@ public class RemoveOldestStrategy implements EvictionStrategy {
                     continue;
                 }
 
-                int oldestCreated = Integer.parseInt(oldest.getCreated());
-                int currentCreated = Integer.parseInt(current.getCreated());
+                long oldestCreated = Long.parseLong(oldest.getCreated());
+                long currentCreated = Long.parseLong(current.getCreated());
 
                 if (oldestCreated > currentCreated) {
                     oldest = current;
