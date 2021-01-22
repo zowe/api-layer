@@ -30,6 +30,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -287,7 +288,7 @@ public class AuthenticationServiceTest {
         final String ltpaToken = "zosmfLtpaToken";
         final ZosmfService zosmfService = getSpiedZosmfService();
         final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
-        doReturn(true).when(zosmfService).authenticationEndpointExists(HttpMethod.DELETE);
+        doReturn(true).when(zosmfService).logoutEndpointExists();
         doReturn(new QueryResponse(
             "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
         )).when(authService).parseJwtToken(jwtToken);
@@ -304,7 +305,7 @@ public class AuthenticationServiceTest {
         final String ltpaToken = "zosmfLtpaToken";
         final ZosmfService zosmfService = getSpiedZosmfService();
         final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
-        doReturn(true).when(zosmfService).authenticationEndpointExists(HttpMethod.DELETE);
+        doReturn(true).when(zosmfService).logoutEndpointExists();
         doReturn(new QueryResponse(
             "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
         )).when(authService).parseJwtToken(jwtToken);
@@ -333,7 +334,7 @@ public class AuthenticationServiceTest {
         final String ltpaToken = "zosmfLtpaToken";
         final ZosmfService zosmfService = getSpiedZosmfService();
         final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
-        doReturn(true).when(zosmfService).authenticationEndpointExists(HttpMethod.DELETE);
+        doReturn(true).when(zosmfService).logoutEndpointExists();
         doReturn(new QueryResponse(
             "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
         )).when(authService).parseJwtToken(jwtToken);
@@ -443,7 +444,7 @@ public class AuthenticationServiceTest {
 
         final ZosmfService zosmfService = getSpiedZosmfService();
         final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
-        doReturn(true).when(zosmfService).authenticationEndpointExists(HttpMethod.DELETE);
+        doReturn(true).when(zosmfService).logoutEndpointExists();
         doReturn(new QueryResponse(
             "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
         )).when(authService).parseJwtToken(token);
@@ -500,7 +501,12 @@ public class AuthenticationServiceTest {
 
         when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()))
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add("X-CSRF-ZOSMF-HEADER", "");
+        headers.add("Authorization", "Basic Og==");
 
+        when(restTemplate.exchange(anyString(), (HttpMethod) any(),eq(new HttpEntity<>(null, headers)) , (Class<?>) any()))
+            .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
         TokenAuthentication tokenAuthentication = authService.validateJwtToken(jwtToken);
         assertTrue(tokenAuthentication.isAuthenticated());
         assertEquals(jwtToken, tokenAuthentication.getCredentials());
