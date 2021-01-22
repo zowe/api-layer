@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +24,7 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class TokenCreationService {
     private final Providers providers;
     private final ZosmfAuthenticationProvider zosmfAuthenticationProvider;
@@ -49,7 +51,10 @@ public class TokenCreationService {
 
         if (isZosmfUsedAndAvailable) {
             try {
+                log.debug("ZOSMF is available and used. Attempt to authenticate with PassTicket");
+                log.debug("Generating PassTicket for user: {} and ZOSMF applid: {}", user, zosmfApplId);
                 String passTicket = passTicketService.generate(user, zosmfApplId);
+                log.debug("Generated passticket: {}", passTicket);
                 return ((TokenAuthentication) zosmfAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(user, passTicket)))
                     .getCredentials();
             } catch (IRRPassTicketGenerationException e) {
@@ -57,7 +62,9 @@ public class TokenCreationService {
             }
         } else {
             final String domain = "security-domain";
+            log.debug("ZOSMF is not available or used. Generating APIML's JWT Token.");
             final String jwtTokenString = authenticationService.createJwtToken(user, domain, null);
+            log.debug("Generated JWT Token: {}", jwtTokenString);
             return authenticationService.createTokenAuthentication(user, jwtTokenString).getCredentials();
         }
     }

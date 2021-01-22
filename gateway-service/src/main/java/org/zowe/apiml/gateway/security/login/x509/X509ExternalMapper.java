@@ -72,9 +72,12 @@ public class X509ExternalMapper extends X509AbstractMapper {
                 httpPost.setEntity(httpEntity);
 
                 httpPost.setHeader(new BasicHeader("Cookie", "apimlAuthenticationToken=" + jwtToken));
+                log.debug("Executing request against external mapper API: {}", httpPost.toString());
 
                 HttpResponse httpResponse = httpClientProxy.execute(httpPost);
                 String response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+                log.debug("External mapper API returned: {}", response);
+
                 if (response == null || response.isEmpty()) {
                     return null;
                 }

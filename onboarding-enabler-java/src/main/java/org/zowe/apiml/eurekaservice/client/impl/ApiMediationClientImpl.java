@@ -41,11 +41,13 @@ import org.zowe.apiml.security.HttpsFactory;
  * The issue with DiscoveryService and its behavior is tested in the Eureka.
  */
 public class ApiMediationClientImpl implements ApiMediationClient {
-    private EurekaClientProvider eurekaClientProvider;
-    private EurekaClientConfigProvider eurekaClientConfigProvider;
+
+    private final EurekaClientProvider eurekaClientProvider;
+    private final EurekaClientConfigProvider eurekaClientConfigProvider;
+    private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator;
+    private final DefaultCustomMetadataHelper defaultCustomMetadataHelper;
 
     private EurekaClient eurekaClient;
-    private EurekaInstanceConfigCreator eurekaInstanceConfigCreator;
 
     public ApiMediationClientImpl() {
         this(new DiscoveryClientProvider());
@@ -55,14 +57,30 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         this(eurekaClientProvider, new ApiMlEurekaClientConfigProvider());
     }
 
-    public ApiMediationClientImpl(EurekaClientProvider eurekaClientProvider, EurekaClientConfigProvider eurekaClientConfigProvider) {
+    public ApiMediationClientImpl(
+        EurekaClientProvider eurekaClientProvider, EurekaClientConfigProvider eurekaClientConfigProvider
+    ) {
         this(eurekaClientProvider, eurekaClientConfigProvider, new EurekaInstanceConfigCreator());
     }
 
-    public ApiMediationClientImpl(EurekaClientProvider eurekaClientProvider, EurekaClientConfigProvider eurekaClientConfigProvider, EurekaInstanceConfigCreator instanceConfigCreator) {
+    public ApiMediationClientImpl(
+            EurekaClientProvider eurekaClientProvider,
+            EurekaClientConfigProvider eurekaClientConfigProvider,
+            EurekaInstanceConfigCreator instanceConfigCreator
+    ) {
+        this(eurekaClientProvider, eurekaClientConfigProvider, instanceConfigCreator, new DefaultCustomMetadataHelper());
+    }
+
+    public ApiMediationClientImpl(
+        EurekaClientProvider eurekaClientProvider,
+        EurekaClientConfigProvider eurekaClientConfigProvider,
+        EurekaInstanceConfigCreator instanceConfigCreator,
+        DefaultCustomMetadataHelper defaultCustomMetadataHelper
+    ) {
         this.eurekaClientProvider = eurekaClientProvider;
         this.eurekaClientConfigProvider = eurekaClientConfigProvider;
         this.eurekaInstanceConfigCreator = instanceConfigCreator;
+        this.defaultCustomMetadataHelper = defaultCustomMetadataHelper;
     }
 
     /**
@@ -82,6 +100,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
 
         EurekaClientConfig clientConfiguration = eurekaClientConfigProvider.config(config);
         ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
+        defaultCustomMetadataHelper.update(config);
         eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
     }
 
