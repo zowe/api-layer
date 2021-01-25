@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.CachingRequests;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -29,30 +30,31 @@ class RemoveOldestTest {
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
     private final String jwtToken = SecurityUtils.gatewayToken();
     private final CachingRequests requests = new CachingRequests();
-    private static final CachingService service = new CachingService();
+    private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
+//    private static final CachingService service = new CachingService();
 
     @BeforeAll
     static void setup() throws IOException {
         RestAssured.useRelaxedHTTPSValidation();
-        service.start();
+//        service.start();
     }
 
     @AfterAll
     static void tearDown() {
-        service.stop();
+//        service.stop();
     }
 
     @Test
     void givenStorageIsFull_whenAnotherKeyIsInserted_thenTheOldestIsRemoved() {
         int amountOfAllowedRecords = 100 + 1;
-        URI removeOldestCachingServiceUri = service.getBaseUrl();
+//        URI removeOldestCachingServiceUri = service.getBaseUrl();
         try {
             KeyValue keyValue;
 
             // The default configuration is to allow 100 records.
             for (int i = 0; i < amountOfAllowedRecords; i++) {
                 keyValue = new KeyValue("key" + i, "testValue");
-                requests.create(removeOldestCachingServiceUri, keyValue);
+                requests.create(CACHING_PATH, keyValue);
             }
 
             keyValue = new KeyValue("keyThatWillReplaceTheKey0", "testValue");
@@ -61,12 +63,12 @@ class RemoveOldestTest {
                 .body(keyValue)
                 .cookie(COOKIE_NAME, jwtToken)
             .when()
-                .get(service.getBaseUrl() + "/key0")
+                .get(CACHING_PATH + "/key0")
             .then()
                 .statusCode(is(SC_NOT_FOUND));
         } finally {
             for (int i = 0; i < amountOfAllowedRecords; i++) {
-                requests.deleteValueUnderServiceIdWithoutValidation(removeOldestCachingServiceUri, "key" + i, jwtToken);
+                requests.deleteValueUnderServiceIdWithoutValidation(CACHING_PATH, "key" + i, jwtToken);
             }
         }
     }
