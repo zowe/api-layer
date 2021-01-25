@@ -251,6 +251,7 @@ public class AuthenticationService {
                isValid = zosmfService.validate(JWT, jwtToken);
                 break;
             default:
+                methodNotTested();
                 throw new TokenNotValidException("Unknown token type.");
         }
 
@@ -279,6 +280,9 @@ public class AuthenticationService {
         return out;
     }
 
+    public void methodNotTested(){
+        log.info("for test only");
+    }
     /**
      * This method get all invalidated JWT token in the cache and distributes them to instance of Gateway with name
      * in argument toInstanceId. If instance cannot be find it return false. A notification can throw an runtime
