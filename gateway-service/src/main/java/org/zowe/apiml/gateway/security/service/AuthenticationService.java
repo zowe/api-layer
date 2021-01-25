@@ -248,10 +248,9 @@ public class AuthenticationService {
                 isValid = true;
                 break;
             case ZOSMF:
-                isValid = zosmfService.validate(JWT, jwtToken);
+               isValid = zosmfService.validate(JWT, jwtToken);
                 break;
             default:
-                methodNotTested();
                 throw new TokenNotValidException("Unknown token type.");
         }
 
@@ -278,10 +277,6 @@ public class AuthenticationService {
         final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
         out.setAuthenticated(authenticated);
         return out;
-    }
-
-    public void methodNotTested() {
-        log.info("for test only");
     }
 
     /**
