@@ -40,8 +40,6 @@ dependencies {
 
     annotationProcessor libraries.spring_boot_configuration_processor
     testCompile libraries.gson
-
-    testCompileOnly libraries.junitVintage
 }
 
 jar {

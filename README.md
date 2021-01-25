@@ -45,31 +45,25 @@ The following tools are required to build and develop the API Mediation Layer:
 
 **Follow these steps:**
 
-1. Install the package manager `pnpm` globally in order to build the project:
+1. Install npm packages for the UI:
 
   ```sh
-   npm add -g pnpm
+   cd api-catalog-ui/frontend/; npm install; cd ../..
    ```
 
-2. Install npm packages for the UI:
-
-  ```sh
-   cd api-catalog-ui/frontend/; pnpm install; cd ../..
-   ```
-
-3. Install `concurrently` globally:
+2. Install `concurrently` globally:
 
   ```sh
    npm install -g concurrently
    ```
 
-4. Build all modules:
+3. Build all modules:
 
   ```sh
    ./gradlew build
    ```
 
-5. Run all service on your local machine:
+4. Run all service on your local machine:
 
   ```sh
    npm run api-layer

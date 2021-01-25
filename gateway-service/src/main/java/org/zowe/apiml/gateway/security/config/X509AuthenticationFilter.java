@@ -9,21 +9,20 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
+@Slf4j
 public class X509AuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private final AuthenticationProvider authenticationProvider;
@@ -59,8 +58,10 @@ public class X509AuthenticationFilter extends AbstractAuthenticationProcessingFi
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
         if (certs != null && certs.length > 0) {
+            log.debug("One or more X509 certificate found in request.");
             return this.authenticationProvider.authenticate(new X509AuthenticationToken(certs));
         }
+        log.debug("No X509 certificate found in request.");
         return null;
     }
 

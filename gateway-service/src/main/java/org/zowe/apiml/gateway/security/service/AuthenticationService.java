@@ -241,13 +241,14 @@ public class AuthenticationService {
     @Cacheable(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication validateJwtToken(String jwtToken) {
         QueryResponse queryResponse = parseJwtToken(jwtToken);
-
+        boolean isValid;
         switch (queryResponse.getSource()) {
             case ZOWE:
                 validateAndParseLocalJwtToken(jwtToken);
+                isValid = true;
                 break;
             case ZOSMF:
-                zosmfService.validate(JWT, jwtToken);
+               isValid = zosmfService.validate(JWT, jwtToken);
                 break;
             default:
                 throw new TokenNotValidException("Unknown token type.");
@@ -256,7 +257,7 @@ public class AuthenticationService {
         TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken);
         // without a proxy cache aspect is not working, thus it is necessary get bean from application context
         final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
-        tokenAuthentication.setAuthenticated(authenticated);
+        tokenAuthentication.setAuthenticated(authenticated && isValid);
 
         return tokenAuthentication;
     }

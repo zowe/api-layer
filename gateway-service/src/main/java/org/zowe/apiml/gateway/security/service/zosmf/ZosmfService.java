@@ -23,10 +23,11 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.*;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
@@ -104,7 +105,7 @@ public class ZosmfService extends AbstractZosmfService {
 
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
-        if (authenticationEndpointExists(HttpMethod.POST)) {
+        if (loginEndpointExists()) {
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
                 getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
@@ -121,7 +122,6 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     /**
-     *
      * @return String containing the zosmf realm/domain
      */
     @Cacheable("zosmfInfo")
@@ -152,8 +152,9 @@ public class ZosmfService extends AbstractZosmfService {
 
     /**
      * POST to provided url and return authentication response
+     *
      * @param authentication
-     * @param url String containing auth endpoint to be used
+     * @param url            String containing auth endpoint to be used
      * @return AuthenticationResponse containing auth token, either LTPA or JWT
      */
     protected AuthenticationResponse issueAuthenticationRequest(Authentication authentication, String url, HttpMethod httpMethod) {
@@ -174,37 +175,59 @@ public class ZosmfService extends AbstractZosmfService {
 
     /**
      * Check if call to ZOSMF_AUTHENTICATE_END_POINT resolves
+     *
      * @param httpMethod HttpMethod to be checked for existence
      * @return boolean, containing true if endpoint resolves
      */
-    @Cacheable("zosmfAuthenticationEndpoint")
-    public boolean authenticationEndpointExists(HttpMethod httpMethod) {
+    private boolean authenticationEndpointExists(HttpMethod httpMethod, HttpHeaders headers) {
         String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
-
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(ZOSMF_CSRF_HEADER, "");
 
         try {
             restTemplateWithoutKeystore.exchange(url, httpMethod, new HttpEntity<>(null, headers), String.class);
         } catch (HttpClientErrorException hce) {
-            if (hce.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
+            if (HttpStatus.UNAUTHORIZED.equals(hce.getStatusCode())) {
                 return true;
-            }
-            else if (hce.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+            } else if (HttpStatus.NOT_FOUND.equals(hce.getStatusCode())) {
                 log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure APAR PH12143 " +
                     "(https://www.ibm.com/support/pages/apar/PH12143) fix has been applied. " +
                     "Using z/OSMF info endpoint as backup.");
                 return false;
+            } else {
+                log.warn("z/OSMF authentication endpoint with HTTP method " + httpMethod.name() +
+                    " has failed with status code: " + hce.getStatusCode(), hce);
+                return false;
             }
-            log.warn("The check of z/OSMF JWT authentication endpoint has failed with exception", hce);
-        } catch (RuntimeException re) {
-            log.warn("The check of z/OSMF JWT authentication endpoint has failed with exception", re);
+        } catch (HttpServerErrorException serverError) {
+            log.warn("z/OSMF internal error", serverError);
         }
         return false;
     }
 
-    public void validate(TokenType type, String token) {
-        if (authenticationEndpointExists(HttpMethod.POST)) {
+    /**
+     * Tries to call ZOSMF authentication endpoint with HTTP Post method
+     *
+     * @return true, if zosmf login endpoint is presented
+     */
+    @Cacheable("zosmfLoginEndpoint")
+    public boolean loginEndpointExists() {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(ZOSMF_CSRF_HEADER, "");
+        headers.add("Authorization", "Basic Og==");
+        return authenticationEndpointExists(HttpMethod.POST, headers);
+    }
+
+    /**
+     * Tries to call ZOSMF authentication endpoint with HTTP Delete method
+     *
+     * @return true, if zosmf logout endpoint is presented
+     */
+    @Cacheable("zosmfLogoutEndpoint")
+    public boolean logoutEndpointExists() {
+        return authenticationEndpointExists(HttpMethod.DELETE, null);
+    }
+
+    public boolean validate(TokenType type, String token) {
+        if (loginEndpointExists()) {
             final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
             final HttpHeaders headers = new HttpHeaders();
@@ -216,7 +239,7 @@ public class ZosmfService extends AbstractZosmfService {
                     new HttpEntity<>(null, headers), String.class);
 
                 if (re.getStatusCode().is2xxSuccessful())
-                    return;
+                    return true;
                 if (re.getStatusCodeValue() == 401) {
                     throw new TokenNotValidException("Token is not valid.");
                 }
@@ -225,12 +248,13 @@ public class ZosmfService extends AbstractZosmfService {
             } catch (RuntimeException re) {
                 throw handleExceptionOnCall(url, re);
             }
+        } else {
+            return false;
         }
-        log.warn("The request to validate an auth token was unsuccessful, z/OSMF validate endpoint not available");
-    }
+       }
 
     public void invalidate(TokenType type, String token) {
-        if (authenticationEndpointExists(HttpMethod.DELETE)) {
+        if (logoutEndpointExists()) {
             final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
             final HttpHeaders headers = new HttpHeaders();
