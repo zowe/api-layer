@@ -113,8 +113,7 @@ pipeline {
                         withSonarQubeEnv('sonarcloud-server') {
                             sh 'JAVA_HOME=/usr/java/openjdk-11 && \
                                ./gradlew --info --scan sonarqube -x test -x compileJava\
-                                 -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true
-                            '
+                                 -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true'
                      }
                 }
             }
