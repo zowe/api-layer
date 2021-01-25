@@ -29,20 +29,14 @@ public class KeyValue {
     private final String created;
 
     public KeyValue(String key, String value) {
-        this.key = key;
-        this.value = value;
-        this.serviceId = "";
-        this.created = currentTime();
+        this(key, value, "", currentTime());
     }
 
     public KeyValue(String key, String value, String serviceId) {
-        this.key = key;
-        this.value = value;
-        this.serviceId = serviceId;
-        this.created = currentTime();
+        this(key, value, serviceId, currentTime());
     }
 
-    private String currentTime() {
+    private static String currentTime() {
         return String.valueOf(new Date().getTime());
     }
 
