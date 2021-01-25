@@ -127,6 +127,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .userDetailsService(x509UserDetailsService())
 
             // logout endpoint
+            // only /gateway/api/v1 format configured here, Spring Security only allows one logout route
+            // OldLogoutPathController proxies /api/v1/gateway/auth/logout to /gateway/api/v1/auth/logout instead
             .and()
             .logout()
             .logoutRequestMatcher(new AntPathRequestMatcher(authConfigurationProperties.getGatewayLogoutEndpoint(), HttpMethod.POST.name()))
