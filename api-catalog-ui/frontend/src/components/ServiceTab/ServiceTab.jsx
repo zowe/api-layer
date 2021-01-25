@@ -83,6 +83,15 @@ export default class ServiceTab extends Component {
             }
         }
 
+        let apiIds = "";
+        if(currentService && currentService.apiIds) {
+            currentService.apiIds.forEach(apiId => {
+                apiIds += (apiIds ? ", " : "") + apiId;
+            });
+        }
+
+        let sso = currentService.sso ? 'supported' : 'not supported';
+
         return (
             <React.Fragment>
                 {invalidService && (
@@ -151,7 +160,26 @@ export default class ServiceTab extends Component {
                                     >
                                         <Text style={{ fontSize: '13px' }}>Service ID: {selectedService.serviceId}</Text>
                                     </Tooltip>
+
+                                    <br/>
+                                    <Tooltip
+                                        key={selectedService.sso}
+                                        content="Status of supporting of SSO"
+                                        placement="bottom"
+                                    >
+                                        <Text style={{ fontSize: '13px' }}>SSO: {sso}</Text>
+                                    </Tooltip>
+                                    <br/>
+                                    <Tooltip
+                                        key={selectedService.apiIds}
+                                        content="API IDs of service"
+                                        placement="bottom"
+                                    >
+                                        <Text style={{ fontSize: '13px' }}>API ID: {apiIds}</Text>
+                                    </Tooltip>
+
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
+
                                 </div>
                                 <div className="tabs-container" style={{width: '100%'}}>
                                     {apiVersions}

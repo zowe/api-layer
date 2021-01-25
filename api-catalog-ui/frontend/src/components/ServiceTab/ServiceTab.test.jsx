@@ -20,7 +20,9 @@ const selectedService = {
     "basePath": "/service/api/v1",
     "apiDoc": null,
     "apiVersions": ["v1", "v2"],
-    "defaultApiVersion": ["v1"]
+    "defaultApiVersion": ["v1"],
+    "sso": true,
+    "apiIds": ["zowe.apiml.gateway"]
 }
 
 const tiles = {
@@ -36,6 +38,12 @@ const tiles = {
 }
 
 describe('>>> ServiceTab component tests', () => {
+
+    beforeEach(() => {
+        selectedService.sso = true;
+        selectedService.apiIds = ["zowe.apiml.gateway"];
+    });
+
     it('should display service tab information', () => {
 
         const selectService = jest.fn();
@@ -49,9 +57,11 @@ describe('>>> ServiceTab component tests', () => {
         expect(serviceTab.find('Text').at(1).prop('children')).toEqual(["Instance URL: ", "https://localhost:6000"]);
         expect(serviceTab.find('Text').at(2).prop('children')).toEqual(["API Base Path: ", "/service/api/v1"]);
         expect(serviceTab.find('Text').at(3).prop('children')).toEqual(["Service ID: ", "gateway"]);
-        expect(serviceTab.find('Text').at(4).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
-        expect(serviceTab.find('Text').at(5).prop('children')).toEqual('v1');
-        expect(serviceTab.find('Text').at(6).prop('children')).toEqual('v2');
+        expect(serviceTab.find('Text').at(4).prop('children')).toEqual(["SSO: ", "supported"]);
+        expect(serviceTab.find('Text').at(5).prop('children')).toEqual(["API ID: ", "zowe.apiml.gateway"]);
+        expect(serviceTab.find('Text').at(6).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
+        expect(serviceTab.find('Text').at(7).prop('children')).toEqual('v1');
+        expect(serviceTab.find('Text').at(8).prop('children')).toEqual('v2');
         expect(serviceTab.find('span').first().prop('style').backgroundColor).toEqual('#fff');    //Check default api version is pre selected
 
     });
@@ -69,6 +79,30 @@ describe('>>> ServiceTab component tests', () => {
         expect(serviceTab.find('span').at(1).prop('style').backgroundColor).toEqual('#fff');
         expect(serviceTab.find('span').first().prop('style').backgroundColor).toEqual(undefined);
         
+    });
+
+    it('should not supported sso when is sso equals to false', () => {
+        selectedService.sso = false;
+        const selectService = jest.fn();
+        const serviceTab = shallow(<ServiceTab match={params} selectedService={selectedService} tiles={[tiles]} selectService={selectService}/>);
+        serviceTab.setState({selectedVersion: "v1"})
+        expect(serviceTab.find('Text').at(4).prop('children')).toEqual(["SSO: ", "not supported"]);
+    });
+
+    it('should show multiple API IDs when they are set', () => {
+        selectedService.apiIds = ["a", "b"];
+        const selectService = jest.fn();
+        const serviceTab = shallow(<ServiceTab match={params} selectedService={selectedService} tiles={[tiles]} selectService={selectService}/>);
+        serviceTab.setState({selectedVersion: "v1"})
+        expect(serviceTab.find('Text').at(5).prop('children')).toEqual(["API ID: ", "a, b"]);
+    });
+
+    it('should show empty value if API IDs is not set', () => {
+        selectedService.apiIds = null;
+        const selectService = jest.fn();
+        const serviceTab = shallow(<ServiceTab match={params} selectedService={selectedService} tiles={[tiles]} selectService={selectService}/>);
+        serviceTab.setState({selectedVersion: "v1"})
+        expect(serviceTab.find('Text').at(5).prop('children')).toEqual(["API ID: ", ""]);
     });
 
 });

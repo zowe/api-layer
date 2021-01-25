@@ -13,6 +13,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -22,6 +23,9 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.SemanticVersion;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationSchemes;
+import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
@@ -32,7 +36,7 @@ import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
@@ -56,6 +60,7 @@ public class CachedProductFamilyService {
 
     private final Map<String, APIContainer> products = new HashMap<>();
 
+    private final AuthenticationSchemes schemes = new AuthenticationSchemes();
 
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
                                       TransformService transformService,
@@ -376,42 +381,72 @@ public class CachedProductFamilyService {
         return container;
     }
 
+    private boolean isSso(InstanceInfo instanceInfo) {
+        Map<String, String> eurekaMetadata = instanceInfo.getMetadata();
+        return Authentication.builder()
+            .scheme(schemes.map(eurekaMetadata.get(AUTHENTICATION_SCHEME)))
+            .supportsSso(BooleanUtils.toBooleanObject(eurekaMetadata.get(AUTHENTICATION_SSO)))
+            .build()
+            .supportsSso();
+    }
+
+    private boolean update(APIService apiService) {
+        Application application = cachedServicesService.getService(apiService.getServiceId());
+        // service has not cached yet, but count as alive
+        if (application == null) return true;
+
+        List<InstanceInfo> instancies = application.getInstances();
+        boolean isUp = instancies.stream().anyMatch(i -> InstanceInfo.InstanceStatus.UP.equals(i.getStatus()));
+        boolean isSso = instancies.stream().allMatch(this::isSso);
+        Set<String> apiIds = instancies.stream()
+                .map(i -> metadataParser.parseApiInfo(i.getMetadata()))
+                .flatMap(List::stream)
+                .map(ApiInfo::getApiId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        apiService.setStatus(isUp ? "UP" : "DOWN");
+        apiService.setSso(isSso);
+        apiService.setApiIds(apiIds);
+
+        return isUp;
+    }
+
+    private void setStatus(APIContainer apiContainer, int servicesCount, int activeServicesCount) {
+        apiContainer.setTotalServices(servicesCount);
+        apiContainer.setActiveServices(activeServicesCount);
+
+        if (activeServicesCount == 0) {
+            apiContainer.setStatus("DOWN");
+        } else if (activeServicesCount == servicesCount) {
+            apiContainer.setStatus("UP");
+        } else {
+            apiContainer.setStatus("WARNING");
+        }
+    }
+
     /**
-     * Update the summary totals for a container based on it's running services
+     * Update the summary totals, sso and API IDs info for a container based on it's running services
      *
      * @param apiContainer calculate totals for this container
      */
-    public void calculateContainerServiceTotals(APIContainer apiContainer) {
-        final AtomicInteger activeServices = new AtomicInteger(0);
-        if (apiContainer.getServices() != null) {
-            activeServices.set(apiContainer.getServices().size());
-            apiContainer.getServices().forEach(apiService -> {
-                Application service = this.cachedServicesService.getService(apiService.getServiceId());
-                // only use running instances
-                if (service != null) {
-                    long numInstances = service.getInstances().stream().filter(
-                        instance -> instance.getStatus().equals(InstanceInfo.InstanceStatus.UP)).count();
-                    if (numInstances == 0) {
-                        activeServices.getAndDecrement();
-                        apiService.setStatus("DOWN");
-                    } else {
-                        apiService.setStatus("UP");
-                    }
-                }
-            });
+    public void calculateContainerServiceValues(APIContainer apiContainer) {
+        if (apiContainer.getServices() == null) {
+            apiContainer.setServices(new HashSet<>());
         }
 
-        // set counters for total and active services
-        apiContainer.setTotalServices(apiContainer.getServices() == null ? 0 : apiContainer.getServices().size());
-        apiContainer.setActiveServices(activeServices.get());
-
-        if (activeServices.get() == 0) {
-            apiContainer.setStatus("DOWN");
-        } else if (activeServices.get() < apiContainer.getServices().size()) {
-            apiContainer.setStatus("WARNING");
-        } else {
-            apiContainer.setStatus("UP");
+        int servicesCount = apiContainer.getServices().size();
+        int activeServicesCount = 0;
+        boolean isSso = servicesCount > 0;
+        for (APIService apiService : apiContainer.getServices()) {
+            if (update(apiService)) {
+                activeServicesCount ++;
+            }
+            isSso &= apiService.isSso();
         }
+
+        setStatus(apiContainer, servicesCount, activeServicesCount);
+        apiContainer.setSso(isSso);
     }
 
     /**
@@ -422,4 +457,5 @@ public class CachedProductFamilyService {
     public int getContainerCount() {
         return products.size();
     }
+
 }

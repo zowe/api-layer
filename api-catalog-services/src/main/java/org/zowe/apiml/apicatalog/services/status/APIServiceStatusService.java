@@ -71,7 +71,7 @@ public class APIServiceStatusService {
         List<ContainerStatusChangeEvent> events = new ArrayList<>();
         Iterable<APIContainer> allContainers = cachedProductFamilyService.getAllContainers();
         allContainers.forEach(container -> {
-            cachedProductFamilyService.calculateContainerServiceTotals(container);
+            cachedProductFamilyService.calculateContainerServiceValues(container);
             addContainerEvent(events, container);
         });
         return events;
@@ -119,7 +119,7 @@ public class APIServiceStatusService {
         List<ContainerStatusChangeEvent> recentEvents = new ArrayList<>();
         Iterable<APIContainer> allContainers = cachedProductFamilyService.getRecentlyUpdatedContainers();
         allContainers.forEach(container -> {
-            cachedProductFamilyService.calculateContainerServiceTotals(container);
+            cachedProductFamilyService.calculateContainerServiceValues(container);
             addContainerEvent(recentEvents, container);
         });
         if (!recentEvents.isEmpty()) {

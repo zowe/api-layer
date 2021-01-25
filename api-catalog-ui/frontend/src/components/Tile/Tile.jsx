@@ -75,6 +75,11 @@ export default class Tile extends Component {
                 <CardStatus variant={this.getTileStatus(tile)} className="grid-tile-status">
                     {this.getTileStatusText(tile)}
                 </CardStatus>
+                {tile.sso && (
+                    <CardStatus variant="sso" className="grid-tile-sso">
+                        SSO
+                    </CardStatus>
+                )}
             </Card>
         );
     }

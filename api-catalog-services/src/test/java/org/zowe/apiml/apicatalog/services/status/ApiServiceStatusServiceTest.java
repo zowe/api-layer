@@ -77,7 +77,7 @@ class ApiServiceStatusServiceTest {
     void testGetContainerStatusAsEvents() {
         List<APIContainer> containers = new ArrayList<>(createContainers());
         when(cachedProductFamilyService.getAllContainers()).thenReturn(containers);
-        doNothing().when(this.cachedProductFamilyService).calculateContainerServiceTotals(any(APIContainer.class));
+        doNothing().when(this.cachedProductFamilyService).calculateContainerServiceValues(any(APIContainer.class));
 
         List<ContainerStatusChangeEvent> expectedEvents = new ArrayList<>();
         containers.forEach(container -> {
@@ -125,16 +125,16 @@ class ApiServiceStatusServiceTest {
     @Test
     void givenInvalidAPIs_whenDifferenceIsProduced_thenTheProperExceptionIsRaised() {
         when(openApiCompareProducer.fromContents(anyString(), anyString())).thenThrow(new NullPointerException());
-        assertThrows(ApiDiffNotAvailableException.class, () -> {
-            apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
-        });        
+        assertThrows(ApiDiffNotAvailableException.class, () ->
+            apiServiceStatusService.getApiDiffInfo("service", "v1", "v2")
+        );
     }
 
     @Test
     void testGetRecentlyChangedEvents() {
         List<APIContainer> containers = createContainers();
         when(cachedProductFamilyService.getRecentlyUpdatedContainers()).thenReturn(containers);
-        doNothing().when(this.cachedProductFamilyService).calculateContainerServiceTotals(any(APIContainer.class));
+        doNothing().when(this.cachedProductFamilyService).calculateContainerServiceValues(any(APIContainer.class));
         List<ContainerStatusChangeEvent> events = apiServiceStatusService.getRecentlyUpdatedContainersAsEvents();
         assertNotNull(events);
         assertEquals(2, events.size());

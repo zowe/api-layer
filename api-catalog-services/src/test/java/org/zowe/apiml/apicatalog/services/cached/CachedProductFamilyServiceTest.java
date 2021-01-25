@@ -11,11 +11,11 @@ package org.zowe.apiml.apicatalog.services.cached;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -35,13 +35,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @SuppressWarnings({"squid:S2925"}) // replace with proper wait test library
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class CachedProductFamilyTest {
+class CachedProductFamilyServiceTest {
+
+    private int id = 0;
+
     private final Integer cacheRefreshUpdateThresholdInMillis = 2000;
 
     private CachedProductFamilyService service;
@@ -49,10 +53,13 @@ class CachedProductFamilyTest {
     @Mock
     private final TransformService transformService = new TransformService(new GatewayClient(null));
 
+    @Mock
+    private CachedServicesService cachedServicesService;
+
     @BeforeEach
     void setup() {
         service = new CachedProductFamilyService(
-            null,
+            cachedServicesService,
             transformService,
             cacheRefreshUpdateThresholdInMillis);
     }
@@ -117,9 +124,7 @@ class CachedProductFamilyTest {
 
     @Test
     void testCreationOfContainerWithoutInstance() {
-        assertThrows(NullPointerException.class, () -> {
-            service.getContainer("demoapp", null);
-        });
+        assertThrows(NullPointerException.class, () -> service.getContainer("demoapp", null));
         assertEquals(0, service.getContainerCount());
         assertEquals(0, service.getAllContainers().size());
     }
@@ -200,8 +205,6 @@ class CachedProductFamilyTest {
 
     @Test
     void testCalculationOfContainerTotalsWithAllServicesUp() {
-        CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
-
         InstanceInfo instance1 = createApp("service", "demoapp");
         InstanceInfo instance2 = createApp("service", "demoapp");
         Application application = new Application();
@@ -221,7 +224,7 @@ class CachedProductFamilyTest {
         assertEquals(1, service.getContainerCount());
 
         APIContainer container = containersForService.get(0);
-        service.calculateContainerServiceTotals(container);
+        service.calculateContainerServiceValues(container);
         assertEquals("UP", container.getStatus());
         assertEquals(1, container.getTotalServices().intValue());
         assertEquals(1, container.getActiveServices().intValue());
@@ -229,8 +232,6 @@ class CachedProductFamilyTest {
 
     @Test
     void testCalculationOfContainerTotalsWithAllServicesDown() {
-        CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
-
         InstanceInfo instance1 = createApp("service1", "demoapp", InstanceInfo.InstanceStatus.DOWN);
         InstanceInfo instance2 = createApp("service2", "demoapp", InstanceInfo.InstanceStatus.DOWN);
         Application application1 = new Application();
@@ -251,7 +252,7 @@ class CachedProductFamilyTest {
         APIContainer container = service.retrieveContainer("demoapp");
         assertNotNull(container);
 
-        service.calculateContainerServiceTotals(container);
+        service.calculateContainerServiceValues(container);
         assertEquals("DOWN", container.getStatus());
         assertEquals(2, container.getTotalServices().intValue());
         assertEquals(0, container.getActiveServices().intValue());
@@ -259,8 +260,6 @@ class CachedProductFamilyTest {
 
     @Test
     void testCalculationOfContainerTotalsWithSomeServicesDown() {
-        CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
-
         InstanceInfo instance1 = createApp("service1", "demoapp", InstanceInfo.InstanceStatus.UP);
         InstanceInfo instance2 = createApp("service2", "demoapp", InstanceInfo.InstanceStatus.DOWN);
         Application application1 = new Application();
@@ -281,7 +280,7 @@ class CachedProductFamilyTest {
         APIContainer container = service.retrieveContainer("demoapp");
         assertNotNull(container);
 
-        service.calculateContainerServiceTotals(container);
+        service.calculateContainerServiceValues(container);
         assertEquals("WARNING", container.getStatus());
         assertEquals(2, container.getTotalServices().intValue());
         assertEquals(1, container.getActiveServices().intValue());
@@ -382,7 +381,7 @@ class CachedProductFamilyTest {
                                              InstanceInfo.InstanceStatus status,
                                              HashMap<String, String> metadata) {
         return InstanceInfo.Builder.newBuilder()
-            .setInstanceId(serviceId)
+            .setInstanceId(serviceId + (id++))
             .setAppName(serviceId)
             .setStatus(status)
             .setHostName("localhost")
@@ -392,18 +391,26 @@ class CachedProductFamilyTest {
             .build();
     }
 
-    private InstanceInfo createApp(String serviceId, String catalogId) {
-        return createApp(serviceId,
-            catalogId,
-            InstanceInfo.InstanceStatus.UP);
+    private InstanceInfo createApp(String serviceId, String catalogId, Map.Entry<String, String>...otherMetadata) {
+        return createApp(serviceId, catalogId, InstanceInfo.InstanceStatus.UP, otherMetadata);
     }
 
-    private InstanceInfo createApp(String serviceId, String catalogId, InstanceInfo.InstanceStatus status) {
-        return createApp(serviceId, catalogId, "Title", "Description", "1.0.0", status);
+    private InstanceInfo createApp(
+        String serviceId, String catalogId, InstanceInfo.InstanceStatus status,
+        Map.Entry<String, String>...otherMetadata
+    ) {
+        return createApp(
+            serviceId, catalogId, "Title", "Description", "1.0.0", status,
+            otherMetadata);
     }
 
-    private InstanceInfo createApp(String serviceId, String catalogId, String catalogVersion, String title) {
-        return createApp(serviceId, catalogId, title, "Description", catalogVersion, InstanceInfo.InstanceStatus.UP);
+    private InstanceInfo createApp(
+            String serviceId, String catalogId, String catalogVersion, String title,
+            Map.Entry<String, String>...otherMetadata
+    ) {
+        return createApp(
+            serviceId, catalogId, title, "Description", catalogVersion, InstanceInfo.InstanceStatus.UP,
+            otherMetadata);
     }
 
     private InstanceInfo createApp(String serviceId,
@@ -411,13 +418,70 @@ class CachedProductFamilyTest {
                                    String catalogTitle,
                                    String catalogDescription,
                                    String catalogVersion,
-                                   InstanceInfo.InstanceStatus status) {
+                                   InstanceInfo.InstanceStatus status,
+                                   Map.Entry<String, String>...otherMetadata) {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(CATALOG_ID, catalogId);
         metadata.put(CATALOG_TITLE, catalogTitle);
         metadata.put(CATALOG_DESCRIPTION, catalogDescription);
         metadata.put(CATALOG_VERSION, catalogVersion);
+        for (Map.Entry<String, String> entry : otherMetadata) {
+            metadata.put(entry.getKey(), entry.getValue());
+        }
 
         return getStandardInstance(serviceId, status, metadata);
     }
+
+    @Test
+    void testGivenMultipleApiIds_whenCalculateContainerServiceValues_thenGroupThem() {
+        APIContainer apiContainer = new APIContainer();
+        apiContainer.addService(new APIService("service"));
+
+        Application application = new Application();
+        application.addInstance(createApp("service", "catalog1", Pair.of("apiml.apiInfo.api-v1.apiId", "api1")));
+        application.addInstance(createApp("service", "catalog2", Pair.of("apiml.apiInfo.api-v1.apiId", "api2")));
+        application.addInstance(createApp("service", "catalog3"));
+        doReturn(application).when(cachedServicesService).getService("service");
+
+        service.calculateContainerServiceValues(apiContainer);
+
+        APIService apiService = apiContainer.getServices().iterator().next();
+        assertNotNull(apiService.getApiIds());
+        assertEquals(2, apiService.getApiIds().size());
+        assertTrue(apiService.getApiIds().contains("api1"));
+        assertTrue(apiService.getApiIds().contains("api2"));
+    }
+
+    @Test
+    void testGivenSsoAndNonSsoInstances_whenCalculateContainerServiceValues_thenNonSso() {
+        APIContainer apiContainer = new APIContainer();
+        apiContainer.setSso(true);
+        apiContainer.addService(new APIService("service"));
+
+        Application application = new Application();
+        application.addInstance(createApp("service", "catalog1", Pair.of(AUTHENTICATION_SCHEME, "bypass")));
+        application.addInstance(createApp("service", "catalog2", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt")));
+        doReturn(application).when(cachedServicesService).getService("service");
+
+        service.calculateContainerServiceValues(apiContainer);
+
+        assertFalse(apiContainer.isSso());
+        assertFalse(apiContainer.getServices().iterator().next().isSso());
+    }
+
+    @Test
+    void testGivenSsoInstances_whenCalculateContainerServiceValues_thenSso() {
+        APIContainer apiContainer = new APIContainer();
+        apiContainer.addService(new APIService("service"));
+
+        Application application = new Application();
+        application.addInstance(createApp("service", "catalog1", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt")));
+        doReturn(application).when(cachedServicesService).getService("service");
+
+        service.calculateContainerServiceValues(apiContainer);
+
+        assertTrue(apiContainer.isSso());
+        assertTrue(apiContainer.getServices().iterator().next().isSso());
+    }
+
 }
