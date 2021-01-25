@@ -111,8 +111,8 @@ pipeline {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                         withSonarQubeEnv('sonarcloud-server') {
-                            sh 'export JAVA_HOME=/usr/java/openjdk-11 \
-                                ./gradlew --info --scan sonarqube \
+                            sh 'export JAVA_HOME=/usr/java/openjdk-11'
+                            sh './gradlew --info --scan sonarqube \
                                 -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true'
                      }
                 }
