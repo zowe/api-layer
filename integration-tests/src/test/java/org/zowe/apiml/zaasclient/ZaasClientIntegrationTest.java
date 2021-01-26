@@ -25,8 +25,8 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
-import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
+import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -94,7 +94,7 @@ class ZaasClientIntegrationTest {
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {
         ZaasClientErrorCodes producedErrorCode = zce.getErrorCode();
         assertThat(code.getId(), Is.is(producedErrorCode.getId()));
-        assertThat( code.getMessage(), Is.is(producedErrorCode.getMessage()));
+        assertThat(code.getMessage(), Is.is(producedErrorCode.getMessage()));
         assertThat(code.getReturnCode(), Is.is(producedErrorCode.getReturnCode()));
     }
 
@@ -194,7 +194,7 @@ class ZaasClientIntegrationTest {
     }
 
     @Test
-    void givenInvalidToken_whenPassTicketIsRequested_thenExceptionIsThrown()  {
+    void givenInvalidToken_whenPassTicketIsRequested_thenExceptionIsThrown() {
         assertThrows(ZaasClientException.class, () -> {
             String invalidToken = "INVALID_TOKEN";
             tokenService.passTicket(invalidToken, "ZOWEAPPL");
