@@ -71,11 +71,12 @@ public class RemoveOldestStrategy implements EvictionStrategy {
 
     private void checkAndRemoveRecord(VsamRecord oldest) {
         if (oldest != null) {
+            log.info("Record to remove {}", oldest);
             log.info("Removing the oldest record {}", oldest.getKeyValue().getKey());
             file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE);
             Optional<VsamRecord> returned = file.delete(oldest);
             if (returned.isPresent()) {
-                log.info("The oldest record has been removed!");
+                log.info("The oldest record has been successfully removed!");
             }
         }
     }
