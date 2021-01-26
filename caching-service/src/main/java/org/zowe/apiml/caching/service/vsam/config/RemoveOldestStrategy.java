@@ -17,6 +17,7 @@ import org.zowe.apiml.caching.service.vsam.VsamFile;
 import org.zowe.apiml.caching.service.vsam.VsamFileProducer;
 import org.zowe.apiml.caching.service.vsam.VsamRecord;
 import org.zowe.apiml.caching.service.vsam.VsamRecordException;
+import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
 
 import java.util.Optional;
@@ -47,7 +48,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
             Optional<byte[]> readRecord;
             int overflowProtection = 10000;
             while ((readRecord = file.readBytes(recBuf)).isPresent()) {
-                VsamRecord current = new VsamRecord(vsamConfig, "delete", readRecord.get());
+                VsamRecord current = new VsamRecord(vsamConfig, "", readRecord.get());
                 if (oldest == null) {
                     oldest = current;
                 }
@@ -74,10 +75,24 @@ public class RemoveOldestStrategy implements EvictionStrategy {
             log.info("Record to remove {}", oldest);
             log.info("Removing the oldest record {}", oldest.getKeyValue().getKey());
             file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE);
-            Optional<VsamRecord> returned = file.delete(oldest);
-            if (returned.isPresent()) {
-                log.info("The oldest record has been successfully removed!");
+//            Optional<VsamRecord> returned = file.delete(oldest);
+            try {
+                deleteRecord(oldest);
+            } catch (VsamRecordException | ZFileException e) {
+                log.error(e.toString());
             }
+        }
+    }
+
+    private void deleteRecord(VsamRecord record) throws VsamRecordException, ZFileException {
+        boolean found = file.getZfile().locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
+
+        log.info("Test record for deletion found: {}", found);
+        if (found) {
+            byte[] recBuf = new byte[vsamConfig.getRecordLength()];
+            file.getZfile().read(recBuf); //has to be read before update/delete
+            file.getZfile().delrec();
+            log.info("The oldest record has been successfully removed!");
         }
     }
 }
