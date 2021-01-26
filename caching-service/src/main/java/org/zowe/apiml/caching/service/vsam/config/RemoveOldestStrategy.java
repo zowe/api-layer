@@ -48,7 +48,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
             Optional<byte[]> readRecord;
             int overflowProtection = 10000;
             while ((readRecord = file.readBytes(recBuf)).isPresent()) {
-                VsamRecord current = new VsamRecord(vsamConfig, "", readRecord.get());
+                VsamRecord current = new VsamRecord(vsamConfig, "delete", readRecord.get());
                 if (oldest == null) {
                     oldest = current;
                 }
