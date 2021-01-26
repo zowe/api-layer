@@ -129,7 +129,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // logout endpoint
             .and()
             .logout()
-            .logoutRequestMatcher(new RegexRequestMatcher(authConfigurationProperties.getGatewayLogoutEndpoint(), HttpMethod.POST.name()))
+            .logoutRequestMatcher(new RegexRequestMatcher(
+                String.format("(%s|%s)",
+                    authConfigurationProperties.getGatewayLogoutEndpoint(),
+                    authConfigurationProperties.getGatewayLogoutEndpointOldFormat())
+                , HttpMethod.POST.name()))
             .addLogoutHandler(logoutHandler())
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
             .permitAll()
