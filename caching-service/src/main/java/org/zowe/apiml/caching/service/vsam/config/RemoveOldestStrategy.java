@@ -19,6 +19,8 @@ import org.zowe.apiml.caching.service.vsam.VsamRecord;
 import org.zowe.apiml.caching.service.vsam.VsamRecordException;
 import org.zowe.apiml.zfile.ZFileException;
 
+import java.util.Optional;
+
 
 @RequiredArgsConstructor
 @Slf4j
@@ -42,9 +44,10 @@ public class RemoveOldestStrategy implements EvictionStrategy {
         VsamRecord oldest = null;
         try {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
+            Optional<byte[]> readRecord;
             int overflowProtection = 10000;
-            while ((recBuf = file.readBytes(recBuf)) != null) {
-                VsamRecord current = new VsamRecord(vsamConfig, "", recBuf);
+            while ((readRecord = file.readBytes(recBuf)).isPresent()) {
+                VsamRecord current = new VsamRecord(vsamConfig, "", readRecord.get());
                 if (oldest == null) {
                     oldest = current;
                 }
@@ -69,7 +72,6 @@ public class RemoveOldestStrategy implements EvictionStrategy {
     private void checkAndRemoveRecord(VsamRecord oldest) {
         if (oldest != null) {
             log.info("Removing the oldest record {}", oldest.getKeyValue().getKey());
-            // TODO: Test it is possible you need to open new file.
             file.delete(oldest);
         }
     }

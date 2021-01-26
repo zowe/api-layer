@@ -24,6 +24,8 @@ import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
 
 
+import java.util.Optional;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
@@ -61,7 +63,7 @@ class RemoveOldestStrategyTest {
 
         VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
         when(returnedFile.readBytes(any()))
-            .thenReturn(fullRecord1.getBytes());
+            .thenReturn(Optional.of(fullRecord1.getBytes()));
 
         underTest.evict("new-key");
         verify(returnedFile).delete(recordArgumentCaptor.capture());
@@ -81,8 +83,8 @@ class RemoveOldestStrategyTest {
         VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
         VsamRecord fullRecord2 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record2);
         when(returnedFile.readBytes(any()))
-            .thenReturn(fullRecord1.getBytes())
-            .thenReturn(fullRecord2.getBytes());
+            .thenReturn(Optional.of(fullRecord1.getBytes()))
+            .thenReturn(Optional.of(fullRecord2.getBytes()));
 
         underTest.evict("new-key");
         verify(returnedFile).delete(recordArgumentCaptor.capture());
