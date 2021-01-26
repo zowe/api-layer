@@ -49,11 +49,8 @@ class ZaasClientIntegrationTest {
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private static final String INVALID_USER = "usr";
-    private static final String INVALID_PASS = "usr";
     private static final String NULL_USER = null;
-    private static final String NULL_PASS = null;
     private static final String EMPTY_USER = "";
-    private static final String EMPTY_PASS = "";
     private static final String NULL_AUTH_HEADER = null;
     private static final String EMPTY_AUTH_HEADER = "";
     private static final String EMPTY_STRING = "";
@@ -117,9 +114,7 @@ class ZaasClientIntegrationTest {
     private static Stream<Arguments> provideInvalidUsernamePassword() {
         return Stream.of(
             Arguments.of(INVALID_USER, PASSWORD, ZaasClientErrorCodes.INVALID_AUTHENTICATION),
-            Arguments.of(USERNAME, INVALID_PASS, ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(NULL_USER, PASSWORD, ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD),
-            Arguments.of(USERNAME, NULL_PASS, ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD),
             Arguments.of(EMPTY_USER, PASSWORD, ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD)
         );
     }
@@ -135,11 +130,8 @@ class ZaasClientIntegrationTest {
     private static Stream<Arguments> provideInvalidAuthHeaders() {
         return Stream.of(
             Arguments.of(getAuthHeader(INVALID_USER, PASSWORD), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
-            Arguments.of(getAuthHeader(USERNAME, INVALID_PASS), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(getAuthHeader(NULL_USER, PASSWORD), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
-            Arguments.of(getAuthHeader(USERNAME, NULL_PASS), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(getAuthHeader(EMPTY_USER, PASSWORD), ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD),
-            Arguments.of(getAuthHeader(USERNAME, EMPTY_PASS), ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD),
             Arguments.of(NULL_AUTH_HEADER, ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER),
             Arguments.of(EMPTY_AUTH_HEADER, ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER)
         );
