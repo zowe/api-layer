@@ -33,7 +33,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 @zOSMFAuthTest
-class ZosmfAuthenticationLoginIntegrationTest extends Login {
+class ZosmfAuthenticationLoginTest extends LoginTest {
     private String scheme;
     private String host;
     private int port;
@@ -74,8 +74,18 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     }
 
     @Test
-    void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
+    @MainframeDependentTests
+    void givenValidCredentialsInBody_whenUserOldPathAuthenticatesTwice_thenIdenticalTokenIsProduced() {
+        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
+        String jwtToken1 = authenticateAndVerifyOldPath(loginRequest);
+        String jwtToken2 = authenticateAndVerifyOldPath(loginRequest);
+
+        assertThat(jwtToken1, is((jwtToken2)));
+    }
+
+    @Test
+    void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
@@ -98,10 +108,44 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     }
 
     @Test
-    void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
+    void givenValidCertificate_whenRequestToZosmfHappensAfterOldPathAuthentication_thenTheRequestSucceeds() throws Exception {
+        Cookie cookie = given().config(clientCertValid)
+            .post(new URI(LOGIN_ENDPOINT_URL_OLD_FORMAT))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
 
+        String dsname1 = "SYS1.PARMLIB";
+        String dsname2 = "SYS1.PROCLIB";
+
+        given().config(tlsWithoutCert)
+            .cookie(cookie)
+            .header("X-CSRF-ZOSMF-HEADER", "")
+            .get(String.format("%s://%s:%d%s%s", scheme, host, port, ZOSMF_BASE_PATH, ZOSMF_ENDPOINT))
+            .then()
+            .statusCode(is(SC_OK))
+            .body(
+                "items.dsname", hasItems(dsname1, dsname2));
+    }
+
+    @Test
+    void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
+    }
+
+    @Test
+    void givenClientX509Cert_whenUserOldPathAuthenticates_thenTheValidTokenIsProduced() throws Exception {
+        Cookie cookie = given().config(clientCertValid)
+            .post(new URI(LOGIN_ENDPOINT_URL_OLD_FORMAT))
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -115,6 +159,19 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         Cookie cookie = given().config(clientCertValid)
             .auth().basic("Bob", "The Builder")
             .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
+    }
+
+    @Test
+    void givenValidClientCertAndInvalidBasic_whenOldPathAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
+        Cookie cookie = given().config(clientCertValid)
+            .auth().basic("Bob", "The Builder")
+            .post(new URI(LOGIN_ENDPOINT_URL_OLD_FORMAT))
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))

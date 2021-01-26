@@ -26,7 +26,7 @@ import static org.hamcrest.core.IsNot.not;
  * Also verify that the invalid credentials will be properly rejected.
  */
 @SAFAuthTest
-class SafAuthenticationLoginIntegrationTest extends Login {
+class SafAuthenticationLoginTest extends LoginTest {
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.port = PORT;
@@ -44,5 +44,13 @@ class SafAuthenticationLoginIntegrationTest extends Login {
         assertThat(jwtToken1, is(not(jwtToken2)));
     }
 
+    @Test
+    void givenValidCredentialsInBody_whenUserOldPathAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced() {
+        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
+        String jwtToken1 = authenticateAndVerifyOldPath(loginRequest);
+        String jwtToken2 = authenticateAndVerifyOldPath(loginRequest);
+
+        assertThat(jwtToken1, is(not(jwtToken2)));
+    }
 }

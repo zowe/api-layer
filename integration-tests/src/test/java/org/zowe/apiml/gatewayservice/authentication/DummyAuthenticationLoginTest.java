@@ -20,20 +20,11 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 @AdditionalLocalTest
-class DummyAuthenticationLoginIntegrationTest extends Login {
+class DummyAuthenticationLoginTest extends LoginTest {
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
-
-    }
-
-    protected String getUsername() {
-        return "user";
-    }
-
-    protected String getPassword() {
-        return "user";
     }
 
     @Test
@@ -42,6 +33,16 @@ class DummyAuthenticationLoginIntegrationTest extends Login {
 
         String jwtToken1 = authenticateAndVerify(loginRequest);
         String jwtToken2 = authenticateAndVerify(loginRequest);
+
+        assertThat(jwtToken1, is(not(jwtToken2)));
+    }
+
+    @Test
+    void givenValidCredentialsInBody_whenUserOldPathAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced() {
+        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
+
+        String jwtToken1 = authenticateAndVerifyOldPath(loginRequest);
+        String jwtToken2 = authenticateAndVerifyOldPath(loginRequest);
 
         assertThat(jwtToken1, is(not(jwtToken2)));
     }

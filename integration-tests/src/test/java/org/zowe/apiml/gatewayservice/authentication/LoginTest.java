@@ -45,14 +45,15 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 
-
-abstract class Login {
+abstract class LoginTest {
     protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     protected final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
-    protected final static String BASE_PATH = "/api/v1/gateway";
+    protected final static String BASE_PATH = "/gateway/api/v1";
+    protected final static String BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
     protected final static String LOGIN_ENDPOINT = "/auth/login";
     public static final String LOGIN_ENDPOINT_URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT);
+    public static final String LOGIN_ENDPOINT_URL_OLD_FORMAT = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH_OLD_FORMAT, LOGIN_ENDPOINT);
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -62,7 +63,6 @@ abstract class Login {
 
     public static final char[] KEYSTORE_PASSWORD = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword();
     public static final String KEYSTORE_LOCALHOST_TEST_JKS = ConfigReader.environmentConfiguration().getTlsConfiguration().getClientKeystore();
-
 
     protected String getUsername() {
         return USERNAME;
@@ -129,6 +129,23 @@ abstract class Login {
         assertValidAuthToken(cookie);
     }
 
+    @Test
+    void givenValidCredentialsInBody_whenUserAuthenticatesOldPath_thenTheValidTokenIsProduced() {
+        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
+
+        Cookie cookie = given()
+            .contentType(JSON)
+            .body(loginRequest)
+            .when()
+            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertValidAuthToken(cookie);
+    }
+
     protected void assertValidAuthToken(Cookie cookie) {
         assertValidAuthToken(cookie, Optional.empty());
     }
@@ -151,6 +168,24 @@ abstract class Login {
             .contentType(JSON)
             .when()
             .post(LOGIN_ENDPOINT_URL)
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().cookie(COOKIE_NAME);
+
+        int i = token.lastIndexOf('.');
+        String untrustedJwtString = token.substring(0, i + 1);
+        Claims claims = parseJwtString(untrustedJwtString);
+        assertThatTokenIsValid(claims);
+    }
+
+    @Test
+    void givenValidCredentialsInHeader_whenUserAuthenticatesOldPath_thenTheValidTokenIsProduced() {
+        String token = given()
+            .auth().preemptive().basic(getUsername(), getPassword())
+            .contentType(JSON)
+            .when()
+            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -196,6 +231,24 @@ abstract class Login {
     }
 
     @Test
+    void givenInvalidCredentialsInBody_whenUserAuthenticatesOldPath_thenUnauthorizedIsReturned() {
+        String expectedMessage = "Invalid username or password for URL '" + BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT + "'";
+
+        LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
+
+        given()
+            .contentType(JSON)
+            .body(loginRequest)
+            .when()
+            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
+            .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body(
+                "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
+    @Test
     void givenInvalidCredentialsInHeader_whenUserAuthenticates_thenUnauthorizedIsReturned() {
         String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
 
@@ -214,13 +267,31 @@ abstract class Login {
     }
 
     @Test
-    void givenNoCredentials_whenUserAuthenticates_then400IsReturned() {
+    void givenInvalidCredentialsInHeader_whenUserAuthenticatesOldPath_thenUnauthorizedIsReturned() {
+        String expectedMessage = "Invalid username or password for URL '" + BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT + "'";
+
+        LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
+
+        ValidatableResponse response = given()
+            .contentType(JSON)
+            .body(loginRequest)
+            .when()
+            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
+            .then();
+        response.statusCode(is(SC_UNAUTHORIZED))
+            .body(
+                "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
+    @Test
+    void givenNoCredentials_whenUserAuthenticatesOldPath_then400IsReturned() {
         String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" +
-            BASE_PATH + LOGIN_ENDPOINT + "'";
+            BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT + "'";
 
         given()
             .when()
-            .post(LOGIN_ENDPOINT_URL)
+            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
             .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
@@ -250,6 +321,27 @@ abstract class Login {
     }
 
     @Test
+    void givenCredentialsInTheWrongJsonFormat_whenUserAuthenticatesOldPath_then400IsReturned() {
+        String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" +
+            BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT + "'";
+
+        JSONObject loginRequest = new JSONObject()
+            .put("user", getUsername())
+            .put("pass", getPassword());
+
+        given()
+            .contentType(JSON)
+            .body(loginRequest.toString())
+            .when()
+            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
+            .then()
+            .statusCode(is(SC_BAD_REQUEST))
+            .body(
+                "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
+    @Test
     void givenValidCredentialsInJsonBody_whenUserAuthenticatesViaGetMethod_then405IsReturned() {
         String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
@@ -268,12 +360,39 @@ abstract class Login {
             );
     }
 
+    @Test
+    void givenValidCredentialsInJsonBody_whenUserAuthenticatesViaGetMethodOldPath_then405IsReturned() {
+        String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
+            BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT + "'";
+
+        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
+
+        given()
+            .contentType(JSON)
+            .body(loginRequest)
+            .when()
+            .get(LOGIN_ENDPOINT_URL_OLD_FORMAT)
+            .then()
+            .statusCode(is(SC_METHOD_NOT_ALLOWED))
+            .body(
+                "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
     protected String authenticateAndVerify(LoginRequest loginRequest) {
+        return authenticateAndVerify(loginRequest, LOGIN_ENDPOINT_URL);
+    }
+
+    protected String authenticateAndVerifyOldPath(LoginRequest loginRequest) {
+        return authenticateAndVerify(loginRequest, LOGIN_ENDPOINT_URL_OLD_FORMAT);
+    }
+
+    private String authenticateAndVerify(LoginRequest loginRequest, String url) {
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .post(url)
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -295,6 +414,14 @@ abstract class Login {
     void givenApimlsCert_whenAuth_thenUnauthorized() throws Exception {
         given().config(clientCertApiml)
             .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_BAD_REQUEST));
+    }
+
+    @Test
+    void givenApimlsCert_whenAuthOldFormat_thenUnauthorized() throws Exception {
+        given().config(clientCertApiml)
+            .post(new URI(LOGIN_ENDPOINT_URL_OLD_FORMAT))
             .then()
             .statusCode(is(SC_BAD_REQUEST));
     }
