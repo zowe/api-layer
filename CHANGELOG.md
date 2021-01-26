@@ -1,6 +1,24 @@
 # API Mediation Layer Changelog
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
+## `1.19.0`
+
+- Feature: Configure the connection limit for the GW [#843](https://github.com/zowe/api-layer/issues/843)
+- Feature: Minimize size of API Mediation Layer [#909](https://github.com/zowe/api-layer/issues/909)
+- Feature: Allow removal or configuration of a service as a catalog [#727](https://github.com/zowe/api-layer/issues/727)
+- Bugfix: API ID is not sent to Eureka in metadata by Java enabler [#991](https://github.com/zowe/api-layer/issues/991)
+- Feature: Improve connection limits [#987](https://github.com/zowe/api-layer/issues/987)
+- Feature: SAF authorization checking code [#993](https://github.com/zowe/api-layer/issues/993)
+- Feature: Enhance connection limit log messages [#987](https://github.com/zowe/api-layer/issues/987)
+- Bugfix: Fix stuck opened tcp connections [#1009](https://github.com/zowe/api-layer/issues/1009)
+- Feature: Add /api/v1/gateway/services/{serviceId} endpoint that provides information about a service  in API ML for API clients (Disabled by default) [#873](https://github.com/zowe/api-layer/issues/873)
+- Feature: Support the Size limitation in the InMemory cache [#998](https://github.com/zowe/api-layer/issues/998)
+- Feature: Added PlatformAccessControl test programs for debugging on zOS
+- Feature: Implemenation of the Remove Oldest eviction mechanism for InMemory Caching Service [#998](https://github.com/zowe/api-layer/issues/998)
+- Feature: Configure CORS origins per service [#997](https://github.com/zowe/api-layer/issues/997)
+- Feature: Add reject eviction strategy to Caching service [#998](https://github.com/zowe/api-layer/issues/998)
+- Feature: Add debug logging to x509 Client certificate authentication classes 
+
 ## `1.18.0`
 
 - Feature: Configure more detailed logging outside of Spool. [#709](https://github.com/zowe/api-layer/issues/709)
