@@ -32,7 +32,7 @@ public class AuthConfigurationProperties {
 
     // General properties
     private String gatewayLoginEndpoint = "/gateway/api/v1/auth/login";
-    private String gatewayLogoutEndpoint = "/gateway/api/v1/auth/logout";
+    private String gatewayLogoutEndpoint = "\\/(|api\\/v1\\/)gateway\\/(|api\\/v1\\/)auth\\/logout";
     private String gatewayQueryEndpoint = "/gateway/api/v1/auth/query";
     private String gatewayTicketEndpoint = "/gateway/api/v1/auth/ticket";
 
