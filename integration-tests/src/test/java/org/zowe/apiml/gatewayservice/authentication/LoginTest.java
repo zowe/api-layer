@@ -54,6 +54,11 @@ abstract class LoginTest {
     protected final static String LOGIN_ENDPOINT = "/auth/login";
     public static final String LOGIN_ENDPOINT_URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT);
     public static final String LOGIN_ENDPOINT_URL_OLD_FORMAT = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH_OLD_FORMAT, LOGIN_ENDPOINT);
+
+    protected static String[] loginUrlsSource() {
+        return new String[]{LOGIN_ENDPOINT_URL, LOGIN_ENDPOINT_URL_OLD_FORMAT};
+    }
+
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -379,15 +384,7 @@ abstract class LoginTest {
             );
     }
 
-    protected String authenticateAndVerify(LoginRequest loginRequest) {
-        return authenticateAndVerify(loginRequest, LOGIN_ENDPOINT_URL);
-    }
-
-    protected String authenticateAndVerifyOldPath(LoginRequest loginRequest) {
-        return authenticateAndVerify(loginRequest, LOGIN_ENDPOINT_URL_OLD_FORMAT);
-    }
-
-    private String authenticateAndVerify(LoginRequest loginRequest, String url) {
+    protected String authenticateAndVerify(LoginRequest loginRequest, String url) {
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)

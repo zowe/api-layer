@@ -16,12 +16,18 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.TlsConfiguration;
+import org.zowe.apiml.util.config.ZosmfServiceConfiguration;
 
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Base64;
 
@@ -63,7 +69,7 @@ public class SecurityUtils {
         return gatewayToken(USERNAME, PASSWORD);
     }
 
-    public static String getGateWayUrl(String path) {
+    public static String getGatewayUrl(String path) {
         return getGatewayUrl(path, gatewayPort);
     }
 
@@ -75,6 +81,14 @@ public class SecurityUtils {
         return String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH_OLD_FORMAT, path);
     }
 
+    public static String getGatewayLogoutUrl() {
+        return getGatewayUrl(GATEWAY_LOGOUT_ENDPOINT);
+    }
+
+    public static String getGatewayLogoutUrlOldPath() {
+        return getGatewayUrlOldFormat(GATEWAY_LOGOUT_ENDPOINT);
+    }
+
     public static String gatewayToken(String username, String password) {
         LoginRequest loginRequest = new LoginRequest(username, password);
 
@@ -82,7 +96,7 @@ public class SecurityUtils {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(getGateWayUrl(GATEWAY_LOGIN_ENDPOINT))
+            .post(getGatewayUrl(GATEWAY_LOGIN_ENDPOINT))
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
@@ -93,9 +107,9 @@ public class SecurityUtils {
         return given()
             .auth().preemptive().basic(username, password)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_LOGIN_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .cookie(ZOSMF_TOKEN, not(isEmptyString()))
             .extract().cookie(ZOSMF_TOKEN);
@@ -129,14 +143,14 @@ public class SecurityUtils {
     }
 
     public static void logoutOnGateway(String jwtToken) {
-        logoutOnGateway(getGateWayUrl(GATEWAY_LOGOUT_ENDPOINT), jwtToken);
+        logoutOnGateway(getGatewayUrl(GATEWAY_LOGOUT_ENDPOINT), jwtToken);
     }
 
     public static void logoutOnGatewayOldPath(String jwtToken) {
         logoutOnGateway(getGatewayUrlOldFormat(GATEWAY_LOGOUT_ENDPOINT), jwtToken);
     }
 
-    private static void logoutOnGateway(String url, String jwtToken) {
+    public static void logoutOnGateway(String url, String jwtToken) {
         given()
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwtToken)
             .when()

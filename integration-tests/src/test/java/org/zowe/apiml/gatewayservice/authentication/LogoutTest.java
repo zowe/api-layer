@@ -22,9 +22,12 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 
 abstract class LogoutTest {
 
-    protected final static String LOGOUT_ENDPOINT = "/auth/logout";
     protected final static String QUERY_ENDPOINT = "/auth/query";
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
+
+    protected static String[] logoutUrlsSource() {
+        return new String[]{SecurityUtils.getGatewayLogoutUrl(), SecurityUtils.getGatewayLogoutUrlOldPath()};
+    }
 
     @BeforeEach
     void setUp() {
@@ -38,7 +41,7 @@ abstract class LogoutTest {
         given()
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
             .when()
-            .get(SecurityUtils.getGateWayUrl(QUERY_ENDPOINT))
+            .get(SecurityUtils.getGatewayUrl(QUERY_ENDPOINT))
             .then()
             .statusCode(status.value());
     }
@@ -83,15 +86,7 @@ abstract class LogoutTest {
         SecurityUtils.logoutOnGatewayOldPath(jwtToken);
     }
 
-    protected void assertLogout(String jwtToken, int expectedStatusCode) {
-        assertLogout(SecurityUtils.getGateWayUrl(LOGOUT_ENDPOINT), jwtToken, expectedStatusCode);
-    }
-
-    protected void assertLogoutOldPath(String jwtToken, int expectedStatusCode) {
-        assertLogout(SecurityUtils.getGatewayUrlOldFormat(LOGOUT_ENDPOINT), jwtToken, expectedStatusCode);
-    }
-
-    private void assertLogout(String url, String jwtToken, int expectedStatusCode) {
+    protected void assertLogout(String url, String jwtToken, int expectedStatusCode) {
         given()
             .cookie(COOKIE_NAME, jwtToken)
             .when()

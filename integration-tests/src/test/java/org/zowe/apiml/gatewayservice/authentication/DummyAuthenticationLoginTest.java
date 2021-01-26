@@ -12,6 +12,8 @@ package org.zowe.apiml.gatewayservice.authentication;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.AdditionalLocalTest;
 
@@ -27,22 +29,13 @@ class DummyAuthenticationLoginTest extends LoginTest {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    @Test
-    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced() {
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced(String loginUrl) {
         LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
-        String jwtToken1 = authenticateAndVerify(loginRequest);
-        String jwtToken2 = authenticateAndVerify(loginRequest);
-
-        assertThat(jwtToken1, is(not(jwtToken2)));
-    }
-
-    @Test
-    void givenValidCredentialsInBody_whenUserOldPathAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced() {
-        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
-
-        String jwtToken1 = authenticateAndVerifyOldPath(loginRequest);
-        String jwtToken2 = authenticateAndVerifyOldPath(loginRequest);
+        String jwtToken1 = authenticateAndVerify(loginRequest, loginUrl);
+        String jwtToken2 = authenticateAndVerify(loginRequest, loginUrl);
 
         assertThat(jwtToken1, is(not(jwtToken2)));
     }

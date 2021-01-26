@@ -11,7 +11,8 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.categories.SAFAuthTest;
 
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -28,15 +29,16 @@ class SafLogoutTest extends LogoutTest {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 
-    @Test
-    void givenTwoValidTokens_whenLogoutCalledOnFirstOne_thenSecondStillValid() {
+    @ParameterizedTest
+    @MethodSource("logoutUrlsSource")
+    void givenTwoValidTokens_whenLogoutCalledOnFirstOne_thenSecondStillValid(String logoutUrl) {
         String jwt1 = generateToken();
         String jwt2 = generateToken();
 
         assertIfLogged(jwt1, true);
         assertIfLogged(jwt2, true);
 
-        assertLogout(jwt1, SC_NO_CONTENT);
+        assertLogout(logoutUrl, jwt1, SC_NO_CONTENT);
 
         assertIfLogged(jwt1, false);
         assertIfLogged(jwt2, true);
@@ -44,39 +46,14 @@ class SafLogoutTest extends LogoutTest {
         logout(jwt2);
     }
 
-    @Test
-    void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized() {
+    @ParameterizedTest
+    @MethodSource("logoutUrlsSource")
+    void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized(String logoutUrl) {
         String jwt = generateToken();
 
         assertIfLogged(jwt, true);
 
-        assertLogout(jwt, SC_NO_CONTENT);
-        assertLogout(jwt, SC_UNAUTHORIZED);
-    }
-
-    @Test
-    void givenTwoValidTokens_whenOldPathLogoutCalledOnFirstOne_thenSecondStillValid() {
-        String jwt1 = generateToken();
-        String jwt2 = generateToken();
-
-        assertIfLogged(jwt1, true);
-        assertIfLogged(jwt2, true);
-
-        assertLogoutOldPath(jwt1, SC_NO_CONTENT);
-
-        assertIfLogged(jwt1, false);
-        assertIfLogged(jwt2, true);
-
-        logoutOldPath(jwt2);
-    }
-
-    @Test
-    void givenValidToken_whenOldPathLogoutCalledTwice_thenSecondCallUnauthorized() {
-        String jwt = generateToken();
-
-        assertIfLogged(jwt, true);
-
-        assertLogoutOldPath(jwt, SC_NO_CONTENT);
-        assertLogoutOldPath(jwt, SC_UNAUTHORIZED);
+        assertLogout(logoutUrl, jwt, SC_NO_CONTENT);
+        assertLogout(logoutUrl, jwt, SC_UNAUTHORIZED);
     }
 }
