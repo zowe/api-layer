@@ -30,10 +30,6 @@ class DummyLogoutTest extends LogoutTest {
 
     }
 
-    protected String generateToken() {
-        return SecurityUtils.gatewayToken("user", "user");
-    }
-
     @Test
     void givenTwoValidTokens_whenLogoutCalledOnFirstOne_thenSecondStillValid() {
         String jwt1 = generateToken();
@@ -58,5 +54,31 @@ class DummyLogoutTest extends LogoutTest {
 
         assertLogout(jwt, SC_NO_CONTENT);
         assertLogout(jwt, SC_UNAUTHORIZED);
+    }
+
+    @Test
+    void givenTwoValidTokens_whenOldPathLogoutCalledOnFirstOne_thenSecondStillValid() {
+        String jwt1 = generateToken();
+        String jwt2 = generateToken();
+
+        assertIfLogged(jwt1, true);
+        assertIfLogged(jwt2, true);
+
+        assertLogoutOldPath(jwt1, SC_NO_CONTENT);
+
+        assertIfLogged(jwt1, false);
+        assertIfLogged(jwt2, true);
+
+        logout(jwt2);
+    }
+
+    @Test
+    void givenValidToken_whenOldPathLogoutCalledTwice_thenSecondCallUnauthorized() {
+        String jwt = generateToken();
+
+        assertIfLogged(jwt, true);
+
+        assertLogoutOldPath(jwt, SC_NO_CONTENT);
+        assertLogoutOldPath(jwt, SC_UNAUTHORIZED);
     }
 }

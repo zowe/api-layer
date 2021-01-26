@@ -61,17 +61,42 @@ abstract class LogoutTest {
         assertIfLogged(jwt, false);
     }
 
+    @Test
+    void testLogout_OldPath() {
+        // make login
+        String jwt = generateToken();
+
+        // check if it is logged in
+        assertIfLogged(jwt, true);
+
+        logoutOldPath(jwt);
+
+        // check if it is logged in
+        assertIfLogged(jwt, false);
+    }
+
     protected void logout(String jwtToken) {
         SecurityUtils.logoutOnGateway(jwtToken);
     }
 
+    protected void logoutOldPath(String jwtToken) {
+        SecurityUtils.logoutOnGatewayOldPath(jwtToken);
+    }
+
     protected void assertLogout(String jwtToken, int expectedStatusCode) {
+        assertLogout(SecurityUtils.getGateWayUrl(LOGOUT_ENDPOINT), jwtToken, expectedStatusCode);
+    }
+
+    protected void assertLogoutOldPath(String jwtToken, int expectedStatusCode) {
+        assertLogout(SecurityUtils.getGatewayUrlOldFormat(LOGOUT_ENDPOINT), jwtToken, expectedStatusCode);
+    }
+
+    private void assertLogout(String url, String jwtToken, int expectedStatusCode) {
         given()
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .post(SecurityUtils.getGateWayUrl(LOGOUT_ENDPOINT))
+            .post(url)
             .then()
             .statusCode(is(expectedStatusCode));
     }
-
 }

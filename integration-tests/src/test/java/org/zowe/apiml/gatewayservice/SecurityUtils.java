@@ -40,6 +40,7 @@ public class SecurityUtils {
     public final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
     public final static String GATEWAY_LOGOUT_ENDPOINT = "/auth/logout";
     public final static String GATEWAY_BASE_PATH = "/gateway/api/v1";
+    public final static String GATEWAY_BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
     private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
     private final static String zosmfAuthEndpoint = "/zosmf/services/authenticate";
 
@@ -63,11 +64,15 @@ public class SecurityUtils {
     }
 
     public static String getGateWayUrl(String path) {
-       return getGatewayUrl(path,gatewayPort);
+        return getGatewayUrl(path, gatewayPort);
     }
 
-    public static String getGatewayUrl(String path, int port ) {
+    public static String getGatewayUrl(String path, int port) {
         return String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, port, GATEWAY_BASE_PATH, path);
+    }
+
+    public static String getGatewayUrlOldFormat(String path) {
+        return String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH_OLD_FORMAT, path);
     }
 
     public static String gatewayToken(String username, String password) {
@@ -76,9 +81,9 @@ public class SecurityUtils {
         return given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(getGateWayUrl(GATEWAY_LOGIN_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
@@ -124,10 +129,18 @@ public class SecurityUtils {
     }
 
     public static void logoutOnGateway(String jwtToken) {
+        logoutOnGateway(getGateWayUrl(GATEWAY_LOGOUT_ENDPOINT), jwtToken);
+    }
+
+    public static void logoutOnGatewayOldPath(String jwtToken) {
+        logoutOnGateway(getGatewayUrlOldFormat(GATEWAY_LOGOUT_ENDPOINT), jwtToken);
+    }
+
+    private static void logoutOnGateway(String url, String jwtToken) {
         given()
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwtToken)
             .when()
-            .post(getGateWayUrl(GATEWAY_LOGOUT_ENDPOINT))
+            .post(url)
             .then()
             .statusCode(is(SC_NO_CONTENT));
     }

@@ -26,7 +26,6 @@ class SafLogoutTest extends LogoutTest {
     static void switchToTestedProvider() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-
     }
 
     @Test
@@ -53,5 +52,31 @@ class SafLogoutTest extends LogoutTest {
 
         assertLogout(jwt, SC_NO_CONTENT);
         assertLogout(jwt, SC_UNAUTHORIZED);
+    }
+
+    @Test
+    void givenTwoValidTokens_whenOldPathLogoutCalledOnFirstOne_thenSecondStillValid() {
+        String jwt1 = generateToken();
+        String jwt2 = generateToken();
+
+        assertIfLogged(jwt1, true);
+        assertIfLogged(jwt2, true);
+
+        assertLogoutOldPath(jwt1, SC_NO_CONTENT);
+
+        assertIfLogged(jwt1, false);
+        assertIfLogged(jwt2, true);
+
+        logoutOldPath(jwt2);
+    }
+
+    @Test
+    void givenValidToken_whenOldPathLogoutCalledTwice_thenSecondCallUnauthorized() {
+        String jwt = generateToken();
+
+        assertIfLogged(jwt, true);
+
+        assertLogoutOldPath(jwt, SC_NO_CONTENT);
+        assertLogoutOldPath(jwt, SC_UNAUTHORIZED);
     }
 }

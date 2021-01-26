@@ -22,12 +22,10 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 @SuppressWarnings({"squid:S2187"})
 class ZosmfLogoutTest extends LogoutTest {
 
-    // Change to dummy and run the same test as for the zOSMF
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-
     }
 
     @Test
@@ -38,5 +36,15 @@ class ZosmfLogoutTest extends LogoutTest {
 
         assertLogout(jwt, SC_NO_CONTENT);
         assertLogout(jwt, SC_UNAUTHORIZED);
+    }
+
+    @Test
+    void givenValidToken_whenOldPathLogoutCalledTwice_thenSecondCallUnauthorized() {
+        String jwt = generateToken();
+
+        assertIfLogged(jwt, true);
+
+        assertLogoutOldPath(jwt, SC_NO_CONTENT);
+        assertLogoutOldPath(jwt, SC_UNAUTHORIZED);
     }
 }
