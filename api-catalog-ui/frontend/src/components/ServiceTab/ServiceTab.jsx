@@ -164,7 +164,7 @@ export default class ServiceTab extends Component {
                                     <br/>
                                     <Tooltip
                                         key={selectedService.sso}
-                                        content="Status of supporting of SSO"
+                                        content="SSO support"
                                         placement="bottom"
                                     >
                                         <Text style={{ fontSize: '13px' }}>SSO: {sso}</Text>

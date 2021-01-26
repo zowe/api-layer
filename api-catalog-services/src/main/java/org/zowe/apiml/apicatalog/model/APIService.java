@@ -56,7 +56,7 @@ public class APIService implements Serializable {
     @ApiModelProperty(notes = "The available API versions for this service")
     private List<String> apiVersions;
 
-    @ApiModelProperty(notes = "The SSO supporting status by all instances")
+    @ApiModelProperty(notes = "The SSO support for all instances")
     private boolean sso;
 
     @ApiModelProperty(notes = "The API IDs for this service")
