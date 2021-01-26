@@ -12,7 +12,8 @@ package org.zowe.apiml.gatewayservice.authentication;
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 
@@ -50,40 +51,23 @@ abstract class LogoutTest {
         return SecurityUtils.gatewayToken();
     }
 
-    @Test
-    void testLogout() {
+    @ParameterizedTest
+    @MethodSource("logoutUrlsSource")
+    void testLogout(String logoutUrl) {
         // make login
         String jwt = generateToken();
 
         // check if it is logged in
         assertIfLogged(jwt, true);
 
-        logout(jwt);
+        logout(logoutUrl, jwt);
 
         // check if it is logged in
         assertIfLogged(jwt, false);
     }
 
-    @Test
-    void testLogout_OldPath() {
-        // make login
-        String jwt = generateToken();
-
-        // check if it is logged in
-        assertIfLogged(jwt, true);
-
-        logoutOldPath(jwt);
-
-        // check if it is logged in
-        assertIfLogged(jwt, false);
-    }
-
-    protected void logout(String jwtToken) {
-        SecurityUtils.logoutOnGateway(jwtToken);
-    }
-
-    protected void logoutOldPath(String jwtToken) {
-        SecurityUtils.logoutOnGatewayOldPath(jwtToken);
+    protected void logout(String url, String jwtToken) {
+        SecurityUtils.logoutOnGateway(url, jwtToken);
     }
 
     protected void assertLogout(String url, String jwtToken, int expectedStatusCode) {

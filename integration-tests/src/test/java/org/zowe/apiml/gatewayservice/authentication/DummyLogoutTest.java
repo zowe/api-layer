@@ -43,7 +43,7 @@ class DummyLogoutTest extends LogoutTest {
         assertIfLogged(jwt1, false);
         assertIfLogged(jwt2, true);
 
-        logout(jwt2);
+        logout(logoutUrl, jwt2);
     }
 
     @ParameterizedTest
