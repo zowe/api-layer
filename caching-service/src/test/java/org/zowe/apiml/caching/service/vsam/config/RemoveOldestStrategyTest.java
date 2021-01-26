@@ -20,7 +20,6 @@ import org.zowe.apiml.caching.service.vsam.VsamFile;
 import org.zowe.apiml.caching.service.vsam.VsamFileProducer;
 import org.zowe.apiml.caching.service.vsam.VsamRecord;
 import org.zowe.apiml.caching.service.vsam.VsamRecordException;
-import org.zowe.apiml.zfile.ZFile;
 import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
 

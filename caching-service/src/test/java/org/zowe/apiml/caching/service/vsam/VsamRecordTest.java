@@ -13,6 +13,7 @@ package org.zowe.apiml.caching.service.vsam;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.zfile.ZFileConstants;
 
@@ -99,12 +100,12 @@ class VsamRecordTest {
         KeyValue kvLongValue = new KeyValue("key", longValue);
         VsamRecord underTest1 = new VsamRecord(config, serviceId, kvLongValue);
 
-        assertThrows(VsamRecordException.class, () -> underTest1.getBytes());
+        assertThrows(StorageException.class, () -> underTest1.getBytes());
 
         KeyValue kvLongKey = new KeyValue(longValue, "value");
         VsamRecord underTest2 = new VsamRecord(config, serviceId, kvLongKey);
 
-        assertThrows(VsamRecordException.class, () -> underTest2.getBytes());
+        assertThrows(StorageException.class, () -> underTest2.getBytes());
 
     }
 
