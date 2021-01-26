@@ -49,8 +49,11 @@ class ZaasClientIntegrationTest {
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private static final String INVALID_USER = "usr";
+    private static final String INVALID_PASS = "usr";
     private static final String NULL_USER = null;
+    private static final String NULL_PASS = null;
     private static final String EMPTY_USER = "";
+    private static final String EMPTY_PASS = "";
     private static final String NULL_AUTH_HEADER = null;
     private static final String EMPTY_AUTH_HEADER = "";
     private static final String EMPTY_STRING = "";
