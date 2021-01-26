@@ -17,6 +17,9 @@ import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -169,5 +172,24 @@ class VsamStorageTest {
         assertThrows(StorageException.class, () -> {
             underTest.delete(VALID_SERVICE_ID, "key-1");
         });
+    }
+
+    @Test
+    void givenValueForService_whenRequestAllForService_thenAllAreReturned() {
+        KeyValue record1 = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
+        KeyValue record2 = new KeyValue("key-2", "value-2", VALID_SERVICE_ID, "2");
+
+        VsamFile returnedFile = mock(VsamFile.class);
+        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+
+        List<VsamRecord> records = new ArrayList<>();
+        records.add(new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1));
+        records.add(new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record2));
+
+        when(returnedFile.readForService(VALID_SERVICE_ID)).thenReturn(records);
+
+        Map<String, KeyValue> tests = underTest.readForService(VALID_SERVICE_ID);
+        assertThat(tests.get("key-1"), is(record1));
+        assertThat(tests.get("key-2"), is(record2));
     }
 }
