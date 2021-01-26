@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.login.x509;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -22,13 +23,12 @@ import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 import java.security.cert.X509Certificate;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class X509AuthenticationProvider implements AuthenticationProvider {
 
     @Value("${apiml.security.x509.enabled:false}")
     boolean isClientCertEnabled;
-    @Value("${apiml.security.x509.useZss:false}")
-    boolean useZss;
 
     private final X509AuthenticationMapper x509AuthenticationMapper;
     private final TokenCreationService tokenCreationService;
@@ -48,17 +48,22 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
      */
     @Override
     public Authentication authenticate(Authentication authentication) {
+        log.debug("Authenticating X509 Certificate");
         if (authentication instanceof X509AuthenticationToken) {
             if (!isClientCertEnabled) {
+                log.debug("X509 authentication is not enabled. Certificate will not be authenticated.");
                 return null;
             }
             String username = getUserid(authentication);
             if (username == null) {
+                log.debug("Mapping user to certificate was not successful.");
                 return null;
             }
+            log.debug("Successfully mapped user to certificate: {}", username);
             String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(username);
             Authentication tokenAuthentication = new TokenAuthentication(username, jwtToken);
             tokenAuthentication.setAuthenticated(true);
+            log.debug("Successfully authenticated user {} by X509 certificate.", username);
             return tokenAuthentication;
         } else {
             // This should never happen because of supports method which should fail.
@@ -73,7 +78,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
 
     private String getUserid(Authentication authentication) {
         X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
-
+        log.debug("Getting user id for certificate: {}", certs[0]);
         return x509AuthenticationMapper.mapCertificateToMainframeUserId(certs[0]);
     }
 }

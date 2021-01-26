@@ -19,6 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,15 +59,28 @@ public class CorsMetadataProcessor extends MetadataProcessor {
             UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
             final CorsConfiguration config = new CorsConfiguration();
             if (Boolean.parseBoolean(isCorsEnabledForService)) {
-                config.setAllowCredentials(true);
-                config.addAllowedOrigin(CorsConfiguration.ALL);
-                config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
-                config.setAllowedMethods(allowedCorsHttpMethods);
+                setAllowedOriginsForService(metadata, config);
             }
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
                     cors.registerCorsConfiguration("/" + entry.getValue() + "/" + serviceId.toLowerCase() + "/**", config));
         }
+    }
+
+    private void setAllowedOriginsForService(Map<String, String> metadata, CorsConfiguration config) {
+        // Check if the configuration specifies allowed origins for this service
+        String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
+        if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
+            // Origins not specified: allow everything
+            config.addAllowedOrigin(CorsConfiguration.ALL);
+        } else {
+            // Origins specified: split by comma, add to whitelist
+            Arrays.stream(corsAllowedOriginsForService.split(","))
+                .forEach(config::addAllowedOrigin);
+        }
+        config.setAllowCredentials(true);
+        config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+        config.setAllowedMethods(allowedCorsHttpMethods);
     }
 }

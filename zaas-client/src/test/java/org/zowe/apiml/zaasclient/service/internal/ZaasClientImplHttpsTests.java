@@ -42,9 +42,12 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -202,7 +205,7 @@ class ZaasClientImplHttpsTests {
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {
         ZaasClientErrorCodes producedErrorCode = zce.getErrorCode();
         assertThat(code.getId(), is(producedErrorCode.getId()));
-        assertThat( code.getMessage(), is(producedErrorCode.getMessage()));
+        assertThat(code.getMessage(), is(producedErrorCode.getMessage()));
         assertThat(code.getReturnCode(), is(producedErrorCode.getReturnCode()));
     }
 
@@ -210,9 +213,9 @@ class ZaasClientImplHttpsTests {
     void testLoginWithCredentials_ValidUserName_ValidPassword() throws ZaasClientException {
         prepareResponse(HttpStatus.SC_NO_CONTENT);
         String token = tokenService.login(VALID_USER, VALID_PASSWORD);
-        assertNotNull("null Token obtained", token);
-        assertNotEquals("Empty Token obtained", EMPTY_STRING, token);
-        assertEquals("Token Mismatch","token", token);
+        assertNotNull(token, "null Token obtained");
+        assertNotEquals(EMPTY_STRING, token, "Empty Token obtained");
+        assertEquals("token", token, "Token Mismatch");
     }
 
     private static Stream<Arguments> provideInvalidUsernamePassword() {
@@ -257,9 +260,9 @@ class ZaasClientImplHttpsTests {
     void testLoginWithAuthHeader_ValidUserName_ValidPassword() throws ZaasClientException {
         prepareResponse(HttpStatus.SC_NO_CONTENT);
         String token = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
-        assertNotNull("null Token obtained", token);
-        assertNotEquals("Empty Token obtained", EMPTY_STRING, token);
-        assertEquals("Token Mismatch","token", token);
+        assertNotNull(token, "null Token obtained");
+        assertNotEquals(EMPTY_STRING, token, "Empty Token obtained");
+        assertEquals("token", token, "Token Mismatch");
     }
 
     private static Stream<Arguments> provideInvalidAuthHeaders() {

@@ -26,14 +26,14 @@ import java.text.ParseException;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @TestsNotMeantForZowe
-public class PublicKeyIntegrationTest {
+class PublicKeyIntegrationTest {
 
     private final static String ALL_PUBLIC_KEY_ENDPOINT = "/api/v1/gateway/auth/keys/public/all";
     private final static String CURRENT_PUBLIC_KEY_ENDPOINT = "/api/v1/gateway/auth/keys/public/current";
@@ -45,7 +45,7 @@ public class PublicKeyIntegrationTest {
     private final static String GATEWAY_URL = String.format("%s://%s:%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }

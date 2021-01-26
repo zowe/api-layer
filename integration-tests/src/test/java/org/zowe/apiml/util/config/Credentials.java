@@ -17,6 +17,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Credentials {
+
+    private String key;
     private String user;
     private String password;
+
+    public Credentials(String user, String password) {
+        this.user = user;
+        this.password = password;
+    }
+
 }

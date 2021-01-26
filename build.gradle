@@ -90,7 +90,6 @@ subprojects {
    dependencies {
        testImplementation libraries.junitJupiter
        testImplementation libraries.mockito_jupiter
-       testCompileOnly libraries.junitVintage
 
        testImplementation  'org.junit.platform:junit-platform-launcher:1.6.0'
 

@@ -10,10 +10,7 @@
 
 package org.zowe.apiml.cachingservice;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.restassured.RestAssured;
-import lombok.Data;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -148,8 +145,8 @@ class CachingApiIntegrationTest {
                 .when()
                 .get(CACHING_PATH + "/testKey")
                 .then()
-                .body(not(isEmptyString()))
-                .statusCode(is(SC_OK));
+                    .body(not(isEmptyString()))
+                    .statusCode(is(SC_OK));
         } finally {
             deteleValueUnderServiceIdWithoutValidation("testKey", jwtToken);
         }
@@ -158,7 +155,7 @@ class CachingApiIntegrationTest {
     @Test
     void givenValidKeyParameter_whenCallingGetAllEndpoint_thenAllTheStoredEntries() {
 
-        List<Credentials> testUsers = environmentConfiguration.getAuxiliaryUserList().getCredentials();
+        List<Credentials> testUsers = environmentConfiguration.getAuxiliaryUserList().getCredentials("caching");
         assertThat(testUsers, hasSize(greaterThanOrEqualTo(2)));
 
         testUsers.sort((o1, o2) -> o1.getUser().hashCode() - o2.getUser().hashCode());
@@ -291,10 +288,6 @@ class CachingApiIntegrationTest {
             .statusCode(is(SC_NOT_FOUND));
     }
 
-    private static String generateToken() {
-        return SecurityUtils.gatewayToken();
-    }
-
     private static void loadValueUnderServiceId(KeyValue value, String jwtToken) {
         given()
             .contentType(JSON)
@@ -312,18 +305,5 @@ class CachingApiIntegrationTest {
             .cookie(COOKIE_NAME, jwtToken)
             .when()
             .delete(CACHING_PATH + "/" + value);
-    }
-
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    @Data
-    private static class KeyValue {
-        private final String key;
-        private final String value;
-
-        @JsonCreator
-        public KeyValue(String key, String value) {
-            this.key = key;
-            this.value = value;
-        }
     }
 }

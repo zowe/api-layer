@@ -262,7 +262,7 @@ class ZosmfAuthenticationProviderTest {
            .thenReturn(new ResponseEntity<>(getResponse(true), headers, HttpStatus.OK));
 
        ZosmfService zosmfService = createZosmfService();
-       doReturn(false).when(zosmfService).authenticationEndpointExists(HttpMethod.POST);
+       doReturn(false).when(zosmfService).loginEndpointExists();
        doReturn("realm").when(zosmfService).getZosmfRealm(Mockito.anyString());
        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
            new ZosmfAuthenticationProvider(authenticationService, zosmfService);

@@ -21,7 +21,6 @@ import org.hamcrest.CoreMatchers;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -34,9 +33,14 @@ import java.net.URI;
 import java.util.LinkedHashMap;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ApiCatalogEndpointIntegrationTest {
+class ApiCatalogEndpointIntegrationTest {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String INVALID_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containerz";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
@@ -50,11 +54,12 @@ public class ApiCatalogEndpointIntegrationTest {
     private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
     private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/v1/v2";
     private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION = "/apicatalog/api/v1/apidoc/discoverableclient/v1/v3";
+    private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE = "/apicatalog/api/v1/apidoc/invalidService/v1/v2";
 
     private String baseHost;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String host = gatewayServiceConfiguration.getHost();
         int port = gatewayServiceConfiguration.getExternalPort();
@@ -72,7 +77,7 @@ public class ApiCatalogEndpointIntegrationTest {
         JSONArray containerStatus = jsonContext.read("$.[*].status");
 
         // Then
-        assertTrue("Tile title did not match: API Mediation Layer API", containerTitles.contains("API Mediation Layer API"));
+        assertTrue(containerTitles.contains("API Mediation Layer API"), "Tile title did not match: API Mediation Layer API");
         assertTrue(containerStatus.contains("UP"));
     }
 
@@ -85,7 +90,7 @@ public class ApiCatalogEndpointIntegrationTest {
         JSONArray containerTitles = jsonContext.read("$.[*].title");
         JSONArray containerStatus = jsonContext.read("$.[*].status");
 
-        assertTrue("Tile title did not match: API Mediation Layer API", containerTitles.contains("API Mediation Layer API"));
+        assertTrue(containerTitles.contains("API Mediation Layer API"), "Tile title did not match: API Mediation Layer API");
         assertTrue(containerStatus.contains("UP"));
     }
 
@@ -115,17 +120,17 @@ public class ApiCatalogEndpointIntegrationTest {
         LinkedHashMap definitions = jsonContext.read("$.definitions");
 
         // Then
-        assertFalse(apiCatalogSwagger, paths.isEmpty());
-        assertFalse(apiCatalogSwagger, definitions.isEmpty());
-        assertEquals(apiCatalogSwagger, baseHost, swaggerHost);
-        assertEquals(apiCatalogSwagger, "/apicatalog/api/v1", swaggerBasePath);
-        assertNull(apiCatalogSwagger, paths.get("/status/updates"));
-        assertNotNull(apiCatalogSwagger, paths.get("/containers/{id}"));
-        assertNotNull(apiCatalogSwagger, paths.get("/containers"));
-        assertNotNull(apiCatalogSwagger, paths.get("/apidoc/{serviceId}/{apiVersion}"));
-        assertNotNull(apiCatalogSwagger, definitions.get("APIContainer"));
-        assertNotNull(apiCatalogSwagger, definitions.get("APIService"));
-        assertNotNull(apiCatalogSwagger, definitions.get("TimeZone"));
+        assertFalse(paths.isEmpty(), apiCatalogSwagger);
+        assertFalse(definitions.isEmpty(), apiCatalogSwagger);
+        assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
+        assertEquals("/apicatalog/api/v1", swaggerBasePath, apiCatalogSwagger);
+        assertNull(paths.get("/status/updates"), apiCatalogSwagger);
+        assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
+        assertNotNull(paths.get("/containers"), apiCatalogSwagger);
+        assertNotNull(paths.get("/apidoc/{serviceId}/{apiVersion}"), apiCatalogSwagger);
+        assertNotNull(definitions.get("APIContainer"), apiCatalogSwagger);
+        assertNotNull(definitions.get("APIService"), apiCatalogSwagger);
+        assertNotNull(definitions.get("TimeZone"), apiCatalogSwagger);
     }
 
     @Test
@@ -158,16 +163,16 @@ public class ApiCatalogEndpointIntegrationTest {
         LinkedHashMap definitions = jsonContext.read("$.definitions");
         LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
 
-        assertTrue(apiCatalogSwagger, swaggerInfo.get("description").toString().contains("API"));
-        assertEquals(apiCatalogSwagger, baseHost, swaggerHost);
-        assertEquals(apiCatalogSwagger, "/discoverableclient/api/v2", swaggerBasePath);
-        assertEquals(apiCatalogSwagger, "External documentation", externalDoc.get("description"));
+        assertTrue(swaggerInfo.get("description").toString().contains("API"), apiCatalogSwagger);
+        assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
+        assertEquals("/discoverableclient/api/v2", swaggerBasePath, apiCatalogSwagger);
+        assertEquals("External documentation", externalDoc.get("description"), apiCatalogSwagger);
 
-        assertFalse(apiCatalogSwagger, paths.isEmpty());
-        assertNotNull(apiCatalogSwagger, paths.get("/greeting"));
+        assertFalse(paths.isEmpty(), apiCatalogSwagger);
+        assertNotNull(paths.get("/greeting"), apiCatalogSwagger);
 
-        assertFalse(apiCatalogSwagger, definitions.isEmpty());
-        assertNotNull(apiCatalogSwagger, definitions.get("Greeting"));
+        assertFalse(definitions.isEmpty(), apiCatalogSwagger);
+        assertNotNull(definitions.get("Greeting"), apiCatalogSwagger);
     }
 
     @Test
@@ -237,17 +242,22 @@ public class ApiCatalogEndpointIntegrationTest {
 
         //When
         final String textResponse = EntityUtils.toString(response.getEntity());
-        Assert.assertThat(textResponse, CoreMatchers.startsWith("<!DOCTYPE html><html lang=\"en\">"));
-        Assert.assertThat(textResponse, CoreMatchers.containsString("<header><h1>Api Change Log</h1></header>"));
-        Assert.assertThat(textResponse, CoreMatchers.containsString(
+        assertThat(textResponse, CoreMatchers.startsWith("<!DOCTYPE html><html lang=\"en\">"));
+        assertThat(textResponse, CoreMatchers.containsString("<header><h1>Api Change Log</h1></header>"));
+        assertThat(textResponse, CoreMatchers.containsString(
             "<div><h2>What&#x27;s New</h2><hr><ol><li><span class=\"GET\">GET</span>/greeting/{yourName} <span>Get a greeting</span></li></ol></div>"));
-        Assert.assertThat(textResponse, CoreMatchers.containsString(
+        assertThat(textResponse, CoreMatchers.containsString(
             "<div><h2>What&#x27;s Deleted</h2><hr><ol><li><span class=\"GET\">GET</span><del>/{yourName}/greeting</del><span> Get a greeting</span></li>"));
     }
 
     @Test
     void whenCallGetApiDiffWithWrongVersion_thenReturnNotFound() throws Exception {
         getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION, HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test
+    void whenCallGetApiDiffWithWrongService_thenReturnNotFound() throws Exception {
+        getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE, HttpStatus.SC_NOT_FOUND);
     }
 
     // Execute the endpoint and check the response for a return code
@@ -299,20 +309,20 @@ public class ApiCatalogEndpointIntegrationTest {
         LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
 
         // Then
-        assertTrue(apiCatalogSwagger, swaggerInfo.get("description").toString().contains("API"));
-        assertEquals(apiCatalogSwagger, baseHost, swaggerHost);
-        assertEquals(apiCatalogSwagger, "/discoverableclient/api/v1", swaggerBasePath);
-        assertEquals(apiCatalogSwagger, "External documentation", externalDoc.get("description"));
+        assertTrue(swaggerInfo.get("description").toString().contains("API"), apiCatalogSwagger);
+        assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
+        assertEquals("/discoverableclient/api/v1", swaggerBasePath, apiCatalogSwagger);
+        assertEquals("External documentation", externalDoc.get("description"), apiCatalogSwagger);
 
-        assertFalse(apiCatalogSwagger, paths.isEmpty());
-        assertNotNull(apiCatalogSwagger, paths.get("/greeting"));
+        assertFalse(paths.isEmpty(), apiCatalogSwagger);
+        assertNotNull(paths.get("/greeting"), apiCatalogSwagger);
 
-        assertFalse(apiCatalogSwagger, definitions.isEmpty());
+        assertFalse(definitions.isEmpty(), apiCatalogSwagger);
 
-        assertNotNull(apiCatalogSwagger, definitions.get("ApiMessage"));
-        assertNotNull(apiCatalogSwagger, definitions.get("ApiMessageView"));
-        assertNotNull(apiCatalogSwagger, definitions.get("Greeting"));
-        assertNotNull(apiCatalogSwagger, definitions.get("Pet"));
-        assertNotNull(apiCatalogSwagger, definitions.get("RedirectLocation"));
+        assertNotNull(definitions.get("ApiMessage"), apiCatalogSwagger);
+        assertNotNull(definitions.get("ApiMessageView"), apiCatalogSwagger);
+        assertNotNull(definitions.get("Greeting"), apiCatalogSwagger);
+        assertNotNull(definitions.get("Pet"), apiCatalogSwagger);
+        assertNotNull(definitions.get("RedirectLocation"), apiCatalogSwagger);
     }
 }

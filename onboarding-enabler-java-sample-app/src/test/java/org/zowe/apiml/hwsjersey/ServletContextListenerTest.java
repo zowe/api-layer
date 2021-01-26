@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.hwsjersey;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.mock.web.MockServletContext;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
@@ -22,9 +22,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 
-public class ServletContextListenerTest {
+class ServletContextListenerTest {
     @Test
-    public void testOnContextCreationRegisterWithEureka() throws ServiceDefinitionException {
+    void testOnContextCreationRegisterWithEureka() throws ServiceDefinitionException {
         ApiMediationClient mock = Mockito.mock(ApiMediationClient.class);
         ServletContext context = setValidParametersTo(
             new MockServletContext()
@@ -38,7 +38,7 @@ public class ServletContextListenerTest {
     }
 
     @Test
-    public void testOnContextDestroyUnregisterWithEureka() {
+    void testOnContextDestroyUnregisterWithEureka() {
         ApiMediationClient mock = Mockito.mock(ApiMediationClient.class);
         setValidParametersTo(
             new MockServletContext()
