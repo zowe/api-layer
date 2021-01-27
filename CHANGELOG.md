@@ -4,19 +4,18 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 ## `1.19.0`
 
 - Feature: The connection limit of the Gateway has been configured to support multiple long-running requests by service. [#843](https://github.com/zowe/api-layer/issues/843)
-- Feature: The size of API Mediation Layer has been minimized to fit within 512MB. [#909](https://github.com/zowe/api-layer/issues/909)
+- Feature: The size of API Mediation Layer has been reduced to fit within 150MB. [#909](https://github.com/zowe/api-layer/issues/909)
 - Feature: You can now remove or configure the Catalog from showing on the Gateway homepage [#727](https://github.com/zowe/api-layer/issues/727)
 - Bugfix: API ID is not sent to Eureka in metadata by Java enabler [#991](https://github.com/zowe/api-layer/issues/991)
 - Feature: Connection limits have been enhanced to improve latency times when making requests through the API ML. This feature also enables concurrent requests. [#987](https://github.com/zowe/api-layer/issues/987)
-- Feature: SAF authorization checking code [#993](https://github.com/zowe/api-layer/issues/993)
-- Feature: Enhanced the connection limit of log messages which documents symptoms that indicate the Gateway is stressed with too many connections. Error messages are thrown when too many connections occur. [#987](https://github.com/zowe/api-layer/issues/987)
+- Feature: Enhanced the connection limit log messages. New messages indicate when too many connections occur. [#987](https://github.com/zowe/api-layer/issues/987)
 - Bugfix: Fixed tcp connections that are stuck open [#1009](https://github.com/zowe/api-layer/issues/1009)
-- Feature: The /api/v1/gateway/services/{serviceId} endpoint has been added that provides information about a service in API ML for API clients (Disabled by default). You can now view information to choose the applicable available API service without having a trusted service certificate. Proper SAF authorization is required.[#873](https://github.com/zowe/api-layer/issues/873)
+- Feature: The /api/v1/gateway/services/{serviceId} endpoint has been added that provides information about a service in API ML for API clients. You can now view information to choose the applicable available API service without having a trusted service certificate. Proper SAF authorization is required. [#873](https://github.com/zowe/api-layer/issues/873)
 - Feature: Supported the size limitation in the InMemory cache for proper handling when size limitations are reached.  [#998](https://github.com/zowe/api-layer/issues/998)
 - Feature: Added PlatformAccessControl test programs for debugging on zOS.
-- Feature: The Remove Oldest eviction mechanism for InMemory Caching Service has been implemented to limit the volume of data in the cache.[#998](https://github.com/zowe/api-layer/issues/998)
+- Feature: The Remove Oldest eviction mechanism for Caching Service has been implemented to limit the volume of data in the cache.[#998](https://github.com/zowe/api-layer/issues/998)
 - Feature: Configure CORS origins per service has been configured so that onboarded services can request to delegate CORS behavior for a route to the API Mediation Layer. [#997](https://github.com/zowe/api-layer/issues/997)
-- Feature: Reject eviction strategy to Caching service has been added. This feature allows the Caching Service and sys-programers to specify the behavior of the Caching service when storage capacity is reached.[#998](https://github.com/zowe/api-layer/issues/998)
+- Feature: Reject eviction strategy to Caching service has been implemented to limit the volume of data in the cache.[#998](https://github.com/zowe/api-layer/issues/998)
 - Feature: Debug logging to x509 Client certificate authentication classes has been added. This feature enables users to determinethe cause of system problems during Client certificate authentication setup.
 
 ## `1.18.0`
