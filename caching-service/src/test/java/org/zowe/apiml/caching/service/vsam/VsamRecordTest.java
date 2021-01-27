@@ -78,9 +78,8 @@ class VsamRecordTest {
         byte[] recordData = "-646160747:106079             {\"key\":\"daisy\",\"value\":\"flower\"}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             "
             .getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
 
-        VsamRecord underTest = new VsamRecord(config, "Service", recordData);
+        VsamRecord underTest = new VsamRecord(config, recordData);
 
-        assertThat(underTest.getServiceId(), is("Service"));
         assertThat(underTest.getKeyValue().getKey(), is("daisy"));
         assertThat(underTest.getKeyValue().getValue(), is("flower"));
     }
@@ -90,7 +89,7 @@ class VsamRecordTest {
         byte[] recordData = "-646160747:106079             {tank}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             "
             .getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
 
-        assertThrows(VsamRecordException.class, () -> new VsamRecord(config, "Service", recordData));
+        assertThrows(VsamRecordException.class, () -> new VsamRecord(config, recordData));
     }
 
     @Test
@@ -113,7 +112,7 @@ class VsamRecordTest {
     void toStringCanBeCalledAfterRecordIsCreated() throws VsamRecordException, UnsupportedEncodingException {
         byte[] recordData = "-646160747:106079             {\"key\":\"daisy\",\"value\":\"flower\"}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             "
             .getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
-        VsamRecord underTestFromBytes = new VsamRecord(config, "Service", recordData);
+        VsamRecord underTestFromBytes = new VsamRecord(config, recordData);
         assertDoesNotThrow(() -> underTestFromBytes.toString());
 
         VsamRecord underTestFromValues = new VsamRecord(config, "Service", new KeyValue("k","v"));
