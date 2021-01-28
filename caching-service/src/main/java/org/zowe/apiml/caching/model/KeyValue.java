@@ -25,15 +25,14 @@ import java.util.Date;
 public class KeyValue {
     private final String key;
     private final String value;
-    private final String serviceId;
+    private String serviceId;
     private final String created;
 
     public KeyValue(String key, String value) {
-        this(key, value, "", currentTime());
-    }
-
-    public KeyValue(String key, String value, String serviceId) {
-        this(key, value, serviceId, currentTime());
+        this.key = key;
+        this.value = value;
+        this.serviceId = "";
+        this.created = currentTime();
     }
 
     private static String currentTime() {

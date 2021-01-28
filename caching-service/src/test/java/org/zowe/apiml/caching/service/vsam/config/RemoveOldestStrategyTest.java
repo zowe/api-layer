@@ -56,7 +56,8 @@ class RemoveOldestStrategyTest {
 
     @Test
     void givenThereIsOneItem_whenEvictIsCalled_thenItIsRemoved() throws ZFileException, VsamRecordException {
-        KeyValue record1 = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
+        KeyValue record1 = new KeyValue("key-1", "value-1", "1");
+        record1.setServiceId(VALID_SERVICE_ID);
 
         VsamFile returnedFile = mock(VsamFile.class);
         when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
@@ -74,8 +75,10 @@ class RemoveOldestStrategyTest {
 
     @Test
     void givenThereIsMoreItems_whenEvictIsCalled_thenTheOlderOneIsRemoved() throws ZFileException, VsamRecordException {
-        KeyValue record1 = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
-        KeyValue record2 = new KeyValue("key-2", "value-2", VALID_SERVICE_ID, "2");
+        KeyValue record1 = new KeyValue("key-1", "value-1", "1");
+        record1.setServiceId(VALID_SERVICE_ID);
+        KeyValue record2 = new KeyValue("key-2", "value-2", "2");
+        record2.setServiceId(VALID_SERVICE_ID);
 
         VsamFile returnedFile = mock(VsamFile.class);
         when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);

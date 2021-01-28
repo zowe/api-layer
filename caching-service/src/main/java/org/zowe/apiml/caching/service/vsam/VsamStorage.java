@@ -61,7 +61,7 @@ public class VsamStorage implements Storage {
         KeyValue result = null;
 
         try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
-
+            toCreate.setServiceId(serviceId);
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toCreate);
             int currentSize = file.countAllRecords();
             log.info("Current Size {}.", currentSize);
@@ -116,7 +116,7 @@ public class VsamStorage implements Storage {
         KeyValue result = null;
 
         try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
-
+            toUpdate.setServiceId(serviceId);
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toUpdate);
 
             Optional<VsamRecord> returned = file.update(record);

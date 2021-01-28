@@ -54,8 +54,8 @@ class VsamStorageTest {
 
     @Test
     void givenValidServiceIdKeyValue_whenItemIsCreated_thenItIsProperlyReturned() {
-        KeyValue record = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
-
+        KeyValue record = new KeyValue("key-1", "value-1", "1");
+        record.setServiceId(VALID_SERVICE_ID);
         VsamFile returnedFile = mock(VsamFile.class);
         when(returnedFile.countAllRecords()).thenReturn(60);
         when(returnedFile.create(any())).thenReturn(
@@ -69,7 +69,8 @@ class VsamStorageTest {
 
     @Test
     void givenTheKeyAlreadyExists_whenItemIsCreated_thenExceptionIsThrown() {
-        KeyValue record = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
+        KeyValue record = new KeyValue("key-1", "value-1", "1");
+        record.setServiceId(VALID_SERVICE_ID);
         VsamFile returnedFile = mock(VsamFile.class);
         when(returnedFile.countAllRecords()).thenReturn(60);
         when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
@@ -81,7 +82,8 @@ class VsamStorageTest {
 
     @Test
     void givenTheSizeWasExceeded_whenItemIsCreated_thenTheExceptionIsThrownInReject() {
-        KeyValue record = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
+        KeyValue record = new KeyValue("key-1", "value-1", "1");
+        record.setServiceId(VALID_SERVICE_ID);
 
         VsamFile returnedFile = mock(VsamFile.class);
         when(returnedFile.countAllRecords()).thenReturn(200);
@@ -94,7 +96,8 @@ class VsamStorageTest {
 
     @Test
     void givenKeyIsInCache_whenItemIsRead_thenItIsReturned() {
-        KeyValue record = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
+        KeyValue record = new KeyValue("key-1", "value-1", "1");
+        record.setServiceId(VALID_SERVICE_ID);
         VsamFile returnedFile = mock(VsamFile.class);
         when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
 
@@ -121,7 +124,8 @@ class VsamStorageTest {
 
     @Test
     void givenKeyIsInCache_whenItemIsUpdated_thenItIsUpdated() {
-        KeyValue record = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
+        KeyValue record = new KeyValue("key-1", "value-1", "1");
+        record.setServiceId(VALID_SERVICE_ID);
         VsamFile returnedFile = mock(VsamFile.class);
         when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
 
@@ -135,7 +139,9 @@ class VsamStorageTest {
 
     @Test
     void givenKeyIsntInCache_whenItemIsUpdated_thenExceptionIsThrown() {
-        KeyValue record = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
+        KeyValue record = new KeyValue("key-1", "value-1", "1");
+        record.setServiceId(VALID_SERVICE_ID);
+
         VsamFile returnedFile = mock(VsamFile.class);
         when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
 
@@ -149,7 +155,9 @@ class VsamStorageTest {
 
     @Test
     void givenKeyIsInCache_whenItemIsDeleted_thenItIsDeleted() {
-        KeyValue record = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
+        KeyValue record = new KeyValue("key-1", "value-1", "1");
+        record.setServiceId(VALID_SERVICE_ID);
+
         VsamFile returnedFile = mock(VsamFile.class);
         when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
 
@@ -176,8 +184,11 @@ class VsamStorageTest {
 
     @Test
     void givenValueForService_whenRequestAllForService_thenAllAreReturned() {
-        KeyValue record1 = new KeyValue("key-1", "value-1", VALID_SERVICE_ID, "1");
-        KeyValue record2 = new KeyValue("key-2", "value-2", VALID_SERVICE_ID, "2");
+        KeyValue record1 = new KeyValue("key-1", "value-1", "1");
+        record1.setServiceId(VALID_SERVICE_ID);
+
+        KeyValue record2 = new KeyValue("key-2", "value-2", "2");
+        record2.setServiceId(VALID_SERVICE_ID);
 
         VsamFile returnedFile = mock(VsamFile.class);
         when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);

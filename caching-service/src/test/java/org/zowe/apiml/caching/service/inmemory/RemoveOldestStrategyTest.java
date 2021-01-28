@@ -28,9 +28,14 @@ class RemoveOldestStrategyTest {
         Map<String, Map<String, KeyValue>> storage = new ConcurrentHashMap<>();
         dataForStorage = new ConcurrentHashMap<>();
         storage.put("test-service", dataForStorage);
+        KeyValue keyValue1 = new KeyValue("key1", "willBeRemoved", "1610965944035");
+        keyValue1.setServiceId("test-service");
 
-        dataForStorage.put("key1", new KeyValue("key1", "willBeRemoved", "test-service", "1610965944035"));
-        dataForStorage.put("key2", new KeyValue("key2", "willFit", "test-service", "1610965944036"));
+        KeyValue keyValue2 = new KeyValue("key2", "willFit", "1610965944036");
+        keyValue2.setServiceId("test-service");
+
+        dataForStorage.put("key1", keyValue1);
+        dataForStorage.put("key2", keyValue2);
 
         underTest = new RemoveOldestStrategy(storage);
     }
