@@ -34,6 +34,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
     }
 
     public void removeOldestRecord() {
+        log.info("Inside removeOldestRecord.");
         VsamRecord oldest = null;
         try {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
@@ -71,5 +72,6 @@ public class RemoveOldestStrategy implements EvictionStrategy {
                 log.info("The oldest record has been successfully removed!");
             }
         }
+        log.info("It was not possible to delete the record.");
     }
 }
