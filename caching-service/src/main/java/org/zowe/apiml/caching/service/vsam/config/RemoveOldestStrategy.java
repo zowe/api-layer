@@ -26,12 +26,8 @@ import java.util.Optional;
 public class RemoveOldestStrategy implements EvictionStrategy {
     private final VsamConfig vsamConfig;
 
-    private VsamFile file;
+    private final VsamFile file;
 
-    public RemoveOldestStrategy(VsamConfig vsamConfig, VsamFile file) {
-        this.vsamConfig = vsamConfig;
-        this.file = file;
-    }
     @Override
     public void evict(String key) {
         removeOldestRecord();
