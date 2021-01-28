@@ -13,19 +13,18 @@ package org.zowe.apiml.security.client.token;
 import org.zowe.apiml.security.client.service.GatewaySecurityService;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.junit.Rule;
-import org.junit.Test;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
 
 import java.util.Date;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class GatewayTokenProviderTest {
+class GatewayTokenProviderTest {
     private static final String USER = "USER";
     private static final String DOMAIN = "PASS";
     private static final String VALID_TOKEN = "VALID_TOKEN";
@@ -33,11 +32,8 @@ public class GatewayTokenProviderTest {
     private final GatewaySecurityService gatewaySecurityService = mock(GatewaySecurityService.class);
     private final GatewayTokenProvider gatewayTokenProvider = new GatewayTokenProvider(gatewaySecurityService);
 
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
-
     @Test
-    public void shouldAuthenticateValidToken() {
+    void shouldAuthenticateValidToken() {
         when(gatewaySecurityService.query(VALID_TOKEN)).thenReturn(new QueryResponse(DOMAIN, USER, new Date(), new Date(), QueryResponse.Source.ZOWE));
         TokenAuthentication tokenAuthentication = new TokenAuthentication(VALID_TOKEN);
 
@@ -50,12 +46,12 @@ public class GatewayTokenProviderTest {
     }
 
     @Test
-    public void shouldSupportTokenAuthentication() {
+    void shouldSupportTokenAuthentication() {
         assertTrue(gatewayTokenProvider.supports(TokenAuthentication.class));
     }
 
     @Test
-    public void shouldNotSupportGenericAuthentication() {
+    void shouldNotSupportGenericAuthentication() {
         assertFalse(gatewayTokenProvider.supports(Authentication.class));
     }
 }

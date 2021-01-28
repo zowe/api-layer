@@ -14,8 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.inmemory.config.InMemoryConfig;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,10 +36,14 @@ public class InMemoryStorageTest {
     void setUp() {
         testingStorage = new HashMap<>();
         GeneralConfig generalConfig = new GeneralConfig();
-        generalConfig.setEvictionStrategy("reject");
+        generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
         config = new InMemoryConfig(generalConfig);
-        config.setMaxDataSize(10);
+        config.getGeneralConfig().setMaxDataSize(10);
         underTest = new InMemoryStorage(config, testingStorage);
+    }
+
+    private String currentDate() {
+        return String.valueOf(new Date().getTime());
     }
 
     @Test
@@ -141,18 +147,36 @@ public class InMemoryStorageTest {
         assertThat(serviceStorage.containsKey("username"), is(false));
     }
 
+    // Given the strategy is reject
     @Test
-    void givenTheStorageIsFull_whenNewKeyValueIsAdded_thenTheInsufficientStorageExceptionIsRaised() {
+    void givenTheStorageIsFullAndStrategyIsReject_whenNewKeyValueIsAdded_thenTheInsufficientStorageExceptionIsRaised() {
         GeneralConfig generalConfig = new GeneralConfig();
-        generalConfig.setEvictionStrategy("reject");
+        generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
         config = new InMemoryConfig(generalConfig);
-        config.setMaxDataSize(1);
+        config.getGeneralConfig().setMaxDataSize(1);
 
         underTest = new InMemoryStorage(config);
-                        underTest.create("customService", new KeyValue("key", "willFit"));
+        underTest.create("customService", new KeyValue("key", "willFit"));
         KeyValue wontFit = new KeyValue("key", "wontFit");
         assertThrows(StorageException.class, () -> {
             underTest.create(serviceId, wontFit);
+        });
+    }
+
+    @Test
+    void givenTheStorageIsFullAndStrategyIsRemoveOldest_whenNewKeyValueIsAdded_thenTheOldestErrorIsEvicted() {
+        GeneralConfig generalConfig = new GeneralConfig();
+        generalConfig.setEvictionStrategy(Strategies.REMOVE_OLDEST.getKey());
+        config = new InMemoryConfig(generalConfig);
+        config.getGeneralConfig().setMaxDataSize(1);
+
+        String oldestKey = "oldestKey";
+        underTest = new InMemoryStorage(config);
+        underTest.create(serviceId, new KeyValue(oldestKey, "willFit", serviceId, "1"));
+        underTest.create(serviceId, new KeyValue("key1", "willFit", serviceId, "2"));
+
+        assertThrows(StorageException.class, () -> {
+            underTest.read(serviceId, oldestKey);
         });
     }
 }

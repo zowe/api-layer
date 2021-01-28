@@ -21,7 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @Slf4j
 public class HttpRequestUtils {

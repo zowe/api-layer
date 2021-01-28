@@ -117,9 +117,6 @@ ext {
         rest_assured                       : "io.rest-assured:rest-assured:${restAssuredVersion}",
         spring_mock_mvc                    : "io.rest-assured:spring-mock-mvc:${restAssuredVersion}",
         commons_validator                  : "commons-validator:commons-validator:${commonsValidatorVersion}",
-        powermock_api_mockito2             : "org.powermock:powermock-api-mockito2:${powerMockVersion}",
-        power_mock_junit4                  : "org.powermock:powermock-module-junit4:${powerMockVersion}",
-        power_mock_junit4_rule             : "org.powermock:powermock-module-junit4-rule:${powerMockVersion}",
         jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
         jackson_databind                   : "com.fasterxml.jackson.core:jackson-databind:${jacksonCoreVersion}",
         jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
@@ -136,7 +133,6 @@ ext {
         netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
 
         junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
-        junitVintage                       : "org.junit.vintage:junit-vintage-engine:${junitJupiterVersion}",
         mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
         mockito_jupiter                    : "org.mockito:mockito-junit-jupiter:${mockitoCoreVersion}",
 

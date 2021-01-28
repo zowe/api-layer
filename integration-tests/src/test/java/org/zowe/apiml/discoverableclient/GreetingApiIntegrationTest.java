@@ -19,9 +19,9 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-public class GreetingApiIntegrationTest {
+class GreetingApiIntegrationTest {
     @Test
     @TestsNotMeantForZowe
     void shouldCallDiscoverableServiceApi() throws Exception {

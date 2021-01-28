@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.product.web;
 
+import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.security.SecurityUtils;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.util.Set;
@@ -82,6 +84,15 @@ public class HttpConfig {
     @Value("${server.maxTotalConnections:#{100}}")
     private Integer maxTotalConnections;
 
+    @Value("${apiml.httpclient.conn-pool.idleConnTimeoutSeconds:#{5}}")
+    private int idleConnTimeoutSeconds;
+    @Value("${apiml.httpclient.conn-pool.requestConnectionTimeout:#{10000}}")
+    private int requestConnectionTimeout;
+    @Value("${apiml.httpclient.conn-pool.readTimeout:#{10000}}")
+    private int readTimeout;
+    @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
+    private int timeToLive;
+
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
@@ -93,15 +104,22 @@ public class HttpConfig {
 
     private Set<String> publicKeyCertificatesBase64;
 
+    @Resource
+    private AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
+
+
     @PostConstruct
     public void init() {
         try {
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
                     .protocol(protocol)
-                    .trustStore(trustStore).trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
+                    .trustStore(trustStore).trustStoreType(trustStoreType)
+                    .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
                     .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
-                    .maxConnectionsPerRoute(maxConnectionsPerRoute).maxTotalConnections(maxTotalConnections);
+                    .maxConnectionsPerRoute(maxConnectionsPerRoute).maxTotalConnections(maxTotalConnections)
+                    .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
+                    .timeToLive(timeToLive);
 
             HttpsConfig httpsConfig = httpsConfigSupplier.get()
                 .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
@@ -117,7 +135,7 @@ public class HttpConfig {
             secureSslContext = factory.createSslContext();
             secureHostnameVerifier = factory.createHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
-
+            optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient();
 
@@ -175,6 +193,8 @@ public class HttpConfig {
     @Qualifier("restTemplateWithKeystore")
     public RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
+        factory.setReadTimeout(readTimeout);
+        factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
 
@@ -189,6 +209,8 @@ public class HttpConfig {
     @Qualifier("restTemplateWithoutKeystore")
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
+        factory.setReadTimeout(readTimeout);
+        factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
 
@@ -225,4 +247,6 @@ public class HttpConfig {
     public EurekaJerseyClient eurekaJerseyClient() {
         return eurekaJerseyClientBuilder.build();
     }
+
+
 }

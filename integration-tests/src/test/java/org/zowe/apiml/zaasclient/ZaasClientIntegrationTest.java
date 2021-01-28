@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ConfigReaderZaasClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
@@ -25,8 +26,8 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
-import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
+import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -97,7 +98,7 @@ class ZaasClientIntegrationTest {
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {
         ZaasClientErrorCodes producedErrorCode = zce.getErrorCode();
         assertThat(code.getId(), Is.is(producedErrorCode.getId()));
-        assertThat( code.getMessage(), Is.is(producedErrorCode.getMessage()));
+        assertThat(code.getMessage(), Is.is(producedErrorCode.getMessage()));
         assertThat(code.getReturnCode(), Is.is(producedErrorCode.getReturnCode()));
     }
 
@@ -117,12 +118,11 @@ class ZaasClientIntegrationTest {
     private static Stream<Arguments> provideInvalidUsernamePassword() {
         return Stream.of(
             Arguments.of(INVALID_USER, PASSWORD, ZaasClientErrorCodes.INVALID_AUTHENTICATION),
-            Arguments.of(USERNAME, INVALID_PASS, ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(NULL_USER, PASSWORD, ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD),
-            Arguments.of(USERNAME, NULL_PASS, ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD),
             Arguments.of(EMPTY_USER, PASSWORD, ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD)
         );
     }
+
 
     @ParameterizedTest
     @MethodSource("provideInvalidUsernamePassword")
@@ -132,22 +132,53 @@ class ZaasClientIntegrationTest {
         assertThatExceptionContainValidCode(exception, expectedCode);
     }
 
+    private static Stream<Arguments> provideInvalidPassword() {
+        return Stream.of(
+            Arguments.of(USERNAME, INVALID_PASS, ZaasClientErrorCodes.INVALID_AUTHENTICATION),
+            Arguments.of(USERNAME, NULL_PASS, ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD)
+        );
+    }
+
+    @NotForMainframeTest
+    @ParameterizedTest
+    @MethodSource("provideInvalidPassword")
+    void giveInvalidPassword_whenLoginIsRequested_thenProperExceptionIsRaised(String username, String password, ZaasClientErrorCodes expectedCode) {
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
+
+        assertThatExceptionContainValidCode(exception, expectedCode);
+    }
+
     private static Stream<Arguments> provideInvalidAuthHeaders() {
         return Stream.of(
             Arguments.of(getAuthHeader(INVALID_USER, PASSWORD), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
-            Arguments.of(getAuthHeader(USERNAME, INVALID_PASS), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(getAuthHeader(NULL_USER, PASSWORD), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
-            Arguments.of(getAuthHeader(USERNAME, NULL_PASS), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(getAuthHeader(EMPTY_USER, PASSWORD), ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD),
-            Arguments.of(getAuthHeader(USERNAME, EMPTY_PASS), ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD),
             Arguments.of(NULL_AUTH_HEADER, ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER),
             Arguments.of(EMPTY_AUTH_HEADER, ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER)
         );
     }
 
+
     @ParameterizedTest
     @MethodSource("provideInvalidAuthHeaders")
-    void doLoginWithAuthHeaderInValidUsername(String authHeader, ZaasClientErrorCodes expectedCode) {
+    void doLoginWithAuthHeaderInvalidUsername(String authHeader, ZaasClientErrorCodes expectedCode) {
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));
+
+        assertThatExceptionContainValidCode(exception, expectedCode);
+    }
+
+    private static Stream<Arguments> provideInvalidPasswordAuthHeaders() {
+        return Stream.of(
+            Arguments.of(getAuthHeader(USERNAME, INVALID_PASS), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
+            Arguments.of(getAuthHeader(USERNAME, NULL_PASS), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
+            Arguments.of(getAuthHeader(USERNAME, EMPTY_PASS), ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD)
+        );
+    }
+
+    @NotForMainframeTest
+    @ParameterizedTest
+    @MethodSource("provideInvalidPasswordAuthHeaders")
+    void doLoginWithAuthHeaderInvalidPassword(String authHeader, ZaasClientErrorCodes expectedCode) {
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));
 
         assertThatExceptionContainValidCode(exception, expectedCode);
@@ -202,7 +233,7 @@ class ZaasClientIntegrationTest {
     }
 
     @Test
-    void givenInvalidToken_whenPassTicketIsRequested_thenExceptionIsThrown()  {
+    void givenInvalidToken_whenPassTicketIsRequested_thenExceptionIsThrown() {
         assertThrows(ZaasClientException.class, () -> {
             String invalidToken = "INVALID_TOKEN";
             tokenService.passTicket(invalidToken, "ZOWEAPPL");

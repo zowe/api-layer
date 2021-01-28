@@ -37,6 +37,14 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [ `uname` = "OS/390" ]; then
+    GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
+else
+    GATEWAY_LOADER_PATH=${COMMON_LIB}
+fi
+
+echo "Setting loader path: "${GATEWAY_LOADER_PATH}
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -91,9 +99,14 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.x509.enabled=${APIML_SECURITY_X509_ENABLED:-false} \
     -Dapiml.security.x509.externalMapperUrl=http://localhost:${ZOWE_ZSS_SERVER_PORT}/certificate/x509/map \
     -Dapiml.security.x509.externalMapperUser=ZWESVUSR \
+    -Dapiml.security.authorization.provider=${APIML_SECURITY_AUTHORIZATION_PROVIDER:-} \
+    -Dapiml.security.authorization.endpoint.enabled=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_ENABLED:-false} \
+    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL:-http://localhost:${ZOWE_ZSS_SERVER_PORT}/saf-auth} \
+    -Dapiml.security.authorization.resourceClass=${RESOURCE_CLASS:-ZOWE} \
+    -Dapiml.security.authorization.resourceNamePrefix=${RESOURCE_NAME_PREFIX:-APIML.} \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar \
+    -Dloader.path=${GATEWAY_LOADER_PATH} \
     -jar ${JAR_FILE} &
 pid=$?
 

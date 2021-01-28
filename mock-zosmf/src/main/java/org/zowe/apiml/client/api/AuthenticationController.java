@@ -64,8 +64,8 @@ public class AuthenticationController {
         List<String> usernames = Arrays.asList(this.usernames);
         List<String> passwords = Arrays.asList(this.passwords);
 
-        if (usernames.contains(piecesOfCredentials[0]) &&
-            (passwords.contains(piecesOfCredentials[1]) || piecesOfCredentials[1].contains("PASS_TICKET"))
+        if (piecesOfCredentials.length > 0 && (usernames.contains(piecesOfCredentials[0]) &&
+            (passwords.contains(piecesOfCredentials[1]) || piecesOfCredentials[1].contains("PASS_TICKET")))
         ) {
             return validJwtResponse(response, piecesOfCredentials[0]);
         } else {
