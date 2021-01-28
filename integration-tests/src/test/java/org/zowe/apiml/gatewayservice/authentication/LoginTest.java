@@ -16,6 +16,7 @@ import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.ssl.PrivateKeyDetails;
 import org.apache.http.ssl.SSLContextBuilder;
@@ -24,6 +25,8 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -117,33 +120,17 @@ abstract class LoginTest {
     }
 
     //@formatter:off
-    @Test
-    void givenValidCredentialsInBody_whenUserAuthenticates_thenTheValidTokenIsProduced() {
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenValidCredentialsInBody_whenUserAuthenticates_thenTheValidTokenIsProduced(String loginUrl) {
         LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
-            .post(LOGIN_ENDPOINT_URL)
-            .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().detailedCookie(COOKIE_NAME);
-
-        assertValidAuthToken(cookie);
-    }
-
-    @Test
-    void givenValidCredentialsInBody_whenUserAuthenticatesOldPath_thenTheValidTokenIsProduced() {
-        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
-
-        Cookie cookie = given()
-            .contentType(JSON)
-            .body(loginRequest)
-            .when()
-            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
-            .then()
+        .when()
+            .post(loginUrl)
+        .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
@@ -166,32 +153,15 @@ abstract class LoginTest {
         assertThatTokenIsValid(claims, username);
     }
 
-    @Test
-    void givenValidCredentialsInHeader_whenUserAuthenticates_thenTheValidTokenIsProduced() {
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenValidCredentialsInHeader_whenUserAuthenticates_thenTheValidTokenIsProduced(String loginUrl) {
         String token = given()
             .auth().preemptive().basic(getUsername(), getPassword())
             .contentType(JSON)
-            .when()
-            .post(LOGIN_ENDPOINT_URL)
-            .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().cookie(COOKIE_NAME);
-
-        int i = token.lastIndexOf('.');
-        String untrustedJwtString = token.substring(0, i + 1);
-        Claims claims = parseJwtString(untrustedJwtString);
-        assertThatTokenIsValid(claims);
-    }
-
-    @Test
-    void givenValidCredentialsInHeader_whenUserAuthenticatesOldPath_thenTheValidTokenIsProduced() {
-        String token = given()
-            .auth().preemptive().basic(getUsername(), getPassword())
-            .contentType(JSON)
-            .when()
-            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
-            .then()
+        .when()
+            .post(loginUrl)
+        .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(COOKIE_NAME);
@@ -217,97 +187,51 @@ abstract class LoginTest {
             .getBody();
     }
 
-    @Test
-    void givenInvalidCredentialsInBody_whenUserAuthenticates_thenUnauthorizedIsReturned() {
-        String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenInvalidCredentialsInBody_whenUserAuthenticates_thenUnauthorizedIsReturned(String loginUrl) {
+        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl,"/",3));
+        String expectedMessage = "Invalid username or password for URL '" + loginPath + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
         given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
-            .post(LOGIN_ENDPOINT_URL)
-            .then()
+        .when()
+            .post(loginUrl)
+        .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
-    @Test
-    void givenInvalidCredentialsInBody_whenUserAuthenticatesOldPath_thenUnauthorizedIsReturned() {
-        String expectedMessage = "Invalid username or password for URL '" + BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT + "'";
-
-        LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
-
-        given()
-            .contentType(JSON)
-            .body(loginRequest)
-            .when()
-            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
-            .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
-            );
-    }
-
-    @Test
-    void givenInvalidCredentialsInHeader_whenUserAuthenticates_thenUnauthorizedIsReturned() {
-        String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenInvalidCredentialsInHeader_whenUserAuthenticates_thenUnauthorizedIsReturned(String loginUrl) {
+        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl,"/",3));
+        String expectedMessage = "Invalid username or password for URL '" + loginPath + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
         ValidatableResponse response = given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
-            .post(LOGIN_ENDPOINT_URL)
-            .then();
+        .when()
+            .post(loginUrl)
+        .then();
         response.statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
-    @Test
-    void givenInvalidCredentialsInHeader_whenUserAuthenticatesOldPath_thenUnauthorizedIsReturned() {
-        String expectedMessage = "Invalid username or password for URL '" + BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT + "'";
-
-        LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
-
-        ValidatableResponse response = given()
-            .contentType(JSON)
-            .body(loginRequest)
-            .when()
-            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
-            .then();
-        response.statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
-            );
-    }
-
-    @Test
-    void givenNoCredentials_whenUserAuthenticatesOldPath_then400IsReturned() {
-        String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" +
-            BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT + "'";
-
-        given()
-            .when()
-            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
-            .then()
-            .statusCode(is(SC_BAD_REQUEST))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
-            );
-    }
-
-    @Test
-    void givenCredentialsInTheWrongJsonFormat_whenUserAuthenticates_then400IsReturned() {
-        String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" +
-            BASE_PATH + LOGIN_ENDPOINT + "'";
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenCredentialsInTheWrongJsonFormat_whenUserAuthenticates_then400IsReturned(String loginUrl) {
+        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl,"/",3));
+        String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + loginPath + "'";
 
         JSONObject loginRequest = new JSONObject()
             .put("user", getUsername())
@@ -316,68 +240,29 @@ abstract class LoginTest {
         given()
             .contentType(JSON)
             .body(loginRequest.toString())
-            .when()
-            .post(LOGIN_ENDPOINT_URL)
-            .then()
+        .when()
+            .post(loginUrl)
+        .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
-    @Test
-    void givenCredentialsInTheWrongJsonFormat_whenUserAuthenticatesOldPath_then400IsReturned() {
-        String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" +
-            BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT + "'";
-
-        JSONObject loginRequest = new JSONObject()
-            .put("user", getUsername())
-            .put("pass", getPassword());
-
-        given()
-            .contentType(JSON)
-            .body(loginRequest.toString())
-            .when()
-            .post(LOGIN_ENDPOINT_URL_OLD_FORMAT)
-            .then()
-            .statusCode(is(SC_BAD_REQUEST))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
-            );
-    }
-
-    @Test
-    void givenValidCredentialsInJsonBody_whenUserAuthenticatesViaGetMethod_then405IsReturned() {
-        String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
-            BASE_PATH + LOGIN_ENDPOINT + "'";
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenValidCredentialsInJsonBody_whenUserAuthenticatesViaGetMethod_then405IsReturned(String loginUrl) {
+        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl,"/",3));
+        String expectedMessage = "Authentication method 'GET' is not supported for URL '" + loginPath + "'";
 
         LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
         given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
-            .get(LOGIN_ENDPOINT_URL)
-            .then()
-            .statusCode(is(SC_METHOD_NOT_ALLOWED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
-            );
-    }
-
-    @Test
-    void givenValidCredentialsInJsonBody_whenUserAuthenticatesViaGetMethodOldPath_then405IsReturned() {
-        String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
-            BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT + "'";
-
-        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
-
-        given()
-            .contentType(JSON)
-            .body(loginRequest)
-            .when()
-            .get(LOGIN_ENDPOINT_URL_OLD_FORMAT)
-            .then()
+        .when()
+            .get(loginUrl)
+        .then()
             .statusCode(is(SC_METHOD_NOT_ALLOWED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
@@ -407,18 +292,11 @@ abstract class LoginTest {
         return cookie.getValue();
     }
 
-    @Test
-    void givenApimlsCert_whenAuth_thenUnauthorized() throws Exception {
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenApimlsCert_whenAuth_thenUnauthorized(String loginUrl) throws Exception {
         given().config(clientCertApiml)
-            .post(new URI(LOGIN_ENDPOINT_URL))
-            .then()
-            .statusCode(is(SC_BAD_REQUEST));
-    }
-
-    @Test
-    void givenApimlsCert_whenAuthOldFormat_thenUnauthorized() throws Exception {
-        given().config(clientCertApiml)
-            .post(new URI(LOGIN_ENDPOINT_URL_OLD_FORMAT))
+            .post(new URI(loginUrl))
             .then()
             .statusCode(is(SC_BAD_REQUEST));
     }
