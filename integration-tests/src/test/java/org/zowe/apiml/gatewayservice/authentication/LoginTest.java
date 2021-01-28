@@ -24,7 +24,6 @@ import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.util.ResourceUtils;
@@ -273,9 +272,9 @@ abstract class LoginTest {
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
+        .when()
             .post(url)
-            .then()
+        .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
@@ -297,7 +296,7 @@ abstract class LoginTest {
     void givenApimlsCert_whenAuth_thenUnauthorized(String loginUrl) throws Exception {
         given().config(clientCertApiml)
             .post(new URI(loginUrl))
-            .then()
+        .then()
             .statusCode(is(SC_BAD_REQUEST));
     }
     //@formatter:on
