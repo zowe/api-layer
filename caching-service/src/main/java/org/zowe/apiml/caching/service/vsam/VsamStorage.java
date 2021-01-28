@@ -40,8 +40,6 @@ public class VsamStorage implements Storage {
         this.vsamConfig = vsamConfig;
         if (evictionStrategy.equals(Strategies.REJECT.getKey())) {
             strategy = new RejectStrategy();
-        } else if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
-           strategy = new RemoveOldestStrategy(vsamConfig);
         }
         log.info("Using Vsam configuration: {}", vsamConfig);
         vsamInitializer.storageWarmup(vsamConfig);
@@ -53,6 +51,14 @@ public class VsamStorage implements Storage {
         this.producer = producer;
     }
 
+    private EvictionStrategy provideStrategy(VsamFile file) {
+        String evictionStrategy = vsamConfig.getGeneralConfig().getEvictionStrategy();
+        if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
+            return new RemoveOldestStrategy(vsamConfig, file);
+        } else {
+            return strategy;
+        }
+    }
 
     @Override
     @Retryable(value = {IllegalStateException.class, UnsupportedOperationException.class})
@@ -67,6 +73,7 @@ public class VsamStorage implements Storage {
             log.info("Current Size {}.", currentSize);
 
             if (aboveThreshold(currentSize)) {
+                strategy = provideStrategy(file);
                 log.info("Evicting record using the {} strategy", vsamConfig.getGeneralConfig().getEvictionStrategy());
                 strategy.evict(toCreate.getKey());
             }

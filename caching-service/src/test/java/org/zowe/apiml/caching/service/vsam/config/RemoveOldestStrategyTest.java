@@ -17,7 +17,6 @@ import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.vsam.VsamFile;
-import org.zowe.apiml.caching.service.vsam.VsamFileProducer;
 import org.zowe.apiml.caching.service.vsam.VsamRecord;
 import org.zowe.apiml.caching.service.vsam.VsamRecordException;
 import org.zowe.apiml.zfile.ZFileConstants;
@@ -34,7 +33,7 @@ class RemoveOldestStrategyTest {
     private RemoveOldestStrategy underTest;
 
     private VsamConfig vsamConfiguration;
-    private VsamFileProducer producer;
+    private VsamFile file;
     private ArgumentCaptor<VsamRecord> recordArgumentCaptor = ArgumentCaptor.forClass(VsamRecord.class);
 
     private final String VALID_SERVICE_ID = "test-service-id";
@@ -50,8 +49,8 @@ class RemoveOldestStrategyTest {
         vsamConfiguration.setKeyLength(32);
         vsamConfiguration.setEncoding(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
 
-        producer = mock(VsamFileProducer.class);
-        underTest = new RemoveOldestStrategy(vsamConfiguration, producer);
+        file = mock(VsamFile.class);
+        underTest = new RemoveOldestStrategy(vsamConfiguration, file);
     }
 
     @Test
@@ -59,15 +58,12 @@ class RemoveOldestStrategyTest {
         KeyValue record1 = new KeyValue("key-1", "value-1", "1");
         record1.setServiceId(VALID_SERVICE_ID);
 
-        VsamFile returnedFile = mock(VsamFile.class);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
-
         VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
-        when(returnedFile.readBytes(any()))
+        when(file.readBytes(any()))
             .thenReturn(Optional.of(fullRecord1.getBytes()));
 
         underTest.evict("new-key");
-        verify(returnedFile).delete(recordArgumentCaptor.capture());
+        verify(file).delete(recordArgumentCaptor.capture());
 
         VsamRecord deleted = recordArgumentCaptor.getValue();
         assertThat(deleted.getKeyValue().getKey(), is("key-1"));
@@ -80,17 +76,14 @@ class RemoveOldestStrategyTest {
         KeyValue record2 = new KeyValue("key-2", "value-2", "2");
         record2.setServiceId(VALID_SERVICE_ID);
 
-        VsamFile returnedFile = mock(VsamFile.class);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
-
         VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
         VsamRecord fullRecord2 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record2);
-        when(returnedFile.readBytes(any()))
+        when(file.readBytes(any()))
             .thenReturn(Optional.of(fullRecord1.getBytes()))
             .thenReturn(Optional.of(fullRecord2.getBytes()));
 
         underTest.evict("new-key");
-        verify(returnedFile).delete(recordArgumentCaptor.capture());
+        verify(file).delete(recordArgumentCaptor.capture());
 
         VsamRecord deleted = recordArgumentCaptor.getValue();
         assertThat(deleted.getKeyValue().getKey(), is("key-1"));

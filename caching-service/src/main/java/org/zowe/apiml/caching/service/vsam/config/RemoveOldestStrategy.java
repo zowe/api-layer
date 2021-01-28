@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.service.EvictionStrategy;
 import org.zowe.apiml.caching.service.vsam.VsamFile;
-import org.zowe.apiml.caching.service.vsam.VsamFileProducer;
 import org.zowe.apiml.caching.service.vsam.VsamRecord;
 import org.zowe.apiml.caching.service.vsam.VsamRecordException;
 import org.zowe.apiml.zfile.ZFileException;
@@ -27,16 +26,14 @@ import java.util.Optional;
 public class RemoveOldestStrategy implements EvictionStrategy {
     private final VsamConfig vsamConfig;
 
-    private VsamFileProducer producer = new VsamFileProducer();
     private VsamFile file;
 
-    public RemoveOldestStrategy(VsamConfig vsamConfig, VsamFileProducer producer) {
+    public RemoveOldestStrategy(VsamConfig vsamConfig, VsamFile file) {
         this.vsamConfig = vsamConfig;
-        this.producer = producer;
+        this.file = file;
     }
     @Override
     public void evict(String key) {
-        file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE);
         removeOldestRecord();
     }
 
