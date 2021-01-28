@@ -1,6 +1,22 @@
 # API Mediation Layer Changelog
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
+## `1.19.0`
+
+- Feature: The connection limit of the Gateway has been configured to support multiple long-running requests by service. [#843](https://github.com/zowe/api-layer/issues/843)
+- Feature: The size of API Mediation Layer has been reduced to fit within 150MB. [#909](https://github.com/zowe/api-layer/issues/909)
+- Feature: You can now remove or configure the Catalog from appearing on the Gateway homepage [#727](https://github.com/zowe/api-layer/issues/727)
+- Bugfix: API ID is not sent to Eureka in metadata by the Java enabler [#991](https://github.com/zowe/api-layer/issues/991)
+- Feature: Connection limits have been enhanced to improve latency times when making requests through the API ML. This feature also enables concurrent requests. [#987](https://github.com/zowe/api-layer/issues/987)
+- Feature: The connection limit log messages hae been enhanced. New messages indicate when too many connections occur. [#987](https://github.com/zowe/api-layer/issues/987)
+- Bugfix: Fixed tcp connections that are stuck open. [#1009](https://github.com/zowe/api-layer/issues/1009)
+- Feature: The `/api/v1/gateway/services/{serviceId}` endpoint has been added which provides information about a service in API ML for API clients. You can now view information to choose the applicable available API service without having a trusted service certificate. Proper SAF authorization is required. [#873](https://github.com/zowe/api-layer/issues/873)
+- Feature: The size limitation in the InMemory cache for proper handling is now supported when size limitations are reached.  [#998](https://github.com/zowe/api-layer/issues/998)
+- Feature: The 'Remove Oldest' eviction mechanism for Caching Service has been implemented to limit the volume of data in the cache.[#998](https://github.com/zowe/api-layer/issues/998)
+- Feature: Configure CORS origins per service has been configured so that onboarded services can request to delegate CORS behavior for a route to the API Mediation Layer. [#997](https://github.com/zowe/api-layer/issues/997)
+- Feature: The 'Reject eviction' strategy to Caching service has been implemented to limit the volume of data in the cache.[#998](https://github.com/zowe/api-layer/issues/998)
+- Feature: Debug logging to x509 Client certificate authentication classes has been added. This feature enables users to determine the cause of system problems during client certificate authentication setup.
+
 ## `1.18.0`
 
 - Feature: Configure more detailed logging outside of Spool. [#709](https://github.com/zowe/api-layer/issues/709)
