@@ -293,8 +293,9 @@ class VsamFileTest {
     }
 
     private VsamRecord vsamRecord(String key, String value, int created) {
-        return new VsamRecord(vsamConfiguration, VALID_SERVICE_ID,
-            new KeyValue(key, value, VALID_SERVICE_ID, String.valueOf(created)));
+        KeyValue keyValue = new KeyValue(key, value, String.valueOf(created));
+        keyValue.setServiceId(VALID_SERVICE_ID);
+        return new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, keyValue);
     }
 
     private ZFileException zFileException() {
