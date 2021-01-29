@@ -20,7 +20,8 @@ public enum Messages {
     KEY_NOT_PROVIDED("org.zowe.apiml.cache.keyNotProvided", HttpStatus.BAD_REQUEST),
     KEY_NOT_IN_CACHE("org.zowe.apiml.cache.keyNotInCache", HttpStatus.NOT_FOUND),
     INVALID_PAYLOAD("org.zowe.apiml.cache.invalidPayload", HttpStatus.BAD_REQUEST),
-    INSUFFICIENT_STORAGE("org.zowe.apiml.cache.insufficientStorage", HttpStatus.INSUFFICIENT_STORAGE);
+    INSUFFICIENT_STORAGE("org.zowe.apiml.cache.insufficientStorage", HttpStatus.INSUFFICIENT_STORAGE),
+    PAYLOAD_TOO_LARGE("org.zowe.apiml.cache.payloadTooLarge", HttpStatus.BAD_REQUEST);
 
     private final String key;
     private final HttpStatus status;
