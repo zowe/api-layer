@@ -78,7 +78,7 @@ class VsamFileTest {
         }
 
         @Test
-        void givenOpenZFileThrowsException_ExceptonIsThrown() throws ZFileException {
+        void givenOpenZFileThrowsException_ExceptionIsThrown() throws ZFileException {
             ZFileProducer producer = mock(ZFileProducer.class);
             zFile = mock(ZFile.class);
             when(producer.openZfile()).thenThrow(ZFileException.class);
@@ -279,6 +279,24 @@ class VsamFileTest {
 
             assertThat(underTest.readForService(VALID_SERVICE_ID), hasSize(0));
         }
+    }
+
+    @Test
+    void givenProperAnswer_properBytesAreReturned() throws ZFileException {
+        int validAmountOfBytes = 20;
+        when(zFile.read(any())).thenReturn(validAmountOfBytes);
+
+        Optional<byte[]> read = underTest.readBytes(new byte[]{});
+        assertTrue(read.isPresent());
+    }
+
+    @Test
+    void givenNothingIsRead_nothingIsReturned() throws ZFileException {
+        int nothingFound = -1;
+        when(zFile.read(any())).thenReturn(nothingFound);
+
+        Optional<byte[]> read = underTest.readBytes(new byte[]{});
+        assertFalse(read.isPresent());
     }
 
 
