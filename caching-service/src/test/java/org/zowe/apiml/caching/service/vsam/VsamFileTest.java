@@ -243,6 +243,23 @@ class VsamFileTest {
         }
 
         @Test
+        void givenNullConfig_ExceptionIsThrown() {
+            assertThrows(IllegalArgumentException.class, () -> {
+                new VsamFile(null, VsamConfig.VsamOptions.WRITE, false, null, new VsamInitializer());
+            });
+        }
+
+        @Test
+        void givenOpenZFileThrowsException_ExceptonIsThrown() throws ZFileException {
+            ZFileProducer producer = mock(ZFileProducer.class);
+            zFile = mock(ZFile.class);
+            when(producer.openZfile()).thenThrow(ZFileException.class);
+            assertThrows(IllegalStateException.class, () -> {
+                new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, new VsamInitializer());
+            });
+        }
+
+        @Test
         void givenValidServiceId_allServiceRecordsAreReturned() throws ZFileException, UnsupportedEncodingException {
             int amountOfReturnedRecords = 10;
 
