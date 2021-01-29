@@ -16,8 +16,10 @@ import org.zowe.apiml.caching.service.EvictionStrategy;
 import org.zowe.apiml.caching.service.vsam.VsamFile;
 import org.zowe.apiml.caching.service.vsam.VsamRecord;
 import org.zowe.apiml.caching.service.vsam.VsamRecordException;
+import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
 
@@ -37,9 +39,12 @@ public class RemoveOldestStrategy implements EvictionStrategy {
         log.info("Inside removeOldestRecord.");
         VsamRecord oldest = null;
         try {
+            byte[] ignoreKey = " ".getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
             Optional<byte[]> readRecord;
             int overflowProtection = 10000;
+            file.getZfile().locate(ignoreKey,
+                ZFileConstants.LOCATE_KEY_FIRST);
             while ((readRecord = file.readBytes(recBuf)).isPresent()) {
                 VsamRecord current = new VsamRecord(vsamConfig, readRecord.get());
                 if (oldest == null) {
@@ -57,7 +62,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
                     break;
                 }
             }
-        } catch (ZFileException | VsamRecordException e) {
+        } catch (ZFileException | VsamRecordException | UnsupportedEncodingException e) {
             log.error(e.toString());
         }
         checkAndRemoveRecord(oldest);
