@@ -21,7 +21,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
@@ -32,8 +37,8 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
-import springfox.documentation.annotations.Cacheable;
 
+import javax.annotation.PostConstruct;
 import java.text.ParseException;
 import java.util.EnumMap;
 import java.util.List;
@@ -42,6 +47,8 @@ import java.util.Map;
 @Primary
 @Service
 @Slf4j
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class ZosmfService extends AbstractZosmfService {
 
     /**
@@ -88,12 +95,14 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
+    private final ApplicationContext applicationContext;
 
     public ZosmfService(
         final AuthConfigurationProperties authConfigurationProperties,
         final DiscoveryClient discovery,
         final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
-        final ObjectMapper securityObjectMapper
+        final ObjectMapper securityObjectMapper,
+        final ApplicationContext applicationContext
     ) {
         super(
             authConfigurationProperties,
@@ -101,7 +110,16 @@ public class ZosmfService extends AbstractZosmfService {
             restTemplateWithoutKeystore,
             securityObjectMapper
         );
+        this.applicationContext = applicationContext;
     }
+
+    private ZosmfService meAsProxy;
+
+    @PostConstruct
+    public void afterPropertiesSet() {
+        meAsProxy = applicationContext.getBean(ZosmfService.class);
+    }
+
 
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
@@ -116,7 +134,7 @@ public class ZosmfService extends AbstractZosmfService {
                 authentication,
                 zosmfInfoURIEndpoint,
                 HttpMethod.GET);
-            authenticationResponse.setDomain(getZosmfRealm(zosmfInfoURIEndpoint));
+            authenticationResponse.setDomain(meAsProxy.getZosmfRealm(zosmfInfoURIEndpoint));
         }
         return authenticationResponse;
     }
@@ -179,7 +197,8 @@ public class ZosmfService extends AbstractZosmfService {
      * @param httpMethod HttpMethod to be checked for existence
      * @return boolean, containing true if endpoint resolves
      */
-    private boolean authenticationEndpointExists(HttpMethod httpMethod, HttpHeaders headers) {
+    @Cacheable(value = "zosmfAuthenticationEndpoint", key = "#httpMethod.name()")
+    public boolean authenticationEndpointExists(HttpMethod httpMethod, HttpHeaders headers) {
         String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
         try {
@@ -208,12 +227,11 @@ public class ZosmfService extends AbstractZosmfService {
      *
      * @return true, if zosmf login endpoint is presented
      */
-    @Cacheable("zosmfLoginEndpoint")
     public boolean loginEndpointExists() {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
         headers.add("Authorization", "Basic Og==");
-        return authenticationEndpointExists(HttpMethod.POST, headers);
+        return meAsProxy.authenticationEndpointExists(HttpMethod.POST, headers);
     }
 
     /**
@@ -221,9 +239,9 @@ public class ZosmfService extends AbstractZosmfService {
      *
      * @return true, if zosmf logout endpoint is presented
      */
-    @Cacheable("zosmfLogoutEndpoint")
+
     public boolean logoutEndpointExists() {
-        return authenticationEndpointExists(HttpMethod.DELETE, null);
+        return meAsProxy.authenticationEndpointExists(HttpMethod.DELETE, null);
     }
 
     public boolean validate(TokenType type, String token) {
@@ -251,7 +269,7 @@ public class ZosmfService extends AbstractZosmfService {
         } else {
             return false;
         }
-       }
+    }
 
     public void invalidate(TokenType type, String token) {
         if (logoutEndpointExists()) {

@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,7 +46,8 @@ class ZosmfServiceTest {
     private ObjectMapper securityObjectMapper;
 
     private ZosmfService getZosmfServiceSpy() {
-        ZosmfService zosmfServiceObj = new ZosmfService(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ApplicationContext applicationContext = mock(ApplicationContext.class);
+        ZosmfService zosmfServiceObj = new ZosmfService(authConfigurationProperties, discovery, restTemplate, securityObjectMapper,applicationContext);
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
         doReturn("http://zosmf:1433").when(zosmfService).getURI(ZOSMF_ID);
@@ -338,7 +340,7 @@ class ZosmfServiceTest {
 
     @Test
     void testReadTokenFromCookie() {
-        assertNull(new ZosmfService(null, null, null, null).readTokenFromCookie(null, null));
+        assertNull(new ZosmfService(null, null, null, null, null).readTokenFromCookie(null, null));
     }
 
     @Test

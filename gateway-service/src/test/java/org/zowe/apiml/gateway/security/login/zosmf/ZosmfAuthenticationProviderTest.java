@@ -100,8 +100,8 @@ class ZosmfAuthenticationProviderTest {
    }
 
    private ZosmfService createZosmfService() {
-       ZosmfService zosmfService = new ZosmfService(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
        ApplicationContext applicationContext = mock(ApplicationContext.class);
+       ZosmfService zosmfService = new ZosmfService(authConfigurationProperties, discovery, restTemplate, securityObjectMapper,applicationContext);
        ZosmfService output = spy(zosmfService);
        when(applicationContext.getBean(ZosmfService.class)).thenReturn(output);
        return output;

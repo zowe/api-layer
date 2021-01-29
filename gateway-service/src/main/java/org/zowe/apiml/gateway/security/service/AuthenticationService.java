@@ -313,7 +313,7 @@ public class AuthenticationService {
      * @throws TokenNotValidException if the token is not valid
      */
     public TokenAuthentication validateJwtToken(TokenAuthentication token) {
-        return meAsProxy.validateJwtToken(Optional.ofNullable(token).map(TokenAuthentication::getCredentials).orElse(null));
+        return meAsProxy.validateJwtToken( token != null ? token.getCredentials() : null);
     }
 
     /**

@@ -423,7 +423,8 @@ public class AuthenticationServiceTest {
                 authConfigurationProperties,
                 discoveryClient,
                 restTemplate,
-                securityObjectMapper
+                securityObjectMapper,
+                applicationContext
             )
         );
     }
