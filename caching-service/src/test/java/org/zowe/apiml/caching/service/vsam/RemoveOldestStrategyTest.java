@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.caching.service.vsam.config;
+package org.zowe.apiml.caching.service.vsam;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,9 +16,8 @@ import org.mockito.ArgumentCaptor;
 import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Strategies;
-import org.zowe.apiml.caching.service.vsam.VsamFile;
-import org.zowe.apiml.caching.service.vsam.VsamRecord;
-import org.zowe.apiml.caching.service.vsam.VsamRecordException;
+import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
+import org.zowe.apiml.zfile.ZFile;
 import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
 
@@ -61,6 +60,7 @@ class RemoveOldestStrategyTest {
         VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
         when(file.readBytes(any()))
             .thenReturn(Optional.of(fullRecord1.getBytes()));
+        when(file.getZfile()).thenReturn(mock(ZFile.class));
 
         underTest.evict("new-key");
         verify(file).delete(recordArgumentCaptor.capture());
@@ -81,6 +81,7 @@ class RemoveOldestStrategyTest {
         when(file.readBytes(any()))
             .thenReturn(Optional.of(fullRecord1.getBytes()))
             .thenReturn(Optional.of(fullRecord2.getBytes()));
+        when(file.getZfile()).thenReturn(mock(ZFile.class));
 
         underTest.evict("new-key");
         verify(file).delete(recordArgumentCaptor.capture());

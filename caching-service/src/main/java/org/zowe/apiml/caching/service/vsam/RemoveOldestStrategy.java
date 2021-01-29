@@ -8,14 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.caching.service.vsam.config;
+package org.zowe.apiml.caching.service.vsam;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.service.EvictionStrategy;
-import org.zowe.apiml.caching.service.vsam.VsamFile;
-import org.zowe.apiml.caching.service.vsam.VsamRecord;
-import org.zowe.apiml.caching.service.vsam.VsamRecordException;
+import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
 
@@ -36,7 +34,6 @@ public class RemoveOldestStrategy implements EvictionStrategy {
     }
 
     public void removeOldestRecord() {
-        log.info("Inside removeOldestRecord.");
         VsamRecord oldest = null;
         try {
             byte[] ignoreKey = " ".getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
@@ -70,7 +67,6 @@ public class RemoveOldestStrategy implements EvictionStrategy {
 
     private void checkAndRemoveRecord(VsamRecord oldest) {
         if (oldest != null) {
-            log.info("Record to remove {}", oldest);
             log.info("Removing the oldest record {}", oldest.getKeyValue().getKey());
             Optional<VsamRecord> returned = file.delete(oldest);
             if (returned.isPresent()) {

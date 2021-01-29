@@ -14,7 +14,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.*;
 import org.zowe.apiml.caching.service.inmemory.RejectStrategy;
-import org.zowe.apiml.caching.service.vsam.config.RemoveOldestStrategy;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.util.ObjectUtil;
 
