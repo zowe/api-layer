@@ -1,0 +1,49 @@
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id "io.micronaut.application" version '1.0.5'
+}
+mainClassName = 'org.zowe.apiml.Application'
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+shadowJar {
+    archiveBaseName.set('micronaut-enabler')
+    archiveClassifier.set('')
+    archiveVersion.set('1.0')
+}
+version "0.1"
+group "org.zowe.apiml"
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+micronaut {
+    version = "2.1.3"
+    runtime "netty"
+    testRuntime "junit5"
+    processing {
+        incremental true
+        annotations "org.zowe.apiml.*"
+    }
+}
+
+dependencies {
+    implementation("io.micronaut:micronaut-validation")
+    implementation("io.micronaut:micronaut-runtime")
+    implementation("io.micronaut:micronaut-http-client")
+    runtimeOnly("ch.qos.logback:logback-classic")
+}
+
+
+
+java {
+    sourceCompatibility = JavaVersion.toVersion('1.8')
+    targetCompatibility = JavaVersion.toVersion('1.8')
+}
+
+
+
+
