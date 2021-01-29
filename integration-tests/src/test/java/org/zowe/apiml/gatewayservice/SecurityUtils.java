@@ -16,12 +16,18 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.TlsConfiguration;
+import org.zowe.apiml.util.config.ZosmfServiceConfiguration;
 
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 import static io.restassured.RestAssured.given;
@@ -38,7 +44,8 @@ public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
     public final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
     public final static String GATEWAY_LOGOUT_ENDPOINT = "/auth/logout";
-    public final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
+    public final static String GATEWAY_BASE_PATH = "/gateway/api/v1";
+    public final static String GATEWAY_BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
     private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
 
     private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
@@ -60,12 +67,24 @@ public class SecurityUtils {
         return gatewayToken(USERNAME, PASSWORD);
     }
 
-    public static String getGateWayUrl(String path) {
-       return getGatewayUrl(path,gatewayPort);
+    public static String getGatewayUrl(String path) {
+        return getGatewayUrl(path, gatewayPort);
     }
 
-    public static String getGatewayUrl(String path, int port ) {
+    public static String getGatewayUrl(String path, int port) {
         return String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, port, GATEWAY_BASE_PATH, path);
+    }
+
+    public static String getGatewayUrlOldFormat(String path) {
+        return String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH_OLD_FORMAT, path);
+    }
+
+    public static String getGatewayLogoutUrl() {
+        return getGatewayUrl(GATEWAY_LOGOUT_ENDPOINT);
+    }
+
+    public static String getGatewayLogoutUrlOldPath() {
+        return getGatewayUrlOldFormat(GATEWAY_LOGOUT_ENDPOINT);
     }
 
     public static String gatewayToken(String username, String password) {
@@ -74,9 +93,9 @@ public class SecurityUtils {
         return given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
-            .post(getGateWayUrl(GATEWAY_LOGIN_ENDPOINT))
-        .then()
+            .when()
+            .post(getGatewayUrl(GATEWAY_LOGIN_ENDPOINT))
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
@@ -86,19 +105,27 @@ public class SecurityUtils {
         return given()
             .auth().preemptive().basic(username, password)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_LOGIN_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .cookie(ZOSMF_TOKEN, not(isEmptyString()))
             .extract().cookie(ZOSMF_TOKEN);
     }
 
     public static void logoutOnGateway(String jwtToken) {
+        logoutOnGateway(getGatewayUrl(GATEWAY_LOGOUT_ENDPOINT), jwtToken);
+    }
+
+    public static void logoutOnGatewayOldPath(String jwtToken) {
+        logoutOnGateway(getGatewayUrlOldFormat(GATEWAY_LOGOUT_ENDPOINT), jwtToken);
+    }
+
+    public static void logoutOnGateway(String url, String jwtToken) {
         given()
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwtToken)
             .when()
-            .post(getGateWayUrl(GATEWAY_LOGOUT_ENDPOINT))
+            .post(url)
             .then()
             .statusCode(is(SC_NO_CONTENT));
     }

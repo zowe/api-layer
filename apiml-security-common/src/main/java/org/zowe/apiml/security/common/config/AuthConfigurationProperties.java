@@ -31,10 +31,15 @@ public class AuthConfigurationProperties {
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
     // General properties
-    private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
-    private String gatewayLogoutEndpoint = "/api/v1/gateway/auth/logout";
-    private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";
-    private String gatewayTicketEndpoint = "/api/v1/gateway/auth/ticket";
+    private String gatewayLoginEndpoint = "/gateway/api/v1/auth/login";
+    private String gatewayLogoutEndpoint = "/gateway/api/v1/auth/logout";
+    private String gatewayQueryEndpoint = "/gateway/api/v1/auth/query";
+    private String gatewayTicketEndpoint = "/gateway/api/v1/auth/ticket";
+
+    private String gatewayLoginEndpointOldFormat = "/api/v1/gateway/auth/login";
+    private String gatewayLogoutEndpointOldFormat = "/api/v1/gateway/auth/logout";
+    private String gatewayQueryEndpointOldFormat = "/api/v1/gateway/auth/query";
+    private String gatewayTicketEndpointOldFormat = "/api/v1/gateway/auth/ticket";
 
     private String serviceLoginEndpoint = "/auth/login";
     private String serviceLogoutEndpoint = "/auth/logout";
