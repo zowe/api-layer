@@ -61,6 +61,7 @@ class RemoveOldestStrategyTest {
         when(file.readBytes(any()))
             .thenReturn(Optional.of(fullRecord1.getBytes()));
         when(file.getZfile()).thenReturn(mock(ZFile.class));
+        when(file.delete(any())).thenReturn(Optional.of(fullRecord1));
 
         underTest.evict("new-key");
         verify(file).delete(recordArgumentCaptor.capture());
