@@ -10,8 +10,10 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import static io.restassured.RestAssured.given;
@@ -25,13 +27,21 @@ public class QueryIntegrationTest {
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
-    private final static String BASE_PATH = "/api/v1/gateway";
+    private final static String BASE_PATH = "/gateway/api/v1";
+    private final static String BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
     private final static String QUERY_ENDPOINT = "/auth/query";
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String COOKIE = "apimlAuthenticationToken";
 
     private String token;
+
+    private static String[] queryUrlsSource() {
+        return new String[]{
+            String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT),
+            String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH_OLD_FORMAT, QUERY_ENDPOINT)
+        };
+    }
 
     @BeforeEach
     public void setUp() {
@@ -43,54 +53,42 @@ public class QueryIntegrationTest {
     }
 
     //@formatter:off
-    @Test
-    void doQueryWithValidTokenFromHeader() {
+    @ParameterizedTest
+    @MethodSource("queryUrlsSource")
+    void doQueryWithValidTokenFromHeader(String queryUrl) {
         given()
-             .header("Authorization", "Bearer " + token)
+            .header("Authorization", "Bearer " + token)
         .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
+            .get(queryUrl)
         .then()
             .statusCode(is(SC_OK))
             .body("userId", equalTo(USERNAME));
     }
 
-    @Test
-    void doQueryWithValidTokenFromCookie() {
+    @ParameterizedTest
+    @MethodSource("queryUrlsSource")
+    void doQueryWithValidTokenFromCookie(String queryUrl) {
         given()
             .cookie(COOKIE, token)
         .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
+            .get(queryUrl)
         .then()
             .statusCode(is(SC_OK))
             .body("userId", equalTo(USERNAME));
     }
 
-    @Test
-    void doQueryWithInvalidTokenFromHeader() {
+    @ParameterizedTest
+    @MethodSource("queryUrlsSource")
+    void doQueryWithInvalidTokenFromHeader(String queryUrl) {
         String invalidToken = "1234";
-        String expectedMessage = "Token is not valid for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
+        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+        String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
 
         given()
             .header("Authorization", "Bearer " + invalidToken)
             .contentType(JSON)
         .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-            "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
-        );
-    }
-
-    @Test
-    void doQueryWithInvalidTokenFromCookie() {
-        String invalidToken = "1234";
-        String expectedMessage = "Token is not valid for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
-
-        given()
-            .cookie(COOKIE, invalidToken)
-        .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
+            .get(queryUrl)
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -98,13 +96,33 @@ public class QueryIntegrationTest {
             );
     }
 
-    @Test
-    void doQueryWithoutHeaderOrCookie() {
-        String expectedMessage = "No authorization token provided for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
+    @ParameterizedTest
+    @MethodSource("queryUrlsSource")
+    void doQueryWithInvalidTokenFromCookie(String queryUrl) {
+        String invalidToken = "1234";
+        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+        String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
+
+        given()
+            .cookie(COOKIE, invalidToken)
+        .when()
+            .get(queryUrl)
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body(
+                "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
+    @ParameterizedTest
+    @MethodSource("queryUrlsSource")
+    void doQueryWithoutHeaderOrCookie(String queryUrl) {
+        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+        String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
         given()
         .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
+            .get(queryUrl)
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -112,14 +130,16 @@ public class QueryIntegrationTest {
             );
     }
 
-    @Test
-    void doQueryWithWrongAuthType() {
-        String expectedMessage = "No authorization token provided for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
+    @ParameterizedTest
+    @MethodSource("queryUrlsSource")
+    void doQueryWithWrongAuthType(String queryUrl) {
+        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+        String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
         given()
             .header("Authorization", "Basic " + token)
         .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
+            .get(queryUrl)
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -127,15 +147,17 @@ public class QueryIntegrationTest {
             );
     }
 
-    @Test
-    void doQueryWithWrongCookieName() {
+    @ParameterizedTest
+    @MethodSource("queryUrlsSource")
+    void doQueryWithWrongCookieName(String queryUrl) {
         String invalidCookie = "badCookie";
-        String expectedMessage = "No authorization token provided for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
+        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+        String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
         given()
             .cookie(invalidCookie, token)
         .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
+            .get(queryUrl)
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -143,15 +165,17 @@ public class QueryIntegrationTest {
             );
     }
 
-    @Test
-    void doQueryWithEmptyHeader() {
+    @ParameterizedTest
+    @MethodSource("queryUrlsSource")
+    void doQueryWithEmptyHeader(String queryUrl) {
         String emptyToken = " ";
-        String expectedMessage = "No authorization token provided for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
+        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+        String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
         given()
             .header("Authorization", "Bearer " + emptyToken)
         .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
+            .get(queryUrl)
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -159,18 +183,19 @@ public class QueryIntegrationTest {
             );
     }
 
-    @Test
-    void doQueryWithWrongHttpMethod() {
-        String expectedMessage = "Authentication method 'POST' is not supported for URL '" +
-            BASE_PATH + QUERY_ENDPOINT + "'";
+    @ParameterizedTest
+    @MethodSource("queryUrlsSource")
+    void doQueryWithWrongHttpMethod(String queryUrl) {
+        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+        String expectedMessage = "Authentication method 'POST' is not supported for URL '" + queryPath + "'";
 
         given()
             .header("Authorization", "Bearer " + token)
         .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
+            .post(queryUrl)
         .then()
             .body(
-            "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
             );
     }
     //@formatter:on

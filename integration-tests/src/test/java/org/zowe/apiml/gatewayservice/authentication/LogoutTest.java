@@ -12,7 +12,8 @@ package org.zowe.apiml.gatewayservice.authentication;
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 
@@ -22,9 +23,12 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 
 abstract class LogoutTest {
 
-    protected final static String LOGOUT_ENDPOINT = "/auth/logout";
     protected final static String QUERY_ENDPOINT = "/auth/query";
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
+
+    protected static String[] logoutUrlsSource() {
+        return new String[]{SecurityUtils.getGatewayLogoutUrl(), SecurityUtils.getGatewayLogoutUrlOldPath()};
+    }
 
     @BeforeEach
     void setUp() {
@@ -38,7 +42,7 @@ abstract class LogoutTest {
         given()
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
             .when()
-            .get(SecurityUtils.getGateWayUrl(QUERY_ENDPOINT))
+            .get(SecurityUtils.getGatewayUrl(QUERY_ENDPOINT))
             .then()
             .statusCode(status.value());
     }
@@ -47,31 +51,31 @@ abstract class LogoutTest {
         return SecurityUtils.gatewayToken();
     }
 
-    @Test
-    void testLogout() {
+    @ParameterizedTest
+    @MethodSource("logoutUrlsSource")
+    void testLogout(String logoutUrl) {
         // make login
         String jwt = generateToken();
 
         // check if it is logged in
         assertIfLogged(jwt, true);
 
-        logout(jwt);
+        logout(logoutUrl, jwt);
 
         // check if it is logged in
         assertIfLogged(jwt, false);
     }
 
-    protected void logout(String jwtToken) {
-        SecurityUtils.logoutOnGateway(jwtToken);
+    protected void logout(String url, String jwtToken) {
+        SecurityUtils.logoutOnGateway(url, jwtToken);
     }
 
-    protected void assertLogout(String jwtToken, int expectedStatusCode) {
+    protected void assertLogout(String url, String jwtToken, int expectedStatusCode) {
         given()
             .cookie(COOKIE_NAME, jwtToken)
             .when()
-            .post(SecurityUtils.getGateWayUrl(LOGOUT_ENDPOINT))
+            .post(url)
             .then()
             .statusCode(is(expectedStatusCode));
     }
-
 }
