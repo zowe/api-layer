@@ -2,9 +2,9 @@
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
- *
+ * <p>
  * SPDX-License-Identifier: EPL-2.0
- *
+ * <p>
  * Copyright Contributors to the Zowe Project.
  */
 package org.zowe.apiml.gateway.security.service.zosmf;
@@ -24,6 +24,7 @@ import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -42,23 +43,23 @@ class ZosmfServiceTest {
     private AuthConfigurationProperties authConfigurationProperties;
     private DiscoveryClient discovery = mock(DiscoveryClient.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
+    ApplicationContext applicationContext = mock(ApplicationContext.class);
     @Spy
     private ObjectMapper securityObjectMapper;
 
     private ZosmfService getZosmfServiceSpy() {
-        ApplicationContext applicationContext = mock(ApplicationContext.class);
-        ZosmfService zosmfServiceObj = new ZosmfService(authConfigurationProperties, discovery, restTemplate, securityObjectMapper,applicationContext);
+        ZosmfService zosmfServiceObj = new ZosmfService(authConfigurationProperties, discovery, restTemplate, securityObjectMapper, applicationContext);
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
         doReturn("http://zosmf:1433").when(zosmfService).getURI(ZOSMF_ID);
+        ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
         return zosmfService;
     }
 
     private HttpHeaders getBasicRequestHeaders() {
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.add(HttpHeaders.AUTHORIZATION, "Basic dXNlcjpwYXNz");
-        requestHeaders = addCSRFHeader(requestHeaders);
-        return requestHeaders;
+        return addCSRFHeader(requestHeaders);
     }
 
     private HttpHeaders addCSRFHeader(HttpHeaders headers) {
