@@ -71,8 +71,9 @@ class VsamFileTest {
 
         @Test
         void givenNullConfig_ExceptionIsThrown() {
+            VsamInitializer initializer = new VsamInitializer();
             assertThrows(IllegalArgumentException.class, () -> {
-                new VsamFile(null, VsamConfig.VsamOptions.WRITE, false, null, new VsamInitializer());
+                new VsamFile(null, VsamConfig.VsamOptions.WRITE, false, null, initializer);
             });
         }
 
@@ -81,8 +82,9 @@ class VsamFileTest {
             ZFileProducer producer = mock(ZFileProducer.class);
             zFile = mock(ZFile.class);
             when(producer.openZfile()).thenThrow(ZFileException.class);
+            VsamInitializer initializer = new VsamInitializer();
             assertThrows(IllegalStateException.class, () -> {
-                new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, new VsamInitializer());
+                new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, initializer);
             });
         }
     }
