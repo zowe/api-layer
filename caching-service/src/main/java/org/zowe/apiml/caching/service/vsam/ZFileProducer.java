@@ -23,24 +23,26 @@ public class ZFileProducer {
     private final VsamConfig vsamConfig;
     private final VsamConfig.VsamOptions options;
 
+    @SuppressWarnings({"java:S1130"}) // It's necessary for the zOS implementations.
     public ZFile openZfile() throws ZFileException {
         if (!REGEX_CORRECT_FILENAME.matcher(vsamConfig.getFileName()).find()) {
             throw new IllegalStateException("VsamFile does not exist");
         }
+        String calledMethod = "getMessage";
         return ClassOrDefaultProxyUtils.createProxyByConstructor(ZFile.class, "com.ibm.jzos.ZFile",
             ZFileDummyImpl::new,
             new Class[]{String.class, String.class, int.class},
             new Object[]{vsamConfig.getFileName(), options.getOptionsString(), ZFileConstants.FLAG_DISP_SHR + ZFileConstants.FLAG_PDS_ENQ},
             new ClassOrDefaultProxyUtils.ByMethodName<>(
                 "com.ibm.jzos.ZFileException", ZFileException.class,
-                "getFileName", "getMessage", "getErrnoMsg", "getErrno", "getErrno2", "getLastOp", "getAmrcBytes",
+                "getFileName", calledMethod, "getErrnoMsg", "getErrno", "getErrno2", "getLastOp", "getAmrcBytes",
                 "getAbendCode", "getAbendRc", "getFeedbackRc", "getFeedbackFtncd", "getFeedbackFdbk"),
             new ClassOrDefaultProxyUtils.ByMethodName<>(
                 "com.ibm.jzos.RcException", RcException.class,
-                "getMessage", "getRc"),
+                calledMethod, "getRc"),
             new ClassOrDefaultProxyUtils.ByMethodName<>(
                 "com.ibm.jzos.EnqueueException", EnqueueException.class,
-                "getMessage", "getRc")
+                calledMethod, "getRc")
         );
     }
 }
