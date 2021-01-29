@@ -68,6 +68,23 @@ class VsamFileTest {
                 () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ),
                 "Expected exception is not IllegalArgumentException");
         }
+
+        @Test
+        void givenNullConfig_ExceptionIsThrown() {
+            assertThrows(IllegalArgumentException.class, () -> {
+                new VsamFile(null, VsamConfig.VsamOptions.WRITE, false, null, new VsamInitializer());
+            });
+        }
+
+        @Test
+        void givenOpenZFileThrowsException_ExceptonIsThrown() throws ZFileException {
+            ZFileProducer producer = mock(ZFileProducer.class);
+            zFile = mock(ZFile.class);
+            when(producer.openZfile()).thenThrow(ZFileException.class);
+            assertThrows(IllegalStateException.class, () -> {
+                new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, new VsamInitializer());
+            });
+        }
     }
 
     @Nested
@@ -239,23 +256,6 @@ class VsamFileTest {
 
             assertThrows(IllegalArgumentException.class, () -> {
                 underTest.readForService("");
-            });
-        }
-
-        @Test
-        void givenNullConfig_ExceptionIsThrown() {
-            assertThrows(IllegalArgumentException.class, () -> {
-                new VsamFile(null, VsamConfig.VsamOptions.WRITE, false, null, new VsamInitializer());
-            });
-        }
-
-        @Test
-        void givenOpenZFileThrowsException_ExceptonIsThrown() throws ZFileException {
-            ZFileProducer producer = mock(ZFileProducer.class);
-            zFile = mock(ZFile.class);
-            when(producer.openZfile()).thenThrow(ZFileException.class);
-            assertThrows(IllegalStateException.class, () -> {
-                new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, new VsamInitializer());
             });
         }
 
