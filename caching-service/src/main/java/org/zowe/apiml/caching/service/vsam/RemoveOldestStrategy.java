@@ -33,7 +33,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
         removeOldestRecord();
     }
 
-    public void removeOldestRecord() {
+    private void removeOldestRecord() {
         VsamRecord oldest = null;
         try {
             byte[] ignoreKey = " ".getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
