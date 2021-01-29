@@ -28,6 +28,7 @@ public class VsamStorage implements Storage {
 
     private final VsamConfig vsamConfig;
     private EvictionStrategy strategy = new DefaultEvictionStrategy();
+    private VsamFileProducer producer = new VsamFileProducer();
 
     public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer) {
         String evictionStrategy = vsamConfig.getGeneralConfig().getEvictionStrategy();
@@ -38,13 +39,25 @@ public class VsamStorage implements Storage {
         this.vsamConfig = vsamConfig;
         if (evictionStrategy.equals(Strategies.REJECT.getKey())) {
             strategy = new RejectStrategy();
-        } else if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
-//           strategy = new RemoveOldestStrategy(storage);
         }
         log.info("Using Vsam configuration: {}", vsamConfig);
         vsamInitializer.storageWarmup(vsamConfig);
     }
 
+    public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer, VsamFileProducer producer) {
+        this(vsamConfig, vsamInitializer);
+
+        this.producer = producer;
+    }
+
+    private EvictionStrategy provideStrategy(VsamFile file) {
+        String evictionStrategy = vsamConfig.getGeneralConfig().getEvictionStrategy();
+        if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
+            return new RemoveOldestStrategy(vsamConfig, file);
+        } else {
+            return strategy;
+        }
+    }
 
     @Override
     @Retryable(value = {IllegalStateException.class, UnsupportedOperationException.class})
@@ -52,14 +65,15 @@ public class VsamStorage implements Storage {
         log.info("Writing record: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
         KeyValue result = null;
 
-        try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
-
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
+            toCreate.setServiceId(serviceId);
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toCreate);
             int currentSize = file.countAllRecords();
             log.info("Current Size {}.", currentSize);
 
             if (aboveThreshold(currentSize)) {
-                log.info("Rejecting record");
+                strategy = provideStrategy(file);
+                log.info("Evicting record using the {} strategy", vsamConfig.getGeneralConfig().getEvictionStrategy());
                 strategy.evict(toCreate.getKey());
             }
             Optional<VsamRecord> returned = file.create(record);
@@ -84,7 +98,7 @@ public class VsamStorage implements Storage {
         log.info("Reading Record: {}|{}|{}", serviceId, key, "-");
         KeyValue result = null;
 
-        try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.READ)) {
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.READ)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(key, "", serviceId));
 
@@ -107,8 +121,8 @@ public class VsamStorage implements Storage {
         log.info("Updating Record: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
         KeyValue result = null;
 
-        try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
-
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
+            toUpdate.setServiceId(serviceId);
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toUpdate);
 
             Optional<VsamRecord> returned = file.update(record);
@@ -131,7 +145,7 @@ public class VsamStorage implements Storage {
         log.info("Deleting Record: {}|{}|{}", serviceId, toDelete, "-");
         KeyValue result = null;
 
-        try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(toDelete, "", serviceId));
 
@@ -155,7 +169,7 @@ public class VsamStorage implements Storage {
         Map<String, KeyValue> result = new HashMap<>();
         List<VsamRecord> returned;
 
-        try (VsamFile file = new VsamFile(vsamConfig, VsamConfig.VsamOptions.READ)) {
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.READ)) {
             returned = file.readForService(serviceId);
         }
 

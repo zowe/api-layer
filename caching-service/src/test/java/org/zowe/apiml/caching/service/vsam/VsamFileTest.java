@@ -68,6 +68,25 @@ class VsamFileTest {
                 () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ),
                 "Expected exception is not IllegalArgumentException");
         }
+
+        @Test
+        void givenNullConfig_ExceptionIsThrown() {
+            VsamInitializer initializer = new VsamInitializer();
+            assertThrows(IllegalArgumentException.class, () -> {
+                new VsamFile(null, VsamConfig.VsamOptions.WRITE, false, null, initializer);
+            });
+        }
+
+        @Test
+        void givenOpenZFileThrowsException_ExceptionIsThrown() throws ZFileException {
+            ZFileProducer producer = mock(ZFileProducer.class);
+            zFile = mock(ZFile.class);
+            when(producer.openZfile()).thenThrow(ZFileException.class);
+            VsamInitializer initializer = new VsamInitializer();
+            assertThrows(IllegalStateException.class, () -> {
+                new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, initializer);
+            });
+        }
     }
 
     @Nested
@@ -262,6 +281,24 @@ class VsamFileTest {
         }
     }
 
+    @Test
+    void givenProperAnswer_properBytesAreReturned() throws ZFileException {
+        int validAmountOfBytes = 20;
+        when(zFile.read(any())).thenReturn(validAmountOfBytes);
+
+        Optional<byte[]> read = underTest.readBytes(new byte[]{});
+        assertTrue(read.isPresent());
+    }
+
+    @Test
+    void givenNothingIsRead_nothingIsReturned() throws ZFileException {
+        int nothingFound = -1;
+        when(zFile.read(any())).thenReturn(nothingFound);
+
+        Optional<byte[]> read = underTest.readBytes(new byte[]{});
+        assertFalse(read.isPresent());
+    }
+
 
     private Answer<Integer> prepareAnswer(int amountOfReturnedRecords) {
         List<VsamRecord> records = recordsToReturn(amountOfReturnedRecords);
@@ -293,8 +330,9 @@ class VsamFileTest {
     }
 
     private VsamRecord vsamRecord(String key, String value, int created) {
-        return new VsamRecord(vsamConfiguration, VALID_SERVICE_ID,
-            new KeyValue(key, value, VALID_SERVICE_ID, String.valueOf(created)));
+        KeyValue keyValue = new KeyValue(key, value, String.valueOf(created));
+        keyValue.setServiceId(VALID_SERVICE_ID);
+        return new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, keyValue);
     }
 
     private ZFileException zFileException() {

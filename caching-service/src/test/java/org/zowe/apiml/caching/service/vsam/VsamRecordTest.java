@@ -13,6 +13,7 @@ package org.zowe.apiml.caching.service.vsam;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.zfile.ZFileConstants;
 
@@ -77,9 +78,8 @@ class VsamRecordTest {
         byte[] recordData = "-646160747:106079             {\"key\":\"daisy\",\"value\":\"flower\"}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             "
             .getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
 
-        VsamRecord underTest = new VsamRecord(config, "Service", recordData);
+        VsamRecord underTest = new VsamRecord(config, recordData);
 
-        assertThat(underTest.getServiceId(), is("Service"));
         assertThat(underTest.getKeyValue().getKey(), is("daisy"));
         assertThat(underTest.getKeyValue().getValue(), is("flower"));
     }
@@ -89,7 +89,7 @@ class VsamRecordTest {
         byte[] recordData = "-646160747:106079             {tank}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             "
             .getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
 
-        assertThrows(VsamRecordException.class, () -> new VsamRecord(config, "Service", recordData));
+        assertThrows(VsamRecordException.class, () -> new VsamRecord(config, recordData));
     }
 
     @Test
@@ -99,12 +99,12 @@ class VsamRecordTest {
         KeyValue kvLongValue = new KeyValue("key", longValue);
         VsamRecord underTest1 = new VsamRecord(config, serviceId, kvLongValue);
 
-        assertThrows(VsamRecordException.class, () -> underTest1.getBytes());
+        assertThrows(StorageException.class, () -> underTest1.getBytes());
 
         KeyValue kvLongKey = new KeyValue(longValue, "value");
         VsamRecord underTest2 = new VsamRecord(config, serviceId, kvLongKey);
 
-        assertThrows(VsamRecordException.class, () -> underTest2.getBytes());
+        assertThrows(StorageException.class, () -> underTest2.getBytes());
 
     }
 
@@ -112,7 +112,7 @@ class VsamRecordTest {
     void toStringCanBeCalledAfterRecordIsCreated() throws VsamRecordException, UnsupportedEncodingException {
         byte[] recordData = "-646160747:106079             {\"key\":\"daisy\",\"value\":\"flower\"}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             "
             .getBytes(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
-        VsamRecord underTestFromBytes = new VsamRecord(config, "Service", recordData);
+        VsamRecord underTestFromBytes = new VsamRecord(config, recordData);
         assertDoesNotThrow(() -> underTestFromBytes.toString());
 
         VsamRecord underTestFromValues = new VsamRecord(config, "Service", new KeyValue("k","v"));

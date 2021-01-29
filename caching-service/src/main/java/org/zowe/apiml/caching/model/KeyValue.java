@@ -25,7 +25,7 @@ import java.util.Date;
 public class KeyValue {
     private final String key;
     private final String value;
-    private final String serviceId;
+    private String serviceId;
     private final String created;
 
     public KeyValue(String key, String value) {
@@ -35,14 +35,7 @@ public class KeyValue {
         this.created = currentTime();
     }
 
-    public KeyValue(String key, String value, String serviceId) {
-        this.key = key;
-        this.value = value;
-        this.serviceId = serviceId;
-        this.created = currentTime();
-    }
-
-    private String currentTime() {
+    private static String currentTime() {
         return String.valueOf(new Date().getTime());
     }
 
