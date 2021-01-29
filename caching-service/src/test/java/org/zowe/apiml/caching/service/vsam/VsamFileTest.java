@@ -14,9 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
-import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
-import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.zfile.ZFile;
 import org.zowe.apiml.zfile.ZFileConstants;
@@ -47,14 +45,7 @@ class VsamFileTest {
 
     @BeforeEach
     void prepareConfig() throws ZFileException {
-        GeneralConfig generalConfig = new GeneralConfig();
-        generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
-        generalConfig.setMaxDataSize(100);
-        vsamConfiguration = new VsamConfig(generalConfig);
-        vsamConfiguration.setFileName("//'DATASET.NAME'");
-        vsamConfiguration.setRecordLength(512);
-        vsamConfiguration.setKeyLength(64);
-        vsamConfiguration.setEncoding(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
+        vsamConfiguration = DefaultVsamConfiguration.defaultConfiguration();
         key = new VsamKey(vsamConfiguration);
 
         ZFileProducer producer = mock(ZFileProducer.class);
