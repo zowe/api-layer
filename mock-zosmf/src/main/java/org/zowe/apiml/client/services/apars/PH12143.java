@@ -10,7 +10,6 @@
 package org.zowe.apiml.client.services.apars;
 
 import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +43,9 @@ public class PH12143 implements Apar {
                 Map<String, String> headers = (Map<String, String>) parameters[4];
 
                 String authorization = headers.get("authorization");
+                if (authorization == null || authorization.isEmpty()) {
+                    return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+                }
 
                 byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
                 String credentials = new String(decoded);
@@ -58,6 +60,8 @@ public class PH12143 implements Apar {
                 }
             } else if (calledMethod.equals("verify")) {
                 // TODO Implement the valid behavior.
+            } else if (calledMethod.equals("delete")) {
+                return Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
             }
         }
 
