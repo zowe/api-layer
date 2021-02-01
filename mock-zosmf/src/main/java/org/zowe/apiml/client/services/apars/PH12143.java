@@ -10,9 +10,11 @@
 package org.zowe.apiml.client.services.apars;
 
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.zowe.apiml.client.services.versions.Apar;
 
 import javax.servlet.http.Cookie;
@@ -23,18 +25,17 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.util.*;
 
+@Component
 public class PH12143 implements Apar {
     @Value("${zosmf.username}")
-    private String[] usernames;
+    private List<String> usernames;
     @Value("${zosmf.password}")
-    private String[] passwords;
+    private List<String> passwords;
 
     @Override
     public Optional<ResponseEntity<?>> apply(Object... parameters) {
         String calledService = (String) parameters[0];
-        // Not relevant for this APAR
         String calledMethod = (String) parameters[1];
-        // Not relevant for this APAR.
         Optional<ResponseEntity<?>> previousResult = (Optional<ResponseEntity<?>>) parameters[2];
 
         if (calledService.equals("authentication")) {
@@ -47,9 +48,6 @@ public class PH12143 implements Apar {
                 byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
                 String credentials = new String(decoded);
                 String[] piecesOfCredentials = credentials.split(":");
-
-                List<String> usernames = Arrays.asList(this.usernames);
-                List<String> passwords = Arrays.asList(this.passwords);
 
                 if (piecesOfCredentials.length > 0 && (usernames.contains(piecesOfCredentials[0]) &&
                     (passwords.contains(piecesOfCredentials[1]) || piecesOfCredentials[1].contains("PASS_TICKET")))

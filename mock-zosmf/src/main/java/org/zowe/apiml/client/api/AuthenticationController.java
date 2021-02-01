@@ -37,7 +37,6 @@ public class AuthenticationController {
         HttpServletResponse response,
         @RequestHeader Map<String, String> headers
     ) {
-        // TODO: Distinguish verify and authenticate?
         return authentication.process("authentication","create",response, headers);
     }
 

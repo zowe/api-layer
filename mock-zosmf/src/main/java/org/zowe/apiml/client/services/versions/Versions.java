@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.client.services.versions;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.zowe.apiml.client.services.apars.PHBase;
 
 import java.util.ArrayList;
@@ -16,12 +18,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class Versions {
-    private final Apars apars = new Apars();
-
+    private final Apars apars;
     private final Map<String, List<Apar>> aparsAppliedForVersion = new HashMap<>();
 
-    public Versions() {
+    @Autowired
+    public Versions(Apars apars) {
+        this.apars = apars;
         ArrayList<Apar> baseApars = new ArrayList<>();
         baseApars.add(new PHBase());
 

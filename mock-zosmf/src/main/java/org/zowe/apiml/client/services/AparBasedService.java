@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.client.services;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +24,15 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class AparBasedService {
     @Value("${zosmf.baseVersion}")
     String baseVersion;
     @Value("${zosmf.appliedApars}")
     String[] appliedApars;
 
-    private final Versions versions = new Versions();
+    @Autowired
+    private final Versions versions;
 
     public ResponseEntity<?> process(String calledService, String calledMethods, HttpServletResponse response, Map<String, String> headers) {
         List<Apar> applied = versions.fullSetOfApplied(baseVersion, appliedApars);
