@@ -172,8 +172,15 @@ public class InMemoryStorageTest {
 
         String oldestKey = "oldestKey";
         underTest = new InMemoryStorage(config);
-        underTest.create(serviceId, new KeyValue(oldestKey, "willFit", serviceId, "1"));
-        underTest.create(serviceId, new KeyValue("key1", "willFit", serviceId, "2"));
+
+        KeyValue keyValue1 = new KeyValue(oldestKey, "willFit", "1");
+        keyValue1.setServiceId(serviceId);
+
+        KeyValue keyValue2 = new KeyValue("key1", "willFit", "2");
+        keyValue2.setServiceId(serviceId);
+
+        underTest.create(serviceId, keyValue1);
+        underTest.create(serviceId, keyValue2);
 
         assertThrows(StorageException.class, () -> {
             underTest.read(serviceId, oldestKey);

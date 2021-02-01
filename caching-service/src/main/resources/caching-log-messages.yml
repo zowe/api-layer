@@ -57,6 +57,13 @@ messages:
         reason: "The storage space is full."
         action: "Disable the 'rejected' eviction strategy."
 
+    -   key: org.zowe.apiml.cache.payloadTooLarge
+        number: ZWECS135
+        type: ERROR
+        text: "The record size is over the limit. Key '%s' cannot be added in the cache."
+        reason: "The size of the record is bigger than the limit."
+        action: "Reinstall Zowe with different per record configuration or store smaller record"
+
 
     # Service specific messages (700 - 799)
     -   key: org.zowe.apiml.cache.gatewayUnavailable

@@ -76,7 +76,7 @@ class SuccessfulQueryHandlerTest {
         if (keyPair != null) {
             privateKey = keyPair.getPrivate();
         }
-        ZosmfService zosmfService = new ZosmfService(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper());
+        ZosmfService zosmfService = new ZosmfService(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper(),applicationContext);
         AuthenticationService authenticationService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             discoveryClient, restTemplate, cacheManager, new CacheUtils()
