@@ -59,7 +59,7 @@ public class MockedAuthenticationServiceContext {
             getAuthConfigurationProperties(),
             getDiscoveryClient(),
             getRestTemplate(),
-            AuthenticationServiceTest.securityObjectMapper
+            AuthenticationServiceTest.securityObjectMapper,applicationContext
         );
     }
 
