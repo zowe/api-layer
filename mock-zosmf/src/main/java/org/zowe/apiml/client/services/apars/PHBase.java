@@ -42,7 +42,7 @@ public class PHBase implements Apar {
         }
 
         if (calledService.equals("files")) {
-            Map<String, String> headers = (Map<String, String>) parameters[3];
+            Map<String, String> headers = (Map<String, String>) parameters[4];
 
             return datasets(headers);
         }
