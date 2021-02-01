@@ -83,15 +83,6 @@ export default class ServiceTab extends Component {
             }
         }
 
-        let apiIds = "";
-        if(currentService && currentService.apiIds) {
-            currentService.apiIds.forEach(apiId => {
-                apiIds += (apiIds ? ", " : "") + apiId;
-            });
-        }
-
-        let sso = currentService.sso ? 'supported' : 'not supported';
-
         return (
             <React.Fragment>
                 {invalidService && (
@@ -104,9 +95,9 @@ export default class ServiceTab extends Component {
                 <Shield title={message}>
                     {selectedService !== null && (
                         <React.Fragment>
-                            <div style={{ background: '#ffff' }}>
-                                <div style={{ margin: '20px 0px 0px 55px', background: '#ffff', width: '100vh' }}>
-                                    <Text element="h2" color="#3b4151" fontWeight="bold">
+                            <div class="serviceTab">
+                                <div class="header">
+                                    <Text element="h2">
                                         {selectedService.title}
                                     </Text>
                                     {hasHomepage && (
@@ -137,51 +128,28 @@ export default class ServiceTab extends Component {
                                     )}
                                     <br />
                                     <br />
-                                    <Tooltip
-                                        key={selectedService.baseUrl}
-                                        content="The instance URL for this service"
-                                        placement="bottom"
-                                    >
-                                        <Text style={{ fontSize: '13px' }}>Instance URL: {selectedService.baseUrl}</Text>
-                                    </Tooltip>
-                                    <br/>
-                                    <Tooltip
-                                        key={basePath}
-                                        content="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
-                                        placement="bottom"
-                                    >
-                                        <Text style={{ fontSize: '13px' }}>API Base Path: {basePath}</Text>
-                                    </Tooltip>
-                                    <br/>
-                                    <Tooltip
-                                        key={selectedService.serviceId}
-                                        content="The identifier for this service"
-                                        placement="bottom"
-                                    >
-                                        <Text style={{ fontSize: '13px' }}>Service ID: {selectedService.serviceId}</Text>
-                                    </Tooltip>
-
-                                    <br/>
-                                    <Tooltip
-                                        key={selectedService.sso}
-                                        content="SSO support"
-                                        placement="bottom"
-                                    >
-                                        <Text style={{ fontSize: '13px' }}>SSO: {sso}</Text>
-                                    </Tooltip>
-                                    <br/>
-                                    <Tooltip
-                                        key={selectedService.apiIds}
-                                        content="API IDs of service"
-                                        placement="bottom"
-                                    >
-                                        <Text style={{ fontSize: '13px' }}>API ID: {apiIds}</Text>
-                                    </Tooltip>
+                                    <div class="apiInfo-item">
+                                        <Tooltip
+                                            key={basePath}
+                                            content="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
+                                            placement="bottom"
+                                        >
+                                            <Text><label for="apiBasePath">API Base Path:</label><span id="apiBasePath">{basePath}</span></Text>
+                                        </Tooltip>
+                                        <br/>
+                                        <Tooltip
+                                            key={selectedService.serviceId}
+                                            content="The identifier for this service"
+                                            placement="bottom"
+                                        >
+                                            <Text style={{ fontSize: '13px' }}><label for="serviceId">Service ID:</label><span id="serviceId">{selectedService.serviceId}</span></Text>
+                                        </Tooltip>
+                                    </div>
 
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
 
                                 </div>
-                                <div className="tabs-container" style={{width: '100%'}}>
+                                <div class="tabs-container" style={{width: '100%'}}>
                                     {apiVersions}
                                 </div>
                             {selectedVersion !== 'diff' ? 

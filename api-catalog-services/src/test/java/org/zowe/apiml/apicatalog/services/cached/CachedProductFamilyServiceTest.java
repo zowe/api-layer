@@ -29,11 +29,7 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
@@ -43,6 +39,8 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class CachedProductFamilyServiceTest {
+
+    private static final String SERVICE_ID = "service_test_id";
 
     private int id = 0;
 
@@ -55,6 +53,70 @@ class CachedProductFamilyServiceTest {
 
     @Mock
     private CachedServicesService cachedServicesService;
+
+    private Application createApp(String serviceId, InstanceInfo...instanceInfos) {
+        Application application = new Application(serviceId);
+        for (InstanceInfo instanceInfo : instanceInfos) {
+            application.addInstance(instanceInfo);
+            service.saveContainerFromInstance(serviceId, instanceInfo);
+        }
+        return application;
+    }
+
+    private InstanceInfo getStandardInstance(String serviceId,
+                                             InstanceInfo.InstanceStatus status,
+                                             HashMap<String, String> metadata) {
+        return InstanceInfo.Builder.newBuilder()
+                .setInstanceId(serviceId + (id++))
+                .setAppName(serviceId)
+                .setStatus(status)
+                .setHostName("localhost")
+                .setHomePageUrl(null, "https://localhost:8080/")
+                .setVIPAddress(serviceId)
+                .setMetadata(metadata)
+                .build();
+    }
+
+    private InstanceInfo createApp(String serviceId, String catalogId, Map.Entry<String, String>...otherMetadata) {
+        return createApp(serviceId, catalogId, InstanceInfo.InstanceStatus.UP, otherMetadata);
+    }
+
+    private InstanceInfo createApp(
+            String serviceId, String catalogId, InstanceInfo.InstanceStatus status,
+            Map.Entry<String, String>...otherMetadata
+    ) {
+        return createApp(
+                serviceId, catalogId, "Title", "Description", "1.0.0", status,
+                otherMetadata);
+    }
+
+    private InstanceInfo createApp(
+            String serviceId, String catalogId, String catalogVersion, String title,
+            Map.Entry<String, String>...otherMetadata
+    ) {
+        return createApp(
+                serviceId, catalogId, title, "Description", catalogVersion, InstanceInfo.InstanceStatus.UP,
+                otherMetadata);
+    }
+
+    private InstanceInfo createApp(String serviceId,
+                                   String catalogId,
+                                   String catalogTitle,
+                                   String catalogDescription,
+                                   String catalogVersion,
+                                   InstanceInfo.InstanceStatus status,
+                                   Map.Entry<String, String>...otherMetadata) {
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put(CATALOG_ID, catalogId);
+        metadata.put(CATALOG_TITLE, catalogTitle);
+        metadata.put(CATALOG_DESCRIPTION, catalogDescription);
+        metadata.put(CATALOG_VERSION, catalogVersion);
+        for (Map.Entry<String, String> entry : otherMetadata) {
+            metadata.put(entry.getKey(), entry.getValue());
+        }
+
+        return getStandardInstance(serviceId, status, metadata);
+    }
 
     @BeforeEach
     void setup() {
@@ -377,111 +439,59 @@ class CachedProductFamilyServiceTest {
         assertEquals(instance.getHomePageUrl(), actualService.getHomePageUrl());
     }
 
-    private InstanceInfo getStandardInstance(String serviceId,
-                                             InstanceInfo.InstanceStatus status,
-                                             HashMap<String, String> metadata) {
-        return InstanceInfo.Builder.newBuilder()
-            .setInstanceId(serviceId + (id++))
-            .setAppName(serviceId)
-            .setStatus(status)
-            .setHostName("localhost")
-            .setHomePageUrl(null, "https://localhost:8080/")
-            .setVIPAddress(serviceId)
-            .setMetadata(metadata)
-            .build();
-    }
-
-    private InstanceInfo createApp(String serviceId, String catalogId, Map.Entry<String, String>...otherMetadata) {
-        return createApp(serviceId, catalogId, InstanceInfo.InstanceStatus.UP, otherMetadata);
-    }
-
-    private InstanceInfo createApp(
-        String serviceId, String catalogId, InstanceInfo.InstanceStatus status,
-        Map.Entry<String, String>...otherMetadata
-    ) {
-        return createApp(
-            serviceId, catalogId, "Title", "Description", "1.0.0", status,
-            otherMetadata);
-    }
-
-    private InstanceInfo createApp(
-            String serviceId, String catalogId, String catalogVersion, String title,
-            Map.Entry<String, String>...otherMetadata
-    ) {
-        return createApp(
-            serviceId, catalogId, title, "Description", catalogVersion, InstanceInfo.InstanceStatus.UP,
-            otherMetadata);
-    }
-
-    private InstanceInfo createApp(String serviceId,
-                                   String catalogId,
-                                   String catalogTitle,
-                                   String catalogDescription,
-                                   String catalogVersion,
-                                   InstanceInfo.InstanceStatus status,
-                                   Map.Entry<String, String>...otherMetadata) {
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put(CATALOG_ID, catalogId);
-        metadata.put(CATALOG_TITLE, catalogTitle);
-        metadata.put(CATALOG_DESCRIPTION, catalogDescription);
-        metadata.put(CATALOG_VERSION, catalogVersion);
-        for (Map.Entry<String, String> entry : otherMetadata) {
-            metadata.put(entry.getKey(), entry.getValue());
-        }
-
-        return getStandardInstance(serviceId, status, metadata);
-    }
-
     @Test
     void testGivenMultipleApiIds_whenCalculateContainerServiceValues_thenGroupThem() {
-        APIContainer apiContainer = new APIContainer();
-        apiContainer.addService(new APIService("service"));
-
-        Application application = new Application();
-        application.addInstance(createApp("service", "catalog1", Pair.of("apiml.apiInfo.api-v1.apiId", "api1")));
-        application.addInstance(createApp("service", "catalog2", Pair.of("apiml.apiInfo.api-v1.apiId", "api2")));
-        application.addInstance(createApp("service", "catalog3"));
-        doReturn(application).when(cachedServicesService).getService("service");
-
+        Application application = createApp(
+            SERVICE_ID,
+            createApp(SERVICE_ID, "catalog1",
+                Pair.of("apiml.apiInfo.api-v1.apiId", "api1"),
+                Pair.of("apiml.apiInfo.api-v1.version", "1.0.0"),
+                Pair.of("apiml.apiInfo.api-v2.apiId", "api2"),
+                Pair.of("apiml.apiInfo.api-v2.version", "2"),
+                Pair.of("apiml.apiInfo.api-v3.apiId", "api3")
+            )
+        );
+        doReturn(application).when(cachedServicesService).getService(SERVICE_ID);
+        APIContainer apiContainer = service.retrieveContainer(SERVICE_ID);
         service.calculateContainerServiceValues(apiContainer);
 
         APIService apiService = apiContainer.getServices().iterator().next();
-        assertNotNull(apiService.getApiIds());
-        assertEquals(2, apiService.getApiIds().size());
-        assertTrue(apiService.getApiIds().contains("api1"));
-        assertTrue(apiService.getApiIds().contains("api2"));
+        assertNotNull(apiService.getApiId());
+        assertEquals(3, apiService.getApiId().size());
+        assertEquals("api1", apiService.getApiId().get("v1"));
+        assertEquals("api2", apiService.getApiId().get("v2"));
+        assertEquals("api3", apiService.getApiId().get("default"));
     }
 
     @Test
     void testGivenSsoAndNonSsoInstances_whenCalculateContainerServiceValues_thenNonSso() {
-        APIContainer apiContainer = new APIContainer();
-        apiContainer.setSso(true);
-        apiContainer.addService(new APIService("service"));
-
-        Application application = new Application();
-        application.addInstance(createApp("service", "catalog1", Pair.of(AUTHENTICATION_SCHEME, "bypass")));
-        application.addInstance(createApp("service", "catalog2", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt")));
-        doReturn(application).when(cachedServicesService).getService("service");
-
+        Application application = createApp(
+            SERVICE_ID,
+            createApp(SERVICE_ID, "catalog1", Pair.of(AUTHENTICATION_SCHEME, "bypass")),
+            createApp(SERVICE_ID, "catalog2", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"))
+        );
+        doReturn(application).when(cachedServicesService).getService(SERVICE_ID);
+        APIContainer apiContainer = service.retrieveContainer(SERVICE_ID);
         service.calculateContainerServiceValues(apiContainer);
 
         assertFalse(apiContainer.isSso());
-        assertFalse(apiContainer.getServices().iterator().next().isSso());
+        for (APIService apiService : apiContainer.getServices()) {
+            assertFalse(apiService.isSsoAllInstances());
+        }
     }
 
     @Test
     void testGivenSsoInstances_whenCalculateContainerServiceValues_thenSso() {
-        APIContainer apiContainer = new APIContainer();
-        apiContainer.addService(new APIService("service"));
-
-        Application application = new Application();
-        application.addInstance(createApp("service", "catalog1", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt")));
-        doReturn(application).when(cachedServicesService).getService("service");
-
+        InstanceInfo instanceInfo = createApp(SERVICE_ID, "catalog1", Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
+        doReturn(createApp(SERVICE_ID, instanceInfo)).when(cachedServicesService).getService(SERVICE_ID);
+        APIContainer apiContainer = service.retrieveContainer(SERVICE_ID);
         service.calculateContainerServiceValues(apiContainer);
 
         assertTrue(apiContainer.isSso());
-        assertTrue(apiContainer.getServices().iterator().next().isSso());
+        for (APIService apiService : apiContainer.getServices()) {
+            assertTrue(apiService.isSso());
+            assertTrue(apiService.isSsoAllInstances());
+        }
     }
 
 }

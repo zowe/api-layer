@@ -326,6 +326,12 @@ public class CachedProductFamilyService {
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
         String apiBasePath = getApiBasePath(instanceInfo);
+        Map<String, String> apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().collect(
+            Collectors.toMap(
+                apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : "v" + apiInfo.getMajorVersion(),
+                ApiInfo::getApiId
+            )
+        );
         return new APIService(
             instanceInfo.getAppName().toLowerCase(),
             instanceInfo.getMetadata().get(SERVICE_TITLE),
@@ -333,7 +339,10 @@ public class CachedProductFamilyService {
             secureEnabled,
             instanceInfo.getHomePageUrl(),
             instanceHomePage,
-            apiBasePath);
+            apiBasePath,
+            isSso(instanceInfo),
+            apiId
+        );
     }
 
     /**
@@ -398,16 +407,9 @@ public class CachedProductFamilyService {
         List<InstanceInfo> instancies = application.getInstances();
         boolean isUp = instancies.stream().anyMatch(i -> InstanceInfo.InstanceStatus.UP.equals(i.getStatus()));
         boolean isSso = instancies.stream().allMatch(this::isSso);
-        Set<String> apiIds = instancies.stream()
-                .map(i -> metadataParser.parseApiInfo(i.getMetadata()))
-                .flatMap(List::stream)
-                .map(ApiInfo::getApiId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
 
         apiService.setStatus(isUp ? "UP" : "DOWN");
-        apiService.setSso(isSso);
-        apiService.setApiIds(apiIds);
+        apiService.setSsoAllInstances(isSso);
 
         return isUp;
     }
@@ -442,7 +444,7 @@ public class CachedProductFamilyService {
             if (update(apiService)) {
                 activeServicesCount ++;
             }
-            isSso &= apiService.isSso();
+            isSso &= apiService.isSsoAllInstances();
         }
 
         setStatus(apiContainer, servicesCount, activeServicesCount);

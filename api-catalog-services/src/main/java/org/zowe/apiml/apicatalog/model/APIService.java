@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 @Data
 @EqualsAndHashCode(of = {"serviceId"})
@@ -56,11 +56,14 @@ public class APIService implements Serializable {
     @ApiModelProperty(notes = "The available API versions for this service")
     private List<String> apiVersions;
 
-    @ApiModelProperty(notes = "The SSO support for all instances")
+    @ApiModelProperty(notes = "The SSO support for this instance")
     private boolean sso;
 
-    @ApiModelProperty(notes = "The API IDs for this service")
-    private Set<String> apiIds;
+    @ApiModelProperty(notes = "The SSO support for all instances")
+    private boolean ssoAllInstances;
+
+    @ApiModelProperty(notes = "The API ID for this service")
+    private Map<String, String> apiId;
 
     public APIService(String serviceId) {
         this.serviceId = serviceId;
@@ -68,7 +71,7 @@ public class APIService implements Serializable {
     }
 
     public APIService(String serviceId, String title, String description, boolean secured,
-                      String baseUrl, String homePageUrl, String basePath) {
+                      String baseUrl, String homePageUrl, String basePath, boolean sso, Map<String, String> apiId) {
         this.serviceId = serviceId;
         this.title = title;
         this.description = description;
@@ -78,6 +81,8 @@ public class APIService implements Serializable {
         this.homePageUrl = homePageUrl;
         this.basePath = basePath;
         this.apiDoc = null;
+        this.sso = sso;
+        this.apiId = apiId;
     }
 
 }
