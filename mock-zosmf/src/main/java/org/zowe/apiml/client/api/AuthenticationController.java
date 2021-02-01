@@ -29,7 +29,7 @@ public class AuthenticationController {
     @RequestMapping(value = "/zosmf/services/authenticate", produces = "application/json; charset=utf-8", method = RequestMethod.DELETE)
     public ResponseEntity<?> logout(HttpServletResponse response,
                                     @RequestHeader Map<String, String> headers) {
-        return authentication.process("authentication","delete",response, headers);
+        return authentication.process("authentication", "delete", response, headers);
     }
 
     @RequestMapping(value = "/zosmf/services/authenticate", produces = "application/json; charset=utf-8", method = RequestMethod.POST)
@@ -37,7 +37,7 @@ public class AuthenticationController {
         HttpServletResponse response,
         @RequestHeader Map<String, String> headers
     ) {
-        return authentication.process("authentication","create",response, headers);
+        return authentication.process("authentication", "create", response, headers);
     }
 
     @RequestMapping(value = "/jwt/ibm/api/zOSMFBuilder/**", produces = "application/json; charset=utf-8", method = RequestMethod.GET)

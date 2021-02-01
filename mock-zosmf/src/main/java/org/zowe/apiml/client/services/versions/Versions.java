@@ -34,7 +34,8 @@ public class Versions {
     }
 
     public List<Apar> baselineForVersion(String version) {
-        return aparsAppliedForVersion.get(version);
+        // New list to avoid changes in aparsAppliedForVersion
+        return new ArrayList<>(aparsAppliedForVersion.get(version));
     }
 
     public List<Apar> fullSetOfApplied(String baseVersion, String[] appliedApars) {

@@ -57,17 +57,14 @@ public class PH12143 implements Apar {
                     return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
                 }
             } else if (calledMethod.equals("verify")) {
-                // Implement the valid behavior.
+                // TODO Implement the valid behavior.
             }
         }
 
         return previousResult;
     }
 
-    private ResponseEntity<?> validJwtResponse(
-        HttpServletResponse response,
-        String username
-    ) {
+    private ResponseEntity<?> validJwtResponse(HttpServletResponse response, String username) {
         Date current = new Date();
         final int HOUR = 3600000;
         Date expiration = new Date(current.getTime() + 8 * HOUR);
