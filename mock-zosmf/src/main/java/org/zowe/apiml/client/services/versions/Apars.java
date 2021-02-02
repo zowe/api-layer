@@ -9,8 +9,6 @@
  */
 package org.zowe.apiml.client.services.versions;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.zowe.apiml.client.services.apars.NoApar;
 import org.zowe.apiml.client.services.apars.PH12143;
 import org.zowe.apiml.client.services.apars.PH30398;
@@ -20,17 +18,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
 public class Apars {
     private final Map<String, Apar> availableApars = new HashMap<>();
 
-    @Autowired
-    public Apars(PH12143 ph12143, PH30398 ph30398) {
-        availableApars.put("PH12143", ph12143);
+    public Apars(List<String> usernames, List<String> passwords) {
+        availableApars.put("PH12143", new PH12143(usernames, passwords));
         availableApars.put("PH17867", new NoApar());
         availableApars.put("PH28507", new NoApar());
         availableApars.put("PH28532", new NoApar());
-        availableApars.put("PH30398", ph30398);
+        availableApars.put("PH30398", new PH30398(usernames, passwords));
     }
 
     public List<Apar> getApars(String[] names) {

@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class PHBase implements Apar {
-    private List<String> usernames;
-    private List<String> passwords;
+    private final List<String> usernames;
+    private final List<String> passwords;
 
     public PHBase(List<String> usernames, List<String> passwords) {
         this.usernames = usernames;
@@ -44,11 +44,11 @@ public class PHBase implements Apar {
 
             String authorization = headers.get("authorization");
             if (authorization == null || authorization.isEmpty() || !containsValidUser(authorization)) {
-                return validInfo(HttpStatus.OK);
+                return validInfo();
             }
 
             setLtpaToken(response);
-            return validInfo(HttpStatus.OK);
+            return validInfo();
         }
 
         if (calledService.equals("files")) {
@@ -139,7 +139,7 @@ public class PHBase implements Apar {
         response.addCookie(ltpaToken);
     }
 
-    private Optional<ResponseEntity<?>> validInfo(HttpStatus status) {
+    private Optional<ResponseEntity<?>> validInfo() {
         return Optional.of(new ResponseEntity<>("{\n" +
             "  \"zos_version\": \"04.27.00\",\n" +
             "  \"zosmf_port\": \"1443\",\n" +
@@ -152,6 +152,6 @@ public class PHBase implements Apar {
             "  \"zosmf_saf_realm\": \"SAFRealm\",\n" +
             "  \"zosmf_full_version\": \"27.0\",\n" +
             "  \"api_version\": \"1\"\n" +
-            "}", status));
+            "}", HttpStatus.OK));
     }
 }

@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.client.services.versions;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.client.services.apars.PHBase;
@@ -22,23 +21,19 @@ import java.util.Map;
 
 @Component
 public class Versions {
-    private final Apars apars;
+    private Apars apars;
     private final Map<String, List<Apar>> aparsAppliedForVersion = new HashMap<>();
 
-    // Verify what values are these points.
+    // TODO Verify what values are these points.
     @Value("${zosmf.username}")
     private List<String> usernames;
     @Value("${zosmf.password}")
     private List<String> passwords;
 
-
-    @Autowired
-    public Versions(Apars apars) {
-        this.apars = apars;
-    }
-
     @PostConstruct
     void setBaseApars() {
+        apars = new Apars(usernames, passwords);
+
         ArrayList<Apar> baseApars = new ArrayList<>();
         baseApars.add(new PHBase(usernames, passwords));
 

@@ -10,10 +10,8 @@
 package org.zowe.apiml.client.services.apars;
 
 import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.zowe.apiml.client.services.versions.Apar;
 
 import javax.servlet.http.Cookie;
@@ -24,12 +22,14 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.util.*;
 
-@Component
 public class PH12143 implements Apar {
-    @Value("${zosmf.username}")
-    private List<String> usernames;
-    @Value("${zosmf.password}")
-    private List<String> passwords;
+    private final List<String> usernames;
+    private final List<String> passwords;
+
+    public PH12143(List<String> usernames, List<String> passwords) {
+        this.usernames = usernames;
+        this.passwords = passwords;
+    }
 
     @Override
     public Optional<ResponseEntity<?>> apply(Object... parameters) {
@@ -58,9 +58,14 @@ public class PH12143 implements Apar {
                 } else {
                     return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
                 }
-            } else if (calledMethod.equals("verify")) {
+            }
+
+            if (calledMethod.equals("verify")) {
                 // TODO Implement the valid behavior.
-            } else if (calledMethod.equals("delete")) {
+                return Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+            }
+
+            if (calledMethod.equals("delete")) {
                 return Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
             }
         }

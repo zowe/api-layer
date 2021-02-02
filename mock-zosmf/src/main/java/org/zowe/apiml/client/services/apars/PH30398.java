@@ -9,22 +9,22 @@
  */
 package org.zowe.apiml.client.services.apars;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.zowe.apiml.client.services.versions.Apar;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Component
 public class PH30398 implements Apar {
-    @Value("${zosmf.username}")
-    private List<String> usernames;
-    @Value("${zosmf.password}")
-    private List<String> passwords;
+    private final List<String> usernames;
+    private final List<String> passwords;
+
+    public PH30398(List<String> usernames, List<String> passwords) {
+        this.usernames = usernames;
+        this.passwords = passwords;
+    }
 
     @Override
     public Optional<ResponseEntity<?>> apply(Object... parameters) {
