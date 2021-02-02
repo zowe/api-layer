@@ -12,34 +12,99 @@ package org.zowe.apiml.client.services;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.client.services.apars.PH12143;
-import org.zowe.apiml.client.services.apars.PH30398;
-import org.zowe.apiml.client.services.versions.Apars;
+import org.mockito.ArgumentMatchers;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.zowe.apiml.client.services.versions.Apar;
 import org.zowe.apiml.client.services.versions.Versions;
 
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 class AparBasedServiceTest {
+    private static final String BASE_VERSION = "2.4";
+    private static final String[] APPLIED_APARS = new String[]{"PH12143"};
+    private static final String SERVICE = "service";
+    private static final String METHOD = "method";
+    private static final Map<String, String> HEADERS = new HashMap<>();
+
+    private Apar apar;
+    private MockHttpServletResponse response;
+    private Versions versions;
     private AparBasedService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new AparBasedService(new Versions(new Apars(new PH12143(), new PH30398())));
+        response = new MockHttpServletResponse();
+        apar = mock(Apar.class);
+        versions = mock(Versions.class);
+        underTest = new AparBasedService(BASE_VERSION, APPLIED_APARS, versions);
     }
 
     @Nested
     class whenProcessing {
         @Test
-        void givenInvalidVersion_InternalServerErrorIsReturned() {
+        void givenInvalidVersion_InternalServerErrorIsReturned() throws Exception {
+            ResponseEntity<?> expected = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            when(versions.fullSetOfApplied(any(), any())).thenThrow(new Exception("bad version"));
 
+            ResponseEntity<?> result = underTest.process(SERVICE, METHOD, response, HEADERS);
+            assertThat(result, is(expected));
         }
 
         @Test
-        void givenValidVersionButInvalidApars_resultsProperlyHandled() {
+        void givenOneAparVersion_returnResultOfApply() throws Exception {
+            Optional<ResponseEntity<?>> expectedResult = Optional.of(new ResponseEntity<>(HttpStatus.OK));
+            ResponseEntity<?> expected = expectedResult.get();
+            when(versions.fullSetOfApplied(any(), any())).thenReturn(Collections.singletonList(apar));
+            when(apar.apply(ArgumentMatchers.<Object>any())).thenReturn(expectedResult);
 
+            ResponseEntity<?> result = underTest.process(SERVICE, METHOD, response, HEADERS);
+            assertThat(result, is(expected));
         }
 
         @Test
-        void givenValidVersionAndApars_resultIsProperlyHandled() {
+        void givenTwoAparVersions_returnLastResultOfApply() throws Exception {
+            Optional<ResponseEntity<?>> expectedResult = Optional.of(new ResponseEntity<>(HttpStatus.OK));
+            ResponseEntity<?> expected = expectedResult.get();
 
+            Apar apar2 = mock(Apar.class);
+            List<Apar> aparList = new ArrayList<>();
+            aparList.add(apar);
+            aparList.add(apar2);
+            when(versions.fullSetOfApplied(any(), any())).thenReturn(aparList);
+            when(apar.apply(ArgumentMatchers.<Object>any())).thenReturn(Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT)));
+            when(apar2.apply(ArgumentMatchers.<Object>any())).thenReturn(expectedResult);
+
+            ResponseEntity<?> result = underTest.process(SERVICE, METHOD, response, HEADERS);
+            assertThat(result, is(expected));
+        }
+
+        @Test
+        void givenNoAparVersions_returnInternalServerError() throws Exception {
+            ResponseEntity<?> expected = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+
+            when(versions.fullSetOfApplied(any(), any())).thenReturn(Collections.emptyList());
+
+            ResponseEntity<?> result = underTest.process(SERVICE, METHOD, response, HEADERS);
+            assertThat(result, is(expected));
+        }
+
+        @Test
+        void givenAparsThatReturnLastResult_returnInternalServerError() throws Exception {
+            ResponseEntity<?> expected = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+
+            when(versions.fullSetOfApplied(any(), any())).thenReturn(Collections.singletonList(apar));
+            when(apar.apply(ArgumentMatchers.<Object>any())).thenReturn(Optional.empty());
+
+            ResponseEntity<?> result = underTest.process(SERVICE, METHOD, response, HEADERS);
+            assertThat(result, is(expected));
         }
     }
 }

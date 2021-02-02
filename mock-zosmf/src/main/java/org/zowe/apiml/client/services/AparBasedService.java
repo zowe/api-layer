@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.client.services;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -24,27 +23,33 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class AparBasedService {
-    @Value("${zosmf.baseVersion}")
-    String baseVersion;
-    @Value("${zosmf.appliedApars}")
-    String[] appliedApars;
-
-    @Autowired
+    private final String baseVersion;
+    private final String[] appliedApars;
     private final Versions versions;
 
+    @Autowired
+    public AparBasedService(@Value("${zosmf.baseVersion}") String baseVersion, @Value("${zosmf.appliedApars}") String[] appliedApars, Versions versions) {
+        this.baseVersion = baseVersion;
+        this.appliedApars = appliedApars;
+        this.versions = versions;
+    }
+
     public ResponseEntity<?> process(String calledService, String calledMethods, HttpServletResponse response, Map<String, String> headers) {
-        List<Apar> applied = versions.fullSetOfApplied(baseVersion, appliedApars);
+        try {
+            List<Apar> applied = versions.fullSetOfApplied(baseVersion, appliedApars);
 
-        Optional<ResponseEntity<?>> result = Optional.empty();
-        for (Apar apar : applied) {
-            result = apar.apply(calledService, calledMethods, result, response, headers);
-        }
+            Optional<ResponseEntity<?>> result = Optional.empty();
+            for (Apar apar : applied) {
+                result = apar.apply(calledService, calledMethods, result, response, headers);
+            }
 
-        if (result.isPresent()) {
-            return result.get();
-        } else {
+            if (result.isPresent()) {
+                return result.get();
+            } else {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
