@@ -35,14 +35,14 @@ public class Versions {
         aparsAppliedForVersion.put("2.4", baseApars);
     }
 
-    public List<Apar> baselineForVersion(String version) throws Exception{
+    public List<Apar> baselineForVersion(String version) throws Exception {
         List<Apar> appliedForVersion = aparsAppliedForVersion.get(version);
 
         if (appliedForVersion == null) {
             throw new Exception("Invalid version '" + version + "' given for baseline APARs");
         }
 
-        // New list to avoid changes in aparsAppliedForVersion caused by fullSetOfApplied
+        // New list to avoid changes in aparsAppliedForVersion in case result is mutated
         return new ArrayList<>(appliedForVersion);
     }
 

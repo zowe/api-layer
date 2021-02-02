@@ -137,7 +137,7 @@ class PH12143Test {
     }
 
     @Test
-    void givenServiceNotHandled_whenApplyApar_thenReturnOriginalResult(){
+    void givenServiceNotHandled_whenApplyApar_thenReturnOriginalResult() {
         Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
         Map<String, String> headers = new HashMap<>();
