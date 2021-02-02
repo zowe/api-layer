@@ -18,7 +18,6 @@ const args = {
     serviceId: process.argv[5] || "hwexpress",
     // On z/OS, you need to use certificates encoded in EBCDIC
     // The APIML stores such certificates in files with `-ebcdic` suffix
-    // pfx: process.argv[7] || "../keystore/localhost/localhost.keystore.p12",
 };
 
 /**
@@ -49,10 +48,10 @@ function startHttpsService() {
     app.get("/info", (req, res) => res.json({ serviceId: serviceId, nodeJsVersion: process.version }));
     app.get("/status", (req, res) => res.json({ status: "UP" }));
 
-    // Static resoures (contains Swagger JSON document with API documentation):
+    // Static resources (contains Swagger JSON document with API documentation):
     app.use(express.static("static"));
 
-    // Start HTTPS server:
+    // Start HTTPS server and register to Discovery Service:
     tlsOptions = apiLayerService.tlsOptions;
     const httpsServer = https.createServer(tlsOptions, app);
     httpsServer.listen(args.port, function () {
