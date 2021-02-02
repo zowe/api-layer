@@ -14,7 +14,7 @@ import org.zowe.apiml.client.services.versions.Apar;
 
 import java.util.Optional;
 
-public class DefaultApar implements Apar {
+public class NoApar implements Apar {
     @Override
     public Optional<ResponseEntity<?>> apply(Object... parameters) {
         return (Optional<ResponseEntity<?>>) parameters[2];

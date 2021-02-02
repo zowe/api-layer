@@ -11,7 +11,7 @@ package org.zowe.apiml.client.services.versions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.client.services.apars.DefaultApar;
+import org.zowe.apiml.client.services.apars.NoApar;
 import org.zowe.apiml.client.services.apars.PH12143;
 import org.zowe.apiml.client.services.apars.PH30398;
 
@@ -27,9 +27,9 @@ public class Apars {
     @Autowired
     public Apars(PH12143 ph12143, PH30398 ph30398) {
         availableApars.put("PH12143", ph12143);
-        availableApars.put("PH17867", new DefaultApar());
-        availableApars.put("PH28507", new DefaultApar());
-        availableApars.put("PH28532", new DefaultApar());
+        availableApars.put("PH17867", new NoApar());
+        availableApars.put("PH28507", new NoApar());
+        availableApars.put("PH28532", new NoApar());
         availableApars.put("PH30398", ph30398);
     }
 
