@@ -9,11 +9,11 @@
  */
 package org.zowe.apiml.client.services.versions;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.client.services.apars.PHBase;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,18 +21,12 @@ import java.util.Map;
 
 @Component
 public class Versions {
-    private Apars apars;
+    private final Apars apars;
     private final Map<String, List<Apar>> aparsAppliedForVersion = new HashMap<>();
 
-    // TODO Verify what values are these points.
-    @Value("${zosmf.username}")
-    private List<String> usernames;
-    @Value("${zosmf.password}")
-    private List<String> passwords;
-
-    @PostConstruct
-    void setBaseApars() {
-        apars = new Apars(usernames, passwords);
+    @Autowired
+    public Versions(@Value("${zosmf.username}") List<String> usernames, @Value("${zosmf.password}") List<String> passwords) {
+        this.apars = new Apars(usernames, passwords);
 
         ArrayList<Apar> baseApars = new ArrayList<>();
         baseApars.add(new PHBase(usernames, passwords));
@@ -41,12 +35,18 @@ public class Versions {
         aparsAppliedForVersion.put("2.4", baseApars);
     }
 
-    public List<Apar> baselineForVersion(String version) {
-        // New list to avoid changes in aparsAppliedForVersion
-        return new ArrayList<>(aparsAppliedForVersion.get(version));
+    public List<Apar> baselineForVersion(String version) throws Exception{
+        List<Apar> appliedForVersion = aparsAppliedForVersion.get(version);
+
+        if (appliedForVersion == null) {
+            throw new Exception("Invalid version '" + version + "' given for baseline APARs");
+        }
+
+        // New list to avoid changes in aparsAppliedForVersion caused by fullSetOfApplied
+        return new ArrayList<>(appliedForVersion);
     }
 
-    public List<Apar> fullSetOfApplied(String baseVersion, String[] appliedApars) {
+    public List<Apar> fullSetOfApplied(String baseVersion, String[] appliedApars) throws Exception {
         List<Apar> baseline = baselineForVersion(baseVersion);
         baseline.addAll(apars.getApars(appliedApars));
         return baseline;
