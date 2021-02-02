@@ -1,0 +1,36 @@
+package org.zowe.apiml.client.services.versions;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+
+class AparsTest {
+    private Apars underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new Apars(Collections.singletonList("USER"), Collections.singletonList("validPassword"));
+    }
+
+    @Test
+    void givenAparsList_whenGetApars_returnAparsMatchedInList() {
+        List<String> knownApars = new ArrayList<>();
+        knownApars.add("PH12143");
+        knownApars.add("PH17867");
+        knownApars.add("PH28507");
+        knownApars.add("PH28532");
+        knownApars.add("PH30398");
+
+        List<String> aparsToSearchFor = new ArrayList<>(knownApars);
+        aparsToSearchFor.add("bad apar");
+
+        List<Apar> result = underTest.getApars(aparsToSearchFor);
+
+        assertEquals(result.size(), knownApars.size());
+    }
+}
