@@ -83,6 +83,8 @@ export default class ServiceTab extends Component {
             }
         }
 
+        let sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
+
         return (
             <React.Fragment>
                 {invalidService && (
@@ -142,7 +144,16 @@ export default class ServiceTab extends Component {
                                             content="The identifier for this service"
                                             placement="bottom"
                                         >
-                                            <Text style={{ fontSize: '13px' }}><label for="serviceId">Service ID:</label><span id="serviceId">{selectedService.serviceId}</span></Text>
+                                            <Text><label for="serviceId">Service ID:</label><span id="serviceId">{selectedService.serviceId}</span></Text>
+                                        </Tooltip>
+                                        <br/>
+                                        <Tooltip
+                                            key={selectedService.ssoAllInstances}
+                                            content="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
+                                            placement="bottom"
+                                        >
+                                            <Text><label htmlFor="sso">SSO:</label><span
+                                                id="sso">{sso}</span></Text>
                                         </Tooltip>
                                     </div>
 

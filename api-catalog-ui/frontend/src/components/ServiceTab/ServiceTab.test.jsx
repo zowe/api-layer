@@ -20,7 +20,8 @@ const selectedService = {
     "basePath": "/service/api/v1",
     "apiDoc": null,
     "apiVersions": ["v1", "v2"],
-    "defaultApiVersion": ["v1"]
+    "defaultApiVersion": ["v1"],
+    "ssoAllInstances": true
 }
 
 const tiles = {
@@ -56,9 +57,10 @@ describe('>>> ServiceTab component tests', () => {
 
         checkValueItem(serviceTab, 1,"API Base Path:", "/service/api/v1");
         checkValueItem(serviceTab, 2,"Service ID:", "gateway");
-        expect(serviceTab.find('Text').at(3).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
-        expect(serviceTab.find('Text').at(4).prop('children')).toEqual('v1');
-        expect(serviceTab.find('Text').at(5).prop('children')).toEqual('v2');
+        checkValueItem(serviceTab, 3,"SSO:", "supported");
+        expect(serviceTab.find('Text').at(4).prop('children')).toEqual("API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.");
+        expect(serviceTab.find('Text').at(5).prop('children')).toEqual('v1');
+        expect(serviceTab.find('Text').at(6).prop('children')).toEqual('v2');
     });
 
     it('should change selected version when clicking v2 api version', () => {

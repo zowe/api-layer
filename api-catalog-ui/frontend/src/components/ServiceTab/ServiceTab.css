@@ -34,6 +34,8 @@ div.content-description-container > div > div:nth-child(2) > div {
 
 .apiInfo-item label {
     margin-right: 5px;
+    display: inline-block;
+    width: 100px;
 }
 
 a.nav-tab {

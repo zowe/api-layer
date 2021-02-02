@@ -5,7 +5,6 @@ import InstanceInfo from "./InstanceInfo";
 const selectedService = {
     "serviceId": "gateway",
     "baseUrl": "https://localhost:6000",
-    "sso": true,
     "apiId": {
         "v1" : "zowe.apiml.gateway"
     }
@@ -22,10 +21,8 @@ describe('>>> InstanceInfo component tests', () => {
 
         expect(instanceInfo.find('label').at(0).prop('children')).toEqual("Instance URL:");
         expect(instanceInfo.find('span').at(0).prop('children')).toEqual("https://localhost:6000");
-        expect(instanceInfo.find('label').at(1).prop('children')).toEqual("SSO:");
-        expect(instanceInfo.find('span').at(1).prop('children')).toEqual("supported");
-        expect(instanceInfo.find('label').at(2).prop('children')).toEqual("API ID:");
-        expect(instanceInfo.find('span').at(2).prop('children')).toEqual("zowe.apiml.gateway");
+        expect(instanceInfo.find('label').at(1).prop('children')).toEqual("API ID:");
+        expect(instanceInfo.find('span').at(1).prop('children')).toEqual("zowe.apiml.gateway");
     })
 
     it('No selected version, use defaultApiVersion', () => {
@@ -37,7 +34,7 @@ describe('>>> InstanceInfo component tests', () => {
         const instanceInfo = shallow(<InstanceInfo selectedService={selectedService} selectService={selectService}/>);
 
 
-        expect(instanceInfo.find('span').at(2).prop('children')).toEqual("zowe.apiml.gateway");
+        expect(instanceInfo.find('span').at(1).prop('children')).toEqual("zowe.apiml.gateway");
     });
 
     it('No selected version and not set defaultApiVersion use key default', () => {
@@ -49,7 +46,7 @@ describe('>>> InstanceInfo component tests', () => {
         const instanceInfo = shallow(<InstanceInfo selectedService={selectedService} selectService={selectService}/>);
 
 
-        expect(instanceInfo.find('span').at(2).prop('children')).toEqual("zowe.apiml.gateway");
+        expect(instanceInfo.find('span').at(1).prop('children')).toEqual("zowe.apiml.gateway");
     });
 
 })
