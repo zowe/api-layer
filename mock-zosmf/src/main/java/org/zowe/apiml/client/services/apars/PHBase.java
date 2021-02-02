@@ -15,10 +15,20 @@ import org.zowe.apiml.client.services.versions.Apar;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class PHBase implements Apar {
+    private List<String> usernames;
+    private List<String> passwords;
+
+    public PHBase(List<String> usernames, List<String> passwords) {
+        this.usernames = usernames;
+        this.passwords = passwords;
+    }
+
     @Override
     public Optional<ResponseEntity<?>> apply(Object... parameters) {
         String calledService = (String) parameters[0];
@@ -28,17 +38,17 @@ public class PHBase implements Apar {
             return Optional.of(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         }
 
-        if (calledService.equals("info")) {
+        if (calledService.equals("information")) {
             HttpServletResponse response = (HttpServletResponse) parameters[3];
             Map<String, String> headers = (Map<String, String>) parameters[4];
 
             String authorization = headers.get("authorization");
-            if(authorization == null || authorization.isEmpty()) {
-                // TODO: Verify the authorization
-                return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+            if (authorization == null || authorization.isEmpty() || !containsValidUser(authorization)) {
+                return validInfo(HttpStatus.OK);
             }
 
-            return validInfo(response);
+            setLtpaToken(response);
+            return validInfo(HttpStatus.OK);
         }
 
         if (calledService.equals("files")) {
@@ -48,6 +58,15 @@ public class PHBase implements Apar {
         }
 
         return previousResult;
+    }
+
+    private boolean containsValidUser(String authorization) {
+        byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
+        String credentials = new String(decoded);
+        String[] piecesOfCredentials = credentials.split(":");
+
+        return piecesOfCredentials.length > 0 && (usernames.contains(piecesOfCredentials[0]) &&
+            (passwords.contains(piecesOfCredentials[1]) || piecesOfCredentials[1].contains("PASS_TICKET")));
     }
 
     private Optional<ResponseEntity<?>> datasets(Map<String, String> headers) {
@@ -110,7 +129,7 @@ public class PHBase implements Apar {
             "}", HttpStatus.OK));
     }
 
-    private Optional<ResponseEntity<?>> validInfo(HttpServletResponse response) {
+    private void setLtpaToken(HttpServletResponse response) {
         Cookie ltpaToken = new Cookie("LtpaToken2", "paMypL7yRO/IBroQtro21/uSC2LTrJvOuYebHaPc6JAUNWQ7lEHHt1l3CYeXa/nP6aKLFHTuyWy3qlRXvt10PjVdVl+7Q+wavgIsro7odz+PvTaJBp/+r0AH+DHYcdZikKe8dytGYZRH2c2gw8Gv3PliDIMd1iPEazY4HeYTU5VCFM5cBJkeIoTXCfL5ud9wTzrkY2c4h1PQPtx+hYCF4kEpiVkqIypVwjQLzWdJGV1Ihz7NqH/UU9MMJRXY1xMqsWZSibs2fX5MVK77dnyBrNYjVXA7PqYL6U/v5/1UCvuYQ/iEU9+Uy95J+xFEsnTX");
 
         ltpaToken.setSecure(true);
@@ -118,7 +137,9 @@ public class PHBase implements Apar {
         ltpaToken.setPath("/");
 
         response.addCookie(ltpaToken);
+    }
 
+    private Optional<ResponseEntity<?>> validInfo(HttpStatus status) {
         return Optional.of(new ResponseEntity<>("{\n" +
             "  \"zos_version\": \"04.27.00\",\n" +
             "  \"zosmf_port\": \"1443\",\n" +
@@ -131,6 +152,6 @@ public class PHBase implements Apar {
             "  \"zosmf_saf_realm\": \"SAFRealm\",\n" +
             "  \"zosmf_full_version\": \"27.0\",\n" +
             "  \"api_version\": \"1\"\n" +
-            "}", HttpStatus.OK));
+            "}", status));
     }
 }

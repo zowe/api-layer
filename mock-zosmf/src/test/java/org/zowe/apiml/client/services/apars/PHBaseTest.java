@@ -19,9 +19,7 @@ import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,7 +31,12 @@ class PHBaseTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new PHBase();
+        List<String> usernames = new ArrayList<>();
+        usernames.add("USER");
+        List<String> passwords = new ArrayList<>();
+        passwords.add("validPassword");
+
+        underTest = new PHBase(usernames, passwords);
     }
 
     @Nested
@@ -41,7 +44,7 @@ class PHBaseTest {
         @Test
         void givenNothing_Ltpa2TokenIsntReturned() {
             HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-            underTest.apply("info", "", Optional.empty(), mockResponse, new HashMap<>());
+            underTest.apply("information", "", Optional.empty(), mockResponse, new HashMap<>());
 
             verify(mockResponse, never()).addCookie(any());
         }
@@ -51,7 +54,7 @@ class PHBaseTest {
             HttpServletResponse mockResponse = mock(HttpServletResponse.class);
             Map<String, String> headers = new HashMap<>();
             headers.put("authorization", Base64.encodeBase64String("USER:validPassword".getBytes()));
-            underTest.apply("info", "", Optional.empty(), mockResponse, headers);
+            underTest.apply("information", "", Optional.empty(), mockResponse, headers);
 
             ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
             verify(mockResponse).addCookie(called.capture());
@@ -80,7 +83,8 @@ class PHBaseTest {
             Map<String, String> authorization = new HashMap<>();
             authorization.put("cookie", "LtpaToken2=randomValidValue");
 
-            Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), authorization);
+            Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), null,
+                authorization);
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();
@@ -89,7 +93,8 @@ class PHBaseTest {
 
         @Test
         void givenInvalidAuthorization_unauthorizedIsReturned() {
-            Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), new HashMap<>());
+            Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), null,
+                new HashMap<>());
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();

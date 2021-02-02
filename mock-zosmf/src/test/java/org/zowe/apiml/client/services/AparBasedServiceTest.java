@@ -12,13 +12,17 @@ package org.zowe.apiml.client.services;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.client.services.apars.PH12143;
+import org.zowe.apiml.client.services.apars.PH30398;
+import org.zowe.apiml.client.services.versions.Apars;
+import org.zowe.apiml.client.services.versions.Versions;
 
 class AparBasedServiceTest {
     private AparBasedService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new AparBasedService();
+        underTest = new AparBasedService(new Versions(new Apars(new PH12143(), new PH30398())));
     }
 
     @Nested
