@@ -29,7 +29,7 @@ public class Apars {
         availableApars.put("PH30398", new PH30398(usernames, passwords));
     }
 
-    public List<Apar> getApars(String[] names) {
+    public List<Apar> getApars(List<String> names) {
         ArrayList<Apar> result = new ArrayList<>();
         for (String name : names) {
             if (availableApars.containsKey(name)) {

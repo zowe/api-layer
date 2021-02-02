@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 class AparBasedServiceTest {
     private static final String BASE_VERSION = "2.4";
-    private static final String[] APPLIED_APARS = new String[]{"PH12143"};
+    private static final List<String> APPLIED_APARS = Collections.singletonList("PH12143");
     private static final String SERVICE = "service";
     private static final String METHOD = "method";
     private static final Map<String, String> HEADERS = new HashMap<>();

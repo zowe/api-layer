@@ -46,7 +46,7 @@ public class Versions {
         return new ArrayList<>(appliedForVersion);
     }
 
-    public List<Apar> fullSetOfApplied(String baseVersion, String[] appliedApars) throws Exception {
+    public List<Apar> fullSetOfApplied(String baseVersion, List<String> appliedApars) throws Exception {
         List<Apar> baseline = baselineForVersion(baseVersion);
         baseline.addAll(apars.getApars(appliedApars));
         return baseline;

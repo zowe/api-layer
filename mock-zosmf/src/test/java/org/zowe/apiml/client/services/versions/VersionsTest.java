@@ -38,7 +38,7 @@ class VersionsTest {
 
     @Test
     void givenVersionAndAppliedApar_whenGetAppliedApars_thenReturnAllApars() throws Exception {
-        List<Apar> result = underTest.fullSetOfApplied("2.3", new String[]{"PH12143"});
+        List<Apar> result = underTest.fullSetOfApplied("2.3", Collections.singletonList("PH12143"));
         assertTrue(result.size() > 1);
         assertTrue(result.stream().anyMatch(a -> a instanceof PH12143));
     }

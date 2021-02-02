@@ -25,11 +25,11 @@ import java.util.Optional;
 @Service
 public class AparBasedService {
     private final String baseVersion;
-    private final String[] appliedApars;
+    private final List<String> appliedApars;
     private final Versions versions;
 
     @Autowired
-    public AparBasedService(@Value("${zosmf.baseVersion}") String baseVersion, @Value("${zosmf.appliedApars}") String[] appliedApars, Versions versions) {
+    public AparBasedService(@Value("${zosmf.baseVersion}") String baseVersion, @Value("${zosmf.appliedApars}") List<String> appliedApars, Versions versions) {
         this.baseVersion = baseVersion;
         this.appliedApars = appliedApars;
         this.versions = versions;
