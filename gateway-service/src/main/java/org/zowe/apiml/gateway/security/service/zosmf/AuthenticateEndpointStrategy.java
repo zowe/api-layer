@@ -20,6 +20,9 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.AbstractZosmfService.ZOSMF_CSRF_HEADER;
 
+/**
+ * Strategy to validate token through Authentication endpoint of zOSMF
+ */
 @RequiredArgsConstructor
 public class AuthenticateEndpointStrategy implements TokenValidationStrategy {
 

@@ -10,6 +10,10 @@
 
 package org.zowe.apiml.gateway.security.service.zosmf;
 
+/**
+ * General strategy for token validation
+ *
+ */
 public interface TokenValidationStrategy {
     boolean validate(ZosmfService zosmfService, String token);
 }
