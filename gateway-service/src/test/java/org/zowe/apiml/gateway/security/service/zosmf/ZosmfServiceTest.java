@@ -70,7 +70,7 @@ class ZosmfServiceTest {
             applicationContext,
             strategy);
 
-        if (strategy!=null) {
+        if (strategy != null) {
             doReturn(false).when(strategy).validate(any(), any());
         }
 
