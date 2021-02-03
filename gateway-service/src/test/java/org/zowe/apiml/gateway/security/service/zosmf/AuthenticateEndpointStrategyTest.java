@@ -15,12 +15,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticateEndpointStrategyTest {
@@ -31,20 +33,51 @@ class AuthenticateEndpointStrategyTest {
 
     @Test
     void validatesTokenWhenEndpointResponds200() {
-
         doReturn(true).when(zosmfServiceMock).loginEndpointExists();
         doReturn("https://hellothere.com").when(zosmfServiceMock).getURI(anyString());
-
         ResponseEntity re = mock(ResponseEntity.class);
         doReturn(HttpStatus.OK).when(re).getStatusCode();
-
         doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
         assertThat(underTest.validate(zosmfServiceMock, "TOKN"), is(true));
     }
 
-    //TODO: test that it can validate JWT, LTPA ??
-    // unexpected http status code
-    // runtime exceptions
-    // valid invalid tokens
+    @Test
+    void notValidatesTokenWhenEndpointDoesntExist() {
+        doReturn(false).when(zosmfServiceMock).loginEndpointExists();
+
+        assertThat(underTest.validate(zosmfServiceMock, "TOKN"), is(false));
+    }
+
+    @Test
+    void throwsWhenEndpointResponds401() {
+        doReturn(true).when(zosmfServiceMock).loginEndpointExists();
+        doReturn("https://hellothere.com").when(zosmfServiceMock).getURI(anyString());
+        ResponseEntity re = mock(ResponseEntity.class);
+        doReturn(HttpStatus.UNAUTHORIZED).when(re).getStatusCode();
+        doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+        assertThrows(TokenNotValidException.class, () -> underTest.validate(zosmfServiceMock, "TOKN"));
+    }
+
+    @Test
+    void throwsWhenEndpointRespondsSomeOtherRC() {
+        doReturn(true).when(zosmfServiceMock).loginEndpointExists();
+        doReturn("https://hellothere.com").when(zosmfServiceMock).getURI(anyString());
+        ResponseEntity re = mock(ResponseEntity.class);
+        doReturn(HttpStatus.I_AM_A_TEAPOT).when(re).getStatusCode();
+        doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+        assertThrows(ServiceNotAccessibleException.class, () -> underTest.validate(zosmfServiceMock, "TOKN"));
+    }
+
+    @Test
+    void throwsRuntimeExceptionFromCall() {
+        doReturn(true).when(zosmfServiceMock).loginEndpointExists();
+        doReturn("https://hellothere.com").when(zosmfServiceMock).getURI(anyString());
+        doThrow(RuntimeException.class).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+        assertThrows(RuntimeException.class, () -> underTest.validate(zosmfServiceMock, "TOKN"));
+    }
+
 }

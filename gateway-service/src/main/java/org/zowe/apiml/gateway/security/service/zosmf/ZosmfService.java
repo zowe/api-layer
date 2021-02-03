@@ -236,37 +236,11 @@ public class ZosmfService extends AbstractZosmfService {
         return meAsProxy.authenticationEndpointExists(HttpMethod.DELETE, null);
     }
 
-//    public boolean validate(TokenType type, String token) {
-//        if (loginEndpointExists()) {
-//            final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
-//
-//            final HttpHeaders headers = new HttpHeaders();
-//            headers.add(ZOSMF_CSRF_HEADER, "");
-//            headers.add(HttpHeaders.COOKIE, type.getCookieName() + "=" + token);
-//
-//            try {
-//                ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
-//                    new HttpEntity<>(null, headers), String.class);
-//
-//                if (re.getStatusCode().is2xxSuccessful())
-//                    return true;
-//                if (re.getStatusCodeValue() == 401) {
-//                    throw new TokenNotValidException("Token is not valid.");
-//                }
-//                apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
-//                throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
-//            } catch (RuntimeException re) {
-//                throw handleExceptionOnCall(url, re);
-//            }
-//        } else {
-//            return false;
-//        }
-//    }
-
     public boolean validate(String token) {
         try {
             return tokenValidationStrategy.validate(this, token);
         } catch (RuntimeException re) {
+            //TODO handle returns
             throw handleExceptionOnCall(null ,re);
         }
     }

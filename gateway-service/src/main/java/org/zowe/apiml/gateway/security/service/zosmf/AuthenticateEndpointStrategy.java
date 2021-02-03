@@ -45,7 +45,7 @@ public class AuthenticateEndpointStrategy implements TokenValidationStrategy {
 
             if (re.getStatusCode().is2xxSuccessful())
                 return true;
-            if (re.getStatusCodeValue() == 401) {
+            if (HttpStatus.UNAUTHORIZED.equals(re.getStatusCode())) {
                 throw new TokenNotValidException("Token is not valid.");
             }
             apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
