@@ -1,0 +1,93 @@
+micronaut:
+  application:
+    name: ${apiml.service.serviceId}
+  server:
+      port: ${apiml.service.port}
+      context-path: /${apiml.service.serviceId}
+  ssl:
+      enabled: true
+      key-store:
+          password: ${apiml.service.ssl[0].keyPassword}
+          type: ${apiml.service.ssl[0].keyStoreType}
+          path: file:${apiml.service.ssl[0].keyStore}
+      key:
+          alias: ${apiml.service.ssl[0].keyAlias}
+          password: ${apiml.service.ssl[0].keyPassword}
+      trust-store:
+          password: ${apiml.service.ssl[0].trustStorePassword}
+          path: file:${apiml.service.ssl[0].trustStore}
+          type: ${apiml.service.ssl[0].trustStoreType}
+      port: ${apiml.service.port}
+      ciphers: ${apiml.service.ssl[0].ciphers}
+      protocol: ${apiml.service.ssl[0].protocol}
+
+apiml:
+    service:
+        preferIpAddress: false
+        serviceId: micronautdiscoverableclient
+        title: Service Micronaut Onboarding Enabler sample application API
+        description: Sample API services to demonstrate Micronaut Onboarding Enabler
+
+        discoveryServiceUrls: https://localhost:10011/eureka/
+
+        scheme: https
+
+        hostname: localhost
+        port: 10016
+        baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+        contextPath: /${apiml.service.serviceId}
+
+        homePageRelativeUrl: ${apiml.service.contextPath}
+        statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
+        healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
+        routes:
+            - gatewayUrl: api/v1
+              serviceUrl: /micronaut
+        apiInfo:
+            - apiId: org.zowe.sampleservice
+              version: 1.0.0
+              gatewayUrl: api/v1
+
+        catalog:
+           - tile:
+                id: cademoapps
+                title: Sample API Mediation Layer Applications
+                description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+                version: 1.0.1
+        ssl:
+          - enabled: true
+            verifySslCertificatesOfServices: true
+            protocol: TLSv1.2
+            keyStoreType: PKCS12
+            trustStoreType: PKCS12
+
+            keyAlias: localhost
+            keyPassword: password
+            keyStore: ../keystore/localhost/localhost.keystore.p12
+            keyStorePassword: password
+            trustStore: ../keystore/localhost/localhost.truststore.p12
+            trustStorePassword: password
+            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+
+        customMetadata:
+            apiml:
+                enableUrlEncodedCharacters: true
+                gatewayPort: 10010
+                gatewayAuthEndpoint: /api/v1/gateway/auth
+                corsEnabled: false
+
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: https://localhost:10011/eureka/
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info
+    health:
+        defaults:
+            enabled: false
+

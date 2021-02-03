@@ -9,22 +9,21 @@
  */
 package org.zowe.apiml;
 
-import io.micronaut.runtime.EmbeddedApplication;
+import io.micronaut.context.ApplicationContext;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
+import org.zowe.apiml.config.DiscoveryClientConfig;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 
-import javax.inject.Inject;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @MicronautTest
 public class OnboardingEnablerMicronautTest {
 
-    @Inject
-    EmbeddedApplication application;
-
     @Test
-    void testItWorks() {
-        Assertions.assertTrue(application.isRunning());
+    void test() {
+        ApplicationContext ctx = ApplicationContext.run(ApplicationContext.class);
+        ApiMediationServiceConfig apiMediationServiceConfig = ctx.getBean(DiscoveryClientConfig.class);
+        assertEquals("micronautdiscoverableclient", apiMediationServiceConfig.getServiceId());
     }
-
 }
