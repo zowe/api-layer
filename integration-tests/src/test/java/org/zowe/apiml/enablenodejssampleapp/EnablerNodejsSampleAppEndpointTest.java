@@ -13,7 +13,7 @@ package org.zowe.apiml.enablenodejssampleapp;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.categories.AdditionalLocalTest;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -22,7 +22,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 
-@AdditionalLocalTest
+@TestsNotMeantForZowe
 public class EnablerNodejsSampleAppEndpointTest {
 
     private static final String APP_INFO_PATH = "/hwexpress/api/v1/info/";
