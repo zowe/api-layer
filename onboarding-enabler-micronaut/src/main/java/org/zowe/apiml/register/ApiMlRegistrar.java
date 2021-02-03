@@ -17,8 +17,6 @@ import io.micronaut.runtime.event.annotation.EventListener;
 import org.zowe.apiml.config.DiscoveryClientConfig;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.exception.ServiceDefinitionException;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.log.ApimlLogger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
