@@ -114,6 +114,7 @@ For guidelines to onboard services, see [Zowe Docs#Onboarding Overview](https://
 | Sample Service - Java Enabler         | [README](onboarding-enabler-java-sample-app/README.md)                                                                                                                                  |
 |       Sample Service - Spring Enabler | [README](onboarding-enabler-spring-v1-sample-app/README.md)                                                                                                                            |
 |       Sample Service - Micronaut Enabler | [README](onboarding-enabler-micronaut-sample-app/README.md)                                                                                                                            |
+|       Sample Service - NodeJS Enabler | [README](onboarding-enabler-nodejs-sample-app/README.md)                                                                                                                            |
 
 ## Contact Us
 
