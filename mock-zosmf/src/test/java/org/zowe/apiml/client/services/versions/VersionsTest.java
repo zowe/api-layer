@@ -28,7 +28,7 @@ class VersionsTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new Versions(USERNAMES, PASSWORDS);
+        underTest = new Versions(USERNAMES, PASSWORDS, "keystore/localhost/localhost.keystore.p12");
     }
 
     @ParameterizedTest

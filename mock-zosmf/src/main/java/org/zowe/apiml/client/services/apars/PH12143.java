@@ -26,9 +26,12 @@ public class PH12143 implements Apar {
     private final List<String> usernames;
     private final List<String> passwords;
 
-    public PH12143(List<String> usernames, List<String> passwords) {
+    private final String keystorePath;
+
+    public PH12143(List<String> usernames, List<String> passwords, String keystorePath) {
         this.usernames = usernames;
         this.passwords = passwords;
+        this.keystorePath = keystorePath;
     }
 
     @Override
@@ -107,7 +110,7 @@ public class PH12143 implements Apar {
     }
 
     private Key getKeyForSigning() {
-        try (FileInputStream keystore = new FileInputStream(new File("keystore/localhost/localhost.keystore.p12"))) {
+        try (FileInputStream keystore = new FileInputStream(new File(keystorePath))) {
             KeyStore ks = KeyStore.getInstance("PKCS12");
             ks.load(
                 keystore,

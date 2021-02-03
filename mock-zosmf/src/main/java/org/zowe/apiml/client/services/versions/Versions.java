@@ -25,8 +25,9 @@ public class Versions {
     private final Map<String, List<Apar>> aparsAppliedForVersion = new HashMap<>();
 
     @Autowired
-    public Versions(@Value("${zosmf.username}") List<String> usernames, @Value("${zosmf.password}") List<String> passwords) {
-        this.apars = new Apars(usernames, passwords);
+    public Versions(@Value("${zosmf.username}") List<String> usernames, @Value("${zosmf.password}") List<String> passwords,
+                    @Value("${zosmf.jwtKeyStorePath}") String jwtKeyStorePath) {
+        this.apars = new Apars(usernames, passwords, jwtKeyStorePath);
 
         ArrayList<Apar> baseApars = new ArrayList<>();
         baseApars.add(new PHBase(usernames, passwords));

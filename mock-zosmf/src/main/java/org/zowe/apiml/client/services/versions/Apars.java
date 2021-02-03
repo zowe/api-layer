@@ -21,8 +21,8 @@ import java.util.Map;
 public class Apars {
     private final Map<String, Apar> availableApars = new HashMap<>();
 
-    public Apars(List<String> usernames, List<String> passwords) {
-        availableApars.put("PH12143", new PH12143(usernames, passwords));
+    public Apars(List<String> usernames, List<String> passwords, String jwtKeystorePath) {
+        availableApars.put("PH12143", new PH12143(usernames, passwords, jwtKeystorePath));
         availableApars.put("PH17867", new NoApar());
         availableApars.put("PH28507", new NoApar());
         availableApars.put("PH28532", new NoApar());

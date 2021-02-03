@@ -35,7 +35,7 @@ class PH12143Test {
         List<String> usernames = Collections.singletonList(USERNAME);
         List<String> passwords = Collections.singletonList(PASSWORD);
 
-        underTest = new PH12143(usernames, passwords);
+        underTest = new PH12143(usernames, passwords, "../keystore/localhost/localhost.keystore.p12");
         mockResponse = new MockHttpServletResponse();
     }
 
@@ -97,7 +97,7 @@ class PH12143Test {
 
         @Test
         void givenValidUserAndPassword_thenReturnJwt() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             Map<String, String> headers = new HashMap<>();
             headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
@@ -108,7 +108,7 @@ class PH12143Test {
 
         @Test
         void givenValidUserAndPassticket_thenReturnJwt() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             Map<String, String> headers = new HashMap<>();
             headers.put("authorization", getAuthorizationHeader(USERNAME, "PASS_TICKET"));

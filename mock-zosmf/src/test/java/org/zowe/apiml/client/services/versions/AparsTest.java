@@ -23,7 +23,7 @@ class AparsTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new Apars(Collections.singletonList("USER"), Collections.singletonList("validPassword"));
+        underTest = new Apars(Collections.singletonList("USER"), Collections.singletonList("validPassword"), "keystore/localhost/localhost.keystore.p12");
     }
 
     @Test
