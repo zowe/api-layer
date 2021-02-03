@@ -45,9 +45,9 @@ instance:
     '@class': com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo
     name: MyOwn
   metadata:
-    apiml.catalog.tile.id: 'samplenodeservice'
-    apiml.catalog.tile.title: 'Zowe Sample Node Service'
-    apiml.catalog.tile.description: 'NodeJS Sample service running'
+    apiml.catalog.tile.id: 'cademoapps'
+    apiml.catalog.tile.title: 'Sample API Mediation Layer Applications'
+    apiml.catalog.tile.description: 'Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem'
     apiml.catalog.tile.version: '1.0.0'
     apiml.routes.api_v1.gatewayUrl: "api/v1"
     apiml.routes.api_v1.serviceUrl: "/api/v1"
