@@ -24,6 +24,7 @@ ext.projectsNeedLicense = [
     'onboarding-enabler-spring',
     'onboarding-enabler-micronaut',
     'onboarding-enabler-micronaut-sample-app',
+    'onboarding-enabler-nodejs',
     'zaas-client',
     'mock-zosmf'
 ]

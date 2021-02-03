@@ -42,6 +42,7 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | onboarding-enabler-java                  | APIML SDK - Java Enabler           |
 | onboarding-enabler-java-sample-app       | Sample Service - Java Enabler      |
 | onboarding-enabler-spring                | APIML SDK - Spring Enabler         |
+| onboarding-enabler-nodejs                | APIML SDK - NodeJS Enabler         |
 | passticket                               | Test - Passticket test tools       |
 | scripts                                  | Tool - Test and Build scripts      |
 | security-service-client-spring           | Library - Security Client          |

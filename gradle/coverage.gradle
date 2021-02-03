@@ -12,7 +12,6 @@ ext.javaProjectsWithUnitTests = [
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
     'onboarding-enabler-java-sample-app',
-    'onboarding-enabler-nodejs-sample-app',
     'security-module',
     'security-service-client-spring',
     'onboarding-enabler-micronaut',

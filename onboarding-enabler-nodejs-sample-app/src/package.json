@@ -1,14 +1,14 @@
 {
   "name": "helloworld-expressjs",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Hello World Service in Express",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/zowe/api-layer/helloworld-expressjs"
+    "url": "git+https://github.com/zowe/api-layer.git"
   },
   "author": "",
   "license": "EPL-2.0",
