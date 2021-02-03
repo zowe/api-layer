@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import javax.inject.Inject;
 
 @MicronautTest
-public class OnboardingEnablerMicronautTest {
+class OnboardingEnablerMicronautTest {
 
     @Inject
     EmbeddedApplication application;

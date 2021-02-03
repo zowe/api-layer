@@ -18,7 +18,7 @@ import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @MicronautTest
-public class OnboardingEnablerMicronautTest {
+class OnboardingEnablerMicronautTest {
 
     @Test
     void test() {
