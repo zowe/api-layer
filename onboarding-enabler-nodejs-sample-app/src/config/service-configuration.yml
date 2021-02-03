@@ -2,9 +2,9 @@ serviceId: hwexpress
 title: Hello World express REST API
 eureka:
   ssl: true
-  hostname: localhost
+  host: localhost
   ipAddress: 127.0.0.1
-  port: 10020
+  port: 10011
   servicePath: '/eureka/apps/'
 
 description: Hello World REST API Service implemented in Express and Node.js
