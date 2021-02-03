@@ -15,7 +15,6 @@ import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.eurekaservice.client.EurekaClientConfigProvider;
 import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
 import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
-import org.zowe.apiml.eurekaservice.client.impl.DiscoveryClientProvider;
 
 import javax.inject.Singleton;
 
@@ -31,28 +30,13 @@ public class DiscoveryClientFactory {
     @Requires(beans = EurekaClientProvider.class)
     @Singleton
     public ApiMediationClient apiMlClient(EurekaClientProvider eurekaClientProvider) {
-        if (eurekaClientProvider == null) {
-            return new ApiMediationClientImpl();
-        } else
-            return new ApiMediationClientImpl(eurekaClientProvider);
+        return new ApiMediationClientImpl(eurekaClientProvider);
     }
 
     @Requires(beans = {EurekaClientProvider.class, EurekaClientConfigProvider.class})
     @Singleton
     public ApiMediationClient apiMlClient(EurekaClientProvider eurekaClientProvider, EurekaClientConfigProvider eurekaClientConfigProvider) {
-        if (eurekaClientProvider != null) {
-            if (eurekaClientConfigProvider != null) {
-                return new ApiMediationClientImpl(eurekaClientProvider, eurekaClientConfigProvider);
-            } else {
-                return new ApiMediationClientImpl(eurekaClientProvider);
-            }
-        } else {
-            if (eurekaClientConfigProvider != null) {
-                return new ApiMediationClientImpl(new DiscoveryClientProvider(), eurekaClientConfigProvider);
-            } else {
-                return new ApiMediationClientImpl();
-            }
-        }
+        return new ApiMediationClientImpl(eurekaClientProvider, eurekaClientConfigProvider);
     }
 
 
