@@ -14,8 +14,8 @@ const apiLayerService = require("eureka-js-app");
 
 // Command-line arguments:
 const args = {
-    port: process.argv[2] || 10020,
-    serviceId: process.argv[5] || "hwexpress",
+    port: 10020,
+    serviceId: "hwexpress",
     // On z/OS, you need to use certificates encoded in EBCDIC
     // The APIML stores such certificates in files with `-ebcdic` suffix
 };
@@ -45,8 +45,8 @@ function startHttpsService() {
     app.get("/api/v1/hello", (req, res) => res.json({ greeting: "Hello World!" }));
 
     // Status and health endpoints for Eureka:
-    app.get("/info", (req, res) => res.json({ serviceId: serviceId, nodeJsVersion: process.version }));
-    app.get("/status", (req, res) => res.json({ status: "UP" }));
+    app.get("/api/v1/info", (req, res) => res.json({ serviceId: args.serviceId, nodeJsVersion: process.version }));
+    app.get("/api/v1/status", (req, res) => res.json({ status: "UP" }));
 
     // Static resources (contains Swagger JSON document with API documentation):
     app.use(express.static("static"));
