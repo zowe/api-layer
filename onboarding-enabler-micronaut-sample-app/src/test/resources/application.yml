@@ -33,7 +33,7 @@ apiml:
         scheme: https
 
         hostname: localhost
-        port: 10016
+        port: 10018
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
         contextPath: /${apiml.service.serviceId}
 
