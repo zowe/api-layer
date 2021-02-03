@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.CachingRequests;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
+import org.zowe.apiml.util.service.CachingService;
 
 import java.io.IOException;
 import java.net.URI;
