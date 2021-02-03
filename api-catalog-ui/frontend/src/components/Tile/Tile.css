@@ -50,6 +50,13 @@
     left: 0;
 }
 
+.grid-tile-sso {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+}
+
 .tile {
     text-align: left;
 }
