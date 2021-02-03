@@ -39,5 +39,4 @@ public class DiscoveryClientFactory {
         return new ApiMediationClientImpl(eurekaClientProvider, eurekaClientConfigProvider);
     }
 
-
 }

@@ -17,8 +17,8 @@ import io.micronaut.runtime.event.annotation.EventListener;
 import org.zowe.apiml.config.DiscoveryClientConfig;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -33,9 +33,6 @@ public class ApiMlRegistrar {
 
     @Inject
     ApiMediationClient apiMlClient;
-
-    @InjectApimlLogger
-    private ApimlLogger logger = ApimlLogger.empty();
 
     @EventListener
     @Retryable
