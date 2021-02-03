@@ -21,20 +21,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+//@MockitoSettings(strictness = Strictness.LENIENT)
 class ZosmfServiceTest {
 
     private static final String ZOSMF_ID = "zosmf";
@@ -44,14 +44,37 @@ class ZosmfServiceTest {
     private DiscoveryClient discovery = mock(DiscoveryClient.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
     ApplicationContext applicationContext = mock(ApplicationContext.class);
+    private TokenValidationStrategy tokenValidationStrategy = mock(TokenValidationStrategy.class);
+
     @Spy
     private ObjectMapper securityObjectMapper;
 
     private ZosmfService getZosmfServiceSpy() {
-        ZosmfService zosmfServiceObj = new ZosmfService(authConfigurationProperties, discovery, restTemplate, securityObjectMapper, applicationContext);
+        ZosmfService zosmfServiceObj = new ZosmfService(authConfigurationProperties,
+            discovery,
+            restTemplate,
+            securityObjectMapper,
+            applicationContext,
+            null);
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
         doReturn("http://zosmf:1433").when(zosmfService).getURI(ZOSMF_ID);
+        ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
+        return zosmfService;
+    }
+
+    private ZosmfService getZosmfServiceWithValidationStrategy(TokenValidationStrategy strategy) {
+        ZosmfService zosmfService = new ZosmfService(authConfigurationProperties,
+            discovery,
+            restTemplate,
+            securityObjectMapper,
+            applicationContext,
+            strategy);
+
+        if (strategy!=null) {
+            doReturn(false).when(strategy).validate(any(), any());
+        }
+
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
         return zosmfService;
     }
@@ -167,90 +190,97 @@ class ZosmfServiceTest {
         );
     }
 
-    @Test
-    void testValidateJWT() {
-        ZosmfService zosmfService = getZosmfServiceSpy();
-        doReturn(true).when(zosmfService).loginEndpointExists();
-        setResponseForValidateTest(HttpStatus.OK, "jwtToken=jwt");
-        zosmfService.validate(ZosmfService.TokenType.JWT, "jwt");
-    }
+//    @Test
+//    @Disabled //What is this test supposed to test?
+//    void testValidateJWT() {
+//        ZosmfService zosmfService = getZosmfServiceSpy();
+//        doReturn(true).when(zosmfService).loginEndpointExists();
+//        setResponseForValidateTest(HttpStatus.OK, "jwtToken=jwt");
+//        zosmfService.validate(ZosmfService.TokenType.JWT, "jwt");
+//    }
 
-    @Test
-    void testValidateLTPA() {
-        ZosmfService zosmfService = getZosmfServiceSpy();
-        doReturn(true).when(zosmfService).loginEndpointExists();
-        setResponseForValidateTest(HttpStatus.OK, "LtpaToken2=lt");
-        zosmfService.validate(ZosmfService.TokenType.LTPA, "lt");
-    }
+//    @Test
+//    @Disabled //What is this test supposed to test?
+//    void testValidateLTPA() {
+//        ZosmfService zosmfService = getZosmfServiceSpy();
+//        doReturn(true).when(zosmfService).loginEndpointExists();
+//        setResponseForValidateTest(HttpStatus.OK, "LtpaToken2=lt");
+//        zosmfService.validate(ZosmfService.TokenType.LTPA, "lt");
+//    }
 
-    @Test
-    void testValidateInvalidToken() {
-        ZosmfService zosmfService = getZosmfServiceSpy();
-        doReturn(true).when(zosmfService).loginEndpointExists();
-        setResponseForValidateTest(HttpStatus.UNAUTHORIZED, "jwtToken=jwt");
+//    @Test
+//    @Disabled //this should be part of TokenValidationStrategy
+//    void testValidateInvalidToken() {
+//        ZosmfService zosmfService = getZosmfServiceSpy();
+//
+//        // these are not needed as they are not called anymore
+//        //doReturn(true).when(zosmfService).loginEndpointExists();
+//        //setResponseForValidateTest(HttpStatus.UNAUTHORIZED, "jwtToken=jwt");
+//
+//        try {
+//            zosmfService.validate(ZosmfService.TokenType.JWT, "jwt");
+//        } catch (TokenNotValidException e) {
+//            assertEquals("Token is not valid.", e.getMessage());
+//        }
+//    }
 
-        try {
-            zosmfService.validate(ZosmfService.TokenType.JWT, "jwt");
-        } catch (TokenNotValidException e) {
-            assertEquals("Token is not valid.", e.getMessage());
-        }
-    }
+//    @Test
+//    @Disabled
+//    void testValidateUnexpectedHttpStatusCode() {
+//        ZosmfService zosmfService = getZosmfServiceSpy();
+//        doReturn(true).when(zosmfService).loginEndpointExists();
+//        setResponseForValidateTest(HttpStatus.I_AM_A_TEAPOT, "jwtToken=jwt");
+//
+//        try {
+//            zosmfService.validate(ZosmfService.TokenType.JWT, "jwt");
+//        } catch (ServiceNotAccessibleException e) {
+//            assertEquals("Could not get an access to z/OSMF service.", e.getMessage());
+//        }
+//    }
 
-    @Test
-    void testValidateUnexpectedHttpStatusCode() {
-        ZosmfService zosmfService = getZosmfServiceSpy();
-        doReturn(true).when(zosmfService).loginEndpointExists();
-        setResponseForValidateTest(HttpStatus.I_AM_A_TEAPOT, "jwtToken=jwt");
+//    /**
+//     * Mock the rest template exchange to expect desired authToken string and set the desired response status code
+//     * @param responseStatusCode HttpStatus code to be returned by rest template
+//     * @param authTokenHeaderValue  String representing auth cookie e.g "jwtToken=jt"
+//     */
+//    void setResponseForValidateTest(HttpStatus responseStatusCode, String authTokenHeaderValue) {
+//        HttpHeaders requestHeaders = new HttpHeaders();
+//        requestHeaders = addCSRFHeader(requestHeaders);
+//        requestHeaders.add(HttpHeaders.COOKIE, authTokenHeaderValue);
+//
+//        ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", new HttpHeaders(), responseStatusCode);
+//        doReturn(responseEntity).when(restTemplate).exchange(
+//            "http://zosmf:1433/zosmf/services/authenticate",
+//            HttpMethod.POST,
+//            new HttpEntity<>(null, requestHeaders),
+//            String.class
+//        );
+//    }
 
-        try {
-            zosmfService.validate(ZosmfService.TokenType.JWT, "jwt");
-        } catch (ServiceNotAccessibleException e) {
-            assertEquals("Could not get an access to z/OSMF service.", e.getMessage());
-        }
-    }
-
-    /**
-     * Mock the rest template exchange to expect desired authToken string and set the desired response status code
-     * @param responseStatusCode HttpStatus code to be returned by rest template
-     * @param authTokenHeaderValue  String representing auth cookie e.g "jwtToken=jt"
-     */
-    void setResponseForValidateTest(HttpStatus responseStatusCode, String authTokenHeaderValue) {
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders = addCSRFHeader(requestHeaders);
-        requestHeaders.add(HttpHeaders.COOKIE, authTokenHeaderValue);
-
-        ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", new HttpHeaders(), responseStatusCode);
-        doReturn(responseEntity).when(restTemplate).exchange(
-            "http://zosmf:1433/zosmf/services/authenticate",
-            HttpMethod.POST,
-            new HttpEntity<>(null, requestHeaders),
-            String.class
-        );
-    }
-
-    @Test
-    void testValidateRuntimeException() {
-        ZosmfService zosmfService = getZosmfServiceSpy();
-        doReturn(true).when(zosmfService).loginEndpointExists();
-
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders = addCSRFHeader(requestHeaders);
-        requestHeaders.add(HttpHeaders.COOKIE, "jwtToken=jwt");
-
-        RuntimeException exception = new RuntimeException("Runtime Exception");
-        doThrow(exception).when(restTemplate).exchange(
-            "http://zosmf:1433/zosmf/services/authenticate",
-            HttpMethod.POST,
-            new HttpEntity<>(null, requestHeaders),
-            String.class
-        );
-
-        try {
-            zosmfService.validate(ZosmfService.TokenType.JWT, "jwt");
-        } catch (RuntimeException e) {
-            assertEquals("Runtime Exception", e.getMessage());
-        }
-    }
+//    @Test
+//    @Disabled
+//    void testValidateRuntimeException() {
+//        ZosmfService zosmfService = getZosmfServiceSpy();
+//        doReturn(true).when(zosmfService).loginEndpointExists();
+//
+//        HttpHeaders requestHeaders = new HttpHeaders();
+//        requestHeaders = addCSRFHeader(requestHeaders);
+//        requestHeaders.add(HttpHeaders.COOKIE, "jwtToken=jwt");
+//
+//        RuntimeException exception = new RuntimeException("Runtime Exception");
+//        doThrow(exception).when(restTemplate).exchange(
+//            "http://zosmf:1433/zosmf/services/authenticate",
+//            HttpMethod.POST,
+//            new HttpEntity<>(null, requestHeaders),
+//            String.class
+//        );
+//
+//        try {
+//            zosmfService.validate(ZosmfService.TokenType.JWT, "jwt");
+//        } catch (RuntimeException e) {
+//            assertEquals("Runtime Exception", e.getMessage());
+//        }
+//    }
 
     @Test
     void testInvalidateJWT() {
@@ -269,6 +299,34 @@ class ZosmfServiceTest {
         );
 
         assertDoesNotThrow(() -> zosmfService.invalidate(ZosmfService.TokenType.JWT, "jwt"));
+    }
+
+    @Test
+    void handlesExceptionsFromValidationStrategy() {
+        ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(tokenValidationStrategy);
+
+        doThrow(RuntimeException.class).when(tokenValidationStrategy).validate(any(), anyString());
+        assertThrows(RuntimeException.class, () -> zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"));
+
+        doThrow(ResourceAccessException.class).when(tokenValidationStrategy).validate(any(), anyString());
+        assertThrows(ServiceNotAccessibleException.class, () -> zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"));
+
+        doThrow(HttpClientErrorException.Unauthorized.class).when(tokenValidationStrategy).validate(any(), anyString());
+        assertThrows(BadCredentialsException.class, () -> zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"));
+
+        doThrow(RestClientException.class).when(tokenValidationStrategy).validate(any(), anyString());
+        assertThrows(AuthenticationServiceException.class, () -> zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"));
+    }
+
+    @Test
+    void returnsResultFromValidationStrategy() {
+        ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(tokenValidationStrategy);
+
+        doReturn(true).when(tokenValidationStrategy).validate(any(), anyString());
+        assertThat(zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"), is(true));
+
+        doReturn(false).when(tokenValidationStrategy).validate(any(), anyString());
+        assertThat(zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"), is(false));
     }
 
     @Test
@@ -341,7 +399,7 @@ class ZosmfServiceTest {
 
     @Test
     void testReadTokenFromCookie() {
-        assertNull(new ZosmfService(null, null, null, null, null).readTokenFromCookie(null, null));
+        assertNull(new ZosmfService(null, null, null, null, null, null).readTokenFromCookie(null, null));
     }
 
     @Test
