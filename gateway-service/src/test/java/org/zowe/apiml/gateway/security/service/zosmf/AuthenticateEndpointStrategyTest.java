@@ -75,9 +75,9 @@ class AuthenticateEndpointStrategyTest {
     void throwsRuntimeExceptionFromCall() {
         doReturn(true).when(zosmfServiceMock).loginEndpointExists();
         doReturn("https://hellothere.com").when(zosmfServiceMock).getURI(anyString());
-        doThrow(RuntimeException.class).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+        doThrow(IllegalArgumentException.class).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
-        assertThrows(RuntimeException.class, () -> underTest.validate(zosmfServiceMock, "TOKN"));
+        assertThrows(IllegalArgumentException.class, () -> underTest.validate(zosmfServiceMock, "TOKN"));
     }
 
 }
