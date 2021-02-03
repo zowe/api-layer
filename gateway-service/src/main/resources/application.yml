@@ -55,8 +55,7 @@ apiml:
             enabled: false
             externalMapperUrl:
 
-        zosmf:
-            validation: authenticate
+
 
 spring:
     application:
