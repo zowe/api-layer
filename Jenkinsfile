@@ -98,7 +98,6 @@ pipeline {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
                         withSonarQubeEnv('sonarcloud-server') {
-                            sh 'npm run onboarding-enabler-nodejs-sample-app &'
                             sh './gradlew --info --scan build coverage runCITests runCITestsInternalPort -Pgradle.cache.push=true \
                                 -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} \
                                 -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword \
