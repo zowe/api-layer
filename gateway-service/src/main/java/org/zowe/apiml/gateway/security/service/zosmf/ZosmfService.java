@@ -263,7 +263,7 @@ public class ZosmfService extends AbstractZosmfService {
 //        }
 //    }
 
-    public boolean validate(TokenType type, String token) {
+    public boolean validate(String token) {
         try {
             return tokenValidationStrategy.validate(this, token);
         } catch (RuntimeException re) {

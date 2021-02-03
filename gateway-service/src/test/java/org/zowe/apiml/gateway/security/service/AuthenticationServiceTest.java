@@ -503,8 +503,9 @@ public class AuthenticationServiceTest {
         final String userId = "userIdSource";
         final QueryResponse queryResponse = new QueryResponse("domain", userId, new Date(), new Date(), QueryResponse.Source.ZOSMF);
 
-        final ZosmfService zosmfService = getSpiedZosmfService();
-        ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
+        final ZosmfService zosmfService = mock(ZosmfService.class);
+        doReturn(true).when(zosmfService).validate(jwtToken);
+
         final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
 
         doAnswer((Answer<Object>) invocation -> {
@@ -512,19 +513,11 @@ public class AuthenticationServiceTest {
             return queryResponse;
         }).when(authService).parseJwtToken(jwtToken);
 
-        when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()))
-            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add("X-CSRF-ZOSMF-HEADER", "");
-        headers.add("Authorization", "Basic Og==");
-
-        when(restTemplate.exchange(anyString(), (HttpMethod) any(), eq(new HttpEntity<>(null, headers)), (Class<?>) any()))
-            .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
         TokenAuthentication tokenAuthentication = authService.validateJwtToken(jwtToken);
         assertTrue(tokenAuthentication.isAuthenticated());
         assertEquals(jwtToken, tokenAuthentication.getCredentials());
         assertEquals(userId, tokenAuthentication.getPrincipal());
-        verify(zosmfService, times(1)).validate(ZosmfService.TokenType.JWT, jwtToken);
+        verify(zosmfService, times(1)).validate(jwtToken);
     }
 
     @Test

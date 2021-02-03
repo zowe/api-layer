@@ -39,40 +39,21 @@ public class AuthenticateEndpointStrategy implements TokenValidationStrategy {
             headers.add(ZOSMF_CSRF_HEADER, "");
             headers.add(HttpHeaders.COOKIE, ZosmfService.TokenType.JWT.getCookieName() + "=" + token);
 
-            //try {
-                ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
-                    new HttpEntity<>(null, headers), String.class);
 
-                if (re.getStatusCode().is2xxSuccessful())
-                    return true;
-                if (re.getStatusCodeValue() == 401) {
-                    throw new TokenNotValidException("Token is not valid.");
-                }
-                apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
-                throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
-//            } catch (RuntimeException re) {
-//                throw handleExceptionOnCall(url, re);
-//            }
+            ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
+                new HttpEntity<>(null, headers), String.class);
+
+            if (re.getStatusCode().is2xxSuccessful())
+                return true;
+            if (re.getStatusCodeValue() == 401) {
+                throw new TokenNotValidException("Token is not valid.");
+            }
+            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
+            throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
+
         } else {
             return false;
         }
     }
 
-//    private RuntimeException handleExceptionOnCall(String url, RuntimeException re) {
-//        if (re instanceof ResourceAccessException) {
-//            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
-//            return new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
-//        }
-//
-//        if (re instanceof HttpClientErrorException.Unauthorized) {
-//            return new BadCredentialsException("Username or password are invalid.");
-//        }
-//
-//        if (re instanceof RestClientException) {
-//            apimlLog.log("org.zowe.apiml.security.generic", re.getMessage(), url);
-//            return new AuthenticationServiceException("A failure occurred when authenticating.", re);
-//        }
-//
-//        return re;
-//    }
 }

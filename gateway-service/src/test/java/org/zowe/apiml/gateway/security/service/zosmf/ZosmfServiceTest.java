@@ -306,16 +306,16 @@ class ZosmfServiceTest {
         ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(tokenValidationStrategy);
 
         doThrow(RuntimeException.class).when(tokenValidationStrategy).validate(any(), anyString());
-        assertThrows(RuntimeException.class, () -> zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"));
+        assertThrows(RuntimeException.class, () -> zosmfService.validate( "TOKN"));
 
         doThrow(ResourceAccessException.class).when(tokenValidationStrategy).validate(any(), anyString());
-        assertThrows(ServiceNotAccessibleException.class, () -> zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"));
+        assertThrows(ServiceNotAccessibleException.class, () -> zosmfService.validate( "TOKN"));
 
         doThrow(HttpClientErrorException.Unauthorized.class).when(tokenValidationStrategy).validate(any(), anyString());
-        assertThrows(BadCredentialsException.class, () -> zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"));
+        assertThrows(BadCredentialsException.class, () -> zosmfService.validate( "TOKN"));
 
         doThrow(RestClientException.class).when(tokenValidationStrategy).validate(any(), anyString());
-        assertThrows(AuthenticationServiceException.class, () -> zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"));
+        assertThrows(AuthenticationServiceException.class, () -> zosmfService.validate( "TOKN"));
     }
 
     @Test
@@ -323,10 +323,10 @@ class ZosmfServiceTest {
         ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(tokenValidationStrategy);
 
         doReturn(true).when(tokenValidationStrategy).validate(any(), anyString());
-        assertThat(zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"), is(true));
+        assertThat(zosmfService.validate( "TOKN"), is(true));
 
         doReturn(false).when(tokenValidationStrategy).validate(any(), anyString());
-        assertThat(zosmfService.validate(ZosmfService.TokenType.JWT, "TOKN"), is(false));
+        assertThat(zosmfService.validate( "TOKN"), is(false));
     }
 
     @Test
