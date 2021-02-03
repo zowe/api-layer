@@ -49,8 +49,6 @@ jar {
     baseName = "integration-tests"
 }
 
-test.enabled = false
-
 apply plugin: 'java'
 
 test {

@@ -19,54 +19,49 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.awaitility.Awaitility.await;
 
 @Slf4j
 public class RunningService {
-    private DiscoveryRequests discovery = new DiscoveryRequests();
+    private final DiscoveryRequests discovery = new DiscoveryRequests();
     private Process newCachingProcess;
 
-    private String id;
-    private int port;
+    private final String jarFile;
+    private final String id;
 
-    private Map<String, String> parameters = new HashMap<>();
+    private final Map<String, String> parametersBefore;
+    private final Map<String, String> parametersAfter;
 
-    public RunningService() {
-        id = "test-service";
-        port = 10562;
-    }
-
-    public RunningService(String id, int port, Map<String, String> parameters) {
+    public RunningService(String id, String jarFile, Map<String, String> parametersBefore, Map<String, String> parametersAfter) {
         this.id = id;
-        this.port = port;
+        this.jarFile = jarFile;
+        this.parametersBefore = parametersBefore;
+        this.parametersAfter = parametersAfter;
     }
 
     public void start() throws IOException {
-        log.info("Starting new Service with ID {} on the port {}", id, port);
+        log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
         stop();
 
         ArrayList<String> discoveryCommand = new ArrayList<>();
         discoveryCommand.add("java");
-        discoveryCommand.add("-Dapiml.service.serviceId=" + id);
-        discoveryCommand.add("-Dapiml.service.port=" + port);
-        parameters
-            .entrySet()
-            .forEach(
-                entry -> discoveryCommand.add(entry.getKey() + '=' + entry.getValue())
-            );
+        parametersBefore
+            .forEach((key1, value1) -> discoveryCommand.add(key1 + '=' + value1));
 
         discoveryCommand.add("-jar");
-        discoveryCommand.add("./caching-service/build/libs/caching-service.jar");
+        discoveryCommand.add(jarFile);
+
+        parametersAfter
+            .forEach((key, value) -> discoveryCommand.add(key + '=' + value));
 
         ProcessBuilder builder1 = new ProcessBuilder(discoveryCommand);
         builder1.directory(new File("../"));
         newCachingProcess = builder1.inheritIO().start();
 
         await()
-            .atMost(Duration.ONE_MINUTE)
+            .atMost(Duration.TWO_MINUTES)
             .with()
             .pollInterval(Duration.TEN_SECONDS)
             .until(this::isServiceProperlyRegistered);
@@ -85,13 +80,9 @@ public class RunningService {
         return false;
     }
 
-    public URI getBaseUrl() {
-        return HttpRequestUtils.getUriFromGateway("/" + id + "/api/v1/cache");
-    }
-
     public void stop() {
         if (newCachingProcess != null) {
-            log.info("Stopping new Service with ID {} on the port {}", id, port);
+            log.info("Stopping new Service with ID {} on the port {}", id);
             newCachingProcess.destroy();
         }
     }
