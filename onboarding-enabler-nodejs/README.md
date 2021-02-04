@@ -1,14 +1,14 @@
-## Onboarding NodeJS enabler for Zowe API Mediation Layer
+## Onboarding Node.js enabler for Zowe API Mediation Layer
 
-This is the onboarding Nodejs enabler for [Zowe API Mediation Layer](https://github.com/zowe/api-layer) (part of [Zowe](https://zowe.org)) that allows to register a NodeJS based service to the API Mediation Layer Discovery Service. It uses [eureka-js-client](https://www.npmjs.com/package/eureka-js-client).
+This is the onboarding Node.js enabler for [Zowe API Mediation Layer](https://github.com/zowe/api-layer) (part of [Zowe](https://zowe.org)) that allows to register a NodeJS based service to the API Mediation Layer Discovery Service. It uses [eureka-js-client](https://www.npmjs.com/package/eureka-js-client).
 
 ### How to use
 
-1. Install the onboarding NodeJS enabler package as a dependency of your service:
+1. Install the onboarding Node.js enabler package as a dependency of your service:
 
     `npm i apiml-onboarding-enabler-nodejs --dev-save`
 
-2. Inside your NodeJS service `index.js`, add the following code block to register your service with Eureka:
+2. Inside your Node.js service `index.js`, add the following code block to register your service with Eureka:
 
     ```js
     const apiLayerService = require("apiml-onboarding-enabler-nodejs");
@@ -97,4 +97,4 @@ Below is an example of the configuration.
     
     ```
 
-4. Start your NodeJS service and verify that it registers to the Zowe API Mediation Layer.
+4. Start your Node.js service and verify that it registers to the Zowe API Mediation Layer.

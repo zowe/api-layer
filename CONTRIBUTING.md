@@ -36,13 +36,13 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | docs                                     | Documentation                      |
 | gateway-service                          | Core Service - Gateway Service     |
 | onboarding-enabler-spring-v1-sample-app  | Sample Service - Spring Enabler    |
-| onboarding-enabler-nodejs-sample-app     | Sample Service - NodeJS Enabler    |
+| onboarding-enabler-nodejs-sample-app     | Sample Service - Node.js Enabler   |
 | integration-tests                        | Test - Integration test            |
 | keystore                                 | Config - Local TLS config          |
 | onboarding-enabler-java                  | APIML SDK - Java Enabler           |
 | onboarding-enabler-java-sample-app       | Sample Service - Java Enabler      |
 | onboarding-enabler-spring                | APIML SDK - Spring Enabler         |
-| onboarding-enabler-nodejs                | APIML SDK - NodeJS Enabler         |
+| onboarding-enabler-nodejs                | APIML SDK - Node.js Enabler        |
 | passticket                               | Test - Passticket test tools       |
 | scripts                                  | Tool - Test and Build scripts      |
 | security-service-client-spring           | Library - Security Client          |

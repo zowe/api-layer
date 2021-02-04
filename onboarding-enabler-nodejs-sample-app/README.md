@@ -3,7 +3,7 @@
 This is an example about how an API service implemented using [Node.js](https://nodejs.org/en/) and [Express](https://expressjs.com/) can be registered to the API Mediation Layer using the [apiml-onboarding-enabler-nodejs](https://www.npmjs.com/package/apiml-onboarding-enabler-nodejs) npm package. 
 
 
- [index.js](src/index.js) starts the API service implemented in Express and registers it to the Discovery service using the NodeJS onboarding enabler.
+ [index.js](src/index.js) starts the API service implemented in Express and registers it to the Discovery service using the Node.js onboarding enabler.
 
  This example contains the full HTTPS validation of both Discovery Service and the Hello World service.
 
