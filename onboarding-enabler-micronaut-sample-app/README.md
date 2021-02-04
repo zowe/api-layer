@@ -17,7 +17,14 @@ https://micronaut.io/download.html
 ```
 gradle shadowJar
 ```
+##How to run
+
 ### Run sample application with gradle
 ```
 gradle run
+```
+### Run sample applicat`zion with java
+Prerequisite: build runnable jar with shadowJar task
+```
+java -jar onboarding-enabler-micronaut-sample-app/build/libs/micronaut-enabler-1.0.jar
 ```

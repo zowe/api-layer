@@ -113,6 +113,7 @@ For guidelines to onboard services, see [Zowe Docs#Onboarding Overview](https://
 | APIML SDK - ZAAS Client               | [README](zaas-client/README.md)                                                                                                                                                         |
 | Sample Service - Java Enabler         | [README](onboarding-enabler-java-sample-app/README.md)                                                                                                                                  |
 |       Sample Service - Spring Enabler | [README](onboarding-enabler-spring-v1-sample-app/README.md)                                                                                                                            |
+|       Sample Service - Micronaut Enabler | [README](onboarding-enabler-micronaut-sample-app/README.md)                                                                                                                            |
 
 ## Contact Us
 
