@@ -44,4 +44,9 @@ public class AuthenticationController {
     public ResponseEntity<?> jwk() {
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @RequestMapping(value = "/zosmf/notifications/inbox", produces = "application/json; charset=utf-8", method = RequestMethod.GET)
+    public ResponseEntity<?> verify(HttpServletResponse response, @RequestHeader Map<String, String> headers) {
+        return authentication.process("authentication", "verify", response, headers);
+    }
 }

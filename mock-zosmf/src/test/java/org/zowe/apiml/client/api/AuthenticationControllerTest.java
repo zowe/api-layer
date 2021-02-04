@@ -57,4 +57,10 @@ class AuthenticationControllerTest {
     void whenCallZosmfBuilderEndpointWithGet_thenReturnOk() throws Exception {
         mockMvc.perform(get("/jwt/ibm/api/zOSMFBuilder")).andExpect(status().is(SC_OK));
     }
+
+    @Test
+    void whenCallZosmfNotificationEndpointWithGet_thenReturnAparServiceProcessResult() throws Exception {
+        doReturn(DEFAULT_RESPONSE).when(aparService).process(any(), any(), any(), any());
+        mockMvc.perform(get("/zosmf/notifications/inbox")).andExpect(status().is(SC_OK));
+    }
 }
