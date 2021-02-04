@@ -54,6 +54,8 @@ apiml:
         x509:
             enabled: false
             externalMapperUrl:
+        zosmf:
+            tokenValidation: generic-endpoint
 
 
 

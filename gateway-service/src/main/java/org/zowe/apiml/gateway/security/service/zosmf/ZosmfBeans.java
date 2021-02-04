@@ -23,7 +23,7 @@ import org.springframework.web.client.RestTemplate;
 public class ZosmfBeans {
 
     @Bean
-    @ConditionalOnProperty(prefix = "apiml.security.zosmf", name = "tokenValidation", havingValue = "authenticate-endpoint")
+    @ConditionalOnProperty(prefix = "apiml.security.zosmf", name = "tokenValidation", havingValue = "authenticate-endpoint", matchIfMissing = true)
     TokenValidationStrategy authenticateValidationStrategy(@Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore) {
         return new AuthenticateEndpointStrategy(restTemplateWithoutKeystore);
     }
