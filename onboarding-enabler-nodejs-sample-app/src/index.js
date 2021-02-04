@@ -10,7 +10,7 @@
 
 const express = require("express");
 const https = require("https");
-const apiLayerService = require("eureka-js-app");
+const apiLayerService = require("apiml-onboarding-enabler-nodejs");
 
 // Command-line arguments:
 const args = {

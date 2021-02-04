@@ -13,7 +13,7 @@
   "author": "",
   "license": "EPL-2.0",
   "dependencies": {
-    "eureka-js-app": "/usr/local/lib/node_modules/onboarding-enabler-nodejs",
+    "apiml-onboarding-enabler-nodejs": "1.0.1",
     "express": "^4.16.4"
   }
 }

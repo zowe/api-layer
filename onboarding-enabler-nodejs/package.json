@@ -1,7 +1,7 @@
 {
-  "name": "onboarding-enabler-nodejs",
-  "version": "0.3.0",
-  "description": "NodeJS enabler for API Mediation Layer",
+  "name": "apiml-onboarding-enabler-nodejs",
+  "version": "1.0.1",
+  "description": "NodeJS enabler for Zowe API Mediation Layer",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js NODE_DEBUG=request",
@@ -12,6 +12,7 @@
     "url": "git+https://github.com/zowe/api-layer.git"
   },
   "author": "",
+  "license": "EPL-2.0",
   "homepage": ".",
   "dependencies": {
     "eureka-js-client": "^4.5.0"
