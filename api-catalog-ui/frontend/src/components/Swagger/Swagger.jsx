@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
+import InstanceInfo from '../ServiceTab/InstanceInfo'
 
 export default class SwaggerUI extends Component {
     componentDidMount() {
@@ -34,6 +35,17 @@ export default class SwaggerUI extends Component {
                 },
             },
         },
+        wrapComponents: {
+            operations : (Original, { React }) => (props) => {
+                const {selectedService, selectedVersion} = this.props;
+                return (
+                    <div>
+                        <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion}></InstanceInfo>
+                        <Original {...props}></Original>
+                    </div>
+                )
+            }
+        }
     });
 
     retrieveSwagger = () => {

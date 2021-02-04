@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -64,6 +65,17 @@ public class ApiInfo {
     @JsonDeserialize(using = StringToBooleanDeserializer.class)
     @Builder.Default
     private boolean isDefaultApi = false;
+
+    @JsonIgnore
+    public int getMajorVersion() {
+        if (version == null) {
+            return -1;
+        }
+
+        String[] versionFields = version.split("[^0-9a-zA-Z]");
+        String majorVersionStr = versionFields[0].replaceAll("[^0-9]", "");
+        return majorVersionStr.isEmpty() ? -1 : Integer.parseInt(majorVersionStr);
+    }
 
     private static class StringToBooleanDeserializer extends JsonDeserializer<Boolean> {
 
