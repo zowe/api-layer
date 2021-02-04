@@ -34,6 +34,10 @@ Below is an example of the configuration.
       ipAddress: 127.0.0.1
       port: 10011
       servicePath: '/eureka/apps/'
+      maxRetries: 30
+      requestRetryDelay: 1000
+      registryFetchInterval: 5
+    
     
     description: Hello World REST API Service implemented in Express and Node.js
     baseUrl: https://localhost:10020/hwexpress
