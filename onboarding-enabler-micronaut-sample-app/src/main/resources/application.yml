@@ -81,19 +81,3 @@ apiml:
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /api/v1/gateway/auth
                 corsEnabled: false
-
-eureka:
-    client:
-        serviceUrl:
-            defaultZone: https://localhost:10011/eureka/
-
-management:
-    endpoints:
-        web:
-            base-path: /application
-            exposure:
-                include: health,info
-    health:
-        defaults:
-            enabled: false
-
