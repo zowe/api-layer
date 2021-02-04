@@ -14,8 +14,7 @@
   "author": "",
   "homepage": ".",
   "dependencies": {
-    "eureka-js-client": "^4.5.0",
-    "express": "^4.17.1"
+    "eureka-js-client": "^4.5.0"
   },
   "devDependencies": {
     "js-yaml": "^4.0.0"
