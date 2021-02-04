@@ -41,31 +41,33 @@ public class PH12143 implements Apar {
         Optional<ResponseEntity<?>> previousResult = (Optional<ResponseEntity<?>>) parameters[2];
 
         if (calledService.equals("authentication")) {
+            HttpServletResponse response = (HttpServletResponse) parameters[3];
+            Map<String, String> headers = (Map<String, String>) parameters[4];
+
             if (calledMethod.equals("create")) {
-                HttpServletResponse response = (HttpServletResponse) parameters[3];
-                Map<String, String> headers = (Map<String, String>) parameters[4];
 
                 String authorization = headers.get("authorization");
                 if (authorization == null || authorization.isEmpty()) {
                     return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
                 }
 
-                byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
-                String credentials = new String(decoded);
-                String[] piecesOfCredentials = credentials.split(":");
-
-                if (piecesOfCredentials.length > 0 && (usernames.contains(piecesOfCredentials[0]) &&
-                    (passwords.contains(piecesOfCredentials[1]) || piecesOfCredentials[1].contains("PASS_TICKET")))
-                ) {
-                    return Optional.of(validJwtResponse(response, piecesOfCredentials[0]));
-                } else {
+                if (containsInvalidUser(authorization)) {
                     return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
                 }
+
+                String[] credentials = getPiecesOfCredentials(authorization);
+                return Optional.of(validJwtResponse(response, credentials[0]));
             }
 
             if (calledMethod.equals("verify")) {
-                // TODO Implement the valid behavior.
-                return Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+                String authorization = headers.get("authorization");
+
+                if (authorization == null || authorization.isEmpty() || containsInvalidUser(authorization)) {
+                    return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+                }
+
+                String[] credentials = getPiecesOfCredentials(authorization);
+                return Optional.of(validJwtResponse(response, credentials[0]));
             }
 
             if (calledMethod.equals("delete")) {
@@ -121,5 +123,18 @@ public class PH12143 implements Apar {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
+    }
+
+    private boolean containsInvalidUser(String authorization) {
+        String[] piecesOfCredentials = getPiecesOfCredentials(authorization);
+
+        return piecesOfCredentials.length <= 0 || (!usernames.contains(piecesOfCredentials[0]) ||
+            (!passwords.contains(piecesOfCredentials[1]) && !piecesOfCredentials[1].contains("PASS_TICKET")));
+    }
+
+    private String[] getPiecesOfCredentials(String authorization) {
+        byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
+        String credentials = new String(decoded);
+        return credentials.split(":");
     }
 }

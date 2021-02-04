@@ -29,6 +29,7 @@ class PH12143Test {
 
     private PH12143 underTest;
     private MockHttpServletResponse mockResponse;
+    private Map<String, String> headers;
 
     @BeforeEach
     void setUp() {
@@ -37,6 +38,7 @@ class PH12143Test {
 
         underTest = new PH12143(usernames, passwords, "../keystore/localhost/localhost.keystore.p12");
         mockResponse = new MockHttpServletResponse();
+        headers = new HashMap<>();
     }
 
     @Nested
@@ -45,7 +47,6 @@ class PH12143Test {
         void givenNoAuthorization_thenReturnUnauthorized() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
-            Map<String, String> headers = new HashMap<>();
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
 
             assertThat(result, is(expected));
@@ -55,7 +56,6 @@ class PH12143Test {
         void givenEmptyAuthorization_thenReturnUnauthorized() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
-            Map<String, String> headers = new HashMap<>();
             headers.put("authorization", "");
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
 
@@ -66,7 +66,6 @@ class PH12143Test {
         void givenNoCredentials_thenReturnUnauthorized() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
-            Map<String, String> headers = new HashMap<>();
             headers.put("authorization", getAuthorizationHeader(null, null));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
 
@@ -77,7 +76,6 @@ class PH12143Test {
         void givenInvalidUsername_thenReturnUnauthorized() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
-            Map<String, String> headers = new HashMap<>();
             headers.put("authorization", getAuthorizationHeader("baduser", PASSWORD));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
 
@@ -88,7 +86,6 @@ class PH12143Test {
         void givenInvalidPassword_thenReturnUnauthorized() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
-            Map<String, String> headers = new HashMap<>();
             headers.put("authorization", getAuthorizationHeader(USERNAME, "badpassword"));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
 
@@ -99,7 +96,6 @@ class PH12143Test {
         void givenValidUserAndPassword_thenReturnJwt() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
-            Map<String, String> headers = new HashMap<>();
             headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
 
@@ -110,7 +106,6 @@ class PH12143Test {
         void givenValidUserAndPassticket_thenReturnJwt() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
-            Map<String, String> headers = new HashMap<>();
             headers.put("authorization", getAuthorizationHeader(USERNAME, "PASS_TICKET"));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
 
@@ -120,7 +115,41 @@ class PH12143Test {
 
     @Nested
     class whenVerifying {
+        @Test
+        void givenNoAuthorization_thenReturnUnauthorized() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
+            assertThat(result, is(expected));
+        }
+
+        @Test
+        void givenEmptyAuthorization_thenReturnUnauthorized() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
+            assertThat(result, is(expected));
+        }
+
+        @Test
+        void givenInvalidUser_thenReturnUnauthorized() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
+
+            headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
+
+            assertThat(result, is(expected));
+        }
+
+        @Test
+        void givenValidUser_thenReturnJwt() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
+
+            headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
+
+            assertThat(result, is(expected));
+        }
     }
 
     @Nested
@@ -129,9 +158,7 @@ class PH12143Test {
         void thenReturnNoContent() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-            Map<String, String> headers = new HashMap<>();
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "delete", Optional.empty(), headers);
-
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "delete", Optional.empty(), mockResponse, headers);
             assertThat(result, is(expected));
         }
     }
@@ -140,9 +167,7 @@ class PH12143Test {
     void givenServiceNotHandled_whenApplyApar_thenReturnOriginalResult() {
         Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-        Map<String, String> headers = new HashMap<>();
         Optional<ResponseEntity<?>> result = underTest.apply("badservice", "", previousResult, headers);
-
         assertThat(result, is(previousResult));
     }
 
