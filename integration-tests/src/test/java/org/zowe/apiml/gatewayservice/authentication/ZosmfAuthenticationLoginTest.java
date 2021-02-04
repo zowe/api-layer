@@ -13,7 +13,8 @@ import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
@@ -33,7 +34,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 @zOSMFAuthTest
-class ZosmfAuthenticationLoginIntegrationTest extends Login {
+class ZosmfAuthenticationLoginTest extends LoginTest {
     private String scheme;
     private String host;
     private int port;
@@ -55,29 +56,29 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
         port = serviceConfiguration.getPort();
-
     }
 
     /**
      * This is how z/OSMF behaves. Two logins with basic auth give identical token.
      * There is no point to replicate this behavior on mock.
      */
-    @Test
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
     @MainframeDependentTests
-    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenIdenticalTokenIsProduced() {
+    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenIdenticalTokenIsProduced(String loginUrl) {
         LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
-        String jwtToken1 = authenticateAndVerify(loginRequest);
-        String jwtToken2 = authenticateAndVerify(loginRequest);
+        String jwtToken1 = authenticateAndVerify(loginRequest, loginUrl);
+        String jwtToken2 = authenticateAndVerify(loginRequest, loginUrl);
 
         assertThat(jwtToken1, is((jwtToken2)));
     }
 
-    @Test
-    void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
-
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds(String loginUrl) throws Exception {
         Cookie cookie = given().config(clientCertValid)
-            .post(new URI(LOGIN_ENDPOINT_URL))
+            .post(new URI(loginUrl))
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -97,11 +98,11 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
                 "items.dsname", hasItems(dsname1, dsname2));
     }
 
-    @Test
-    void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
-
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced(String loginUrl) throws Exception {
         Cookie cookie = given().config(clientCertValid)
-            .post(new URI(LOGIN_ENDPOINT_URL))
+            .post(new URI(loginUrl))
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -110,11 +111,12 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         assertValidAuthToken(cookie, Optional.of("APIMTST"));
     }
 
-    @Test
-    void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
+    @ParameterizedTest
+    @MethodSource("loginUrlsSource")
+    void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced(String loginUrl) throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .auth().basic("Bob", "The Builder")
-            .post(new URI(LOGIN_ENDPOINT_URL))
+            .post(new URI(loginUrl))
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))

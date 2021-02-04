@@ -132,6 +132,8 @@ eureka:
                     title: API Catalog
                     description: API Catalog service to display service details and API documentation for discovered API services.
 
+                authentication:
+                    sso: true
     client:
         healthcheck:
             enabled: true

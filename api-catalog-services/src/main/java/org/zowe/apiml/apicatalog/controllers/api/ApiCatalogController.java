@@ -83,7 +83,7 @@ public class ApiCatalogController {
                 return new ResponseEntity<>(apiContainers, HttpStatus.NO_CONTENT);
             } else {
                 // for each container, check the status of all it's services so it's overall status can be set here
-                apiContainers.forEach(cachedProductFamilyService::calculateContainerServiceTotals);
+                apiContainers.forEach(cachedProductFamilyService::calculateContainerServiceValues);
                 return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             }
         } catch (Exception e) {
@@ -113,8 +113,8 @@ public class ApiCatalogController {
             }
             if (!apiContainers.isEmpty()) {
                 apiContainers.forEach(apiContainer -> {
-                    // Fot this single container, check the status of all it's services so it's overall status can be set here
-                    cachedProductFamilyService.calculateContainerServiceTotals(apiContainer);
+                    // For this single container, check the status of all it's services so it's overall status can be set here
+                    cachedProductFamilyService.calculateContainerServiceValues(apiContainer);
                     // add API Doc to the services to improve UI performance
                     setApiDocToService(apiContainer);
                 });

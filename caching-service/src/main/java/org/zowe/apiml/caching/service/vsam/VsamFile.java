@@ -10,10 +10,9 @@
 
 package org.zowe.apiml.caching.service.vsam;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
-import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 import org.zowe.apiml.zfile.*;
 
 import java.io.Closeable;
@@ -31,9 +30,10 @@ import java.util.regex.Pattern;
 @Slf4j
 public class VsamFile implements Closeable {
 
-    private ZFile zfile;
-    private VsamConfig vsamConfig;
-    private final VsamConfig.VsamOptions options;
+    @Getter
+    private final ZFile zfile;
+    private final VsamConfig vsamConfig;
+    private final ZFileProducer zFileProducer;
 
     public static final String VSAM_RECORD_ERROR_MESSAGE = "VsamRecordException occured: {}";
     public static final String RECORD_FOUND_MESSAGE = "Record found: {}";
@@ -47,28 +47,34 @@ public class VsamFile implements Closeable {
     }
 
     public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean performWarmup) {
+        this(config, options, performWarmup, new ZFileProducer(config, options), new VsamInitializer());
+    }
+
+    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean performWarmup, ZFileProducer zFileProducer, VsamInitializer vsamInitializer) {
         if (config == null) {
             throw new IllegalArgumentException("Cannot create VsamFile with null configuration");
         }
 
         this.vsamConfig = config;
-        this.options = options;
-        log.info("VsamFile::new with parameters: {}, Vsam options: {}", this.vsamConfig, this.options);
+        log.info("VsamFile::new with parameters: {}, Vsam options: {}", this.vsamConfig, options);
 
         if (!REGEX_CORRECT_FILENAME.matcher(vsamConfig.getFileName()).find()) {
             throw new IllegalArgumentException("VsamFile name does not conform to //'VSAM.DATASET.NAME' pattern");
         }
 
+        this.zFileProducer = zFileProducer;
+
         try {
+
             this.zfile = openZfile();
 
             if (performWarmup) {
                 log.info("Warming up VSAM file");
-                warmUpVsamFile();
+                vsamInitializer.warmUpVsamFile(zfile, vsamConfig);
             }
 
         } catch (ZFileException | VsamRecordException e) {
-            log.error("Problem initializing VSAM storage, opening of {} in mode {} has failed. Exception thrown: {}", vsamConfig, this.options, e);
+            log.error("Problem initializing VSAM storage, opening of {} in mode {} has failed. Exception thrown: {}", vsamConfig, options, e);
             throw new IllegalStateException("Failed to open VsamFile");
         }
     }
@@ -83,39 +89,6 @@ public class VsamFile implements Closeable {
                 log.error("Closing ZFile failed");
             }
         }
-    }
-
-    /**
-     * This method writes a record to file and deletes it immediately.
-     * Use this method on freshly created empty VSAM to write the fist record
-     * and to verify that records can be written.
-     * <p>
-     * Exceptions are thrown to give chance to the caller to react.
-     *
-     * @throws ZFileException
-     * @throws VsamRecordException
-     */
-    public void warmUpVsamFile() throws ZFileException, VsamRecordException {
-
-        log.info("Warming up the vsam file by writing and deleting a record");
-
-        log.info("VSAM file being used: {}", zfile.getActualFilename());
-
-        VsamRecord record = new VsamRecord(vsamConfig, "delete", new KeyValue("me", "novalue"));
-
-        log.info("Writing Record: {}", record);
-        zfile.write(record.getBytes());
-
-        boolean found = zfile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
-
-        log.info("Test record for deletion found: {}", found);
-        if (found) {
-            byte[] recBuf = new byte[vsamConfig.getRecordLength()];
-            zfile.read(recBuf); //has to be read before update/delete
-            zfile.delrec();
-            log.info("Test record deleted.");
-        }
-
     }
 
     public Optional<VsamRecord> create(VsamRecord record) {
@@ -156,7 +129,7 @@ public class VsamFile implements Closeable {
                 zfile.read(recBuf);
                 log.trace("RecBuf: {}", recBuf);
                 log.info("ConvertedStringValue: {}", new String(recBuf, vsamConfig.getEncoding()));
-                VsamRecord returned = new VsamRecord(vsamConfig, record.getServiceId(), recBuf);
+                VsamRecord returned = new VsamRecord(vsamConfig, recBuf);
                 log.info("VsamRecord read: {}", returned);
                 return Optional.of(returned);
             } else {
@@ -219,7 +192,7 @@ public class VsamFile implements Closeable {
             if (found) {
                 byte[] recBuf = new byte[vsamConfig.getRecordLength()];
                 zfile.read(recBuf); //has to be read before update/delete
-                VsamRecord returned = new VsamRecord(vsamConfig, record.getServiceId(), recBuf);
+                VsamRecord returned = new VsamRecord(vsamConfig, recBuf);
                 zfile.delrec();
                 log.info("Deleted vsam record: {}", returned);
                 return Optional.of(returned);
@@ -266,7 +239,7 @@ public class VsamFile implements Closeable {
 
                 String convertedStringValue = new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
 
-                VsamRecord record = new VsamRecord(vsamConfig, serviceId, recBuf);
+                VsamRecord record = new VsamRecord(vsamConfig, recBuf);
                 log.info("Read record: {}", record);
 
                 if (nread < 0) {
@@ -304,6 +277,14 @@ public class VsamFile implements Closeable {
         return returned;
     }
 
+    public Optional<byte[]> readBytes(byte[] arrayToStoreIn) throws ZFileException {
+        if (getZfile().read(arrayToStoreIn) == -1) {
+            return Optional.empty();
+        }
+
+        return Optional.of(arrayToStoreIn);
+    }
+
     public Integer countAllRecords() {
         int recordsCounter = 0;
 
@@ -331,24 +312,7 @@ public class VsamFile implements Closeable {
 
     @SuppressWarnings({"squid:S1130", "squid:S1192"})
     private ZFile openZfile() throws ZFileException {
-        if (!REGEX_CORRECT_FILENAME.matcher(vsamConfig.getFileName()).find()) {
-            throw new IllegalStateException("VsamFile does not exist");
-        }
-        return ClassOrDefaultProxyUtils.createProxyByConstructor(ZFile.class, "com.ibm.jzos.ZFile",
-            ZFileDummyImpl::new,
-            new Class[]{String.class, String.class, int.class},
-            new Object[]{vsamConfig.getFileName(), options.getOptionsString(), ZFileConstants.FLAG_DISP_SHR + ZFileConstants.FLAG_PDS_ENQ},
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.jzos.ZFileException", ZFileException.class,
-                "getFileName", "getMessage", "getErrnoMsg", "getErrno", "getErrno2", "getLastOp", "getAmrcBytes",
-                "getAbendCode", "getAbendRc", "getFeedbackRc", "getFeedbackFtncd", "getFeedbackFdbk"),
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.jzos.RcException", RcException.class,
-                "getMessage", "getRc"),
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.jzos.EnqueueException", EnqueueException.class,
-                "getMessage", "getRc")
-        );
+        return zFileProducer.openZfile();
     }
 
 }

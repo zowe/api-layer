@@ -14,6 +14,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.Messages;
+import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 
 import java.io.UnsupportedEncodingException;
@@ -48,14 +50,14 @@ public class VsamRecord {
         this.key = new VsamKey(config);
     }
 
-    public VsamRecord(VsamConfig config, String serviceId, byte[] recordData) throws VsamRecordException {
+    public VsamRecord(VsamConfig config, byte[] recordData) throws VsamRecordException {
         this.config = config;
-        this.serviceId = serviceId;
         this.key = new VsamKey(config);
 
         try {
             String recordString = new String(recordData, config.getEncoding());
             this.keyValue = mapper.readValue(recordString.substring(config.getKeyLength()).trim(), KeyValue.class);
+            this.serviceId = keyValue.getServiceId();
         } catch (UnsupportedEncodingException e) {
             throw new VsamRecordException(UNSUPPORTED_ENCODING_MESSAGE + config.getEncoding(), e);
         } catch (JsonProcessingException e) {
@@ -69,7 +71,7 @@ public class VsamRecord {
             byte[] bytes = StringUtils.rightPad(key.getKey(serviceId, keyValue.getKey()) + mapper.writeValueAsString(keyValue), config.getRecordLength())
                 .getBytes(config.getEncoding());
             if (bytes.length > config.getRecordLength()) {
-                throw new VsamRecordException("Record length exceeds the configured Vsam record length: ");
+                throw new StorageException(Messages.PAYLOAD_TOO_LARGE.getKey(), Messages.PAYLOAD_TOO_LARGE.getStatus(), keyValue.getKey());
             }
 
             return bytes;

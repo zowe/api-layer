@@ -1,3 +1,43 @@
+.serviceTab {
+    background: #fff;
+    overflow-x: hidden;
+}
+
+.serviceTab .header {
+    margin: 20px 0 0 55px;
+    background: #fff;
+    height: 100vw;
+    display: block;
+}
+
+div.content-description-container > div > div:nth-child(2) > div {
+    width: 100vw;
+    height: auto;
+}
+
+.serviceTab .header>h2 {
+    color: #3b4151;
+    font-weight: bold;
+    padding-right: 110px;
+}
+
+.apiInfo-item label, .swagger-ui .apiInfo-item span {
+    display: inline;
+    font-size: 13px;
+    font-family: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    line-height: 1.5;
+}
+
+.apiInfo-item p {
+    display: inline-block;
+}
+
+.apiInfo-item label {
+    margin-right: 5px;
+    display: inline-block;
+    width: 100px;
+}
+
 a.nav-tab {
     display: flex;
     align-items: baseline;

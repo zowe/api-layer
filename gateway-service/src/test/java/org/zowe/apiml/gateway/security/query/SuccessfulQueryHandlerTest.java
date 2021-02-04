@@ -26,6 +26,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.zosmf.TokenValidationStrategy;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -36,6 +37,7 @@ import java.security.Key;
 import java.security.KeyPair;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,7 +78,12 @@ class SuccessfulQueryHandlerTest {
         if (keyPair != null) {
             privateKey = keyPair.getPrivate();
         }
-        ZosmfService zosmfService = new ZosmfService(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper());
+        ZosmfService zosmfService = new ZosmfService(authConfigurationProperties,
+            discoveryClient,
+            restTemplate,
+            new ObjectMapper(),
+            applicationContext,
+            mock(TokenValidationStrategy.class));
         AuthenticationService authenticationService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             discoveryClient, restTemplate, cacheManager, new CacheUtils()
