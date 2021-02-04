@@ -28,6 +28,8 @@ import static org.mockito.Mockito.*;
 
 class PHBaseTest {
     private PHBase underTest;
+    private Map<String, String> headers;
+    private HttpServletResponse mockResponse;
 
     @BeforeEach
     void setUp() {
@@ -37,23 +39,23 @@ class PHBaseTest {
         passwords.add("validPassword");
 
         underTest = new PHBase(usernames, passwords);
+        headers = new HashMap<>();
+        mockResponse = mock(HttpServletResponse.class);
     }
 
     @Nested
     class whenInfoCalled {
         @Test
         void givenNothing_Ltpa2TokenIsntReturned() {
-            HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-            underTest.apply("information", "", Optional.empty(), mockResponse, new HashMap<>());
+            underTest.apply("information", "", Optional.empty(), mockResponse, headers);
 
             verify(mockResponse, never()).addCookie(any());
         }
 
         @Test
         void givenValidAuthenticationCredentials_Ltpa2TokenIsReturned() {
-            HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-            Map<String, String> headers = new HashMap<>();
             headers.put("authorization", Base64.encodeBase64String("USER:validPassword".getBytes()));
+
             underTest.apply("information", "", Optional.empty(), mockResponse, headers);
 
             ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
@@ -67,8 +69,80 @@ class PHBaseTest {
     @Nested
     class whenAuthenticateIsCalled {
         @Test
-        void notExistIsReturned() {
-            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "", Optional.empty());
+        void givenVerifyMethodWithNoAuthorization_returnUnauthorized() {
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
+            assertThat(result.isPresent(), is(true));
+
+            ResponseEntity<?> response = result.get();
+            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+        }
+
+        @Test
+        void givenVerifyMethodWithEmptyAuthorization_returnUnauthorized() {
+            headers.put("authorization", "");
+
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
+            assertThat(result.isPresent(), is(true));
+
+            ResponseEntity<?> response = result.get();
+            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+        }
+
+        @Test
+        void givenVerifyMethodWithInvalidUser_returnUnauthorized() {
+            headers.put("authorization", Base64.encodeBase64String("baduser:badpassword".getBytes()));
+
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
+            assertThat(result.isPresent(), is(true));
+
+            ResponseEntity<?> response = result.get();
+            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+        }
+
+        @Test
+        void givenVerifyMethodWithInvalidCookie_returnUnauthorized() {
+            headers.put("cookie", "bad cookie");
+
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
+            assertThat(result.isPresent(), is(true));
+
+            ResponseEntity<?> response = result.get();
+            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+        }
+
+        @Test
+        void givenVerifyMethodWithValidUser_returnOkLtpa2Token() {
+            headers.put("authorization", Base64.encodeBase64String("USER:validPassword".getBytes()));
+
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
+            assertThat(result.isPresent(), is(true));
+            assertThat(result.get().getStatusCode(), is(HttpStatus.OK));
+
+            ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
+            verify(mockResponse).addCookie(called.capture());
+
+            Cookie ltpa = called.getValue();
+            assertThat(ltpa.getName(), is("LtpaToken2"));
+        }
+
+        @Test
+        void givenVerifyMethodWithValidCookie_returnOkLtpa2Token() {
+            headers.put("cookie", "LtpaToken2=randomValidValue");
+
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
+            assertThat(result.isPresent(), is(true));
+            assertThat(result.get().getStatusCode(), is(HttpStatus.OK));
+
+            ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
+            verify(mockResponse).addCookie(called.capture());
+
+            Cookie ltpa = called.getValue();
+            assertThat(ltpa.getName(), is("LtpaToken2"));
+        }
+
+        @Test
+        void givenUnimplementedMethod_notExistIsReturned() {
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "fake service", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();
@@ -80,11 +154,9 @@ class PHBaseTest {
     class whenFilesAreCalled {
         @Test
         void givenProperAuthorization_validFilesAreReturned() {
-            Map<String, String> authorization = new HashMap<>();
-            authorization.put("cookie", "LtpaToken2=randomValidValue");
+            headers.put("cookie", "LtpaToken2=randomValidValue");
 
-            Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), null,
-                authorization);
+            Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();
@@ -93,8 +165,7 @@ class PHBaseTest {
 
         @Test
         void givenInvalidAuthorization_unauthorizedIsReturned() {
-            Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), null,
-                new HashMap<>());
+            Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();

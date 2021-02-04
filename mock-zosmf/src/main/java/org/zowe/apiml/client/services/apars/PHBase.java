@@ -32,18 +32,29 @@ public class PHBase implements Apar {
     @Override
     public Optional<ResponseEntity<?>> apply(Object... parameters) {
         String calledService = (String) parameters[0];
+        String calledMethod = (String) parameters[1];
         Optional<ResponseEntity<?>> previousResult = (Optional<ResponseEntity<?>>) parameters[2];
+        HttpServletResponse response = (HttpServletResponse) parameters[3];
+        Map<String, String> headers = (Map<String, String>) parameters[4];
 
         if (calledService.equals("authentication")) {
-            return Optional.of(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            if (calledMethod.equals("verify")) {
+                String authorization = headers.get("authorization");
+                if ((authorization == null || authorization.isEmpty() || containsInvalidUser(authorization))
+                    && noLtpaCookie(headers)) {
+                    return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+                }
+
+                setLtpaToken(response);
+                return Optional.of(new ResponseEntity<>(HttpStatus.OK));
+            } else {
+                return Optional.of(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            }
         }
 
         if (calledService.equals("information")) {
-            HttpServletResponse response = (HttpServletResponse) parameters[3];
-            Map<String, String> headers = (Map<String, String>) parameters[4];
-
             String authorization = headers.get("authorization");
-            if (authorization == null || authorization.isEmpty() || !containsValidUser(authorization)) {
+            if (authorization == null || authorization.isEmpty() || containsInvalidUser(authorization)) {
                 return validInfo();
             }
 
@@ -52,21 +63,19 @@ public class PHBase implements Apar {
         }
 
         if (calledService.equals("files")) {
-            Map<String, String> headers = (Map<String, String>) parameters[4];
-
             return datasets(headers);
         }
 
         return previousResult;
     }
 
-    private boolean containsValidUser(String authorization) {
+    private boolean containsInvalidUser(String authorization) {
         byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
         String credentials = new String(decoded);
         String[] piecesOfCredentials = credentials.split(":");
 
-        return piecesOfCredentials.length > 0 && (usernames.contains(piecesOfCredentials[0]) &&
-            (passwords.contains(piecesOfCredentials[1]) || piecesOfCredentials[1].contains("PASS_TICKET")));
+        return piecesOfCredentials.length <= 0 || (!usernames.contains(piecesOfCredentials[0]) ||
+            (!passwords.contains(piecesOfCredentials[1]) && !piecesOfCredentials[1].contains("PASS_TICKET")));
     }
 
     private Optional<ResponseEntity<?>> datasets(Map<String, String> headers) {
@@ -77,7 +86,7 @@ public class PHBase implements Apar {
                 return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
             }
         } else {
-            if (headers.get("cookie") == null || !headers.get("cookie").contains("LtpaToken2")) {
+            if (noLtpaCookie(headers)) {
                 return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
             }
         }
@@ -127,6 +136,11 @@ public class PHBase implements Apar {
             "  \"returnedRows\": 13,\n" +
             "  \"JSONversion\": 1\n" +
             "}", HttpStatus.OK));
+    }
+
+    private boolean noLtpaCookie(Map<String, String> headers) {
+        String cookie = headers.get("cookie");
+        return cookie == null || !cookie.contains("LtpaToken2");
     }
 
     private void setLtpaToken(HttpServletResponse response) {
