@@ -141,7 +141,7 @@ class PHBaseTest {
         }
 
         @Test
-        void givenUnimplementedMethod_notExistIsReturned() {
+        void givenUnimplementedMethod_notFoundIsReturned() {
             Optional<ResponseEntity<?>> result = underTest.apply("authentication", "fake service", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
 

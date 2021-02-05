@@ -166,6 +166,14 @@ class PH12143Test {
     }
 
     @Test
+    void givenAuthenticationMethodNotHandled_whenApplyApar_thenReturnOriginalResult(){
+        Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+
+        Optional<ResponseEntity<?>> result = underTest.apply("authentication", "default", previousResult, mockResponse, headers);
+        assertThat(result, is(previousResult));
+    }
+
+    @Test
     void givenServiceNotHandled_whenApplyApar_thenReturnOriginalResult() {
         Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 

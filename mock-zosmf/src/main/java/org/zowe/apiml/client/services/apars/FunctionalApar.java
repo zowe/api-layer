@@ -46,9 +46,9 @@ public class FunctionalApar implements Apar {
                 case "delete":
                     result = handleAuthenticationDelete();
                     break;
-                default:
-                    result = handleAuthenticationDefault(headers);
-                    break;
+            }
+            if (!result.isPresent()) {
+                result = handleAuthenticationDefault(headers);
             }
         }
 

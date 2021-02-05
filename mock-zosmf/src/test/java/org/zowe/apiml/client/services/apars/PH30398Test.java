@@ -48,7 +48,7 @@ public class PH30398Test {
     }
 
     @Test
-    void givenEmptyAuthorization_thenReturnInteralServerError() {
+    void givenEmptyAuthorization_thenReturnInternalServerError() {
         Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
         Map<String, String> headers = new HashMap<>();
@@ -63,7 +63,7 @@ public class PH30398Test {
         Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
         Map<String, String> headers = new HashMap<>();
-        Optional<ResponseEntity<?>> result = underTest.apply("badservice", "", previousResult, headers);
+        Optional<ResponseEntity<?>> result = underTest.apply("badservice", "", previousResult, mockResponse, headers);
 
         assertThat(result, is(previousResult));
     }
