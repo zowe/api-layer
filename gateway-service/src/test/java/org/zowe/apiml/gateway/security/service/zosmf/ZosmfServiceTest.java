@@ -63,15 +63,18 @@ class ZosmfServiceTest {
     }
 
     private ZosmfService getZosmfServiceWithValidationStrategy(TokenValidationStrategy strategy) {
-        ZosmfService zosmfService = new ZosmfService(authConfigurationProperties,
+        ZosmfService zosmfServiceObj = new ZosmfService(authConfigurationProperties,
             discovery,
             restTemplate,
             securityObjectMapper,
             applicationContext,
             strategy);
 
+        ZosmfService zosmfService = spy(zosmfServiceObj);
+        doReturn("zosmfuri").when(zosmfService).getURI(any());
+
         if (strategy != null) {
-            doReturn(false).when(strategy).validate(any(), any());
+            doReturn(false).when(strategy).validate(any());
         }
 
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
@@ -212,16 +215,16 @@ class ZosmfServiceTest {
     void handlesExceptionsFromValidationStrategy() {
         ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(tokenValidationStrategy);
 
-        doThrow(RuntimeException.class).when(tokenValidationStrategy).validate(any(), anyString());
+        doThrow(RuntimeException.class).when(tokenValidationStrategy).validate(any());
         assertThrows(RuntimeException.class, () -> zosmfService.validate( "TOKN"));
 
-        doThrow(ResourceAccessException.class).when(tokenValidationStrategy).validate(any(), anyString());
+        doThrow(ResourceAccessException.class).when(tokenValidationStrategy).validate(any());
         assertThrows(ServiceNotAccessibleException.class, () -> zosmfService.validate( "TOKN"));
 
-        doThrow(HttpClientErrorException.Unauthorized.class).when(tokenValidationStrategy).validate(any(), anyString());
+        doThrow(HttpClientErrorException.Unauthorized.class).when(tokenValidationStrategy).validate(any());
         assertThrows(BadCredentialsException.class, () -> zosmfService.validate( "TOKN"));
 
-        doThrow(RestClientException.class).when(tokenValidationStrategy).validate(any(), anyString());
+        doThrow(RestClientException.class).when(tokenValidationStrategy).validate(any());
         assertThrows(AuthenticationServiceException.class, () -> zosmfService.validate( "TOKN"));
     }
 
@@ -229,10 +232,10 @@ class ZosmfServiceTest {
     void returnsResultFromValidationStrategy() {
         ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(tokenValidationStrategy);
 
-        doReturn(true).when(tokenValidationStrategy).validate(any(), anyString());
+        doReturn(true).when(tokenValidationStrategy).validate(any());
         assertThat(zosmfService.validate( "TOKN"), is(true));
 
-        doReturn(false).when(tokenValidationStrategy).validate(any(), anyString());
+        doReturn(false).when(tokenValidationStrategy).validate(any());
         assertThat(zosmfService.validate( "TOKN"), is(false));
     }
 

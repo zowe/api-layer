@@ -10,10 +10,16 @@
 
 package org.zowe.apiml.gateway.security.service.zosmf;
 
-/**
- * General strategy for token validation
- *
- */
-public interface TokenValidationStrategy {
-    boolean validate(TokenValidationRequest request);
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import javax.annotation.concurrent.Immutable;
+
+@Data
+@Immutable
+@AllArgsConstructor
+public class TokenValidationRequest {
+    private final ZosmfService.TokenType tokenType;
+    private final String token;
+    private final String zosmfBaseUrl;
 }

@@ -36,13 +36,13 @@ public class GenericEndpointStrategy implements TokenValidationStrategy {
     protected String VALIDATE_ENDPOINT;
 
     @Override
-    public boolean validate(ZosmfService zosmfService, String token) {
+    public boolean validate(TokenValidationRequest request) {
 
-        final String url = zosmfService.getURI(zosmfService.getZosmfServiceId()) + VALIDATE_ENDPOINT;
+        final String url = request.getZosmfBaseUrl() + VALIDATE_ENDPOINT;
 
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
-        headers.add(HttpHeaders.COOKIE, ZosmfService.TokenType.JWT.getCookieName() + "=" + token);
+        headers.add(HttpHeaders.COOKIE, ZosmfService.TokenType.JWT.getCookieName() + "=" + request.getToken());
 
 
         ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,

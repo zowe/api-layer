@@ -237,8 +237,10 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public boolean validate(String token) {
+        TokenValidationRequest request = new TokenValidationRequest(TokenType.JWT, token, getURI(getZosmfServiceId()));
+
         try {
-            return tokenValidationStrategy.validate(this, token);
+            return tokenValidationStrategy.validate(request);
         } catch (RuntimeException re) {
             //TODO handle returns
             throw handleExceptionOnCall(null ,re);

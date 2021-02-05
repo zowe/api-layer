@@ -34,13 +34,13 @@ public class AuthenticateEndpointStrategy implements TokenValidationStrategy {
     protected static final String ZOSMF_AUTHENTICATE_END_POINT = "/zosmf/services/authenticate";
 
     @Override
-    public boolean validate(ZosmfService zosmfService, String token) {
-        if (zosmfService.loginEndpointExists()) {
-            final String url = zosmfService.getURI(zosmfService.getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
+    public boolean validate(TokenValidationRequest request) {
+        //if (zosmfService.loginEndpointExists()) {
+            final String url = request.getZosmfBaseUrl() + ZOSMF_AUTHENTICATE_END_POINT;
 
             final HttpHeaders headers = new HttpHeaders();
             headers.add(ZOSMF_CSRF_HEADER, "");
-            headers.add(HttpHeaders.COOKIE, ZosmfService.TokenType.JWT.getCookieName() + "=" + token);
+            headers.add(HttpHeaders.COOKIE, ZosmfService.TokenType.JWT.getCookieName() + "=" + request.getToken());
 
 
             ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
@@ -54,9 +54,9 @@ public class AuthenticateEndpointStrategy implements TokenValidationStrategy {
             apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
             throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
 
-        } else {
-            return false;
-        }
+//        } else {
+//            return false;
+//        }
     }
 
 }
