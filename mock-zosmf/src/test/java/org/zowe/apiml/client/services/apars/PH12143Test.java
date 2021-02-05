@@ -13,14 +13,17 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletResponse;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.*;
 
 class PH12143Test {
     private static final String SERVICE = "authentication";
@@ -28,10 +31,8 @@ class PH12143Test {
     private static final String PASSWORD = "validPassword";
 
     private PH12143 underTest;
-    private MockHttpServletResponse mockResponse;
+    private HttpServletResponse mockResponse;
     private Map<String, String> headers;
-
-    // TODO validate JWT when it is returned, not just HTTP code
 
     @BeforeEach
     void setUp() {
@@ -39,7 +40,7 @@ class PH12143Test {
         List<String> passwords = Collections.singletonList(PASSWORD);
 
         underTest = new PH12143(usernames, passwords, "../keystore/localhost/localhost.keystore.p12");
-        mockResponse = new MockHttpServletResponse();
+        mockResponse = mock(HttpServletResponse.class);
         headers = new HashMap<>();
     }
 
@@ -95,23 +96,35 @@ class PH12143Test {
         }
 
         @Test
-        void givenValidUserAndPassword_thenReturnJwt() {
+        void givenValidUserAndPassword_thenReturnJwtAndLtpa() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
-
             assertThat(result, is(expected));
+
+            ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
+            verify(mockResponse, times(2)).addCookie(called.capture());
+
+            List<Cookie> cookies = called.getAllValues();
+            Cookie jwt = cookies.get(0);
+            assertThat(jwt.getName(), is("jwtToken"));
         }
 
         @Test
-        void givenValidUserAndPassticket_thenReturnJwt() {
+        void givenValidUserAndPassticket_thenReturnJwtAndLtpa() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             headers.put("authorization", getAuthorizationHeader(USERNAME, "PASS_TICKET"));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
-
             assertThat(result, is(expected));
+
+            ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
+            verify(mockResponse, times(2)).addCookie(called.capture());
+
+            List<Cookie> cookies = called.getAllValues();
+            Cookie jwt = cookies.get(0);
+            assertThat(jwt.getName(), is("jwtToken"));
         }
     }
 
@@ -144,13 +157,22 @@ class PH12143Test {
         }
 
         @Test
-        void givenValidUser_thenReturnJwt() {
+        void givenValidUser_thenReturnJwtAndLtpa() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
 
             assertThat(result, is(expected));
+            ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
+            verify(mockResponse, times(2)).addCookie(called.capture());
+
+            List<Cookie> cookies = called.getAllValues();
+            Cookie jwt = cookies.get(0);
+            assertThat(jwt.getName(), is("jwtToken"));
+
+            Cookie ltpa = cookies.get(1);
+            assertThat(ltpa.getName(), is("LtpaToken2"));
         }
     }
 
@@ -166,7 +188,7 @@ class PH12143Test {
     }
 
     @Test
-    void givenAuthenticationMethodNotHandled_whenApplyApar_thenReturnOriginalResult(){
+    void givenAuthenticationMethodNotHandled_whenApplyApar_thenReturnOriginalResult() {
         Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
         Optional<ResponseEntity<?>> result = underTest.apply("authentication", "default", previousResult, mockResponse, headers);

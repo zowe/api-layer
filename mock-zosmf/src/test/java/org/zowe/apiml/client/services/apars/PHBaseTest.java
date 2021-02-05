@@ -33,10 +33,8 @@ class PHBaseTest {
 
     @BeforeEach
     void setUp() {
-        List<String> usernames = new ArrayList<>();
-        usernames.add("USER");
-        List<String> passwords = new ArrayList<>();
-        passwords.add("validPassword");
+        List<String> usernames = Collections.singletonList("USER");
+        List<String> passwords = Collections.singletonList("validPassword");
 
         underTest = new PHBase(usernames, passwords);
         headers = new HashMap<>();
