@@ -11,34 +11,26 @@ package org.zowe.apiml.client.services.apars;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.zowe.apiml.client.services.versions.Apar;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class PH30398 implements Apar {
-    private final List<String> usernames;
-    private final List<String> passwords;
+public class PH30398 extends FunctionalApar {
 
     public PH30398(List<String> usernames, List<String> passwords) {
-        this.usernames = usernames;
-        this.passwords = passwords;
+        super(usernames, passwords);
     }
 
+    // TODO implement other functionality for this apar
+
     @Override
-    public Optional<ResponseEntity<?>> apply(Object... parameters) {
-        String calledService = (String) parameters[0];
-
-        if (calledService.equals("authentication")) {
-            Map<String, String> headers = (Map<String, String>) parameters[4];
-
-            String authorization = headers.get("authorization");
-            if (authorization == null || authorization.isEmpty()) {
-                return Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
-            }
+    protected Optional<ResponseEntity<?>> handleAuthenticationDefault(Map<String, String> headers) {
+        String authorization = headers.get("authorization");
+        if (containsInvalidUser(authorization)) {
+            return Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
         }
-        // TODO implement functionality other than checking for no authentication
-        return (Optional<ResponseEntity<?>>) parameters[2];
+
+        return Optional.empty();
     }
 }

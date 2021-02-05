@@ -31,6 +31,8 @@ class PH12143Test {
     private MockHttpServletResponse mockResponse;
     private Map<String, String> headers;
 
+    // TODO validate JWT when it is returned, not just HTTP code
+
     @BeforeEach
     void setUp() {
         List<String> usernames = Collections.singletonList(USERNAME);
@@ -167,7 +169,7 @@ class PH12143Test {
     void givenServiceNotHandled_whenApplyApar_thenReturnOriginalResult() {
         Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-        Optional<ResponseEntity<?>> result = underTest.apply("badservice", "", previousResult, headers);
+        Optional<ResponseEntity<?>> result = underTest.apply("badservice", "", previousResult, mockResponse, headers);
         assertThat(result, is(previousResult));
     }
 

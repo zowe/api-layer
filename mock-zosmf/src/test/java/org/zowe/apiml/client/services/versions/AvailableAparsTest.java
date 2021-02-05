@@ -11,6 +11,7 @@ package org.zowe.apiml.client.services.versions;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.client.services.apars.Apar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,12 +19,12 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-class AparsTest {
-    private Apars underTest;
+class AvailableAparsTest {
+    private AvailableApars underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new Apars(Collections.singletonList("USER"), Collections.singletonList("validPassword"), "keystore/localhost/localhost.keystore.p12");
+        underTest = new AvailableApars(Collections.singletonList("USER"), Collections.singletonList("validPassword"), "keystore/localhost/localhost.keystore.p12");
     }
 
     @Test

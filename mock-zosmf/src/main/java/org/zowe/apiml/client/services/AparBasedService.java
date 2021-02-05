@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.client.services.versions.Apar;
+import org.zowe.apiml.client.services.apars.Apar;
 import org.zowe.apiml.client.services.versions.Versions;
 
 import javax.servlet.http.HttpServletResponse;

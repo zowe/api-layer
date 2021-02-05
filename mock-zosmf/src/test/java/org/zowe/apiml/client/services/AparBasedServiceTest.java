@@ -16,7 +16,7 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.zowe.apiml.client.services.versions.Apar;
+import org.zowe.apiml.client.services.apars.Apar;
 import org.zowe.apiml.client.services.versions.Versions;
 
 import java.util.*;

@@ -12,7 +12,6 @@ package org.zowe.apiml.client.services.apars;
 import io.jsonwebtoken.Jwts;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.zowe.apiml.client.services.versions.Apar;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -22,60 +21,41 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.util.*;
 
-public class PH12143 implements Apar {
-    private final List<String> usernames;
-    private final List<String> passwords;
-
+public class PH12143 extends FunctionalApar {
     private final String keystorePath;
 
     public PH12143(List<String> usernames, List<String> passwords, String keystorePath) {
-        this.usernames = usernames;
-        this.passwords = passwords;
+        super(usernames, passwords);
         this.keystorePath = keystorePath;
     }
 
     @Override
-    public Optional<ResponseEntity<?>> apply(Object... parameters) {
-        String calledService = (String) parameters[0];
-        String calledMethod = (String) parameters[1];
-        Optional<ResponseEntity<?>> previousResult = (Optional<ResponseEntity<?>>) parameters[2];
+    protected Optional<ResponseEntity<?>> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
+        String authorization = headers.get("authorization");
 
-        if (calledService.equals("authentication")) {
-            HttpServletResponse response = (HttpServletResponse) parameters[3];
-            Map<String, String> headers = (Map<String, String>) parameters[4];
-
-            if (calledMethod.equals("create")) {
-
-                String authorization = headers.get("authorization");
-                if (authorization == null || authorization.isEmpty()) {
-                    return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
-                }
-
-                if (containsInvalidUser(authorization)) {
-                    return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
-                }
-
-                String[] credentials = getPiecesOfCredentials(authorization);
-                return Optional.of(validJwtResponse(response, credentials[0]));
-            }
-
-            if (calledMethod.equals("verify")) {
-                String authorization = headers.get("authorization");
-
-                if (authorization == null || authorization.isEmpty() || containsInvalidUser(authorization)) {
-                    return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
-                }
-
-                String[] credentials = getPiecesOfCredentials(authorization);
-                return Optional.of(validJwtResponse(response, credentials[0]));
-            }
-
-            if (calledMethod.equals("delete")) {
-                return Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
-            }
+        if (containsInvalidUser(authorization)) {
+            return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
         }
 
-        return previousResult;
+        String[] credentials = getPiecesOfCredentials(authorization);
+        return Optional.of(validJwtResponse(response, credentials[0]));
+    }
+
+    @Override
+    protected Optional<ResponseEntity<?>> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
+        String authorization = headers.get("authorization");
+
+        if (containsInvalidUser(authorization)) {
+            return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+        }
+
+        String[] credentials = getPiecesOfCredentials(authorization);
+        return Optional.of(validJwtResponse(response, credentials[0]));
+    }
+
+    @Override
+    protected Optional<ResponseEntity<?>> handleAuthenticationDelete() {
+        return Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
     }
 
     private ResponseEntity<?> validJwtResponse(HttpServletResponse response, String username) {
@@ -123,18 +103,5 @@ public class PH12143 implements Apar {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
-    }
-
-    private boolean containsInvalidUser(String authorization) {
-        String[] piecesOfCredentials = getPiecesOfCredentials(authorization);
-
-        return piecesOfCredentials.length <= 0 || (!usernames.contains(piecesOfCredentials[0]) ||
-            (!passwords.contains(piecesOfCredentials[1]) && !piecesOfCredentials[1].contains("PASS_TICKET")));
-    }
-
-    private String[] getPiecesOfCredentials(String authorization) {
-        byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
-        String credentials = new String(decoded);
-        return credentials.split(":");
     }
 }

@@ -11,74 +11,48 @@ package org.zowe.apiml.client.services.apars;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.zowe.apiml.client.services.versions.Apar;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class PHBase implements Apar {
-    private final List<String> usernames;
-    private final List<String> passwords;
+public class PHBase extends FunctionalApar {
 
     public PHBase(List<String> usernames, List<String> passwords) {
-        this.usernames = usernames;
-        this.passwords = passwords;
+        super(usernames, passwords);
     }
 
     @Override
-    public Optional<ResponseEntity<?>> apply(Object... parameters) {
-        String calledService = (String) parameters[0];
-        String calledMethod = (String) parameters[1];
-        Optional<ResponseEntity<?>> previousResult = (Optional<ResponseEntity<?>>) parameters[2];
-        HttpServletResponse response = (HttpServletResponse) parameters[3];
-        Map<String, String> headers = (Map<String, String>) parameters[4];
-
-        if (calledService.equals("authentication")) {
-            if (calledMethod.equals("verify")) {
-                String authorization = headers.get("authorization");
-                if ((authorization == null || authorization.isEmpty() || containsInvalidUser(authorization))
-                    && noLtpaCookie(headers)) {
-                    return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
-                }
-
-                setLtpaToken(response);
-                return Optional.of(new ResponseEntity<>(HttpStatus.OK));
-            } else {
-                return Optional.of(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-            }
+    protected Optional<ResponseEntity<?>> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
+        String authorization = headers.get("authorization");
+        if (containsInvalidUser(authorization) && noLtpaCookie(headers)) {
+            return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
         }
 
-        if (calledService.equals("information")) {
-            String authorization = headers.get("authorization");
-            if (authorization == null || authorization.isEmpty() || containsInvalidUser(authorization)) {
-                return validInfo();
-            }
+        setLtpaToken(response);
+        return Optional.of(new ResponseEntity<>(HttpStatus.OK));
+    }
 
-            setLtpaToken(response);
+    @Override
+    protected Optional<ResponseEntity<?>> handleAuthenticationDefault(Map<String, String> headers) {
+        return Optional.of(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @Override
+    protected Optional<ResponseEntity<?>> handleInformation(Map<String, String> headers, HttpServletResponse response) {
+        String authorization = headers.get("authorization");
+        if (containsInvalidUser(authorization)) {
             return validInfo();
         }
 
-        if (calledService.equals("files")) {
-            return datasets(headers);
-        }
-
-        return previousResult;
+        setLtpaToken(response);
+        return validInfo();
     }
 
-    private boolean containsInvalidUser(String authorization) {
-        byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
-        String credentials = new String(decoded);
-        String[] piecesOfCredentials = credentials.split(":");
-
-        return piecesOfCredentials.length <= 0 || (!usernames.contains(piecesOfCredentials[0]) ||
-            (!passwords.contains(piecesOfCredentials[1]) && !piecesOfCredentials[1].contains("PASS_TICKET")));
-    }
-
-    private Optional<ResponseEntity<?>> datasets(Map<String, String> headers) {
+    @Override
+    protected Optional<ResponseEntity<?>> handleFiles(Map<String, String> headers) {
         String authorization = headers.get("authorization");
 
         if (authorization != null) {
@@ -91,6 +65,10 @@ public class PHBase implements Apar {
             }
         }
 
+        return datasets();
+    }
+
+    private Optional<ResponseEntity<?>> datasets() {
         return Optional.of(new ResponseEntity<>("{\n" +
             "  \"items\": [\n" +
             "    {\n" +

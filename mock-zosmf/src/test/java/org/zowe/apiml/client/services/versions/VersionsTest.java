@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.zowe.apiml.client.services.apars.Apar;
 import org.zowe.apiml.client.services.apars.PH12143;
 import org.zowe.apiml.client.services.apars.PHBase;
 

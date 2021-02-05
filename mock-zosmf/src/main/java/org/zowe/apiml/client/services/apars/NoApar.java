@@ -10,7 +10,6 @@
 package org.zowe.apiml.client.services.apars;
 
 import org.springframework.http.ResponseEntity;
-import org.zowe.apiml.client.services.versions.Apar;
 
 import java.util.Optional;
 
