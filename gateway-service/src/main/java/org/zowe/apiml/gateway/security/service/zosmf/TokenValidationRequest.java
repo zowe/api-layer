@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.annotation.concurrent.Immutable;
+import java.util.Map;
 
 @Data
 @Immutable
@@ -22,4 +23,5 @@ public class TokenValidationRequest {
     private final ZosmfService.TokenType tokenType;
     private final String token;
     private final String zosmfBaseUrl;
+    private final Map<String, Boolean> endpointExistenceMap;
 }

@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
+import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
@@ -34,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ZosmfServiceTest {
 
     private static final String ZOSMF_ID = "zosmf";
@@ -71,7 +75,7 @@ class ZosmfServiceTest {
             strategy);
 
         ZosmfService zosmfService = spy(zosmfServiceObj);
-        doReturn("zosmfuri").when(zosmfService).getURI(any());
+        doReturn("http://host:port").when(zosmfService).getURI(any());
 
         if (strategy != null) {
             doReturn(false).when(strategy).validate(any());
@@ -238,6 +242,23 @@ class ZosmfServiceTest {
         doReturn(false).when(tokenValidationStrategy).validate(any());
         assertThat(zosmfService.validate( "TOKN"), is(false));
     }
+
+    @Test
+    void suppliesValidationRequestWithVerifiedEndpointsList() {
+        ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(tokenValidationStrategy);
+        zosmfService.validate("TOKN");
+        verify(tokenValidationStrategy).validate(argThat(request -> request.getEndpointExistenceMap().size() > 0));
+    }
+
+    @Test
+    void getsEndpointMapWithGivenData() {
+        ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(tokenValidationStrategy);
+        doReturn(true).when(zosmfService).loginEndpointExists();
+        assertThat(zosmfService.getEndpointMap(), IsMapContaining.hasEntry("http://host:port" + ZosmfService.ZOSMF_AUTHENTICATE_END_POINT, true));
+        doReturn(false).when(zosmfService).loginEndpointExists();
+        assertThat(zosmfService.getEndpointMap(), IsMapContaining.hasEntry("http://host:port" + ZosmfService.ZOSMF_AUTHENTICATE_END_POINT, false));
+    }
+
 
     @Test
     void testInvalidateLTPA() {

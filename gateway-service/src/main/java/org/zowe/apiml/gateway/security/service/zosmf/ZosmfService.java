@@ -237,7 +237,8 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public boolean validate(String token) {
-        TokenValidationRequest request = new TokenValidationRequest(TokenType.JWT, token, getURI(getZosmfServiceId()));
+
+        TokenValidationRequest request = new TokenValidationRequest(TokenType.JWT, token, getURI(getZosmfServiceId()), getEndpointMap());
 
         try {
             return tokenValidationStrategy.validate(request);
@@ -245,6 +246,14 @@ public class ZosmfService extends AbstractZosmfService {
             //TODO handle returns
             throw handleExceptionOnCall(null ,re);
         }
+    }
+
+    public Map<String, Boolean> getEndpointMap() {
+        Map<String, Boolean> endpointMap = new HashMap<>();
+
+        endpointMap.put(getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT, loginEndpointExists() ? true : false);
+
+        return endpointMap;
     }
 
     public void invalidate(TokenType type, String token) {

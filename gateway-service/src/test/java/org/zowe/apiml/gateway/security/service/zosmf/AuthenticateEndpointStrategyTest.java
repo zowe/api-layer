@@ -18,6 +18,9 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,12 +33,10 @@ class AuthenticateEndpointStrategyTest {
     private ZosmfService zosmfServiceMock = mock(ZosmfService.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
     private AuthenticateEndpointStrategy underTest = new AuthenticateEndpointStrategy(restTemplate);
-    private TokenValidationRequest dummyRequest = new TokenValidationRequest(ZosmfService.TokenType.JWT, "TOKN", "zosmfurl");
+    private TokenValidationRequest dummyRequest = new TokenValidationRequest(ZosmfService.TokenType.JWT, "TOKN", "zosmfurl", null);
 
     @Test
     void validatesTokenWhenEndpointResponds200() {
-        //doReturn(true).when(zosmfServiceMock).loginEndpointExists();
-        //doReturn("https://hellothere.com").when(zosmfServiceMock).getURI(anyString());
         ResponseEntity re = mock(ResponseEntity.class);
         doReturn(HttpStatus.OK).when(re).getStatusCode();
         doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
@@ -43,17 +44,43 @@ class AuthenticateEndpointStrategyTest {
         assertThat(underTest.validate(dummyRequest), is(true));
     }
 
-//    @Test
-//    void notValidatesTokenWhenEndpointDoesntExist() {
-//        doReturn(false).when(zosmfServiceMock).loginEndpointExists();
-//
-//        assertThat(underTest.validate(new TokenValidationRequest(ZosmfService.TokenType.JWT, "TOKN", "zosmfurl")), is(false));
-//    }
+    @Test
+    void doesNotTryToCallEndpointWhenEndpointDoesntExist() {
+        ResponseEntity re = mock(ResponseEntity.class);
+        doReturn(HttpStatus.OK).when(re).getStatusCode();
+        doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+        TokenValidationRequest realRequestWithNullMap = new TokenValidationRequest(ZosmfService.TokenType.JWT,
+            "TOKN","zosmfurl",null);
+
+
+        assertThat(underTest.validate(realRequestWithNullMap), is(true));
+        verify(restTemplate, times(1)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+        Map<String, Boolean> realEmptyMap = new HashMap<>();
+        TokenValidationRequest realRequestWithEmptyMap = new TokenValidationRequest(ZosmfService.TokenType.JWT,
+            "TOKN","zosmfurl",realEmptyMap);
+        assertThat(underTest.validate(realRequestWithEmptyMap), is(true));
+        verify(restTemplate, times(2)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+        Map<String, Boolean> realMapWithData = new HashMap<>();
+        realMapWithData.put("zosmfurl" + AuthenticateEndpointStrategy.ZOSMF_AUTHENTICATE_END_POINT, true);
+        TokenValidationRequest realRequest = new TokenValidationRequest(ZosmfService.TokenType.JWT,
+            "TOKN","zosmfurl",realMapWithData);
+        assertThat(underTest.validate(realRequest), is(true));
+        verify(restTemplate, times(3)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+        Map<String, Boolean> realMapWithData2 = new HashMap<>();
+        realMapWithData2.put("zosmfurl" + AuthenticateEndpointStrategy.ZOSMF_AUTHENTICATE_END_POINT, false);
+        TokenValidationRequest realRequest2 = new TokenValidationRequest(ZosmfService.TokenType.JWT,
+            "TOKN","zosmfurl",realMapWithData2);
+        assertThat(underTest.validate(realRequest2), is(false));
+        verify(restTemplate, times(3)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+    }
 
     @Test
     void throwsWhenEndpointResponds401() {
-        //doReturn(true).when(zosmfServiceMock).loginEndpointExists();
-        //doReturn("https://hellothere.com").when(zosmfServiceMock).getURI(anyString());
         ResponseEntity re = mock(ResponseEntity.class);
         doReturn(HttpStatus.UNAUTHORIZED).when(re).getStatusCode();
         doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
@@ -63,8 +90,6 @@ class AuthenticateEndpointStrategyTest {
 
     @Test
     void throwsWhenEndpointRespondsSomeOtherRC() {
-        //doReturn(true).when(zosmfServiceMock).loginEndpointExists();
-        //doReturn("https://hellothere.com").when(zosmfServiceMock).getURI(anyString());
         ResponseEntity re = mock(ResponseEntity.class);
         doReturn(HttpStatus.I_AM_A_TEAPOT).when(re).getStatusCode();
         doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
@@ -74,8 +99,6 @@ class AuthenticateEndpointStrategyTest {
 
     @Test
     void throwsRuntimeExceptionFromCall() {
-        //doReturn(true).when(zosmfServiceMock).loginEndpointExists();
-        //doReturn("https://hellothere.com").when(zosmfServiceMock).getURI(anyString());
         doThrow(IllegalArgumentException.class).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
         assertThrows(IllegalArgumentException.class, () -> underTest.validate(dummyRequest));

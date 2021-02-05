@@ -31,11 +31,11 @@ public class AuthenticateEndpointStrategy implements TokenValidationStrategy {
     @InjectApimlLogger
     protected ApimlLogger apimlLog = ApimlLogger.empty();
 
-    protected static final String ZOSMF_AUTHENTICATE_END_POINT = "/zosmf/services/authenticate";
+    public static final String ZOSMF_AUTHENTICATE_END_POINT = "/zosmf/services/authenticate";
 
     @Override
     public boolean validate(TokenValidationRequest request) {
-        //if (zosmfService.loginEndpointExists()) {
+        if (endpointExists(request, ZOSMF_AUTHENTICATE_END_POINT)) {
             final String url = request.getZosmfBaseUrl() + ZOSMF_AUTHENTICATE_END_POINT;
 
             final HttpHeaders headers = new HttpHeaders();
@@ -54,9 +54,19 @@ public class AuthenticateEndpointStrategy implements TokenValidationStrategy {
             apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
             throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
 
-//        } else {
-//            return false;
-//        }
+        } else {
+            return false;
+        }
+    }
+
+    private boolean endpointExists(TokenValidationRequest request, String endpoint) {
+        if (request.getEndpointExistenceMap() == null || request.getEndpointExistenceMap().isEmpty()) {
+            return true;
+        } else {
+            return request.getEndpointExistenceMap().entrySet().stream()
+                .filter(entry -> entry.getKey().equalsIgnoreCase(request.getZosmfBaseUrl() + endpoint))
+            .findFirst().get().getValue();
+        }
     }
 
 }
