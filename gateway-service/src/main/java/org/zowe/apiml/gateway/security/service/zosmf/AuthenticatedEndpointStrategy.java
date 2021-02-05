@@ -24,7 +24,7 @@ import static org.zowe.apiml.gateway.security.service.zosmf.AbstractZosmfService
  * Strategy to validate token through Authentication endpoint of zOSMF
  */
 @RequiredArgsConstructor
-public class AuthenticateEndpointStrategy implements TokenValidationStrategy {
+public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
 
     private final RestTemplate restTemplateWithoutKeystore;
 

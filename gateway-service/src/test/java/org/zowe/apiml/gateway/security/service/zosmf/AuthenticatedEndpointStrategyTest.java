@@ -28,11 +28,11 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AuthenticateEndpointStrategyTest {
+class AuthenticatedEndpointStrategyTest {
 
     private ZosmfService zosmfServiceMock = mock(ZosmfService.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
-    private AuthenticateEndpointStrategy underTest = new AuthenticateEndpointStrategy(restTemplate);
+    private AuthenticatedEndpointStrategy underTest = new AuthenticatedEndpointStrategy(restTemplate);
     private TokenValidationRequest dummyRequest = new TokenValidationRequest(ZosmfService.TokenType.JWT, "TOKN", "zosmfurl", null);
 
     @Test
@@ -64,14 +64,14 @@ class AuthenticateEndpointStrategyTest {
         verify(restTemplate, times(2)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
         Map<String, Boolean> realMapWithData = new HashMap<>();
-        realMapWithData.put("zosmfurl" + AuthenticateEndpointStrategy.ZOSMF_AUTHENTICATE_END_POINT, true);
+        realMapWithData.put("zosmfurl" + AuthenticatedEndpointStrategy.ZOSMF_AUTHENTICATE_END_POINT, true);
         TokenValidationRequest realRequest = new TokenValidationRequest(ZosmfService.TokenType.JWT,
             "TOKN","zosmfurl",realMapWithData);
         assertThat(underTest.validate(realRequest), is(true));
         verify(restTemplate, times(3)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
         Map<String, Boolean> realMapWithData2 = new HashMap<>();
-        realMapWithData2.put("zosmfurl" + AuthenticateEndpointStrategy.ZOSMF_AUTHENTICATE_END_POINT, false);
+        realMapWithData2.put("zosmfurl" + AuthenticatedEndpointStrategy.ZOSMF_AUTHENTICATE_END_POINT, false);
         TokenValidationRequest realRequest2 = new TokenValidationRequest(ZosmfService.TokenType.JWT,
             "TOKN","zosmfurl",realMapWithData2);
         assertThat(underTest.validate(realRequest2), is(false));

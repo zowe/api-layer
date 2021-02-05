@@ -22,6 +22,8 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.CacheUtils;
 
+import java.util.ArrayList;
+
 import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.gateway.security.service.AuthenticationServiceTest.ZOSMF;
 
@@ -59,7 +61,7 @@ public class MockedAuthenticationServiceContext {
             getDiscoveryClient(),
             getRestTemplate(),
             AuthenticationServiceTest.securityObjectMapper,applicationContext,
-            mock(TokenValidationStrategy.class)
+            new ArrayList<TokenValidationStrategy>()
         );
     }
 

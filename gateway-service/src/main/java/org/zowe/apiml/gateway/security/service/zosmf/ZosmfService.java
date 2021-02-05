@@ -85,7 +85,7 @@ public class ZosmfService extends AbstractZosmfService {
 
     private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
     private final ApplicationContext applicationContext;
-    private final TokenValidationStrategy tokenValidationStrategy;
+    private final List<TokenValidationStrategy> tokenValidationStrategy;
 
     public ZosmfService(
         final AuthConfigurationProperties authConfigurationProperties,
@@ -93,7 +93,7 @@ public class ZosmfService extends AbstractZosmfService {
         final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
         final ObjectMapper securityObjectMapper,
         final ApplicationContext applicationContext,
-        TokenValidationStrategy tokenValidationStrategy
+        List<TokenValidationStrategy> tokenValidationStrategy
     ) {
         super(
             authConfigurationProperties,
@@ -241,11 +241,16 @@ public class ZosmfService extends AbstractZosmfService {
         TokenValidationRequest request = new TokenValidationRequest(TokenType.JWT, token, getURI(getZosmfServiceId()), getEndpointMap());
 
         try {
-            return tokenValidationStrategy.validate(request);
+            for (TokenValidationStrategy s: tokenValidationStrategy) {
+                if (s.validate(request)) {
+                   return true;
+                }
+            }
         } catch (RuntimeException re) {
             //TODO handle returns
             throw handleExceptionOnCall(null ,re);
         }
+        return false;
     }
 
     public Map<String, Boolean> getEndpointMap() {

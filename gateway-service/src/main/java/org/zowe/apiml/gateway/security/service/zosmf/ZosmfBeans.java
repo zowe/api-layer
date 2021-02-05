@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.security.service.zosmf;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -23,14 +22,13 @@ import org.springframework.web.client.RestTemplate;
 public class ZosmfBeans {
 
     @Bean
-    @ConditionalOnProperty(prefix = "apiml.security.zosmf", name = "tokenValidation", havingValue = "authenticate-endpoint", matchIfMissing = true)
     TokenValidationStrategy authenticateValidationStrategy(@Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore) {
-        return new AuthenticateEndpointStrategy(restTemplateWithoutKeystore);
+        return new AuthenticatedEndpointStrategy(restTemplateWithoutKeystore);
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "apiml.security.zosmf", name = "tokenValidation", havingValue = "generic-endpoint")
-    TokenValidationStrategy genericValidationStrategy(@Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore) {
-        return new GenericEndpointStrategy(restTemplateWithoutKeystore);
+    TokenValidationStrategy authenticateValidationStrategy2(@Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore) {
+        return new AuthenticatedEndpointStrategy(restTemplateWithoutKeystore);
     }
+
 }

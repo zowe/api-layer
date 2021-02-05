@@ -433,7 +433,7 @@ public class AuthenticationServiceTest {
                 restTemplate,
                 securityObjectMapper,
                 applicationContext,
-                mock(TokenValidationStrategy.class)
+                new ArrayList<TokenValidationStrategy>()
             ));
 
 
