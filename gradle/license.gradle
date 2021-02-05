@@ -21,6 +21,8 @@ ext.projectsNeedLicense = [
     'zowe-install',
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
+    'onboarding-enabler-micronaut',
+    'onboarding-enabler-micronaut-sample-app',
     'zaas-client',
     'mock-zosmf'
 ]

@@ -38,5 +38,8 @@ include 'security-service-client-spring'
 
 include 'onboarding-enabler-java'
 include 'onboarding-enabler-spring'
+include 'onboarding-enabler-micronaut'
 include 'zaas-client'
 include 'mock-zosmf'
+include 'onboarding-enabler-micronaut-sample-app'
+
