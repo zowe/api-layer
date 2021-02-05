@@ -22,6 +22,10 @@ public class CachingService {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(CachingService.class);
         app.setLogStartupInfo(false);
-        app.run(args);
+        try {
+            app.run(args);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
     }
 }

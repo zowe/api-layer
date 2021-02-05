@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import static io.restassured.RestAssured.given;
@@ -25,7 +26,7 @@ import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.constants.ApimlConstants.BASIC_AUTHENTICATION_PREFIX;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
 
-class ServicesInfoTest {
+class ServicesInfoTest implements TestWithStartedInstances {
 
     public static final String VERSION_HEADER = "Content-Version";
     public static final String CURRENT_VERSION = "1";

@@ -28,6 +28,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import javax.net.ssl.SSLContext;
@@ -47,7 +48,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 
-abstract class LoginTest {
+abstract class LoginTest implements TestWithStartedInstances {
     protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     protected final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();

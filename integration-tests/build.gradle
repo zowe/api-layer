@@ -54,6 +54,7 @@ apply plugin: 'java'
 test {
     testLogging.showStandardStreams = true
     systemProperty "externalJenkinsToggle", System.getProperty("externalJenkinsToggle")
+    outputs.upToDateWhen { false }
 }
 
 task startUpCheck(type: Test) {

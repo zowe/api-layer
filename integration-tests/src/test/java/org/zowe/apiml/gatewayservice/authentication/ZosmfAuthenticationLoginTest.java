@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.security.common.login.LoginRequest;
@@ -65,6 +66,7 @@ class ZosmfAuthenticationLoginTest extends LoginTest {
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     @MainframeDependentTests
+    @Disabled
     void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenIdenticalTokenIsProduced(String loginUrl) {
         LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 

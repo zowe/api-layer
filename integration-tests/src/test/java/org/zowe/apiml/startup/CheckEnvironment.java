@@ -20,6 +20,7 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 
+@Disabled
 @EnvironmentCheck
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CheckEnvironment {

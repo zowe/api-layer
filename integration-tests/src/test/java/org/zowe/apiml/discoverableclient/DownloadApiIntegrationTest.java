@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -20,7 +21,7 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 
-public class DownloadApiIntegrationTest {
+public class DownloadApiIntegrationTest implements TestWithStartedInstances {
 
     @BeforeAll
     public static void beforeClass() {

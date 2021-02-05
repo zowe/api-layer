@@ -12,11 +12,9 @@ package org.zowe.apiml.util.service;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Duration;
 import org.zowe.apiml.util.DiscoveryRequests;
-import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -59,7 +57,9 @@ public class RunningService {
         ProcessBuilder builder1 = new ProcessBuilder(discoveryCommand);
         builder1.directory(new File("../"));
         newCachingProcess = builder1.inheritIO().start();
+    }
 
+    public void waitUntilReady() {
         await()
             .atMost(Duration.TWO_MINUTES)
             .with()

@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.util.service;
 
+import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,14 +23,16 @@ public class FullApiMediationLayer {
     private RunningService mockZosmfService;
     private RunningService discoverableClientService;
 
+    private boolean firstCheck = true;
+
     private static FullApiMediationLayer instance = new FullApiMediationLayer();
     private FullApiMediationLayer() {
         prepareCaching();
         prepareCatalog();
         prepareDiscoverableClient();
-        prepareDiscovery();
         prepareGateway();
         prepareMockZosmf();
+        prepareDiscovery();
     }
 
     private void prepareDiscovery() {
@@ -52,7 +56,6 @@ public class FullApiMediationLayer {
         after.put("--apiml.security.ssl.verifySslCertificatesOfServices", "true");
 
         gatewayService = new RunningService("gateway", "gateway-service/build/libs/gateway-service-lite.jar", before, after);
-
     }
 
     private void prepareCatalog() {
@@ -66,7 +69,7 @@ public class FullApiMediationLayer {
         apiCatalogService = new RunningService("apicatalog", "api-catalog-services/build/libs/api-catalog-services-lite.jar", before, after);
     }
 
-    private void prepareCaching() {
+    public void prepareCaching() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
 
@@ -93,16 +96,16 @@ public class FullApiMediationLayer {
     }
 
     public void start() {
+        // TODO: Start only outside of tests against zOS
         try {
             discoveryService.start();
             gatewayService.start();
             mockZosmfService.start();
 
-            cachingService.start();
             apiCatalogService.start();
             discoverableClientService.start();
         } catch (IOException ex) {
-            throw new RuntimeException("Couldn't start the services");
+            ex.printStackTrace();
         }
     }
 
@@ -111,8 +114,24 @@ public class FullApiMediationLayer {
         gatewayService.stop();
         mockZosmfService.stop();
 
-        cachingService.stop();
         apiCatalogService.stop();
         discoverableClientService.stop();
+
+        cachingService.stop();
+    }
+
+    public void waitUntilReady() {
+        if (firstCheck) {
+            new ApiMediationLayerStartupChecker().waitUntilReady();
+
+            try {
+                cachingService.start();
+                cachingService.waitUntilReady();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+            firstCheck = false;
+        }
     }
 }

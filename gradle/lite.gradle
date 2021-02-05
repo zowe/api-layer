@@ -52,6 +52,8 @@ task liteLibJarAll(type: Jar) {
     from { rootProject.subprojects.collectMany {getLiteLibJarOutput(it.buildDir)}.collect() }
 }
 
+tasks.getByPath(":integration-tests:test").dependsOn([liteLibJarAll, ":caching-service:build"])
+
 build.dependsOn(liteLibJarAll)
 liteLibJarAll.dependsOn(":gateway-service:build")
 liteLibJarAll.dependsOn(":discovery-service:build")
