@@ -35,8 +35,11 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
 
     @Override
     public boolean validate(TokenValidationRequest request) {
+
+        final String url = request.getZosmfBaseUrl() + ZOSMF_AUTHENTICATE_END_POINT;
+        String errorReturned = "Endpoint does not exist";
+
         if (endpointExists(request, ZOSMF_AUTHENTICATE_END_POINT)) {
-            final String url = request.getZosmfBaseUrl() + ZOSMF_AUTHENTICATE_END_POINT;
 
             final HttpHeaders headers = new HttpHeaders();
             headers.add(ZOSMF_CSRF_HEADER, "");
@@ -51,12 +54,12 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
             if (HttpStatus.UNAUTHORIZED.equals(re.getStatusCode())) {
                 throw new TokenNotValidException("Token is not valid.");
             }
-            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
-            throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
+            errorReturned = String.valueOf(re.getStatusCode());
 
-        } else {
-            return false;
         }
+
+        apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, errorReturned);
+        throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
     }
 
     private boolean endpointExists(TokenValidationRequest request, String endpoint) {
