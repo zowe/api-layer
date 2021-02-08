@@ -17,6 +17,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,8 +32,19 @@ class AuthenticatedEndpointStrategyTest {
 
     private ZosmfService zosmfServiceMock = mock(ZosmfService.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
-    private AuthenticatedEndpointStrategy underTest = new AuthenticatedEndpointStrategy(restTemplate);
+    private static final String ENDPOINT = "/mamma/mia";
+    private AuthenticatedEndpointStrategy underTest = new AuthenticatedEndpointStrategy(restTemplate, ENDPOINT);
     private TokenValidationRequest dummyRequest = new TokenValidationRequest(ZosmfService.TokenType.JWT, "TOKN", "zosmfurl", null);
+
+    @Test
+    void canBeConstructedForSpecificEndpoint() throws URISyntaxException {
+        ResponseEntity re = mock(ResponseEntity.class);
+        doReturn(HttpStatus.OK).when(re).getStatusCode();
+        doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+        underTest.validate(dummyRequest);
+        verify(restTemplate, times(1)).exchange(eq("zosmfurl" + ENDPOINT), eq(HttpMethod.POST), any(), eq(String.class));
+    }
 
     @Test
     void doesNotTryToCallEndpointWhenEndpointDoesntExist() {
@@ -52,14 +64,14 @@ class AuthenticatedEndpointStrategyTest {
         verify(restTemplate, times(2)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
         Map<String, Boolean> realMapWithData = new HashMap<>();
-        realMapWithData.put("zosmfurl" + AuthenticatedEndpointStrategy.ZOSMF_AUTHENTICATE_END_POINT, true);
+        realMapWithData.put("zosmfurl" + underTest.AUTHENTICATED_ENDPOINT, true);
         TokenValidationRequest realRequest = new TokenValidationRequest(ZosmfService.TokenType.JWT,
             "TOKN","zosmfurl",realMapWithData);
         underTest.validate(realRequest);
         verify(restTemplate, times(3)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
         Map<String, Boolean> realMapWithData2 = new HashMap<>();
-        realMapWithData2.put("zosmfurl" + AuthenticatedEndpointStrategy.ZOSMF_AUTHENTICATE_END_POINT, false);
+        realMapWithData2.put("zosmfurl" + underTest.AUTHENTICATED_ENDPOINT, false);
         TokenValidationRequest realRequest2 = new TokenValidationRequest(ZosmfService.TokenType.JWT,
             "TOKN","zosmfurl",realMapWithData2);
         assertThrows(RuntimeException.class, () -> underTest.validate(realRequest2));
@@ -99,7 +111,7 @@ class AuthenticatedEndpointStrategyTest {
     @Test
     void throwsServiceNotAccesibleWhenEndpointDoesNotExist() {
         Map<String, Boolean> endpointMap = new HashMap<>();
-        endpointMap.put("zosmfurl" + AuthenticatedEndpointStrategy.ZOSMF_AUTHENTICATE_END_POINT, false);
+        endpointMap.put("zosmfurl" + underTest.AUTHENTICATED_ENDPOINT, false);
         TokenValidationRequest request = new TokenValidationRequest(ZosmfService.TokenType.JWT,
             "TOKN","zosmfurl",endpointMap);
 

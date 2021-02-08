@@ -30,15 +30,15 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
     @InjectApimlLogger
     protected ApimlLogger apimlLog = ApimlLogger.empty();
 
-    public static final String ZOSMF_AUTHENTICATE_END_POINT = "/zosmf/services/authenticate";
+    public final String AUTHENTICATED_ENDPOINT;
 
     @Override
     public void validate(TokenValidationRequest request) {
 
-        final String url = request.getZosmfBaseUrl() + ZOSMF_AUTHENTICATE_END_POINT;
+        final String url = request.getZosmfBaseUrl() + AUTHENTICATED_ENDPOINT;
         String errorReturned = "Endpoint does not exist";
 
-        if (endpointExists(request, ZOSMF_AUTHENTICATE_END_POINT)) {
+        if (endpointExists(request, AUTHENTICATED_ENDPOINT)) {
 
             final HttpHeaders headers = new HttpHeaders();
             headers.add(ZOSMF_CSRF_HEADER, "");
