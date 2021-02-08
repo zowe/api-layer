@@ -63,6 +63,7 @@ task startUpCheck(type: Test) {
     description "Check that the API Mediation Layer is up and runnig"
 
     systemProperties System.properties
+    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags 'StartupCheck'
     }
