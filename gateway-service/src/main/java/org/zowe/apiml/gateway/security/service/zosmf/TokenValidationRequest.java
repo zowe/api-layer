@@ -10,18 +10,24 @@
 
 package org.zowe.apiml.gateway.security.service.zosmf;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
-import javax.annotation.concurrent.Immutable;
 import java.util.Map;
 
 @Data
-@Immutable
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class TokenValidationRequest {
     private final ZosmfService.TokenType tokenType;
     private final String token;
     private final String zosmfBaseUrl;
     private final Map<String, Boolean> endpointExistenceMap;
+
+    @Setter
+    private STATUS authenticated = STATUS.UNKNOWN;
+
+    public enum STATUS {
+        AUTHENTICATED,
+        INVALID,
+        UNKNOWN
+    }
 }

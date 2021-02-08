@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,15 +33,6 @@ class AuthenticatedEndpointStrategyTest {
     private RestTemplate restTemplate = mock(RestTemplate.class);
     private AuthenticatedEndpointStrategy underTest = new AuthenticatedEndpointStrategy(restTemplate);
     private TokenValidationRequest dummyRequest = new TokenValidationRequest(ZosmfService.TokenType.JWT, "TOKN", "zosmfurl", null);
-
-    @Test
-    void validatesTokenWhenEndpointResponds200() {
-        ResponseEntity re = mock(ResponseEntity.class);
-        doReturn(HttpStatus.OK).when(re).getStatusCode();
-        doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
-
-        assertThat(underTest.validate(dummyRequest), is(true));
-    }
 
     @Test
     void doesNotTryToCallEndpointWhenEndpointDoesntExist() {
@@ -78,12 +68,23 @@ class AuthenticatedEndpointStrategyTest {
     }
 
     @Test
-    void throwsTokenNotValidWhenEndpointResponds401() {
+    void authenticatesRequestWhenEndpointResponds200() {
+        ResponseEntity re = mock(ResponseEntity.class);
+        doReturn(HttpStatus.OK).when(re).getStatusCode();
+        doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+        underTest.validate(dummyRequest);
+        assertThat(dummyRequest.getAuthenticated(), is(TokenValidationRequest.STATUS.AUTHENTICATED));
+    }
+
+    @Test
+    void invalidatesRequestdWhenEndpointResponds401() {
         ResponseEntity re = mock(ResponseEntity.class);
         doReturn(HttpStatus.UNAUTHORIZED).when(re).getStatusCode();
         doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
-        assertThrows(TokenNotValidException.class, () -> underTest.validate(dummyRequest));
+        underTest.validate(dummyRequest);
+        assertThat(dummyRequest.getAuthenticated(), is(TokenValidationRequest.STATUS.INVALID));
     }
 
     @Test

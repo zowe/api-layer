@@ -240,17 +240,25 @@ public class ZosmfService extends AbstractZosmfService {
 
         TokenValidationRequest request = new TokenValidationRequest(TokenType.JWT, token, getURI(getZosmfServiceId()), getEndpointMap());
 
-        try {
-            for (TokenValidationStrategy s: tokenValidationStrategy) {
-                if (s.validate(request)) {
-                   return true;
+        for (TokenValidationStrategy s: tokenValidationStrategy) {
+            try {
+                s.validate(request);
+                if (requestValidationIsDecided(request)) {
+                    break;
                 }
+            } catch (RuntimeException re) {
+                //NOOP or logging
             }
-        } catch (RuntimeException re) {
-            //TODO handle returns
-            throw handleExceptionOnCall(null ,re);
         }
-        return false;
+        return requestIsAuthenticated(request);
+    }
+
+    private boolean requestIsAuthenticated(TokenValidationRequest request) {
+        return TokenValidationRequest.STATUS.AUTHENTICATED.equals(request.getAuthenticated());
+    }
+
+    private boolean requestValidationIsDecided(TokenValidationRequest request) {
+        return !TokenValidationRequest.STATUS.UNKNOWN.equals(request.getAuthenticated());
     }
 
     public Map<String, Boolean> getEndpointMap() {

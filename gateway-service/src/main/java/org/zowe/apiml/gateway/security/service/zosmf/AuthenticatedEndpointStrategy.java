@@ -16,7 +16,6 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.AbstractZosmfService.ZOSMF_CSRF_HEADER;
 
@@ -34,7 +33,7 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
     public static final String ZOSMF_AUTHENTICATE_END_POINT = "/zosmf/services/authenticate";
 
     @Override
-    public boolean validate(TokenValidationRequest request) {
+    public void validate(TokenValidationRequest request) {
 
         final String url = request.getZosmfBaseUrl() + ZOSMF_AUTHENTICATE_END_POINT;
         String errorReturned = "Endpoint does not exist";
@@ -49,10 +48,13 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
             ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
                 new HttpEntity<>(null, headers), String.class);
 
-            if (re.getStatusCode().is2xxSuccessful())
-                return true;
+            if (re.getStatusCode().is2xxSuccessful()) {
+                request.setAuthenticated(TokenValidationRequest.STATUS.AUTHENTICATED);
+                return;
+            }
             if (HttpStatus.UNAUTHORIZED.equals(re.getStatusCode())) {
-                throw new TokenNotValidException("Token is not valid.");
+                request.setAuthenticated(TokenValidationRequest.STATUS.INVALID);
+                return;
             }
             errorReturned = String.valueOf(re.getStatusCode());
 

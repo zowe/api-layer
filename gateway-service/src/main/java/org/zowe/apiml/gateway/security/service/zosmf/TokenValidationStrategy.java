@@ -15,5 +15,5 @@ package org.zowe.apiml.gateway.security.service.zosmf;
  *
  */
 public interface TokenValidationStrategy {
-    boolean validate(TokenValidationRequest request);
+    void validate(TokenValidationRequest request);
 }
