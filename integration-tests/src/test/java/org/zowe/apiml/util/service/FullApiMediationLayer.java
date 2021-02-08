@@ -96,7 +96,6 @@ public class FullApiMediationLayer {
     }
 
     public void start() {
-        // TODO: Start only outside of tests against zOS
         try {
             discoveryService.start();
             gatewayService.start();
@@ -118,6 +117,11 @@ public class FullApiMediationLayer {
         discoverableClientService.stop();
 
         cachingService.stop();
+    }
+
+    public boolean runsOffPlatform() {
+        String offPlatform = System.getProperty("environment.offPlatform");
+        return offPlatform != null && !offPlatform.isEmpty() && Boolean.parseBoolean(offPlatform);
     }
 
     public void waitUntilReady() {
