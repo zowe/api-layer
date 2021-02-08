@@ -15,12 +15,9 @@ import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class RSU2012 extends FunctionalApar {
     private final String keystorePath;
-
-    // TODO DRY authentication check across all apars, and their unit tests
 
     public RSU2012(List<String> usernames, List<String> passwords, String keystorePath) {
         super(usernames, passwords);
@@ -28,32 +25,33 @@ public class RSU2012 extends FunctionalApar {
     }
 
     @Override
-    protected Optional<ResponseEntity<?>> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
-        String authorization = headers.get("authorization");
-        if (containsInvalidUser(authorization) && noLtpaCookie(headers)) {
-            return Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+    protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
+        // JWT token not accepted for create method
+        if (containsInvalidUser(headers) && noLtpaCookie(headers)) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // TODO what if use ltpa token, then what is the username?
+        String authorization = headers.get("authorization");
         String[] credentials = getPiecesOfCredentials(authorization);
-        return Optional.of(validJwtResponse(response, credentials[0], keystorePath));
+        return validJwtResponse(response, credentials[0], keystorePath);
     }
 
     @Override
-    protected Optional<ResponseEntity<?>> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        String authorization = headers.get("authorization");
-        if (containsInvalidUser(authorization) && noLtpaCookie(headers) && noJwtCookie(headers)) {
-            return Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+    protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
+        if (containsInvalidUser(headers) && noLtpaCookie(headers) && noJwtCookie(headers)) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // TODO what if use ltpa token, then what is the username?
+        String authorization = headers.get("authorization");
         String[] credentials = getPiecesOfCredentials(authorization);
-        return Optional.of(validJwtResponse(response, credentials[0], keystorePath));
+        return validJwtResponse(response, credentials[0], keystorePath);
     }
 
     @Override
-    protected Optional<ResponseEntity<?>> handleAuthenticationDelete() {
+    protected ResponseEntity<?> handleAuthenticationDelete() {
         // TODO implement auth check for all apars
-        return Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

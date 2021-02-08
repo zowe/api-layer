@@ -13,6 +13,9 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,62 +48,65 @@ class RSU2012Test {
     }
 
     // TODO test using ltpa cookie for auth in all apar unit tests
-    // TODO consider method source for method - e.g. create and verify have same logic
-    // TODO consider base class for tests to dry across apars
 
     @Nested
-    class whenCreating {
-        @Test
-        void givenNoAuthorization_thenReturnInternalServerError() {
+    class whenAuthenticating {
+        @ParameterizedTest
+        @ValueSource(strings = {"create", "verify"})
+        void givenNoAuthorization_thenReturnInternalServerError(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
 
             assertThat(result, is(expected));
         }
 
-        @Test
-        void givenEmptyAuthorization_thenReturnInternalServerError() {
+        @ParameterizedTest
+        @ValueSource(strings = {"create", "verify"})
+        void givenEmptyAuthorization_thenReturnInternalServerError(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
             headers.put("authorization", "");
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
 
             assertThat(result, is(expected));
         }
 
-        @Test
-        void givenNoCredentials_thenReturnInternalServerError() {
+        @ParameterizedTest
+        @ValueSource(strings = {"create", "verify"})
+        void givenNoCredentials_thenReturnInternalServerError(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
             headers.put("authorization", getAuthorizationHeader(null, null));
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
 
             assertThat(result, is(expected));
         }
 
-        @Test
-        void givenInvalidUsername_thenReturnInternalServerError() {
+        @ParameterizedTest
+        @ValueSource(strings = {"create", "verify"})
+        void givenInvalidUsername_thenReturnInternalServerError(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
             headers.put("authorization", getAuthorizationHeader("baduser", PASSWORD));
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
 
             assertThat(result, is(expected));
         }
 
-        @Test
-        void givenInvalidPassword_thenReturnInternalServerError() {
+        @ParameterizedTest
+        @ValueSource(strings = {"create", "verify"})
+        void givenInvalidPassword_thenReturnInternalServerError(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
             headers.put("authorization", getAuthorizationHeader(USERNAME, "badpassword"));
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
 
             assertThat(result, is(expected));
         }
 
         @Test
-        void givenValidUserAndPassword_thenReturnJwtAndLtpa() {
+        void givenValidUserAndPassword_whenCreating_thenReturnJwtAndLtpa() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
@@ -114,61 +120,9 @@ class RSU2012Test {
             Cookie jwt = cookies.get(0);
             assertThat(jwt.getName(), is("jwtToken"));
         }
-    }
-
-    @Nested
-    class whenVerifying {
-        @Test
-        void givenNoAuthorization_thenReturnInternalServerError() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
-
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
-
-            assertThat(result, is(expected));
-        }
 
         @Test
-        void givenEmptyAuthorization_thenReturnInternalServerError() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
-
-            headers.put("authorization", "");
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
-
-            assertThat(result, is(expected));
-        }
-
-        @Test
-        void givenNoCredentials_thenReturnInternalServerError() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
-
-            headers.put("authorization", getAuthorizationHeader(null, null));
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
-
-            assertThat(result, is(expected));
-        }
-
-        @Test
-        void givenInvalidUsername_thenReturnInternalServerError() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
-
-            headers.put("authorization", getAuthorizationHeader("baduser", PASSWORD));
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
-
-            assertThat(result, is(expected));
-        }
-
-        @Test
-        void givenInvalidPassword_thenReturnInternalServerError() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
-
-            headers.put("authorization", getAuthorizationHeader(USERNAME, "badpassword"));
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
-
-            assertThat(result, is(expected));
-        }
-
-        @Test
-        void givenValidUserAndPassword_thenReturnJwtAndLtpa() {
+        void givenValidUserAndPassword_whenVerifying_thenReturnJwtAndLtpa() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
@@ -181,6 +135,14 @@ class RSU2012Test {
             List<Cookie> cookies = called.getAllValues();
             Cookie jwt = cookies.get(0);
             assertThat(jwt.getName(), is("jwtToken"));
+        }
+
+        @Test
+        void givenMethodNotHandled_thenReturnOriginalResult() {
+            Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "default", previousResult, mockResponse, headers);
+            assertThat(result, is(previousResult));
         }
     }
 
@@ -193,14 +155,6 @@ class RSU2012Test {
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "delete", Optional.empty(), mockResponse, headers);
             assertThat(result, is(expected));
         }
-    }
-
-    @Test
-    void givenAuthenticationMethodNotHandled_whenApplyApar_thenReturnOriginalResult() {
-        Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
-
-        Optional<ResponseEntity<?>> result = underTest.apply("authentication", "default", previousResult, mockResponse, headers);
-        assertThat(result, is(previousResult));
     }
 
     @Test

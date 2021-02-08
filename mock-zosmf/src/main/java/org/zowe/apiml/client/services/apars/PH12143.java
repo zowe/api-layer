@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class PH12143 extends FunctionalApar {
     private final String keystorePath;
@@ -26,31 +25,29 @@ public class PH12143 extends FunctionalApar {
     }
 
     @Override
-    protected Optional<ResponseEntity<?>> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
-        String authorization = headers.get("authorization");
-
-        if (containsInvalidUser(authorization) && noLtpaCookie(headers)) {
-            return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+    protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
+        if (containsInvalidUser(headers) && noLtpaCookie(headers)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
+        String authorization = headers.get("authorization");
         String[] credentials = getPiecesOfCredentials(authorization);
-        return Optional.of(validJwtResponse(response, credentials[0], keystorePath));
+        return validJwtResponse(response, credentials[0], keystorePath);
     }
 
     @Override
-    protected Optional<ResponseEntity<?>> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        String authorization = headers.get("authorization");
-
-        if (containsInvalidUser(authorization) && noLtpaCookie(headers)) {
-            return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+    protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
+        if (containsInvalidUser(headers) && noLtpaCookie(headers)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
+        String authorization = headers.get("authorization");
         String[] credentials = getPiecesOfCredentials(authorization);
-        return Optional.of(validJwtResponse(response, credentials[0], keystorePath));
+        return validJwtResponse(response, credentials[0], keystorePath);
     }
 
     @Override
-    protected Optional<ResponseEntity<?>> handleAuthenticationDelete() {
-        return Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+    protected ResponseEntity<?> handleAuthenticationDelete() {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

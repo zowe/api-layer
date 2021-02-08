@@ -37,7 +37,7 @@ public class FunctionalApar implements Apar {
         Optional<ResponseEntity<?>> originalResult = (Optional<ResponseEntity<?>>) parameters[2];
         HttpServletResponse response = (HttpServletResponse) parameters[3];
         Map<String, String> headers = (Map<String, String>) parameters[4];
-        Optional<ResponseEntity<?>> result = Optional.empty();
+        ResponseEntity<?> result = null;
 
         if (calledService.equals("authentication")) {
             switch (calledMethod) {
@@ -51,7 +51,7 @@ public class FunctionalApar implements Apar {
                     result = handleAuthenticationDelete();
                     break;
             }
-            if (!result.isPresent()) {
+            if (result == null) {
                 result = handleAuthenticationDefault(headers);
             }
         }
@@ -64,34 +64,57 @@ public class FunctionalApar implements Apar {
             result = handleFiles(headers);
         }
 
-        return result.isPresent() ? result : originalResult;
+        return result == null ? originalResult : Optional.of(result);
     }
 
-    protected Optional<ResponseEntity<?>> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
-        return Optional.empty();
+    /**
+     * Override to provide a response entity, or set fields (like cookies) in the HTTP response when the create method
+     * for the authentication service is called with proper authorization.
+     */
+    protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
+        return null;
     }
 
-    protected Optional<ResponseEntity<?>> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        return Optional.empty();
+    /**
+     * Override to provide a response entity, or set fields (like cookies) in the HTTP response when the verify method
+     * for the authentication service is called with proper authorization.
+     */
+    protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
+        return null;
     }
 
-    protected Optional<ResponseEntity<?>> handleAuthenticationDelete() {
-        return Optional.empty();
+    /**
+     * Override to provide a response entity when the delete method for the authentication service is called
+     * with proper authorization.
+     */
+    protected ResponseEntity<?> handleAuthenticationDelete() {
+        return null;
     }
 
-    protected Optional<ResponseEntity<?>> handleAuthenticationDefault(Map<String, String> headers) {
-        return Optional.empty();
+    /**
+     * Override to provide a response entity when the authentication service with proper authorization and the method
+     * is not explicitly handled.
+     */
+    protected ResponseEntity<?> handleAuthenticationDefault(Map<String, String> headers) {
+        return null;
     }
 
-    protected Optional<ResponseEntity<?>> handleInformation(Map<String, String> headers, HttpServletResponse response) {
-        return Optional.empty();
+    /**
+     * Override to provide a response entity when the information service is called with proper authorization.
+     */
+    protected ResponseEntity<?> handleInformation(Map<String, String> headers, HttpServletResponse response) {
+        return null;
     }
 
-    protected Optional<ResponseEntity<?>> handleFiles(Map<String, String> headers) {
-        return Optional.empty();
+    /**
+     * Override to provide a response entity when the files service is called with proper authorization.
+     */
+    protected ResponseEntity<?> handleFiles(Map<String, String> headers) {
+        return null;
     }
 
-    protected boolean containsInvalidUser(String authorization) {
+    protected boolean containsInvalidUser(Map<String, String> headers) {
+        String authorization = headers.get("authorization");
         if (authorization == null || authorization.isEmpty()) {
             return true;
         }

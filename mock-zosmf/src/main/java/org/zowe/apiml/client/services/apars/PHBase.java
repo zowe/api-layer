@@ -12,11 +12,9 @@ package org.zowe.apiml.client.services.apars;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class PHBase extends FunctionalApar {
 
@@ -25,25 +23,23 @@ public class PHBase extends FunctionalApar {
     }
 
     @Override
-    protected Optional<ResponseEntity<?>> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        String authorization = headers.get("authorization");
-        if (containsInvalidUser(authorization) && noLtpaCookie(headers)) {
-            return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+    protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
+        if (containsInvalidUser(headers) && noLtpaCookie(headers)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         setLtpaToken(response);
-        return Optional.of(new ResponseEntity<>(HttpStatus.OK));
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
-    protected Optional<ResponseEntity<?>> handleAuthenticationDefault(Map<String, String> headers) {
-        return Optional.of(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    protected ResponseEntity<?> handleAuthenticationDefault(Map<String, String> headers) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @Override
-    protected Optional<ResponseEntity<?>> handleInformation(Map<String, String> headers, HttpServletResponse response) {
-        String authorization = headers.get("authorization");
-        if (containsInvalidUser(authorization)) {
+    protected ResponseEntity<?> handleInformation(Map<String, String> headers, HttpServletResponse response) {
+        if (containsInvalidUser(headers)) {
             return validInfo();
         }
 
@@ -52,24 +48,24 @@ public class PHBase extends FunctionalApar {
     }
 
     @Override
-    protected Optional<ResponseEntity<?>> handleFiles(Map<String, String> headers) {
+    protected ResponseEntity<?> handleFiles(Map<String, String> headers) {
         String authorization = headers.get("authorization");
 
         if (authorization != null) {
             if (authorization.startsWith("Bearer")) {
-                return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         } else {
             if (noLtpaCookie(headers)) {
-                return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         }
 
         return datasets();
     }
 
-    private Optional<ResponseEntity<?>> datasets() {
-        return Optional.of(new ResponseEntity<>("{\n" +
+    private ResponseEntity<?> datasets() {
+        return new ResponseEntity<>("{\n" +
             "  \"items\": [\n" +
             "    {\n" +
             "      \"dsname\": \"SYS1.PAGEDUMP.VMVD21M\"\n" +
@@ -113,11 +109,11 @@ public class PHBase extends FunctionalApar {
             "  ],\n" +
             "  \"returnedRows\": 13,\n" +
             "  \"JSONversion\": 1\n" +
-            "}", HttpStatus.OK));
+            "}", HttpStatus.OK);
     }
 
-    private Optional<ResponseEntity<?>> validInfo() {
-        return Optional.of(new ResponseEntity<>("{\n" +
+    private ResponseEntity<?> validInfo() {
+        return new ResponseEntity<>("{\n" +
             "  \"zos_version\": \"04.27.00\",\n" +
             "  \"zosmf_port\": \"1443\",\n" +
             "  \"zosmf_version\": \"27\",\n" +
@@ -129,6 +125,6 @@ public class PHBase extends FunctionalApar {
             "  \"zosmf_saf_realm\": \"SAFRealm\",\n" +
             "  \"zosmf_full_version\": \"27.0\",\n" +
             "  \"api_version\": \"1\"\n" +
-            "}", HttpStatus.OK));
+            "}", HttpStatus.OK);
     }
 }

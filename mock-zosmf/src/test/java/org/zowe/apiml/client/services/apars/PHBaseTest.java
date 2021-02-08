@@ -45,8 +45,10 @@ class PHBaseTest {
     class whenInfoCalled {
         @Test
         void givenNothing_Ltpa2TokenIsntReturned() {
-            underTest.apply("information", "", Optional.empty(), mockResponse, headers);
+            Optional<ResponseEntity<?>> result = underTest.apply("information", "", Optional.empty(), mockResponse, headers);
 
+            assertThat(result.isPresent(), is(true));
+            assertThat(result.get().getStatusCode(), is(HttpStatus.OK));
             verify(mockResponse, never()).addCookie(any());
         }
 
@@ -140,7 +142,7 @@ class PHBaseTest {
 
         @Test
         void givenUnimplementedMethod_notFoundIsReturned() {
-            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "fake service", Optional.empty(), mockResponse, headers);
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "fake method", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();
