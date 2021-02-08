@@ -1,5 +1,6 @@
 ext.springBootEnabler = 'onboarding-enabler-spring'
 ext.javaEnabler = 'onboarding-enabler-java'
+ext.micronautEnabler = 'onboarding-enabler-micronaut'
 
 ext.javaLibraries = [
     'api-catalog-services',
@@ -17,7 +18,7 @@ ext.javaLibraries = [
 
 ext.serviceJars = [ 'zowe-install', 'api-catalog-package', 'discovery-package', 'gateway-package', 'caching-service-package', 'apiml-common-lib-package' ]
 
-ext.enablers = [ext.javaEnabler, ext.springBootEnabler]
+ext.enablers = [ext.javaEnabler, ext.springBootEnabler, ext.micronautEnabler]
 ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
 
 ext.publishTasksList = projectsToPublish.collect {

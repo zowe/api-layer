@@ -1,0 +1,42 @@
+
+plugins {
+    id "io.micronaut.application" version '1.0.5'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
+mainClassName = 'org.zowe.apiml.Application'
+
+shadowJar {
+    archiveBaseName.set('micronaut-enabler')
+    archiveClassifier.set('')
+    archiveVersion.set('1.0')
+}
+version "0.1"
+group "org.zowe.apiml"
+
+
+micronaut {
+    version = "2.3.1"
+    runtime "netty"
+    testRuntime "junit5"
+    processing {
+        incremental true
+        annotations "org.zowe.apiml.*"
+    }
+}
+
+dependencies {
+    compile project(':onboarding-enabler-micronaut')
+    testImplementation ("io.micronaut:micronaut-http-client")
+ }
+
+
+
+java {
+    sourceCompatibility = JavaVersion.toVersion('1.8')
+    targetCompatibility = JavaVersion.toVersion('1.8')
+}
+
+
+
+
+

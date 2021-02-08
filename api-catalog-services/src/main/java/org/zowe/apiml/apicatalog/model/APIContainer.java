@@ -55,6 +55,9 @@ public class APIContainer implements Serializable {
     // used to determine if container is new
     private Calendar createdTimestamp;
 
+    @ApiModelProperty(notes = "The SSO support of all services and instances in the container")
+    private boolean sso;
+
     public APIContainer() {
         this.lastUpdatedTimestamp = Calendar.getInstance();
         this.createdTimestamp = this.lastUpdatedTimestamp;
