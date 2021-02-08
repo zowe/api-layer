@@ -50,8 +50,10 @@ public class RSU2012 extends FunctionalApar {
     }
 
     @Override
-    protected ResponseEntity<?> handleAuthenticationDelete() {
-        // TODO implement auth check for all apars
+    protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
+        if (containsInvalidUser(headers) && noLtpaCookie(headers) && noJwtCookie(headers)) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

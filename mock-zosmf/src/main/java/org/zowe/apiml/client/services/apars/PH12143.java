@@ -26,7 +26,7 @@ public class PH12143 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
-        if (containsInvalidUser(headers) && noLtpaCookie(headers)) {
+        if (isUnauthorized(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -37,7 +37,7 @@ public class PH12143 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        if (containsInvalidUser(headers) && noLtpaCookie(headers)) {
+        if (isUnauthorized(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -47,7 +47,14 @@ public class PH12143 extends FunctionalApar {
     }
 
     @Override
-    protected ResponseEntity<?> handleAuthenticationDelete() {
+    protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
+        if (isUnauthorized(headers)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    private boolean isUnauthorized(Map<String, String> headers) {
+        return containsInvalidUser(headers) && noLtpaCookie(headers);
     }
 }

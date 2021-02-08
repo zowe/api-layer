@@ -49,7 +49,7 @@ class PH12143Test {
     @Nested
     class whenAuthenticating {
         @ParameterizedTest
-        @ValueSource(strings = {"create", "verify"})
+        @ValueSource(strings = {"create", "verify", "delete"})
         void givenNoAuthorization_thenReturnUnauthorized(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
@@ -59,7 +59,7 @@ class PH12143Test {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"create", "verify"})
+        @ValueSource(strings = {"create", "verify", "delete"})
         void givenEmptyAuthorization_thenReturnUnauthorized(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
@@ -70,7 +70,7 @@ class PH12143Test {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"create", "verify"})
+        @ValueSource(strings = {"create", "verify", "delete"})
         void givenNoCredentials_thenReturnUnauthorized(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
@@ -81,7 +81,7 @@ class PH12143Test {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"create", "verify"})
+        @ValueSource(strings = {"create", "verify", "delete"})
         void givenInvalidUsername_thenReturnUnauthorized(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
@@ -92,7 +92,7 @@ class PH12143Test {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"create", "verify"})
+        @ValueSource(strings = {"create", "verify", "delete"})
         void givenInvalidPassword_thenReturnUnauthorized(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
@@ -138,13 +138,12 @@ class PH12143Test {
             Cookie jwt = cookies.get(0);
             assertThat(jwt.getName(), is("jwtToken"));
         }
-    }
 
-    @Nested
-    class whenDeleting {
-        @Test
-        void thenReturnNoContent() {
+        @ParameterizedTest
+        @ValueSource(strings = {PASSWORD, "PASS_TICKET"})
+        void givenValidCredentials_whenDelete_thenReturnNoContent(String password) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+            headers.put("authorization", getAuthorizationHeader(USERNAME, password));
 
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "delete", Optional.empty(), mockResponse, headers);
             assertThat(result, is(expected));

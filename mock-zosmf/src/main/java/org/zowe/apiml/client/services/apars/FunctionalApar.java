@@ -48,7 +48,7 @@ public class FunctionalApar implements Apar {
                     result = handleAuthenticationVerify(headers, response);
                     break;
                 case "delete":
-                    result = handleAuthenticationDelete();
+                    result = handleAuthenticationDelete(headers);
                     break;
             }
             if (result == null) {
@@ -87,7 +87,7 @@ public class FunctionalApar implements Apar {
      * Override to provide a response entity when the delete method for the authentication service is called
      * with proper authorization.
      */
-    protected ResponseEntity<?> handleAuthenticationDelete() {
+    protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
         return null;
     }
 

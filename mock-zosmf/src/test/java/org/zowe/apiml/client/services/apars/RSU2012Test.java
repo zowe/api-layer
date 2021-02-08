@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
@@ -52,7 +51,7 @@ class RSU2012Test {
     @Nested
     class whenAuthenticating {
         @ParameterizedTest
-        @ValueSource(strings = {"create", "verify"})
+        @ValueSource(strings = {"create", "verify", "delete"})
         void givenNoAuthorization_thenReturnInternalServerError(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
@@ -62,7 +61,7 @@ class RSU2012Test {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"create", "verify"})
+        @ValueSource(strings = {"create", "verify", "delete"})
         void givenEmptyAuthorization_thenReturnInternalServerError(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
@@ -73,7 +72,7 @@ class RSU2012Test {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"create", "verify"})
+        @ValueSource(strings = {"create", "verify", "delete"})
         void givenNoCredentials_thenReturnInternalServerError(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
@@ -84,7 +83,7 @@ class RSU2012Test {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"create", "verify"})
+        @ValueSource(strings = {"create", "verify", "delete"})
         void givenInvalidUsername_thenReturnInternalServerError(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
@@ -95,7 +94,7 @@ class RSU2012Test {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"create", "verify"})
+        @ValueSource(strings = {"create", "verify", "delete"})
         void givenInvalidPassword_thenReturnInternalServerError(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
@@ -105,12 +104,13 @@ class RSU2012Test {
             assertThat(result, is(expected));
         }
 
-        @Test
-        void givenValidUserAndPassword_whenCreating_thenReturnJwtAndLtpa() {
+        @ParameterizedTest
+        @ValueSource(strings = {"create", "verify"})
+        void givenValidUserAndPassword_thenReturnJwtAndLtpa(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
             assertThat(result, is(expected));
 
             ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
@@ -121,12 +121,13 @@ class RSU2012Test {
             assertThat(jwt.getName(), is("jwtToken"));
         }
 
-        @Test
-        void givenValidUserAndPassword_whenVerifying_thenReturnJwtAndLtpa() {
+        @ParameterizedTest
+        @ValueSource(strings = {"create", "verify"})
+        void givenValidUserAndPassticket_thenReturnJwtAndLtpa(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
-            headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
+            headers.put("authorization", getAuthorizationHeader(USERNAME, "PASS_TICKET"));
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
             assertThat(result, is(expected));
 
             ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
@@ -135,6 +136,16 @@ class RSU2012Test {
             List<Cookie> cookies = called.getAllValues();
             Cookie jwt = cookies.get(0);
             assertThat(jwt.getName(), is("jwtToken"));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {PASSWORD, "PASS_TICKET"})
+        void givenValidCredentials_whenDelete_thenReturnNoContent(String password) {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+            headers.put("authorization", getAuthorizationHeader(USERNAME, password));
+
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "delete", Optional.empty(), mockResponse, headers);
+            assertThat(result, is(expected));
         }
 
         @Test
@@ -143,17 +154,6 @@ class RSU2012Test {
 
             Optional<ResponseEntity<?>> result = underTest.apply("authentication", "default", previousResult, mockResponse, headers);
             assertThat(result, is(previousResult));
-        }
-    }
-
-    @Nested
-    class whenDeleting {
-        @Test
-        void thenReturnNoContent() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
-
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "delete", Optional.empty(), mockResponse, headers);
-            assertThat(result, is(expected));
         }
     }
 
