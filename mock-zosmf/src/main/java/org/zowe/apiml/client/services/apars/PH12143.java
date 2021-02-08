@@ -30,8 +30,7 @@ public class PH12143 extends FunctionalApar {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        String authorization = headers.get("authorization");
-        String[] credentials = getPiecesOfCredentials(authorization);
+        String[] credentials = getPiecesOfCredentials(headers);
         return validJwtResponse(response, credentials[0], keystorePath);
     }
 
@@ -41,8 +40,7 @@ public class PH12143 extends FunctionalApar {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        String authorization = headers.get("authorization");
-        String[] credentials = getPiecesOfCredentials(authorization);
+        String[] credentials = getPiecesOfCredentials(headers);
         return validJwtResponse(response, credentials[0], keystorePath);
     }
 

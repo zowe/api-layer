@@ -31,9 +31,7 @@ public class RSU2012 extends FunctionalApar {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        // TODO what if use ltpa token, then what is the username?
-        String authorization = headers.get("authorization");
-        String[] credentials = getPiecesOfCredentials(authorization);
+        String[] credentials = getPiecesOfCredentials(headers);
         return validJwtResponse(response, credentials[0], keystorePath);
     }
 
@@ -43,9 +41,7 @@ public class RSU2012 extends FunctionalApar {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        // TODO what if use ltpa token, then what is the username?
-        String authorization = headers.get("authorization");
-        String[] credentials = getPiecesOfCredentials(authorization);
+        String[] credentials = getPiecesOfCredentials(headers);
         return validJwtResponse(response, credentials[0], keystorePath);
     }
 

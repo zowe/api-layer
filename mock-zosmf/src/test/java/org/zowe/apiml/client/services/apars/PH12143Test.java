@@ -74,7 +74,7 @@ class PH12143Test {
         void givenNoCredentials_thenReturnUnauthorized(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
-            headers.put("authorization", getAuthorizationHeader(null, null));
+            headers.put("authorization", getBasicAuthorizationHeader(null, null));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
 
             assertThat(result, is(expected));
@@ -85,7 +85,7 @@ class PH12143Test {
         void givenInvalidUsername_thenReturnUnauthorized(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
-            headers.put("authorization", getAuthorizationHeader("baduser", PASSWORD));
+            headers.put("authorization", getBasicAuthorizationHeader("baduser", PASSWORD));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
 
             assertThat(result, is(expected));
@@ -96,7 +96,7 @@ class PH12143Test {
         void givenInvalidPassword_thenReturnUnauthorized(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
-            headers.put("authorization", getAuthorizationHeader(USERNAME, "badpassword"));
+            headers.put("authorization", getBasicAuthorizationHeader(USERNAME, "badpassword"));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
 
             assertThat(result, is(expected));
@@ -107,7 +107,7 @@ class PH12143Test {
         void givenValidUserAndPassword_thenReturnJwtAndLtpa(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
-            headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
+            headers.put("authorization", getBasicAuthorizationHeader(USERNAME, PASSWORD));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
             assertThat(result, is(expected));
 
@@ -127,7 +127,24 @@ class PH12143Test {
         void givenValidUserAndPassticket_thenReturnJwtAndLtpa(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
-            headers.put("authorization", getAuthorizationHeader(USERNAME, "PASS_TICKET"));
+            headers.put("authorization", getBasicAuthorizationHeader(USERNAME, "PASS_TICKET"));
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
+            assertThat(result, is(expected));
+
+            ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
+            verify(mockResponse, times(2)).addCookie(called.capture());
+
+            List<Cookie> cookies = called.getAllValues();
+            Cookie jwt = cookies.get(0);
+            assertThat(jwt.getName(), is("jwtToken"));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"create", "verify"})
+        void givenValidLtpaCookie_thenReturnJwtAndLtpa(String method){
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
+
+            headers.put("cookie", getLtpaCookieHeader());
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
             assertThat(result, is(expected));
 
@@ -143,7 +160,16 @@ class PH12143Test {
         @ValueSource(strings = {PASSWORD, "PASS_TICKET"})
         void givenValidCredentials_whenDelete_thenReturnNoContent(String password) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
-            headers.put("authorization", getAuthorizationHeader(USERNAME, password));
+            headers.put("authorization", getBasicAuthorizationHeader(USERNAME, password));
+
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "delete", Optional.empty(), mockResponse, headers);
+            assertThat(result, is(expected));
+        }
+
+        @Test
+        void givenValidLtpaCookie_whenDelete_thenReturnNoContent() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+            headers.put("cookie", getLtpaCookieHeader());
 
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "delete", Optional.empty(), mockResponse, headers);
             assertThat(result, is(expected));
@@ -166,7 +192,11 @@ class PH12143Test {
         assertThat(result, is(previousResult));
     }
 
-    private String getAuthorizationHeader(String user, String password) {
+    private String getBasicAuthorizationHeader(String user, String password) {
         return "Basic " + Base64.encodeBase64String((user + ":" + password).getBytes());
+    }
+
+    private String getLtpaCookieHeader() {
+        return "LtpaToken2=token";
     }
 }

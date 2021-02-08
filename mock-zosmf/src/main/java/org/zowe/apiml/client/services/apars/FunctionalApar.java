@@ -119,15 +119,25 @@ public class FunctionalApar implements Apar {
             return true;
         }
 
-        String[] piecesOfCredentials = getPiecesOfCredentials(authorization);
+        String[] piecesOfCredentials = getPiecesOfCredentials(headers);
         return piecesOfCredentials.length <= 0 || (!usernames.contains(piecesOfCredentials[0]) ||
             (!passwords.contains(piecesOfCredentials[1]) && !piecesOfCredentials[1].contains("PASS_TICKET")));
     }
 
-    protected String[] getPiecesOfCredentials(String authorization) {
-        byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
-        String credentials = new String(decoded);
-        return credentials.split(":");
+    protected String[] getPiecesOfCredentials(Map<String, String> headers) {
+        String authorization = headers.get("authorization");
+        if (authorization != null) {
+            byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
+            String credentials = new String(decoded);
+            return credentials.split(":");
+        }
+
+        String cookie = headers.get("cookie");
+        if (cookie != null) {
+            return cookie.split("=");
+        }
+
+        throw new IllegalArgumentException("Headers did not have cookie or authorization field");
     }
 
     protected boolean noLtpaCookie(Map<String, String> headers) {

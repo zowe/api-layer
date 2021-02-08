@@ -46,8 +46,6 @@ class RSU2012Test {
         headers = new HashMap<>();
     }
 
-    // TODO test using ltpa cookie for auth in all apar unit tests
-
     @Nested
     class whenAuthenticating {
         @ParameterizedTest
@@ -149,10 +147,35 @@ class RSU2012Test {
         }
 
         @Test
+        void givenValidLtpaCookie_thenReturnJwtAndLtpa() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
+
+            headers.put("cookie", getLtpaCookieHeader());
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
+            assertThat(result, is(expected));
+
+            ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
+            verify(mockResponse, times(2)).addCookie(called.capture());
+
+            List<Cookie> cookies = called.getAllValues();
+            Cookie jwt = cookies.get(0);
+            assertThat(jwt.getName(), is("jwtToken"));
+        }
+
+        @Test
+        void givenValidLtpaCookie_whenDelete_thenReturnNoContent() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+            headers.put("cookie", getLtpaCookieHeader());
+
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "delete", Optional.empty(), mockResponse, headers);
+            assertThat(result, is(expected));
+        }
+
+        @Test
         void givenMethodNotHandled_thenReturnOriginalResult() {
             Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "default", previousResult, mockResponse, headers);
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "not handled", previousResult, mockResponse, headers);
             assertThat(result, is(previousResult));
         }
     }
@@ -167,5 +190,9 @@ class RSU2012Test {
 
     private String getAuthorizationHeader(String user, String password) {
         return "Basic " + Base64.encodeBase64String((user + ":" + password).getBytes());
+    }
+
+    private String getLtpaCookieHeader() {
+        return "LtpaToken2=token";
     }
 }
