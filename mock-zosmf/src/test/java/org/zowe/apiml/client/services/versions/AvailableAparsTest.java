@@ -34,7 +34,7 @@ class AvailableAparsTest {
         knownApars.add("PH17867");
         knownApars.add("PH28507");
         knownApars.add("PH28532");
-        knownApars.add("PH30398");
+        knownApars.add("RSU2012");
 
         List<String> aparsToSearchFor = new ArrayList<>(knownApars);
         aparsToSearchFor.add("bad apar");
