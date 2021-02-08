@@ -17,10 +17,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class PH12143 extends FunctionalApar {
+public class RSU2012 extends FunctionalApar {
     private final String keystorePath;
 
-    public PH12143(List<String> usernames, List<String> passwords, String keystorePath) {
+    // TODO DRY authentication check across all apars, and their unit tests
+
+    public RSU2012(List<String> usernames, List<String> passwords, String keystorePath) {
         super(usernames, passwords);
         this.keystorePath = keystorePath;
     }
@@ -28,11 +30,11 @@ public class PH12143 extends FunctionalApar {
     @Override
     protected Optional<ResponseEntity<?>> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
         String authorization = headers.get("authorization");
-
         if (containsInvalidUser(authorization) && noLtpaCookie(headers)) {
-            return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+            return Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
+        // TODO what if use ltpa token, then what is the username?
         String[] credentials = getPiecesOfCredentials(authorization);
         return Optional.of(validJwtResponse(response, credentials[0], keystorePath));
     }
@@ -40,17 +42,18 @@ public class PH12143 extends FunctionalApar {
     @Override
     protected Optional<ResponseEntity<?>> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
         String authorization = headers.get("authorization");
-
-        if (containsInvalidUser(authorization) && noLtpaCookie(headers)) {
-            return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+        if (containsInvalidUser(authorization) && noLtpaCookie(headers) && noJwtCookie(headers)) {
+            return Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
+        // TODO what if use ltpa token, then what is the username?
         String[] credentials = getPiecesOfCredentials(authorization);
         return Optional.of(validJwtResponse(response, credentials[0], keystorePath));
     }
 
     @Override
     protected Optional<ResponseEntity<?>> handleAuthenticationDelete() {
+        // TODO implement auth check for all apars
         return Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
     }
 }

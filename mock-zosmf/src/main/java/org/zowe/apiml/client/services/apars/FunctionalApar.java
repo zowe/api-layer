@@ -9,14 +9,17 @@
  */
 package org.zowe.apiml.client.services.apars;
 
+import io.jsonwebtoken.Jwts;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.Key;
+import java.security.KeyStore;
+import java.util.*;
 
 public class FunctionalApar implements Apar {
     private final List<String> usernames;
@@ -109,6 +112,11 @@ public class FunctionalApar implements Apar {
         return cookie == null || !cookie.contains("LtpaToken2");
     }
 
+    protected boolean noJwtCookie(Map<String, String> headers) {
+        String cookie = headers.get("cookie");
+        return cookie == null || !cookie.contains("jwtToken");
+    }
+
     protected void setLtpaToken(HttpServletResponse response) {
         Cookie ltpaToken = new Cookie("LtpaToken2", "paMypL7yRO/IBroQtro21/uSC2LTrJvOuYebHaPc6JAUNWQ7lEHHt1l3CYeXa/nP6aKLFHTuyWy3qlRXvt10PjVdVl+7Q+wavgIsro7odz+PvTaJBp/+r0AH+DHYcdZikKe8dytGYZRH2c2gw8Gv3PliDIMd1iPEazY4HeYTU5VCFM5cBJkeIoTXCfL5ud9wTzrkY2c4h1PQPtx+hYCF4kEpiVkqIypVwjQLzWdJGV1Ihz7NqH/UU9MMJRXY1xMqsWZSibs2fX5MVK77dnyBrNYjVXA7PqYL6U/v5/1UCvuYQ/iEU9+Uy95J+xFEsnTX");
 
@@ -117,5 +125,46 @@ public class FunctionalApar implements Apar {
         ltpaToken.setPath("/");
 
         response.addCookie(ltpaToken);
+    }
+
+    protected ResponseEntity<?> validJwtResponse(HttpServletResponse response, String username, String keystorePath) {
+        Date current = new Date();
+        final int HOUR = 3600000;
+        Date expiration = new Date(current.getTime() + 8 * HOUR);
+
+        String jwtToken = Jwts.builder()
+            .setSubject(username)
+            .setIssuedAt(new Date())
+            .setExpiration(expiration)
+            .setIssuer("zOSMF")
+            .setId(UUID.randomUUID().toString())
+            .signWith(getKeyForSigning(keystorePath))
+            .compact();
+
+        // Build a valid JWT token
+        Cookie jwtCookie = new Cookie("jwtToken", jwtToken);
+        jwtCookie.setSecure(true);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        response.addCookie(jwtCookie);
+
+        setLtpaToken(response);
+
+        response.setContentType("application/json");
+        return new ResponseEntity<>("{}", HttpStatus.OK);
+    }
+
+    private Key getKeyForSigning(String keystorePath) {
+        try (FileInputStream keystore = new FileInputStream(new File(keystorePath))) {
+            KeyStore ks = KeyStore.getInstance("PKCS12");
+            ks.load(
+                keystore,
+                "password".toCharArray()
+            );
+            return ks.getKey("localhost", "password".toCharArray());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
     }
 }

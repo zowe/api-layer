@@ -25,12 +25,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
 
-class PH12143Test {
+class RSU2012Test {
     private static final String SERVICE = "authentication";
     private static final String USERNAME = "USER";
     private static final String PASSWORD = "validPassword";
 
-    private PH12143 underTest;
+    private RSU2012 underTest;
     private HttpServletResponse mockResponse;
     private Map<String, String> headers;
 
@@ -39,16 +39,20 @@ class PH12143Test {
         List<String> usernames = Collections.singletonList(USERNAME);
         List<String> passwords = Collections.singletonList(PASSWORD);
 
-        underTest = new PH12143(usernames, passwords, "../keystore/localhost/localhost.keystore.p12");
+        underTest = new RSU2012(usernames, passwords, "../keystore/localhost/localhost.keystore.p12");
         mockResponse = mock(HttpServletResponse.class);
         headers = new HashMap<>();
     }
 
+    // TODO test using ltpa cookie for auth in all apar unit tests
+    // TODO consider method source for method - e.g. create and verify have same logic
+    // TODO consider base class for tests to dry across apars
+
     @Nested
     class whenCreating {
         @Test
-        void givenNoAuthorization_thenReturnUnauthorized() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+        void givenNoAuthorization_thenReturnInternalServerError() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
 
@@ -56,8 +60,8 @@ class PH12143Test {
         }
 
         @Test
-        void givenEmptyAuthorization_thenReturnUnauthorized() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+        void givenEmptyAuthorization_thenReturnInternalServerError() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
             headers.put("authorization", "");
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
@@ -66,8 +70,8 @@ class PH12143Test {
         }
 
         @Test
-        void givenNoCredentials_thenReturnUnauthorized() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+        void givenNoCredentials_thenReturnInternalServerError() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
             headers.put("authorization", getAuthorizationHeader(null, null));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
@@ -76,8 +80,8 @@ class PH12143Test {
         }
 
         @Test
-        void givenInvalidUsername_thenReturnUnauthorized() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+        void givenInvalidUsername_thenReturnInternalServerError() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
             headers.put("authorization", getAuthorizationHeader("baduser", PASSWORD));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
@@ -86,8 +90,8 @@ class PH12143Test {
         }
 
         @Test
-        void givenInvalidPassword_thenReturnUnauthorized() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+        void givenInvalidPassword_thenReturnInternalServerError() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
             headers.put("authorization", getAuthorizationHeader(USERNAME, "badpassword"));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
@@ -110,69 +114,73 @@ class PH12143Test {
             Cookie jwt = cookies.get(0);
             assertThat(jwt.getName(), is("jwtToken"));
         }
-
-        @Test
-        void givenValidUserAndPassticket_thenReturnJwtAndLtpa() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
-
-            headers.put("authorization", getAuthorizationHeader(USERNAME, "PASS_TICKET"));
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "create", Optional.empty(), mockResponse, headers);
-            assertThat(result, is(expected));
-
-            ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
-            verify(mockResponse, times(2)).addCookie(called.capture());
-
-            List<Cookie> cookies = called.getAllValues();
-            Cookie jwt = cookies.get(0);
-            assertThat(jwt.getName(), is("jwtToken"));
-        }
     }
 
     @Nested
     class whenVerifying {
         @Test
-        void givenNoAuthorization_thenReturnUnauthorized() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+        void givenNoAuthorization_thenReturnInternalServerError() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
+
             assertThat(result, is(expected));
         }
 
         @Test
-        void givenEmptyAuthorization_thenReturnUnauthorized() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+        void givenEmptyAuthorization_thenReturnInternalServerError() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
+            headers.put("authorization", "");
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
+
             assertThat(result, is(expected));
         }
 
         @Test
-        void givenInvalidUser_thenReturnUnauthorized() {
+        void givenNoCredentials_thenReturnInternalServerError() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+
+            headers.put("authorization", getAuthorizationHeader(null, null));
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
+
+            assertThat(result, is(expected));
+        }
+
+        @Test
+        void givenInvalidUsername_thenReturnInternalServerError() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+
+            headers.put("authorization", getAuthorizationHeader("baduser", PASSWORD));
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
+
+            assertThat(result, is(expected));
+        }
+
+        @Test
+        void givenInvalidPassword_thenReturnInternalServerError() {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+
+            headers.put("authorization", getAuthorizationHeader(USERNAME, "badpassword"));
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
+
+            assertThat(result, is(expected));
+        }
+
+        @Test
+        void givenValidUserAndPassword_thenReturnJwtAndLtpa() {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
-
             assertThat(result, is(expected));
-        }
 
-        @Test
-        void givenValidUser_thenReturnJwtAndLtpa() {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
-
-            headers.put("authorization", getAuthorizationHeader(USERNAME, PASSWORD));
-            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "verify", Optional.empty(), mockResponse, headers);
-
-            assertThat(result, is(expected));
             ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
             verify(mockResponse, times(2)).addCookie(called.capture());
 
             List<Cookie> cookies = called.getAllValues();
             Cookie jwt = cookies.get(0);
             assertThat(jwt.getName(), is("jwtToken"));
-
-            Cookie ltpa = cookies.get(1);
-            assertThat(ltpa.getName(), is("LtpaToken2"));
         }
     }
 
