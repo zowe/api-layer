@@ -1,8 +1,8 @@
 /* eslint-disable no-undef */
 import * as React from 'react';
 import { shallow } from 'enzyme';
+import { mount } from 'enzyme';
 import Tile from './Tile';
-import DetailPage from '../DetailPage/DetailPage';
 
 const match = {
     params: {
@@ -31,6 +31,7 @@ const sampleTile = {
     activeServices: 1,
     lastUpdatedTimestamp: '2018-08-22T08:32:03.110+0000',
     createdTimestamp: '2018-08-22T08:31:22.948+0000',
+    sso: true,
 };
 
 const resetSampleTile = () => {
@@ -101,4 +102,16 @@ describe('>>> Tile component tests', () => {
         expect(instance.shortenDescription(description)).toEqual(expected);
         expect(instance.shortenDescription(description).length).toEqual(180);
     });
+
+    it('should show sso if it is set', () => {
+        const wrapper = mount(<Tile tile={sampleTile} />);
+        expect(wrapper.text().includes('SSO')).toBe(true);
+    });
+
+    it('should mssing sso if it is not set', () => {
+        sampleTile.sso = false;
+        const wrapper = mount(<Tile tile={sampleTile} />);
+        expect(wrapper.text().includes('SSO')).toBe(false);
+    });
+
 });

@@ -99,6 +99,20 @@ project(":mock-zosmf") {
     }
 }
 
+// Onboarding NodeJS enabler; sonar does not apply
+project(":onboarding-enabler-nodejs") {
+    sonarqube {
+        skipProject = true
+    }
+}
+
+// NodeJS sample service; sonar does not apply
+project(":onboarding-enabler-nodejs-sample-app") {
+    sonarqube {
+        skipProject = true
+    }
+}
+
 project(":integration-tests") {
     sonarqube {
         properties {

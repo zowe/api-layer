@@ -17,10 +17,14 @@ ext.projectsNeedLicense = [
     'security-module',
     'security-service-client-spring',
     'onboarding-enabler-java-sample-app',
+    'onboarding-enabler-nodejs-sample-app',
     'onboarding-enabler-spring-v1-sample-app',
     'zowe-install',
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
+    'onboarding-enabler-micronaut',
+    'onboarding-enabler-micronaut-sample-app',
+    'onboarding-enabler-nodejs',
     'zaas-client',
     'mock-zosmf'
 ]

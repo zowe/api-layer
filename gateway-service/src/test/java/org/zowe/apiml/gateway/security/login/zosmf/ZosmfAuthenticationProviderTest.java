@@ -20,26 +20,20 @@ import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.authentication.jaas.JaasAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.zosmf.TokenValidationStrategy;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumMap;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -100,7 +94,12 @@ class ZosmfAuthenticationProviderTest {
 
     private ZosmfService createZosmfService() {
         ApplicationContext applicationContext = mock(ApplicationContext.class);
-        ZosmfService zosmfService = new ZosmfService(authConfigurationProperties, discovery, restTemplate, securityObjectMapper, applicationContext);
+        ZosmfService zosmfService = new ZosmfService(authConfigurationProperties,
+            discovery,
+            restTemplate,
+            securityObjectMapper,
+            applicationContext,
+            mock(TokenValidationStrategy.class));
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
         ZosmfService output = spy(zosmfService);
         when(applicationContext.getBean(ZosmfService.class)).thenReturn(output);

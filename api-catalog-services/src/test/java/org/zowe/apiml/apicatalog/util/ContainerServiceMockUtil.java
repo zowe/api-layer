@@ -114,7 +114,9 @@ public class ContainerServiceMockUtil {
             false,
             "base",
             "home",
-            "base");
+            "base",
+            false,
+            Collections.emptyMap());
         services.add(service);
         allServices.add(service);
         return service;

@@ -229,13 +229,11 @@ public class APIDocRetrievalService {
      * @return int representing major version. If no version integer
      */
     private int getMajorVersion(ApiInfo apiInfo) {
-        if (apiInfo == null || apiInfo.getVersion() == null) {
+        if (apiInfo == null) {
             return -1;
         }
 
-        String[] versionFields = apiInfo.getVersion().split("[^0-9a-zA-Z]");
-        String majorVersionStr = versionFields[0].replaceAll("[^0-9]", "");
-        return majorVersionStr.isEmpty() ? -1 : Integer.parseInt(majorVersionStr);
+        return apiInfo.getMajorVersion();
     }
 
     /**

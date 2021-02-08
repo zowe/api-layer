@@ -35,21 +35,17 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.gateway.security.service.zosmf.TokenValidationStrategy;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
 import javax.servlet.http.Cookie;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.PublicKey;
+import java.security.*;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -436,7 +432,8 @@ public class AuthenticationServiceTest {
                 discoveryClient,
                 restTemplate,
                 securityObjectMapper,
-                applicationContext
+                applicationContext,
+                mock(TokenValidationStrategy.class)
             ));
 
 
@@ -506,8 +503,9 @@ public class AuthenticationServiceTest {
         final String userId = "userIdSource";
         final QueryResponse queryResponse = new QueryResponse("domain", userId, new Date(), new Date(), QueryResponse.Source.ZOSMF);
 
-        final ZosmfService zosmfService = getSpiedZosmfService();
-        ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
+        final ZosmfService zosmfService = mock(ZosmfService.class);
+        doReturn(true).when(zosmfService).validate(jwtToken);
+
         final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
 
         doAnswer((Answer<Object>) invocation -> {
@@ -515,19 +513,11 @@ public class AuthenticationServiceTest {
             return queryResponse;
         }).when(authService).parseJwtToken(jwtToken);
 
-        when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()))
-            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add("X-CSRF-ZOSMF-HEADER", "");
-        headers.add("Authorization", "Basic Og==");
-
-        when(restTemplate.exchange(anyString(), (HttpMethod) any(), eq(new HttpEntity<>(null, headers)), (Class<?>) any()))
-            .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
         TokenAuthentication tokenAuthentication = authService.validateJwtToken(jwtToken);
         assertTrue(tokenAuthentication.isAuthenticated());
         assertEquals(jwtToken, tokenAuthentication.getCredentials());
         assertEquals(userId, tokenAuthentication.getPrincipal());
-        verify(zosmfService, times(1)).validate(ZosmfService.TokenType.JWT, jwtToken);
+        verify(zosmfService, times(1)).validate(jwtToken);
     }
 
     @Test
