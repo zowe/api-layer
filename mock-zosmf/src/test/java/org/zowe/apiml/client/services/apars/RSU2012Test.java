@@ -146,12 +146,13 @@ class RSU2012Test {
             assertThat(result, is(expected));
         }
 
-        @Test
-        void givenValidLtpaCookie_thenReturnJwtAndLtpa() {
+        @ParameterizedTest
+        @ValueSource(strings = {"create", "verify"})
+        void givenValidLtpaCookie_thenReturnJwtAndLtpa(String method){
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             headers.put("cookie", getLtpaCookieHeader());
-            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
+            Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
             assertThat(result, is(expected));
 
             ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
