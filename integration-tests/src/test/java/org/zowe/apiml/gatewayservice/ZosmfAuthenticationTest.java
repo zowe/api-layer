@@ -13,7 +13,6 @@ import io.restassured.RestAssured;
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -52,7 +51,6 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  *  - static definition of zosmf could be supported, but it is suggested to haven't any one
  */
 @AdditionalLocalTest
-@Disabled
 class ZosmfAuthenticationTest implements TestWithStartedInstances {
 
     private static final String ZOSMF_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
