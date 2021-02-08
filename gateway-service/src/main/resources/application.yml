@@ -55,8 +55,6 @@ apiml:
             enabled: false
             externalMapperUrl:
 
-
-
 spring:
     application:
         name: ${apiml.service.id}

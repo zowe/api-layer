@@ -85,7 +85,7 @@ public class ZosmfService extends AbstractZosmfService {
 
     private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
     private final ApplicationContext applicationContext;
-    private final TokenValidationStrategy tokenValidationStrategy;
+    private final List<TokenValidationStrategy> tokenValidationStrategy;
 
     public ZosmfService(
         final AuthConfigurationProperties authConfigurationProperties,
@@ -93,7 +93,7 @@ public class ZosmfService extends AbstractZosmfService {
         final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
         final ObjectMapper securityObjectMapper,
         final ApplicationContext applicationContext,
-        TokenValidationStrategy tokenValidationStrategy
+        List<TokenValidationStrategy> tokenValidationStrategy
     ) {
         super(
             authConfigurationProperties,
@@ -237,12 +237,39 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public boolean validate(String token) {
-        try {
-            return tokenValidationStrategy.validate(this, token);
-        } catch (RuntimeException re) {
-            //TODO handle returns
-            throw handleExceptionOnCall(null ,re);
+        log.debug("ZosmfService validating token: ....{}", StringUtils.right(token, 15));
+        TokenValidationRequest request = new TokenValidationRequest(TokenType.JWT, token, getURI(getZosmfServiceId()), getEndpointMap());
+
+        for (TokenValidationStrategy s: tokenValidationStrategy) {
+            log.debug("Trying to validate token with strategy: {}", s.toString());
+            try {
+                s.validate(request);
+                if (requestValidationIsDecided(request)) {
+                    log.debug("Token validity has been successfully determined: {}", request.getAuthenticated());
+                    break;
+                }
+            } catch (RuntimeException re) {
+                log.debug("Exception during token validation:", re);
+            }
         }
+        log.debug("Token validation strategies exhausted, final validation status: {}", request.getAuthenticated());
+        return requestIsAuthenticated(request);
+    }
+
+    private boolean requestIsAuthenticated(TokenValidationRequest request) {
+        return TokenValidationRequest.STATUS.AUTHENTICATED.equals(request.getAuthenticated());
+    }
+
+    private boolean requestValidationIsDecided(TokenValidationRequest request) {
+        return !TokenValidationRequest.STATUS.UNKNOWN.equals(request.getAuthenticated());
+    }
+
+    public Map<String, Boolean> getEndpointMap() {
+        Map<String, Boolean> endpointMap = new HashMap<>();
+
+        endpointMap.put(getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT, loginEndpointExists());
+
+        return endpointMap;
     }
 
     public void invalidate(TokenType type, String token) {
