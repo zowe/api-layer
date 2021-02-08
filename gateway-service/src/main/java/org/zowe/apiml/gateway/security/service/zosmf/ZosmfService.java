@@ -267,7 +267,7 @@ public class ZosmfService extends AbstractZosmfService {
     public Map<String, Boolean> getEndpointMap() {
         Map<String, Boolean> endpointMap = new HashMap<>();
 
-        endpointMap.put(getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT, loginEndpointExists() ? true : false);
+        endpointMap.put(getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT, loginEndpointExists());
 
         return endpointMap;
     }

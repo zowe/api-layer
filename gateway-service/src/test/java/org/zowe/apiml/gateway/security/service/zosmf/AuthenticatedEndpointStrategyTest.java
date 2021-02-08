@@ -65,14 +65,14 @@ class AuthenticatedEndpointStrategyTest {
         verify(restTemplate, times(2)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
         Map<String, Boolean> realMapWithData = new HashMap<>();
-        realMapWithData.put("zosmfurl" + underTest.AUTHENTICATED_ENDPOINT, true);
+        realMapWithData.put("zosmfurl" + underTest.authenticatedEndpoint, true);
         TokenValidationRequest realRequest = new TokenValidationRequest(ZosmfService.TokenType.JWT,
             "TOKN","zosmfurl",realMapWithData);
         underTest.validate(realRequest);
         verify(restTemplate, times(3)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
         Map<String, Boolean> realMapWithData2 = new HashMap<>();
-        realMapWithData2.put("zosmfurl" + underTest.AUTHENTICATED_ENDPOINT, false);
+        realMapWithData2.put("zosmfurl" + underTest.authenticatedEndpoint, false);
         TokenValidationRequest realRequest2 = new TokenValidationRequest(ZosmfService.TokenType.JWT,
             "TOKN","zosmfurl",realMapWithData2);
         assertThrows(RuntimeException.class, () -> underTest.validate(realRequest2));
@@ -119,7 +119,7 @@ class AuthenticatedEndpointStrategyTest {
     @Test
     void throwsServiceNotAccesibleWhenEndpointDoesNotExist() {
         Map<String, Boolean> endpointMap = new HashMap<>();
-        endpointMap.put("zosmfurl" + underTest.AUTHENTICATED_ENDPOINT, false);
+        endpointMap.put("zosmfurl" + underTest.authenticatedEndpoint, false);
         TokenValidationRequest request = new TokenValidationRequest(ZosmfService.TokenType.JWT,
             "TOKN","zosmfurl",endpointMap);
 

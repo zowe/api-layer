@@ -31,15 +31,15 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
     @InjectApimlLogger
     protected ApimlLogger apimlLog = ApimlLogger.empty();
 
-    public final String AUTHENTICATED_ENDPOINT;
+    public final String authenticatedEndpoint;
 
     @Override
     public void validate(TokenValidationRequest request) {
 
-        final String url = request.getZosmfBaseUrl() + AUTHENTICATED_ENDPOINT;
+        final String url = request.getZosmfBaseUrl() + authenticatedEndpoint;
         String errorReturned = "Endpoint does not exist";
 
-        if (endpointExists(request, AUTHENTICATED_ENDPOINT)) {
+        if (endpointExists(request, authenticatedEndpoint)) {
             try {
                 final HttpHeaders headers = new HttpHeaders();
                 headers.add(ZOSMF_CSRF_HEADER, "");
@@ -75,12 +75,12 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
         } else {
             return request.getEndpointExistenceMap().entrySet().stream()
                 .filter(entry -> entry.getKey().equalsIgnoreCase(request.getZosmfBaseUrl() + endpoint))
-            .findFirst().get().getValue();
+            .findFirst().map(entry -> entry.getValue()).orElseThrow(IllegalStateException::new);
         }
     }
 
     public String toString() {
-        return "AuthenticatedEndpointStrategy{endpoint=" + AUTHENTICATED_ENDPOINT + "}";
+        return "AuthenticatedEndpointStrategy{endpoint=" + authenticatedEndpoint + "}";
     }
 
 }
