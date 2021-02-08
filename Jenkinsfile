@@ -89,6 +89,7 @@ pipeline {
             steps {
                 sh 'npm install'
                 sh 'cd api-catalog-ui/frontend && npm install'
+                sh 'cd onboarding-enabler-nodejs-sample-app && npm install'
             }
         }
 
