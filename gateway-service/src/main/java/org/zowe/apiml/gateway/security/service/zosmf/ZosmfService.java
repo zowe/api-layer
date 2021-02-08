@@ -237,19 +237,22 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public boolean validate(String token) {
-
+        log.debug("ZosmfService validating token: ....{}", StringUtils.right(token, 15));
         TokenValidationRequest request = new TokenValidationRequest(TokenType.JWT, token, getURI(getZosmfServiceId()), getEndpointMap());
 
         for (TokenValidationStrategy s: tokenValidationStrategy) {
+            log.debug("Trying to validate token with strategy: {}", s.toString());
             try {
                 s.validate(request);
                 if (requestValidationIsDecided(request)) {
+                    log.debug("Token validity has been successfully determined: {}", request.getAuthenticated());
                     break;
                 }
             } catch (RuntimeException re) {
-                //NOOP or logging
+                log.debug("Exception during token validation:", re);
             }
         }
+        log.debug("Token validation strategies exhausted, final validation status: {}", request.getAuthenticated());
         return requestIsAuthenticated(request);
     }
 

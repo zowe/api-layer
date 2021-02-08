@@ -74,4 +74,8 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
         }
     }
 
+    public String toString() {
+        return "AuthenticatedEndpointStrategy{endpoint=" + AUTHENTICATED_ENDPOINT + "}";
+    }
+
 }
