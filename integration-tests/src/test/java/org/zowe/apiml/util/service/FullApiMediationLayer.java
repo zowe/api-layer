@@ -11,8 +11,11 @@ package org.zowe.apiml.util.service;
 
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FullApiMediationLayer {
@@ -22,6 +25,9 @@ public class FullApiMediationLayer {
     private RunningService cachingService;
     private RunningService mockZosmfService;
     private RunningService discoverableClientService;
+
+    private ProcessBuilder nodeJsBuilder;
+    private Process nodeJsSampleApp;
 
     private boolean firstCheck = true;
 
@@ -33,6 +39,17 @@ public class FullApiMediationLayer {
         prepareGateway();
         prepareMockZosmf();
         prepareDiscovery();
+        prepareNodeJsSampleApp();
+    }
+
+    private void prepareNodeJsSampleApp() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("node");
+        parameters.add("index.js");
+
+        ProcessBuilder builder1 = new ProcessBuilder(parameters);
+        builder1.directory(new File("../onboarding-enabler-nodejs-sample-app/src/"));
+        nodeJsBuilder = builder1.inheritIO();
     }
 
     private void prepareDiscovery() {
@@ -109,14 +126,19 @@ public class FullApiMediationLayer {
     }
 
     public void stop() {
-        discoveryService.stop();
-        gatewayService.stop();
-        mockZosmfService.stop();
+        try {
+            discoveryService.stop();
+            gatewayService.stop();
+            mockZosmfService.stop();
 
-        apiCatalogService.stop();
-        discoverableClientService.stop();
+            apiCatalogService.stop();
+            discoverableClientService.stop();
 
-        cachingService.stop();
+            cachingService.stop();
+            nodeJsSampleApp.destroy();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean runsOffPlatform() {
@@ -129,6 +151,7 @@ public class FullApiMediationLayer {
             new ApiMediationLayerStartupChecker().waitUntilReady();
 
             try {
+                nodeJsSampleApp = nodeJsBuilder.start();
                 cachingService.start();
                 cachingService.waitUntilReady();
             } catch (IOException ex) {
