@@ -21,7 +21,7 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 
-public class DownloadApiIntegrationTest implements TestWithStartedInstances {
+class DownloadApiIntegrationTest implements TestWithStartedInstances {
 
     @BeforeAll
     public static void beforeClass() {
