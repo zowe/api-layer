@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
@@ -95,6 +96,13 @@ class AuthenticatedEndpointStrategyTest {
         doReturn(HttpStatus.UNAUTHORIZED).when(re).getStatusCode();
         doReturn(re).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
+        underTest.validate(dummyRequest);
+        assertThat(dummyRequest.getAuthenticated(), is(TokenValidationRequest.STATUS.INVALID));
+    }
+
+    @Test
+    void invalidatesRequestdWhenRestTemplateThrowsUnauthorized() {
+        doThrow(HttpClientErrorException.Unauthorized.class).when(restTemplate).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
         underTest.validate(dummyRequest);
         assertThat(dummyRequest.getAuthenticated(), is(TokenValidationRequest.STATUS.INVALID));
     }

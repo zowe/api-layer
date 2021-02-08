@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -39,25 +40,29 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
         String errorReturned = "Endpoint does not exist";
 
         if (endpointExists(request, AUTHENTICATED_ENDPOINT)) {
+            try {
+                final HttpHeaders headers = new HttpHeaders();
+                headers.add(ZOSMF_CSRF_HEADER, "");
+                headers.add(HttpHeaders.COOKIE, ZosmfService.TokenType.JWT.getCookieName() + "=" + request.getToken());
 
-            final HttpHeaders headers = new HttpHeaders();
-            headers.add(ZOSMF_CSRF_HEADER, "");
-            headers.add(HttpHeaders.COOKIE, ZosmfService.TokenType.JWT.getCookieName() + "=" + request.getToken());
 
+                ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
+                    new HttpEntity<>(null, headers), String.class);
 
-            ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
-                new HttpEntity<>(null, headers), String.class);
+                if (re.getStatusCode().is2xxSuccessful()) {
+                    request.setAuthenticated(TokenValidationRequest.STATUS.AUTHENTICATED);
+                    return;
+                }
+                if (HttpStatus.UNAUTHORIZED.equals(re.getStatusCode())) {
+                    request.setAuthenticated(TokenValidationRequest.STATUS.INVALID);
+                    return;
+                }
+                errorReturned = String.valueOf(re.getStatusCode());
 
-            if (re.getStatusCode().is2xxSuccessful()) {
-                request.setAuthenticated(TokenValidationRequest.STATUS.AUTHENTICATED);
-                return;
-            }
-            if (HttpStatus.UNAUTHORIZED.equals(re.getStatusCode())) {
+            } catch (HttpClientErrorException.Unauthorized e) {
                 request.setAuthenticated(TokenValidationRequest.STATUS.INVALID);
                 return;
             }
-            errorReturned = String.valueOf(re.getStatusCode());
-
         }
 
         apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, errorReturned);
