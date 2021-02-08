@@ -29,10 +29,10 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  *
  */
 @TestsNotMeantForZowe
-public class RequestInfoIntegrationTest implements TestWithStartedInstances {
+class RequestInfoIntegrationTest implements TestWithStartedInstances {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
@@ -60,7 +60,7 @@ public class RequestInfoIntegrationTest implements TestWithStartedInstances {
 
     @ParameterizedTest(name = "call endpoint {1} to receive json with signed = {2} : {0}")
     @MethodSource("getInputs")
-    public void testRequestInfo(String description, String url, Boolean signed) {
+    void testRequestInfo(String description, String url, Boolean signed) {
         if (signed) {
             RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         }

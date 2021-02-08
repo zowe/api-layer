@@ -24,7 +24,7 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 
-public class QueryIntegrationTest implements TestWithStartedInstances {
+class QueryIntegrationTest implements TestWithStartedInstances {
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
@@ -45,7 +45,7 @@ public class QueryIntegrationTest implements TestWithStartedInstances {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.port = PORT;
         RestAssured.basePath = BASE_PATH;
         RestAssured.useRelaxedHTTPSValidation();

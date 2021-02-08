@@ -23,7 +23,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.is;
 
-public class EncodedCharactersTest implements TestWithStartedInstances {
+class EncodedCharactersTest implements TestWithStartedInstances {
 
 
     private String scheme;
@@ -31,12 +31,12 @@ public class EncodedCharactersTest implements TestWithStartedInstances {
     private int port;
 
     @BeforeAll
-    public static void beforeClass() {
+    static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
@@ -45,7 +45,7 @@ public class EncodedCharactersTest implements TestWithStartedInstances {
 
     @Test
     @TestsNotMeantForZowe
-    public void shouldCallDiscoverableServiceWithEncodedCharacterAndAllow() {
+    void shouldCallDiscoverableServiceWithEncodedCharacterAndAllow() {
         final String encodedURI = "/api/v1/discoverableclient/wor%2fld/greeting";
 
         given()

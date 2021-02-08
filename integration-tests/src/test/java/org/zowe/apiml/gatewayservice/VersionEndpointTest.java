@@ -23,17 +23,17 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 @TestsNotMeantForZowe
-public class VersionEndpointTest implements TestWithStartedInstances {
+class VersionEndpointTest implements TestWithStartedInstances {
 
     private String requestString;
 
     @BeforeAll
-    public static void beforeClass() {
+    static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String scheme = serviceConfiguration.getScheme();
         String host = serviceConfiguration.getHost();

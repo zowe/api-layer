@@ -40,7 +40,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  * The test repeats calls until it sees that request has been retried from mentioned header.
  */
 @TestsNotMeantForZowe
-class ServiceHaMode implements TestWithStartedInstances {
+class ServiceHaModeTest implements TestWithStartedInstances {
     private static final int TIMEOUT = 30;
 
     @BeforeEach

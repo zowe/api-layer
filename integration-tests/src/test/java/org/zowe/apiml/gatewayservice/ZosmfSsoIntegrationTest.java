@@ -23,7 +23,7 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.Is.is;
 
-public class ZosmfSsoIntegrationTest implements TestWithStartedInstances {
+class ZosmfSsoIntegrationTest implements TestWithStartedInstances {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
@@ -36,7 +36,7 @@ public class ZosmfSsoIntegrationTest implements TestWithStartedInstances {
     private int port;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
@@ -51,7 +51,7 @@ public class ZosmfSsoIntegrationTest implements TestWithStartedInstances {
     @Test
     @zOSMFAuthTest
     //@formatter:off
-    public void doZosmfCallWithValidToken() {
+    void doZosmfCallWithValidToken() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
 
