@@ -116,21 +116,6 @@ public class PHBase extends FunctionalApar {
             "}", HttpStatus.OK));
     }
 
-    private boolean noLtpaCookie(Map<String, String> headers) {
-        String cookie = headers.get("cookie");
-        return cookie == null || !cookie.contains("LtpaToken2");
-    }
-
-    private void setLtpaToken(HttpServletResponse response) {
-        Cookie ltpaToken = new Cookie("LtpaToken2", "paMypL7yRO/IBroQtro21/uSC2LTrJvOuYebHaPc6JAUNWQ7lEHHt1l3CYeXa/nP6aKLFHTuyWy3qlRXvt10PjVdVl+7Q+wavgIsro7odz+PvTaJBp/+r0AH+DHYcdZikKe8dytGYZRH2c2gw8Gv3PliDIMd1iPEazY4HeYTU5VCFM5cBJkeIoTXCfL5ud9wTzrkY2c4h1PQPtx+hYCF4kEpiVkqIypVwjQLzWdJGV1Ihz7NqH/UU9MMJRXY1xMqsWZSibs2fX5MVK77dnyBrNYjVXA7PqYL6U/v5/1UCvuYQ/iEU9+Uy95J+xFEsnTX");
-
-        ltpaToken.setSecure(true);
-        ltpaToken.setHttpOnly(true);
-        ltpaToken.setPath("/");
-
-        response.addCookie(ltpaToken);
-    }
-
     private Optional<ResponseEntity<?>> validInfo() {
         return Optional.of(new ResponseEntity<>("{\n" +
             "  \"zos_version\": \"04.27.00\",\n" +

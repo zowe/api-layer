@@ -11,6 +11,7 @@ package org.zowe.apiml.client.services.apars;
 
 import org.springframework.http.ResponseEntity;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Base64;
 import java.util.List;
@@ -101,5 +102,20 @@ public class FunctionalApar implements Apar {
         byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
         String credentials = new String(decoded);
         return credentials.split(":");
+    }
+
+    protected boolean noLtpaCookie(Map<String, String> headers) {
+        String cookie = headers.get("cookie");
+        return cookie == null || !cookie.contains("LtpaToken2");
+    }
+
+    protected void setLtpaToken(HttpServletResponse response) {
+        Cookie ltpaToken = new Cookie("LtpaToken2", "paMypL7yRO/IBroQtro21/uSC2LTrJvOuYebHaPc6JAUNWQ7lEHHt1l3CYeXa/nP6aKLFHTuyWy3qlRXvt10PjVdVl+7Q+wavgIsro7odz+PvTaJBp/+r0AH+DHYcdZikKe8dytGYZRH2c2gw8Gv3PliDIMd1iPEazY4HeYTU5VCFM5cBJkeIoTXCfL5ud9wTzrkY2c4h1PQPtx+hYCF4kEpiVkqIypVwjQLzWdJGV1Ihz7NqH/UU9MMJRXY1xMqsWZSibs2fX5MVK77dnyBrNYjVXA7PqYL6U/v5/1UCvuYQ/iEU9+Uy95J+xFEsnTX");
+
+        ltpaToken.setSecure(true);
+        ltpaToken.setHttpOnly(true);
+        ltpaToken.setPath("/");
+
+        response.addCookie(ltpaToken);
     }
 }

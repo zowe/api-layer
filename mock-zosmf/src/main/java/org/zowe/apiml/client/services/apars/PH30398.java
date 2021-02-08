@@ -22,12 +22,10 @@ public class PH30398 extends FunctionalApar {
         super(usernames, passwords);
     }
 
-    // TODO implement other functionality for this apar
-
     @Override
     protected Optional<ResponseEntity<?>> handleAuthenticationDefault(Map<String, String> headers) {
         String authorization = headers.get("authorization");
-        if (containsInvalidUser(authorization)) {
+        if (containsInvalidUser(authorization) && noLtpaCookie(headers)) {
             return Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 

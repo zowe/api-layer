@@ -33,7 +33,7 @@ public class PH12143 extends FunctionalApar {
     protected Optional<ResponseEntity<?>> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
         String authorization = headers.get("authorization");
 
-        if (containsInvalidUser(authorization)) {
+        if (containsInvalidUser(authorization) && noLtpaCookie(headers)) {
             return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
         }
 
@@ -45,7 +45,7 @@ public class PH12143 extends FunctionalApar {
     protected Optional<ResponseEntity<?>> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
         String authorization = headers.get("authorization");
 
-        if (containsInvalidUser(authorization)) {
+        if (containsInvalidUser(authorization) && noLtpaCookie(headers)) {
             return Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
         }
 
