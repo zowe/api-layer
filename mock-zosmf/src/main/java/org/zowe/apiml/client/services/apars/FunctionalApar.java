@@ -22,7 +22,7 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.util.*;
 
-@SuppressWarnings({"squid:S1452", "squid:1172"})
+@SuppressWarnings({"squid:S1452", "squid:S1172"})
 public class FunctionalApar implements Apar {
     private static final String COOKIE_HEADER = "cookie";
     private static final String JWT_TOKEN_NAME = "jwtToken";
