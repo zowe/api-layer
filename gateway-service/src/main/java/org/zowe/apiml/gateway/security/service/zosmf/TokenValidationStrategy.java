@@ -13,7 +13,12 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 /**
  * General strategy for token validation
  *
+ * toString method should be implemented as debug logs
+ * call this method. It should provide information about
+ * what principle will the strategy employ to validate
+ * the request
+ *
  */
 public interface TokenValidationStrategy {
-    boolean validate(ZosmfService zosmfService, String token);
+    void validate(TokenValidationRequest request);
 }

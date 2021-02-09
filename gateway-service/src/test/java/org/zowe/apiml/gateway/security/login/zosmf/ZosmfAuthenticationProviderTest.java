@@ -99,7 +99,7 @@ class ZosmfAuthenticationProviderTest {
             restTemplate,
             securityObjectMapper,
             applicationContext,
-            mock(TokenValidationStrategy.class));
+            new ArrayList<TokenValidationStrategy>());
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
         ZosmfService output = spy(zosmfService);
         when(applicationContext.getBean(ZosmfService.class)).thenReturn(output);

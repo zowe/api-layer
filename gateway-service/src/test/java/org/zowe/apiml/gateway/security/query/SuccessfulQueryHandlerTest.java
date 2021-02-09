@@ -35,9 +35,9 @@ import org.zowe.apiml.util.CacheUtils;
 
 import java.security.Key;
 import java.security.KeyPair;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -83,7 +83,7 @@ class SuccessfulQueryHandlerTest {
             restTemplate,
             new ObjectMapper(),
             applicationContext,
-            mock(TokenValidationStrategy.class));
+            new ArrayList<TokenValidationStrategy>());
         AuthenticationService authenticationService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             discoveryClient, restTemplate, cacheManager, new CacheUtils()
