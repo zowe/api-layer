@@ -75,6 +75,7 @@ task environmentCheck(type: Test) {
     description "Check that the Integration environment is healthy"
 
     systemProperties System.properties
+    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags 'EnvironmentCheck'
     }
