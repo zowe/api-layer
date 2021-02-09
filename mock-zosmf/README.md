@@ -16,6 +16,16 @@ As we mainly use zOSMF to authenticate the user, there are two properties in the
 
 `zosmf.username` - Specifies which users are valid from the point of view of the zOSMF. Provide the comma separated list of usernames. It is case sensitive. 
 
-`zosmf.password` - Specifies passwords for the users in the `zosmf.username`. The password is at the same position in the comma separated list. On top of that if the password contains PASS_TICKET it is accepted as valid Passticket regardless of password specified here. 
+`zosmf.password` - Specifies passwords for the users in the `zosmf.username`. The password is at the same position in the comma separated list. On top of that if the password contains PASS_TICKET it is accepted as valid Passticket regardless of password specified here.
+
+The Mock can simulate different configurations of zOSMF. This can be set via the `zosmf.appliedApars` field. If left empty, base zOSMF will be mocked.
+The supported APARs are:
+* PH12143
+* PH17867
+* PH28507
+* PH28532
+* RSU2012
+
+Multiple APARs can be set in `zosmf.appliedApars`. Conflicting functionality will result in only one functionality mocked, but it is not guaranteed which will be mocked. 
 
 
