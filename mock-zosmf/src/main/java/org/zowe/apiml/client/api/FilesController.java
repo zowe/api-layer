@@ -11,10 +11,7 @@ package org.zowe.apiml.client.api;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.services.AparBasedService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -25,7 +22,7 @@ import java.util.Map;
 public class FilesController {
     private final AparBasedService files;
 
-    @RequestMapping(value = "/zosmf/restfiles/ds", produces = "application/json; charset=utf-8", method = RequestMethod.GET)
+    @GetMapping(value = "/zosmf/restfiles/ds", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> readFiles(
         HttpServletResponse response,
         @RequestHeader Map<String, String> headers
