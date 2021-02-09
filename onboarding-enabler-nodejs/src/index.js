@@ -48,9 +48,11 @@ const client = new Eureka({
 });
 
 function connectToEureka() {
-    client.logger.level('debug');
     client.start(function(error) {
-        console.log(JSON.stringify(error) || 'Eureka registration complete');   });
+        if (error != null) {
+            console.log(JSON.stringify(error));
+        }
+    });
 }
 
 connectToEureka();
