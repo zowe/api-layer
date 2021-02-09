@@ -148,7 +148,7 @@ class RSU2012Test {
 
         @ParameterizedTest
         @ValueSource(strings = {"create", "verify"})
-        void givenValidLtpaCookie_thenReturnJwtAndLtpa(String method){
+        void givenValidLtpaCookie_thenReturnJwtAndLtpa(String method) {
             Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>("{}", HttpStatus.OK));
 
             headers.put("cookie", getLtpaCookieHeader());
