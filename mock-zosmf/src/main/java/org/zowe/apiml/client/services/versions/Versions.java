@@ -12,6 +12,7 @@ package org.zowe.apiml.client.services.versions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.client.services.MockZosmfException;
 import org.zowe.apiml.client.services.apars.Apar;
 import org.zowe.apiml.client.services.apars.PHBase;
 
@@ -37,18 +38,18 @@ public class Versions {
         aparsAppliedForVersion.put("2.4", baseApars);
     }
 
-    public List<Apar> baselineForVersion(String version) throws Exception {
+    public List<Apar> baselineForVersion(String version) {
         List<Apar> appliedForVersion = aparsAppliedForVersion.get(version);
 
         if (appliedForVersion == null) {
-            throw new Exception("Invalid version '" + version + "' given for baseline APARs");
+            throw new MockZosmfException("Invalid version '" + version + "' given for baseline APARs");
         }
 
         // New list to avoid changes in aparsAppliedForVersion in case result is mutated
         return new ArrayList<>(appliedForVersion);
     }
 
-    public List<Apar> fullSetOfApplied(String baseVersion, List<String> appliedApars) throws Exception {
+    public List<Apar> fullSetOfApplied(String baseVersion, List<String> appliedApars) {
         List<Apar> baseline = baselineForVersion(baseVersion);
         baseline.addAll(availableApars.getApars(appliedApars));
         return baseline;

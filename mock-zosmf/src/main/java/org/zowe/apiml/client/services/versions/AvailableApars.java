@@ -20,21 +20,21 @@ import java.util.List;
 import java.util.Map;
 
 public class AvailableApars {
-    private final Map<String, Apar> availableApars = new HashMap<>();
+    private final Map<String, Apar> implementedApars = new HashMap<>();
 
     public AvailableApars(List<String> usernames, List<String> passwords, String jwtKeystorePath) {
-        availableApars.put("PH12143", new PH12143(usernames, passwords, jwtKeystorePath));
-        availableApars.put("PH17867", new NoApar());
-        availableApars.put("PH28507", new NoApar());
-        availableApars.put("PH28532", new NoApar());
-        availableApars.put("RSU2012", new RSU2012(usernames, passwords, jwtKeystorePath));
+        implementedApars.put("PH12143", new PH12143(usernames, passwords, jwtKeystorePath));
+        implementedApars.put("PH17867", new NoApar());
+        implementedApars.put("PH28507", new NoApar());
+        implementedApars.put("PH28532", new NoApar());
+        implementedApars.put("RSU2012", new RSU2012(usernames, passwords, jwtKeystorePath));
     }
 
     public List<Apar> getApars(List<String> names) {
         ArrayList<Apar> result = new ArrayList<>();
         for (String name : names) {
-            if (availableApars.containsKey(name)) {
-                result.add(availableApars.get(name));
+            if (implementedApars.containsKey(name)) {
+                result.add(implementedApars.get(name));
             }
         }
 

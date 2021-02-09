@@ -20,13 +20,16 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@SuppressWarnings("squid:S1452")
 public class AuthenticationController {
+    private static final String AUTHENTICATION_SERVICE = "authentication";
+
     private final AparBasedService authentication;
 
     @DeleteMapping(value = "/zosmf/services/authenticate", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> logout(HttpServletResponse response,
                                     @RequestHeader Map<String, String> headers) {
-        return authentication.process("authentication", "delete", response, headers);
+        return authentication.process(AUTHENTICATION_SERVICE, "delete", response, headers);
     }
 
     @PostMapping(value = "/zosmf/services/authenticate", produces = "application/json; charset=utf-8")
@@ -34,7 +37,7 @@ public class AuthenticationController {
         HttpServletResponse response,
         @RequestHeader Map<String, String> headers
     ) {
-        return authentication.process("authentication", "create", response, headers);
+        return authentication.process(AUTHENTICATION_SERVICE, "create", response, headers);
     }
 
     @GetMapping(value = "/jwt/ibm/api/zOSMFBuilder/**", produces = "application/json; charset=utf-8")
@@ -44,6 +47,6 @@ public class AuthenticationController {
 
     @GetMapping(value = "/zosmf/notifications/inbox", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> verify(HttpServletResponse response, @RequestHeader Map<String, String> headers) {
-        return authentication.process("authentication", "verify", response, headers);
+        return authentication.process(AUTHENTICATION_SERVICE, "verify", response, headers);
     }
 }

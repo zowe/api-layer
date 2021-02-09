@@ -12,6 +12,7 @@ package org.zowe.apiml.client.services.apars;
 import io.jsonwebtoken.Jwts;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.client.services.MockZosmfException;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -21,7 +22,14 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.util.*;
 
+@SuppressWarnings({"squid:S1452", "squid:1172"})
 public class FunctionalApar implements Apar {
+    private static final String COOKIE_HEADER = "cookie";
+    private static final String JWT_TOKEN_NAME = "jwtToken";
+    private static final String LTPA_TOKEN_NAME = "LtpaToken2";
+
+    protected static final String AUTHORIZATION_HEADER = "authorization";
+
     private final List<String> usernames;
     private final List<String> passwords;
 
@@ -50,9 +58,9 @@ public class FunctionalApar implements Apar {
                 case "delete":
                     result = handleAuthenticationDelete(headers);
                     break;
-            }
-            if (result == null) {
-                result = handleAuthenticationDefault(headers);
+                default:
+                    result = handleAuthenticationDefault(headers);
+                    break;
             }
         }
 
@@ -114,7 +122,7 @@ public class FunctionalApar implements Apar {
     }
 
     protected boolean containsInvalidUser(Map<String, String> headers) {
-        String authorization = headers.get("authorization");
+        String authorization = headers.get(AUTHORIZATION_HEADER);
         if (authorization == null || authorization.isEmpty()) {
             return true;
         }
@@ -125,14 +133,14 @@ public class FunctionalApar implements Apar {
     }
 
     protected String[] getPiecesOfCredentials(Map<String, String> headers) {
-        String authorization = headers.get("authorization");
+        String authorization = headers.get(AUTHORIZATION_HEADER);
         if (authorization != null) {
             byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
             String credentials = new String(decoded);
             return credentials.split(":");
         }
 
-        String cookie = headers.get("cookie");
+        String cookie = headers.get(COOKIE_HEADER);
         if (cookie != null) {
             return cookie.split("=");
         }
@@ -141,17 +149,17 @@ public class FunctionalApar implements Apar {
     }
 
     protected boolean noLtpaCookie(Map<String, String> headers) {
-        String cookie = headers.get("cookie");
-        return cookie == null || !cookie.contains("LtpaToken2");
+        String cookie = headers.get(COOKIE_HEADER);
+        return cookie == null || !cookie.contains(LTPA_TOKEN_NAME);
     }
 
     protected boolean noJwtCookie(Map<String, String> headers) {
-        String cookie = headers.get("cookie");
-        return cookie == null || !cookie.contains("jwtToken");
+        String cookie = headers.get(COOKIE_HEADER);
+        return cookie == null || !cookie.contains(JWT_TOKEN_NAME);
     }
 
     protected void setLtpaToken(HttpServletResponse response) {
-        Cookie ltpaToken = new Cookie("LtpaToken2", "paMypL7yRO/IBroQtro21/uSC2LTrJvOuYebHaPc6JAUNWQ7lEHHt1l3CYeXa/nP6aKLFHTuyWy3qlRXvt10PjVdVl+7Q+wavgIsro7odz+PvTaJBp/+r0AH+DHYcdZikKe8dytGYZRH2c2gw8Gv3PliDIMd1iPEazY4HeYTU5VCFM5cBJkeIoTXCfL5ud9wTzrkY2c4h1PQPtx+hYCF4kEpiVkqIypVwjQLzWdJGV1Ihz7NqH/UU9MMJRXY1xMqsWZSibs2fX5MVK77dnyBrNYjVXA7PqYL6U/v5/1UCvuYQ/iEU9+Uy95J+xFEsnTX");
+        Cookie ltpaToken = new Cookie(LTPA_TOKEN_NAME, "paMypL7yRO/IBroQtro21/uSC2LTrJvOuYebHaPc6JAUNWQ7lEHHt1l3CYeXa/nP6aKLFHTuyWy3qlRXvt10PjVdVl+7Q+wavgIsro7odz+PvTaJBp/+r0AH+DHYcdZikKe8dytGYZRH2c2gw8Gv3PliDIMd1iPEazY4HeYTU5VCFM5cBJkeIoTXCfL5ud9wTzrkY2c4h1PQPtx+hYCF4kEpiVkqIypVwjQLzWdJGV1Ihz7NqH/UU9MMJRXY1xMqsWZSibs2fX5MVK77dnyBrNYjVXA7PqYL6U/v5/1UCvuYQ/iEU9+Uy95J+xFEsnTX");
 
         ltpaToken.setSecure(true);
         ltpaToken.setHttpOnly(true);
@@ -175,7 +183,7 @@ public class FunctionalApar implements Apar {
             .compact();
 
         // Build a valid JWT token
-        Cookie jwtCookie = new Cookie("jwtToken", jwtToken);
+        Cookie jwtCookie = new Cookie(JWT_TOKEN_NAME, jwtToken);
         jwtCookie.setSecure(true);
         jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
@@ -196,8 +204,7 @@ public class FunctionalApar implements Apar {
             );
             return ks.getKey("localhost", "password".toCharArray());
         } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
+            throw new MockZosmfException(ex);
         }
     }
 }

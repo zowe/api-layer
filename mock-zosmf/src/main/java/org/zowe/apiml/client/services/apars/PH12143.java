@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("squid:S1452")
 public class PH12143 extends FunctionalApar {
     private final String keystorePath;
 
@@ -36,12 +37,7 @@ public class PH12143 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        if (isUnauthorized(headers)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-
-        String[] credentials = getPiecesOfCredentials(headers);
-        return validJwtResponse(response, credentials[0], keystorePath);
+        return handleAuthenticationCreate(headers, response);
     }
 
     @Override

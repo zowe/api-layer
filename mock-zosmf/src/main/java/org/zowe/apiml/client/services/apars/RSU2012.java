@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("squid:S1452")
 public class RSU2012 extends FunctionalApar {
     private final String keystorePath;
 

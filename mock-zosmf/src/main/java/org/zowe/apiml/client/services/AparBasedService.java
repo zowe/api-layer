@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@SuppressWarnings("squid:S1452")
 public class AparBasedService {
     private final String baseVersion;
     private final List<String> appliedApars;

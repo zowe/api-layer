@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.Optional;
 
+@SuppressWarnings("squid:S1452")
 public class NoApar implements Apar {
     @Override
     public Optional<ResponseEntity<?>> apply(Object... parameters) {

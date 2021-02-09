@@ -50,16 +50,16 @@ class AparBasedServiceTest {
     @Nested
     class whenProcessing {
         @Test
-        void givenInvalidVersion_InternalServerErrorIsReturned() throws Exception {
+        void givenInvalidVersion_InternalServerErrorIsReturned() {
             ResponseEntity<?> expected = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            when(versions.fullSetOfApplied(any(), any())).thenThrow(new Exception("bad version"));
+            when(versions.fullSetOfApplied(any(), any())).thenThrow(new MockZosmfException("bad version"));
 
             ResponseEntity<?> result = underTest.process(SERVICE, METHOD, response, HEADERS);
             assertThat(result, is(expected));
         }
 
         @Test
-        void givenOneAparVersion_returnResultOfApply() throws Exception {
+        void givenOneAparVersion_returnResultOfApply() {
             Optional<ResponseEntity<?>> expectedResult = Optional.of(new ResponseEntity<>(HttpStatus.OK));
             ResponseEntity<?> expected = expectedResult.get();
             when(versions.fullSetOfApplied(any(), any())).thenReturn(Collections.singletonList(apar));
@@ -70,7 +70,7 @@ class AparBasedServiceTest {
         }
 
         @Test
-        void givenTwoAparVersions_returnLastResultOfApply() throws Exception {
+        void givenTwoAparVersions_returnLastResultOfApply() {
             Optional<ResponseEntity<?>> expectedResult = Optional.of(new ResponseEntity<>(HttpStatus.OK));
             ResponseEntity<?> expected = expectedResult.get();
 
@@ -87,7 +87,7 @@ class AparBasedServiceTest {
         }
 
         @Test
-        void givenNoAparVersions_returnInternalServerError() throws Exception {
+        void givenNoAparVersions_returnInternalServerError() {
             ResponseEntity<?> expected = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 
             when(versions.fullSetOfApplied(any(), any())).thenReturn(Collections.emptyList());
@@ -97,7 +97,7 @@ class AparBasedServiceTest {
         }
 
         @Test
-        void givenAparsThatReturnLastResult_returnInternalServerError() throws Exception {
+        void givenAparsThatReturnLastResult_returnInternalServerError() {
             ResponseEntity<?> expected = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 
             when(versions.fullSetOfApplied(any(), any())).thenReturn(Collections.singletonList(apar));

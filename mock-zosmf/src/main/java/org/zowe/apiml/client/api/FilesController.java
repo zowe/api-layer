@@ -19,6 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@SuppressWarnings("squid:S1452")
 public class FilesController {
     private final AparBasedService files;
 

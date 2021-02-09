@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.zowe.apiml.client.services.MockZosmfException;
 import org.zowe.apiml.client.services.apars.Apar;
 import org.zowe.apiml.client.services.apars.PH12143;
 import org.zowe.apiml.client.services.apars.PHBase;
@@ -34,20 +35,20 @@ class VersionsTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"2.3", "2.4"})
-    void givenVersion_whenGetBaseline_thenReturnPhBase(String version) throws Exception {
+    void givenVersion_whenGetBaseline_thenReturnPhBase(String version) {
         List<Apar> result = underTest.baselineForVersion(version);
 
-        assertEquals(result.size(), 1);
+        assertEquals(1, result.size());
         assertTrue(result.stream().anyMatch(a -> a instanceof PHBase));
     }
 
     @Test
     void givenBadVersion_whenGetBaseline_thenThrowException() {
-        assertThrows(Exception.class, () -> underTest.baselineForVersion("bad"));
+        assertThrows(MockZosmfException.class, () -> underTest.baselineForVersion("bad"));
     }
 
     @Test
-    void givenVersionAndAppliedApar_whenGetAppliedApars_thenReturnAllApars() throws Exception {
+    void givenVersionAndAppliedApar_whenGetAppliedApars_thenReturnAllApars() {
         List<Apar> result = underTest.fullSetOfApplied("2.3", Collections.singletonList("PH12143"));
         assertTrue(result.size() > 1);
         assertTrue(result.stream().anyMatch(a -> a instanceof PH12143));

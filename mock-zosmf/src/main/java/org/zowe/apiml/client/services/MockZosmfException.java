@@ -7,13 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.client.services.apars;
+package org.zowe.apiml.client.services;
 
-import org.springframework.http.ResponseEntity;
+public class MockZosmfException extends RuntimeException {
+    public MockZosmfException(String message) {
+        super(message);
+    }
 
-import java.util.Optional;
-
-@SuppressWarnings("squid:S1452")
-public interface Apar {
-    Optional<ResponseEntity<?>> apply(Object ... parameters);
+    public MockZosmfException(Exception ex) {
+        super(ex);
+    }
 }

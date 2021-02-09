@@ -19,6 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@SuppressWarnings("squid:S1452")
 public class InfoController {
     private final AparBasedService info;
 

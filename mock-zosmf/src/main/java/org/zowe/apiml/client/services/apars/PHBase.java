@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("squid:S1452")
 public class PHBase extends FunctionalApar {
 
     public PHBase(List<String> usernames, List<String> passwords) {
@@ -49,7 +50,7 @@ public class PHBase extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleFiles(Map<String, String> headers) {
-        String authorization = headers.get("authorization");
+        String authorization = headers.get(AUTHORIZATION_HEADER);
 
         if (authorization != null) {
             if (authorization.startsWith("Bearer")) {
@@ -64,6 +65,7 @@ public class PHBase extends FunctionalApar {
         return datasets();
     }
 
+    @SuppressWarnings("squid:S1192")
     private ResponseEntity<?> datasets() {
         return new ResponseEntity<>("{\n" +
             "  \"items\": [\n" +
