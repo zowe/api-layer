@@ -9,78 +9,26 @@
  */
 package org.zowe.apiml.client.api;
 
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.client.services.AparBasedService;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
+@SuppressWarnings("squid:S1452")
 public class FilesController {
-    @RequestMapping(value = "/zosmf/restfiles/ds", produces = "application/json; charset=utf-8", method = RequestMethod.GET)
+    private final AparBasedService files;
+
+    @GetMapping(value = "/zosmf/restfiles/ds", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> readFiles(
+        HttpServletResponse response,
         @RequestHeader Map<String, String> headers
     ) {
-        String authorization = headers.get("authorization");
-
-        if (authorization != null) {
-            if (authorization.startsWith("Bearer")) {
-                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            }
-        } else {
-            if (headers.get("cookie") == null || !headers.get("cookie").contains("LtpaToken2")) {
-                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            }
-        }
-
-        return new ResponseEntity<>("{\n" +
-            "  \"items\": [\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PAGEDUMP.VMVD21M\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PAGEDUMP.VMVD22M\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PAGEDUMP.VMVD23M\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PAGEDUMP.VMVD24M\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PARMLIB\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PARMLIB.ARCHIVE\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PARMLIB.D200328\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PARMLIBN\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PDEFLIB\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PHELP\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PROCLIB\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PROCLIBX\"\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"dsname\": \"SYS1.PSEGLIB\"\n" +
-            "    }\n" +
-            "  ],\n" +
-            "  \"returnedRows\": 13,\n" +
-            "  \"JSONversion\": 1\n" +
-            "}", HttpStatus.OK);
+        return files.process("files", "read", response, headers);
     }
 }
 
