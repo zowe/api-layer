@@ -35,6 +35,7 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | docker                                   | Tool - Dev Docker Container        |
 | docs                                     | Documentation                      |
 | gateway-service                          | Core Service - Gateway Service     |
+| mock-zosmf                               | Test - More zOSMF versions mock    |
 | onboarding-enabler-spring-v1-sample-app  | Sample Service - Spring Enabler    |
 | onboarding-enabler-nodejs-sample-app     | Sample Service - Node.js Enabler   |
 | integration-tests                        | Test - Integration test            |
@@ -126,7 +127,7 @@ Please keep the name short and relevant.
 
 - Core team uses TDD practices.
 - All code in PR should be covered with unit tests.
-- Add integration tests where needed. The integration tests are executed on the [Zowe build pipeline](https://wash.zowe.org:8443/job/API_Mediation/), and on our inhouse system as part of the build pipeline. Contact the API Layer squad if you need triage.
+- Add integration tests where needed. The integration tests are executed on the [Zowe build pipeline](https://wash.zowe.org:8443/job/API_Mediation/), and on our inhouse system as part of the build pipeline. Contact the API Layer squad if you need triage. The Mock zOSMF is used for verifying the integration with zOSMF. 
 - Add UI end to end tests where needed. The end to end tests are executed on [Zowe build pipeline](https://wash.zowe.org:8443/job/API_Mediation/) and on our inhouse system as part of the build pipeline. Contact API Layer squad if you need triage.
 - Use meaningful test method names. We use the `given_when_then` pattern.
 - Most of our java unit tests are still written in JUnit4, since we didn’t fully migrate them to JUnit5 and we have a backward compatibility package. However, use JUnit5 for new tests.
