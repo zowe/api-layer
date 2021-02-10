@@ -31,6 +31,8 @@ case $RELEASE_TYPE in
    echo "Make specific release"
    ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=$RELEASE_VERSION -Prelease.newVersion=$NEW_VERSION $AUTH
    git archive --format tar.gz -9 --output api-layer.tar.gz "v$RELEASE_VERSION"
+   ;;
+   "NODEJS_ENABLER_RELEASE")
    cd onboarding-enabler-nodejs
    echo \"//registry.npmjs.org/:_authToken=$TOKEN\" > ~/.npmrc
    echo \"registry=$DIST_REGISTRY\" >> ~/.npmrc
