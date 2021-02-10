@@ -49,7 +49,7 @@ The following tools are required to build and develop the API Mediation Layer:
 
   ```sh
    cd api-catalog-ui/frontend/; npm install; cd ../..
-   cd onboarding-enabler-nodejs-sample-app; npm install; cd ../
+   cd onboarding-enabler-nodejs-sample-app/; npm install; cd ../
    ```
 
 2. Install `concurrently` globally:
