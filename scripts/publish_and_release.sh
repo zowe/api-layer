@@ -37,7 +37,7 @@ case $RELEASE_TYPE in
    echo \"//registry.npmjs.org/:_authToken=$TOKEN\" > ~/.npmrc
    echo \"registry=$DIST_REGISTRY\" >> ~/.npmrc
    npm version $RELEASE_VERSION
-   npm publish @zowe/apiml-onboarding-enabler-nodejs --access public
+   npm publish --access public
 
 esac
 
