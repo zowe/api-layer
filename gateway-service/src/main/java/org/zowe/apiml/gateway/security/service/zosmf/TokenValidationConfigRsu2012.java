@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -25,13 +26,13 @@ public class TokenValidationConfigRsu2012 {
     @Bean
     @Order(30)
     TokenValidationStrategy authenticateValidationStrategy(@Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore) {
-        return new AuthenticatedEndpointStrategy(restTemplateWithoutKeystore, "/zosmf/services/authenticate");
+        return new AuthenticatedEndpointStrategy(restTemplateWithoutKeystore, "/zosmf/services/authenticate", HttpMethod.POST);
     }
 
     @Bean
     @Order(50)
     TokenValidationStrategy authenticateValidationStrategy2(@Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore) {
-        return new AuthenticatedEndpointStrategy(restTemplateWithoutKeystore, "/zosmf/notifications/inbox");
+        return new AuthenticatedEndpointStrategy(restTemplateWithoutKeystore, "/zosmf/notifications/inbox", HttpMethod.GET);
     }
 
 }
