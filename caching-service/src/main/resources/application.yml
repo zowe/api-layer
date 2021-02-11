@@ -1,6 +1,15 @@
-spring:
-    application:
-        name: Caching service
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: INFO
+        org.springframework: WARN
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery.DiscoveryClient: OFF
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
 
 apiml:
     enabled: true
@@ -58,6 +67,11 @@ apiml:
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /api/v1/gateway/auth
                 corsEnabled: false
+
+spring:
+    application:
+        name: Caching service
+    output.ansi.enabled: always
 
 server:
     port: ${apiml.service.port}
