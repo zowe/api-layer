@@ -13,7 +13,7 @@
   "author": "",
   "license": "EPL-2.0",
   "dependencies": {
-    "@zowe/apiml-onboarding-enabler-nodejs": "*",
+    "@zowe/apiml-onboarding-enabler-nodejs": "latest",
     "express": "^4.16.4"
   }
 }
