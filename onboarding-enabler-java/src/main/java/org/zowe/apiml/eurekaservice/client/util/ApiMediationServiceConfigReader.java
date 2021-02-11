@@ -201,7 +201,6 @@ public class ApiMediationServiceConfigReader {
         if ((serviceConfig != null) && (serviceConfig.getServiceIpAddress() == null)) {
             String urlString = serviceConfig.getBaseUrl();
             try {
-                System.setProperty("java.net.preferIPv6Addresses","true");
                 serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(urlString));
             } catch (MalformedURLException e) {
                 throw new ServiceDefinitionException(String.format("%s is not a valid URL.", urlString), e);
