@@ -28,10 +28,13 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
 
     private final RestTemplate restTemplateWithoutKeystore;
 
+
     @InjectApimlLogger
     protected ApimlLogger apimlLog = ApimlLogger.empty();
 
     public final String authenticatedEndpoint;
+
+    private final HttpMethod httpMethod;
 
     @Override
     public void validate(TokenValidationRequest request) {
@@ -46,7 +49,7 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
                 headers.add(HttpHeaders.COOKIE, ZosmfService.TokenType.JWT.getCookieName() + "=" + request.getToken());
 
 
-                ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
+                ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, httpMethod,
                     new HttpEntity<>(null, headers), String.class);
 
                 if (re.getStatusCode().is2xxSuccessful()) {
@@ -75,7 +78,7 @@ public class AuthenticatedEndpointStrategy implements TokenValidationStrategy {
         } else {
             return request.getEndpointExistenceMap().entrySet().stream()
                 .filter(entry -> entry.getKey().equalsIgnoreCase(request.getZosmfBaseUrl() + endpoint))
-            .findFirst().map(entry -> entry.getValue()).orElseThrow(IllegalStateException::new);
+                .findFirst().map(entry -> entry.getValue()).orElse(true);
         }
     }
 
