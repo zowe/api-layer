@@ -34,9 +34,8 @@ case $RELEASE_TYPE in
    ;;
    "NODEJS_ENABLER_RELEASE")
    cd onboarding-enabler-nodejs
-   echo "//registry.npmjs.org/:_authToken=$TOKEN" >> .npmrc
-   echo "registry=$DIST_REGISTRY" >> .npmrc
-   ls -l
+   echo "//registry.npmjs.org/:_authToken=$TOKEN" > ~/.npmrc
+   echo "registry=$DIST_REGISTRY" >> ~/.npmrc
    npm whoami
    npm version $RELEASE_VERSION
    npm publish --access public
