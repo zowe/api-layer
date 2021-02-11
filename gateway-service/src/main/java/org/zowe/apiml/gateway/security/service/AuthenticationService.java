@@ -12,22 +12,15 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.*;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
@@ -248,7 +241,7 @@ public class AuthenticationService {
                 isValid = true;
                 break;
             case ZOSMF:
-                isValid = zosmfService.validate(jwtToken);
+               isValid = zosmfService.validate(jwtToken);
                 break;
             default:
                 throw new TokenNotValidException("Unknown token type.");
@@ -313,7 +306,7 @@ public class AuthenticationService {
      * @throws TokenNotValidException if the token is not valid
      */
     public TokenAuthentication validateJwtToken(TokenAuthentication token) {
-        return meAsProxy.validateJwtToken(token != null ? token.getCredentials() : null);
+        return meAsProxy.validateJwtToken( token != null ? token.getCredentials() : null);
     }
 
     /**
@@ -356,7 +349,7 @@ public class AuthenticationService {
                 .parseClaimsJwt(withoutSign)
                 .getBody();
             return new QueryResponse(
-                getDomain(claims),
+                claims.get(DOMAIN_CLAIM_NAME, String.class),
                 claims.getSubject(),
                 claims.getIssuedAt(),
                 claims.getExpiration(),
@@ -365,10 +358,6 @@ public class AuthenticationService {
         } catch (RuntimeException exception) {
             throw handleJwtParserException(exception);
         }
-    }
-
-    private String getDomain(Claims claims) {
-        return claims.get(DOMAIN_CLAIM_NAME, String.class) != null ? claims.get(DOMAIN_CLAIM_NAME, String.class) : "";
     }
 
     /**
