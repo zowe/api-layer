@@ -199,7 +199,6 @@ public class VsamFile implements Closeable {
                 return Optional.of(returned);
             } else {
                 apimlLog.log("org.zowe.apiml.cache.keyNotInCache");
-                apimlLog.log("org.zowe.apiml.cache.keyNotInCache");
             }
 
         } catch (ZFileException | VsamRecordException e) {
