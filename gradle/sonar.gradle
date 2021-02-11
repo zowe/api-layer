@@ -92,13 +92,6 @@ project(":zowe-install") {
     }
 }
 
-// Mock, not involved in the production code
-project(":mock-zosmf") {
-    sonarqube {
-        skipProject = true
-    }
-}
-
 // Onboarding NodeJS enabler; sonar does not apply
 project(":onboarding-enabler-nodejs") {
     sonarqube {

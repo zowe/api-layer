@@ -303,16 +303,16 @@ public enum PlatformErrno2 {
     JRBadAuditOption("JRBadAuditOption", 0x0150, "An incorrect option code was specified for the chaudit service"),  // NOSONAR
     JRExecFileTooBig("JRExecFileTooBig", 0x0151, "The size of the specified file exceeds the private region of the caller"),  // NOSONAR
     JRInvalidCursor("JRInvalidCursor", 0x0152, "The cursor value passed to the w_getmntent call is incorrect"),  // NOSONAR
-    JRPtySlaveOpened("JRPtySlaveOpened", 0x0153, "The open of the master pseudo-TTY failed, because the associated slave pseudo-TTY is still open"),  // NOSONAR
+    JRPtySlaveOpened("JRPtySlaveOpened", 0x0153, "The open of the main pseudo-TTY failed, because the associated secondary pseudo-TTY is still open"),  // NOSONAR
     JRPtyMinorInvalid("JRPtyMinorInvalid", 0x0154, "The device minor number is larger than the MAXPTYS parameter in the BPXPRMxx member"),  // NOSONAR
     JRPtyAlreadyActive("JRPtyAlreadyActive", 0x0155, "The device minor number is already active"),  // NOSONAR
     JRSignalReceived("JRSignalReceived", 0x0156, "The call was interrupted by a signal"),  // NOSONAR
     JRPtyDifferentUID("JRPtyDifferentUID", 0x0157, "The process UID is different from the UID of the process that opened the master pseudo-TTY"),  // NOSONAR
     JRPtyMasterClosed("JRPtyMasterClosed", 0x0158, "There is no corresponding master pseudo-TTY file open"),  // NOSONAR
-    JRPtyDifferentFile("JRPtyDifferentFile", 0x0159, "A slave pseudo-TTY file for this minor number with a different filename is already open"),  // NOSONAR
-    JRPtySlaveNotInit("JRPtySlaveNotInit", 0x015b, "The slave pseudo-TTY support did not complete successfully"),  // NOSONAR
+    JRPtyDifferentFile("JRPtyDifferentFile", 0x0159, "A dependent pseudo-TTY file for this minor number with a different filename is already open"),  // NOSONAR
+    JRPtySlaveNotInit("JRPtySlaveNotInit", 0x015b, "The dependent pseudo-TTY support did not complete successfully"),  // NOSONAR
     JRPtyInputStopped("JRPtyInputStopped", 0x015c, "The nonblocked write failed, because input is stopped"),  // NOSONAR
-    JREOFAlreadySent("JREOFAlreadySent", 0x015e, "The write to the master pseudo-TTY failed, because all slaves are closed and HUPCL was set"),  // NOSONAR
+    JREOFAlreadySent("JREOFAlreadySent", 0x015e, "The write to the master pseudo-TTY failed, because all dependents are closed and HUPCL was set"),  // NOSONAR
     JRPtyOrphanedWrite("JRPtyOrphanedWrite", 0x0160, "The write service is processing in a background, orphaned process group"),  // NOSONAR
     JRPtyOutputStopped("JRPtyOutputStopped", 0x0161, "Write cannot be processed, because output has stopped"),  // NOSONAR
     JRPtyNoData("JRPtyNoData", 0x0163, "Data or room is not available on the queue"),  // NOSONAR
@@ -385,7 +385,7 @@ public enum PlatformErrno2 {
     JRPtyBadQueSel("JRPtyBadQueSel", 0x01a7, "The queue selector is not valid"),  // NOSONAR
     JRPtyNoSessLeader("JRPtyNoSessLeader", 0x01a8, "The system is unable to locate the session leader"),  // NOSONAR
     JRNoCTTY("JRNoCTTY", 0x01a9, "There is no controlling terminal for this process"),  // NOSONAR
-    JRPtyHupclClose("JRPtyHupclClose", 0x01aa, "The slave pseudo-TTY file was previously closed with the termios HUPCL flag set"),  // NOSONAR
+    JRPtyHupclClose("JRPtyHupclClose", 0x01aa, "The depndent pseudo-TTY file was previously closed with the termios HUPCL flag set"),  // NOSONAR
     JRFsInUse("JRFsInUse", 0x01ab, "The requested file system is still in use"),  // NOSONAR
     JRPtyInvalidPgid("JRPtyInvalidPgid", 0x01ac, "The requested process group ID is not valid"),  // NOSONAR
     JRPtyNotInSession("JRPtyNotInSession", 0x01ad, "The process group ID (PGID) does not exist in the caller&apos;s session"),  // NOSONAR
@@ -678,7 +678,7 @@ public enum PlatformErrno2 {
     JRClnyNoCommonStorage("JRClnyNoCommonStorage", 0x0332, "The system was unable to obtain storage in common for a control block to represent a colony address space"),  // NOSONAR
     JRPfsNotDubbed("JRPfsNotDubbed", 0x0333, "The PFS task calling an OSI service is not dubbed"),  // NOSONAR
     JRClnyNotStarted("JRClnyNotStarted", 0x0334, "An attempt was made to start a PFS within a colony address space. The colony was either not completely initialized or it was being terminated"),  // NOSONAR
-    JRPtyChgFromSlave("JRPtyChgFromSlave", 0x0335, "An attempt was made to change a termios flag from the slave pty, which is only allowed from the master"),  // NOSONAR
+    JRPtyChgFromSlave("JRPtyChgFromSlave", 0x0335, "An attempt was made to change a termios flag from the dependent pty, which is only allowed from the master"),  // NOSONAR
     JRClnyPfsNotStarted("JRClnyPfsNotStarted", 0x0336, "An attempt was made to stop or clean up a colony PFS that was not previously started"),  // NOSONAR
     JRClnyPfsNotDone("JRClnyPfsNotDone", 0x0337, "An attempt was made to clean up a colony PFS that was not completely terminated"),  // NOSONAR
     JRCpbNotFound("JRCpbNotFound", 0x0338, "No Cpb was found on the Cpb chain representing this colony PFS"),  // NOSONAR
@@ -800,7 +800,7 @@ public enum PlatformErrno2 {
     JRWaitForever("JRWaitForever", 0x03b9, "The timeout value specified wait forever, but there were no events to wait for"),  // NOSONAR
     JRInvalidNfds("JRInvalidNfds", 0x03ba, "The NFDS parameter is larger than the OPEN_MAX (MAXFILEPROC) value"),  // NOSONAR
     JRClnyPfsNotAllowed("JRClnyPfsNotAllowed", 0x03bb, "The requested operation is not allowed for a PFS that is running in a Colony Address Space"),  // NOSONAR
-    JRPtyNotMaster("JRPtyNotMaster", 0x03bc, "Unsupported function against slave TTY"),  // NOSONAR
+    JRPtyNotMaster("JRPtyNotMaster", 0x03bc, "Unsupported function against dependent TTY"),  // NOSONAR
     JRFsUnAuthClnt("JRFsUnAuthClnt", 0x03bd, "An unauthenticated client is denied access"),  // NOSONAR
     JRBadBufLen("JRBadBufLen", 0x03be, "The length of the buffer is not valid"),  // NOSONAR
     JRBadStgKey("JRBadStgKey", 0x03bf, "The message data could not be fetched using the specified storage key"),  // NOSONAR
@@ -854,7 +854,7 @@ public enum PlatformErrno2 {
     JRTargetIPNotFound("JRTargetIPNotFound", 0x03ef, "Target IP address cannot be found"),  // NOSONAR
     JRESCONNotConfigured("JRESCONNotConfigured", 0x03f0, "The ESCON connection is not configured"),  // NOSONAR
     JRPtySlaveLocked("JRPtySlaveLocked", 0x03f1, "A grantpt() was issued against the master pty but an unlockpt() has not yet been issued"),  // NOSONAR
-    JRPtySlaveNotLocked("JRPtySlaveNotLocked", 0x03f2, "The slave pty is not locked either because grantpt was not done or because grantpt has already been issued"),  // NOSONAR
+    JRPtySlaveNotLocked("JRPtySlaveNotLocked", 0x03f2, "The dependent pty is not locked either because grantpt was not done or because grantpt has already been issued"),  // NOSONAR
     JRPtyGrantptDone("JRPtyGrantptDone", 0x03f3, "grantpt() has already been issued. This grantpt is redundant"),  // NOSONAR
     JRSRBSNotAllowed("JRSRBSNotAllowed", 0x03f4, "Issuing syscalls from an SRB is not allowed"),  // NOSONAR
     JRNotSRBSyscall("JRNotSRBSyscall", 0x03f5, "The syscall requested is not supported in SRB mode"),  // NOSONAR

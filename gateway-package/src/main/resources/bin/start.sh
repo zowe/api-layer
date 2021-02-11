@@ -37,6 +37,16 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [[ -z ${APIML_GATEWAY_CATALOG_ID} ]]
+then
+    APIML_GATEWAY_CATALOG_ID="apicatalog"
+fi
+
+if [ ${APIML_GATEWAY_CATALOG_ID} = "none" ]
+then
+    APIML_GATEWAY_CATALOG_ID=""
+fi
+
 if [ `uname` = "OS/390" ]; then
     GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
 else
@@ -76,6 +86,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
     -Dapiml.service.allowEncodedSlashes=${APIML_ALLOW_ENCODED_SLASHES} \
     -Dapiml.service.corsEnabled=${APIML_CORS_ENABLED} \
+    -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID}
     -Dapiml.cache.storage.location=${WORKSPACE_DIR}/api-mediation/ \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
     -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
