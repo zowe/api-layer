@@ -13,9 +13,7 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
@@ -79,6 +77,13 @@ class AuthenticatedEndpointStrategyTest {
             "TOKN", "zosmfurl", realMapWithData2);
         assertThrows(RuntimeException.class, () -> underTest.validate(realRequest2));
         verify(restTemplate, times(3)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+
+        Map<String, Boolean> realMapWithAnotherEndpoint = new HashMap<>();
+        realMapWithAnotherEndpoint.put("zosmfurl/anotherendpoint", false);
+        TokenValidationRequest realRequest3 = new TokenValidationRequest(ZosmfService.TokenType.JWT,
+            "TOKN", "zosmfurl", realMapWithAnotherEndpoint);
+        underTest.validate(realRequest3);
+        verify(restTemplate, times(4)).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
 
     }
 
