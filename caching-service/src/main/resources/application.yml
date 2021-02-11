@@ -95,4 +95,32 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
 
+---
+spring:
+    profiles: debug
+
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: DEBUG
+        org.springframework: INFO
+        org.apache: INFO
+        org.apache.http: DEBUG
+        com.netflix: INFO
+        org.hibernate: INFO
+        org.springframework.web.servlet.PageNotFound: WARN
+        net.sf.ehcache: INFO
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
+
+---
+spring:
+    profiles: diag
+
+---
+spring:
+    profiles: dev
+    profiles.include:
+        - debug
+        - diag
+
 logbackServiceName: ZWEACS1
