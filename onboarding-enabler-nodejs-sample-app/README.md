@@ -1,6 +1,6 @@
 # Hello World API Service in Express
 
-This is an example about how an API service implemented using [Node.js](https://nodejs.org/en/) and [Express](https://expressjs.com/) can be registered to the API Mediation Layer using the [apiml-onboarding-enabler-nodejs](https://www.npmjs.com/package/apiml-onboarding-enabler-nodejs) npm package. 
+This is an example about how an API service implemented using [Node.js](https://nodejs.org/en/) and [Express](https://expressjs.com/) can be registered to the API Mediation Layer using the [apiml-onboarding-enabler-nodejs](https://www.npmjs.com/package/@zowe/apiml-onboarding-enabler-nodejs) npm package. 
 
 
  [index.js](src/index.js) starts the API service implemented in Express and registers it to the Discovery service using the Node.js onboarding enabler.
@@ -11,18 +11,18 @@ This is an example about how an API service implemented using [Node.js](https://
  
  ## How to run
 
- You can start the service using:
+You can start the service using by running:
 
-    cd helloworld-expressjs
-    npm install
-    node index.js
+ `npm run onboarding-enabler-nodejs-sample-app` 
+ 
+ from the root project.
 
-If the APIML is already running then you should see following messages:
+If the APIML is already running then you should see the following messages:
 
     hwexpress service listening on port 10020
     registered with eureka:  hwexpress/localhost:hwexpress:10020
 
-The you can access it via gateway it by:
+Then you can access it via Gateway by issuing the following command:
 
     http --verify=../keystore/local_ca/localca.cer GET https://localhost:10010/api/v1/hwexpress/hello
 
