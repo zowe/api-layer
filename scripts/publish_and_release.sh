@@ -33,12 +33,13 @@ case $RELEASE_TYPE in
    git archive --format tar.gz -9 --output api-layer.tar.gz "v$RELEASE_VERSION"
    ;;
    "NODEJS_ENABLER_RELEASE")
-   ls -l
-   echo "//registry.npmjs.org/:_authToken=$TOKEN" > ~/.npmrc
+   cd onboarding-enabler-nodejs
+   echo "//registry.npmjs.org/:_authToken=$TOKEN" >> .npmrc
    echo "registry=$DIST_REGISTRY" >> ~/.npmrc
+   ls -l
    npm whoami
-#   npm version $RELEASE_VERSION
-#   npm publish --access public
+   npm version $RELEASE_VERSION
+   npm publish --access public
 
 esac
 
