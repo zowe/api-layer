@@ -17,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
+import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -34,6 +35,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 @zOSMFAuthTest
+@NotForMainframeTest
 class ZosmfAuthenticationLoginTest extends LoginTest {
     private String scheme;
     private String host;
@@ -65,6 +67,7 @@ class ZosmfAuthenticationLoginTest extends LoginTest {
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     @MainframeDependentTests
+    @NotForMainframeTest
     void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenIdenticalTokenIsProduced(String loginUrl) {
         LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
@@ -76,6 +79,7 @@ class ZosmfAuthenticationLoginTest extends LoginTest {
 
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
+    @NotForMainframeTest
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds(String loginUrl) throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .post(new URI(loginUrl))
@@ -100,6 +104,7 @@ class ZosmfAuthenticationLoginTest extends LoginTest {
 
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
+    @NotForMainframeTest
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced(String loginUrl) throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .post(new URI(loginUrl))
@@ -113,6 +118,7 @@ class ZosmfAuthenticationLoginTest extends LoginTest {
 
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
+    @NotForMainframeTest
     void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced(String loginUrl) throws Exception {
         Cookie cookie = given().config(clientCertValid)
             .auth().basic("Bob", "The Builder")
