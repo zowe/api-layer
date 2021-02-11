@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.service.EvictionStrategy;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
 
@@ -27,6 +29,9 @@ public class RemoveOldestStrategy implements EvictionStrategy {
     private final VsamConfig vsamConfig;
 
     private final VsamFile file;
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Override
     public void evict(String key) {
@@ -55,12 +60,12 @@ public class RemoveOldestStrategy implements EvictionStrategy {
                 }
                 overflowProtection--;
                 if (overflowProtection <= 0) {
-                    log.error("Maximum number of records retrieved, stopping the retrieval");
+                    apimlLog.log("org.zowe.apiml.cache.tooManyRecordsRetrieved");
                     break;
                 }
             }
         } catch (ZFileException | VsamRecordException | UnsupportedEncodingException e) {
-            log.error(e.toString());
+            apimlLog.log("org.zowe.apiml.cache.errorRetrievingEntry");
         }
         checkAndRemoveRecord(oldest);
     }

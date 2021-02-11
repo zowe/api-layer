@@ -65,6 +65,45 @@ messages:
         action: "Reinstall Zowe with different per record configuration or store smaller record"
 
 
+    # Retrieval messages (141 - 150)
+    -   key: org.zowe.apiml.cache.errorRetrievingEntry
+        number: ZWECS141
+        type: ERROR
+        text: "Error retrieving cache entry: '%s'."
+        reason: "An entry in the cache could not be retrieved."
+        action: "Please submit an issue with this message."
+
+    -   key: org.zowe.apiml.cache.tooManyEntriesRetrieved
+        number: ZWECS142
+        type: ERROR
+        text: "Maximum number of caching entries retrieved, stopping the retrieval."
+        reason: "Too many records were retrieved when trying to find a record to evict."
+        action: "Use an eviction strategy that doesn't retrieve as many records."
+
+
+    # Storage messages (151 - 160)
+    -   key: org.zowe.apiml.cache.errorInitializingStorage
+        number: ZWECS151
+        type: ERROR
+        text: "Problem initializing storage of type '%s': '%s'. Exception: '%s'"
+        reason: "Caching storage was not initialized."
+        action: "Please submit an issue with this message."
+
+    -   key: org.zowe.apiml.cache.errorQueryingStorage
+        number: ZWECS152
+        type: ERROR
+        text: "Could not query the cache for '%s' storage: '%s'"
+        reason: "There was an error querying the persistent storage."
+        action: "Check that your configured caching storage solution is functioning properly."
+
+    -   key: org.zowe.apiml.cache.unsupportedEncoding
+        number: ZWECS153
+        type: ERROR
+        text: "Unsupported encoding: '%s' for '%s' storage"
+        reason: "Data in an unsupported encoding was used."
+        action: "Check that you are storing data in a proper encoding."
+
+
     # Service specific messages (700 - 799)
     -   key: org.zowe.apiml.cache.gatewayUnavailable
         number: ZWECS700
