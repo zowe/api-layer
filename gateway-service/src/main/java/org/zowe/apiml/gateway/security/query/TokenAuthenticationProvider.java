@@ -9,18 +9,20 @@
  */
 package org.zowe.apiml.gateway.security.query;
 
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 /**
  * Authentication provider that verifies the JWT token
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class TokenAuthenticationProvider implements AuthenticationProvider {
     private final AuthenticationService authenticationService;
 
@@ -33,6 +35,7 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
+        log.info("validate token " + tokenAuthentication.getCredentials() + " principal " + tokenAuthentication.getPrincipal());
         return authenticationService.validateJwtToken(tokenAuthentication);
     }
 

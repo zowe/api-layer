@@ -72,7 +72,7 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         if (!request.getMethod().equals(httpMethod.name())) {
             throw new AuthMethodNotSupportedException(request.getMethod());
         }
-
+        logger.debug("Is protected " + protectedByCertificate);
         // Must be already authenticated by certificate
         if (protectedByCertificate &&
             (SecurityContextHolder.getContext().getAuthentication() == null ||
@@ -83,11 +83,13 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
 
         String token = authenticationService.getJwtTokenFromRequest(request)
             .orElseThrow(() -> new TokenNotProvidedException("Authorization token not provided."));
-
+        logger.debug("Token for query" + token);
         Authentication result = this.getAuthenticationManager().authenticate(new TokenAuthentication(token));
         if (result.isAuthenticated()) {
+            logger.debug("Is authenticated");
             return result;
         } else {
+            logger.debug("Is not authenticated");
             throw new TokenNotValidException("JWT Token is not authenticated");
         }
     }

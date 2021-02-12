@@ -9,14 +9,15 @@
  */
 package org.zowe.apiml.gateway.security.query;
 
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +27,7 @@ import java.io.IOException;
  * Handles the successful query
  */
 @Component
+@Slf4j
 public class SuccessfulQueryHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper mapper;
     private final AuthenticationService authenticationService;
@@ -52,7 +54,7 @@ public class SuccessfulQueryHandler implements AuthenticationSuccessHandler {
 
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
         response.setStatus(HttpStatus.OK.value());
-
+        log.debug("Parse for response");
         mapper.writeValue(response.getWriter(), authenticationService.parseJwtToken(token));
 
         response.getWriter().flush();
