@@ -14,6 +14,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.SlowTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -30,12 +31,14 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @Slf4j
 @TestsNotMeantForZowe
+@Disabled
 class GatewayTimeoutTest {
     private static final String API_V1_GREETING_URI = "/api/v1/discoverableclient/greeting";
     private static final int DEFAULT_TIMEOUT = 30000;
 
     @Test
     @SlowTests
+    @Disabled
     @SuppressWarnings("squid:S1160")
     void shouldCallLongButBelowTimeoutRequest() throws IOException {
         // Given
@@ -50,6 +53,7 @@ class GatewayTimeoutTest {
 
     @Test
     @SlowTests
+    @Disabled
     @SuppressWarnings("squid:S1160")
     void shouldTimeoutRequestWithGatewayTimeoutHttpResponseCode() throws IOException {
         // Given
