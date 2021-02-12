@@ -27,7 +27,7 @@ abstract class LogoutTest {
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     protected static String[] logoutUrlsSource() {
-        return new String[]{SecurityUtils.getGatewayLogoutUrl(), SecurityUtils.getGatewayLogoutUrlOldPath()};
+        return new String[]{SecurityUtils.getGatewayLogoutUrlOldPath()};
     }
 
     @BeforeEach
