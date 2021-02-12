@@ -122,6 +122,7 @@ abstract class LoginTest {
     //@formatter:off
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
+    @Disabled
     void givenValidCredentialsInBody_whenUserAuthenticates_thenTheValidTokenIsProduced(String loginUrl) {
         LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
@@ -155,6 +156,7 @@ abstract class LoginTest {
 
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
+    @Disabled
     void givenValidCredentialsInHeader_whenUserAuthenticates_thenTheValidTokenIsProduced(String loginUrl) {
         String token = given()
             .auth().preemptive().basic(getUsername(), getPassword())
@@ -189,6 +191,7 @@ abstract class LoginTest {
 
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
+    @Disabled
     void givenInvalidCredentialsInBody_whenUserAuthenticates_thenUnauthorizedIsReturned(String loginUrl) {
         String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl, "/", 3));
         String expectedMessage = "Invalid username or password for URL '" + loginPath + "'";
@@ -209,6 +212,7 @@ abstract class LoginTest {
 
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
+    @Disabled
     void givenInvalidCredentialsInHeader_whenUserAuthenticates_thenUnauthorizedIsReturned(String loginUrl) {
         String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl, "/", 3));
         String expectedMessage = "Invalid username or password for URL '" + loginPath + "'";
@@ -229,6 +233,7 @@ abstract class LoginTest {
 
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
+    @Disabled
     void givenCredentialsInTheWrongJsonFormat_whenUserAuthenticates_then400IsReturned(String loginUrl) {
         String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl, "/", 3));
         String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + loginPath + "'";
@@ -251,6 +256,7 @@ abstract class LoginTest {
 
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
+    @Disabled
     void givenValidCredentialsInJsonBody_whenUserAuthenticatesViaGetMethod_then405IsReturned(String loginUrl) {
         String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl, "/", 3));
         String expectedMessage = "Authentication method 'GET' is not supported for URL '" + loginPath + "'";
