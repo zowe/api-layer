@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,14 +20,15 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 
-import static  org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
-import static  org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
 /**
  * Authentication provider that verifies credentials against z/OSMF service
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
     @Value("${apiml.security.zosmf.useJwtToken:true}")
@@ -44,17 +46,23 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
-
+        String s = "";
+        if (authentication.getCredentials() != null) {
+            s = authentication.getCredentials().toString();
+        }
+        log.debug("Auth to zosmf " + user + " pass " + s);
         final ZosmfService.AuthenticationResponse ar = zosmfService.authenticate(authentication);
 
         // if z/OSMF support JWT, use it as Zowe JWT token
         if (ar.getTokens().containsKey(JWT) && useJwtToken) {
+            log.debug("ZOSMF jwt token " + ar.getTokens().get(JWT));
             return authenticationService.createTokenAuthentication(user, ar.getTokens().get(JWT));
         }
 
         if (ar.getTokens().containsKey(LTPA)) {
             // construct own JWT token, including LTPA from z/OSMF
             final String domain = ar.getDomain();
+            log.debug("ZOSMF ltpa token " + ar.getTokens().get(LTPA));
             final String jwtToken = authenticationService.createJwtToken(user, domain, ar.getTokens().get(LTPA));
 
             return authenticationService.createTokenAuthentication(user, jwtToken);

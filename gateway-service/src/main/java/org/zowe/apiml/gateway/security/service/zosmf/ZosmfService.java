@@ -129,7 +129,9 @@ public class ZosmfService extends AbstractZosmfService {
 
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
+        log.debug("Authenticate");
         if (loginEndpointExists()) {
+            log.debug("endpoint exists");
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
                 getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
@@ -206,7 +208,7 @@ public class ZosmfService extends AbstractZosmfService {
     @Cacheable(value = "zosmfAuthenticationEndpoint", key = "#httpMethod.name()")
     public boolean authenticationEndpointExists(HttpMethod httpMethod, HttpHeaders headers) {
         String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
-
+        log.debug("auth endpoint exists not cached");
         try {
             restTemplateWithoutKeystore.exchange(url, httpMethod, new HttpEntity<>(null, headers), String.class);
         } catch (HttpClientErrorException hce) {
@@ -238,6 +240,7 @@ public class ZosmfService extends AbstractZosmfService {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
         headers.add("Authorization", "Basic Og==");
+        log.debug("Check if auth endpoint exists");
         return meAsProxy.authenticationEndpointExists(HttpMethod.POST, headers);
     }
 
