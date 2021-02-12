@@ -14,24 +14,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
 import javax.annotation.PostConstruct;
 import java.text.ParseException;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Primary
 @Service
@@ -53,6 +64,7 @@ public class ZosmfService extends AbstractZosmfService {
         private final String cookieName;
 
     }
+
     /**
      * Response of authentication, contains all data to next processing
      */
@@ -64,6 +76,7 @@ public class ZosmfService extends AbstractZosmfService {
         private String domain;
         private final Map<TokenType, String> tokens;
     }
+
     /**
      * DTO with base information about z/OSMF (version and realm/domain)
      */
@@ -107,6 +120,7 @@ public class ZosmfService extends AbstractZosmfService {
 
 
     private ZosmfService meAsProxy;
+
     @PostConstruct
     public void afterPropertiesSet() {
         meAsProxy = applicationContext.getBean(ZosmfService.class);
@@ -197,6 +211,7 @@ public class ZosmfService extends AbstractZosmfService {
             restTemplateWithoutKeystore.exchange(url, httpMethod, new HttpEntity<>(null, headers), String.class);
         } catch (HttpClientErrorException hce) {
             if (HttpStatus.UNAUTHORIZED.equals(hce.getStatusCode())) {
+                log.debug("Authentication endpoint exists " + httpMethod.name());
                 return true;
             } else if (HttpStatus.NOT_FOUND.equals(hce.getStatusCode())) {
                 log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure APAR PH12143 " +
@@ -240,7 +255,7 @@ public class ZosmfService extends AbstractZosmfService {
         log.debug("ZosmfService validating token: ....{}", StringUtils.right(token, 15));
         TokenValidationRequest request = new TokenValidationRequest(TokenType.JWT, token, getURI(getZosmfServiceId()), getEndpointMap());
 
-        for (TokenValidationStrategy s: tokenValidationStrategy) {
+        for (TokenValidationStrategy s : tokenValidationStrategy) {
             log.debug("Trying to validate token with strategy: {}", s.toString());
             try {
                 s.validate(request);
@@ -273,9 +288,11 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public void invalidate(TokenType type, String token) {
+        log.debug("Check if endpoint exists");
         if (logoutEndpointExists()) {
-            final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
+            final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
+            log.debug("Calling url " + url);
             final HttpHeaders headers = new HttpHeaders();
             headers.add(ZOSMF_CSRF_HEADER, "");
             headers.add(HttpHeaders.COOKIE, type.getCookieName() + "=" + token);
@@ -284,8 +301,10 @@ public class ZosmfService extends AbstractZosmfService {
                 ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.DELETE,
                     new HttpEntity<>(null, headers), String.class);
 
-                if (re.getStatusCode().is2xxSuccessful())
+                if (re.getStatusCode().is2xxSuccessful()) {
+                    log.debug("invalidate was successful");
                     return;
+                }
                 apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
                 throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
             } catch (RuntimeException re) {

@@ -117,6 +117,7 @@ public class AuthenticationService {
         /*
          * until ehCache is not distributed, send to other instances invalidation request
          */
+        log.debug("Start invalidating token cached method");
         boolean isInvalidatedOnAnotherInstance = false;
         if (distribute) {
             isInvalidatedOnAnotherInstance = invalidateTokenOnAnotherInstance(jwtToken);
@@ -131,10 +132,12 @@ public class AuthenticationService {
         switch (queryResponse.getSource()) {
             case ZOWE:
                 final String ltpaToken = getLtpaToken(jwtToken);
+                log.debug("Invalidate ltpa in zosmf " + ltpaToken);
                 if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
                 break;
             case ZOSMF:
                 try {
+                    log.debug("Invalidate JWT in zosmf " + jwtToken);
                     zosmfService.invalidate(JWT, jwtToken);
                 } catch (BadCredentialsException e) {
                     if (!isInvalidatedOnAnotherInstance) {
