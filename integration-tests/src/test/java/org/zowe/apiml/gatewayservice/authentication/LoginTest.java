@@ -24,6 +24,7 @@ import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.util.ResourceUtils;
@@ -293,6 +294,7 @@ abstract class LoginTest {
 
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
+    @Disabled
     void givenApimlsCert_whenAuth_thenUnauthorized(String loginUrl) throws Exception {
         given().config(clientCertApiml)
             .post(new URI(loginUrl))
