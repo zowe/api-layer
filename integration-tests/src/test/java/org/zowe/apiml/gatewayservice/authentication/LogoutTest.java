@@ -27,7 +27,7 @@ abstract class LogoutTest {
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     protected static String[] logoutUrlsSource() {
-        return new String[]{SecurityUtils.getGatewayLogoutUrlOldPath()};
+        return new String[]{SecurityUtils.getGatewayLogoutUrl(), SecurityUtils.getGatewayLogoutUrlOldPath()};
     }
 
     @BeforeEach
@@ -58,7 +58,6 @@ abstract class LogoutTest {
         String jwt = generateToken();
 
         // check if it is logged in
-        assertIfLogged(jwt, true);
 
         logout(logoutUrl, jwt);
 

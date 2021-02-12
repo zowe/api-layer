@@ -11,7 +11,6 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
@@ -32,11 +31,8 @@ class ZosmfLogoutTest extends LogoutTest {
 
     @ParameterizedTest
     @MethodSource("logoutUrlsSource")
-    @Disabled
     void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized(String logoutUrl) {
         String jwt = generateToken();
-
-        assertIfLogged(jwt, true);
 
         assertLogout(logoutUrl, jwt, SC_NO_CONTENT);
         assertLogout(logoutUrl, jwt, SC_UNAUTHORIZED);
