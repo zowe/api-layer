@@ -48,7 +48,7 @@ public class VsamFile implements Closeable {
     public static final String RECORD_CANNOT_BE_NULL_MESSAGE = "Record cannot be null";
 
     private static final String STORAGE_TYPE = "VSAM";
-    private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^//'.*'");
+    private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^\\/\\/\\'.*'");
 
     public VsamFile(VsamConfig config, VsamConfig.VsamOptions options) {
         this(config, options, false);
