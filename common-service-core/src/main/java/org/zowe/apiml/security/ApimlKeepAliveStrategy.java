@@ -22,7 +22,7 @@ import org.apache.http.protocol.HttpContext;
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class ApimlKeepAliveStrategy implements ConnectionKeepAliveStrategy {
 
-    private static final int KEEPALIVE_TIMOUT_MILLIS = 2000;
+    private static final int KEEPALIVE_TIMOUT_MILLIS = 500;
 
     public static final ApimlKeepAliveStrategy INSTANCE = new ApimlKeepAliveStrategy();
     @Override

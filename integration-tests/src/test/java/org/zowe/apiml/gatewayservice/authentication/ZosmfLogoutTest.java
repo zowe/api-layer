@@ -31,11 +31,10 @@ class ZosmfLogoutTest extends LogoutTest {
 
     @ParameterizedTest
     @MethodSource("logoutUrlsSource")
-    void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized(String logoutUrl) throws InterruptedException {
+    void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized(String logoutUrl) {
         String jwt = generateToken();
 
         assertLogout(logoutUrl, jwt, SC_NO_CONTENT);
         assertLogout(logoutUrl, jwt, SC_UNAUTHORIZED);
-        Thread.sleep(5000);
     }
 }

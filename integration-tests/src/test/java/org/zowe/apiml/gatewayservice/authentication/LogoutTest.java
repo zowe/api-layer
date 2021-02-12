@@ -53,7 +53,7 @@ abstract class LogoutTest {
 
     @ParameterizedTest
     @MethodSource("logoutUrlsSource")
-    void testLogout(String logoutUrl) throws InterruptedException {
+    void testLogout(String logoutUrl) {
         // make login
         String jwt = generateToken();
 
@@ -63,7 +63,6 @@ abstract class LogoutTest {
 
         // check if it is logged in
         assertIfLogged(jwt, false);
-        Thread.sleep(5000);
     }
 
     protected void logout(String url, String jwtToken) {
