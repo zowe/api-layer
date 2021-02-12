@@ -23,11 +23,6 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class TokenValidationConfigRsu2012 {
 
-    @Bean
-    @Order(30)
-    TokenValidationStrategy authenticateValidationStrategy(@Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore) {
-        return new AuthenticatedEndpointStrategy(restTemplateWithoutKeystore, "/zosmf/services/authenticate", HttpMethod.POST);
-    }
 
     @Bean
     @Order(50)
