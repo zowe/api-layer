@@ -59,7 +59,7 @@ abstract class LoginTest {
     public static final String LOGIN_ENDPOINT_URL_OLD_FORMAT = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH_OLD_FORMAT, LOGIN_ENDPOINT);
 
     protected static String[] loginUrlsSource() {
-        return new String[]{LOGIN_ENDPOINT_URL, LOGIN_ENDPOINT_URL_OLD_FORMAT};
+        return new String[]{LOGIN_ENDPOINT_URL_OLD_FORMAT};
     }
 
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
