@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
 @Primary
 @Service
@@ -150,6 +151,7 @@ public class ZosmfService extends AbstractZosmfService {
 
             if (authenticationService.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
                 log.info("Invalid token after login to zosmf" + authenticationResponse.getTokens().get(JWT));
+                invalidate(LTPA, authenticationResponse.getTokens().get(LTPA));
                 throw new TokenNotValidException("Invalid token returned from zosmf");
             }
             log.info("Valid zosmf token " + authenticationResponse.getTokens().get(JWT));
