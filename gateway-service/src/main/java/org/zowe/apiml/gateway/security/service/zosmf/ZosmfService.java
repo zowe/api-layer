@@ -149,9 +149,10 @@ public class ZosmfService extends AbstractZosmfService {
                 HttpMethod.POST);
 
             if (authenticationService.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
-                log.info("Invalid token after login to zosmf");
+                log.info("Invalid token after login to zosmf" + authenticationResponse.getTokens().get(JWT));
                 throw new TokenNotValidException("Invalid token returned from zosmf");
             }
+            log.info("Valid zosmf token " + authenticationResponse.getTokens().get(JWT));
         } else {
             String zosmfInfoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
             authenticationResponse = issueAuthenticationRequest(
