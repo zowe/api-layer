@@ -9,12 +9,13 @@
  */
 package org.zowe.apiml.gateway.config;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 class GatewayConfigTest {
 
@@ -22,8 +23,12 @@ class GatewayConfigTest {
     private static final String PORT = "8888";
     private static final String SCHEME = "https";
 
-    @Mock
     ConfigurableEnvironment env;
+
+    @BeforeEach
+    void setUp() {
+        env = mock(ConfigurableEnvironment.class);
+    }
 
     @Test
     void shouldReturnGatewayProperties() {
