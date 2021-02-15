@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertyResolver;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.util.StringUtils;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
@@ -35,6 +36,7 @@ import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableRetry
 public class GatewayConfig {
 
     private static final String SEPARATOR = ":";
