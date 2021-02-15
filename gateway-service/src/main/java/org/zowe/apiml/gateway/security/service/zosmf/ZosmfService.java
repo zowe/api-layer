@@ -20,7 +20,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
@@ -114,7 +113,8 @@ public class ZosmfService extends AbstractZosmfService {
         final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
         final ObjectMapper securityObjectMapper,
         final ApplicationContext applicationContext,
-        List<TokenValidationStrategy> tokenValidationStrategy
+        List<TokenValidationStrategy> tokenValidationStrategy,
+        AuthenticationService authenticationService
     ) {
         super(
             authConfigurationProperties,
@@ -124,11 +124,10 @@ public class ZosmfService extends AbstractZosmfService {
         );
         this.applicationContext = applicationContext;
         this.tokenValidationStrategy = tokenValidationStrategy;
+        this.authenticationService = authenticationService;
     }
 
-
-    @Autowired
-    private AuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
 
     private ZosmfService meAsProxy;
 
@@ -141,20 +140,16 @@ public class ZosmfService extends AbstractZosmfService {
     @Retryable(value = {TokenNotValidException.class}, maxAttempts = 4, backoff = @Backoff(value = 3000))
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
-        log.debug("Authenticate");
         if (loginEndpointExists()) {
-            log.debug("endpoint exists");
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
                 getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
                 HttpMethod.POST);
 
             if (authenticationService.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
-                log.info("Invalid token after login to zosmf" + authenticationResponse.getTokens().get(JWT));
                 invalidate(LTPA, authenticationResponse.getTokens().get(LTPA));
                 throw new TokenNotValidException("Invalid token returned from zosmf");
             }
-            log.info("Valid zosmf token " + authenticationResponse.getTokens().get(JWT));
         } else {
             String zosmfInfoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
             authenticationResponse = issueAuthenticationRequest(
@@ -227,12 +222,11 @@ public class ZosmfService extends AbstractZosmfService {
     @Cacheable(value = "zosmfAuthenticationEndpoint", key = "#httpMethod.name()")
     public boolean authenticationEndpointExists(HttpMethod httpMethod, HttpHeaders headers) {
         String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
-        log.debug("auth endpoint exists not cached");
+
         try {
             restTemplateWithoutKeystore.exchange(url, httpMethod, new HttpEntity<>(null, headers), String.class);
         } catch (HttpClientErrorException hce) {
             if (HttpStatus.UNAUTHORIZED.equals(hce.getStatusCode())) {
-                log.debug("Authentication endpoint exists " + httpMethod.name());
                 return true;
             } else if (HttpStatus.NOT_FOUND.equals(hce.getStatusCode())) {
                 log.warn("The check of z/OSMF JWT authentication endpoint has failed, ensure APAR PH12143 " +
@@ -259,7 +253,6 @@ public class ZosmfService extends AbstractZosmfService {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
         headers.add("Authorization", "Basic Og==");
-        log.debug("Check if auth endpoint exists");
         return meAsProxy.authenticationEndpointExists(HttpMethod.POST, headers);
     }
 
@@ -310,11 +303,9 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public void invalidate(TokenType type, String token) {
-        log.debug("Check if endpoint exists");
         if (logoutEndpointExists()) {
-
             final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
-            log.debug("Calling url " + url);
+
             final HttpHeaders headers = new HttpHeaders();
             headers.add(ZOSMF_CSRF_HEADER, "");
             headers.add(HttpHeaders.COOKIE, type.getCookieName() + "=" + token);
@@ -323,10 +314,8 @@ public class ZosmfService extends AbstractZosmfService {
                 ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.DELETE,
                     new HttpEntity<>(null, headers), String.class);
 
-                if (re.getStatusCode().is2xxSuccessful()) {
-                    log.debug("invalidate was successful");
+                if (re.getStatusCode().is2xxSuccessful())
                     return;
-                }
                 apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
                 throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
             } catch (RuntimeException re) {

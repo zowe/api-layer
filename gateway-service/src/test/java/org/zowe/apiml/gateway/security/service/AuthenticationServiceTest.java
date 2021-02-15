@@ -433,7 +433,8 @@ public class AuthenticationServiceTest {
                 restTemplate,
                 securityObjectMapper,
                 applicationContext,
-                new ArrayList<TokenValidationStrategy>()
+                new ArrayList<TokenValidationStrategy>(),
+                authService
             ));
 
 

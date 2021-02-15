@@ -66,6 +66,9 @@ class SuccessfulQueryHandlerTest {
     @Mock
     private CacheManager cacheManager;
 
+    @Mock
+    private AuthenticationService authenticationService;
+
     @BeforeEach
     void setup() {
         httpServletRequest = new MockHttpServletRequest();
@@ -83,7 +86,9 @@ class SuccessfulQueryHandlerTest {
             restTemplate,
             new ObjectMapper(),
             applicationContext,
-            new ArrayList<TokenValidationStrategy>());
+            new ArrayList<TokenValidationStrategy>(),
+            authenticationService
+            );
         AuthenticationService authenticationService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             discoveryClient, restTemplate, cacheManager, new CacheUtils()

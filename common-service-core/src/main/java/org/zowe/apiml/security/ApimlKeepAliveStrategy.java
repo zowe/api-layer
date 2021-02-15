@@ -25,7 +25,6 @@ public class ApimlKeepAliveStrategy implements ConnectionKeepAliveStrategy {
     private static final int KEEPALIVE_TIMOUT_MILLIS = 2000;
 
     public static final ApimlKeepAliveStrategy INSTANCE = new ApimlKeepAliveStrategy();
-
     @Override
     public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
         HeaderElementIterator it = new BasicHeaderElementIterator

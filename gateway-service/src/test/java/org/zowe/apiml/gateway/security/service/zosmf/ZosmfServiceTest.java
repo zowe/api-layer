@@ -30,10 +30,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -48,6 +51,8 @@ class ZosmfServiceTest {
 
     @Mock
     private AuthConfigurationProperties authConfigurationProperties;
+    @Mock
+    private AuthenticationService authenticationService;
     private DiscoveryClient discovery = mock(DiscoveryClient.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
     ApplicationContext applicationContext = mock(ApplicationContext.class);
@@ -69,7 +74,9 @@ class ZosmfServiceTest {
             restTemplate,
             securityObjectMapper,
             applicationContext,
-            null);
+            null,
+            authenticationService
+        );
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
         doReturn("http://zosmf:1433").when(zosmfService).getURI(ZOSMF_ID);
@@ -83,7 +90,8 @@ class ZosmfServiceTest {
             restTemplate,
             securityObjectMapper,
             applicationContext,
-            validationStrategyList);
+            validationStrategyList,
+            authenticationService);
 
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn("http://host:port").when(zosmfService).getURI(any());
@@ -227,7 +235,7 @@ class ZosmfServiceTest {
         ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(Arrays.asList(tokenValidationStrategy1));
 
         doThrow(RuntimeException.class).when(tokenValidationStrategy1).validate(any());
-        assertDoesNotThrow(() -> zosmfService.validate( "TOKN"));
+        assertDoesNotThrow(() -> zosmfService.validate("TOKN"));
     }
 
     @Test
@@ -235,26 +243,26 @@ class ZosmfServiceTest {
         ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(Arrays.asList(tokenValidationStrategy1));
 
         //UNKNOWN by default
-        assertThat(zosmfService.validate( "TOKN"), is(false));
+        assertThat(zosmfService.validate("TOKN"), is(false));
 
         doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.AUTHENTICATED);
 
-        assertThat(zosmfService.validate( "TOKN"), is(true));
+        assertThat(zosmfService.validate("TOKN"), is(true));
 
         doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.INVALID);
-        assertThat(zosmfService.validate( "TOKN"), is(false));
+        assertThat(zosmfService.validate("TOKN"), is(false));
     }
 
     @Test
     void validationHappensWithShortCircuitLogic() {
         ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
 
-        assertThat(zosmfService.validate( "TOKN"), is(false));
+        assertThat(zosmfService.validate("TOKN"), is(false));
         verify(tokenValidationStrategy1, times(1)).validate(any());
         verify(tokenValidationStrategy2, times(1)).validate(any());
 
         doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.AUTHENTICATED);
-        assertThat(zosmfService.validate( "TOKN"), is(true));
+        assertThat(zosmfService.validate("TOKN"), is(true));
         verify(tokenValidationStrategy1, times(2)).validate(any());
         verify(tokenValidationStrategy2, times(1)).validate(any());
     }
@@ -273,7 +281,7 @@ class ZosmfServiceTest {
         TokenValidationRequest request = mock(TokenValidationRequest.class);
 
         doThrow(RuntimeException.class).when(tokenValidationStrategy1).validate(request);
-        assertDoesNotThrow(() -> zosmfService.validate( "TOKN"));
+        assertDoesNotThrow(() -> zosmfService.validate("TOKN"));
     }
 
     @Test
@@ -363,7 +371,7 @@ class ZosmfServiceTest {
 
     @Test
     void testReadTokenFromCookie() {
-        assertNull(new ZosmfService(null, null, null, null, null, null).readTokenFromCookie(null, null));
+        assertNull(new ZosmfService(null, null, null, null, null, null, null).readTokenFromCookie(null, null));
     }
 
     @Test

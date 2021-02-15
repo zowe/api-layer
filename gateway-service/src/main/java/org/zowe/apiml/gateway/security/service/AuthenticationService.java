@@ -12,22 +12,15 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.*;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
@@ -124,7 +117,6 @@ public class AuthenticationService {
         /*
          * until ehCache is not distributed, send to other instances invalidation request
          */
-        log.debug("Start invalidating token cached method");
         boolean isInvalidatedOnAnotherInstance = false;
         if (distribute) {
             isInvalidatedOnAnotherInstance = invalidateTokenOnAnotherInstance(jwtToken);
@@ -139,12 +131,10 @@ public class AuthenticationService {
         switch (queryResponse.getSource()) {
             case ZOWE:
                 final String ltpaToken = getLtpaToken(jwtToken);
-                log.debug("Invalidate ltpa in zosmf " + ltpaToken);
                 if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
                 break;
             case ZOSMF:
                 try {
-                    log.debug("Invalidate JWT in zosmf " + jwtToken);
                     zosmfService.invalidate(JWT, jwtToken);
                 } catch (BadCredentialsException e) {
                     if (!isInvalidatedOnAnotherInstance) {
@@ -245,16 +235,13 @@ public class AuthenticationService {
     public TokenAuthentication validateJwtToken(String jwtToken) {
         QueryResponse queryResponse = parseJwtToken(jwtToken);
         boolean isValid;
-        log.debug("Source of token " + queryResponse.getSource());
         switch (queryResponse.getSource()) {
             case ZOWE:
                 validateAndParseLocalJwtToken(jwtToken);
                 isValid = true;
                 break;
             case ZOSMF:
-                log.debug("Validate JWT ZOSMF" + jwtToken);
-                isValid = zosmfService.validate(jwtToken);
-                log.debug("Is valid " + isValid);
+               isValid = zosmfService.validate(jwtToken);
                 break;
             default:
                 throw new TokenNotValidException("Unknown token type.");
@@ -319,8 +306,7 @@ public class AuthenticationService {
      * @throws TokenNotValidException if the token is not valid
      */
     public TokenAuthentication validateJwtToken(TokenAuthentication token) {
-        log.debug("validating token");
-        return meAsProxy.validateJwtToken(token != null ? token.getCredentials() : null);
+        return meAsProxy.validateJwtToken( token != null ? token.getCredentials() : null);
     }
 
     /**
@@ -420,7 +406,6 @@ public class AuthenticationService {
      */
     public Optional<String> getJwtTokenFromRequest(@NonNull HttpServletRequest request) {
         Optional<String> fromCookie = getJwtTokenFromCookie(request);
-        log.debug("Get from cookie");
         return fromCookie.isPresent() ?
             fromCookie : extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
     }
