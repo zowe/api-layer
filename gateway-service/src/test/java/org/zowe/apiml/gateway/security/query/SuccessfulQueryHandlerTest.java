@@ -83,8 +83,7 @@ class SuccessfulQueryHandlerTest {
             restTemplate,
             new ObjectMapper(),
             applicationContext,
-            new ArrayList<TokenValidationStrategy>()
-        );
+            new ArrayList<TokenValidationStrategy>());
         AuthenticationService authenticationService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             discoveryClient, restTemplate, cacheManager, new CacheUtils()

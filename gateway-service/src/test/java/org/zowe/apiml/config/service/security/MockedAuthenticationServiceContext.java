@@ -16,9 +16,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.AuthenticationServiceTest;
-import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.*;
 import org.zowe.apiml.gateway.security.service.zosmf.TokenValidationStrategy;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -56,14 +54,13 @@ public class MockedAuthenticationServiceContext {
         return mock(DiscoveryClient.class);
     }
 
-
     @Bean
     public ZosmfService getZosmfService() {
         return new ZosmfService(
             getAuthConfigurationProperties(),
             getDiscoveryClient(),
             getRestTemplate(),
-            AuthenticationServiceTest.securityObjectMapper, applicationContext,
+            AuthenticationServiceTest.securityObjectMapper,applicationContext,
             new ArrayList<TokenValidationStrategy>()
         );
     }

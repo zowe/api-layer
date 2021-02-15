@@ -34,9 +34,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -50,6 +48,7 @@ import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenTy
 class ZosmfServiceTest {
 
     private static final String ZOSMF_ID = "zosmf";
+    protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
 
     @Mock
     private AuthConfigurationProperties authConfigurationProperties;
@@ -74,8 +73,7 @@ class ZosmfServiceTest {
             restTemplate,
             securityObjectMapper,
             applicationContext,
-            null
-        );
+            null);
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
         doReturn("http://zosmf:1433").when(zosmfService).getURI(ZOSMF_ID);
@@ -136,8 +134,6 @@ class ZosmfServiceTest {
         assertEquals(1, response.getTokens().size());
         assertEquals("jt", response.getTokens().get(ZosmfService.TokenType.JWT));
     }
-
-    protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
 
     @Test
     void whenInvalidTokenIsReturned_thenThrowException() {
@@ -271,7 +267,7 @@ class ZosmfServiceTest {
         ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(Arrays.asList(tokenValidationStrategy1));
 
         doThrow(RuntimeException.class).when(tokenValidationStrategy1).validate(any());
-        assertDoesNotThrow(() -> zosmfService.validate("TOKN"));
+        assertDoesNotThrow(() -> zosmfService.validate( "TOKN"));
     }
 
     @Test
@@ -279,26 +275,26 @@ class ZosmfServiceTest {
         ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(Arrays.asList(tokenValidationStrategy1));
 
         //UNKNOWN by default
-        assertThat(zosmfService.validate("TOKN"), is(false));
+        assertThat(zosmfService.validate( "TOKN"), is(false));
 
         doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.AUTHENTICATED);
 
-        assertThat(zosmfService.validate("TOKN"), is(true));
+        assertThat(zosmfService.validate( "TOKN"), is(true));
 
         doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.INVALID);
-        assertThat(zosmfService.validate("TOKN"), is(false));
+        assertThat(zosmfService.validate( "TOKN"), is(false));
     }
 
     @Test
     void validationHappensWithShortCircuitLogic() {
         ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
 
-        assertThat(zosmfService.validate("TOKN"), is(false));
+        assertThat(zosmfService.validate( "TOKN"), is(false));
         verify(tokenValidationStrategy1, times(1)).validate(any());
         verify(tokenValidationStrategy2, times(1)).validate(any());
 
         doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.AUTHENTICATED);
-        assertThat(zosmfService.validate("TOKN"), is(true));
+        assertThat(zosmfService.validate( "TOKN"), is(true));
         verify(tokenValidationStrategy1, times(2)).validate(any());
         verify(tokenValidationStrategy2, times(1)).validate(any());
     }
@@ -317,7 +313,7 @@ class ZosmfServiceTest {
         TokenValidationRequest request = mock(TokenValidationRequest.class);
 
         doThrow(RuntimeException.class).when(tokenValidationStrategy1).validate(request);
-        assertDoesNotThrow(() -> zosmfService.validate("TOKN"));
+        assertDoesNotThrow(() -> zosmfService.validate( "TOKN"));
     }
 
     @Test
