@@ -36,7 +36,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -57,6 +56,8 @@ import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenTy
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class ZosmfService extends AbstractZosmfService {
+
+    private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
 
     /**
      * Enumeration of supported security tokens
@@ -113,8 +114,7 @@ public class ZosmfService extends AbstractZosmfService {
         final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
         final ObjectMapper securityObjectMapper,
         final ApplicationContext applicationContext,
-        List<TokenValidationStrategy> tokenValidationStrategy,
-        AuthenticationService authenticationService
+        List<TokenValidationStrategy> tokenValidationStrategy
     ) {
         super(
             authConfigurationProperties,
@@ -124,10 +124,7 @@ public class ZosmfService extends AbstractZosmfService {
         );
         this.applicationContext = applicationContext;
         this.tokenValidationStrategy = tokenValidationStrategy;
-        this.authenticationService = authenticationService;
     }
-
-    private final AuthenticationService authenticationService;
 
     private ZosmfService meAsProxy;
 
@@ -146,7 +143,7 @@ public class ZosmfService extends AbstractZosmfService {
                 getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
                 HttpMethod.POST);
 
-            if (authenticationService.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
+            if (meAsProxy.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
                 invalidate(LTPA, authenticationResponse.getTokens().get(LTPA));
                 throw new TokenNotValidException("Invalid token returned from zosmf");
             }
@@ -159,6 +156,17 @@ public class ZosmfService extends AbstractZosmfService {
             authenticationResponse.setDomain(meAsProxy.getZosmfRealm(zosmfInfoURIEndpoint));
         }
         return authenticationResponse;
+    }
+
+    /**
+     * Checks if jwtToken is in the list of invalidated tokens.
+     *
+     * @param jwtToken token to check
+     * @return true - token is invalidated, otherwise token is still valid
+     */
+    @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, unless = "true", key = "#jwtToken", condition = "#jwtToken != null")
+    public Boolean isInvalidated(String jwtToken) {
+        return Boolean.FALSE;
     }
 
     /**

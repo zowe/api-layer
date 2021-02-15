@@ -30,7 +30,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
@@ -51,8 +50,6 @@ class ZosmfServiceTest {
 
     @Mock
     private AuthConfigurationProperties authConfigurationProperties;
-    @Mock
-    private AuthenticationService authenticationService;
     private DiscoveryClient discovery = mock(DiscoveryClient.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
     ApplicationContext applicationContext = mock(ApplicationContext.class);
@@ -74,8 +71,7 @@ class ZosmfServiceTest {
             restTemplate,
             securityObjectMapper,
             applicationContext,
-            null,
-            authenticationService
+            null
         );
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
@@ -90,8 +86,7 @@ class ZosmfServiceTest {
             restTemplate,
             securityObjectMapper,
             applicationContext,
-            validationStrategyList,
-            authenticationService);
+            validationStrategyList);
 
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn("http://host:port").when(zosmfService).getURI(any());
@@ -371,7 +366,7 @@ class ZosmfServiceTest {
 
     @Test
     void testReadTokenFromCookie() {
-        assertNull(new ZosmfService(null, null, null, null, null, null, null).readTokenFromCookie(null, null));
+        assertNull(new ZosmfService(null, null, null, null, null, null).readTokenFromCookie(null, null));
     }
 
     @Test

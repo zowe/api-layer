@@ -10,14 +10,15 @@
 package org.zowe.apiml.config.service.security;
 
 import com.netflix.discovery.DiscoveryClient;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.service.*;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.AuthenticationServiceTest;
+import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
 import org.zowe.apiml.gateway.security.service.zosmf.TokenValidationStrategy;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -55,18 +56,15 @@ public class MockedAuthenticationServiceContext {
         return mock(DiscoveryClient.class);
     }
 
-    @Mock
-    private AuthenticationService authenticationService;
+
     @Bean
     public ZosmfService getZosmfService() {
         return new ZosmfService(
             getAuthConfigurationProperties(),
             getDiscoveryClient(),
             getRestTemplate(),
-            AuthenticationServiceTest.securityObjectMapper,applicationContext,
-            new ArrayList<TokenValidationStrategy>(),
-            authenticationService
-
+            AuthenticationServiceTest.securityObjectMapper, applicationContext,
+            new ArrayList<TokenValidationStrategy>()
         );
     }
 
