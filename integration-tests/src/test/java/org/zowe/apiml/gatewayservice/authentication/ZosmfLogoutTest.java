@@ -34,6 +34,8 @@ class ZosmfLogoutTest extends LogoutTest {
     void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized(String logoutUrl) {
         String jwt = generateToken();
 
+        assertIfLogged(jwt, true);
+
         assertLogout(logoutUrl, jwt, SC_NO_CONTENT);
         assertLogout(logoutUrl, jwt, SC_UNAUTHORIZED);
     }

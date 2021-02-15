@@ -58,6 +58,7 @@ abstract class LogoutTest {
         String jwt = generateToken();
 
         // check if it is logged in
+        assertIfLogged(jwt, true);
 
         logout(logoutUrl, jwt);
 
