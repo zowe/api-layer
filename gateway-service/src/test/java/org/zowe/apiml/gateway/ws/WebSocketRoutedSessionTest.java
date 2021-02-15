@@ -18,6 +18,7 @@ import java.net.URI;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -51,5 +52,17 @@ class WebSocketRoutedSessionTest {
 
         assertThat(underTest.getServerRemoteAddress(), is("gateway:8080"));
         assertThat(underTest.getServerUri(), is(serverUriPath));
+    }
+
+    @Test
+    void givenBrokenServerSession_whenUriIsRequested_NullIsReturned() {
+        when(serverSession.getUri()).thenReturn(null);
+        assertThat(underTest.getServerUri(), is(nullValue()));
+    }
+
+    @Test
+    void givenBrokenClientSession_whenUriIsRequested_NullIsReturned() {
+        when(clientSession.getUri()).thenReturn(null);
+        assertThat(underTest.getClientUri(), is(nullValue()));
     }
 }
