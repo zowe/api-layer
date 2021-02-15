@@ -32,6 +32,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +42,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -132,6 +135,44 @@ class ZosmfServiceTest {
         assertNotNull(response.getTokens());
         assertEquals(1, response.getTokens().size());
         assertEquals("jt", response.getTokens().get(ZosmfService.TokenType.JWT));
+    }
+
+    protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
+
+    @Test
+    void whenInvalidTokenIsReturned_retryRequest() {
+        ZosmfService zosmfService = getZosmfServiceSpy();
+        doReturn(true).when(zosmfService).loginEndpointExists();
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken("user", "pass");
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.AUTHORIZATION, zosmfService.getAuthenticationValue(authentication));
+        headers.add(ZOSMF_CSRF_HEADER, "");
+        String ltpaCookie = LTPA.getCookieName() + "=ltpatoken";
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.SET_COOKIE, JWT.getCookieName() + "=jt");
+        responseHeaders.add(HttpHeaders.SET_COOKIE, ltpaCookie);
+
+        ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", responseHeaders, HttpStatus.OK);
+        when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
+            HttpMethod.POST,
+            new HttpEntity<>(null, headers),
+            String.class)).thenReturn(responseEntity);
+        when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
+            HttpMethod.DELETE,
+            new HttpEntity<>(null, null),
+            String.class)).thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
+
+        HttpHeaders respHead = new HttpHeaders();
+        respHead.add(ZOSMF_CSRF_HEADER, "");
+        respHead.add("Cookie", ltpaCookie);
+        when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
+            HttpMethod.DELETE,
+            new HttpEntity<>(null, respHead),
+            String.class)).thenReturn(new ResponseEntity<>("{}", responseHeaders, HttpStatus.OK));
+
+        when(zosmfService.isInvalidated("jt")).thenReturn(true);
+        assertThrows(TokenNotValidException.class, () -> zosmfService.authenticate(authentication));
     }
 
     @Test
