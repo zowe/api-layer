@@ -72,6 +72,7 @@ public class ZosmfService extends AbstractZosmfService {
         private final String cookieName;
 
     }
+
     /**
      * Response of authentication, contains all data to next processing
      */
@@ -83,6 +84,7 @@ public class ZosmfService extends AbstractZosmfService {
         private String domain;
         private final Map<TokenType, String> tokens;
     }
+
     /**
      * DTO with base information about z/OSMF (version and realm/domain)
      */
@@ -132,7 +134,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
 
-    @Retryable(value = {TokenNotValidException.class}, maxAttempts = 1, backoff = @Backoff(value = 1000))
+    @Retryable(value = {TokenNotValidException.class}, maxAttempts = 1, backoff = @Backoff(value = 2000))
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
         if (loginEndpointExists()) {
