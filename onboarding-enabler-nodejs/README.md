@@ -6,12 +6,12 @@ This is the onboarding Node.js enabler for [Zowe API Mediation Layer](https://gi
 
 1. Install the onboarding Node.js enabler package as a dependency of your service:
 
-    `npm i apiml-onboarding-enabler-nodejs --dev-save`
+    `npm i @zowe/apiml-onboarding-enabler-nodejs --dev-save`
 
 2. Inside your Node.js service `index.js`, add the following code block to register your service with Eureka:
 
     ```js
-    const apiLayerService = require("apiml-onboarding-enabler-nodejs");
+    const apiLayerService = require("@zowe/apiml-onboarding-enabler-nodejs");
     tlsOptions = apiLayerService.tlsOptions;
     const httpsServer = https.createServer(tlsOptions, app);
     httpsServer.listen(args.port, function () {
