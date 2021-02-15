@@ -72,7 +72,6 @@ public class ZosmfService extends AbstractZosmfService {
         private final String cookieName;
 
     }
-
     /**
      * Response of authentication, contains all data to next processing
      */
@@ -84,7 +83,6 @@ public class ZosmfService extends AbstractZosmfService {
         private String domain;
         private final Map<TokenType, String> tokens;
     }
-
     /**
      * DTO with base information about z/OSMF (version and realm/domain)
      */
