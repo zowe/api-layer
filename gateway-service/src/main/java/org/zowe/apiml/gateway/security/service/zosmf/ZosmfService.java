@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
@@ -28,14 +29,18 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
 import java.text.ParseException;
@@ -43,6 +48,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 
 @Primary
 @Service
@@ -119,6 +126,9 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     private ZosmfService meAsProxy;
 
     @PostConstruct
@@ -127,6 +137,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
 
+    @Retryable(value = TokenNotValidException.class, backoff = @Backoff(delay = 2000))
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
         log.debug("Authenticate");
@@ -136,6 +147,11 @@ public class ZosmfService extends AbstractZosmfService {
                 authentication,
                 getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
                 HttpMethod.POST);
+
+            if (authenticationService.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
+                throw new TokenNotValidException("Invalid token returned from zosmf");
+            }
+            ;
         } else {
             String zosmfInfoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
             authenticationResponse = issueAuthenticationRequest(
