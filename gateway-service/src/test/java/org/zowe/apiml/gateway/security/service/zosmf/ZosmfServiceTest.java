@@ -140,7 +140,7 @@ class ZosmfServiceTest {
     protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
 
     @Test
-    void whenInvalidTokenIsReturned_retryRequest() {
+    void whenInvalidTokenIsReturned_thenThrowException() {
         ZosmfService zosmfService = getZosmfServiceSpy();
         doReturn(true).when(zosmfService).loginEndpointExists();
 
