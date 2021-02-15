@@ -22,6 +22,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
@@ -107,15 +108,30 @@ public class WebSocketRoutedSession {
     }
 
     public String getServerRemoteAddress() {
-        return getWebSocketServerSession().getRemoteAddress().toString();
+        InetSocketAddress address = getWebSocketServerSession().getRemoteAddress();
+        if (address != null) {
+            return address.toString();
+        }
+
+        return null;
     }
 
     public String getServerUri() {
-        return getWebSocketServerSession().getUri().toString();
+        URI uri = getWebSocketServerSession().getUri();
+        if (uri != null) {
+            return uri.toString();
+        }
+
+        return null;
     }
 
     public String getClientUri() {
-        return getWebSocketClientSession().getUri().toString();
+        URI uri = getWebSocketClientSession().getUri();
+        if (uri != null) {
+            return uri.toString();
+        }
+
+        return null;
     }
 
     public String getClientId() {

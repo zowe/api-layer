@@ -138,7 +138,9 @@ public class APIDocRetrievalService {
         if (serviceId.equals("zosmf") || serviceId.equals("ibmzosmf")) {
             try {
                 String apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
-                apiDocContent = apiDocContent.replace("null, null", "true, false");
+                if (apiDocContent != null) {
+                    apiDocContent = apiDocContent.replace("null, null", "true, false");
+                }
                 return new ApiDocInfo(apiInfo, apiDocContent, routes);
             } catch (Exception e) {
                 return getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);

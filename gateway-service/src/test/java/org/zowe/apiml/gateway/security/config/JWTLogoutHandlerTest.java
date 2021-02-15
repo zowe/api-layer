@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.gateway.security.config;
 
+import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.security.core.Authentication;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -21,8 +21,6 @@ import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
-
-import ch.qos.logback.classic.Level;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -40,16 +38,18 @@ class JWTLogoutHandlerTest {
 
     private final LogMessageTracker logMessageTracker = new LogMessageTracker(JWTLogoutHandler.class);
 
-    @Mock
     private HttpServletRequest request;
-    @Mock
     private HttpServletResponse response;
-    @Mock
     private Authentication authentication;
+
     private JWTLogoutHandler handler;
 
     @BeforeEach
     void setup() {
+        request = mock(HttpServletRequest.class);
+        response = mock(HttpServletResponse.class);
+        authentication = mock(Authentication.class);
+
         authenticationService = mock(AuthenticationService.class);
         failedAuthenticationHandler = mock(FailedAuthenticationHandler.class);
         handler = new JWTLogoutHandler(authenticationService, failedAuthenticationHandler);
