@@ -40,7 +40,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
 @ExtendWith(MockitoExtension.class)
@@ -136,39 +135,31 @@ class ZosmfServiceTest {
     }
 
     @Test
-    void whenInvalidTokenIsReturned_thenThrowException() {
+    void newTokenIsCheckedAgainstInvalidateTokensCache() {
+        Authentication authentication = new UsernamePasswordAuthenticationToken("user", "pass");
         ZosmfService zosmfService = getZosmfServiceSpy();
         doReturn(true).when(zosmfService).loginEndpointExists();
+        ZosmfService.AuthenticationResponse responseMock = mock(ZosmfService.AuthenticationResponse.class);
+        doReturn(responseMock).when(zosmfService).issueAuthenticationRequest(any(), any(), any());
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken("user", "pass");
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.AUTHORIZATION, zosmfService.getAuthenticationValue(authentication));
-        headers.add(ZOSMF_CSRF_HEADER, "");
-        String ltpaCookie = LTPA.getCookieName() + "=ltpatoken";
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.SET_COOKIE, JWT.getCookieName() + "=jt");
-        responseHeaders.add(HttpHeaders.SET_COOKIE, ltpaCookie);
-
-        ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", responseHeaders, HttpStatus.OK);
-        when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
-            HttpMethod.POST,
-            new HttpEntity<>(null, headers),
-            String.class)).thenReturn(responseEntity);
-        when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
-            HttpMethod.DELETE,
-            new HttpEntity<>(null, null),
-            String.class)).thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
-
-        HttpHeaders respHead = new HttpHeaders();
-        respHead.add(ZOSMF_CSRF_HEADER, "");
-        respHead.add("Cookie", ltpaCookie);
-        when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
-            HttpMethod.DELETE,
-            new HttpEntity<>(null, respHead),
-            String.class)).thenReturn(new ResponseEntity<>("{}", responseHeaders, HttpStatus.OK));
-
-        when(zosmfService.isInvalidated("jt")).thenReturn(true);
+        doReturn(true).when(zosmfService).isInvalidated(any());
         assertThrows(TokenNotValidException.class, () -> zosmfService.authenticate(authentication));
+
+        doReturn(false).when(zosmfService).isInvalidated(any());
+        assertDoesNotThrow(() -> zosmfService.authenticate(authentication));
+    }
+
+    @Test
+    void whenNewTokenFoundInInvalidatedTokensCacheItsLTPAtokenIsInvalidatedAgainstZosmf() {
+        Authentication authentication = new UsernamePasswordAuthenticationToken("user", "pass");
+        ZosmfService zosmfService = getZosmfServiceSpy();
+        doReturn(true).when(zosmfService).loginEndpointExists();
+        ZosmfService.AuthenticationResponse responseMock = mock(ZosmfService.AuthenticationResponse.class);
+        doReturn(responseMock).when(zosmfService).issueAuthenticationRequest(any(), any(), any());
+
+        doReturn(true).when(zosmfService).isInvalidated(any());
+        assertThrows(TokenNotValidException.class, () -> zosmfService.authenticate(authentication));
+        verify(zosmfService, times(1)).invalidate(eq(LTPA), any());
     }
 
     @Test

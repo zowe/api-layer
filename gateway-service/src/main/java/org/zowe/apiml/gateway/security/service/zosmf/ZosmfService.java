@@ -134,7 +134,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
 
-    @Retryable(value = {TokenNotValidException.class}, maxAttempts = 4, backoff = @Backoff(value = 3000))
+    @Retryable(value = {TokenNotValidException.class}, maxAttempts = 2, backoff = @Backoff(value = 1500))
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
         if (loginEndpointExists()) {
