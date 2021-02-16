@@ -12,14 +12,26 @@ package org.zowe.apiml.security.common.login;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Represents the login JSON with credentials
  */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class LoginRequest {
     private String username;
     private String password;
+    private String newPassword;
+
+    public LoginRequest(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public LoginRequest(String username, String password, String newPassword) {
+        this.username = username;
+        this.password = password;
+        this.newPassword = newPassword;
+    }
 }

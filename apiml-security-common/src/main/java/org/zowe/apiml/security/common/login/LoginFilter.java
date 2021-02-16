@@ -33,6 +33,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -81,7 +83,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         }
 
         UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
+            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
 
         Authentication auth = null;
 

@@ -20,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
+import org.zowe.apiml.security.common.login.LoginRequest;
 
 @Component
 @Slf4j
@@ -32,8 +33,13 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     @Override
     public Authentication authenticate(Authentication authentication) {
         String userid = authentication.getName();
-        String password = authentication.getCredentials().toString();
-        PlatformReturned returned = (PlatformReturned) getPlatformUser().authenticate(userid, password);
+        LoginRequest credentials = (LoginRequest) authentication.getCredentials();
+        PlatformReturned returned;
+        if(credentials.getNewPassword() != null) {
+           returned = (PlatformReturned) getPlatformUser().changePassword(userid, credentials.getPassword(), credentials.getNewPassword());
+        } else {
+            returned = (PlatformReturned) getPlatformUser().authenticate(userid, credentials.getPassword());
+        }
 
         if ((returned == null) || (returned.isSuccess())) {
             final String domain = "security-domain";

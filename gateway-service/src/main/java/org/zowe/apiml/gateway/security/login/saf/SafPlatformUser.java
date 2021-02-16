@@ -44,4 +44,14 @@ public class SafPlatformUser implements PlatformUser {
         }
     }
 
+    @Override
+    public Object changePassword(String userid, String password, String newPassword) {
+        try {
+            Object safReturned = authenticateMethodHandle.invokeWithArguments(platformClassFactory.getPlatformUser(),
+                userid, password, newPassword);
+            return platformReturnedHelper.convert(safReturned);
+        } catch (Throwable throwable) {
+            throw new AuthenticationServiceException("Error occurred while changing password.", throwable);
+        }
+    }
 }

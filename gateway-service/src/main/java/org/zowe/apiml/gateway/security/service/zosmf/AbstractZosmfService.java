@@ -23,6 +23,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.EurekaUtils;
 
 import java.util.*;
@@ -69,7 +70,8 @@ public abstract class AbstractZosmfService {
      */
     protected String getAuthenticationValue(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
-        final String password = authentication.getCredentials().toString();
+        LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
+        final String password = loginRequest.getPassword();
 
         final String credentials = user + ":" + password;
         return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());

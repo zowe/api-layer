@@ -16,4 +16,11 @@ public interface PlatformUser {
      * If successful, a null object is returned. If not successful an instance of the PlatformReturned class is returned.
      */
     Object authenticate(java.lang.String userid, java.lang.String password);
+
+    /**
+     *If successful, a null object is returned. If NOT successful, an instance of the PlatformReturned class is returned
+     * with the class variables errno, errno2 and errnoMsg set from the values returned by the OS/390 services __passwd,
+     * strerror(errno), and __errno2().
+     */
+    Object changePassword(java.lang.String userid, java.lang.String password, java.lang.String newPassword);
 }
