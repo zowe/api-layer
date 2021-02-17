@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import * as React from 'react';
 import { shallow } from 'enzyme';
 import ServiceVersionDiff from './ServiceVersionDiff';
@@ -95,7 +96,7 @@ describe('>>> ServiceVersionDiff component tests', () => {
 
     it('Should preselect versions for compare when props are passed', () => {
         const serviceVersionDiff = shallow(
-            <ServiceVersionDiff serviceId="service" versions={['v1', 'v2']} version1="v1" version2="v2"/>);
+            <ServiceVersionDiff serviceId="service" versions={['v1', 'v2']} version1="v1" version2="v2" />
         );
 
         expect(
