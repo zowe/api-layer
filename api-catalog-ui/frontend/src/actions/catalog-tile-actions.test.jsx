@@ -1,8 +1,7 @@
 /* eslint-disable no-undef */
 
-import * as constants from "../constants/catalog-tile-constants";
-import * as actions from "./catalog-tile-actions";
-
+import * as constants from '../constants/catalog-tile-constants';
+import * as actions from './catalog-tile-actions';
 
 describe('>>> Catalog tiles actions tests', () => {
     it('should create when fetching tiles has failed', () => {

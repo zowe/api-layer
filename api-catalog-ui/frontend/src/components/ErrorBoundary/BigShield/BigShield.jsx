@@ -1,9 +1,9 @@
 /* eslint-disable react/destructuring-assignment */
 import React, { Component } from 'react';
 import Text from 'mineral-ui/Text';
-import '../../Dashboard/Dashboard.css';
 import { Button } from 'mineral-ui';
 import IconChevronLeft from 'mineral-ui-icons/IconChevronLeft';
+import '../../Dashboard/Dashboard.css';
 import './BigShield.css';
 
 export default class BigShield extends Component {
@@ -15,18 +15,18 @@ export default class BigShield extends Component {
         };
     }
 
-    handleGoToHome = () => {
-        const { history } = this.props;
-        this.setState({ error: null });
-        history.push('/dashboard');
-    };
-
     componentDidCatch(error, info) {
         this.setState({
             error,
             info,
         });
     }
+
+    handleGoToHome = () => {
+        const { history } = this.props;
+        this.setState({ error: null });
+        history.push('/dashboard');
+    };
 
     render() {
         const iconBack = <IconChevronLeft />;
@@ -72,7 +72,9 @@ export default class BigShield extends Component {
                                 {disableButton && (
                                     <b>The Dashboard is broken, you cannot navigate away from this page.</b>
                                 )}
-                                {!disableButton && <b>You can return to the Dashboard by clicking on the button above.</b>}
+                                {!disableButton && (
+                                    <b>You can return to the Dashboard by clicking on the button above.</b>
+                                )}
                             </Text>
                             <Text element="h4" color="#de1b1b">
                                 <pre>
@@ -82,6 +84,7 @@ export default class BigShield extends Component {
 
                             <div className="wrap-collabsible">
                                 <input id="collapsible" className="toggle" type="checkbox" />
+                                {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                 <label htmlFor="collapsible" className="lbl-toggle">
                                     Display the error stack
                                 </label>
@@ -99,6 +102,7 @@ export default class BigShield extends Component {
                             <br />
                             <div className="wrap-collabsible2">
                                 <input id="collapsible2" className="toggle2" type="checkbox" />
+                                {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                 <label htmlFor="collapsible2" className="lbl-toggle2">
                                     Display the component stack
                                 </label>

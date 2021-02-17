@@ -35,7 +35,9 @@ describe('>>> Dashboard test', () => {
         cy.get('input[data-testid="search-bar"]').should('exist');
         cy.contains('Available API services').should('exist');
 
-        cy.get('#refresh-api-button').should('exist').click();
+        cy.get('#refresh-api-button')
+            .should('exist')
+            .click();
         cy.get('.Toastify').should('have.length.gte', 1);
         cy.get('.Toastify > div> div')
             .should('have.length', 1)
@@ -45,7 +47,9 @@ describe('>>> Dashboard test', () => {
             .as('search')
             .type('API Mediation Layer API');
 
-        cy.get('.grid-tile').should('have.length', 1).should('contain', 'API Mediation Layer API');
+        cy.get('.grid-tile')
+            .should('have.length', 1)
+            .should('contain', 'API Mediation Layer API');
 
         cy.get('@search')
             .clear()

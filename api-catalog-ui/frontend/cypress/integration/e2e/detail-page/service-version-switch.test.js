@@ -1,5 +1,4 @@
 describe('>>> Service version change Test', () => {
-
     beforeEach(() => {
         cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
 
@@ -25,9 +24,15 @@ describe('>>> Service version change Test', () => {
         cy.get('.nav-tab').should('have.length', 4);
         cy.get('.version-text').should('exist');
         cy.get('.version-text').should('have.length', 3);
-        cy.get('.version-text').eq(0).should('contain.text', 'v1');
-        cy.get('.version-text').eq(1).should('contain.text', 'v2');
-        cy.get('.version-text').eq(2).should('contain.text', 'Compare');
+        cy.get('.version-text')
+            .eq(0)
+            .should('contain.text', 'v1');
+        cy.get('.version-text')
+            .eq(1)
+            .should('contain.text', 'v2');
+        cy.get('.version-text')
+            .eq(2)
+            .should('contain.text', 'Compare');
     });
 
     it('Should pre select default version', () => {
@@ -36,8 +41,12 @@ describe('>>> Service version change Test', () => {
     });
 
     it('Should change version when clicking version 2', () => {
-        cy.get('.nav-tab').eq(2).should('contain.text', 'v2');
-        cy.get('.nav-tab').eq(2).click();
+        cy.get('.nav-tab')
+            .eq(2)
+            .should('contain.text', 'v2');
+        cy.get('.nav-tab')
+            .eq(2)
+            .click();
         cy.get('.base-url', { timeout: 10000 }).should('contain.text', '/discoverableclient/api/v2');
     });
-})
+});

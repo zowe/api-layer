@@ -1,8 +1,7 @@
 /* eslint-disable no-undef */
 
 import { sendError, clearAllErrors } from './error-actions';
-import {ApiError, CLEAR_ALL_ERRORS, MessageType, SEND_ERROR} from "../constants/error-constants";
-
+import { ApiError, CLEAR_ALL_ERRORS, MessageType, SEND_ERROR } from '../constants/error-constants';
 
 describe('>>> Error actions tests', () => {
     it('should create an action to clear all errors', () => {

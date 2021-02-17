@@ -10,7 +10,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
 import Footer from '../Footer/Footer';
-import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from "./AsyncModules";
+import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules';
 
 class App extends Component {
     render() {

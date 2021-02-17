@@ -84,8 +84,7 @@ describe('>>> Login page component tests', () => {
         const messageText = instance.handleError({
             messageType: 'ERROR',
             messageNumber: 'ZWEAS104E',
-            messageContent:
-                "Authentication service is not available by URL",
+            messageContent: 'Authentication service is not available by URL',
             messageKey: 'org.zowe.apiml.security.authenticationRequired',
         });
         expect(messageText).toEqual('(ZWEAS104E) Authentication service not available, please try again later');
@@ -97,8 +96,7 @@ describe('>>> Login page component tests', () => {
         const messageText = instance.handleError({
             messageType: 'ERROR',
             messageNumber: 'ZWEAS102E',
-            messageContent:
-                "Token is expired for URL",
+            messageContent: 'Token is expired for URL',
             messageKey: 'org.zowe.apiml.security.expiredToken',
         });
         expect(messageText).toEqual('(ZWEAS102E) Session has expired, please login again');
@@ -110,8 +108,7 @@ describe('>>> Login page component tests', () => {
         const messageText = instance.handleError({
             messageType: 'ERROR',
             messageNumber: 'ZWEAS100E',
-            messageContent:
-                "Authentication exception for URL",
+            messageContent: 'Authentication exception for URL',
             messageKey: 'org.zowe.apiml.security.generic',
         });
         expect(messageText).toEqual('(ZWEAS100E) A generic failure occurred while authenticating');
@@ -123,8 +120,7 @@ describe('>>> Login page component tests', () => {
         const messageText = instance.handleError({
             messageType: 'ERROR',
             messageNumber: 'ZWEAM700E',
-            messageContent:
-                "No response received within the allowed time",
+            messageContent: 'No response received within the allowed time',
             messageKey: 'org.zowe.apiml.common.serviceTimeout',
         });
         expect(messageText).toEqual(`(ZWEAM700E) Request timeout, please try again later`);

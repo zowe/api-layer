@@ -113,5 +113,4 @@ describe('>>> Tile component tests', () => {
         const wrapper = mount(<Tile tile={sampleTile} />);
         expect(wrapper.text().includes('SSO')).toBe(false);
     });
-
 });
