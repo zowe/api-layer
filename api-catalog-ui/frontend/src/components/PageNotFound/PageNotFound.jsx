@@ -9,13 +9,18 @@ export default class PageNotFound extends Component {
     };
 
     render() {
-        const iconBack = <IconChevronLeft/>;
+        const iconBack = <IconChevronLeft />;
         return (
             <div>
                 <Text element="h1">Page Not Found</Text>
                 <div>
-                    <Button primary data-testid="go-home-button" onClick={this.handleGoToHome} size="medium"
-                            iconStart={iconBack}>
+                    <Button
+                        primary
+                        data-testid="go-home-button"
+                        onClick={this.handleGoToHome}
+                        size="medium"
+                        iconStart={iconBack}
+                    >
                         Go to Dashboard
                     </Button>
                 </div>

@@ -4,11 +4,11 @@ import './ServiceVersionDiff.css';
 
 export default class ServiceVersionDiff extends Component {
     constructor(props) {
-        const {version1, version2} = props;
+        const { version1, version2 } = props;
         super(props);
         this.state = {
-            selectedVersion1: version1 ? {text: version1} : undefined,
-            selectedVersion2: version2 ? {text: version2} : undefined,
+            selectedVersion1: version1 ? { text: version1 } : undefined,
+            selectedVersion2: version2 ? { text: version2 } : undefined,
         };
 
         this.handleVersion1Change = this.handleVersion1Change.bind(this);
@@ -16,17 +16,17 @@ export default class ServiceVersionDiff extends Component {
     }
 
     handleVersion1Change(version) {
-        this.setState({selectedVersion1: version});
+        this.setState({ selectedVersion1: version });
     }
 
     handleVersion2Change(version) {
-        this.setState({selectedVersion2: version});
+        this.setState({ selectedVersion2: version });
     }
 
     render() {
-        const {serviceId, versions, getDiff, diffText} = this.props;
-        const {selectedVersion1, selectedVersion2} = this.state;
-        const versionData = versions.map(version => ({text: version}));
+        const { serviceId, versions, getDiff, diffText } = this.props;
+        const { selectedVersion1, selectedVersion2 } = this.state;
+        const versionData = versions.map(version => ({ text: version }));
         const selectorStyle = {
             width: '140px',
         };
@@ -58,7 +58,7 @@ export default class ServiceVersionDiff extends Component {
                         Go
                     </Button>
                 </div>
-                <div className="api-diff-content" dangerouslySetInnerHTML={{__html: diffText}}/>
+                <div className="api-diff-content" dangerouslySetInnerHTML={{ __html: diffText }} />
             </div>
         );
     }
