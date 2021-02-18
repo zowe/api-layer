@@ -54,7 +54,7 @@ describe('>>> Login page component tests', () => {
             .last()
             .simulate('change', { target: { name: 'password', value: 'password' } });
 
-        const button = page.find('Button');
+        const button = page.find('[data-testid="submit"]');
         expect(button).toBeDefined();
         expect(button.props().disabled).toBeFalsy();
     });
@@ -129,7 +129,7 @@ describe('>>> Login page component tests', () => {
     it('should disable button and show spinner when request is being resolved', () => {
         const wrapper = enzyme.shallow(<Login isFetching />);
 
-        const submitButton = wrapper.find('Button');
+        const submitButton = wrapper.find('[data-testid="submit"]');
         const spinner = wrapper.find('Spinner');
 
         expect(submitButton).toBeDefined();
