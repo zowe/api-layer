@@ -1,8 +1,8 @@
-import React, {Component, Suspense} from 'react';
-import {NavTab} from 'react-router-tabs';
-import {Button, Text, Tooltip} from 'mineral-ui';
-import {IconChevronLeft, IconSuccessSimple} from 'mineral-ui-icons';
-import {Redirect, Route, Router, Switch} from 'react-router-dom';
+import React, { Component, Suspense } from 'react';
+import { NavTab } from 'react-router-tabs';
+import { Button, Text, Tooltip } from 'mineral-ui';
+import { IconChevronLeft, IconSuccessSimple } from 'mineral-ui-icons';
+import { Redirect, Route, Router, Switch } from 'react-router-dom';
 
 import './DetailPage.css';
 import './ReactRouterTabs.css';
