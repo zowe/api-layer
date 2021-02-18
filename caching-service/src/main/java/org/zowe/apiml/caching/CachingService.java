@@ -11,17 +11,30 @@ package org.zowe.apiml.caching;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.retry.annotation.EnableRetry;
 import org.zowe.apiml.enable.EnableApiDiscovery;
+import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
+import org.zowe.apiml.product.service.ServiceStartupEventHandler;
+
+import javax.annotation.Nonnull;
 
 @SpringBootApplication
 @EnableApiDiscovery
 @EnableRetry
-public class CachingService {
+@EnableApimlLogger
+public class CachingService implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(CachingService.class);
         app.setLogStartupInfo(false);
         app.run(args);
+    }
+
+    @Override
+    public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
+        new ServiceStartupEventHandler().onServiceStartup("Caching Service",
+            ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }
