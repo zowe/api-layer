@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import * as React from 'react';
-import { shallow } from 'enzyme';
+import {shallow} from 'enzyme';
 import ServiceVersionDiff from './ServiceVersionDiff';
 
 describe('>>> ServiceVersionDiff component tests', () => {
@@ -64,13 +64,13 @@ describe('>>> ServiceVersionDiff component tests', () => {
 
         expect(
             serviceVersionDiff
-                .find('Button')
+                .find('[data-testid="diff-button"]')
                 .first()
                 .exists()
         ).toEqual(true);
         expect(
             serviceVersionDiff
-                .find('Button')
+                .find('[data-testid="diff-button"]')
                 .first()
                 .prop('children')
         ).toEqual('Go');
@@ -126,7 +126,7 @@ describe('>>> ServiceVersionDiff component tests', () => {
         );
 
         serviceVersionDiff
-            .find('Button')
+            .find('[data-testid="diff-button"]')
             .first()
             .simulate('click');
         expect(getDiff.mock.calls.length).toBe(1);

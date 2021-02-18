@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { Select, Button, Text } from 'mineral-ui';
+import React, {Component} from 'react';
+import {Button, Select, Text} from 'mineral-ui';
 import './ServiceVersionDiff.css';
 
 export default class ServiceVersionDiff extends Component {
@@ -50,6 +50,7 @@ export default class ServiceVersionDiff extends Component {
                         style={selectorStyle}
                     />
                     <Button
+                        data-testid="diff-button"
                         onClick={() => {
                             getDiff(serviceId, selectedVersion1.text, selectedVersion2.text);
                         }}

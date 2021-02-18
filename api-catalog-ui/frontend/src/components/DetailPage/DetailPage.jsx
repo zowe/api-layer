@@ -1,8 +1,8 @@
-import React, { Component, Suspense } from 'react';
-import { NavTab } from 'react-router-tabs';
-import { Button, Text, Tooltip } from 'mineral-ui';
-import { IconChevronLeft, IconSuccessSimple } from 'mineral-ui-icons';
-import { Redirect, Route, Switch, Router } from 'react-router-dom';
+import React, {Component, Suspense} from 'react';
+import {NavTab} from 'react-router-tabs';
+import {Button, Text, Tooltip} from 'mineral-ui';
+import {IconChevronLeft, IconSuccessSimple} from 'mineral-ui-icons';
+import {Redirect, Route, Router, Switch} from 'react-router-dom';
 
 import './DetailPage.css';
 import './ReactRouterTabs.css';
@@ -98,6 +98,7 @@ export default class DetailPage extends Component {
                                 <div className="link-block w-inline-block back-button-container">
                                     <Button
                                         id="go-back-button"
+                                        data-testid="go-back-button"
                                         primary
                                         onClick={this.handleGoBack}
                                         size="medium"

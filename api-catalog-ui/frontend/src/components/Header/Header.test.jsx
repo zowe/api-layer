@@ -23,7 +23,7 @@ describe('>>> Header component tests', () => {
     it('should handle a Logout button click', () => {
         const logout = jest.fn();
         const wrapper = enzyme.shallow(<Header logout={logout} />);
-        wrapper.find('Button').simulate('click');
+        wrapper.find('[data-testid="logout"]').simulate('click');
         expect(logout).toHaveBeenCalled();
     });
 

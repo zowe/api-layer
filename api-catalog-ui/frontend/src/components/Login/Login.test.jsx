@@ -36,7 +36,7 @@ describe('>>> Login page component tests', () => {
             .last()
             .simulate('change', { target: { name: 'password', value: '' } });
 
-        const button = page.find('Button');
+        const button = page.find('[data-testid="submit"]');
         button.simulate('click');
         const errorMessage = page.find('p.error-message-content');
         expect(button).toBeDefined();
