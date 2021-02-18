@@ -15,8 +15,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -28,7 +26,6 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -56,22 +53,6 @@ class ZosmfAuthenticationLoginTest extends LoginTest {
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
         port = serviceConfiguration.getPort();
-    }
-
-    /**
-     * This is how z/OSMF behaves. Two logins with basic auth give identical token.
-     * There is no point to replicate this behavior on mock.
-     */
-    @ParameterizedTest
-    @MethodSource("loginUrlsSource")
-    @MainframeDependentTests
-    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenIdenticalTokenIsProduced(String loginUrl) {
-        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
-
-        String jwtToken1 = authenticateAndVerify(loginRequest, loginUrl);
-        String jwtToken2 = authenticateAndVerify(loginRequest, loginUrl);
-
-        assertThat(jwtToken1, is((jwtToken2)));
     }
 
     @ParameterizedTest

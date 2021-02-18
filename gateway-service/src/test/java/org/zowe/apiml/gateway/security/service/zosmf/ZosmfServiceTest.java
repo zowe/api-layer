@@ -32,6 +32,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.*;
 
@@ -39,12 +40,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class ZosmfServiceTest {
 
     private static final String ZOSMF_ID = "zosmf";
+    protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
 
     @Mock
     private AuthConfigurationProperties authConfigurationProperties;
@@ -129,6 +132,34 @@ class ZosmfServiceTest {
         assertNotNull(response.getTokens());
         assertEquals(1, response.getTokens().size());
         assertEquals("jt", response.getTokens().get(ZosmfService.TokenType.JWT));
+    }
+
+    @Test
+    void newTokenIsCheckedAgainstInvalidateTokensCache() {
+        Authentication authentication = new UsernamePasswordAuthenticationToken("user", "pass");
+        ZosmfService zosmfService = getZosmfServiceSpy();
+        doReturn(true).when(zosmfService).loginEndpointExists();
+        ZosmfService.AuthenticationResponse responseMock = mock(ZosmfService.AuthenticationResponse.class);
+        doReturn(responseMock).when(zosmfService).issueAuthenticationRequest(any(), any(), any());
+
+        doReturn(true).when(zosmfService).isInvalidated(any());
+        assertThrows(TokenNotValidException.class, () -> zosmfService.authenticate(authentication));
+
+        doReturn(false).when(zosmfService).isInvalidated(any());
+        assertDoesNotThrow(() -> zosmfService.authenticate(authentication));
+    }
+
+    @Test
+    void whenNewTokenFoundInInvalidatedTokensCacheItsLTPAtokenIsInvalidatedAgainstZosmf() {
+        Authentication authentication = new UsernamePasswordAuthenticationToken("user", "pass");
+        ZosmfService zosmfService = getZosmfServiceSpy();
+        doReturn(true).when(zosmfService).loginEndpointExists();
+        ZosmfService.AuthenticationResponse responseMock = mock(ZosmfService.AuthenticationResponse.class);
+        doReturn(responseMock).when(zosmfService).issueAuthenticationRequest(any(), any(), any());
+
+        doReturn(true).when(zosmfService).isInvalidated(any());
+        assertThrows(TokenNotValidException.class, () -> zosmfService.authenticate(authentication));
+        verify(zosmfService, times(1)).invalidate(eq(LTPA), any());
     }
 
     @Test
