@@ -136,7 +136,7 @@ pipeline {
                         keepAll              : true,
                         reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
                         reportFiles          : 'index.html',
-                        reportName           : "UI JavaScript Test Coverage"
+                        reportName           : "JavaScript Unit Test Coverage"
                     ])
             }
         }

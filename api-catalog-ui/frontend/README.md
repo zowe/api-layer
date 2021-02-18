@@ -5,13 +5,12 @@ Contains React component loaded at startup which calls the running API Catalog s
 
 ## Testing
 
-The front end is covered by Unit tests, integration tests and e2e tests. The testing part of the CI/CD pipeline, but manual testing
+The front end is covered by Unit tests and e2e tests. The testing part of the CI/CD pipeline, but manual testing
 can be done locally. 
 
-#### Unit and Integration testing
+#### Unit testing
 
-Unit tests for each component and integration tests are performed part of the CI/CD ,and you can see the results of the tests as well as the coverage report
-at stage "Javascript Test and Coverage"
+Unit tests for each component are performed part of the api-catalog-ui build task.
 
 #### For Manual testing
 
@@ -23,13 +22,13 @@ For coverage use ``npm run coverage`` or gradle task "javaScriptCoverage"
 
 ## Installation
 
+You need to have Node.js installed.
+
 1. Clone the repo
 
-2. Install the package manager `pnpm` by running `npm add -g pnpm`
+2. Run `npm install` inside the repo folder to install all dependencies
 
-3. run `pnpm install` inside the repo folder to install all dependencies
-
-3. run `npm run start` to run the live reload server (will automatically open new browser tab on <https://localhost:3000/> where the app runs)
+3. (Optional) run `npm run start` to run the live reload server (will automatically open new browser tab on <https://localhost:3000/> where the app runs)
 
 ## Testing
 
@@ -39,17 +38,7 @@ For Unit tests we use [Enzyme](https://github.com/airbnb/enzyme) and [jest](http
 
 When virtually rendering components you should use `.shallow`.
 
-To run all unit and integration tests run `npm test`.
-
-The tests will auto rerun after you make any file changes to test files.
-
-### Integration tests
-
-For e2e tests we use [Enzyme](https://github.com/airbnb/enzyme) and [jest](https://jestjs.io/).
-
-When virtually rendering components you should use `.mount`.
-
-[Integration tests](src/integration-tests) are meant to verify the overall functionality of the app, so they should be run with mocked backend as a source for info.
+To run all unit tests run `npm test`.
 
 ### e2e tests
 
@@ -59,7 +48,7 @@ We are using [cypress](https://github.com/cypress-io/cypress) to control headles
 
 to run e2e tests follow these steps:
 
-1. Have some running instance to test (for example `npm start`)
+1. Have some running instance to test (for example `npm run api-layer-ci`)
 
 2. Point e2e to the instance to the instance you want to test
 
@@ -77,6 +66,8 @@ You can see the coverage in the terminal window or go to the `coverage/lcov-repo
 
 ## Dev environment
 
+**!! Not maintained, use at your own risk !!**
+
 For local development run `npm run start:dev`.
 
 Using this command you will have an instance of catalog UI running on <https://localhost:3000/> using mocked backend for info updates.
@@ -84,6 +75,8 @@ Using this command you will have an instance of catalog UI running on <https://l
 To configure variouse environment specific variables for development see [this env file](./.env.development);
 
 ## Mocked backend
+
+**!! Not maintained, use at your own risk !!**
 
 If you want to develop only on the UI side mocked backend can come in handy. It serves a static jsons from the `mocked-abackend/assets` folder.
 
@@ -93,11 +86,9 @@ The server tuns on <http://localhost:8000/> and the endpoints addresses are set 
 
 ## Building
 
-To build the UI run `npm run build`.
+To build the UI run `npm run build`. Tests are run as part of every build.
 
 This will generate `build` folder.
-
-You can install a tool called _serve_ (`npm install -g serve`) and then run `serve -s build` to start a static server.
 
 ## Cypress tests
 
