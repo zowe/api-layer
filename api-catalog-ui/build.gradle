@@ -23,37 +23,38 @@ node {
     nodeModulesDir = file("${project.projectDir}/frontend")
 }
 
-task cleanBundle(type: Delete) {
-    delete 'bin', 'build', 'frontend/build', 'tools/nodejs'
+// =================================================
+//
+//  Please manage all task dependencies in NPM and
+//  not here. This should be just a wrapper around
+//  package.json
+//
+// =================================================
+
+task jsClean(type: Delete) {
+    group = 'node'
+    delete 'bin', 'build', 'frontend/test-results', 'frontend/coverage', 'frontend/build', 'tools/nodejs'
 }
 
-task startMockedBackend(type: NpmTask) {
-    group = 'testing'
-    description = "UI Mocked Backend"
-    args = ['run', 'start:mock']
-}
+////todo remove
+//task npmTest(type: NpmTask) {
+//    group = 'node'
+//    description = "Javascript unit tests"
+//    args = ['run', 'test']
+//}
 
-task javaScriptCoverage(type: NpmTask) {
-    group = 'testing'
-    description = "UI JavaScript Test Coverage"
-    args = ['run', 'coverage']
-}
-
-task runTests(type: NpmTask) {
-    group = 'testing'
-    description = "UI JavaScript Test Coverage"
-    args = ['run', 'test']
-}
-
-task runE2ETests(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
-    group = 'integration tests'
-    description = "End to End Tests depending on the catalog ui"
-
-    args = ['run', 'cy:e2e:zowe-ci']
-}
+////todo remove
+//task npmE2ETests(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
+//    group = 'node'
+//    description = "Javascript End to End Tests"
+//
+//    args = ['run', 'cy:e2e:zowe-ci']
+//}
 
 
-task bundle(type: NpmTask) {
+task npmBuild(type: NpmTask) {
+    group = 'node'
+    description = "Produces errors in intellij run window but tests pass, dont panic. You can verify running the npm test directly"
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
@@ -61,14 +62,17 @@ task bundle(type: NpmTask) {
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.dir('frontend/build')
+    outputs.dir('frontend/test-resultstest-report-unit.html')
+    outputs.dir('frontend/coverage')
     outputs.cacheIf { true }
 
     args = ['run', 'build']
 
 }
 
-clean.dependsOn cleanBundle
-build.dependsOn bundle
-javaScriptCoverage.dependsOn bundle
-runTests.dependsOn bundle
+clean.dependsOn jsClean
+build.dependsOn npmBuild
 
+jar {
+    enabled false
+}

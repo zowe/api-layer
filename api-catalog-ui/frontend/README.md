@@ -15,9 +15,8 @@ Unit tests for each component are performed part of the api-catalog-ui build tas
 #### For Manual testing
 
 You need to have Node.js installed. Run command `npm install` in your root directory to install a package, and any packages that it depends on
-Either use directly node.js command ``npm test`` while on directory /api-catalog-ui/frontend or via gradle task `api-catalog-ui:runTests`. 
+Either use directly node.js command ``npm test`` while on directory /api-catalog-ui/frontend. 
 For coverage use ``npm run coverage`` or gradle task "javaScriptCoverage"
-
 
 
 ## Installation
@@ -36,8 +35,6 @@ You need to have Node.js installed.
 
 For Unit tests we use [Enzyme](https://github.com/airbnb/enzyme) and [jest](https://jestjs.io/).
 
-When virtually rendering components you should use `.shallow`.
-
 To run all unit tests run `npm test`.
 
 ### e2e tests
@@ -48,7 +45,7 @@ We are using [cypress](https://github.com/cypress-io/cypress) to control headles
 
 to run e2e tests follow these steps:
 
-1. Have some running instance to test (for example `npm run api-layer-ci`)
+1. Have some running instance to test (for example `npm run api-layer-ci` from the repository root)
 
 2. Point e2e to the instance to the instance you want to test
 
@@ -62,7 +59,9 @@ to run e2e tests follow these steps:
 
 To get the current coverage run `npm run coverage`.
 
-You can see the coverage in the terminal window or go to the `coverage/lcov-report` folder and open the `index.html` file.
+You can see the coverage in the terminal window or go to the `coverage/lcov-report` folder and open the `index.html` file. 
+
+Coverage is being produced as part of every `npm run build`.
 
 ## Dev environment
 
@@ -86,9 +85,9 @@ The server tuns on <http://localhost:8000/> and the endpoints addresses are set 
 
 ## Building
 
-To build the UI run `npm run build`. Tests are run as part of every build.
+To build the UI run `npm run build`. Unit tests are run on every build. Coverage is produced on every build.
 
-This will generate `build` folder.
+This will generate `build`, `coverage` and `test-results` folders.
 
 ## Cypress tests
 
