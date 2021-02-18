@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { Button, Text } from 'mineral-ui';
+import React, {Component} from 'react';
+import {Button, Text} from 'mineral-ui';
 import IconChevronLeft from 'mineral-ui-icons/IconChevronLeft';
 
 export default class PageNotFound extends Component {
@@ -14,7 +14,7 @@ export default class PageNotFound extends Component {
             <div>
                 <Text element="h1">Page Not Found</Text>
                 <div>
-                    <Button primary onClick={this.handleGoToHome} size="medium" iconStart={iconBack}>
+                    <Button primary data-testid="go-home-button" onClick={this.handleGoToHome} size="medium" iconStart={iconBack}>
                         Go to Dashboard
                     </Button>
                 </div>
