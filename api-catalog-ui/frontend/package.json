@@ -41,12 +41,8 @@
         "uuid": "3.3.2"
     },
     "scripts": {
-        "start": "cross-env HTTPS=true react-scripts start",
-        "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mock\" \"cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 npm run start\"",
-        "start:mock": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mock/server.js",
         "build": "npm run coverage && npm run react-scripts-build",
         "react-scripts-build": "react-scripts build",
-        "analyze": "source-map-explorer build/static/js/main.*",
         "postbuild": "rimraf build/**/*.map",
         "test": "react-scripts test --env=jsdom components/* reducers/* epics/* actions/* selectors/* ErrorBoundary/* --reporters=default --reporters=jest-html-reporter",
         "coverage": "npm test -- --coverage --watchAll=false",
@@ -55,6 +51,11 @@
         "cy:e2e:zowe-ci": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless",
         "cy:e2e:localhost": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\"",
         "cy:e2e:mocked-backend": "cypress run --spec \"cypress/integration/mocked-e2e/**/*.test.js\" --env catalogHomePage=https://localhost:3000/ui/v1/apicagalog,username=user,password=user",
+        "the-scripts-below-might-be-stale": "",
+        "start": "cross-env HTTPS=true react-scripts start",
+        "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mock\" \"cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 npm run start\"",
+        "start:mock": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mock/server.js",
+        "analyze": "source-map-explorer build/static/js/main.*",
         "delete:reports": "rm ./test-results/e2e/* || true"
     },
     "proxy": "https://localhost:10010",
