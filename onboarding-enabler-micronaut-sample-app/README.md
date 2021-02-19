@@ -32,6 +32,6 @@ Prerequisite: build runnable jar with shadowJar task
 ```
 java -jar onboarding-enabler-micronaut-sample-app/build/libs/micronaut-enabler-1.0.jar
 ```
-## Start with http-client
+## Start with http server
 
-- [Micronaut Micronaut HTTP Client documentation](https://docs.micronaut.io/latest/guide/index.html#httpClient)
+- [Micronaut Micronaut HTTP Server documentation](https://docs.micronaut.io/latest/guide/index.html#httpServer)
