@@ -41,7 +41,7 @@ task nodeClean(type: Delete) {
 //    args = ['run', 'test']
 //}
 
-task npmE2ECI(type: NpmTask) {
+task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
     group = 'npm'
     description = "Javascript End to End Tests"
     environment = ['cypress_catalogHomePage': String.format("%s://%s:%s/apicatalog/ui/v1", System.getProperty("gateway.scheme"),
