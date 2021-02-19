@@ -1,3 +1,5 @@
+import java.util.stream.Collectors
+
 plugins {
     id "com.github.node-gradle.node" version "3.0.1"
 }
@@ -39,10 +41,13 @@ task nodeClean(type: Delete) {
 //    args = ['run', 'test']
 //}
 
-task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
+task npmE2ECI(type: NpmTask) {
     group = 'npm'
     description = "Javascript End to End Tests"
-
+    environment = ['cypress_catalogHomePage': String.format("%s://%s:%s/apicatalog/ui/v1", System.getProperty("gateway.scheme"),
+                        System.getProperty("gateway.host"), System.getProperty("gateway.port")),
+                   'cypress_username': System.getProperty("credentials.user"),
+                   'cypress_password': System.getProperty("credentials.password")]
     args = ['run', 'cy:e2e:ci']
 }
 
