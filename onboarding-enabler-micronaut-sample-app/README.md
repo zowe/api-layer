@@ -1,4 +1,4 @@
-#Micronaut enabler
+# Micronaut enabler
 
 ### (Optional) Install Micronaut CLI
 - [Quick start new server](https://docs.micronaut.io/latest/guide/index.html#quickStart)
