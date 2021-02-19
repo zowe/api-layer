@@ -88,7 +88,6 @@ pipeline {
         stage ('Install') {
             steps {
                 sh 'npm install'
-                //sh 'cd api-catalog-ui/frontend && npm install' ////todo remove
                 sh 'cd onboarding-enabler-nodejs-sample-app && npm install'
                 sh './gradlew api-catalog-ui:npmInstall'
             }
