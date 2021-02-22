@@ -34,12 +34,13 @@ task nodeClean(type: Delete) {
     delete 'frontend/node_modules', 'tools/nodejs'
 }
 
-//todo hook up to test
-//task npmTest(type: NpmTask) {
-//    group = 'npm'
-//    description = "Javascript unit tests"
-//    args = ['run', 'test']
-//}
+
+task npmTest(type: NpmTask) {
+    group = 'npm'
+    description = "Javascript unit tests"
+    args = ['run', 'test']
+}
+test.dependsOn npmTest
 
 task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
     group = 'npm'

@@ -2,40 +2,30 @@
 
 Contains React component loaded at startup which calls the running API Catalog services to get a list of registered Tiles and displays them in a list.
 
+## Install Node
+
+Many of the tasks here can be run either through Gradle or through NPM. If you're using npm directly, ensure you have correct version of node installed globally. The version of node can be found in `gradle.properties` in variable `nodejsVersion`. You have to perform `npm install` command from the `api-catalog-ui/frontend` directory first, to download necessary dependencies before running any `npm` commands. 
+
+For the gradle tasks, the node-gradle plugin is used which downloads correct node version and sets up dependencies automatically. This approach is used in CI environment but can be used locally as well.
 
 ## Testing
 
-The front end is covered by Unit tests and e2e tests. The testing part of the CI/CD pipeline, but manual testing
-can be done locally. 
-
-#### Unit testing
-
-Unit tests for each component are performed part of the api-catalog-ui build task.
-
-#### For Manual testing
-
-You need to have Node.js installed. Run command `npm install` in your root directory to install a package, and any packages that it depends on
-Either use directly node.js command ``npm test`` while on directory /api-catalog-ui/frontend. 
-For coverage use ``npm run coverage`` or gradle task "javaScriptCoverage"
-
-
-## Installation
-
-You need to have Node.js installed.
-
-1. Clone the repo
-
-2. Run `npm install` inside the repo folder to install all dependencies
-
-3. (Optional) run `npm run start` to run the live reload server (will automatically open new browser tab on <https://localhost:3000/> where the app runs)
-
-## Testing
+The front end is covered by Unit tests and e2e tests. The testing part of the CI/CD pipeline, but manual testing can be done locally. 
 
 ### Unit tests
 
+Unit tests for each component are performed part of the api-catalog-ui build task.
+
 For Unit tests we use [Enzyme](https://github.com/airbnb/enzyme) and [jest](https://jestjs.io/).
 
-To run all unit tests run `npm test`.
+#### For Manual testing
+
+Npm: `npm test` while on directory `/api-catalog-ui/frontend`.
+Gradle: `./gradlew api-catalog-ui:test`
+
+For coverage
+Npm: `npm run coverage`
+Gradle: `./gradlew api-catalog-ui:build`
 
 ### e2e tests
 
@@ -45,11 +35,18 @@ We are using [cypress](https://github.com/cypress-io/cypress) to control headles
 
 to run e2e tests follow these steps:
 
-1. Have some running instance to test (for example `npm run api-layer-ci` from the repository root)
+1. Have some running instance to test (for example local instance `npm run api-layer-ci` from the repository root or some remote instance)
 
-2. Point e2e to the instance to the instance you want to test
+2. Run the e2e tests
+   
+    - against localhost:
+      
+    `npm run cy:e2e:localhost`
 
-3. Run the tests with `npm run cy:e2e:ci`
+    - against real instance:
+  
+
+    ./gradlew api-catalog-ui:npmE2ECI -Dcredentials.user=${USERID} -Dcredentials.password=${PASSWORD} -Ddiscovery.host=${HOST} -Ddiscovery.port=${DISCOVERY_PORT} -Ddiscovery.scheme=${DISCOVERY_SCHEME} -Ddiscovery.instances=${DISCOVERY_NUM_INSTANCES} -Dgateway.instances=${GATEWAY_NUM_INSTANCES} -Dgateway.host=${HOST} -Dgateway.port=${GATEWAY_PORT} -Dgateway.externalPort=${GATEWAY_PORT} -Dgateway.internalPorts=${GATEWAY_PORT} -Dgateway.scheme=https
 
 **Note:** coverage is not collected from e2e tests
 
@@ -57,7 +54,7 @@ to run e2e tests follow these steps:
 
 ### Code coverage
 
-To get the current coverage run `npm run coverage`.
+To get the current coverage run `npm run coverage` or Gradle `build` task.
 
 You can see the coverage in the terminal window or go to the `coverage/lcov-report` folder and open the `index.html` file. 
 
