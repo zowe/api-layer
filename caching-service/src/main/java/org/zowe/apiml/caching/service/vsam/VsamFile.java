@@ -54,11 +54,11 @@ public class VsamFile implements Closeable {
         this(config, options, false, apimlLogger);
     }
 
-    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean performWarmup, ApimlLogger apimlLogger) {
-        this(config, options, performWarmup, new ZFileProducer(config, options, apimlLogger), new VsamInitializer(), apimlLogger);
+    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean initialCreation, ApimlLogger apimlLogger) {
+        this(config, options, initialCreation, new ZFileProducer(config, options, apimlLogger), new VsamInitializer(), apimlLogger);
     }
 
-    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean performWarmup, ZFileProducer zFileProducer, VsamInitializer vsamInitializer, ApimlLogger apimlLogger) {
+    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean initialCreation, ZFileProducer zFileProducer, VsamInitializer vsamInitializer, ApimlLogger apimlLogger) {
         this.apimlLog = apimlLogger;
         if (config == null) {
             apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "vsam", "wrong Configuration", "No configuration provided");
@@ -81,14 +81,18 @@ public class VsamFile implements Closeable {
         try {
             this.zfile = openZfile();
 
-            if (performWarmup) {
+            if (initialCreation) {
                 log.info("Warming up VSAM file");
                 vsamInitializer.warmUpVsamFile(zfile, vsamConfig);
             }
 
         } catch (ZFileException | VsamRecordException e) {
             String info = String.format("opening of %s in mode %s failed", vsamConfig, options);
-            apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", STORAGE_TYPE, info, e);
+            if (initialCreation) {
+                apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", STORAGE_TYPE, info, e);
+            } else {
+                log.info(info);
+            }
 
             throw new IllegalStateException("Failed to open VsamFile");
         }
@@ -122,8 +126,12 @@ public class VsamFile implements Closeable {
             }
         } catch (ZFileException e) {
             log.info(e.toString());
+
+            throw new RetryableVsamException(e);
         } catch (VsamRecordException e) {
             log.info(VSAM_RECORD_ERROR_MESSAGE, e);
+
+            throw new RetryableVsamException(e);
         }
 
         return Optional.empty();

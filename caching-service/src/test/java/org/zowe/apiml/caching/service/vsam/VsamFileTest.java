@@ -230,12 +230,12 @@ class VsamFileTest {
         }
 
         @Test
-        void givenZFileThrowsError_NoRecordIsReturned() throws UnsupportedEncodingException, ZFileException {
+        void givenZFileThrowsError_TheErrorIsPropagated() throws UnsupportedEncodingException, ZFileException {
             VsamRecord toCreate = defaultVsamRecord();
             String createdKey = toCreate.getKeyValue().getKey();
 
             when(zFile.locate(key.getKeyBytes(VALID_SERVICE_ID, createdKey), ZFileConstants.LOCATE_KEY_EQ)).thenThrow(zFileException());
-            assertFalse(underTest.create(toCreate).isPresent());
+            assertThrows(RetryableVsamException.class, () -> underTest.create(toCreate));
         }
 
         @Test

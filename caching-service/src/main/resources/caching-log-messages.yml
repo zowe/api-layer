@@ -89,7 +89,7 @@ messages:
 
     -   key: org.zowe.apiml.cache.usingInMemory
         number: ZWECS701
-        type: ERROR
+        type: WARNING
         text: "The InMemory configuration is used despite not being supported for production usage."
         reason: "Development configuration in the production."
         action: "Change the caching.storage.mode to other supported option than inMemory."

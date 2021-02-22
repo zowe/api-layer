@@ -1,3 +1,9 @@
+caching:
+    storage:
+        mode: vsam
+        vsam:
+            name: //'TEST.TEST'
+
 logging:
     level:
         ROOT: WARN
@@ -104,11 +110,14 @@ spring:
 
 logging:
     level:
-        ROOT: INFO
+        ROOT: DEBUG
+        sun.rmi: INFO
         org.zowe.apiml: DEBUG
+        org.zowe.apiml.enable: WARN
+        org.zowe.apiml.caching: DEBUG
         org.springframework: INFO
         org.apache: INFO
-        org.apache.http: DEBUG
+        org.apache.http: INFO
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN

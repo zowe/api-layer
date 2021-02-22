@@ -70,7 +70,7 @@ public class VsamStorage implements Storage {
     }
 
     @Override
-    @Retryable(value = {IllegalStateException.class, UnsupportedOperationException.class})
+    @Retryable(value = {RetryableVsamException.class, IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue create(String serviceId, KeyValue toCreate) {
         log.info("Writing record: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
         KeyValue result = null;
