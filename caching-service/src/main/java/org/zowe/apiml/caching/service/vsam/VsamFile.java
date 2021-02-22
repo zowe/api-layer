@@ -86,7 +86,7 @@ public class VsamFile implements Closeable {
                 vsamInitializer.warmUpVsamFile(zfile, vsamConfig);
             }
 
-        } catch (ZFileException | VsamRecordException e) {
+        } catch (Exception e) {
             String info = String.format("opening of %s in mode %s failed", vsamConfig, options);
             if (initialCreation) {
                 apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", STORAGE_TYPE, info, e);
