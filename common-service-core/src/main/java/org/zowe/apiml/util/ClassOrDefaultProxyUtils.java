@@ -64,7 +64,14 @@ public final class ClassOrDefaultProxyUtils {
      * @return Proxy object implementing interfaceClass and ClassOrDefaultProxyState
      */
     public static <T> T createProxy(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, ExceptionMapping<? extends Exception> ... exceptionMappings) {
-        return createProxyByConstructor(interfaceClass, implementationClassName, defaultImplementation, new Class[]{}, new Object[]{}, exceptionMappings);
+        try {
+            return createProxyByConstructor(interfaceClass, implementationClassName, defaultImplementation, new Class[]{}, new Object[]{}, exceptionMappings);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            log.warn("Implementation {} is not available with constructor signature {}, it will continue with default one {} : " + e.getLocalizedMessage(),
+                implementationClassName, new Class[]{},  defaultImplementation);
+        }
+
+        return makeProxy(interfaceClass, defaultImplementation.get(), false, exceptionMappings);
     }
 
     /**
@@ -79,23 +86,17 @@ public final class ClassOrDefaultProxyUtils {
      * @param exceptionMappings handlers to map exception to custom class
      * @return Proxy object implementing interfaceClass and ClassOrDefaultProxyState
      */
-    public static <T> T createProxyByConstructor(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, Class[] constructorSignature, Object[] constructorParams, ExceptionMapping<? extends Exception> ... exceptionMappings) {
+    public static <T> T createProxyByConstructor(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, Class[] constructorSignature, Object[] constructorParams, ExceptionMapping<? extends Exception> ... exceptionMappings)
+        throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         ObjectUtil.requireNotNull(interfaceClass, "interfaceClass can't be null");
         ObjectUtil.requireNotEmpty(implementationClassName, "implementationClassName can't be empty");
         ObjectUtil.requireNotNull(defaultImplementation, "defaultImplementation can't be null");
         ObjectUtil.requireNotNull(constructorSignature, "constructorSignature can't be null");
         ObjectUtil.requireNotNull(constructorParams, "constructorParams can't be null");
 
-        try {
-            final Class<?> implementationClazz = Class.forName(implementationClassName);
-            final Object implementation = implementationClazz.getDeclaredConstructor(constructorSignature).newInstance(constructorParams);
-            return makeProxy(interfaceClass, implementation, true, exceptionMappings);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            log.warn("Implementation {} is not available with constructor signature {}, it will continue with default one {} : " + e.getLocalizedMessage(),
-                implementationClassName, constructorSignature,  defaultImplementation);
-        }
-
-        return makeProxy(interfaceClass, defaultImplementation.get(), false, exceptionMappings);
+        final Class<?> implementationClazz = Class.forName(implementationClassName);
+        final Object implementation = implementationClazz.getDeclaredConstructor(constructorSignature).newInstance(constructorParams);
+        return makeProxy(interfaceClass, implementation, true, exceptionMappings);
     }
 
     private static <T> T makeProxy(Class<T> interfaceClass, Object implementation, boolean usingBaseImplementation, ExceptionMapping<? extends Exception> ... exceptionMappings) {

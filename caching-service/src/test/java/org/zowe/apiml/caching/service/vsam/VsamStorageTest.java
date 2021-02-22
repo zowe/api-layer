@@ -16,6 +16,7 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,7 @@ class VsamStorageTest {
         VsamInitializer initializer = mock(VsamInitializer.class);
         producer = mock(VsamFileProducer.class);
 
-        underTest = new VsamStorage(vsamConfiguration, initializer, producer);
+        underTest = new VsamStorage(vsamConfiguration, initializer, producer, ApimlLogger.empty());
     }
 
     @Test
@@ -61,7 +62,7 @@ class VsamStorageTest {
         when(returnedFile.create(any())).thenReturn(
             Optional.of(new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record))
         );
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+        when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
 
         KeyValue result = underTest.create(VALID_SERVICE_ID, record);
         assertThat(result, is(record));
@@ -73,7 +74,7 @@ class VsamStorageTest {
         record.setServiceId(VALID_SERVICE_ID);
         VsamFile returnedFile = mock(VsamFile.class);
         when(returnedFile.countAllRecords()).thenReturn(60);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+        when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
 
         assertThrows(StorageException.class, () -> {
             underTest.create(VALID_SERVICE_ID, record);
@@ -87,7 +88,7 @@ class VsamStorageTest {
 
         VsamFile returnedFile = mock(VsamFile.class);
         when(returnedFile.countAllRecords()).thenReturn(200);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+        when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
 
         assertThrows(StorageException.class, () -> {
             underTest.create(VALID_SERVICE_ID, record);
@@ -99,7 +100,7 @@ class VsamStorageTest {
         KeyValue record = new KeyValue("key-1", "value-1", "1");
         record.setServiceId(VALID_SERVICE_ID);
         VsamFile returnedFile = mock(VsamFile.class);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+        when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
 
         when(returnedFile.read(any())).thenReturn(
             Optional.of(new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record))
@@ -112,7 +113,7 @@ class VsamStorageTest {
     @Test
     void givenKeyIsntInCache_whenItemIsRead_thenExceptionIsThrown() {
         VsamFile returnedFile = mock(VsamFile.class);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+        when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
 
         when(returnedFile.read(any())).thenReturn(
             Optional.empty()
@@ -127,7 +128,7 @@ class VsamStorageTest {
         KeyValue record = new KeyValue("key-1", "value-1", "1");
         record.setServiceId(VALID_SERVICE_ID);
         VsamFile returnedFile = mock(VsamFile.class);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+        when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
 
         when(returnedFile.update(any())).thenReturn(
             Optional.of(new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record))
@@ -143,7 +144,7 @@ class VsamStorageTest {
         record.setServiceId(VALID_SERVICE_ID);
 
         VsamFile returnedFile = mock(VsamFile.class);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+        when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
 
         when(returnedFile.read(any())).thenReturn(
             Optional.empty()
@@ -159,7 +160,7 @@ class VsamStorageTest {
         record.setServiceId(VALID_SERVICE_ID);
 
         VsamFile returnedFile = mock(VsamFile.class);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+        when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
 
         when(returnedFile.delete(any())).thenReturn(
             Optional.of(new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record))
@@ -172,7 +173,7 @@ class VsamStorageTest {
     @Test
     void givenKeyIsntInCache_whenItemIsDeleted_thenExceptionIsThrown() {
         VsamFile returnedFile = mock(VsamFile.class);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+        when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
 
         when(returnedFile.read(any())).thenReturn(
             Optional.empty()
@@ -191,7 +192,7 @@ class VsamStorageTest {
         record2.setServiceId(VALID_SERVICE_ID);
 
         VsamFile returnedFile = mock(VsamFile.class);
-        when(producer.newVsamFile(any(), any())).thenReturn(returnedFile);
+        when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
 
         List<VsamRecord> records = new ArrayList<>();
         records.add(new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1));

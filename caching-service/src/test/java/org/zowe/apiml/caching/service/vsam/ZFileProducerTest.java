@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.service.vsam;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -22,7 +23,7 @@ class ZFileProducerTest {
     void setUp() {
         VsamConfig vsamConfiguration = DefaultVsamConfiguration.defaultConfiguration();
         vsamConfiguration.setFileName("Invalid-file-name");
-        underTest = new ZFileProducer(vsamConfiguration, VsamConfig.VsamOptions.WRITE);
+        underTest = new ZFileProducer(vsamConfiguration, VsamConfig.VsamOptions.WRITE, ApimlLogger.empty());
     }
 
     @Test

@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.vsam.VsamInitializer;
 import org.zowe.apiml.caching.service.vsam.VsamStorage;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 @Configuration
 @RequiredArgsConstructor
@@ -25,9 +27,7 @@ public class VsamConfiguration {
 
     @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "vsam")
     @Bean
-    public Storage vsam() {
-        return new VsamStorage(vsamConfig, vsamInitializer);
+    public Storage vsam(MessageService messageService) {
+        return new VsamStorage(vsamConfig, vsamInitializer, ApimlLogger.of(VsamStorage.class, messageService));
     }
-
-
 }

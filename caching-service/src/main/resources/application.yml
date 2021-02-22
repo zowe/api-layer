@@ -5,6 +5,7 @@ logging:
         org.zowe.apiml.enable: WARN
         org.zowe.apiml.caching: WARN
         org.springframework: WARN
+        org.springframework.boot: OFF
         com.netflix: WARN
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR

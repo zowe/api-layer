@@ -124,6 +124,8 @@ public class CachingController {
             return new ResponseEntity<>(pair, successStatus);
         } catch (StorageException exception) {
             return exceptionToResponse(exception);
+        } catch (IllegalStateException exception) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -150,6 +152,8 @@ public class CachingController {
             return new ResponseEntity<>(successStatus);
         } catch (StorageException exception) {
             return exceptionToResponse(exception);
+        } catch (IllegalStateException exception) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

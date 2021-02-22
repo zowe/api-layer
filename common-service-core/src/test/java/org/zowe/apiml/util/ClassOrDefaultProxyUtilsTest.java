@@ -60,7 +60,7 @@ class ClassOrDefaultProxyUtilsTest {
     }
 
     @Test
-    void specificConstructorCanBeInvoked() {
+    void specificConstructorCanBeInvoked() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TestInterface1 ti;
 
         ti = ClassOrDefaultProxyUtils.createProxyByConstructor(TestInterface1.class, ConstructorTestImplementation.class.getName(),
@@ -70,12 +70,6 @@ class ClassOrDefaultProxyUtilsTest {
         ti = ClassOrDefaultProxyUtils.createProxyByConstructor(TestInterface1.class, ConstructorTestImplementation.class.getName(),
                 TestImplementation1B::new, new Class[]{int.class}, new Object[]{5});
         assertEquals("Zeryk_5", ti.method2("dummy", 0));
-
-        //not found constructor falls back to backup instead of exception
-        ti = ClassOrDefaultProxyUtils.createProxyByConstructor(TestInterface1.class, ConstructorTestImplementation.class.getName(),
-            TestImplementation1B::new, new Class[]{org.hamcrest.Matchers.class}, new Object[]{5});
-        assertFalse(((ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) ti).isUsingBaseImplementation());
-
     }
 
     @Test

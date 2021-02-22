@@ -11,6 +11,7 @@ package org.zowe.apiml.caching.service.inmemory;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.caching.service.RejectStrategy;
 import org.zowe.apiml.caching.service.StorageException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;

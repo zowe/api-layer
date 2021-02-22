@@ -14,7 +14,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.zfile.ZFile;
 import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
@@ -41,25 +40,29 @@ public class VsamFile implements Closeable {
     private final VsamConfig vsamConfig;
     private final ZFileProducer zFileProducer;
 
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
+    private final ApimlLogger apimlLog;
 
+    public static final String VSAM_RECORD_ERROR_MESSAGE = "VsamRecordException occured: {}";
     public static final String RECORD_FOUND_MESSAGE = "Record found: {}";
     public static final String RECORD_CANNOT_BE_NULL_MESSAGE = "Record cannot be null";
+    public static final String UNSUPPORTED_ENCODING_MESSAGE = "Unsupported encoding: {}";
 
     private static final String STORAGE_TYPE = "VSAM";
     private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^\\/\\/\\'.*'");
 
-    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options) {
-        this(config, options, false);
+    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, ApimlLogger apimlLogger) {
+        this(config, options, false, apimlLogger);
     }
 
-    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean performWarmup) {
-        this(config, options, performWarmup, new ZFileProducer(config, options), new VsamInitializer());
+    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean performWarmup, ApimlLogger apimlLogger) {
+        this(config, options, performWarmup, new ZFileProducer(config, options, apimlLogger), new VsamInitializer(), apimlLogger);
     }
 
-    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean performWarmup, ZFileProducer zFileProducer, VsamInitializer vsamInitializer) {
+    public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean performWarmup, ZFileProducer zFileProducer, VsamInitializer vsamInitializer, ApimlLogger apimlLogger) {
+        this.apimlLog = apimlLogger;
         if (config == null) {
+            apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "vsam", "wrong Configuration", "No configuration provided");
+
             throw new IllegalArgumentException("Cannot create VsamFile with null configuration");
         }
 
@@ -67,7 +70,10 @@ public class VsamFile implements Closeable {
         log.info("VsamFile::new with parameters: {}, Vsam options: {}", this.vsamConfig, options);
 
         if (!REGEX_CORRECT_FILENAME.matcher(vsamConfig.getFileName()).find()) {
-            throw new IllegalArgumentException("VsamFile name does not conform to //'VSAM.DATASET.NAME' pattern");
+            String nonConformance = "VsamFile name does not conform to //'VSAM.DATASET.NAME' pattern";
+            apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "vsam", "wrong Configuration", nonConformance);
+
+            throw new IllegalArgumentException(nonConformance);
         }
 
         this.zFileProducer = zFileProducer;
@@ -83,6 +89,7 @@ public class VsamFile implements Closeable {
         } catch (ZFileException | VsamRecordException e) {
             String info = String.format("opening of %s in mode %s failed", vsamConfig, options);
             apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", STORAGE_TYPE, info, e);
+
             throw new IllegalStateException("Failed to open VsamFile");
         }
     }
@@ -111,10 +118,12 @@ public class VsamFile implements Closeable {
                 zfile.write(record.getBytes());
                 return Optional.of(record);
             } else {
-                apimlLog.log("org.zowe.apiml.cache.keyCollision");
+                log.info("The record already exists and will not be created. Use update instead.");
             }
-        } catch (ZFileException | VsamRecordException e) {
-            apimlLog.log("org.zowe.apiml.cache.errorQueryingStorage", STORAGE_TYPE, e);
+        } catch (ZFileException e) {
+            log.info(e.toString());
+        } catch (VsamRecordException e) {
+            log.info(VSAM_RECORD_ERROR_MESSAGE, e);
         }
 
         return Optional.empty();
@@ -138,12 +147,14 @@ public class VsamFile implements Closeable {
                 log.info("VsamRecord read: {}", returned);
                 return Optional.of(returned);
             } else {
-                apimlLog.log("org.zowe.apiml.cache.keyNotInCache");
+                log.info("No record found with requested key");
             }
         } catch (UnsupportedEncodingException e) {
-            apimlLog.log("org.zowe.apiml.cache.unsupportedEncoding", ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE, STORAGE_TYPE);
-        } catch (ZFileException | VsamRecordException e) {
-            apimlLog.log("org.zowe.apiml.cache.errorQueryingStorage", STORAGE_TYPE, e);
+            log.info(UNSUPPORTED_ENCODING_MESSAGE, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
+        } catch (ZFileException e) {
+            log.info(e.toString());
+        } catch (VsamRecordException e) {
+            log.info(VSAM_RECORD_ERROR_MESSAGE, e);
         }
         return Optional.empty();
     }
@@ -168,13 +179,15 @@ public class VsamFile implements Closeable {
                 log.info("ZFile.update return value: {}", nUpdated);
                 return Optional.of(record);
             } else {
-                apimlLog.log("org.zowe.apiml.cache.keyNotInCache");
+                log.info("No record updated because no record found with key");
             }
 
         } catch (UnsupportedEncodingException e) {
-            apimlLog.log("org.zowe.apiml.cache.unsupportedEncoding", ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE, STORAGE_TYPE);
-        } catch (ZFileException | VsamRecordException e) {
-            apimlLog.log("org.zowe.apiml.cache.errorQueryingStorage", STORAGE_TYPE, e);
+            log.info(UNSUPPORTED_ENCODING_MESSAGE, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
+        } catch (ZFileException e) {
+            log.info(e.toString());
+        } catch (VsamRecordException e) {
+            log.info(VSAM_RECORD_ERROR_MESSAGE, e);
         }
 
         return Optional.empty();
@@ -198,11 +211,13 @@ public class VsamFile implements Closeable {
                 log.info("Deleted vsam record: {}", returned);
                 return Optional.of(returned);
             } else {
-                apimlLog.log("org.zowe.apiml.cache.keyNotInCache");
+                log.error("No record deleted because no record found with key");
             }
 
-        } catch (ZFileException | VsamRecordException e) {
-            apimlLog.log("org.zowe.apiml.cache.errorQueryingStorage", STORAGE_TYPE, e);
+        } catch (ZFileException e) {
+            log.info(e.toString());
+        } catch (VsamRecordException e) {
+            log.info(VSAM_RECORD_ERROR_MESSAGE, e);
         }
 
         return Optional.empty();
@@ -261,14 +276,16 @@ public class VsamFile implements Closeable {
 
                 overflowProtection--;
                 if (overflowProtection <= 0) {
-                    apimlLog.log("org.zowe.apiml.cache.tooManyEntriesRetrieved");
+                    log.info("Maximum number of records retrieved, stopping the retrieval");
                     break;
                 }
             }
         } catch (UnsupportedEncodingException e) {
-            apimlLog.log("org.zowe.apiml.cache.unsupportedEncoding", ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE, STORAGE_TYPE);
-        } catch (ZFileException | VsamRecordException e) {
-            apimlLog.log("org.zowe.apiml.cache.errorQueryingStorage", STORAGE_TYPE, e);
+            log.info(UNSUPPORTED_ENCODING_MESSAGE, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
+        } catch (ZFileException e) {
+            log.info(e.toString());
+        } catch (VsamRecordException e) {
+            log.info(VSAM_RECORD_ERROR_MESSAGE, e);
         }
 
         return returned;
@@ -297,18 +314,18 @@ public class VsamFile implements Closeable {
 
                 overflowProtection--;
                 if (overflowProtection <= 0) {
-                    apimlLog.log("org.zowe.apiml.cache.tooManyEntriesRetrieved");
+                    log.info("Maximum number of records retrieved, stopping the retrieval");
                     break;
                 }
             }
         } catch (ZFileException e) {
-            apimlLog.log("org.zowe.apiml.cache.errorQueryingStorage", STORAGE_TYPE, e);
+            log.info(e.toString());
         }
         return recordsCounter;
     }
 
     @SuppressWarnings({"squid:S1130", "squid:S1192"})
-    private ZFile openZfile() throws ZFileException {
+    private ZFile openZfile() throws VsamRecordException {
         return zFileProducer.openZfile();
     }
 

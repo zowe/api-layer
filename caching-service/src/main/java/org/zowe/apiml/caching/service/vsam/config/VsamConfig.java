@@ -29,7 +29,7 @@ import org.zowe.apiml.zfile.ZFileConstants;
 public class VsamConfig {
     private final GeneralConfig generalConfig;
 
-    @Value("${caching.storage.vsam.name://CACHE}")
+    @Value("${caching.storage.vsam.name:}")
     private String fileName;
     @Value("${caching.storage.vsam.keyLength:32}")
     private int keyLength;
@@ -38,7 +38,7 @@ public class VsamConfig {
     @Value("${caching.storage.vsam.encoding:" + ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE + "}")
     private String encoding;
 
-    public static enum VsamOptions {
+    public enum VsamOptions {
         READ("rb,type=record"),
         WRITE("ab+,type=record");
 

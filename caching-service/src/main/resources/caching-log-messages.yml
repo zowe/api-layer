@@ -55,7 +55,7 @@ messages:
         type: ERROR
         text: "Insufficient storage space limit. Key '%s' cannot be added in the cache."
         reason: "The storage space is full."
-        action: "Disable the 'rejected' eviction strategy."
+        action: "Change the definition of the VSAM and the configuration for the maximum records stored or replace Reject strategy with Remove Oldest."
 
     -   key: org.zowe.apiml.cache.payloadTooLarge
         number: ZWECS135
@@ -103,6 +103,12 @@ messages:
         reason: "Data in an unsupported encoding was used."
         action: "Check that you are storing data in a proper encoding."
 
+    -   key: org.zowe.apiml.cache.noJzosImplementation
+        number: ZWECS154
+        type: ERROR
+        text: "The JZOS toolkit implementation isn't available. "
+        reason: "JZOS toolkit used to communicate with JZOS is unavailable. Either you are running outside of zOS with VSAM as the storage or your zOS Java is misconfigured."
+        action: "Check that you run on zOS and that the JZOS toolkit Java classes are on classpath."
 
     # Service specific messages (700 - 799)
     -   key: org.zowe.apiml.cache.gatewayUnavailable
@@ -111,3 +117,10 @@ messages:
         text: "Gateway service is not available at URL '%s'. Error returned: '%s'"
         reason: "The gateway service is not available."
         action: "Make sure that the gateway service is running and is accessible by the URL provided in the message."
+
+    -   key: org.zowe.apiml.cache.usingInMemory
+        number: ZWECS701
+        type: ERROR
+        text: "The InMemory configuration is used despite not being supported for production usage."
+        reason: "Development configuration in the production."
+        action: "Change the caching.storage.mode to other supported option than inMemory."

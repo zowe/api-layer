@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.inmemory.InMemoryStorage;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 @Configuration
 @RequiredArgsConstructor
@@ -23,7 +25,9 @@ public class InMemoryConfiguration {
 
     @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "inMemory", matchIfMissing = true)
     @Bean
-    public Storage inMemory() {
+    public Storage inMemory(MessageService messageService) {
+        ApimlLogger.of(InMemoryConfig.class, messageService).log("org.zowe.apiml.cache.usingInMemory");
+
         return new InMemoryStorage(inMemoryConfig);
     }
 }
