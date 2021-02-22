@@ -42,7 +42,7 @@ public class VsamFile implements Closeable {
 
     private final ApimlLogger apimlLog;
 
-    public static final String VSAM_RECORD_ERROR_MESSAGE = "VsamRecordException occured: {}";
+    public static final String VSAM_RECORD_ERROR_MESSAGE = "VsamRecordException occurred: {}";
     public static final String RECORD_FOUND_MESSAGE = "Record found: {}";
     public static final String RECORD_CANNOT_BE_NULL_MESSAGE = "Record cannot be null";
     public static final String UNSUPPORTED_ENCODING_MESSAGE = "Unsupported encoding: {}";
@@ -114,8 +114,7 @@ public class VsamFile implements Closeable {
             throw new IllegalArgumentException(RECORD_CANNOT_BE_NULL_MESSAGE);
         }
         try {
-            boolean found = zfile.locate(record.getKeyBytes(),
-                ZFileConstants.LOCATE_KEY_EQ);
+            boolean found = zfile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
 
             if (!found) {
                 log.info("Writing Record: {}", record);

@@ -21,6 +21,7 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.caching.service.vsam.RetryableVsamException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
@@ -152,7 +153,7 @@ public class CachingController {
             return new ResponseEntity<>(successStatus);
         } catch (StorageException exception) {
             return exceptionToResponse(exception);
-        } catch (IllegalStateException exception) {
+        } catch (RetryableVsamException | IllegalStateException | IllegalArgumentException exception) {
             return handleInternalError(exception, request.getRequestURL());
         }
     }
