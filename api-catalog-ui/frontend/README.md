@@ -8,6 +8,14 @@ Many of the tasks here can be run either through Gradle or through NPM. If you'r
 
 For the gradle tasks, the node-gradle plugin is used which downloads correct node version and sets up dependencies automatically. This approach is used in CI environment but can be used locally as well.
 
+## Building
+
+Unit tests are run on every build. Coverage is produced on every build. Build will generate `build`, `coverage` and `test-results` folders.
+
+To build the UI:
+NPM: `npm run build`.
+Gradle: `./gradlew api-catalog-ui:build`
+
 ## Testing
 
 The front end is covered by Unit tests and e2e tests. The testing part of the CI/CD pipeline, but manual testing can be done locally. 
@@ -52,6 +60,25 @@ to run e2e tests follow these steps:
 
 **Note:** you should run the real catalog services as a backend for e2e testing
 
+#### Cypress tests
+
+The tests are located in api-catalog-ui/frontend/cypress/integration. Inside this folder you can find two other folders:
+
+`/mocked-e2e` - e2e tests that are supposed to run locally against mocked backend
+`/e2e` - e2e tests that can be run locally but they should mostly run as a part of our pipeline
+Both can be run in interactive mode (more on that bellow).
+
+All commands related to cypress start with cy.
+As of now the available ones are:
+
+`cy:open` - opens the interactive window with no environment variables set
+
+`cy:e2e:ci` - runs all test inside the e2e folder testing the instance in the baseURL env variable while using credential passed as parameters (This command should be used in the pipeline)
+
+`cy:e2e:localhost` - runs all test inside the e2e folder testing the localhost instance
+
+`cy:e2e:mocked-backend` - runs all test inside the /integration/integration folder; integration tests should run locally against mocked backend
+
 ### Code coverage
 
 To get the current coverage run `npm run coverage` or Gradle `build` task.
@@ -79,30 +106,3 @@ If you want to develop only on the UI side mocked backend can come in handy. It 
 To fire up the server run `npm run start:mock`;
 
 The server tuns on <http://localhost:8000/> and the endpoints addresses are set up so that they simulate the real services as much as possible.
-
-## Building
-
-To build the UI run `npm run build`. Unit tests are run on every build. Coverage is produced on every build.
-
-This will generate `build`, `coverage` and `test-results` folders.
-
-## Cypress tests
-
-The tests are located in api-catalog-ui/frontend/cypress/integration. Inside this folder you can find two other folders:
-
-`/mocked-e2e` - e2e tests that are supposed to run locally against mocked backend
-`/e2e` - e2e tests that can be run locally but they should mostly run as a part of our pipeline
-Both can be run in interactive mode (more on that bellow).
-
-All commands related to cypress start with cy.
-As of now the available ones are:
-
-`cy:open` - opens the interactive window with no environment variables set
-
-`cy:e2e:ci` - runs all test inside the e2e folder testing the instance in the baseURL env variable while using credential passed as parameters (This command should be used in the pipeline)
-
-`cy:e2e:localhost` - runs all test inside the e2e folder testing the localhost instance
-
-`cy:e2e:mocked-backend` - runs all test inside the /integration/integration folder; integration tests should run locally against mocked backend
-
-
