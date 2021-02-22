@@ -34,7 +34,7 @@ task nodeClean(type: Delete) {
     delete 'frontend/node_modules', 'tools/nodejs'
 }
 
-
+// test always runs for build, this side effect of task hierarchy being defined in package.json rather than here
 task npmTest(type: NpmTask) {
     group = 'npm'
     description = "Javascript unit tests"
