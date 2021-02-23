@@ -57,6 +57,20 @@ class VsamStorageTest {
     }
 
     @Test
+    void givenNoInvalidFilename_whenCreateVsamStorage_thenThrowException() {
+        VsamInitializer initializer = mock(VsamInitializer.class);
+        EvictionStrategyProducer evictionStrategyProducer = mock(EvictionStrategyProducer.class);
+        when(evictionStrategyProducer.evictionStrategy(any())).thenReturn(new RejectStrategy(ApimlLogger.empty()));
+        VsamConfig vsamConfig = new VsamConfig(new GeneralConfig());
+
+        vsamConfig.setFileName(null);
+        assertThrows(IllegalArgumentException.class, () -> new VsamStorage(vsamConfig, initializer, ApimlLogger.empty(), evictionStrategyProducer));
+
+        vsamConfig.setFileName("");
+        assertThrows(IllegalArgumentException.class, () -> new VsamStorage(vsamConfig, initializer, ApimlLogger.empty(), evictionStrategyProducer));
+    }
+
+    @Test
     void givenValidServiceIdKeyValue_whenItemIsCreated_thenItIsProperlyReturned() {
         KeyValue record = new KeyValue("key-1", "value-1", "1");
         record.setServiceId(VALID_SERVICE_ID);

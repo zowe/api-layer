@@ -165,7 +165,7 @@ class VsamFileTest {
             when(zFile.locate(key.getKeyBytes(VALID_SERVICE_ID, readKey), ZFileConstants.LOCATE_KEY_EQ)).thenReturn(true);
             when(zFile.read(any())).thenAnswer(prepareAnswer(1));
 
-            Optional<VsamRecord> result = underTest.read(toUpdate);
+            Optional<VsamRecord> result = underTest.update(toUpdate);
             assertTrue(result.isPresent());
             assertThat(result.get().getKeyValue().getKey(), is(readKey));
         }
