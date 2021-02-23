@@ -9,12 +9,9 @@
  */
 package org.zowe.apiml.tomcat;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.IOException;
 
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
 import org.zowe.apiml.security.HttpsConfig;
@@ -33,6 +30,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.slf4j.Slf4j;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 class TomcatHttpsTest {
@@ -117,15 +116,12 @@ class TomcatHttpsTest {
     }
 
     @Test
-    void wrongClientCertificateShouldFail() throws IOException, LifecycleException {
+    void wrongClientCertificateShouldFail() {
         HttpsConfig serverConfig = SecurityTestUtils.correctHttpsSettings().clientAuth(true).build();
         HttpsConfig clientConfig = SecurityTestUtils.correctHttpsSettings().keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
-        try {
-            startTomcatAndDoHttpsRequest(serverConfig, clientConfig);
-            fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
-        } catch (SSLHandshakeException e) {  // NOSONAR
-            assertTrue(e.getMessage().contains("bad_certificate"));
-        }
+        assertThrows(SSLException.class, () ->
+            startTomcatAndDoHttpsRequest(serverConfig, clientConfig)
+        );
     }
 
     @Test
