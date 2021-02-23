@@ -17,8 +17,7 @@ const pauseErrorLogging = codeToRun => {
 };
 describe('>>> Shield component tests', () => {
     it('Should catches error and renders message', () => {
-        const errorMessage =
-            'Display the error stack';
+        const errorMessage = 'Display the error stack';
         pauseErrorLogging(() => {
             const wrapper = enzyme.mount(
                 <Shield>
