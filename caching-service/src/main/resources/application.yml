@@ -104,14 +104,11 @@ spring:
 
 logging:
     level:
-        ROOT: DEBUG
-        sun.rmi: INFO
+        ROOT: INFO
         org.zowe.apiml: DEBUG
-        org.zowe.apiml.enable: WARN
-        org.zowe.apiml.caching: DEBUG
         org.springframework: INFO
         org.apache: INFO
-        org.apache.http: INFO
+        org.apache.http: DEBUG
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
