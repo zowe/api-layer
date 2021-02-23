@@ -331,7 +331,7 @@ class VsamFileTest {
         }
 
         @Test
-        void givenRecords_thenReturnCount() throws ZFileException{
+        void givenRecords_thenReturnCount() throws ZFileException {
             when(zFile.read(any())).thenReturn(1).thenReturn(-1);
             int result = underTest.countAllRecords();
 
