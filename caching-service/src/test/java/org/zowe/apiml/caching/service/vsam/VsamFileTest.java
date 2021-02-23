@@ -99,12 +99,12 @@ class VsamFileTest {
         }
 
         @Test
-        void givenZFileThrowsError_NoRecordIsReturned() throws UnsupportedEncodingException, ZFileException {
+        void givenZFileThrowsError_TheErrorIsPropagated() throws UnsupportedEncodingException, ZFileException {
             VsamRecord toRead = defaultVsamRecord();
             String createdKey = toRead.getKeyValue().getKey();
 
             when(zFile.locate(key.getKeyBytes(VALID_SERVICE_ID, createdKey), ZFileConstants.LOCATE_KEY_EQ)).thenThrow(zFileException());
-            assertFalse(underTest.read(toRead).isPresent());
+            assertThrows(RetryableVsamException.class, () -> underTest.read(toRead));
         }
 
         @Test
@@ -140,12 +140,12 @@ class VsamFileTest {
         }
 
         @Test
-        void givenZFileThrowsError_NoRecordIsReturned() throws UnsupportedEncodingException, ZFileException {
+        void givenZFileThrowsError_TheErrorIsPropagated() throws UnsupportedEncodingException, ZFileException {
             VsamRecord toUpdate = defaultVsamRecord();
             String createdKey = toUpdate.getKeyValue().getKey();
 
             when(zFile.locate(key.getKeyBytes(VALID_SERVICE_ID, createdKey), ZFileConstants.LOCATE_KEY_EQ)).thenThrow(zFileException());
-            assertFalse(underTest.update(toUpdate).isPresent());
+            assertThrows(RetryableVsamException.class, () -> underTest.update(toUpdate));
         }
 
         @Test
@@ -181,12 +181,12 @@ class VsamFileTest {
         }
 
         @Test
-        void givenZFileThrowsError_NoRecordIsReturned() throws UnsupportedEncodingException, ZFileException {
+        void givenZFileThrowsError_TheErrorIsPropagated() throws UnsupportedEncodingException, ZFileException {
             VsamRecord toDelete = defaultVsamRecord();
             String deletedKey = toDelete.getKeyValue().getKey();
 
             when(zFile.locate(key.getKeyBytes(VALID_SERVICE_ID, deletedKey), ZFileConstants.LOCATE_KEY_EQ)).thenThrow(zFileException());
-            assertFalse(underTest.delete(toDelete).isPresent());
+            assertThrows(RetryableVsamException.class, () -> underTest.delete(toDelete));
         }
 
         @Test

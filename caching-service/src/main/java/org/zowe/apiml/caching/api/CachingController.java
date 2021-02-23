@@ -125,7 +125,7 @@ public class CachingController {
             return new ResponseEntity<>(pair, successStatus);
         } catch (StorageException exception) {
             return exceptionToResponse(exception);
-        } catch (IllegalStateException exception) {
+        } catch (RetryableVsamException | IllegalStateException | IllegalArgumentException exception) {
             return handleInternalError(exception, request.getRequestURL());
         }
     }

@@ -160,8 +160,12 @@ public class VsamFile implements Closeable {
             log.info(UNSUPPORTED_ENCODING_MESSAGE, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
         } catch (ZFileException e) {
             log.info(e.toString());
+
+            throw new RetryableVsamException(e);
         } catch (VsamRecordException e) {
             log.info(VSAM_RECORD_ERROR_MESSAGE, e);
+
+            throw new RetryableVsamException(e);
         }
         return Optional.empty();
     }
@@ -193,8 +197,12 @@ public class VsamFile implements Closeable {
             log.info(UNSUPPORTED_ENCODING_MESSAGE, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
         } catch (ZFileException e) {
             log.info(e.toString());
+
+            throw new RetryableVsamException(e);
         } catch (VsamRecordException e) {
             log.info(VSAM_RECORD_ERROR_MESSAGE, e);
+
+            throw new RetryableVsamException(e);
         }
 
         return Optional.empty();
@@ -218,13 +226,17 @@ public class VsamFile implements Closeable {
                 log.info("Deleted vsam record: {}", returned);
                 return Optional.of(returned);
             } else {
-                log.error("No record deleted because no record found with key");
+                log.info("No record deleted because no record found with key");
             }
 
         } catch (ZFileException e) {
             log.info(e.toString());
+
+            throw new RetryableVsamException(e);
         } catch (VsamRecordException e) {
             log.info(VSAM_RECORD_ERROR_MESSAGE, e);
+
+            throw new RetryableVsamException(e);
         }
 
         return Optional.empty();

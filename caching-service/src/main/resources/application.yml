@@ -1,9 +1,3 @@
-caching:
-    storage:
-        mode: vsam
-        vsam:
-            name: //'TEST.TEST'
-
 logging:
     level:
         ROOT: WARN

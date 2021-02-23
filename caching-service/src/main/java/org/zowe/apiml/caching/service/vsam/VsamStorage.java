@@ -104,6 +104,7 @@ public class VsamStorage implements Storage {
     }
 
     @Override
+    @Retryable(value = {RetryableVsamException.class})
     public KeyValue read(String serviceId, String key) {
         log.info("Reading Record: {}|{}|{}", serviceId, key, "-");
         KeyValue result = null;
@@ -126,7 +127,7 @@ public class VsamStorage implements Storage {
     }
 
     @Override
-    @Retryable(value = {IllegalStateException.class, UnsupportedOperationException.class})
+    @Retryable(value = {RetryableVsamException.class, IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         log.info("Updating Record: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
         KeyValue result = null;
@@ -149,7 +150,7 @@ public class VsamStorage implements Storage {
     }
 
     @Override
-    @Retryable(value = {IllegalStateException.class, UnsupportedOperationException.class})
+    @Retryable(value = {RetryableVsamException.class, IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue delete(String serviceId, String toDelete) {
 
         log.info("Deleting Record: {}|{}|{}", serviceId, toDelete, "-");
