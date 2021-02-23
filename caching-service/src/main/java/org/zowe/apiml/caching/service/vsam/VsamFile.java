@@ -49,7 +49,7 @@ public class VsamFile implements Closeable {
 
     private static final String ERROR_INITIALIZING_STORAGE_MESSAGE_KEY = "org.zowe.apiml.cache.errorInitializingStorage";
     private static final String STORAGE_TYPE = "VSAM";
-    private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^\\/\\/\\'.*'");
+    private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^//'.*'");
 
     public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, ApimlLogger apimlLogger) {
         this(config, options, false, apimlLogger);
@@ -111,132 +111,84 @@ public class VsamFile implements Closeable {
     }
 
     public Optional<VsamRecord> create(VsamRecord record) {
-        if (record == null) {
-            throw new IllegalArgumentException(RECORD_CANNOT_BE_NULL_MESSAGE);
-        }
-        try {
-            boolean found = zfile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
+        log.info("Attempting to create record: {}", record);
 
-            if (!found) {
+        return recordOperation(record, new RecordHandler() {
+            @Override
+            public Optional<VsamRecord> handleRecordFound() {
+                log.info("The record already exists and will not be created. Use update instead.");
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<VsamRecord> handleNoRecordFound() throws VsamRecordException, ZFileException {
                 log.info("Writing Record: {}", record);
                 zfile.write(record.getBytes());
                 return Optional.of(record);
-            } else {
-                log.info("The record already exists and will not be created. Use update instead.");
             }
-        } catch (ZFileException e) {
-            log.info(e.toString());
-
-            throw new RetryableVsamException(e);
-        } catch (VsamRecordException e) {
-            log.info(VSAM_RECORD_ERROR_MESSAGE, e);
-
-            throw new RetryableVsamException(e);
-        }
-
-        return Optional.empty();
+        });
     }
 
     public Optional<VsamRecord> read(VsamRecord record) {
-        if (record == null) {
-            throw new IllegalArgumentException(RECORD_CANNOT_BE_NULL_MESSAGE);
-        }
+        log.info("Attempting to read record: {}", record);
 
-        try {
-            boolean found = zfile.locate(record.getKeyBytes(),
-                ZFileConstants.LOCATE_KEY_EQ);
-            log.info(RECORD_FOUND_MESSAGE, found);
-            if (found) {
-                byte[] recBuf = new byte[vsamConfig.getRecordLength()];
-                zfile.read(recBuf);
-                log.trace("RecBuf: {}", recBuf);
-                log.info("ConvertedStringValue: {}", new String(recBuf, vsamConfig.getEncoding()));
-                VsamRecord returned = new VsamRecord(vsamConfig, recBuf);
-                log.info("VsamRecord read: {}", returned);
-                return Optional.of(returned);
-            } else {
-                log.info("No record found with requested key");
-            }
-        } catch (UnsupportedEncodingException e) {
-            log.info(UNSUPPORTED_ENCODING_MESSAGE, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
-        } catch (ZFileException e) {
-            log.info(e.toString());
-
-            throw new RetryableVsamException(e);
-        } catch (VsamRecordException e) {
-            log.info(VSAM_RECORD_ERROR_MESSAGE, e);
-
-            throw new RetryableVsamException(e);
-        }
-        return Optional.empty();
+        return recordOperation(record, () -> {
+            byte[] recBuf = new byte[vsamConfig.getRecordLength()];
+            zfile.read(recBuf); //has to be read before update/delete
+            log.trace("Read found record: {}", new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE));
+            log.info("Will update record: {}", record);
+            int nUpdated = zfile.update(record.getBytes());
+            log.info("ZFile.update return value: {}", nUpdated);
+            return Optional.of(record);
+        });
     }
 
     public Optional<VsamRecord> update(VsamRecord record) {
+        log.info("Attempting to update record: {}", record);
+
+        return recordOperation(record, () -> {
+            byte[] recBuf = new byte[vsamConfig.getRecordLength()];
+            zfile.read(recBuf); //has to be read before update
+            log.trace("Read found record: {}", new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE));
+            log.info("Will update record: {}", record);
+            int nUpdated = zfile.update(record.getBytes());
+            log.info("ZFile.update return value: {}", nUpdated);
+            return Optional.of(record);
+        });
+    }
+
+    public Optional<VsamRecord> delete(VsamRecord record) {
+        log.info("Attempting to delete record: {}", record);
+
+        return recordOperation(record, () -> {
+            byte[] recBuf = new byte[vsamConfig.getRecordLength()];
+            zfile.read(recBuf); //has to be read before delete
+            VsamRecord returned = new VsamRecord(vsamConfig, recBuf);
+            zfile.delrec();
+            log.info("Deleted vsam record: {}", returned);
+            return Optional.of(returned);
+        });
+    }
+
+    private Optional<VsamRecord> recordOperation(VsamRecord record, RecordHandler recordHandler) {
         if (record == null) {
             throw new IllegalArgumentException(RECORD_CANNOT_BE_NULL_MESSAGE);
         }
 
         try {
-            boolean found = zfile.locate(record.getKeyBytes(),
-                ZFileConstants.LOCATE_KEY_EQ);
-
-            log.info(RECORD_FOUND_MESSAGE, found);
-
+            boolean found = zfile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
             if (found) {
-                byte[] recBuf = new byte[vsamConfig.getRecordLength()];
-                zfile.read(recBuf); //has to be read before update/delete
-                log.trace("Read found record: {}", new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE));
-                log.info("Will update record: {}", record);
-                int nUpdated = zfile.update(record.getBytes());
-                log.info("ZFile.update return value: {}", nUpdated);
-                return Optional.of(record);
+                return recordHandler.handleRecordFound();
             } else {
-                log.info("No record updated because no record found with key");
+                return recordHandler.handleNoRecordFound();
             }
-
         } catch (UnsupportedEncodingException e) {
             log.info(UNSUPPORTED_ENCODING_MESSAGE, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
         } catch (ZFileException e) {
             log.info(e.toString());
-
             throw new RetryableVsamException(e);
         } catch (VsamRecordException e) {
-            log.info(VSAM_RECORD_ERROR_MESSAGE, e);
-
-            throw new RetryableVsamException(e);
-        }
-
-        return Optional.empty();
-    }
-
-    public Optional<VsamRecord> delete(VsamRecord record) {
-        if (record == null) {
-            throw new IllegalArgumentException(RECORD_CANNOT_BE_NULL_MESSAGE);
-        }
-
-        try {
-            boolean found = zfile.locate(record.getKeyBytes(),
-                ZFileConstants.LOCATE_KEY_EQ);
-            log.info(RECORD_FOUND_MESSAGE, found);
-
-            if (found) {
-                byte[] recBuf = new byte[vsamConfig.getRecordLength()];
-                zfile.read(recBuf); //has to be read before update/delete
-                VsamRecord returned = new VsamRecord(vsamConfig, recBuf);
-                zfile.delrec();
-                log.info("Deleted vsam record: {}", returned);
-                return Optional.of(returned);
-            } else {
-                log.info("No record deleted because no record found with key");
-            }
-
-        } catch (ZFileException e) {
-            log.info(e.toString());
-
-            throw new RetryableVsamException(e);
-        } catch (VsamRecordException e) {
-            log.info(VSAM_RECORD_ERROR_MESSAGE, e);
-
+            log.info(VSAM_RECORD_ERROR_MESSAGE, e.toString());
             throw new RetryableVsamException(e);
         }
 
@@ -247,11 +199,9 @@ public class VsamFile implements Closeable {
         if (serviceId == null || serviceId.isEmpty()) {
             throw new IllegalArgumentException("serviceId cannot be null");
         }
+
         List<VsamRecord> returned = new ArrayList<>();
-
         VsamKey key = new VsamKey(vsamConfig);
-
-        boolean found;
 
         try {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
@@ -259,8 +209,7 @@ public class VsamFile implements Closeable {
             String keyGe = key.getKeySidOnly(serviceId);
             log.info("Attempt to find key in KEY_GE mode: {}", keyGe);
 
-            found = zfile.locate(key.getKeyBytesSidOnly(serviceId),
-                ZFileConstants.LOCATE_KEY_GE);
+            boolean found = zfile.locate(key.getKeyBytesSidOnly(serviceId), ZFileConstants.LOCATE_KEY_GE);
 
             log.info(RECORD_FOUND_MESSAGE, found);
 
@@ -305,7 +254,7 @@ public class VsamFile implements Closeable {
         } catch (ZFileException e) {
             log.info(e.toString());
         } catch (VsamRecordException e) {
-            log.info(VSAM_RECORD_ERROR_MESSAGE, e);
+            log.info(VSAM_RECORD_ERROR_MESSAGE, e.toString());
         }
 
         return returned;
@@ -349,4 +298,13 @@ public class VsamFile implements Closeable {
         return zFileProducer.openZfile();
     }
 
+    @FunctionalInterface
+    private interface RecordHandler {
+        Optional<VsamRecord> handleRecordFound() throws VsamRecordException, ZFileException, UnsupportedEncodingException;
+
+        default Optional<VsamRecord> handleNoRecordFound() throws VsamRecordException, ZFileException {
+            log.info("No record found");
+            return Optional.empty();
+        }
+    }
 }
