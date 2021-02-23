@@ -40,8 +40,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
             Optional<byte[]> readRecord;
             int overflowProtection = 10000;
-            file.getZfile().locate(ignoreKey,
-                ZFileConstants.LOCATE_KEY_FIRST);
+            file.getZfile().locate(ignoreKey, ZFileConstants.LOCATE_KEY_FIRST);
             while ((readRecord = file.readBytes(recBuf)).isPresent()) {
                 VsamRecord current = new VsamRecord(vsamConfig, readRecord.get());
                 if (oldest == null) {

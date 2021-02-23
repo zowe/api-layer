@@ -34,12 +34,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class VsamFileTest {
-
-    VsamConfig vsamConfiguration;
+    private VsamConfig vsamConfiguration;
 
     private VsamFile underTest;
     private VsamKey key;
 
+    private ZFileProducer producer;
     private ZFile zFile;
 
     private final ApimlLogger apimlLogger = ApimlLogger.empty();
@@ -51,7 +51,7 @@ class VsamFileTest {
         vsamConfiguration = DefaultVsamConfiguration.defaultConfiguration();
         key = new VsamKey(vsamConfiguration);
 
-        ZFileProducer producer = mock(ZFileProducer.class);
+        producer = mock(ZFileProducer.class);
         zFile = mock(ZFile.class);
         when(producer.openZfile()).thenReturn(zFile);
         underTest = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, mock(VsamInitializer.class), apimlLogger);
@@ -62,7 +62,7 @@ class VsamFileTest {
         @Test
         void hasValidFileName() throws VsamRecordException {
             ZFileProducer producer = mock(ZFileProducer.class);
-            zFile = mock(ZFile.class);
+
             when(producer.openZfile()).thenReturn(zFile);
             assertDoesNotThrow(() -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger));
         }
@@ -83,8 +83,6 @@ class VsamFileTest {
 
         @Test
         void givenOpenZFileThrowsException_ExceptionIsThrown() throws VsamRecordException {
-            ZFileProducer producer = mock(ZFileProducer.class);
-            zFile = mock(ZFile.class);
             when(producer.openZfile()).thenThrow(VsamRecordException.class);
             VsamInitializer initializer = new VsamInitializer();
             assertThrows(IllegalStateException.class, () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, initializer, apimlLogger));
@@ -280,6 +278,64 @@ class VsamFileTest {
                 .thenThrow(zFileException());
 
             assertThat(underTest.readForService(VALID_SERVICE_ID), hasSize(0));
+        }
+    }
+
+    @Nested
+    class whenClosingRecord {
+        @Test
+        void givenZFile_fileIsClosed() throws VsamRecordException, ZFileException {
+            when(producer.openZfile()).thenReturn(zFile);
+            VsamFile vsamFile = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger);
+            vsamFile.close();
+
+            verify(zFile).close();
+        }
+
+        @Test
+        void givenNoZFile_fileIsNotClosed() throws VsamRecordException, ZFileException {
+            when(producer.openZfile()).thenReturn(null);
+            VsamFile vsamFile = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger);
+            vsamFile.close();
+
+            verify(zFile, times(0)).close();
+        }
+
+        @Test
+        void givenZFileCloseError_NoExceptionThrown() throws VsamRecordException, ZFileException {
+            doThrow(new ZFileException("", "", "", 0, 0, 0, new byte[]{}, 0, 0, 0, 0, 0)).when(zFile).close();
+            when(producer.openZfile()).thenReturn(zFile);
+            VsamFile vsamFile = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger);
+            vsamFile.close();
+
+            verify(zFile).close();
+        }
+    }
+
+    @Nested
+    class whenCountingRecords {
+        @Test
+        void givenExceptionReadingFile_thenReturnZero() throws ZFileException {
+            when(zFile.read(any())).thenThrow(new ZFileException("", "", "", 0, 0, 0, new byte[]{}, 0, 0, 0, 0, 0));
+            int result = underTest.countAllRecords();
+
+            assertThat(result, is(0));
+        }
+
+        @Test
+        void givenNoFileContent_thenReturnZero() throws ZFileException {
+            when(zFile.read(any())).thenReturn(-1);
+            int result = underTest.countAllRecords();
+
+            assertThat(result, is(0));
+        }
+
+        @Test
+        void givenRecords_thenReturnCount() throws ZFileException{
+            when(zFile.read(any())).thenReturn(1).thenReturn(-1);
+            int result = underTest.countAllRecords();
+
+            assertThat(result, is(1));
         }
     }
 

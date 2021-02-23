@@ -90,11 +90,19 @@ public class CachingControllerTest {
     @Test
     void givenStoreWithNoKey_whenGetByKey_thenResponseNotFound() {
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
-        when(mockStorage.read(any(), any())).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), KEY, SERVICE_ID));
+        when(mockStorage.read(any(), any())).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), new Exception("the cause"), KEY, SERVICE_ID));
 
         ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
         assertThat(response.getBody(), is(expectedBody));
+    }
+
+    @Test
+    void givenErrorReadingStorage_whenGetByKey_thenResponseInternalError() {
+        when(mockStorage.read(any(), any())).thenThrow(new RuntimeException("error"));
+
+        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
     @Test
@@ -108,6 +116,15 @@ public class CachingControllerTest {
 
         Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
         assertThat(result, is(values));
+    }
+
+    @Test
+    void givenNoAuthentication_whenGetByService_thenReturnBadRequest() throws ZaasClientException {
+        when(mockZaasClient.query(any(HttpServletRequest.class))).thenThrow(new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED));
+        underTest = new CachingController(mockStorage, mockZaasClient, messageService);
+
+        ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test
@@ -127,6 +144,23 @@ public class CachingControllerTest {
         ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
         assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
         assertThat(response.getBody(), is(expectedBody));
+    }
+
+    @Test
+    void givenStorageWithError_whenCreateKey_thenResponseInternalError() {
+        when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenThrow(new RuntimeException("error"));
+
+        ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+    }
+
+    @Test
+    void givenNoAuthentication_whenCreateKey_thenResponseBadRequest() throws ZaasClientException {
+        when(mockZaasClient.query(any(HttpServletRequest.class))).thenThrow(new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED));
+        underTest = new CachingController(mockStorage, mockZaasClient, messageService);
+
+        ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 
     @Test

@@ -21,7 +21,6 @@ import org.zowe.apiml.zfile.ZFile;
 import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
 
-
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -33,7 +32,7 @@ class RemoveOldestStrategyTest {
 
     private VsamConfig vsamConfiguration;
     private VsamFile file;
-    private ArgumentCaptor<VsamRecord> recordArgumentCaptor = ArgumentCaptor.forClass(VsamRecord.class);
+    private final ArgumentCaptor<VsamRecord> recordArgumentCaptor = ArgumentCaptor.forClass(VsamRecord.class);
 
     private final String VALID_SERVICE_ID = "test-service-id";
 
@@ -49,7 +48,16 @@ class RemoveOldestStrategyTest {
         vsamConfiguration.setEncoding(ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
 
         file = mock(VsamFile.class);
+        when(file.getZfile()).thenReturn(mock(ZFile.class));
         underTest = new RemoveOldestStrategy(vsamConfiguration, file);
+    }
+
+    @Test
+    void givenThereAreNoItems_whenEvictIsCalled_thenNothingIsRemoved() throws ZFileException {
+        when(file.readBytes(any())).thenReturn(Optional.empty());
+
+        underTest.evict("new-key");
+        verify(file, times(0)).delete(recordArgumentCaptor.capture());
     }
 
     @Test
@@ -58,9 +66,7 @@ class RemoveOldestStrategyTest {
         record1.setServiceId(VALID_SERVICE_ID);
 
         VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
-        when(file.readBytes(any()))
-            .thenReturn(Optional.of(fullRecord1.getBytes()));
-        when(file.getZfile()).thenReturn(mock(ZFile.class));
+        when(file.readBytes(any())).thenReturn(Optional.of(fullRecord1.getBytes()));
         when(file.delete(any())).thenReturn(Optional.of(fullRecord1));
 
         underTest.evict("new-key");
@@ -80,9 +86,8 @@ class RemoveOldestStrategyTest {
         VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
         VsamRecord fullRecord2 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record2);
         when(file.readBytes(any()))
-            .thenReturn(Optional.of(fullRecord1.getBytes()))
-            .thenReturn(Optional.of(fullRecord2.getBytes()));
-        when(file.getZfile()).thenReturn(mock(ZFile.class));
+            .thenReturn(Optional.of(fullRecord2.getBytes()))
+            .thenReturn(Optional.of(fullRecord1.getBytes()));
 
         underTest.evict("new-key");
         verify(file).delete(recordArgumentCaptor.capture());

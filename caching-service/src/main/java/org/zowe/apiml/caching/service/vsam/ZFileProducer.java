@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 public class ZFileProducer {
-    private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^\\/\\/\\'.*'");
+    private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^//'.*'");
 
     private final VsamConfig vsamConfig;
     private final VsamConfig.VsamOptions options;

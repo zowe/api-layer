@@ -47,9 +47,7 @@ public class VsamInitializer {
      * @throws VsamRecordException
      */
     public void warmUpVsamFile(ZFile zFile, VsamConfig vsamConfig) throws ZFileException, VsamRecordException {
-
         log.info("Warming up the vsam file by writing and deleting a record");
-
         log.info("VSAM file being used: {}", zFile.getActualFilename());
 
         VsamRecord record = new VsamRecord(vsamConfig, "delete", new KeyValue("me", "novalue"));
@@ -66,6 +64,5 @@ public class VsamInitializer {
             zFile.delrec();
             log.info("Test record deleted.");
         }
-
     }
 }
