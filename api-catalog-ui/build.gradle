@@ -63,7 +63,7 @@ task npmBuild(type: NpmTask) {
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.dir('frontend/build')
-    outputs.dir('frontend/test-resultstest-report-unit.html')
+    outputs.file('frontend/test-results/test-report-unit.html')
     outputs.dir('frontend/coverage')
     outputs.cacheIf { true }
 

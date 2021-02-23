@@ -95,7 +95,7 @@ For local development run `npm run start:dev`.
 
 Using this command you will have an instance of catalog UI running on <https://localhost:3000/> using mocked backend for info updates.
 
-To configure variouse environment specific variables for development see [this env file](./.env.development);
+To configure various environment specific variables for development see [this env file](./.env.development);
 
 ## Mocked backend
 
