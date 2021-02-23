@@ -47,6 +47,7 @@ public class VsamFile implements Closeable {
     public static final String RECORD_CANNOT_BE_NULL_MESSAGE = "Record cannot be null";
     public static final String UNSUPPORTED_ENCODING_MESSAGE = "Unsupported encoding: {}";
 
+    private static final String ERROR_INITIALIZING_STORAGE_MESSAGE_KEY = "org.zowe.apiml.cache.errorInitializingStorage";
     private static final String STORAGE_TYPE = "VSAM";
     private static final Pattern REGEX_CORRECT_FILENAME = Pattern.compile("^\\/\\/\\'.*'");
 
@@ -61,7 +62,7 @@ public class VsamFile implements Closeable {
     public VsamFile(VsamConfig config, VsamConfig.VsamOptions options, boolean initialCreation, ZFileProducer zFileProducer, VsamInitializer vsamInitializer, ApimlLogger apimlLogger) {
         this.apimlLog = apimlLogger;
         if (config == null) {
-            apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "vsam", "wrong Configuration", "No configuration provided");
+            apimlLog.log(ERROR_INITIALIZING_STORAGE_MESSAGE_KEY, "vsam", "wrong Configuration", "No configuration provided");
 
             throw new IllegalArgumentException("Cannot create VsamFile with null configuration");
         }
@@ -71,7 +72,7 @@ public class VsamFile implements Closeable {
 
         if (!REGEX_CORRECT_FILENAME.matcher(vsamConfig.getFileName()).find()) {
             String nonConformance = "VsamFile name does not conform to //'VSAM.DATASET.NAME' pattern";
-            apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "vsam", "wrong Configuration", nonConformance);
+            apimlLog.log(ERROR_INITIALIZING_STORAGE_MESSAGE_KEY, "vsam", "wrong Configuration", nonConformance);
 
             throw new IllegalArgumentException(nonConformance);
         }
@@ -89,7 +90,7 @@ public class VsamFile implements Closeable {
         } catch (Exception e) {
             String info = String.format("opening of %s in mode %s failed", vsamConfig, options);
             if (initialCreation) {
-                apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", STORAGE_TYPE, info, e);
+                apimlLog.log(ERROR_INITIALIZING_STORAGE_MESSAGE_KEY, STORAGE_TYPE, info, e);
             } else {
                 log.info(info);
             }

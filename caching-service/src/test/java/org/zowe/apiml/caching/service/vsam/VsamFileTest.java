@@ -42,6 +42,8 @@ class VsamFileTest {
 
     private ZFile zFile;
 
+    private final ApimlLogger apimlLogger = ApimlLogger.empty();
+
     private final String VALID_SERVICE_ID = "test-service-id";
 
     @BeforeEach
@@ -52,7 +54,7 @@ class VsamFileTest {
         ZFileProducer producer = mock(ZFileProducer.class);
         zFile = mock(ZFile.class);
         when(producer.openZfile()).thenReturn(zFile);
-        underTest = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, mock(VsamInitializer.class), ApimlLogger.empty());
+        underTest = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, mock(VsamInitializer.class), apimlLogger);
     }
 
     @Nested
@@ -62,21 +64,21 @@ class VsamFileTest {
             ZFileProducer producer = mock(ZFileProducer.class);
             zFile = mock(ZFile.class);
             when(producer.openZfile()).thenReturn(zFile);
-            new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), ApimlLogger.empty());
+            assertDoesNotThrow(() -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger));
         }
 
         @Test
         void hasInvalidFileName() {
             vsamConfiguration.setFileName("test-file-name");
             assertThrows(IllegalArgumentException.class,
-                () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, ApimlLogger.empty()),
+                () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, apimlLogger),
                 "Expected exception is not IllegalArgumentException");
         }
 
         @Test
         void givenNullConfig_ExceptionIsThrown() {
             VsamInitializer initializer = new VsamInitializer();
-            assertThrows(IllegalArgumentException.class, () -> new VsamFile(null, VsamConfig.VsamOptions.WRITE, false, null, initializer, ApimlLogger.empty()));
+            assertThrows(IllegalArgumentException.class, () -> new VsamFile(null, VsamConfig.VsamOptions.WRITE, false, null, initializer, apimlLogger));
         }
 
         @Test
@@ -85,7 +87,7 @@ class VsamFileTest {
             zFile = mock(ZFile.class);
             when(producer.openZfile()).thenThrow(VsamRecordException.class);
             VsamInitializer initializer = new VsamInitializer();
-            assertThrows(IllegalStateException.class, () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, initializer, ApimlLogger.empty()));
+            assertThrows(IllegalStateException.class, () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, initializer, apimlLogger));
         }
     }
 
@@ -318,7 +320,7 @@ class VsamFileTest {
     private List<VsamRecord> recordsToReturn(int size) {
         List<VsamRecord> records = new ArrayList<>(size);
 
-        for ( int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             records.add(vsamRecord("key-" + i, "value-" + i, i));
         }
 

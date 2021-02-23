@@ -51,7 +51,7 @@ public class ZFileProducer {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
             apimlLog.log("org.zowe.apiml.cache.noJzosImplementation");
 
-            throw new RuntimeException(e);
+            throw new JzosImplementationException(e);
         } catch (InvocationTargetException e) {
             throw new VsamRecordException("Failed opening of file", e.getTargetException());
         }
