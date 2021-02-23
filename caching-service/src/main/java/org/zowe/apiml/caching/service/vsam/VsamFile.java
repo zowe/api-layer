@@ -134,12 +134,12 @@ public class VsamFile implements Closeable {
 
         return recordOperation(record, () -> {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
-            zfile.read(recBuf); //has to be read before update/delete
-            log.trace("Read found record: {}", new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE));
-            log.info("Will update record: {}", record);
-            int nUpdated = zfile.update(record.getBytes());
-            log.info("ZFile.update return value: {}", nUpdated);
-            return Optional.of(record);
+            zfile.read(recBuf);
+            log.trace("RecBuf: {}", recBuf);
+            log.info("ConvertedStringValue: {}", new String(recBuf, vsamConfig.getEncoding()));
+            VsamRecord returned = new VsamRecord(vsamConfig, recBuf);
+            log.info("VsamRecord read: {}", returned);
+            return Optional.of(returned);
         });
     }
 
