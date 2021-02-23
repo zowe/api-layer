@@ -25,7 +25,6 @@ const appRouter = app => {
     });
 
     app.post('/api/v1/apicatalog/auth/login', async (req, res) => {
-
         const credentials = req.body;
 
         if (validateCredentials(credentials)) {

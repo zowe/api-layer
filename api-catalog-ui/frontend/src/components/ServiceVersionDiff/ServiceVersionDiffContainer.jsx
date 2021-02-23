@@ -1,4 +1,4 @@
-import { connect } from  'react-redux';
+import { connect } from 'react-redux';
 import ServiceVersionDiff from './ServiceVersionDiff';
 import { getDiff } from '../../actions/service-version-diff-actions';
 
@@ -9,10 +9,10 @@ const mapSateToProps = state => ({
 });
 
 const mapDispatchToProps = {
-    getDiff
+    getDiff,
 };
 
 export default connect(
     mapSateToProps,
-    mapDispatchToProps,
+    mapDispatchToProps
 )(ServiceVersionDiff);

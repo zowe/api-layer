@@ -1,5 +1,4 @@
 describe('>>> Swagger Test', () => {
-
     beforeEach(() => {
         cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
 
@@ -16,29 +15,36 @@ describe('>>> Swagger Test', () => {
         cy.contains('API Mediation Layer API').click();
 
         cy.visit(`${Cypress.env('catalogHomePage')}/#/tile/apimediationlayer/apicatalog`);
-    })
-
-
+    });
 
     it('Should contain try-out button', () => {
-        cy.get('.opblock-summary').eq(0).click();
+        cy.get('.opblock-summary')
+            .eq(0)
+            .click();
         cy.get('.try-out').should('exist');
-    })
-
+    });
 
     it('Should protect endpoint', () => {
         cy.get('.authorization__btn').should('exist');
 
-        cy.get('.authorization__btn').eq(0).click()
+        cy.get('.authorization__btn')
+            .eq(0)
+            .click();
 
         cy.get('input[name=username]').type('non-valid');
         cy.get('input[name=password]').type('non-valid');
 
-        cy.contains('Basic authorization').parent().parent().parent().submit();
+        cy.contains('Basic authorization')
+            .parent()
+            .parent()
+            .parent()
+            .submit();
 
-        cy.get('.close-modal').click()
+        cy.get('.close-modal').click();
 
-        cy.get('.opblock-summary').eq(0).click();
+        cy.get('.opblock-summary')
+            .eq(0)
+            .click();
 
         cy.get('.try-out').click();
 
@@ -46,10 +52,6 @@ describe('>>> Swagger Test', () => {
 
         cy.get('table.live-responses-table')
             .find('.response-col_status')
-            .should('contain', '401')
-
-    
-    })
-
-
-})
+            .should('contain', '401');
+    });
+});

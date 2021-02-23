@@ -14,7 +14,6 @@ describe('>>> Login ok page test', () => {
     it('should log in user', () => {
         const user = { username: 'user', password: 'user' };
 
-
         cy.get('#username').type(user.username);
         cy.get('#password').type(user.password);
 

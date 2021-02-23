@@ -88,8 +88,8 @@ pipeline {
         stage ('Install') {
             steps {
                 sh 'npm install'
-                sh 'cd api-catalog-ui/frontend && npm install'
-                sh 'cd onboarding-enabler-nodejs-sample-app && npm install'
+                sh 'cd onboarding-enabler-nodejs-sample-app && npm install' // This should be integrated into local build
+                sh './gradlew api-catalog-ui:npmInstall'
             }
         }
 
@@ -136,7 +136,7 @@ pipeline {
                         keepAll              : true,
                         reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
                         reportFiles          : 'index.html',
-                        reportName           : "UI JavaScript Test Coverage"
+                        reportName           : "JavaScript Unit Test Coverage"
                     ])
             }
         }

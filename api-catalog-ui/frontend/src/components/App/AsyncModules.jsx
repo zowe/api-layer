@@ -8,7 +8,6 @@ export const AsyncAppContainer = Loadable({
 
 export const AsyncLoginContainer = lazy(() => import('../Login/LoginContainer'));
 
-export const AsyncDashboardContainer = lazy(()  => import('../Dashboard/DashboardContainer'));
+export const AsyncDashboardContainer = lazy(() => import('../Dashboard/DashboardContainer'));
 
 export const AsyncDetailPageContainer = lazy(() => import('../DetailPage/DetailPageContainer'));
-

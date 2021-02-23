@@ -7,7 +7,7 @@ import ServiceTab from './ServiceTab';
 const mapStateToProps = state => ({
     tiles: state.tilesReducer.tiles,
     selectedService: state.selectedServiceReducer.selectedService,
-    selectedTile: state.selectedServiceReducer.selectedTile
+    selectedTile: state.selectedServiceReducer.selectedTile,
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -18,6 +18,6 @@ const mapDispatchToProps = dispatch => ({
 export default withRouter(
     connect(
         mapStateToProps,
-        mapDispatchToProps,
-    )(ServiceTab),
+        mapDispatchToProps
+    )(ServiceTab)
 );
