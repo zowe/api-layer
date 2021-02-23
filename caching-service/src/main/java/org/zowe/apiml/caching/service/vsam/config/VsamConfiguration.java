@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.vsam.EvictionStrategyProducer;
 import org.zowe.apiml.caching.service.vsam.VsamInitializer;
 import org.zowe.apiml.caching.service.vsam.VsamStorage;
 import org.zowe.apiml.message.core.MessageService;
@@ -27,7 +28,7 @@ public class VsamConfiguration {
 
     @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "vsam")
     @Bean
-    public Storage vsam(MessageService messageService) {
-        return new VsamStorage(vsamConfig, vsamInitializer, ApimlLogger.of(VsamStorage.class, messageService));
+    public Storage vsam(MessageService messageService, EvictionStrategyProducer evictionStrategyProducer) {
+        return new VsamStorage(vsamConfig, vsamInitializer, ApimlLogger.of(VsamStorage.class, messageService), evictionStrategyProducer);
     }
 }

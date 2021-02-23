@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.RejectStrategy;
 import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
@@ -50,7 +51,9 @@ class VsamStorageTest {
         VsamInitializer initializer = mock(VsamInitializer.class);
         producer = mock(VsamFileProducer.class);
 
-        underTest = new VsamStorage(vsamConfiguration, initializer, producer, ApimlLogger.empty());
+        EvictionStrategyProducer evictionStrategyProducer = mock(EvictionStrategyProducer.class);
+        when(evictionStrategyProducer.evictionStrategy(any())).thenReturn(new RejectStrategy(ApimlLogger.empty()));
+        underTest = new VsamStorage(vsamConfiguration, initializer, producer, ApimlLogger.empty(), evictionStrategyProducer);
     }
 
     @Test

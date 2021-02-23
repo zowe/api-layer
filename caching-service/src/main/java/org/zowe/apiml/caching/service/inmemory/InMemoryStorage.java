@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.*;
 import org.zowe.apiml.caching.service.inmemory.config.InMemoryConfig;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,17 +26,17 @@ public class InMemoryStorage implements Storage {
     private EvictionStrategy strategy = new DefaultEvictionStrategy();
     private InMemoryConfig config;
 
-    public InMemoryStorage(InMemoryConfig inMemoryConfig) {
-        this(inMemoryConfig, new ConcurrentHashMap<>());
+    public InMemoryStorage(InMemoryConfig inMemoryConfig, MessageService messageService) {
+        this(inMemoryConfig, new ConcurrentHashMap<>(), ApimlLogger.of(RejectStrategy.class, messageService));
     }
 
-    protected InMemoryStorage(InMemoryConfig inMemoryConfig, Map<String, Map<String, KeyValue>> storage) {
+    protected InMemoryStorage(InMemoryConfig inMemoryConfig, Map<String, Map<String, KeyValue>> storage, ApimlLogger apimlLogger) {
         this.storage = storage;
         this.config = inMemoryConfig;
 
         String evictionStrategy = inMemoryConfig.getGeneralConfig().getEvictionStrategy();
         if (evictionStrategy.equals(Strategies.REJECT.getKey())) {
-            strategy = new RejectStrategy();
+            strategy = new RejectStrategy(apimlLogger);
         } else if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
             strategy = new RemoveOldestStrategy(storage);
         }

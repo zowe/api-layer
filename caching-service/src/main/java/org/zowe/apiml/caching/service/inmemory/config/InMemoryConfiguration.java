@@ -28,6 +28,6 @@ public class InMemoryConfiguration {
     public Storage inMemory(MessageService messageService) {
         ApimlLogger.of(InMemoryConfig.class, messageService).log("org.zowe.apiml.cache.usingInMemory");
 
-        return new InMemoryStorage(inMemoryConfig);
+        return new InMemoryStorage(inMemoryConfig, messageService);
     }
 }

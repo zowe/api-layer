@@ -53,7 +53,7 @@ messages:
     -   key: org.zowe.apiml.cache.insufficientStorage
         number: ZWECS134
         type: ERROR
-        text: "Insufficient storage space limit. Key '%s' cannot be added in the cache."
+        text: "Insufficient storage space limit."
         reason: "The storage space is full."
         action: "Change the definition of the VSAM and the configuration for the maximum records stored or replace Reject strategy with Remove Oldest."
 

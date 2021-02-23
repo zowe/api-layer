@@ -29,12 +29,11 @@ import java.util.Optional;
 public class VsamStorage implements Storage {
 
     private VsamConfig vsamConfig;
-    private EvictionStrategy strategy = new DefaultEvictionStrategy();
+    private EvictionStrategyProducer evictionStrategyProducer;
     private VsamFileProducer producer = new VsamFileProducer();
     private ApimlLogger apimlLog;
 
-    public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer, ApimlLogger apimlLog) {
-        String evictionStrategy = vsamConfig.getGeneralConfig().getEvictionStrategy();
+    public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer, ApimlLogger apimlLog, EvictionStrategyProducer evictionStrategyProducer) {
         log.info("Using VSAM storage for the cached data");
 
         this.apimlLog = apimlLog;
@@ -47,26 +46,20 @@ public class VsamStorage implements Storage {
         }
 
         this.vsamConfig = vsamConfig;
-        if (evictionStrategy.equals(Strategies.REJECT.getKey())) {
-            strategy = new RejectStrategy();
-        }
+        this.evictionStrategyProducer = evictionStrategyProducer;
+
         log.info("Using Vsam configuration: {}", vsamConfig);
         vsamInitializer.storageWarmup(vsamConfig, apimlLog);
     }
 
-    public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer, VsamFileProducer producer, ApimlLogger apimlLogger) {
-        this(vsamConfig, vsamInitializer, apimlLogger);
+    public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer, VsamFileProducer producer, ApimlLogger apimlLogger, EvictionStrategyProducer evictionStrategyProducer) {
+        this(vsamConfig, vsamInitializer, apimlLogger, evictionStrategyProducer);
 
         this.producer = producer;
     }
 
     private EvictionStrategy provideStrategy(VsamFile file) {
-        String evictionStrategy = vsamConfig.getGeneralConfig().getEvictionStrategy();
-        if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
-            return new RemoveOldestStrategy(vsamConfig, file);
-        } else {
-            return strategy;
-        }
+        return evictionStrategyProducer.evictionStrategy(file);
     }
 
     @Override
@@ -82,7 +75,7 @@ public class VsamStorage implements Storage {
             log.info("Current Size {}.", currentSize);
 
             if (aboveThreshold(currentSize)) {
-                strategy = provideStrategy(file);
+                EvictionStrategy strategy = provideStrategy(file);
                 log.info("Evicting record using the {} strategy", vsamConfig.getGeneralConfig().getEvictionStrategy());
                 strategy.evict(toCreate.getKey());
             }
