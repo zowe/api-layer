@@ -7,7 +7,6 @@ const userConstants = {
     USERS_LOGOUT_REQUEST: 'USERS_LOGOUT_REQUEST',
     USERS_LOGOUT_SUCCESS: 'USERS_LOGOUT_SUCCESS',
     USERS_LOGOUT_FAILURE: 'USERS_LOGOUT_FAILURE',
-
 };
 
 export default userConstants;

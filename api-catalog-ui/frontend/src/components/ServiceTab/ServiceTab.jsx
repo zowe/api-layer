@@ -11,13 +11,13 @@ export default class ServiceTab extends Component {
         super(props);
         this.state = {
             selectedVersion: null,
-        }
+        };
     }
 
     render() {
         const {
-            match : {
-                params: {tileID, serviceId},
+            match: {
+                params: { tileID, serviceId },
             },
             tiles,
             selectedService,
@@ -27,14 +27,13 @@ export default class ServiceTab extends Component {
         const { selectedVersion } = this.state;
         let basePath = '';
         if (selectedService.basePath) {
-            const version = selectedVersion ? selectedVersion : selectedService.defaultApiVersion;
+            const version = selectedVersion || selectedService.defaultApiVersion;
             basePath = selectedService.basePath.replace('{api-version}', version);
         }
         let currentService = null;
         let invalidService = true;
         tiles[0].services.forEach(service => {
             if (service.serviceId === serviceId) {
-
                 if (service.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
                     selectService(service, tileID);
                 }
@@ -51,30 +50,42 @@ export default class ServiceTab extends Component {
             throw new Error('No tile is selected.');
         }
         let apiVersions = [];
-        if(currentService && currentService.apiVersions) {
+        if (currentService && currentService.apiVersions) {
             apiVersions = currentService.apiVersions.map(version => {
-                //Pre select default version or if only one version exists select that
+                // Pre select default version or if only one version exists select that
                 let tabStyle = {};
-                if(selectedVersion === null && (currentService.defaultApiVersion === version || currentService.apiVersions.length === 1)){
+                if (
+                    selectedVersion === null &&
+                    (currentService.defaultApiVersion === version || currentService.apiVersions.length === 1)
+                ) {
                     tabStyle = { backgroundColor: '#fff' };
                 }
                 if (selectedVersion === version) {
                     tabStyle = { backgroundColor: '#fff' };
                 }
-                return <span 
-                    className="nav-tab"
-                    key={version} 
-                    style={tabStyle}
-                    onClick={ () => { this.setState({selectedVersion: version}); }}>
+                return (
+                    // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
+                    <span
+                        className="nav-tab"
+                        key={version}
+                        style={tabStyle}
+                        onClick={() => {
+                            this.setState({ selectedVersion: version });
+                        }}
+                    >
                         <Text className="version-text">{version}</Text>
                     </span>
+                );
             });
-            if(apiVersions.length >= 2){
+            if (apiVersions.length >= 2) {
                 apiVersions.push(
-                    <span 
-                        className="nav-tab" 
-                        onClick={ () => { this.setState({selectedVersion: 'diff'})}}
-                        style={selectedVersion === 'diff' ? { backgroundColor: '#fff'} : {} }
+                    // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
+                    <span
+                        className="nav-tab"
+                        onClick={() => {
+                            this.setState({ selectedVersion: 'diff' });
+                        }}
+                        style={selectedVersion === 'diff' ? { backgroundColor: '#fff' } : {}}
                         key="diff"
                     >
                         <Text className="version-text">Compare</Text>
@@ -83,7 +94,7 @@ export default class ServiceTab extends Component {
             }
         }
 
-        let sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
+        const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
 
         return (
             <React.Fragment>
@@ -95,80 +106,91 @@ export default class ServiceTab extends Component {
                     </Text>
                 )}
                 <Shield title={message}>
-                    {selectedService !== null && (
-                        <React.Fragment>
-                            <div class="serviceTab">
-                                <div class="header">
-                                    <Text element="h2">
-                                        {selectedService.title}
-                                    </Text>
-                                    {hasHomepage && (
-                                        <React.Fragment>
-                                            {selectedService.status === 'UP' && (
-                                                <Tooltip
-                                                    key={selectedService.serviceId}
-                                                    content="Open Service Homepage"
-                                                    placement="bottom"
-                                                >
-                                                    <Link href={selectedService.homePageUrl}>
-                                                        <strong>Service Homepage</strong>
-                                                    </Link>
-                                                </Tooltip>
-                                            )}
-                                            {selectedService.status === 'DOWN' && (
-                                                <Tooltip
-                                                    key={selectedService.serviceId}
-                                                    content="API Homepage navigation is disabled as the service is not running"
-                                                    placement="bottom"
-                                                >
-                                                    <Link variant="danger">
-                                                        <strong>API Homepage</strong>
-                                                    </Link>
-                                                </Tooltip>
-                                            )}
-                                        </React.Fragment>
-                                    )}
+                    <React.Fragment>
+                        <div className="serviceTab">
+                            <div className="header">
+                                <Text element="h2">{selectedService.title}</Text>
+                                {hasHomepage && (
+                                    <React.Fragment>
+                                        {selectedService.status === 'UP' && (
+                                            <Tooltip
+                                                key={selectedService.serviceId}
+                                                content="Open Service Homepage"
+                                                placement="bottom"
+                                            >
+                                                <Link href={selectedService.homePageUrl}>
+                                                    <strong>Service Homepage</strong>
+                                                </Link>
+                                            </Tooltip>
+                                        )}
+                                        {selectedService.status === 'DOWN' && (
+                                            <Tooltip
+                                                key={selectedService.serviceId}
+                                                content="API Homepage navigation is disabled as the service is not running"
+                                                placement="bottom"
+                                            >
+                                                <Link variant="danger">
+                                                    <strong>API Homepage</strong>
+                                                </Link>
+                                            </Tooltip>
+                                        )}
+                                    </React.Fragment>
+                                )}
+                                <br />
+                                <br />
+                                <div className="apiInfo-item">
+                                    <Tooltip
+                                        key={basePath}
+                                        content="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
+                                        placement="bottom"
+                                    >
+                                        <Text>
+                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                            <label htmlFor="apiBasePath">API Base Path:</label>
+                                            <span id="apiBasePath">{basePath}</span>
+                                        </Text>
+                                    </Tooltip>
                                     <br />
+                                    <Tooltip
+                                        key={selectedService.serviceId}
+                                        content="The identifier for this service"
+                                        placement="bottom"
+                                    >
+                                        <Text>
+                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                            <label htmlFor="serviceId">Service ID:</label>
+                                            <span id="serviceId">{selectedService.serviceId}</span>
+                                        </Text>
+                                    </Tooltip>
                                     <br />
-                                    <div class="apiInfo-item">
-                                        <Tooltip
-                                            key={basePath}
-                                            content="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
-                                            placement="bottom"
-                                        >
-                                            <Text><label for="apiBasePath">API Base Path:</label><span id="apiBasePath">{basePath}</span></Text>
-                                        </Tooltip>
-                                        <br/>
-                                        <Tooltip
-                                            key={selectedService.serviceId}
-                                            content="The identifier for this service"
-                                            placement="bottom"
-                                        >
-                                            <Text><label for="serviceId">Service ID:</label><span id="serviceId">{selectedService.serviceId}</span></Text>
-                                        </Tooltip>
-                                        <br/>
-                                        <Tooltip
-                                            key={selectedService.ssoAllInstances}
-                                            content="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
-                                            placement="bottom"
-                                        >
-                                            <Text><label htmlFor="sso">SSO:</label><span
-                                                id="sso">{sso}</span></Text>
-                                        </Tooltip>
-                                    </div>
-
-                                    <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
-
+                                    <Tooltip
+                                        key={selectedService.ssoAllInstances}
+                                        content="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
+                                        placement="bottom"
+                                    >
+                                        <Text>
+                                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
+                                            <label htmlFor="sso">SSO:</label>
+                                            <span id="sso">{sso}</span>
+                                        </Text>
+                                    </Tooltip>
                                 </div>
-                                <div class="tabs-container" style={{width: '100%'}}>
-                                    {apiVersions}
-                                </div>
-                            {selectedVersion !== 'diff' ? 
-                                <SwaggerContainer selectedVersion={selectedVersion} /> :
-                                <ServiceVersionDiffContainer serviceId={selectedService.serviceId} versions={currentService.apiVersions} />}
+
+                                <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                             </div>
-                        </React.Fragment>
-                    )}
+                            <div className="tabs-container" style={{ width: '100%' }}>
+                                {apiVersions}
+                            </div>
+                            {selectedVersion !== 'diff' ? (
+                                <SwaggerContainer selectedVersion={selectedVersion} />
+                            ) : (
+                                <ServiceVersionDiffContainer
+                                    serviceId={selectedService.serviceId}
+                                    versions={currentService.apiVersions}
+                                />
+                            )}
+                        </div>
+                    </React.Fragment>
                 </Shield>
             </React.Fragment>
         );

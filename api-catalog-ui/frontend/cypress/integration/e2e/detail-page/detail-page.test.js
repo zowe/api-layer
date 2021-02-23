@@ -18,23 +18,22 @@ function login() {
 
 describe('>>> Detail page test', () => {
     it('Detail page test', () => {
-
         login();
 
         cy.contains('API Mediation Layer API').click();
 
-        cy.url().should('contain', ('/tile/apimediationlayer'));
+        cy.url().should('contain', '/tile/apimediationlayer');
 
         cy.get('#go-back-button').should('exist');
 
         cy.get('.api-description-container').should('exist');
 
-        cy.contains('The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.');
-
+        cy.contains(
+            'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.'
+        );
     });
 
     it('Should display the API Catalog service title, URL and description in Swagger', () => {
-
         login();
 
         cy.contains('API Mediation Layer API').click();
@@ -43,16 +42,18 @@ describe('>>> Detail page test', () => {
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
-        const values = [`\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/apicatalog\/api\/v1 \]`,
-            `\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/api\/v1\/apicatalog \]`];
+        const values = [
+            `\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/apicatalog\/api\/v1 \]`,
+            `\[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}\/api\/v1\/apicatalog \]`,
+        ];
         const regex = new RegExp(`${values.join('|')}`, 'g');
 
         cy.get('pre.base-url')
             .should('exist')
-            .then( element => {
+            .then(element => {
                 const text = element.text();
                 expect(text).to.match(regex);
-            })
+            });
 
         cy.get('.tabs-container')
             .should('exist')
@@ -63,7 +64,9 @@ describe('>>> Detail page test', () => {
 
         cy.contains('Service Homepage').should('exist');
 
-        cy.get('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a')
+        cy.get(
+            '#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a'
+        )
             .should('have.attr', 'href')
             .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
 
@@ -72,14 +75,9 @@ describe('>>> Detail page test', () => {
         cy.contains('Swagger/OpenAPI JSON Document').should('exist');
 
         cy.get('.opblock-tag-section').should('have.length.gte', 1);
-
     });
 
-
-
-
     it('Should display the Gateway information in the detail page', () => {
-
         login();
 
         cy.contains('API Mediation Layer API').click();
@@ -88,7 +86,9 @@ describe('>>> Detail page test', () => {
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
-        cy.get('#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > label > select > option')
+        cy.get(
+            '#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > label > select > option'
+        )
             .should('exist')
             .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/gateway/api/v1`);
 
@@ -107,21 +107,26 @@ describe('>>> Detail page test', () => {
 
         cy.get('.opblock-tag-section').should('have.length.gte', 1);
 
-        cy.get('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > p')
+        cy.get(
+            '#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > p'
+        )
             .should('exist')
-            .should('contain', 'API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.');
-
+            .should(
+                'contain',
+                'API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.'
+            );
     });
 
     it('Should go to the detail page, go back to the dashboard page and check if the search bar works', () => {
-
         login();
 
         cy.contains('API Mediation Layer API').click();
 
-        cy.url().should('contain', ('/tile/apimediationlayer'));
+        cy.url().should('contain', '/tile/apimediationlayer');
 
-        cy.get('#go-back-button').should('exist').click();
+        cy.get('#go-back-button')
+            .should('exist')
+            .click();
 
         cy.get('input[data-testid="search-bar"]').should('exist');
         cy.contains('Available API services').should('exist');
@@ -130,7 +135,8 @@ describe('>>> Detail page test', () => {
             .as('search')
             .type('API Mediation Layer API');
 
-        cy.get('.grid-tile').should('have.length', 1).should('contain', 'API Mediation Layer API');
-
+        cy.get('.grid-tile')
+            .should('have.length', 1)
+            .should('contain', 'API Mediation Layer API');
     });
 });

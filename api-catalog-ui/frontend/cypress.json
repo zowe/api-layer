@@ -3,8 +3,8 @@
         "catalogHomePage": "https://localhost:10010/ui/v1/apicatalog",
         "viewportWidth": 1400,
         "viewportHeight": 980,
-        "username": "user",
-        "password": "user"
+        "username": "USER",
+        "password": "validPassword"
     },
     "reporter": "junit",
     "defaultCommandTimeout": 60000,
