@@ -54,6 +54,5 @@ class VsamInitializerTest {
         verify(zFile, times(1)).write(any());
         verify(zFile, times(0)).read(any());
         verify(zFile, times(0)).delrec();
-
     }
 }

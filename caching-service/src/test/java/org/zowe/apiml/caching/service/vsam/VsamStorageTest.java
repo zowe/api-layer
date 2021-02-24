@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 class VsamStorageTest {
     private VsamStorage underTest;
     private final String VALID_SERVICE_ID = "test-service-id";
+    private final ApimlLogger apimlLogger = ApimlLogger.empty();
 
     private VsamFileProducer producer;
     private VsamConfig vsamConfiguration;
@@ -52,22 +53,22 @@ class VsamStorageTest {
         producer = mock(VsamFileProducer.class);
 
         EvictionStrategyProducer evictionStrategyProducer = mock(EvictionStrategyProducer.class);
-        when(evictionStrategyProducer.evictionStrategy(any())).thenReturn(new RejectStrategy(ApimlLogger.empty()));
-        underTest = new VsamStorage(vsamConfiguration, initializer, producer, ApimlLogger.empty(), evictionStrategyProducer);
+        when(evictionStrategyProducer.evictionStrategy(any())).thenReturn(new RejectStrategy(apimlLogger));
+        underTest = new VsamStorage(vsamConfiguration, initializer, producer, apimlLogger, evictionStrategyProducer);
     }
 
     @Test
     void givenNoInvalidFilename_whenCreateVsamStorage_thenThrowException() {
         VsamInitializer initializer = mock(VsamInitializer.class);
         EvictionStrategyProducer evictionStrategyProducer = mock(EvictionStrategyProducer.class);
-        when(evictionStrategyProducer.evictionStrategy(any())).thenReturn(new RejectStrategy(ApimlLogger.empty()));
+        when(evictionStrategyProducer.evictionStrategy(any())).thenReturn(new RejectStrategy(apimlLogger));
         VsamConfig vsamConfig = new VsamConfig(new GeneralConfig());
 
         vsamConfig.setFileName(null);
-        assertThrows(IllegalArgumentException.class, () -> new VsamStorage(vsamConfig, initializer, ApimlLogger.empty(), evictionStrategyProducer));
+        assertThrows(IllegalArgumentException.class, () -> new VsamStorage(vsamConfig, initializer, apimlLogger, evictionStrategyProducer));
 
         vsamConfig.setFileName("");
-        assertThrows(IllegalArgumentException.class, () -> new VsamStorage(vsamConfig, initializer, ApimlLogger.empty(), evictionStrategyProducer));
+        assertThrows(IllegalArgumentException.class, () -> new VsamStorage(vsamConfig, initializer, apimlLogger, evictionStrategyProducer));
     }
 
     @Test

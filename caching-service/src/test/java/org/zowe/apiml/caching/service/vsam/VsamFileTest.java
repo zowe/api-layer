@@ -339,6 +339,27 @@ class VsamFileTest {
         }
     }
 
+    @Nested
+    class whenInitialCreation {
+        private VsamInitializer vsamInitializer;
+
+        @BeforeEach
+        void setInitialCreation() {
+            vsamInitializer = mock(VsamInitializer.class);
+        }
+
+        @Test
+        void givenVsamFileException_thenThrowException() throws ZFileException, VsamRecordException {
+            doThrow(new RuntimeException("error")).when(vsamInitializer).warmUpVsamFile(any(), any());
+            assertThrows(IllegalStateException.class, () -> underTest = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, true, producer, vsamInitializer, apimlLogger));
+        }
+
+        @Test
+        void givenValidVsam_thenCreateVsamFile() {
+            assertDoesNotThrow(() -> underTest = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, true, producer, vsamInitializer, apimlLogger));
+        }
+    }
+
     @Test
     void givenProperAnswer_properBytesAreReturned() throws ZFileException {
         int validAmountOfBytes = 20;
