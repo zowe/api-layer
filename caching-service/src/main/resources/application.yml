@@ -1,6 +1,18 @@
-spring:
-    application:
-        name: Caching service
+logging:
+    level:
+        ROOT: WARN
+        org.zowe.apiml: INFO
+        org.zowe.apiml.enable: WARN
+        org.zowe.apiml.caching: WARN
+        org.springframework: WARN
+        org.springframework.boot: OFF
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery.DiscoveryClient: OFF
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
 
 apiml:
     enabled: true
@@ -59,6 +71,11 @@ apiml:
                 gatewayAuthEndpoint: /api/v1/gateway/auth
                 corsEnabled: false
 
+spring:
+    application:
+        name: Caching service
+    output.ansi.enabled: always
+
 server:
     port: ${apiml.service.port}
 
@@ -80,3 +97,33 @@ server:
         keyStorePassword: password
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+---
+spring:
+    profiles: debug
+
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: DEBUG
+        org.springframework: INFO
+        org.apache: INFO
+        org.apache.http: DEBUG
+        com.netflix: INFO
+        org.hibernate: INFO
+        org.springframework.web.servlet.PageNotFound: WARN
+        net.sf.ehcache: INFO
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
+
+---
+spring:
+    profiles: diag
+
+---
+spring:
+    profiles: dev
+    profiles.include:
+        - debug
+        - diag
+
+logbackServiceName: ZWEACS1

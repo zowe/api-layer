@@ -11,7 +11,9 @@ package org.zowe.apiml.caching.service.inmemory;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.caching.service.RejectStrategy;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -20,7 +22,7 @@ class RejectStrategyTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new RejectStrategy();
+        underTest = new RejectStrategy(ApimlLogger.empty());
     }
 
     @Test

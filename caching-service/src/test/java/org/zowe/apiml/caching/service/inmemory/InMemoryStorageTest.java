@@ -16,14 +16,16 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.inmemory.config.InMemoryConfig;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.log.ApimlLogger;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 public class InMemoryStorageTest {
     private InMemoryStorage underTest;
@@ -39,16 +41,12 @@ public class InMemoryStorageTest {
         generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
         config = new InMemoryConfig(generalConfig);
         config.getGeneralConfig().setMaxDataSize(10);
-        underTest = new InMemoryStorage(config, testingStorage);
-    }
-
-    private String currentDate() {
-        return String.valueOf(new Date().getTime());
+        underTest = new InMemoryStorage(config, testingStorage, ApimlLogger.empty());
     }
 
     @Test
     void givenDefaultStorageConstructor_whenStorageConstructed_thenCanUseStorage() {
-        underTest = new InMemoryStorage(config);
+        underTest = new InMemoryStorage(config, mock(MessageService.class));
         underTest.create(serviceId, new KeyValue("key", "value"));
 
         KeyValue result = underTest.read(serviceId, "key");
@@ -155,7 +153,7 @@ public class InMemoryStorageTest {
         config = new InMemoryConfig(generalConfig);
         config.getGeneralConfig().setMaxDataSize(1);
 
-        underTest = new InMemoryStorage(config);
+        underTest = new InMemoryStorage(config, testingStorage, ApimlLogger.empty());
         underTest.create("customService", new KeyValue("key", "willFit"));
         KeyValue wontFit = new KeyValue("key", "wontFit");
         assertThrows(StorageException.class, () -> {
@@ -171,7 +169,7 @@ public class InMemoryStorageTest {
         config.getGeneralConfig().setMaxDataSize(1);
 
         String oldestKey = "oldestKey";
-        underTest = new InMemoryStorage(config);
+        underTest = new InMemoryStorage(config, testingStorage, ApimlLogger.empty());
 
         KeyValue keyValue1 = new KeyValue(oldestKey, "willFit", "1");
         keyValue1.setServiceId(serviceId);

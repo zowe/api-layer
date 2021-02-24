@@ -124,6 +124,8 @@ public class CachingController {
             return new ResponseEntity<>(pair, successStatus);
         } catch (StorageException exception) {
             return exceptionToResponse(exception);
+        } catch (Exception exception) {
+            return handleInternalError(exception, request.getRequestURL());
         }
     }
 
@@ -150,7 +152,15 @@ public class CachingController {
             return new ResponseEntity<>(successStatus);
         } catch (StorageException exception) {
             return exceptionToResponse(exception);
+        } catch (Exception exception) {
+            return handleInternalError(exception, request.getRequestURL());
         }
+    }
+
+    private ResponseEntity<Object> handleInternalError(Exception exception, StringBuffer requestURL) {
+        Messages internalServerError = Messages.INTERNAL_SERVER_ERROR;
+        Message message = messageService.createMessage(internalServerError.getKey(), requestURL, exception.getMessage(), exception.toString());
+        return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());
     }
 
     private void keyNotInCache() {

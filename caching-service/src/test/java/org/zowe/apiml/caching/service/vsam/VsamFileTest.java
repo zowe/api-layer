@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.zfile.ZFile;
 import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
@@ -33,59 +34,58 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class VsamFileTest {
-
-    VsamConfig vsamConfiguration;
+    private VsamConfig vsamConfiguration;
 
     private VsamFile underTest;
     private VsamKey key;
 
+    private ZFileProducer producer;
     private ZFile zFile;
+
+    private final ApimlLogger apimlLogger = ApimlLogger.empty();
 
     private final String VALID_SERVICE_ID = "test-service-id";
 
     @BeforeEach
-    void prepareConfig() throws ZFileException {
+    void prepareConfig() throws VsamRecordException {
         vsamConfiguration = DefaultVsamConfiguration.defaultConfiguration();
         key = new VsamKey(vsamConfiguration);
 
-        ZFileProducer producer = mock(ZFileProducer.class);
+        producer = mock(ZFileProducer.class);
         zFile = mock(ZFile.class);
         when(producer.openZfile()).thenReturn(zFile);
-        underTest = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, new VsamInitializer());
+        underTest = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, mock(VsamInitializer.class), apimlLogger);
     }
 
     @Nested
     class whenInstantiatingRecord {
         @Test
-        void hasValidFileName() {
-            assertThrows(UnsupportedOperationException.class, () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ));
+        void hasValidFileName() throws VsamRecordException {
+            ZFileProducer producer = mock(ZFileProducer.class);
+
+            when(producer.openZfile()).thenReturn(zFile);
+            assertDoesNotThrow(() -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger));
         }
 
         @Test
         void hasInvalidFileName() {
             vsamConfiguration.setFileName("test-file-name");
             assertThrows(IllegalArgumentException.class,
-                () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ),
+                () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, apimlLogger),
                 "Expected exception is not IllegalArgumentException");
         }
 
         @Test
         void givenNullConfig_ExceptionIsThrown() {
             VsamInitializer initializer = new VsamInitializer();
-            assertThrows(IllegalArgumentException.class, () -> {
-                new VsamFile(null, VsamConfig.VsamOptions.WRITE, false, null, initializer);
-            });
+            assertThrows(IllegalArgumentException.class, () -> new VsamFile(null, VsamConfig.VsamOptions.WRITE, false, null, initializer, apimlLogger));
         }
 
         @Test
-        void givenOpenZFileThrowsException_ExceptionIsThrown() throws ZFileException {
-            ZFileProducer producer = mock(ZFileProducer.class);
-            zFile = mock(ZFile.class);
-            when(producer.openZfile()).thenThrow(ZFileException.class);
+        void givenOpenZFileThrowsException_ExceptionIsThrown() throws VsamRecordException {
+            when(producer.openZfile()).thenThrow(VsamRecordException.class);
             VsamInitializer initializer = new VsamInitializer();
-            assertThrows(IllegalStateException.class, () -> {
-                new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, initializer);
-            });
+            assertThrows(IllegalStateException.class, () -> new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, false, producer, initializer, apimlLogger));
         }
     }
 
@@ -99,12 +99,12 @@ class VsamFileTest {
         }
 
         @Test
-        void givenZFileThrowsError_NoRecordIsReturned() throws UnsupportedEncodingException, ZFileException {
+        void givenZFileThrowsError_TheErrorIsPropagated() throws UnsupportedEncodingException, ZFileException {
             VsamRecord toRead = defaultVsamRecord();
             String createdKey = toRead.getKeyValue().getKey();
 
             when(zFile.locate(key.getKeyBytes(VALID_SERVICE_ID, createdKey), ZFileConstants.LOCATE_KEY_EQ)).thenThrow(zFileException());
-            assertFalse(underTest.read(toRead).isPresent());
+            assertThrows(RetryableVsamException.class, () -> underTest.read(toRead));
         }
 
         @Test
@@ -140,12 +140,12 @@ class VsamFileTest {
         }
 
         @Test
-        void givenZFileThrowsError_NoRecordIsReturned() throws UnsupportedEncodingException, ZFileException {
+        void givenZFileThrowsError_TheErrorIsPropagated() throws UnsupportedEncodingException, ZFileException {
             VsamRecord toUpdate = defaultVsamRecord();
             String createdKey = toUpdate.getKeyValue().getKey();
 
             when(zFile.locate(key.getKeyBytes(VALID_SERVICE_ID, createdKey), ZFileConstants.LOCATE_KEY_EQ)).thenThrow(zFileException());
-            assertFalse(underTest.update(toUpdate).isPresent());
+            assertThrows(RetryableVsamException.class, () -> underTest.update(toUpdate));
         }
 
         @Test
@@ -165,7 +165,7 @@ class VsamFileTest {
             when(zFile.locate(key.getKeyBytes(VALID_SERVICE_ID, readKey), ZFileConstants.LOCATE_KEY_EQ)).thenReturn(true);
             when(zFile.read(any())).thenAnswer(prepareAnswer(1));
 
-            Optional<VsamRecord> result = underTest.read(toUpdate);
+            Optional<VsamRecord> result = underTest.update(toUpdate);
             assertTrue(result.isPresent());
             assertThat(result.get().getKeyValue().getKey(), is(readKey));
         }
@@ -181,12 +181,12 @@ class VsamFileTest {
         }
 
         @Test
-        void givenZFileThrowsError_NoRecordIsReturned() throws UnsupportedEncodingException, ZFileException {
+        void givenZFileThrowsError_TheErrorIsPropagated() throws UnsupportedEncodingException, ZFileException {
             VsamRecord toDelete = defaultVsamRecord();
             String deletedKey = toDelete.getKeyValue().getKey();
 
             when(zFile.locate(key.getKeyBytes(VALID_SERVICE_ID, deletedKey), ZFileConstants.LOCATE_KEY_EQ)).thenThrow(zFileException());
-            assertFalse(underTest.delete(toDelete).isPresent());
+            assertThrows(RetryableVsamException.class, () -> underTest.delete(toDelete));
         }
 
         @Test
@@ -230,12 +230,12 @@ class VsamFileTest {
         }
 
         @Test
-        void givenZFileThrowsError_NoRecordIsReturned() throws UnsupportedEncodingException, ZFileException {
+        void givenZFileThrowsError_TheErrorIsPropagated() throws UnsupportedEncodingException, ZFileException {
             VsamRecord toCreate = defaultVsamRecord();
             String createdKey = toCreate.getKeyValue().getKey();
 
             when(zFile.locate(key.getKeyBytes(VALID_SERVICE_ID, createdKey), ZFileConstants.LOCATE_KEY_EQ)).thenThrow(zFileException());
-            assertFalse(underTest.create(toCreate).isPresent());
+            assertThrows(RetryableVsamException.class, () -> underTest.create(toCreate));
         }
 
         @Test
@@ -281,6 +281,85 @@ class VsamFileTest {
         }
     }
 
+    @Nested
+    class whenClosingRecord {
+        @Test
+        void givenZFile_fileIsClosed() throws VsamRecordException, ZFileException {
+            when(producer.openZfile()).thenReturn(zFile);
+            VsamFile vsamFile = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger);
+            vsamFile.close();
+
+            verify(zFile).close();
+        }
+
+        @Test
+        void givenNoZFile_fileIsNotClosed() throws VsamRecordException, ZFileException {
+            when(producer.openZfile()).thenReturn(null);
+            VsamFile vsamFile = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger);
+            vsamFile.close();
+
+            verify(zFile, times(0)).close();
+        }
+
+        @Test
+        void givenZFileCloseError_NoExceptionThrown() throws VsamRecordException, ZFileException {
+            doThrow(new ZFileException("", "", "", 0, 0, 0, new byte[]{}, 0, 0, 0, 0, 0)).when(zFile).close();
+            when(producer.openZfile()).thenReturn(zFile);
+            VsamFile vsamFile = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.READ, false, producer, mock(VsamInitializer.class), apimlLogger);
+            vsamFile.close();
+
+            verify(zFile).close();
+        }
+    }
+
+    @Nested
+    class whenCountingRecords {
+        @Test
+        void givenExceptionReadingFile_thenReturnZero() throws ZFileException {
+            when(zFile.read(any())).thenThrow(new ZFileException("", "", "", 0, 0, 0, new byte[]{}, 0, 0, 0, 0, 0));
+            int result = underTest.countAllRecords();
+
+            assertThat(result, is(0));
+        }
+
+        @Test
+        void givenNoFileContent_thenReturnZero() throws ZFileException {
+            when(zFile.read(any())).thenReturn(-1);
+            int result = underTest.countAllRecords();
+
+            assertThat(result, is(0));
+        }
+
+        @Test
+        void givenRecords_thenReturnCount() throws ZFileException {
+            when(zFile.read(any())).thenReturn(1).thenReturn(-1);
+            int result = underTest.countAllRecords();
+
+            assertThat(result, is(1));
+        }
+    }
+
+    @Nested
+    class whenInitialCreation {
+        private VsamInitializer vsamInitializer;
+
+        @BeforeEach
+        void setInitialCreation() {
+            vsamInitializer = mock(VsamInitializer.class);
+        }
+
+        @Test
+        void givenVsamFileException_thenThrowException() throws ZFileException, VsamRecordException {
+            doThrow(new RuntimeException("error")).when(vsamInitializer).warmUpVsamFile(any(), any());
+            assertThrows(IllegalStateException.class, () -> underTest = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, true, producer, vsamInitializer, apimlLogger));
+        }
+
+        @Test
+        void givenValidVsam_thenCreateVsamFile() {
+            assertDoesNotThrow(() -> underTest = new VsamFile(vsamConfiguration, VsamConfig.VsamOptions.WRITE, true, producer, vsamInitializer, apimlLogger));
+        }
+    }
+
     @Test
     void givenProperAnswer_properBytesAreReturned() throws ZFileException {
         int validAmountOfBytes = 20;
@@ -318,7 +397,7 @@ class VsamFileTest {
     private List<VsamRecord> recordsToReturn(int size) {
         List<VsamRecord> records = new ArrayList<>(size);
 
-        for ( int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             records.add(vsamRecord("key-" + i, "value-" + i, i));
         }
 

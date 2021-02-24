@@ -7,19 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.caching.service.inmemory;
+package org.zowe.apiml.caching.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.zowe.apiml.caching.service.EvictionStrategy;
-import org.zowe.apiml.caching.service.Messages;
-import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 @RequiredArgsConstructor
 @Slf4j
 public class RejectStrategy implements EvictionStrategy {
+    private final ApimlLogger apimlLog;
+
     @Override
     public void evict(String key) {
-        throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus(), key);
+        apimlLog.log("org.zowe.apiml.cache.insufficientStorage");
+
+        throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus());
     }
 }

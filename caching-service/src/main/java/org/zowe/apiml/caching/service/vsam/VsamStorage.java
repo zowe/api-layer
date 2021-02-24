@@ -13,66 +13,68 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.*;
-import org.zowe.apiml.caching.service.inmemory.RejectStrategy;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
-import org.zowe.apiml.util.ObjectUtil;
+import org.zowe.apiml.message.log.ApimlLogger;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Class handles requests from controller and orchestrates operations on the low level VSAM File class
  */
-
 @Slf4j
 public class VsamStorage implements Storage {
 
-    private final VsamConfig vsamConfig;
-    private EvictionStrategy strategy = new DefaultEvictionStrategy();
+    private VsamConfig vsamConfig;
+    private EvictionStrategyProducer evictionStrategyProducer;
     private VsamFileProducer producer = new VsamFileProducer();
+    private ApimlLogger apimlLog;
 
-    public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer) {
-        String evictionStrategy = vsamConfig.getGeneralConfig().getEvictionStrategy();
+    public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer, ApimlLogger apimlLog, EvictionStrategyProducer evictionStrategyProducer) {
         log.info("Using VSAM storage for the cached data");
 
-        ObjectUtil.requireNotNull(vsamConfig.getFileName(), "Vsam filename cannot be null"); //TODO bean validation
-        ObjectUtil.requireNotEmpty(vsamConfig.getFileName(), "Vsam filename cannot be empty");
-        this.vsamConfig = vsamConfig;
-        if (evictionStrategy.equals(Strategies.REJECT.getKey())) {
-            strategy = new RejectStrategy();
+        this.apimlLog = apimlLog;
+
+        String vsamFileName = vsamConfig.getFileName();
+        if (vsamFileName == null || vsamFileName.isEmpty()) {
+            apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "vsam", "wrong Configuration", "VSAM Filename must be valid");
+
+            throw new IllegalArgumentException("Vsam filename must be valid");
         }
+
+        this.vsamConfig = vsamConfig;
+        this.evictionStrategyProducer = evictionStrategyProducer;
+
         log.info("Using Vsam configuration: {}", vsamConfig);
-        vsamInitializer.storageWarmup(vsamConfig);
+        vsamInitializer.storageWarmup(vsamConfig, apimlLog);
     }
 
-    public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer, VsamFileProducer producer) {
-        this(vsamConfig, vsamInitializer);
+    public VsamStorage(VsamConfig vsamConfig, VsamInitializer vsamInitializer, VsamFileProducer producer, ApimlLogger apimlLogger, EvictionStrategyProducer evictionStrategyProducer) {
+        this(vsamConfig, vsamInitializer, apimlLogger, evictionStrategyProducer);
 
         this.producer = producer;
     }
 
     private EvictionStrategy provideStrategy(VsamFile file) {
-        String evictionStrategy = vsamConfig.getGeneralConfig().getEvictionStrategy();
-        if (evictionStrategy.equals(Strategies.REMOVE_OLDEST.getKey())) {
-            return new RemoveOldestStrategy(vsamConfig, file);
-        } else {
-            return strategy;
-        }
+        return evictionStrategyProducer.evictionStrategy(file);
     }
 
     @Override
-    @Retryable(value = {IllegalStateException.class, UnsupportedOperationException.class})
+    @Retryable(value = {RetryableVsamException.class, IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue create(String serviceId, KeyValue toCreate) {
         log.info("Writing record: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
         KeyValue result = null;
 
-        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE, apimlLog)) {
             toCreate.setServiceId(serviceId);
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toCreate);
             int currentSize = file.countAllRecords();
             log.info("Current Size {}.", currentSize);
 
             if (aboveThreshold(currentSize)) {
-                strategy = provideStrategy(file);
+                EvictionStrategy strategy = provideStrategy(file);
                 log.info("Evicting record using the {} strategy", vsamConfig.getGeneralConfig().getEvictionStrategy());
                 strategy.evict(toCreate.getKey());
             }
@@ -94,11 +96,12 @@ public class VsamStorage implements Storage {
     }
 
     @Override
+    @Retryable(value = {RetryableVsamException.class})
     public KeyValue read(String serviceId, String key) {
         log.info("Reading Record: {}|{}|{}", serviceId, key, "-");
         KeyValue result = null;
 
-        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.READ)) {
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.READ, apimlLog)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(key, "", serviceId));
 
@@ -116,12 +119,12 @@ public class VsamStorage implements Storage {
     }
 
     @Override
-    @Retryable(value = {IllegalStateException.class, UnsupportedOperationException.class})
+    @Retryable(value = {RetryableVsamException.class, IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         log.info("Updating Record: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
         KeyValue result = null;
 
-        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE, apimlLog)) {
             toUpdate.setServiceId(serviceId);
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, toUpdate);
 
@@ -139,13 +142,13 @@ public class VsamStorage implements Storage {
     }
 
     @Override
-    @Retryable(value = {IllegalStateException.class, UnsupportedOperationException.class})
+    @Retryable(value = {RetryableVsamException.class, IllegalStateException.class, UnsupportedOperationException.class})
     public KeyValue delete(String serviceId, String toDelete) {
 
         log.info("Deleting Record: {}|{}|{}", serviceId, toDelete, "-");
         KeyValue result = null;
 
-        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE)) {
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE, apimlLog)) {
 
             VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(toDelete, "", serviceId));
 
@@ -169,7 +172,7 @@ public class VsamStorage implements Storage {
         Map<String, KeyValue> result = new HashMap<>();
         List<VsamRecord> returned;
 
-        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.READ)) {
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.READ, apimlLog)) {
             returned = file.readForService(serviceId);
         }
 

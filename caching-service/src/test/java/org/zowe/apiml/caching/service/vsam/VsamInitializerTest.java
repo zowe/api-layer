@@ -22,25 +22,37 @@ import static org.mockito.Mockito.*;
 
 class VsamInitializerTest {
     private VsamConfig vsamConfiguration;
+    private VsamRecord record;
     private VsamInitializer underTest;
+
+    private ZFile zFile;
 
     @BeforeEach
     void setUp() {
         vsamConfiguration = DefaultVsamConfiguration.defaultConfiguration();
+        record = new VsamRecord(vsamConfiguration, "delete", new KeyValue("me", "novalue"));
         underTest = new VsamInitializer();
+
+        zFile = mock(ZFile.class);
     }
 
     @Test
-    void givenValidZfileBehavior_whenInitializing_thenRecordIsInsertedAndDeleted() throws ZFileException, VsamRecordException {
-        VsamRecord record = new VsamRecord(vsamConfiguration, "delete", new KeyValue("me", "novalue"));
-
-        ZFile zFile = mock(ZFile.class);
+    void givenValidZFileBehavior_whenInitializing_thenRecordIsInsertedAndDeleted() throws ZFileException, VsamRecordException {
         when(zFile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ)).thenReturn(true);
-
         underTest.warmUpVsamFile(zFile, vsamConfiguration);
 
         verify(zFile).write(any());
         verify(zFile).read(any());
         verify(zFile).delrec();
+    }
+
+    @Test
+    void givenZFileNotLocated_whenInitializing_thenRecordIsNotDeleted() throws ZFileException, VsamRecordException {
+        when(zFile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ)).thenReturn(false);
+        underTest.warmUpVsamFile(zFile, vsamConfiguration);
+
+        verify(zFile, times(1)).write(any());
+        verify(zFile, times(0)).read(any());
+        verify(zFile, times(0)).delrec();
     }
 }
