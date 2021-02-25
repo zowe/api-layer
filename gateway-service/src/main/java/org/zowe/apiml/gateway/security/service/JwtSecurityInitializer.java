@@ -42,7 +42,7 @@ public class JwtSecurityInitializer {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
-    @Value("${apiml.security.auth.jwtKeyAlias:jwtsecret}")
+    @Value("${apiml.security.auth.jwtKeyAlias:}")
     private String keyAlias;
 
     private SignatureAlgorithm signatureAlgorithm;
@@ -63,6 +63,12 @@ public class JwtSecurityInitializer {
         } catch (HttpsConfigError er) {
             apimlLog.log("org.zowe.apiml.gateway.jwtInitConfigError", er.getCode(), er.getMessage());
         }
+
+        // This should be Exception only if the configuration of the JWT requires the API ML to produce tokens.
+        // This happens when the older version of zOSMF is used or when SAF is selected as the token provider.
+
+        // Do we need to do it here?
+
         if (jwtSecret == null || jwtPublicKey == null) {
             String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
             apimlLog.log("org.zowe.apiml.gateway.jwtKeyMissing", keyAlias, keyStore);
