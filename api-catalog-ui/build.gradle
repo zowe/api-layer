@@ -55,7 +55,7 @@ task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
 
 task npmBuild(type: NpmTask) {
     group = 'npm'
-    description = "Produces errors in intellij run window but tests pass, dont panic. You can verify running the npm test directly"
+    description = "Executes npm build"
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)

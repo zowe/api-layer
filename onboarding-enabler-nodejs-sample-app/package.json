@@ -4,6 +4,7 @@
   "description": "Hello World Service in Express",
   "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -13,7 +14,7 @@
   "author": "",
   "license": "EPL-2.0",
   "dependencies": {
-    "@zowe/apiml-onboarding-enabler-nodejs": "latest",
+    "@zowe/apiml-onboarding-enabler-nodejs": "file:../onboarding-enabler-nodejs",
     "express": "^4.16.4"
   }
 }
