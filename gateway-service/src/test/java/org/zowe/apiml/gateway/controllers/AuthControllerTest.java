@@ -112,7 +112,7 @@ class AuthControllerTest {
 
     @Test
     void testGetActivePublicKeys_useZoweJwt() throws Exception {
-        initPublicKeys(true);
+        initPublicKeys(false);
         JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
         this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
             .andExpect(status().is(SC_OK))
