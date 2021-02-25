@@ -28,6 +28,7 @@ import java.util.function.Function;
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
+@SuppressWarnings("squid:S1452")
 public class ApiTransformationConfig {
 
     private final GatewayClient gatewayClient;
