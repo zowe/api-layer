@@ -136,7 +136,7 @@ Template:
 ```
 Basic example:
 ```
-fix(authentication): Introducing x509 as a form of authentication
+feat(authentication): Introducing x509 as a form of authentication
 
 This is a body, which is purely optional. One can use this section if description is not enough to provide insight. 
 Can also contains notes and hints. Should not be too long.
