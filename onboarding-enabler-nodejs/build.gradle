@@ -14,8 +14,6 @@ task nodeClean(type: Delete) {
 }
 clean.dependsOn nodeClean
 
-//TODO publishing of artifact to npm though Gradle
-
 jar {
     enabled false
 }
