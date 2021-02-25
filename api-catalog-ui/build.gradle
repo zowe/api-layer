@@ -9,37 +9,40 @@ node {
     version = rootProject.nodejsVersion
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "install"
-    workDir = file("${project.projectDir}/tools/nodejs")
-    npmWorkDir = file("${project.projectDir}/tools/npm")
-    yarnWorkDir = file("${project.projectDir}/tools/yarn")
+    workDir = file("${rootProject.buildDir}/tools/nodejs")
+    npmWorkDir = file("${rootProject.buildDir}/tools/npm")
+    yarnWorkDir = file("${rootProject.buildDir}/tools/yarn")
     nodeProjectDir = file("${project.projectDir}/frontend")
 }
 
 // =================================================
 //
-//  Please manage all task dependencies in NPM and
-//  not here. This should be just a wrapper around
-//  package.json
+//  Please manage all task dependencies in here and
+//  not in package.json. This is to leverage
+//  Gradle's incremental task feature
 //
 // =================================================
 
 task javascriptClean(type: Delete) {
     group = 'npm'
-    delete 'bin', 'build', 'frontend/test-results', 'frontend/coverage', 'frontend/build'
+    delete 'bin', 'build', 'frontend/test-results', 'frontend/coverage', 'frontend/build', 'frontend/node_modules'
 }
 clean.dependsOn javascriptClean
-
-task nodeClean(type: Delete) {
-    group = 'node'
-    delete 'frontend/node_modules', 'tools/nodejs'
-}
 
 // test always runs for build, this side effect of task hierarchy being defined in package.json rather than here
 task npmTest(type: NpmTask) {
     group = 'npm'
     description = "Javascript unit tests"
+
+    inputs.dir('frontend/src')
+    inputs.file('frontend/package.json')
+
+    outputs.file('frontend/test-results/test-report-unit.html')
+    outputs.dir('frontend/coverage')
+
     args = ['run', 'test']
 }
+npmTest.dependsOn npmInstall
 test.dependsOn npmTest
 
 task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
@@ -51,6 +54,7 @@ task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
                    'cypress_password': System.getProperty("credentials.password")]
     args = ['run', 'cy:e2e:ci']
 }
+npmE2ECI.dependsOn npmInstall
 
 
 task npmBuild(type: NpmTask) {
@@ -63,14 +67,14 @@ task npmBuild(type: NpmTask) {
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.dir('frontend/build')
-    outputs.file('frontend/test-results/test-report-unit.html')
-    outputs.dir('frontend/coverage')
     outputs.cacheIf { true }
 
     args = ['run', 'build']
 
 }
+npmBuild.dependsOn npmInstall
 build.dependsOn npmBuild
+
 
 jar {
     enabled false

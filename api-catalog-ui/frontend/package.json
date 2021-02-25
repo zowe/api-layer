@@ -41,11 +41,9 @@
         "uuid": "3.3.2"
     },
     "scripts": {
-        "build": "npm run coverage && npm run react-scripts-build",
-        "react-scripts-build": "react-scripts build",
+        "build": "react-scripts build",
         "postbuild": "rimraf build/**/*.map",
-        "test": "react-scripts test --silent --watchAll=false --env=jsdom components/* reducers/* epics/* actions/* selectors/* ErrorBoundary/* --reporters=default --reporters=jest-html-reporter",
-        "coverage": "npm test -- --coverage",
+        "test": "react-scripts test --silent --watchAll=false --env=jsdom components/* reducers/* epics/* actions/* selectors/* ErrorBoundary/* --reporters=default --reporters=jest-html-reporter --coverage",
         "cy:open": "cypress open",
         "cy:e2e:ci": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless",
         "cy:e2e:localhost": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless",
