@@ -9,13 +9,13 @@
  */
 package org.zowe.apiml.apicatalog.swagger;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV2Service;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV3Service;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
 
 import javax.validation.UnexpectedTypeException;
 import java.util.function.Function;
@@ -26,7 +26,7 @@ class TransformApiDocServiceTest {
 
     private final String SERVICE_ID = "SERVICE_1";
 
-    private Function<String, AbstractApiDocService> beanApiDocFactory;
+    private Function<String, AbstractApiDocService<?, ?>> beanApiDocFactory;
     private TransformApiDocService transformApiDocService;
 
     @BeforeEach
