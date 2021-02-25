@@ -13,8 +13,10 @@ package org.zowe.apiml.gateway.security.service;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.HttpsConfig;
@@ -28,6 +30,7 @@ import java.security.interfaces.RSAPublicKey;
 
 
 @Service
+@RequiredArgsConstructor
 public class JwtSecurityInitializer {
 
     @Value("${server.ssl.keyStore:#{null}}")
@@ -49,30 +52,36 @@ public class JwtSecurityInitializer {
     private Key jwtSecret;
     private PublicKey jwtPublicKey;
 
+    private final Providers providers;
+
+    public JwtSecurityInitializer(Providers providers, String keyAlias) {
+        this(providers);
+
+        this.keyAlias = keyAlias;
+    }
+
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
     @PostConstruct
     public void init() {
-        signatureAlgorithm = SignatureAlgorithm.RS256;
-        HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
-            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
-        try {
-            jwtSecret = SecurityUtils.loadKey(config);
-            jwtPublicKey = SecurityUtils.loadPublicKey(config);
-        } catch (HttpsConfigError er) {
-            apimlLog.log("org.zowe.apiml.gateway.jwtInitConfigError", er.getCode(), er.getMessage());
-        }
+        // This is the only setup where API ML create its own tokens and therefore needs the Secret to build the JWT.
+        if (!providers.isZosfmUsed() || (providers.isZosfmUsed() && !providers.zosmfSupportsJwt())) {
+            signatureAlgorithm = SignatureAlgorithm.RS256;
+            HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
+                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
+            try {
+                jwtSecret = SecurityUtils.loadKey(config);
+                jwtPublicKey = SecurityUtils.loadPublicKey(config);
+            } catch (HttpsConfigError er) {
+                apimlLog.log("org.zowe.apiml.gateway.jwtInitConfigError", er.getCode(), er.getMessage());
+            }
 
-        // This should be Exception only if the configuration of the JWT requires the API ML to produce tokens.
-        // This happens when the older version of zOSMF is used or when SAF is selected as the token provider.
-
-        // Do we need to do it here?
-
-        if (jwtSecret == null || jwtPublicKey == null) {
-            String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
-            apimlLog.log("org.zowe.apiml.gateway.jwtKeyMissing", keyAlias, keyStore);
-            throw new HttpsConfigError(errorMessage, HttpsConfigError.ErrorCode.WRONG_KEY_ALIAS, config);
+            if (jwtSecret == null || jwtPublicKey == null) {
+                String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
+                apimlLog.log("org.zowe.apiml.gateway.jwtKeyMissing", keyAlias, keyStore);
+                throw new HttpsConfigError(errorMessage, HttpsConfigError.ErrorCode.WRONG_KEY_ALIAS, config);
+            }
         }
     }
 
@@ -89,8 +98,8 @@ public class JwtSecurityInitializer {
     }
 
     public JWK getJwkPublicKey() {
-         final RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) jwtPublicKey).build();
-         return rsaKey.toPublicJWK();
+        final RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) jwtPublicKey).build();
+        return rsaKey.toPublicJWK();
     }
 
 }

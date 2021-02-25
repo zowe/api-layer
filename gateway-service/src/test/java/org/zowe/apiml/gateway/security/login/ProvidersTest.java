@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.util.Collections;
@@ -28,6 +29,7 @@ class ProvidersTest {
     private DiscoveryClient discovery;
     private Providers underTest;
     private CompoundAuthProvider compoundAuthProvider;
+    private ZosmfService zosmfService;
     private static final String ZOSMF_ID = "zosmf";
 
     @BeforeEach
@@ -35,8 +37,9 @@ class ProvidersTest {
         authConfigurationProperties = mock(AuthConfigurationProperties.class);
         compoundAuthProvider = mock(CompoundAuthProvider.class);
         discovery = mock(DiscoveryClient.class);
+        zosmfService = mock(ZosmfService.class);
 
-        underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider);
+        underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider, zosmfService);
     }
 
 

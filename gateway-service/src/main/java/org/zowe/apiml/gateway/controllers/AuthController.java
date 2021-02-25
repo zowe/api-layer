@@ -37,10 +37,6 @@ import static org.apache.http.HttpStatus.*;
 @RequestMapping(AuthController.CONTROLLER_PATH)
 public class AuthController {
 
-    @Setter
-    @Value("${apiml.security.zosmf.useJwtToken:true}")
-    protected boolean useZosmfJwtToken;
-
     private final AuthenticationService authenticationService;
 
     private final JwtSecurityInitializer jwtSecurityInitializer;
@@ -94,10 +90,8 @@ public class AuthController {
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
     @ResponseBody
     public JSONObject getCurrentPublicKeys() {
-        final List<JWK> keys = new LinkedList<>();
-        if (useZosmfJwtToken) {
-            keys.addAll(zosmfService.getPublicKeys().getKeys());
-        }
+        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+
         if (keys.isEmpty()) {
             keys.add(jwtSecurityInitializer.getJwkPublicKey());
         }

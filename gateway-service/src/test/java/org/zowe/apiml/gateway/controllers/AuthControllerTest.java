@@ -113,7 +113,6 @@ class AuthControllerTest {
     @Test
     void testGetActivePublicKeys_useZoweJwt() throws Exception {
         initPublicKeys(true);
-        authController.setUseZosmfJwtToken(false);
         JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
         this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
             .andExpect(status().is(SC_OK))
@@ -123,7 +122,6 @@ class AuthControllerTest {
     @Test
     void testGetActivePublicKeys_useBoth() throws Exception {
         initPublicKeys(true);
-        authController.setUseZosmfJwtToken(true);
         JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
         this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
             .andExpect(status().is(SC_OK))
@@ -133,7 +131,6 @@ class AuthControllerTest {
     @Test
     void testGetActivePublicKeys_missingZosmf() throws Exception {
         initPublicKeys(false);
-        authController.setUseZosmfJwtToken(true);
         JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
         this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
             .andExpect(status().is(SC_OK))

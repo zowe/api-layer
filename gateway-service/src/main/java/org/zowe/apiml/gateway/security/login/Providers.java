@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class Providers {
     private final DiscoveryClient discoveryClient;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final CompoundAuthProvider compoundAuthProvider;
+    private final ZosmfService zosmfService;
 
     /**
      * This method decides whether the Zosmf service is available.
@@ -36,5 +38,13 @@ public class Providers {
      */
     public boolean isZosfmUsed() {
         return compoundAuthProvider.getLoginAuthProviderName().equalsIgnoreCase(LoginProvider.ZOSMF.toString());
+    }
+
+    /**
+     * This method decides whether used zOSMF instance supports JWT tokens.
+     * @return True is the instance support JWT
+     */
+    public boolean zosmfSupportsJwt() {
+        return zosmfService.loginEndpointExists();
     }
 }
