@@ -135,7 +135,7 @@ public class VsamFile implements Closeable {
         return recordOperation(record, () -> {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
             zfile.read(recBuf);
-            log.trace("RecBuf: {}", recBuf);
+            log.trace("RecBuf: {}", recBuf); //NOSONAR
             log.info("ConvertedStringValue: {}", new String(recBuf, vsamConfig.getEncoding()));
             VsamRecord returned = new VsamRecord(vsamConfig, recBuf);
             log.info("VsamRecord read: {}", returned);
@@ -217,7 +217,7 @@ public class VsamFile implements Closeable {
 
             while (found) {
                 int nread = zfile.read(recBuf);
-                log.trace("RecBuf: {}", recBuf);
+                log.trace("RecBuf: {}", recBuf); //NOSONAR
                 log.info("nread: {}", nread);
 
                 String convertedStringValue = new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
@@ -277,7 +277,7 @@ public class VsamFile implements Closeable {
             int overflowProtection = 10000;
             while (zfile.read(recBuf) != -1) {
 
-                log.trace("RecBuf: {}", recBuf);
+                log.trace("RecBuf: {}", recBuf); //NOSONAR
 
                 recordsCounter += 1;
 
