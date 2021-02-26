@@ -60,8 +60,6 @@ task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
 }
 npmE2ECI.dependsOn npmInstall
 
-npmInstall.args = ['--loglevel', 'verbose']
-
 task npmBuild(type: NpmTask) {
     group = 'npm'
     description = "Executes npm build"
