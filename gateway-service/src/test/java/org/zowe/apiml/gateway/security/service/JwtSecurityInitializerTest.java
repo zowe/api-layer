@@ -30,6 +30,8 @@ class JwtSecurityInitializerTest {
         @BeforeEach
         void setUp() {
             providers = mock(Providers.class);
+            when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
+
             underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray());
         }
 
@@ -65,6 +67,7 @@ class JwtSecurityInitializerTest {
         @BeforeEach
         void setUp() {
             providers = mock(Providers.class);
+            when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
             underTest = new JwtSecurityInitializer(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray());
         }
 

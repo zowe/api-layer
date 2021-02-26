@@ -14,13 +14,9 @@ import com.netflix.discovery.DiscoveryClient;
 import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
@@ -29,12 +25,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -42,29 +41,24 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class ZosmfServiceTest {
 
     private static final String ZOSMF_ID = "zosmf";
-    protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
 
-    @Mock
-    private AuthConfigurationProperties authConfigurationProperties;
-    private DiscoveryClient discovery = mock(DiscoveryClient.class);
-    private RestTemplate restTemplate = mock(RestTemplate.class);
+    private final AuthConfigurationProperties authConfigurationProperties = mock(AuthConfigurationProperties.class);
+    private final DiscoveryClient discovery = mock(DiscoveryClient.class);
+    private final RestTemplate restTemplate = mock(RestTemplate.class);
     ApplicationContext applicationContext = mock(ApplicationContext.class);
-    private TokenValidationStrategy tokenValidationStrategy1 = mock(TokenValidationStrategy.class);
-    private TokenValidationStrategy tokenValidationStrategy2 = mock(TokenValidationStrategy.class);
-    private List<TokenValidationStrategy> validationStrategyList = new ArrayList<>();
+    private final TokenValidationStrategy tokenValidationStrategy1 = mock(TokenValidationStrategy.class);
+    private final TokenValidationStrategy tokenValidationStrategy2 = mock(TokenValidationStrategy.class);
+    private final List<TokenValidationStrategy> validationStrategyList = new ArrayList<>();
 
     {
         validationStrategyList.add(tokenValidationStrategy1);
         validationStrategyList.add(tokenValidationStrategy2);
     }
 
-    @Spy
-    private ObjectMapper securityObjectMapper;
+    private final ObjectMapper securityObjectMapper = spy(ObjectMapper.class);
 
     private ZosmfService getZosmfServiceSpy() {
         ZosmfService zosmfServiceObj = new ZosmfService(authConfigurationProperties,
@@ -435,5 +429,53 @@ class ZosmfServiceTest {
         )).thenReturn(ZOSMF_PUBLIC_KEY_JSON);
 
         JSONAssert.assertEquals(ZOSMF_PUBLIC_KEY_JSON, new JSONObject(zosmfService.getPublicKeys().toString()), true);
+    }
+
+    @Nested
+    class WhenTestingIfTheZosmfIsAvailable {
+        private ZosmfService underTest;
+        private String ZOSMF_URL = "http://host:port";
+
+        @BeforeEach
+        void setUp() {
+            when(authConfigurationProperties.validatedZosmfServiceId()).thenReturn(ZOSMF_ID);
+
+            ZosmfService zosmfService = new ZosmfService(
+                authConfigurationProperties,
+                discovery,
+                restTemplate,
+                securityObjectMapper,
+                applicationContext,
+                null
+            );
+
+            underTest = spy(zosmfService);
+            doReturn(ZOSMF_URL).when(underTest).getURI(any());
+        }
+
+
+        @Test
+        void givenZosmfIsAvailable_thenTrueIsReturned() {
+            when(restTemplate.exchange(
+                eq(ZOSMF_URL + AbstractZosmfService.ZOSMF_INFO_END_POINT),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ZosmfService.ZosmfInfo.class)
+            )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
+
+            underTest.isAccessible();
+        }
+
+        @Test
+        void givenZosmfIsUnavailable_thenFalseIsReturned() {
+            when(restTemplate.exchange(
+                eq(ZOSMF_URL + AbstractZosmfService.ZOSMF_INFO_END_POINT),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ZosmfService.ZosmfInfo.class)
+            )).thenThrow(RestClientException.class);
+
+            underTest.isAccessible();
+        }
     }
 }

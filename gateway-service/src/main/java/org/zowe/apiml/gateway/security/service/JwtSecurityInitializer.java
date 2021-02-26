@@ -14,6 +14,9 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.awaitility.Duration;
+import org.awaitility.core.ConditionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,7 +32,9 @@ import java.security.Key;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 
+import static org.awaitility.Awaitility.await;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JwtSecurityInitializer {
@@ -75,23 +80,46 @@ public class JwtSecurityInitializer {
 
     @PostConstruct
     public void init() {
-        // This is the only setup where API ML create its own tokens and therefore needs the Secret to build the JWT.
-        if (!providers.isZosfmUsed() || (providers.isZosfmUsed() && !providers.zosmfSupportsJwt())) {
-            signatureAlgorithm = SignatureAlgorithm.RS256;
-            HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
-                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
-            try {
-                jwtSecret = SecurityUtils.loadKey(config);
-                jwtPublicKey = SecurityUtils.loadPublicKey(config);
-            } catch (HttpsConfigError er) {
-                apimlLog.log("org.zowe.apiml.gateway.jwtInitConfigError", er.getCode(), er.getMessage());
+        if (!providers.isZosfmUsed()) {
+            loadJwtSecret();
+        } else {
+            log.info("is zOSMF available");
+            if (!providers.isZosmfAvailableAndOnline()) {
+
+                try {
+                    await()
+                        .atMost(Duration.FIVE_MINUTES)
+                    .with()
+                        .pollInterval(Duration.ONE_MINUTE)
+                        .until(providers::isZosmfAvailableAndOnline);
+                } catch (ConditionTimeoutException ex) {
+                    apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", "zOSMF");
+
+                    throw new RuntimeException("The zOSMF is configured as the Authentication provider but isn't available.");
+                }
             }
 
-            if (jwtSecret == null || jwtPublicKey == null) {
-                String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
-                apimlLog.log("org.zowe.apiml.gateway.jwtKeyMissing", keyAlias, keyStore);
-                throw new HttpsConfigError(errorMessage, HttpsConfigError.ErrorCode.WRONG_KEY_ALIAS, config);
+            if (!providers.zosmfSupportsJwt()) {
+                loadJwtSecret();
             }
+        }
+    }
+
+    private void loadJwtSecret() {
+        signatureAlgorithm = SignatureAlgorithm.RS256;
+        HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
+            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
+        try {
+            jwtSecret = SecurityUtils.loadKey(config);
+            jwtPublicKey = SecurityUtils.loadPublicKey(config);
+        } catch (HttpsConfigError er) {
+            apimlLog.log("org.zowe.apiml.gateway.jwtInitConfigError", er.getCode(), er.getMessage());
+        }
+
+        if (jwtSecret == null || jwtPublicKey == null) {
+            String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
+            apimlLog.log("org.zowe.apiml.gateway.jwtKeyMissing", keyAlias, keyStore);
+            throw new HttpsConfigError(errorMessage, HttpsConfigError.ErrorCode.WRONG_KEY_ALIAS, config);
         }
     }
 

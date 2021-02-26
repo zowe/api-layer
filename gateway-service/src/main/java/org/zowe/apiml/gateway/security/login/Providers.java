@@ -10,12 +10,14 @@
 package org.zowe.apiml.gateway.security.login;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
+@Slf4j
 @RequiredArgsConstructor
 public class Providers {
     private final DiscoveryClient discoveryClient;
@@ -29,7 +31,19 @@ public class Providers {
      * @throws AuthenticationServiceException if the z/OSMF service id is not configured
      */
     public boolean isZosmfAvailable() {
+        log.info("isZosmfAvailable");
         return !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
+    }
+
+    /**
+     * Verify that the zOSMF is registered in the Discovery service and that we can actually reach it.
+     * @return true if the service is registered and properly responds.
+     */
+    public boolean isZosmfAvailableAndOnline() {
+        log.info("isZosmfAvailableAndOnline");
+        boolean available = isZosmfAvailable();
+        log.info("Available: " + available);
+        return available && zosmfService.isAccessible();
     }
 
     /**

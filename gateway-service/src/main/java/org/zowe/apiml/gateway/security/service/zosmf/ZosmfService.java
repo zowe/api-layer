@@ -35,6 +35,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
@@ -195,6 +196,37 @@ public class ZosmfService extends AbstractZosmfService {
             return zosmfInfo.getSafRealm();
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(infoURIEndpoint, re);
+        }
+    }
+
+    /**
+     * Verify whether the service is actually accessible.
+     * @return true when it's possible to access the Info endpoint via GET.
+     */
+    public boolean isAccessible() {
+        log.info("isAccesible");
+
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(ZOSMF_CSRF_HEADER, "");
+
+        String infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
+        log.info("InfoEndpoint: {}", infoURIEndpoint);
+
+        try {
+            final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
+                infoURIEndpoint,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                ZosmfInfo.class
+            );
+
+            log.info("Result {}", info);
+
+            return info.getStatusCode() == HttpStatus.OK;
+        } catch (RestClientException ex) {
+            log.info("zOSMF isn't accessible on URI: {}", infoURIEndpoint);
+
+            return false;
         }
     }
 
