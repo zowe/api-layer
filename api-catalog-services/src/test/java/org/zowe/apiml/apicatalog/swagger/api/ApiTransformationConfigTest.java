@@ -15,16 +15,13 @@ import org.junit.jupiter.api.Test;
 import javax.validation.UnexpectedTypeException;
 import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ApiTransformationConfigTest {
-    private AbstractApiDocService abstractApiDocService;
+    private AbstractApiDocService<?, ?> abstractApiDocService;
 
-    private ApiTransformationConfig apiTransformationConfig = new ApiTransformationConfig(null);
-    private Function<String, AbstractApiDocService> beanApiDocFactory =  apiTransformationConfig.beanApiDocFactory();
+    private final ApiTransformationConfig apiTransformationConfig = new ApiTransformationConfig(null);
+    private final Function<String, AbstractApiDocService<?, ?>> beanApiDocFactory = apiTransformationConfig.beanApiDocFactory();
 
     @BeforeEach
     void setUp() {
@@ -32,30 +29,41 @@ class ApiTransformationConfigTest {
     }
 
     @Test
-    void testApiDocFactory_whenSwagerDocIsPresent() {
+    void givenSwaggerJson_whenGetApiDocService_thenReturnApiDocV2Service() {
         abstractApiDocService = beanApiDocFactory.apply("{\"swagger\": \"2.0\"}");
         assertTrue(abstractApiDocService instanceof ApiDocV2Service, "AbstractApiDocService is not ApiDocV2Service");
     }
 
     @Test
-    void testApiDocFactory_whenOpenApiDocIsPresent() {
+    void givenOpenApiJson_whenGetApiDocService_thenReturnApiDocV3Service() {
         abstractApiDocService = beanApiDocFactory.apply("{\"openapi\": \"3.0\"}");
         assertTrue(abstractApiDocService instanceof ApiDocV3Service, "AbstractApiDocService is not ApiDocV3Service");
     }
 
     @Test
-    void testApiDocFactory_whenApDocIsNotOpenApiNorSwagger() {
+    void givenSwaggerYml_whenGetApiDocService_thenReturnApiDocV2Service() {
+        abstractApiDocService = beanApiDocFactory.apply("swagger: 2.0");
+        assertTrue(abstractApiDocService instanceof ApiDocV2Service, "AbstractApiDocService is not ApiDocV2Service");
+    }
+
+    @Test
+    void givenOpenApiYml_whenGetApiDocService_thenReturnApiDocV3Service() {
+        abstractApiDocService = beanApiDocFactory.apply("openapi: 3.0");
+        assertTrue(abstractApiDocService instanceof ApiDocV3Service, "AbstractApiDocService is not ApiDocV3Service");
+    }
+
+    @Test
+    void givenApiDocNotInOpenApiNorSwagger_whenGetApiDocService_thenReturnNull() {
         abstractApiDocService = beanApiDocFactory.apply("{\"superapi\": \"3.0\"}");
         assertNull(abstractApiDocService, "abstractApiDocService is not null");
     }
 
     @Test
-    void testApiDocFactory_whenApDocVersionIsNotAsExpectedFormat() {
+    void givenApDocVersionIsNotAsExpectedFormat_whenGetApiDocService_thenThrowException() {
         Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
             abstractApiDocService = beanApiDocFactory.apply("FAILED FORMAT");
         });
         assertNull(abstractApiDocService);
         assertEquals("Response is not a Swagger or OpenAPI type object.", exception.getMessage());
     }
-
 }
