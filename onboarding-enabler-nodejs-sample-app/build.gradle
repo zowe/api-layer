@@ -17,9 +17,9 @@ node {
     version = rootProject.nodejsVersion
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "install"
-    workDir = file("${rootProject.projectDir}/tools/nodejs")
-    npmWorkDir = file("${rootProject.projectDir}/tools/npm")
-    yarnWorkDir = file("${rootProject.projectDir}/tools/yarn")
+    workDir = file("${project.projectDir}/tools/nodejs")
+    npmWorkDir = file("${project.projectDir}/tools/npm")
+    yarnWorkDir = file("${project.projectDir}/tools/yarn")
     nodeProjectDir = file("${project.projectDir}")
 }
 
