@@ -34,31 +34,6 @@ public class SecurityUtils {
     public static final String SAFKEYRING = "safkeyring";
 
     /**
-     * Reads secret key from keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}, and encode to Base64
-     * @param config - {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
-     *                                 and optional filled: keyAlias and trustStore
-     * @return Base64 encoded secret key in {@link String}
-     */
-    public static String readSecret(HttpsConfig config) {
-        if (config.getKeyStore() != null) {
-            try {
-                Key key = loadKey(config);
-                if (key == null) {
-                    throw new UnrecoverableKeyException(String.format(
-                        "No key with private key entry could be used in the keystore. Provided key alias: %s",
-                        config.getKeyAlias() == null ? "<not provided>" : config.getKeyAlias()));
-                }
-                return Base64.getEncoder().encodeToString(key.getEncoded());
-            } catch (UnrecoverableKeyException e) {
-                apimlLog.log("org.zowe.apiml.common.errorReadingSecretKey", e.getMessage());
-                throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
-                    HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
-            }
-        }
-        return null;
-    }
-
-    /**
      * Loads secret key from keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}
      * @param config - {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
      *                                  and optional filled: keyAlias and trustStore
@@ -73,7 +48,7 @@ public class SecurityUtils {
                 if (config.getKeyAlias() != null) {
                     key = ks.getKey(config.getKeyAlias(), keyPasswordInChars);
                 } else {
-                    key = findFirstSecretKey(ks, keyPasswordInChars);
+                    throw new KeyStoreException("No key alias provided.");
                 }
                 return key;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException

@@ -14,6 +14,7 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.login.Providers;
@@ -52,12 +53,21 @@ public class JwtSecurityInitializer {
     private Key jwtSecret;
     private PublicKey jwtPublicKey;
 
-    private final Providers providers;
+    private Providers providers;
 
-    public JwtSecurityInitializer(Providers providers, String keyAlias) {
+    @Autowired
+    public JwtSecurityInitializer(Providers providers) {
+        this.providers = providers;
+    }
+
+    public JwtSecurityInitializer(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword) {
         this(providers);
 
+        this.keyStore = keyStore;
+        this.keyStorePassword = keyStorePassword;
+        this.keyPassword = keyPassword;
         this.keyAlias = keyAlias;
+        this.keyStoreType = "PKCS12";
     }
 
     @InjectApimlLogger

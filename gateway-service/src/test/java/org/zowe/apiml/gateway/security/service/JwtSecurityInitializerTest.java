@@ -30,7 +30,7 @@ class JwtSecurityInitializerTest {
         @BeforeEach
         void setUp() {
             providers = mock(Providers.class);
-            underTest = new JwtSecurityInitializer(providers, "jwtSecret");
+            underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray());
         }
 
         @Test
@@ -65,7 +65,7 @@ class JwtSecurityInitializerTest {
         @BeforeEach
         void setUp() {
             providers = mock(Providers.class);
-            underTest = new JwtSecurityInitializer(providers, null);
+            underTest = new JwtSecurityInitializer(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray());
         }
 
         @Test
