@@ -164,6 +164,14 @@ task publishAllVersions {
     }
 }
 
+task nodejsClean(type: Delete) {
+    group = 'npm'
+    if (cleanNode == 'true') {
+        delete 'tools'
+    }
+}
+clean.dependsOn nodejsClean
+
 publishAllVersions.dependsOn publishSdkArtifacts
 
 //-----------Release part start

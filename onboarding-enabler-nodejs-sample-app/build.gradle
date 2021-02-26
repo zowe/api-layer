@@ -17,9 +17,9 @@ node {
     version = rootProject.nodejsVersion
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "install"
-    workDir = file("${rootProject.buildDir}/tools/nodejs")
-    npmWorkDir = file("${rootProject.buildDir}/tools/npm")
-    yarnWorkDir = file("${rootProject.buildDir}/tools/yarn")
+    workDir = file("${rootProject.projectDir}/tools/nodejs")
+    npmWorkDir = file("${rootProject.projectDir}/tools/npm")
+    yarnWorkDir = file("${rootProject.projectDir}/tools/yarn")
     nodeProjectDir = file("${project.projectDir}")
 }
 
@@ -27,7 +27,9 @@ build.dependsOn npmInstall
 
 task nodeClean(type: Delete) {
     group = 'node'
-    delete 'node_modules'
+    if (rootProject.cleanNodeModules == 'true') {
+        delete 'node_modules'
+    }
 }
 clean.dependsOn nodeClean
 

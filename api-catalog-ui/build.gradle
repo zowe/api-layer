@@ -9,9 +9,9 @@ node {
     version = rootProject.nodejsVersion
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "install"
-    workDir = file("${rootProject.buildDir}/tools/nodejs")
-    npmWorkDir = file("${rootProject.buildDir}/tools/npm")
-    yarnWorkDir = file("${rootProject.buildDir}/tools/yarn")
+    workDir = file("${rootProject.projectDir}/tools/nodejs")
+    npmWorkDir = file("${rootProject.projectDir}/tools/npm")
+    yarnWorkDir = file("${rootProject.projectDir}/tools/yarn")
     nodeProjectDir = file("${project.projectDir}/frontend")
 }
 
@@ -25,7 +25,11 @@ node {
 
 task javascriptClean(type: Delete) {
     group = 'npm'
-    delete 'bin', 'build', 'frontend/test-results', 'frontend/coverage', 'frontend/build', 'frontend/node_modules'
+    delete 'bin', 'build', 'frontend/test-results', 'frontend/coverage', 'frontend/build'
+
+    if (rootProject.cleanNodeModules == 'true') {
+        delete 'frontend/node_modules'
+    }
 }
 clean.dependsOn javascriptClean
 
