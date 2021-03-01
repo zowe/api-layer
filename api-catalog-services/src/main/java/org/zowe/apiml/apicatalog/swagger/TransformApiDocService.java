@@ -9,11 +9,11 @@
  */
 package org.zowe.apiml.apicatalog.swagger;
 
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 
 import javax.validation.UnexpectedTypeException;
 import java.util.function.Function;
@@ -25,7 +25,7 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class TransformApiDocService {
-    private final Function<String, AbstractApiDocService> beanApiDocFactory;
+    private final Function<String, AbstractApiDocService<?, ?>> beanApiDocFactory;
 
     /**
      * Does transformation API documentation
@@ -38,7 +38,7 @@ public class TransformApiDocService {
      */
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
         //maybe null check of apidocinfo
-        AbstractApiDocService abstractApiDocService = beanApiDocFactory.apply(apiDocInfo.getApiDocContent());
+        AbstractApiDocService<?, ?> abstractApiDocService = beanApiDocFactory.apply(apiDocInfo.getApiDocContent());
         if (abstractApiDocService == null) {
             throw new UnexpectedTypeException("Response is not a Swagger or OpenAPI type object.");
         }
