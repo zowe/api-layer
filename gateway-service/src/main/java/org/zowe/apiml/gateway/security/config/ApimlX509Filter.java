@@ -27,6 +27,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ApimlX509Filter extends X509AuthenticationFilter {
 
+    private static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
+    private static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
+    private static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
+
     private final Set<String> publicKeyCertificatesBase64;
 
     private Set<String> getPublicKeyCertificatesBase64() {
@@ -40,12 +44,12 @@ public class ApimlX509Filter extends X509AuthenticationFilter {
      * @param request Request to filter certificates
      */
     private void categorizeCerts(ServletRequest request) {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
         if (certs != null) {
-            request.setAttribute("client.auth.X509Certificate", selectCerts(certs, certificateForClientAuth ));
-            request.setAttribute("javax.servlet.request.X509Certificate", selectCerts(certs, notCertificateForClientAuth ));
-            log.debug("Filtering certificates: client.auth.X509Certificate -> {}", request.getAttribute("client.auth.X509Certificate"));
-            log.debug("Filtering certificates: javax.servlet.request.X509Certificate -> {}", request.getAttribute("javax.servlet.request.X509Certificate"));
+            request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth ));
+            request.setAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, notCertificateForClientAuth ));
+            log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
+            log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE));
         }
     }
 

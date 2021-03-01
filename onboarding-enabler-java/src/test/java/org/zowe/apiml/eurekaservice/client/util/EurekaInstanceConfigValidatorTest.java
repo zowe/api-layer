@@ -147,7 +147,7 @@ class EurekaInstanceConfigValidatorTest {
         Exception exception = assertThrows(MetadataValidationException.class,
             () -> validator.validate(testConfig),
             "Expected exception is not MetadataValidationException");
-        assertEquals("SSL parameters ** protocol, trustStore, keyStore, keyAlias, keyStoreType, trustStoreType, trustStorePassword, keyStorePassword, keyPassword, enabled ** are missing or were not replaced by the system properties.", exception.getMessage());
+        assertEquals("SSL parameters ** protocol, trustStore, keyStore, keyAlias, keyStoreType, trustStoreType, keyPassword, enabled, trustStorePassword, keyStorePassword ** are missing or were not replaced by the system properties.", exception.getMessage());
     }
 
     @Test
