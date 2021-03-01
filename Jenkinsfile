@@ -88,8 +88,6 @@ pipeline {
         stage ('Install') {
             steps {
                 sh 'npm install'
-                sh 'cd onboarding-enabler-nodejs-sample-app && npm install' // This should be integrated into local build
-                sh './gradlew api-catalog-ui:npmInstall'
             }
         }
 
