@@ -38,32 +38,29 @@ The following platform is required to run the API Mediation Layer:
 
 The following tools are required to build and develop the API Mediation Layer:
 
-* Node.js version 8.x and npm are required to be installed globally to build the API Catalog UI.
-    * <https://nodejs.org/dist/latest-v8.x/>
+* Node.js version 10.23.3 and npm are required to be installed globally to run npm commands in project root folder.
+  
+    * <https://nodejs.org/dist/>
+    
+    * During build, correct node version is automatically downloaded and built with.
 
 ### Quick start
 
 **Follow these steps:**
 
-1. Install npm packages for the UI:
-
-  ```sh
-   cd api-catalog-ui/frontend/; npm install; cd ../..
-   ```
-
-2. Install `concurrently` globally:
+1. Install `concurrently` globally:
 
   ```sh
    npm install -g concurrently
    ```
 
-3. Build all modules:
+2. Build all modules:
 
   ```sh
    ./gradlew build
    ```
 
-4. Run all service on your local machine:
+3. Run all service on your local machine:
 
   ```sh
    npm run api-layer
