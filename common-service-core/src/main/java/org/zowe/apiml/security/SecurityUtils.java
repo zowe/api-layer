@@ -14,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.*;
@@ -97,22 +94,6 @@ public class SecurityUtils {
             out.add(base64);
         }
         return out;
-    }
-
-    private static Key findFirstSecretKey(KeyStore keyStore, char[] keyPasswordInChars) throws KeyStoreException, NoSuchAlgorithmException {
-        Key key = null;
-        for (Enumeration<String> e = keyStore.aliases(); e.hasMoreElements(); ) {
-            String alias = e.nextElement();
-            try {
-                key = keyStore.getKey(alias, keyPasswordInChars);
-                if (key != null) {
-                    break;
-                }
-            } catch (UnrecoverableKeyException uke) {
-                log.debug("Key with alias {} could not be used: {}", alias, uke.getMessage());
-            }
-        }
-        return key;
     }
 
     /**

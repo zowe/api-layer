@@ -14,9 +14,7 @@ import com.netflix.discovery.DiscoveryClient;
 import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
@@ -24,16 +22,12 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -463,7 +457,7 @@ class ZosmfServiceTest {
                 eq(ZosmfService.ZosmfInfo.class)
             )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
-            underTest.isAccessible();
+            assertThat(underTest.isAccessible(), is(true));
         }
 
         @Test
@@ -475,7 +469,7 @@ class ZosmfServiceTest {
                 eq(ZosmfService.ZosmfInfo.class)
             )).thenThrow(RestClientException.class);
 
-            underTest.isAccessible();
+            assertThat(underTest.isAccessible(), is(false));
         }
     }
 }
