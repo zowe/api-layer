@@ -80,31 +80,60 @@ public class JwtSecurityInitializer {
 
     @PostConstruct
     public void init() {
+        // zOSMF isn't the authentication provider.
         if (!providers.isZosfmUsed()) {
+            log.info("zOSMF isn't used as the Authentication provider");
             loadJwtSecret();
+        // zOSMF is authentication provider
         } else {
-            log.info("is zOSMF available");
+            // zOSMF isn't available at the moment.
+            log.info("zOSMF is used as authentication provider");
             if (!providers.isZosmfAvailableAndOnline()) {
-
-                try {
-                    await()
-                        .atMost(Duration.FIVE_MINUTES)
-                    .with()
-                        .pollInterval(Duration.ONE_MINUTE)
-                        .until(providers::isZosmfAvailableAndOnline);
-                } catch (ConditionTimeoutException ex) {
-                    apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", "zOSMF");
-
-                    throw new RuntimeException("The zOSMF is configured as the Authentication provider but isn't available.");
+                // Wait for some time before giving up. Mainly used in the integration testing.
+                waitUntilZosmfIsUp();
+            } else {
+                // zOSMF is UP and the APAR PH12143 isn't applied
+                if (!providers.zosmfSupportsJwt()) {
+                    log.info("zOSMF is UP and APAR PH12143 was not applied");
+                    loadJwtSecret();
+                } else {
+                    log.info("zOSMF is UP and APAR PH12143 was applied");
                 }
-            }
-
-            if (!providers.zosmfSupportsJwt()) {
-                loadJwtSecret();
             }
         }
     }
 
+    /**
+     * The PostConstruct happens on the main thread and as such waiting on this thread stops the whole application.
+     * Therefore the waiting is externalized to another thread, which kills the VM if the setup is unsuccesfull. .
+     */
+    private void waitUntilZosmfIsUp() {
+        new Thread(() -> {
+            try {
+                await()
+                    .atMost(Duration.FIVE_MINUTES)
+                    .with()
+                    .pollInterval(Duration.ONE_MINUTE)
+                    .until(providers::isZosmfAvailableAndOnline);
+            } catch (ConditionTimeoutException ex) {
+                apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", "zOSMF");
+
+                System.exit(1);
+            }
+
+            if (!providers.zosmfSupportsJwt()) {
+                try {
+                    loadJwtSecret();
+                } catch (HttpsConfigError exception) {
+                    System.exit(1);
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * Load the JWT secret. If there is an configuration issue the error is thrown.
+     */
     private void loadJwtSecret() {
         signatureAlgorithm = SignatureAlgorithm.RS256;
         HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
