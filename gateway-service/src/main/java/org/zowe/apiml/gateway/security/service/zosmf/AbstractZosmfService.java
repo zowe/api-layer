@@ -16,10 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -85,7 +82,7 @@ public abstract class AbstractZosmfService {
      */
     protected String getURI(String zosmf) {
         Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {
-            log.info("z/OSMF instance not found or incorrectly configured.");
+            log.debug("z/OSMF instance not found or incorrectly configured.");
             return new ServiceNotAccessibleException("z/OSMF instance not found or incorrectly configured.");
         };
 

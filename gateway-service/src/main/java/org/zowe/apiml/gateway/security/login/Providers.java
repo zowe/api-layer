@@ -33,7 +33,7 @@ public class Providers {
      */
     public boolean isZosmfAvailable() {
         boolean isZosmfRegisteredAndPropagated = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
-        log.info("zOSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
+        log.debug("zOSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
         return isZosmfRegisteredAndPropagated;
     }
 
@@ -45,11 +45,11 @@ public class Providers {
         try {
             boolean isAvailable = isZosmfAvailable();
             boolean isAccessible = zosmfService.isAccessible();
-            log.info("zOSMF is registered and propagated to the DS: {} and is accessible based on the information: {}", isAvailable, isAccessible);
+            log.debug("zOSMF is registered and propagated to the DS: {} and is accessible based on the information: {}", isAvailable, isAccessible);
 
             return isAvailable && isAccessible;
         } catch (ServiceNotAccessibleException exception) {
-            log.info("zOSMF isn't registered to the Gateway yet");
+            log.debug("zOSMF isn't registered to the Gateway yet");
 
             return false;
         }

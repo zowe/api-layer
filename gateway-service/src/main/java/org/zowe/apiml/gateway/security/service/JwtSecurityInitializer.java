@@ -23,9 +23,7 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
 import javax.annotation.PostConstruct;
 import java.security.Key;
@@ -83,22 +81,22 @@ public class JwtSecurityInitializer {
     public void init() {
         // zOSMF isn't the authentication provider.
         if (!providers.isZosfmUsed()) {
-            log.info("zOSMF isn't used as the Authentication provider");
+            log.debug("zOSMF isn't used as the Authentication provider");
             loadJwtSecret();
         // zOSMF is authentication provider
         } else {
             // zOSMF isn't available at the moment.
-            log.info("zOSMF is used as authentication provider");
+            log.debug("zOSMF is used as authentication provider");
             if (!providers.isZosmfAvailableAndOnline()) {
                 // Wait for some time before giving up. Mainly used in the integration testing.
                 waitUntilZosmfIsUp();
             } else {
                 // zOSMF is UP and the APAR PH12143 isn't applied
                 if (!providers.zosmfSupportsJwt()) {
-                    log.info("zOSMF is UP and APAR PH12143 was not applied");
+                    log.debug("zOSMF is UP and APAR PH12143 was not applied");
                     loadJwtSecret();
                 } else {
-                    log.info("zOSMF is UP and APAR PH12143 was applied");
+                    log.debug("zOSMF is UP and APAR PH12143 was applied");
                 }
             }
         }
