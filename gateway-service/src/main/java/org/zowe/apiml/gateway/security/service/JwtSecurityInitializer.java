@@ -31,6 +31,7 @@ import javax.annotation.PostConstruct;
 import java.security.Key;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Optional;
 
 import static org.awaitility.Awaitility.await;
 
@@ -164,9 +165,13 @@ public class JwtSecurityInitializer {
         return jwtPublicKey;
     }
 
-    public JWK getJwkPublicKey() {
+    public Optional<JWK> getJwkPublicKey() {
+        if (jwtPublicKey == null) {
+            return Optional.empty();
+        }
+
         final RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) jwtPublicKey).build();
-        return rsaKey.toPublicJWK();
+        return Optional.of(rsaKey.toPublicJWK());
     }
 
 }

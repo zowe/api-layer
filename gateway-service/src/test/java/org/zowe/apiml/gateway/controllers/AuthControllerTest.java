@@ -25,6 +25,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
 import static org.mockito.Mockito.*;
@@ -98,7 +99,7 @@ class AuthControllerTest {
             zosmfKeys ? Arrays.asList(jwk1, jwk2) : Collections.emptyList()
         );
         when(zosmfService.getPublicKeys()).thenReturn(zosmf);
-        when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(jwk3);
+        when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(Optional.of(jwk3));
     }
 
     @Test

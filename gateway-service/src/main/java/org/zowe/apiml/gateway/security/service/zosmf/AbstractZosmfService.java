@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,6 +29,7 @@ import org.zowe.apiml.util.EurekaUtils;
 import java.util.*;
 import java.util.function.Supplier;
 
+@Slf4j
 public abstract class AbstractZosmfService {
 
     protected static final String ZOSMF_INFO_END_POINT = "/zosmf/info";
@@ -83,7 +85,7 @@ public abstract class AbstractZosmfService {
      */
     protected String getURI(String zosmf) {
         Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {
-            apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmf);
+            log.info("z/OSMF instance not found or incorrectly configured.");
             return new ServiceNotAccessibleException("z/OSMF instance not found or incorrectly configured.");
         };
 

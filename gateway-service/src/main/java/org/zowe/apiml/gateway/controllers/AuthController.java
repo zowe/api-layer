@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
 
@@ -81,7 +82,8 @@ public class AuthController {
     public JSONObject getAllPublicKeys() {
         final List<JWK> keys = new LinkedList<>();
         keys.addAll(zosmfService.getPublicKeys().getKeys());
-        keys.add(jwtSecurityInitializer.getJwkPublicKey());
+        Optional<JWK> key = jwtSecurityInitializer.getJwkPublicKey();
+        key.ifPresent(keys::add);
         return new JWKSet(keys).toJSONObject(true);
     }
 
@@ -91,7 +93,8 @@ public class AuthController {
         final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
 
         if (keys.isEmpty()) {
-            keys.add(jwtSecurityInitializer.getJwkPublicKey());
+            Optional<JWK> key = jwtSecurityInitializer.getJwkPublicKey();
+            key.ifPresent(keys::add);
         }
         return new JWKSet(keys).toJSONObject(true);
     }

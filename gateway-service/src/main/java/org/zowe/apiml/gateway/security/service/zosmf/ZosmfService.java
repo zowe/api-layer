@@ -204,13 +204,11 @@ public class ZosmfService extends AbstractZosmfService {
      * @return true when it's possible to access the Info endpoint via GET.
      */
     public boolean isAccessible() {
-        log.info("isAccesible");
-
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
 
         String infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
-        log.info("InfoEndpoint: {}", infoURIEndpoint);
+        log.info("Verifying zOSMF accessibility on info endpoint: {}", infoURIEndpoint);
 
         try {
             final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
@@ -219,8 +217,6 @@ public class ZosmfService extends AbstractZosmfService {
                 new HttpEntity<>(headers),
                 ZosmfInfo.class
             );
-
-            log.info("Result {}", info);
 
             return info.getStatusCode() == HttpStatus.OK;
         } catch (RestClientException ex) {
