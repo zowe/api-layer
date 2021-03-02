@@ -26,13 +26,17 @@ public class Authentication {
 
     private AuthenticationScheme scheme;
     private String applid;
+    private String headers;
 
     @JsonIgnore
     @Getter(AccessLevel.NONE)
     private Boolean supportsSso;
 
+    public Authentication(AuthenticationScheme scheme, String applid, String headers) {
+        this(scheme, applid, headers, null);
+    }
     public Authentication(AuthenticationScheme scheme, String applid) {
-        this(scheme, applid, null);
+        this(scheme, applid, null, null);
     }
 
     @JsonProperty
@@ -41,6 +45,7 @@ public class Authentication {
 
         switch (scheme) {
             case ZOWE_JWT:
+            case X509:
             case HTTP_BASIC_PASSTICKET:
             case ZOSMF:
                 return supportsSso == null || supportsSso;
