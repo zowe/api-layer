@@ -27,7 +27,7 @@
         "react-render-html": "0.6.0",
         "react-router-dom": "4.3.1",
         "react-router-tabs": "1.2.0",
-        "react-scripts": "4.0.2",
+        "react-scripts": "4.0.3",
         "react-toastify": "4.4.3",
         "redux": "4.0.1",
         "redux-catch": "1.3.1",
@@ -41,11 +41,9 @@
         "uuid": "3.3.2"
     },
     "scripts": {
-        "build": "npm run coverage && npm run react-scripts-build",
-        "react-scripts-build": "react-scripts build",
+        "build": "react-scripts build",
         "postbuild": "rimraf build/**/*.map",
-        "test": "react-scripts test --silent --watchAll=false --env=jsdom components/* reducers/* epics/* actions/* selectors/* ErrorBoundary/* --reporters=default --reporters=jest-html-reporter",
-        "coverage": "npm test -- --coverage",
+        "test": "react-scripts test --silent --watchAll=false --env=jsdom components/* reducers/* epics/* actions/* selectors/* ErrorBoundary/* --reporters=default --reporters=jest-html-reporter --coverage",
         "cy:open": "cypress open",
         "cy:e2e:ci": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless",
         "cy:e2e:localhost": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless",

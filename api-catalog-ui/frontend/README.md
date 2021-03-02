@@ -32,8 +32,8 @@ Npm: `npm test` while on directory `/api-catalog-ui/frontend`.
 Gradle: `./gradlew api-catalog-ui:test`
 
 For coverage
-Npm: `npm run coverage`
-Gradle: `./gradlew api-catalog-ui:build`
+Npm: `npm test`
+Gradle: `./gradlew api-catalog-ui:test`
 
 ### e2e tests
 

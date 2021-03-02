@@ -29,7 +29,7 @@ public class LoadBalancerRegistry extends RefreshEventListener {
 
     @Override
     public void refresh() {
-        registry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
+        registry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers); //NOSONAR
     }
 
 }
