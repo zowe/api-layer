@@ -14,38 +14,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
 import java.text.ParseException;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -195,6 +184,33 @@ public class ZosmfService extends AbstractZosmfService {
             return zosmfInfo.getSafRealm();
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(infoURIEndpoint, re);
+        }
+    }
+
+    /**
+     * Verify whether the service is actually accessible.
+     * @return true when it's possible to access the Info endpoint via GET.
+     */
+    public boolean isAccessible() {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(ZOSMF_CSRF_HEADER, "");
+
+        String infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
+        log.debug("Verifying zOSMF accessibility on info endpoint: {}", infoURIEndpoint);
+
+        try {
+            final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
+                infoURIEndpoint,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                ZosmfInfo.class
+            );
+
+            return info.getStatusCode() == HttpStatus.OK;
+        } catch (RestClientException ex) {
+            log.debug("zOSMF isn't accessible on URI: {}", infoURIEndpoint);
+
+            return false;
         }
     }
 

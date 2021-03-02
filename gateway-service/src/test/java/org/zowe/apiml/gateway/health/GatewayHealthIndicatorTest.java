@@ -67,7 +67,7 @@ class GatewayHealthIndicatorTest {
     @Test
     void givenZosmfIsUsedAnfZosmfIsUnavailable_whenHealthIsRequested_thenStatusIsDown() {
         when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfAvailable()).thenReturn(false);
+        when(providers.isZosmfAvailableAndOnline()).thenReturn(false);
 
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
@@ -83,7 +83,7 @@ class GatewayHealthIndicatorTest {
     @Test
     void givenZosmfIsUsedAndAvailable_whenHealthIsRequested_thenStatusIsUp() {
         when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfAvailable()).thenReturn(true);
+        when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
 
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
@@ -100,7 +100,7 @@ class GatewayHealthIndicatorTest {
     @Test
     void givenCustomCatalogProvider_whenHealthIsRequested_thenStatusIsUp() {
         when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfAvailable()).thenReturn(true);
+        when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
         String customCatalogServiceId = "customCatalog";
 
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);

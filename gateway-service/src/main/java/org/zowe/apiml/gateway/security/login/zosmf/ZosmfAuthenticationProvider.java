@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,9 +28,6 @@ import static  org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenT
 @RequiredArgsConstructor
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
-    @Value("${apiml.security.zosmf.useJwtToken:true}")
-    private boolean useJwtToken;
-
     private final AuthenticationService authenticationService;
     private final ZosmfService zosmfService;
 
@@ -48,7 +44,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         final ZosmfService.AuthenticationResponse ar = zosmfService.authenticate(authentication);
 
         // if z/OSMF support JWT, use it as Zowe JWT token
-        if (ar.getTokens().containsKey(JWT) && useJwtToken) {
+        if (ar.getTokens().containsKey(JWT)) {
             return authenticationService.createTokenAuthentication(user, ar.getTokens().get(JWT));
         }
 

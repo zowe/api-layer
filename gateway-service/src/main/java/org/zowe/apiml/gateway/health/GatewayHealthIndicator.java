@@ -54,7 +54,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         boolean authUp = true;
         if (loginProviders.isZosfmUsed()) {
             try {
-                authUp = loginProviders.isZosmfAvailable();
+                authUp = loginProviders.isZosmfAvailableAndOnline();
             } catch (AuthenticationServiceException ex) {
                 System.exit(-1);
             }

@@ -385,7 +385,6 @@ class ZosmfAuthenticationProviderTest {
         AuthenticationService authenticationService = mock(AuthenticationService.class);
         ZosmfService zosmfService = mock(ZosmfService.class);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService);
-        ReflectionTestUtils.setField(zosmfAuthenticationProvider, "useJwtToken", Boolean.TRUE);
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn("user1");
         TokenAuthentication authentication2 = mock(TokenAuthentication.class);
@@ -404,10 +403,8 @@ class ZosmfAuthenticationProviderTest {
         AuthenticationService authenticationService = mock(AuthenticationService.class);
         ZosmfService zosmfService = mock(ZosmfService.class);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService);
-        ReflectionTestUtils.setField(zosmfAuthenticationProvider, "useJwtToken", Boolean.FALSE);
 
         EnumMap<ZosmfService.TokenType, String> tokens = new EnumMap<>(ZosmfService.TokenType.class);
-        tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
         tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
         when(zosmfService.authenticate(any())).thenReturn(new ZosmfService.AuthenticationResponse("domain", tokens));
 

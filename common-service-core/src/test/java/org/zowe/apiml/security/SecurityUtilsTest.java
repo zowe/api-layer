@@ -44,20 +44,6 @@ class SecurityUtilsTest {
     }
 
     @Test
-    void testReadSecret() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
-        String secretKey = SecurityUtils.readSecret(httpsConfig);
-        assertNotNull(secretKey);
-    }
-
-    @Test
-    void testReadSecretWithIncorrectKeyAlias() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(WRONG_PARAMETER).build();
-        assertThrows(HttpsConfigError.class, () -> SecurityUtils.readSecret(httpsConfig));
-
-    }
-
-    @Test
     void testLoadKey() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).build();
         Key secretKey = SecurityUtils.loadKey(httpsConfig);
