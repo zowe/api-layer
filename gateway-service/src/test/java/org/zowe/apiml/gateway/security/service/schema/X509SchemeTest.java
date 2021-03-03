@@ -23,7 +23,7 @@ import java.security.cert.X509Certificate;
 
 import static org.mockito.Mockito.*;
 
-public class X509SchemeTest extends CleanCurrentRequestContextTest {
+class X509SchemeTest extends CleanCurrentRequestContextTest {
     private static final String PUBLIC_KEY = "X-Certificate-Public";
     private static final String DISTINGUISHED_NAME = "X-Certificate-DistinguishedName";
     private static final String COMMON_NAME = "X-Certificate-CommonName";

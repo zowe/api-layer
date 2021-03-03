@@ -24,6 +24,10 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.function.Supplier;
 
+/**
+ * This schema adds requested information about client certificate. This information is added
+ * to HTTP header. If no header is specified in Authentication object, empty command is returned.
+ */
 @Component
 @Slf4j
 public class X509Scheme implements AbstractAuthenticationScheme {
@@ -36,7 +40,10 @@ public class X509Scheme implements AbstractAuthenticationScheme {
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
         String[] headers = authentication.getHeaders().split(",");
-        return new X509Command(headers);
+        if(headers.length > 1) {
+            return new X509Command(headers);
+        }
+        else return AuthenticationCommand.EMPTY;
     }
 
     public static class X509Command extends AuthenticationCommand {
@@ -68,18 +75,20 @@ public class X509Scheme implements AbstractAuthenticationScheme {
         private void setHeader(RequestContext context, X509Certificate clientCert) throws CertificateEncodingException {
             for (String header : headers) {
                 switch (header.trim()) {
-                    case PUBLIC_KEY:
-                        String encodedCert = Base64.getEncoder().encodeToString(clientCert.getEncoded());
-                        context.addZuulRequestHeader(PUBLIC_KEY, encodedCert);
-                        continue;
-                    case DISTINGUISHED_NAME:
-                        String distinguishedName = clientCert.getSubjectDN().toString();
-                        context.addZuulRequestHeader(DISTINGUISHED_NAME, distinguishedName);
-                        continue;
                     case COMMON_NAME:
                         X509CommonNameUserMapper mapper = new X509CommonNameUserMapper();
                         String commonName = mapper.mapCertificateToMainframeUserId(clientCert);
                         context.addZuulRequestHeader(COMMON_NAME, commonName);
+                        break;
+                    case PUBLIC_KEY:
+                        String encodedCert = Base64.getEncoder().encodeToString(clientCert.getEncoded());
+                        context.addZuulRequestHeader(PUBLIC_KEY, encodedCert);
+                        break;
+                    case DISTINGUISHED_NAME:
+                        String distinguishedName = clientCert.getSubjectDN().toString();
+                        context.addZuulRequestHeader(DISTINGUISHED_NAME, distinguishedName);
+                        break;
+
                 }
             }
         }
