@@ -40,7 +40,7 @@ apiml:
         contextPath: /${apiml.service.serviceId}
         authentication:
             scheme: x509
-            headers: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonNme
+            headers: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         homePageRelativeUrl: ${apiml.service.contextPath}
         statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
