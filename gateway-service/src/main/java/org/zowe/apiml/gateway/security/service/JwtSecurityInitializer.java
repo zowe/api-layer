@@ -53,7 +53,7 @@ public class JwtSecurityInitializer {
     @Value("${apiml.security.auth.jwtKeyAlias:}")
     private String keyAlias;
 
-    private Duration pollingInterval;
+    private Duration pollingInterval = Duration.FIVE_MINUTES;
 
     private SignatureAlgorithm signatureAlgorithm;
     private Key jwtSecret;
