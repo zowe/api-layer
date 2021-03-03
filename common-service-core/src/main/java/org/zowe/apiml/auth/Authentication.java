@@ -36,7 +36,7 @@ public class Authentication {
         this(scheme, applid, headers, null);
     }
     public Authentication(AuthenticationScheme scheme, String applid) {
-        this(scheme, applid, null, null);
+        this(scheme, applid, null);
     }
 
     @JsonProperty
