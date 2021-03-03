@@ -40,7 +40,7 @@ public class X509Scheme implements AbstractAuthenticationScheme {
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
         String[] headers = authentication.getHeaders().split(",");
-        if (headers.length > 1) {
+        if (headers.length > 0) {
             return new X509Command(headers);
         } else return AuthenticationCommand.EMPTY;
     }
