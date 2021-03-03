@@ -31,6 +31,7 @@ api-catalog-ui/src/main/resources/static
 *.py[cod]
 Pipfile.lock
 .pytest_cache
+venv
 
 # C extensions
 *.so
