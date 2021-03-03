@@ -9,59 +9,116 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
-import org.zowe.apiml.config.service.security.MockedSecurityInitializer;
-import org.zowe.apiml.security.HttpsConfigError;
-import io.jsonwebtoken.SignatureAlgorithm;
+import org.awaitility.Duration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.gateway.security.login.Providers;
+import org.zowe.apiml.security.HttpsConfigError;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-
-@ExtendWith(SpringExtension.class)
-@TestPropertySource(locations = "/application.yml")
-@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
-@Import(MockedSecurityInitializer.class)
 class JwtSecurityInitializerTest {
+    private JwtSecurityInitializer underTest;
+    private Providers providers;
 
-    @Autowired
-    private JwtSecurityInitializer jwtSecurityInitializer;
+    @Nested
+    class WhenInitializedWithValidJWT {
+        @BeforeEach
+        void setUp() {
+            providers = mock(Providers.class);
+            when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
 
-    @Test
-    void shouldExtractSecretAndPublicKey() {
-        jwtSecurityInitializer.init();
-        assertEquals("RSA", jwtSecurityInitializer.getJwtSecret().getAlgorithm());
-        assertEquals("RSA", jwtSecurityInitializer.getJwtPublicKey().getAlgorithm());
-        assertEquals("PKCS#8", jwtSecurityInitializer.getJwtSecret().getFormat());
-        assertEquals("X.509", jwtSecurityInitializer.getJwtPublicKey().getFormat());
+            underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), new Duration(10, TimeUnit.MILLISECONDS));
+        }
+
+        @Test
+        void givenZosmfIsUsedWithValidJwt_thenJwtSecretIsIgnored() {
+            when(providers.isZosfmUsed()).thenReturn(true);
+            when(providers.zosmfSupportsJwt()).thenReturn(true);
+
+            underTest.init();
+            assertThat(underTest.getJwtSecret(), is(nullValue()));
+        }
+
+        @Test
+        void givenSafIsUsed_thenProperKeysAreInitialized() {
+            when(providers.isZosfmUsed()).thenReturn(false);
+
+            underTest.init();
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
+
+        @Test
+        void givenZosmfIsUsedWithoutJwt_thenProperKeysAreInitialized() {
+            when(providers.isZosfmUsed()).thenReturn(true);
+            when(providers.zosmfSupportsJwt()).thenReturn(false);
+
+            underTest.init();
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
+
+        @Test
+        void givenZosmfIsntRegisteredAtTheStartupButRegistersLater_thenProperKeysAreInitialized() {
+            when(providers.isZosfmUsed()).thenReturn(true);
+            when(providers.zosmfSupportsJwt()).thenReturn(false);
+            when(providers.isZosmfAvailableAndOnline())
+                .thenReturn(false)
+                .thenReturn(true);
+
+            underTest.init();
+
+            await()
+                .atMost(Duration.TEN_SECONDS)
+            .with()
+                .pollInterval(new Duration(20, TimeUnit.MILLISECONDS))
+                .until(underTest::getJwtSecret, is(not(nullValue())));
+        }
     }
 
-    @Test
-    void shouldThrowExceptionIfTheKeysAreNull() {
-        jwtSecurityInitializer = new JwtSecurityInitializer();
-        Exception exception = assertThrows(HttpsConfigError.class,
-            () -> jwtSecurityInitializer.init(),
-            "Expected exception is not HttpsConfigError");
+    @Nested
+    class WhenInitializedWithoutValidJWT {
+        @BeforeEach
+        void setUp() {
+            providers = mock(Providers.class);
+            when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
+            underTest = new JwtSecurityInitializer(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), new Duration(10, TimeUnit.MILLISECONDS));
+        }
 
-        assertEquals("Not found 'null' key alias in the keystore 'null'.", exception.getMessage());
-    }
+        @Test
+        void givenZosmfIsUsedWithValidJwt_thenMissingJwtIsIgnored() {
+            when(providers.isZosfmUsed()).thenReturn(true);
+            when(providers.zosmfSupportsJwt()).thenReturn(true);
 
-    @Test
-    void shouldReturnSignatureAlgorithm() {
-        jwtSecurityInitializer.init();
-        assertEquals(SignatureAlgorithm.RS256, jwtSecurityInitializer.getSignatureAlgorithm());
-    }
+            underTest.init();
+            assertThat(underTest.getJwtSecret(), is(nullValue()));
+        }
 
-    @Test
-    void testGetJwkPublicKey() {
-        assertEquals("RSA", jwtSecurityInitializer.getJwkPublicKey().getKeyType().getValue());
+        @Test
+        void givenSafIsUsed_exceptionIsThrown() {
+            when(providers.isZosfmUsed()).thenReturn(false);
+
+            assertThrows(HttpsConfigError.class, () -> {
+                underTest.init();
+            });
+        }
+
+        @Test
+        void givenZosmfIsUsedWithoutJwt_exceptionIsThrown() {
+            when(providers.isZosfmUsed()).thenReturn(true);
+            when(providers.zosmfSupportsJwt()).thenReturn(false);
+
+            assertThrows(HttpsConfigError.class, () -> {
+                underTest.init();
+            });
+        }
     }
 }
 

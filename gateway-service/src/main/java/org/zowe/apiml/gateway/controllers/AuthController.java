@@ -12,9 +12,7 @@ package org.zowe.apiml.gateway.controllers;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import net.minidev.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
@@ -25,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
 
@@ -36,10 +35,6 @@ import static org.apache.http.HttpStatus.*;
 @RestController
 @RequestMapping(AuthController.CONTROLLER_PATH)
 public class AuthController {
-
-    @Setter
-    @Value("${apiml.security.zosmf.useJwtToken:true}")
-    protected boolean useZosmfJwtToken;
 
     private final AuthenticationService authenticationService;
 
@@ -87,19 +82,19 @@ public class AuthController {
     public JSONObject getAllPublicKeys() {
         final List<JWK> keys = new LinkedList<>();
         keys.addAll(zosmfService.getPublicKeys().getKeys());
-        keys.add(jwtSecurityInitializer.getJwkPublicKey());
+        Optional<JWK> key = jwtSecurityInitializer.getJwkPublicKey();
+        key.ifPresent(keys::add);
         return new JWKSet(keys).toJSONObject(true);
     }
 
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
     @ResponseBody
     public JSONObject getCurrentPublicKeys() {
-        final List<JWK> keys = new LinkedList<>();
-        if (useZosmfJwtToken) {
-            keys.addAll(zosmfService.getPublicKeys().getKeys());
-        }
+        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+
         if (keys.isEmpty()) {
-            keys.add(jwtSecurityInitializer.getJwkPublicKey());
+            Optional<JWK> key = jwtSecurityInitializer.getJwkPublicKey();
+            key.ifPresent(keys::add);
         }
         return new JWKSet(keys).toJSONObject(true);
     }

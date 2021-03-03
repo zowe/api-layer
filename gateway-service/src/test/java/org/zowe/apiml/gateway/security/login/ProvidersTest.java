@@ -10,11 +10,14 @@
 package org.zowe.apiml.gateway.security.login;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
 import java.util.Collections;
 
@@ -28,6 +31,7 @@ class ProvidersTest {
     private DiscoveryClient discovery;
     private Providers underTest;
     private CompoundAuthProvider compoundAuthProvider;
+    private ZosmfService zosmfService;
     private static final String ZOSMF_ID = "zosmf";
 
     @BeforeEach
@@ -35,38 +39,103 @@ class ProvidersTest {
         authConfigurationProperties = mock(AuthConfigurationProperties.class);
         compoundAuthProvider = mock(CompoundAuthProvider.class);
         discovery = mock(DiscoveryClient.class);
+        zosmfService = mock(ZosmfService.class);
 
-        underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider);
+        underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider, zosmfService);
     }
 
+    @Nested
+    class whenInUseIsRequested {
+        @Test
+        void givenZosmfAsAuthentication_thenReturnTrue() {
+            when(compoundAuthProvider.getLoginAuthProviderName()).thenReturn(LoginProvider.ZOSMF.getValue());
 
-    @Test
-    void givenZosmfAsAuthentication_whenInUseIsRequested_thenReturnTrue() {
-        when(compoundAuthProvider.getLoginAuthProviderName()).thenReturn(LoginProvider.ZOSMF.getValue());
-        assertThat(underTest.isZosfmUsed(), is(true));
+            assertThat(underTest.isZosfmUsed(), is(true));
+        }
+
+        @Test
+        void givenSafIsUsedAsAuthentication_thenReturnFalse() {
+            when(compoundAuthProvider.getLoginAuthProviderName()).thenReturn(LoginProvider.SAF.getValue());
+
+            assertThat(underTest.isZosfmUsed(), is(false));
+        }
     }
 
-    @Test
-    void givenSafIsUsedAsAuthentication_whenInUseIsRequested_thenReturnFalse() {
-        when(compoundAuthProvider.getLoginAuthProviderName()).thenReturn(LoginProvider.SAF.getValue());
+    @Nested
+    class whenAvailabilityIsRequested {
+        @Test
+        void givenZosmfIsKnownByDiscovery_thenReturnTrue() {
+            prepareValidZosmfInDiscovery();
 
-        assertThat(underTest.isZosfmUsed(), is(false));
+            assertThat(underTest.isZosmfAvailable(), is(true));
+        }
+
+        @Test
+        void givenZosmfIsUnknownByDiscovery_thenReturnFalse() {
+            when(discovery.getInstances(ZOSMF_ID)).thenReturn(Collections.emptyList());
+
+            assertThat(underTest.isZosmfAvailable(), is(false));
+        }
     }
 
-    @Test
-    void givenZosmfIsKnownByDiscovery_whenAvailabilityIsRequested_thenReturnTrue() {
+    @Nested
+    class whenAvailabilityAndAccessibilityOfZosmfIsRequested {
+        @Test
+        void givenZosmfIsAvailableAndAccessible_thenTrueIsReturned() {
+            prepareValidZosmfInDiscovery();
+            when(zosmfService.isAccessible()).thenReturn(true);
+
+            assertThat(underTest.isZosmfAvailableAndOnline(), is(true));
+        }
+
+        @Nested
+        class thenFalseIsReturned {
+            @Test
+            void givenZosmfIsntRegisteredToTheGatewayYet() {
+                when(discovery.getInstances(ZOSMF_ID)).thenReturn(Collections.emptyList());
+                when(zosmfService.isAccessible()).thenThrow(ServiceNotAccessibleException.class);
+
+                assertThat(underTest.isZosmfAvailableAndOnline(), is(false));
+            }
+
+            @Test
+            void givenSafIsUsed() {
+                when(discovery.getInstances(ZOSMF_ID)).thenReturn(Collections.emptyList());
+
+                assertThat(underTest.isZosmfAvailableAndOnline(), is(false));
+            }
+
+            @Test
+            void givenZosmfIsRegisteredButUnavailable() {
+                prepareValidZosmfInDiscovery();
+                when(zosmfService.isAccessible()).thenReturn(false);
+
+                assertThat(underTest.isZosmfAvailableAndOnline(), is(false));
+            }
+        }
+    }
+
+    @Nested
+    class whenJwtSupportIsVerified {
+        @Test
+        void givenLoginEndpointExists_thenSupportJwtReturnsTrue() {
+            when(zosmfService.loginEndpointExists()).thenReturn(true);
+
+            assertThat(underTest.zosmfSupportsJwt(), is(true));
+        }
+
+        @Test
+        void givenLoginEndpointDoesntExist_thenSupportJwtReturnsFalse() {
+            when(zosmfService.loginEndpointExists()).thenReturn(false);
+
+            assertThat(underTest.zosmfSupportsJwt(), is(false));
+        }
+    }
+
+    private void prepareValidZosmfInDiscovery() {
         when(discovery.getInstances(ZOSMF_ID)).thenReturn(
             Collections.singletonList(mock(ServiceInstance.class))
         );
         when(authConfigurationProperties.validatedZosmfServiceId()).thenReturn(ZOSMF_ID);
-
-        assertThat(underTest.isZosmfAvailable(), is(true));
-    }
-
-    @Test
-    void givenZosmfIsUnknownByDiscovery_whenAvailabilityIsRequested_thenReturnFalse() {
-        when(discovery.getInstances(ZOSMF_ID)).thenReturn(Collections.emptyList());
-
-        assertThat(underTest.isZosmfAvailable(), is(false));
     }
 }

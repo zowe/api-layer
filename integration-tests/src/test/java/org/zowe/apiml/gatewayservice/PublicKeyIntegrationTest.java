@@ -79,6 +79,7 @@ class PublicKeyIntegrationTest {
     }
 
     @Test
+    @MainframeDependentTests
     void testCurrentPublicKeys() throws ParseException {
         String response = given()
             .accept(ContentType.JSON)

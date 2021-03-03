@@ -25,6 +25,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
 import static org.mockito.Mockito.*;
@@ -98,7 +99,7 @@ class AuthControllerTest {
             zosmfKeys ? Arrays.asList(jwk1, jwk2) : Collections.emptyList()
         );
         when(zosmfService.getPublicKeys()).thenReturn(zosmf);
-        when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(jwk3);
+        when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(Optional.of(jwk3));
     }
 
     @Test
@@ -112,8 +113,7 @@ class AuthControllerTest {
 
     @Test
     void testGetActivePublicKeys_useZoweJwt() throws Exception {
-        initPublicKeys(true);
-        authController.setUseZosmfJwtToken(false);
+        initPublicKeys(false);
         JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
         this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
             .andExpect(status().is(SC_OK))
@@ -123,7 +123,6 @@ class AuthControllerTest {
     @Test
     void testGetActivePublicKeys_useBoth() throws Exception {
         initPublicKeys(true);
-        authController.setUseZosmfJwtToken(true);
         JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
         this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
             .andExpect(status().is(SC_OK))
@@ -133,7 +132,6 @@ class AuthControllerTest {
     @Test
     void testGetActivePublicKeys_missingZosmf() throws Exception {
         initPublicKeys(false);
-        authController.setUseZosmfJwtToken(true);
         JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
         this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
             .andExpect(status().is(SC_OK))
