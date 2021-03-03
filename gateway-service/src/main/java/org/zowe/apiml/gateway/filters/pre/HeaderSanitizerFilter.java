@@ -27,7 +27,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @NoArgsConstructor
 @AllArgsConstructor
 public class HeaderSanitizerFilter extends ZuulFilter {
-    @Value(value = "${apiml.security.headersToBeCleared}")
+    @Value(value = "${apiml.security.headersToBeCleared:}")
     private String[] headersToBeCleared;
 
     @Override
