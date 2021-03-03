@@ -10,6 +10,7 @@
 package org.zowe.apiml.security;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -43,17 +44,26 @@ class SecurityUtilsTest {
         httpsConfigBuilder = SecurityTestUtils.correctHttpsSettings();
     }
 
-    @Test
-    void testLoadKey() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).build();
-        Key secretKey = SecurityUtils.loadKey(httpsConfig);
-        assertNotNull(secretKey);
-    }
+    @Nested
+    class whenLoadingKey {
+        @Test
+        void givenValidSetup_thenReturnValidKey() {
+            HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).build();
+            Key secretKey = SecurityUtils.loadKey(httpsConfig);
+            assertNotNull(secretKey);
+        }
 
-    @Test
-    void testLoadKeyWithIncorrectKeyPassword() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).keyPassword(WRONG_PARAMETER.toCharArray()).build();
-        assertThrows(HttpsConfigError.class, () -> SecurityUtils.loadKey(httpsConfig));
+        @Test
+        void givenIncorrectPassword_thenThrowException() {
+            HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).keyPassword(WRONG_PARAMETER.toCharArray()).build();
+            assertThrows(HttpsConfigError.class, () -> SecurityUtils.loadKey(httpsConfig));
+        }
+
+        @Test
+        void givenNullAsKeyAlias_thenThrowException() {
+            HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(null).build();
+            assertThrows(HttpsConfigError.class, () -> SecurityUtils.loadKey(httpsConfig));
+        }
     }
 
     @Test
