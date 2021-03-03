@@ -22,14 +22,14 @@ public class HeaderSanitizerFilterTest {
     HeaderSanitizerFilter headerSanitizerFilter;
 
     @Test
-    void test(){
-        String[] headers = {PUBLIC_KEY,DISTINGUISHED_NAME,COMMON_NAME};
+    void test() {
+        String[] headers = {PUBLIC_KEY, DISTINGUISHED_NAME, COMMON_NAME};
         headerSanitizerFilter = spy(new HeaderSanitizerFilter(headers));
         RequestContext context = spy(RequestContext.class);
-            RequestContext.testSetCurrentContext(context);
+        RequestContext.testSetCurrentContext(context);
         headerSanitizerFilter.run();
-        context.addZuulRequestHeader(PUBLIC_KEY,"evil header");
-        verify(context,times(1)).addZuulRequestHeader(PUBLIC_KEY,null);
+        context.addZuulRequestHeader(PUBLIC_KEY, "evil header");
+        verify(context, times(1)).addZuulRequestHeader(PUBLIC_KEY, null);
         assertNull(context.getZuulRequestHeaders().get(PUBLIC_KEY));
     }
 }
