@@ -50,7 +50,7 @@ function startHttpsService() {
     app.get("/api/v1/status", (req, res) => res.json({ status: "UP" }));
 
     // Static resources (contains Swagger JSON document with API documentation):
-    app.use(express.static("static"));
+    app.use(express.static("src/static"));
 
     // Start HTTPS server and register to Discovery Service:
     tlsOptions = apiLayerService.tlsOptions;
