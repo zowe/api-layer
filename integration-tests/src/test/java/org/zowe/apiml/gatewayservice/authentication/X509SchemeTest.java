@@ -20,7 +20,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
 
-public class X509SchemeTest {
+class X509SchemeTest {
     private final static EnvironmentConfiguration ENVIRONMENT_CONFIGURATION = ConfigReader.environmentConfiguration();
     private final static GatewayServiceConfiguration GATEWAY_SERVICE_CONFIGURATION =
         ENVIRONMENT_CONFIGURATION.getGatewayServiceConfiguration();

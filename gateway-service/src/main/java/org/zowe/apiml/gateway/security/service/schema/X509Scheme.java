@@ -87,6 +87,10 @@ public class X509Scheme implements AbstractAuthenticationScheme {
                         String distinguishedName = clientCert.getSubjectDN().toString();
                         context.addZuulRequestHeader(DISTINGUISHED_NAME, distinguishedName);
                         break;
+                    default:
+                        log.warn("Unsupported header specified in service metadata, " +
+                            "please review apiml.service.authentication.headers, possible values are: " + PUBLIC_KEY +
+                            ", " + DISTINGUISHED_NAME + ", " + COMMON_NAME + "\nprovided value: " + header);
 
                 }
             }
