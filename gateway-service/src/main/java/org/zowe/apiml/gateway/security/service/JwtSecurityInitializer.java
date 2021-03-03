@@ -53,7 +53,7 @@ public class JwtSecurityInitializer {
     @Value("${apiml.security.auth.jwtKeyAlias:}")
     private String keyAlias;
 
-    private Duration pollingInterval = Duration.FIVE_MINUTES;
+    private Duration pollingInterval;
 
     private SignatureAlgorithm signatureAlgorithm;
     private Key jwtSecret;
@@ -64,6 +64,7 @@ public class JwtSecurityInitializer {
     @Autowired
     public JwtSecurityInitializer(Providers providers) {
         this.providers = providers;
+        this.pollingInterval = Duration.ONE_MINUTE;
     }
 
     public JwtSecurityInitializer(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, Duration pollingInterval) {
@@ -114,7 +115,7 @@ public class JwtSecurityInitializer {
             try {
                 await()
                     .atMost(Duration.FIVE_MINUTES)
-                    .with()
+                .with()
                     .pollInterval(pollingInterval)
                     .until(providers::isZosmfAvailableAndOnline);
             } catch (ConditionTimeoutException ex) {
