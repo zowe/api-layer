@@ -17,7 +17,9 @@ let keyFile = null;
 let caFile = null;
 let passPhrase = null;
 
-// Read ssl service configuration
+/**
+ * Read ssl service configuration
+ */
 function readTlsProps() {
     try {
         const config = yaml.load(fs.readFileSync('config/service-configuration.yml', 'utf8'));
@@ -47,6 +49,9 @@ const client = new Eureka({
     }
 });
 
+/**
+ * Function that uses the eureka-js-client library to register the application to Eureka
+ */
 function connectToEureka() {
     client.start(function(error) {
         if (error != null) {
@@ -55,9 +60,17 @@ function connectToEureka() {
     });
 }
 
+/**
+ * Unregister the Eureka client from Eureka (i.e. when the application down)
+ */
+function unregisterFromEureka() {
+    console.log("\nUnregistering the service from Eureka...")
+    client.stop();
+}
+
 connectToEureka();
 
-module.exports = {connectToEureka, tlsOptions};
+module.exports = {connectToEureka, tlsOptions, unregisterFromEureka};
 
 
 

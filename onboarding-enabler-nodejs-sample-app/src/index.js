@@ -60,4 +60,28 @@ function startHttpsService() {
     });
 }
 
+function exitHandler() {
+    apiLayerService.unregisterFromEureka();
+}
+
+process.on('SIGTERM', signal => {
+    exitHandler();
+    process.exit(0);
+});
+
+process.on('SIGINT', signal => {
+    exitHandler();
+    process.exit(0);
+});
+
+process.on('uncaughtException', err => {
+    exitHandler();
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    exitHandler();
+    process.exit(1);
+});
+
 startHttpsService();
