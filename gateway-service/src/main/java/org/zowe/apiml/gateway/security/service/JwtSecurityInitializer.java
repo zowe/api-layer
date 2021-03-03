@@ -53,6 +53,8 @@ public class JwtSecurityInitializer {
     @Value("${apiml.security.auth.jwtKeyAlias:}")
     private String keyAlias;
 
+    private Duration pollingInterval;
+
     private SignatureAlgorithm signatureAlgorithm;
     private Key jwtSecret;
     private PublicKey jwtPublicKey;
@@ -62,9 +64,10 @@ public class JwtSecurityInitializer {
     @Autowired
     public JwtSecurityInitializer(Providers providers) {
         this.providers = providers;
+        this.pollingInterval = Duration.ONE_MINUTE;
     }
 
-    public JwtSecurityInitializer(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword) {
+    public JwtSecurityInitializer(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, Duration pollingInterval) {
         this(providers);
 
         this.keyStore = keyStore;
@@ -72,6 +75,7 @@ public class JwtSecurityInitializer {
         this.keyPassword = keyPassword;
         this.keyAlias = keyAlias;
         this.keyStoreType = "PKCS12";
+        this.pollingInterval = pollingInterval;
     }
 
     @InjectApimlLogger
@@ -111,8 +115,8 @@ public class JwtSecurityInitializer {
             try {
                 await()
                     .atMost(Duration.FIVE_MINUTES)
-                    .with()
-                    .pollInterval(Duration.ONE_MINUTE)
+                .with()
+                    .pollInterval(pollingInterval)
                     .until(providers::isZosmfAvailableAndOnline);
             } catch (ConditionTimeoutException ex) {
                 apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", "zOSMF");

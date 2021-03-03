@@ -9,12 +9,16 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
+import org.awaitility.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.security.HttpsConfigError;
 
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,7 +36,7 @@ class JwtSecurityInitializerTest {
             providers = mock(Providers.class);
             when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
 
-            underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray());
+            underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), new Duration(10, TimeUnit.MILLISECONDS));
         }
 
         @Test
@@ -60,6 +64,23 @@ class JwtSecurityInitializerTest {
             underTest.init();
             assertThat(underTest.getJwtSecret(), is(not(nullValue())));
         }
+
+        @Test
+        void givenZosmfIsntRegisteredAtTheStartupButRegistersLater_thenProperKeysAreInitialized() {
+            when(providers.isZosfmUsed()).thenReturn(true);
+            when(providers.zosmfSupportsJwt()).thenReturn(false);
+            when(providers.isZosmfAvailableAndOnline())
+                .thenReturn(false)
+                .thenReturn(true);
+
+            underTest.init();
+
+            await()
+                .atMost(Duration.TEN_SECONDS)
+            .with()
+                .pollInterval(new Duration(20, TimeUnit.MILLISECONDS))
+                .until(underTest::getJwtSecret, is(not(nullValue())));
+        }
     }
 
     @Nested
@@ -68,7 +89,7 @@ class JwtSecurityInitializerTest {
         void setUp() {
             providers = mock(Providers.class);
             when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
-            underTest = new JwtSecurityInitializer(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray());
+            underTest = new JwtSecurityInitializer(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), new Duration(10, TimeUnit.MILLISECONDS));
         }
 
         @Test
