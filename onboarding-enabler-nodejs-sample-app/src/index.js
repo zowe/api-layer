@@ -20,6 +20,8 @@ const args = {
     // The APIML stores such certificates in files with `-ebcdic` suffix
 };
 
+const app = express();
+let httpsServer;
 /**
  * Registers the service to the APIML Discovery service
  */
@@ -27,7 +29,6 @@ const args = {
  * Starts the REST API service as an HTTPS server
  */
 function startHttpsService() {
-    const app = express();
 
     // Index page with a link to the REST API endpoint:
     app.get("/", (req, res) =>
@@ -53,35 +54,39 @@ function startHttpsService() {
 
     // Start HTTPS server and register to Discovery Service:
     tlsOptions = apiLayerService.tlsOptions;
-    const httpsServer = https.createServer(tlsOptions, app);
+    httpsServer = https.createServer(tlsOptions, app);
     httpsServer.listen(args.port, function () {
         console.log(`${args.serviceId} service listening on port ${args.port}`);
         apiLayerService.connectToEureka();
     });
 }
 
-function exitHandler() {
-    apiLayerService.unregisterFromEureka();
-}
+startHttpsService();
 
 process.on('SIGTERM', signal => {
-    exitHandler();
-    process.exit(0);
+    apiLayerService.unregisterFromEureka();
+    httpsServer.close(() => {
+        process.exit(0);
+    });
 });
 
 process.on('SIGINT', signal => {
-    exitHandler();
-    process.exit(0);
+    apiLayerService.unregisterFromEureka();
+    httpsServer.close(() => {
+        process.exit(0);
+    });
 });
 
 process.on('uncaughtException', err => {
-    exitHandler();
-    process.exit(1);
+    apiLayerService.unregisterFromEureka();
+    httpsServer.close(() => {
+        process.exit(1);
+    });
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-    exitHandler();
-    process.exit(1);
+    apiLayerService.unregisterFromEureka();
+    httpsServer.close(() => {
+        process.exit(1);
+    });
 });
-
-startHttpsService();
