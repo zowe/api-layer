@@ -12,8 +12,9 @@ case $RELEASE_TYPE in
    cd onboarding-enabler-nodejs
    echo "//registry.npmjs.org/:_authToken=$TOKEN" > ~/.npmrc
    echo "registry=$DIST_REGISTRY" >> ~/.npmrc
-   npm version $RELEASE_VERSION
-   npm publish --access public
+   #TODO broken with gradle release task, it fails on uncommitted changes in working dir
+   #/npm version $RELEASE_VERSION
+   #npm publish --access public
    cd ..
    ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=$RELEASE_VERSION -Prelease.newVersion=$NEW_VERSION $AUTH
    git archive --format tar.gz -9 --output api-layer.tar.gz "v$RELEASE_VERSION"
