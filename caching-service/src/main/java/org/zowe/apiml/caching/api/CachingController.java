@@ -39,10 +39,7 @@ public class CachingController {
         notes = "Values returned for the calling service")
     @ResponseBody
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
-        if (getServiceId(request).isPresent()) {
-            return new ResponseEntity<>(storage.readForService(getServiceId(request).get()), HttpStatus.OK);
-        }
-        return getUnauthorizedResponse();
+        return getServiceId(request).<ResponseEntity<Object>>map(s -> new ResponseEntity<>(storage.readForService(s), HttpStatus.OK)).orElseGet(this::getUnauthorizedResponse);
     }
 
     private ResponseEntity<Object> getUnauthorizedResponse() {
@@ -100,17 +97,16 @@ public class CachingController {
      * Properly handle and package Exceptions.
      */
     private ResponseEntity<Object> keyRequest(KeyOperation keyOperation, String key, HttpServletRequest request, HttpStatus successStatus) {
-        if (!getServiceId(request).isPresent()) {
+        Optional<String> serviceId = getServiceId(request);
+        if (!serviceId.isPresent()) {
             return getUnauthorizedResponse();
         }
-
-        String serviceId = getServiceId(request).get();
         try {
             if (key == null) {
                 keyNotInCache();
             }
 
-            KeyValue pair = keyOperation.storageRequest(serviceId, key);
+            KeyValue pair = keyOperation.storageRequest(serviceId.get(), key);
 
             return new ResponseEntity<>(pair, successStatus);
         } catch (StorageException exception) {
@@ -128,16 +124,15 @@ public class CachingController {
      */
     private ResponseEntity<Object> keyValueRequest(KeyValueOperation keyValueOperation, KeyValue keyValue,
                                                    HttpServletRequest request, HttpStatus successStatus) {
-        if (!getServiceId(request).isPresent()) {
+        Optional<String> serviceId = getServiceId(request);
+        if (!serviceId.isPresent()) {
             return getUnauthorizedResponse();
         }
-
-        String serviceId = getServiceId(request).get();
 
         try {
             checkForInvalidPayload(keyValue);
 
-            keyValueOperation.storageRequest(serviceId, keyValue);
+            keyValueOperation.storageRequest(serviceId.get(), keyValue);
 
             return new ResponseEntity<>(successStatus);
         } catch (StorageException exception) {
