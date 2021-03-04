@@ -12,31 +12,25 @@ package org.zowe.apiml.caching.api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
-import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.service.ZaasClient;
-import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
-@Import(DefaultZaasClientConfiguration.class)
 public class CachingController {
     private final Storage storage;
-    private final ZaasClient zaasClient;
     private final MessageService messageService;
 
     @GetMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -44,14 +38,7 @@ public class CachingController {
         notes = "Values returned for the calling service")
     @ResponseBody
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
-        String serviceId;
-        try {
-            serviceId = authenticate(request);
-        } catch (ZaasClientException e) {
-            return handleZaasClientException(e, request);
-        }
-
-        return new ResponseEntity<>(storage.readForService(serviceId), HttpStatus.OK);
+        return new ResponseEntity<>(storage.readForService(getServiceId(request)), HttpStatus.OK);
     }
 
     @GetMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -90,11 +77,6 @@ public class CachingController {
             keyValue, request, HttpStatus.NO_CONTENT);
     }
 
-    private String authenticate(HttpServletRequest request) throws ZaasClientException {
-        ZaasToken token = zaasClient.query(request);
-        return token.getUserId();
-    }
-
     private ResponseEntity<Object> exceptionToResponse(StorageException exception) {
         Message message = messageService.createMessage(exception.getKey(), (Object[]) exception.getParameters());
         return new ResponseEntity<>(message.mapToView(), exception.getStatus());
@@ -107,13 +89,7 @@ public class CachingController {
      * Properly handle and package Exceptions.
      */
     private ResponseEntity<Object> keyRequest(KeyOperation keyOperation, String key, HttpServletRequest request, HttpStatus successStatus) {
-        String serviceId;
-        try {
-            serviceId = authenticate(request);
-        } catch (ZaasClientException e) {
-            return handleZaasClientException(e, request);
-        }
-
+        String serviceId = getServiceId(request);
         try {
             if (key == null) {
                 keyNotInCache();
@@ -137,13 +113,7 @@ public class CachingController {
      */
     private ResponseEntity<Object> keyValueRequest(KeyValueOperation keyValueOperation, KeyValue keyValue,
                                                    HttpServletRequest request, HttpStatus successStatus) {
-        String serviceId;
-        try {
-            serviceId = authenticate(request);
-        } catch (ZaasClientException e) {
-            return handleZaasClientException(e, request);
-        }
-
+       String serviceId = getServiceId(request);
         try {
             checkForInvalidPayload(keyValue);
 
@@ -154,6 +124,15 @@ public class CachingController {
             return exceptionToResponse(exception);
         } catch (Exception exception) {
             return handleInternalError(exception, request.getRequestURL());
+        }
+    }
+
+    private String getServiceId(HttpServletRequest request) {
+        String serviceId = request.getHeader("X-Certificate-DistinguishedName");
+        if (StringUtils.isEmpty(serviceId)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Certificate not provided");
+        } else {
+            return serviceId;
         }
     }
 
@@ -188,37 +167,6 @@ public class CachingController {
         if (!StringUtils.isAlphanumeric(key)) {
             invalidPayload(keyValue.toString(), "Key is not alphanumeric");
         }
-    }
-
-    private ResponseEntity<Object> handleZaasClientException(ZaasClientException e, HttpServletRequest request) {
-        String requestUrl = request.getRequestURL().toString();
-        Message message;
-        HttpStatus statusCode;
-
-        switch (e.getErrorCode()) {
-            case TOKEN_NOT_PROVIDED:
-                statusCode = HttpStatus.BAD_REQUEST;
-                message = messageService.createMessage("org.zowe.apiml.security.query.tokenNotProvided", requestUrl);
-                break;
-            case INVALID_JWT_TOKEN:
-                statusCode = HttpStatus.UNAUTHORIZED;
-                message = messageService.createMessage("org.zowe.apiml.security.query.invalidToken", requestUrl);
-                break;
-            case EXPIRED_JWT_EXCEPTION:
-                statusCode = HttpStatus.UNAUTHORIZED;
-                message = messageService.createMessage("org.zowe.apiml.security.expiredToken", requestUrl);
-                break;
-            case SERVICE_UNAVAILABLE:
-                statusCode = HttpStatus.NOT_FOUND;
-                message = messageService.createMessage("org.zowe.apiml.cache.gatewayUnavailable", requestUrl, e.getMessage());
-                break;
-            default:
-                statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-                message = messageService.createMessage("org.zowe.apiml.common.internalRequestError", requestUrl, e.getMessage(), e.getCause());
-                break;
-        }
-
-        return new ResponseEntity<>(message.mapToView(), statusCode);
     }
 
     @FunctionalInterface

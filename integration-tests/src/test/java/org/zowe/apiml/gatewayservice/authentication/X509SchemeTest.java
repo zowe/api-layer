@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.EnvironmentConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.SslContext;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
@@ -32,13 +33,13 @@ class X509SchemeTest {
     private static String URL;
     @BeforeAll
     static void init() throws Exception {
-        LoginTest.prepareSslAuthentication();
+        SslContext.prepareSslAuthentication();
         URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLE_CLIENT_BASE_PATH, X509_ENDPOINT);
     }
 
     @Test
     void givenCorrectClientCertificateInRequest_thenUsernameIsReturned() {
-        given().config(LoginTest.clientCertValid).get(X509SchemeTest.URL)
+        given().config(SslContext.clientCertValid).get(X509SchemeTest.URL)
             .then()
             .body("dn",startsWith("CN=APIMTST"))
             .body("cn", is("APIMTST")).statusCode(200);
@@ -46,7 +47,7 @@ class X509SchemeTest {
 
     @Test
     void givenApimlCertificateInRequest_thenEmptyBodyIsReturned() {
-        given().config(LoginTest.clientCertApiml).get(X509SchemeTest.URL)
+        given().config(SslContext.clientCertApiml).get(X509SchemeTest.URL)
             .then()
             .body("publicKey",is(""))
             .body("dn",is(""))
@@ -55,7 +56,7 @@ class X509SchemeTest {
 
     @Test
     void givenApimlCertificateAndMaliciousHeaderInRequest_thenEmptyBodyIsReturned() {
-        given().config(LoginTest.clientCertApiml)
+        given().config(SslContext.clientCertApiml)
             .header(new Header("X-Certificate-CommonName", "evil common name"))
             .header(new Header("X-Certificate-Public", "evil public key"))
             .header(new Header("X-Certificate-DistinguishedName", "evil distinguished name"))
