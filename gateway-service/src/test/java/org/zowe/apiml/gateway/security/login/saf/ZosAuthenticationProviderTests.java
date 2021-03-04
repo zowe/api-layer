@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
@@ -39,7 +40,7 @@ class ZosAuthenticationProviderTests {
     @BeforeAll
     static void setup() {
         mockService = mock(AuthenticationService.class);
-        provider = new ZosAuthenticationProvider(mockService);
+        provider = new ZosAuthenticationProvider(mockService, LoginProvider.SAF.getValue());
         provider.afterPropertiesSet();
     }
 
