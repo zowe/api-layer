@@ -13,28 +13,26 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.CachingRequests;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
+import org.zowe.apiml.util.config.SslContext;
 
-import java.io.IOException;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.hamcrest.core.Is.is;
 
 @NotForMainframeTest
 class RemoveOldestTest {
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private final String jwtToken = SecurityUtils.gatewayToken();
     private final CachingRequests requests = new CachingRequests();
     private static final CachingService service = new CachingService();
 
     @BeforeAll
-    static void setup() throws IOException {
+    static void setup() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
+        SslContext.prepareSslAuthentication();
         service.start();
     }
 
@@ -53,21 +51,20 @@ class RemoveOldestTest {
             // The default configuration is to allow 100 records.
             for (int i = 0; i < amountOfAllowedRecords; i++) {
                 keyValue = new KeyValue("key" + i, "testValue");
-                requests.create(removeOldestCachingServiceUri, keyValue);
+                requests.create(removeOldestCachingServiceUri, keyValue, SslContext.clientCertValid);
             }
 
             keyValue = new KeyValue("keyThatWillReplaceTheKey0", "testValue");
-            given()
+            given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .body(keyValue)
-                .cookie(COOKIE_NAME, jwtToken)
-            .when()
+                .when()
                 .get(service.getBaseUrl() + "/key0")
-            .then()
+                .then()
                 .statusCode(is(SC_NOT_FOUND));
         } finally {
             for (int i = 0; i < amountOfAllowedRecords; i++) {
-                requests.deleteValueUnderServiceIdWithoutValidation(removeOldestCachingServiceUri, "key" + i, jwtToken);
+                requests.deleteValueUnderServiceIdWithoutValidation(removeOldestCachingServiceUri, "key" + i, SslContext.clientCertValid);
             }
         }
     }

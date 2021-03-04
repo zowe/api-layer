@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.CachingRequests;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -30,7 +31,8 @@ class RejectEvictionTest {
     private final CachingRequests requests = new CachingRequests();
 
     @BeforeAll
-    static void setup() {
+    static void setup() throws Exception {
+        SslContext.prepareSslAuthentication();
         RestAssured.useRelaxedHTTPSValidation();
     }
 
@@ -43,21 +45,20 @@ class RejectEvictionTest {
             // The default configuration is to allow 100 records.
             for (int i = 0; i < amountOfAllowedRecords; i++) {
                 keyValue = new KeyValue("key" + i, "testValue");
-                requests.create(keyValue);
+                requests.create(keyValue, SslContext.clientCertValid);
             }
 
             keyValue = new KeyValue("keyThatWontPass", "testValue");
-            given()
+            given().with().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .body(keyValue)
-                .cookie(COOKIE_NAME, jwtToken)
-            .when()
+                .when()
                 .post(CACHING_PATH)
-            .then()
+                .then()
                 .statusCode(is(SC_INSUFFICIENT_STORAGE));
         } finally {
             for (int i = 0; i < amountOfAllowedRecords; i++) {
-                requests.deleteValueUnderServiceIdWithoutValidation("key" + i, jwtToken);
+                requests.deleteValueUnderServiceIdWithoutValidation("key" + i, SslContext.clientCertValid);
             }
         }
     }

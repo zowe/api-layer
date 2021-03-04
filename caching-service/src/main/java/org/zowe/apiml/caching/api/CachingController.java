@@ -25,6 +25,7 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,7 +39,8 @@ public class CachingController {
         notes = "Values returned for the calling service")
     @ResponseBody
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
-        return new ResponseEntity<>(storage.readForService(getServiceId(request)), HttpStatus.OK);
+        return new ResponseEntity<>(storage.readForService(getServiceId(request).orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Certificate not provided"))), HttpStatus.OK);
     }
 
     @GetMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -89,7 +91,8 @@ public class CachingController {
      * Properly handle and package Exceptions.
      */
     private ResponseEntity<Object> keyRequest(KeyOperation keyOperation, String key, HttpServletRequest request, HttpStatus successStatus) {
-        String serviceId = getServiceId(request);
+        String serviceId = getServiceId(request).orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Certificate not provided"));
         try {
             if (key == null) {
                 keyNotInCache();
@@ -113,7 +116,8 @@ public class CachingController {
      */
     private ResponseEntity<Object> keyValueRequest(KeyValueOperation keyValueOperation, KeyValue keyValue,
                                                    HttpServletRequest request, HttpStatus successStatus) {
-       String serviceId = getServiceId(request);
+        String serviceId = getServiceId(request).orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Certificate not provided"));
         try {
             checkForInvalidPayload(keyValue);
 
@@ -127,12 +131,12 @@ public class CachingController {
         }
     }
 
-    private String getServiceId(HttpServletRequest request) {
+    private Optional<String> getServiceId(HttpServletRequest request) {
         String serviceId = request.getHeader("X-Certificate-DistinguishedName");
         if (StringUtils.isEmpty(serviceId)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Certificate not provided");
+            return Optional.empty();
         } else {
-            return serviceId;
+            return Optional.of(serviceId);
         }
     }
 
