@@ -107,16 +107,16 @@ public class ContainerServiceMockUtil {
     private APIService addApiService(String serviceId,
                                      List<APIService> allServices,
                                      List<APIService> services) {
-        APIService service = new APIService(
-            serviceId,
-            serviceId + "-title",
-            serviceId + "-desc",
-            false,
-            "base",
-            "home",
-            "base",
-            false,
-            Collections.emptyMap());
+        APIService service =  new APIService.Builder(serviceId)
+            .title(serviceId + "-title")
+            .description(serviceId + "-desc")
+            .secured(false)
+            .baseUrl("base")
+            .homePageUrl("home")
+            .basePath("base")
+            .sso(false)
+            .apiId(Collections.emptyMap())
+            .build();
         services.add(service);
         allServices.add(service);
         return service;

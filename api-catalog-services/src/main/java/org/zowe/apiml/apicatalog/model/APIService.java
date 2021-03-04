@@ -65,24 +65,71 @@ public class APIService implements Serializable {
     @ApiModelProperty(notes = "The API ID for this service")
     private Map<String, String> apiId;
 
-    public APIService(String serviceId) {
+    private APIService(String serviceId) {
         this.serviceId = serviceId;
         this.status = "UP";
     }
+    public static class Builder {
+        private APIService apiService;
+        
+        public Builder(String serviceId) {
+            apiService = new APIService(serviceId);
+            apiService.status = "UP";
+        }
 
-    public APIService(String serviceId, String title, String description, boolean secured,
-                      String baseUrl, String homePageUrl, String basePath, boolean sso, Map<String, String> apiId) {
-        this.serviceId = serviceId;
-        this.title = title;
-        this.description = description;
-        this.status = "UP";
-        this.secured = secured;
-        this.baseUrl = baseUrl;
-        this.homePageUrl = homePageUrl;
-        this.basePath = basePath;
-        this.apiDoc = null;
-        this.sso = sso;
-        this.apiId = apiId;
+        public Builder title(String title) {
+            apiService.title = title;
+            return this;
+        }
+
+        public Builder description(String description) {
+            apiService.description = description;
+            return this;
+        }
+
+        public Builder status(String status) {
+            apiService.status = status;
+            return this;
+        }
+
+        public Builder secured(boolean secured) {
+            apiService.secured = secured;
+            return this;
+        }
+
+        public Builder baseUrl(String baseUrl) {
+            apiService.baseUrl = baseUrl;
+            return this;
+        }
+
+        public Builder homePageUrl(String homePageUrl) {
+            apiService.homePageUrl = homePageUrl;
+            return this;
+        }
+
+        public Builder basePath(String basePath) {
+            apiService.basePath = basePath;
+            return this;
+        }
+
+        public Builder apiDoc(String apiDoc) {
+            apiService.apiDoc = apiDoc;
+            return this;
+        }
+
+        public Builder sso(boolean sso) {
+            apiService.sso = sso;
+            return this;
+        }
+
+        public Builder apiId(Map<String, String> apiId) {
+            apiService.apiId = apiId;
+            return this;
+        }
+
+        public APIService build() {
+            return apiService;
+        }
     }
 
 }
