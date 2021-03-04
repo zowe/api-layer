@@ -42,7 +42,7 @@ public final class EurekaMetadataDefinition {
     public static final String AUTHENTICATION_SCHEME = "apiml.authentication.scheme";
     public static final String AUTHENTICATION_APPLID = "apiml.authentication.applid";
     public static final String AUTHENTICATION_SSO = "apiml.authentication.sso";
-
+    public static final String AUTHENTICATION_HEADERS = "apiml.authentication.headers";
     //v1
     public static final String ROUTES_V1 = "routed-services";
     public static final String ROUTES_GATEWAY_URL_V1 = "gateway-url";
