@@ -22,7 +22,6 @@ import org.zowe.apiml.util.service.DiscoveryUtils;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 
 class WebSecurityTest {
@@ -44,7 +43,6 @@ class WebSecurityTest {
     }
     @BeforeEach
     void setupCachingUrl() {
-        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig()); //TODO this is leaking out of DiscoveryUtils
         List<DiscoveryUtils.InstanceInfo> cachingInstances = DiscoveryUtils.getInstances("cachingservice");
         caching_url = cachingInstances.stream().findFirst().map(i -> String.format("%s", i.getUrl()))
             .orElseThrow(() -> new RuntimeException("Cannot determine Caching service from Discovery"));

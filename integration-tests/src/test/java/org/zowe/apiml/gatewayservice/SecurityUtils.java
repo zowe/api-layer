@@ -85,9 +85,10 @@ public class SecurityUtils {
     public static String gatewayToken(String username, String password) {
         LoginRequest loginRequest = new LoginRequest(username, password);
 
+        SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        return given()
+        String cookie = given()
             .contentType(JSON)
             .body(loginRequest)
             .when()
@@ -96,6 +97,9 @@ public class SecurityUtils {
             .statusCode(is(SC_NO_CONTENT))
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
+
+        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        return cookie;
     }
 
     public static String zosmfToken(String username, String password) {
