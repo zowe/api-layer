@@ -10,24 +10,31 @@
  */
 package org.zowe.apiml.gateway.security.login.saf;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class ZosAuthenticationProvider implements AuthenticationProvider, InitializingBean {
     private PlatformUser platformUser = null;
 
+    private final String authenticationProvider;
     private final AuthenticationService authenticationService;
+
+    public ZosAuthenticationProvider(AuthenticationService authenticationService,
+                                     @Value("apiml.security.auth.provider") String authenticationProvider) {
+        this.authenticationService = authenticationService;
+        this.authenticationProvider = authenticationProvider;
+    }
 
     @Override
     public Authentication authenticate(Authentication authentication) {
@@ -55,7 +62,8 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
 
     @Override
     public void afterPropertiesSet() {
-        if (platformUser == null) {
+        if (platformUser == null &&
+            (authenticationProvider != null && authenticationProvider.equals(LoginProvider.SAF.getValue()))) {
             try {
                 platformUser = new SafPlatformUser(new SafPlatformClassFactory());
             } catch (ClassNotFoundException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException e) {
