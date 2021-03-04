@@ -12,7 +12,6 @@ package org.zowe.apiml.cachingservice;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.CachingRequests;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -26,8 +25,6 @@ import static org.hamcrest.core.Is.is;
 
 class RejectEvictionTest {
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
-    private final String COOKIE_NAME = "apimlAuthenticationToken";
-    private final String jwtToken = SecurityUtils.gatewayToken();
     private final CachingRequests requests = new CachingRequests();
 
     @BeforeAll
@@ -49,7 +46,7 @@ class RejectEvictionTest {
             }
 
             keyValue = new KeyValue("keyThatWontPass", "testValue");
-            given().with().config(SslContext.clientCertValid)
+            given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .body(keyValue)
                 .when()

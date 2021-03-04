@@ -16,7 +16,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -33,8 +32,6 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,6 +48,10 @@ public class CachingControllerTest {
     private Storage mockStorage;
     private final MessageService messageService = new YamlMessageService("/caching-log-messages.yml");
     private CachingController underTest;
+
+    static Stream<String> emptyStrings() {
+        return Stream.of("", null);
+    }
 
     @BeforeEach
     void setUp() {
@@ -71,6 +72,7 @@ public class CachingControllerTest {
         KeyValue body = (KeyValue) response.getBody();
         assertThat(body.getValue(), is(VALUE));
     }
+
 
     @Test
     void givenNoKey_whenGetByKey_thenResponseBadRequest() {
@@ -218,19 +220,16 @@ public class CachingControllerTest {
         );
     }
 
-    @Test
-    void givenEmptyStringInCertificateHeader_whenGetValue_thenThrowUnauthorized() {
-        when(httpServletRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn("");
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> underTest.getValue(KEY, httpServletRequest));
-        assertEquals(exception.getMessage(), "401 UNAUTHORIZED \"Certificate not provided\"");
-    }
-
-    @Test
-    void givenNullStringInCertificateHeader_whenGetValue_thenThrowUnauthorized() {
+    @ParameterizedTest
+    @MethodSource("emptyStrings")
+    void givenStorageReturnsValidValue_whenGetAllValues_thenReturnProperValue() {
+        when(mockStorage.read(SERVICE_ID, KEY)).thenReturn(KEY_VALUE);
         when(httpServletRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
-
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> underTest.getValue(KEY, httpServletRequest));
-        assertEquals(exception.getMessage(), "401 UNAUTHORIZED \"Certificate not provided\"");
+        ResponseEntity<?> response = underTest.getAllValues(httpServletRequest);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.missingCertificate",
+            "parameter").mapToView();
+        assertThat(response.getBody(), is(expectedBody));
     }
 
 }

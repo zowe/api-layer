@@ -52,7 +52,7 @@ class CachingApiIntegrationTest {
         AtomicInteger ai = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
             service.execute(() -> {
-                given().with().config(SslContext.clientCertValid)
+                given().config(SslContext.clientCertValid)
                     .contentType(JSON)
                     .cookie(COOKIE_NAME)
                     .body(new KeyValue(String.valueOf(ai.getAndIncrement()), "someValue"))
@@ -65,7 +65,7 @@ class CachingApiIntegrationTest {
         service.shutdown();
         service.awaitTermination(30L, TimeUnit.SECONDS);
 
-        given().with().config(SslContext.clientCertValid)
+        given().config(SslContext.clientCertValid)
             .contentType(JSON)
             .cookie(COOKIE_NAME)
             .when()
@@ -79,7 +79,7 @@ class CachingApiIntegrationTest {
         AtomicInteger ai2 = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
             deleteService.execute(() -> {
-                given().with().config(SslContext.clientCertValid)
+                given().config(SslContext.clientCertValid)
                     .contentType(JSON)
                     .cookie(COOKIE_NAME)
                     .when()
@@ -91,7 +91,7 @@ class CachingApiIntegrationTest {
         deleteService.shutdown();
         deleteService.awaitTermination(30L, TimeUnit.SECONDS);
 
-        given().with().config(SslContext.clientCertValid)
+        given().config(SslContext.clientCertValid)
             .contentType(JSON)
             .cookie(COOKIE_NAME)
             .when()
@@ -107,7 +107,7 @@ class CachingApiIntegrationTest {
         try {
             KeyValue keyValue = new KeyValue("testKey", "testValue");
 
-            given().with().config(SslContext.clientCertValid)
+            given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .body(keyValue)
                 .cookie(COOKIE_NAME)
@@ -123,7 +123,7 @@ class CachingApiIntegrationTest {
 
     @Test
     void givenEmptyBody_whenCallingCreateEndpoint_thenReturn400() {
-        given().with().config(SslContext.clientCertValid)
+        given().config(SslContext.clientCertValid)
             .contentType(JSON)
             .cookie(COOKIE_NAME)
             .when()
@@ -138,7 +138,7 @@ class CachingApiIntegrationTest {
         try {
             loadValueUnderServiceId(new KeyValue("testKey", "testValue"), SslContext.clientCertValid);
 
-            given().with().config(SslContext.clientCertValid)
+            given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .cookie(COOKIE_NAME)
                 .when()
@@ -196,7 +196,7 @@ class CachingApiIntegrationTest {
 
     @Test
     void givenNonExistingKeyParameter_whenCallingGetEndpoint_thenReturnKeyNotFound() {
-        given().with().config(SslContext.clientCertValid)
+        given().config(SslContext.clientCertValid)
             .contentType(JSON)
             .cookie(COOKIE_NAME)
             .when()
@@ -214,7 +214,7 @@ class CachingApiIntegrationTest {
 
             KeyValue newValue = new KeyValue("testKey", "newValue");
 
-            given().with().config(SslContext.clientCertValid)
+            given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .body(newValue)
                 .cookie(COOKIE_NAME)
@@ -223,7 +223,7 @@ class CachingApiIntegrationTest {
                 .then()
                 .statusCode(is(SC_NO_CONTENT));
 
-            given().with().config(SslContext.clientCertValid)
+            given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .cookie(COOKIE_NAME)
                 .when()
@@ -242,7 +242,7 @@ class CachingApiIntegrationTest {
         try {
             loadValueUnderServiceId(new KeyValue("testKey", "testValue"), SslContext.clientCertValid);
 
-            given().with().config(SslContext.clientCertValid)
+            given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .cookie(COOKIE_NAME)
                 .when()
@@ -250,7 +250,7 @@ class CachingApiIntegrationTest {
                 .then()
                 .statusCode(is(SC_NO_CONTENT));
 
-            given().with().config(SslContext.clientCertValid)
+            given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .cookie(COOKIE_NAME)
                 .when()
@@ -265,7 +265,7 @@ class CachingApiIntegrationTest {
 
     @Test
     void givenInvalidParameter_whenCallingDeleteEndpoint_thenNotFound() {
-        given().with().config(SslContext.clientCertValid)
+        given().config(SslContext.clientCertValid)
             .contentType(JSON)
             .cookie(COOKIE_NAME)
             .when()
@@ -275,7 +275,7 @@ class CachingApiIntegrationTest {
     }
 
     private static void loadValueUnderServiceId(KeyValue value, RestAssuredConfig config) {
-        given().with().config(config)
+        given().config(config)
             .contentType(JSON)
             .body(value)
             .cookie(COOKIE_NAME)
@@ -286,7 +286,7 @@ class CachingApiIntegrationTest {
     }
 
     private static void deleteValueUnderServiceIdWithoutValidation(String value, RestAssuredConfig config) {
-        given().with().config(config)
+        given().config(config)
             .contentType(JSON)
             .cookie(COOKIE_NAME)
             .when()

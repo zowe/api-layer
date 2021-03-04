@@ -93,3 +93,10 @@ messages:
         text: "The InMemory configuration is used despite not being supported for production usage."
         reason: "Development configuration in the production."
         action: "Change the caching.storage.mode to other supported option than inMemory."
+
+    -   key: org.zowe.apiml.cache.missingCertificate
+        number: ZWECS702
+        type: WARNING
+        text: "Missing header with certificate."
+        reason: "Call executed without valid client certificate."
+        action: "Verify ssl context in client application."

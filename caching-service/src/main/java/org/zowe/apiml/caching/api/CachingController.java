@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -34,13 +33,22 @@ public class CachingController {
     private final Storage storage;
     private final MessageService messageService;
 
+
     @GetMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Retrieves all values in the cache",
         notes = "Values returned for the calling service")
     @ResponseBody
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
-        return new ResponseEntity<>(storage.readForService(getServiceId(request).orElseThrow(() ->
-            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Certificate not provided"))), HttpStatus.OK);
+        if (getServiceId(request).isPresent()) {
+            return new ResponseEntity<>(storage.readForService(getServiceId(request).get()), HttpStatus.OK);
+        }
+        return getUnauthorizedResponse();
+    }
+
+    private ResponseEntity<Object> getUnauthorizedResponse() {
+        Messages missingCert = Messages.MISSING_CERTIFICATE;
+        Message message = messageService.createMessage(missingCert.getKey(), "parameter");
+        return new ResponseEntity<>(message.mapToView(), missingCert.getStatus());
     }
 
     @GetMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -79,6 +87,7 @@ public class CachingController {
             keyValue, request, HttpStatus.NO_CONTENT);
     }
 
+
     private ResponseEntity<Object> exceptionToResponse(StorageException exception) {
         Message message = messageService.createMessage(exception.getKey(), (Object[]) exception.getParameters());
         return new ResponseEntity<>(message.mapToView(), exception.getStatus());
@@ -91,8 +100,11 @@ public class CachingController {
      * Properly handle and package Exceptions.
      */
     private ResponseEntity<Object> keyRequest(KeyOperation keyOperation, String key, HttpServletRequest request, HttpStatus successStatus) {
-        String serviceId = getServiceId(request).orElseThrow(() ->
-            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Certificate not provided"));
+        if (!getServiceId(request).isPresent()) {
+            return getUnauthorizedResponse();
+        }
+
+        String serviceId = getServiceId(request).get();
         try {
             if (key == null) {
                 keyNotInCache();
@@ -116,8 +128,12 @@ public class CachingController {
      */
     private ResponseEntity<Object> keyValueRequest(KeyValueOperation keyValueOperation, KeyValue keyValue,
                                                    HttpServletRequest request, HttpStatus successStatus) {
-        String serviceId = getServiceId(request).orElseThrow(() ->
-            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Certificate not provided"));
+        if (!getServiceId(request).isPresent()) {
+            return getUnauthorizedResponse();
+        }
+
+        String serviceId = getServiceId(request).get();
+
         try {
             checkForInvalidPayload(keyValue);
 
