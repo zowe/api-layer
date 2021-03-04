@@ -25,7 +25,10 @@ public enum AuthenticationScheme {
     HTTP_BASIC_PASSTICKET("httpBasicPassTicket"),
 
     @JsonProperty("zosmf")
-    ZOSMF("zosmf");
+    ZOSMF("zosmf"),
+
+    @JsonProperty("x509")
+    X509("x509");
 
     public final String scheme;
 

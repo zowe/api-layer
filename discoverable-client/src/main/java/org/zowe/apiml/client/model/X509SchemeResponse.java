@@ -7,17 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.eurekaservice.client.config;
+package org.zowe.apiml.client.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class Authentication {
-    private String scheme;
-    private String applid;
-    private String headers;
+public class X509SchemeResponse {
+    private final String publicKey;
+    private final String dn;
+    private final String cn;
 }
