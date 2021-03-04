@@ -11,7 +11,6 @@ package org.zowe.apiml.util;
 
 import io.restassured.config.RestAssuredConfig;
 import org.zowe.apiml.cachingservice.KeyValue;
-import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -23,9 +22,6 @@ import static org.hamcrest.core.Is.is;
 
 public class CachingRequests {
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private static String jwtToken = SecurityUtils.gatewayToken();
-
 
     public void create(KeyValue keyValue, RestAssuredConfig config) {
         create(CACHING_PATH, keyValue, config);
@@ -35,7 +31,6 @@ public class CachingRequests {
         given().config(config)
             .contentType(JSON)
             .body(keyValue)
-            .cookie(COOKIE_NAME, jwtToken)
             .when()
             .post(cachingPath)
             .then()
@@ -49,7 +44,6 @@ public class CachingRequests {
     public void deleteValueUnderServiceIdWithoutValidation(URI cachingPath, String value, RestAssuredConfig config) {
         given().config(config)
             .contentType(JSON)
-            .cookie(COOKIE_NAME, jwtToken)
             .when()
             .delete(cachingPath + "/" + value);
     }

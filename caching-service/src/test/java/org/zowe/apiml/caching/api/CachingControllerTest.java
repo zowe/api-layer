@@ -222,7 +222,7 @@ public class CachingControllerTest {
 
     @ParameterizedTest
     @MethodSource("emptyStrings")
-    void givenStorageReturnsValidValue_whenGetAllValues_thenReturnProperValue() {
+    void givenNoCertificateInformationInHeader_whenGetAllValues_thenReturnUnauthorized() {
         when(mockStorage.read(SERVICE_ID, KEY)).thenReturn(KEY_VALUE);
         when(httpServletRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
         ResponseEntity<?> response = underTest.getAllValues(httpServletRequest);
