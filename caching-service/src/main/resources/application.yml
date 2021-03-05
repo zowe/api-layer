@@ -35,7 +35,9 @@ apiml:
         homePageRelativeUrl: ${apiml.service.contextPath}
         statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
-
+        authentication:
+            scheme: x509
+            headers: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         routes:
             -   gateway-url: "api/v1"
                 service-url: ${apiml.service.contextPath}/api/v1

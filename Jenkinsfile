@@ -100,7 +100,7 @@ pipeline {
                                 -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} \
                                 -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword \
                                 -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017 \
-                                -DauxiliaryUserList.value="caching,USER1,validPassword;caching,USER2,validPassword;unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"'
+                                -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"'
                         }
                     }
                 }

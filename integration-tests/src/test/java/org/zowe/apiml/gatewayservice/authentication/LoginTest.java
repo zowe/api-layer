@@ -12,29 +12,19 @@ package org.zowe.apiml.gatewayservice.authentication;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
-import io.restassured.config.RestAssuredConfig;
-import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.PrivateKeyDetails;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.SslContext;
 
-import javax.net.ssl.SSLContext;
-import java.net.Socket;
 import java.net.URI;
-import java.security.cert.X509Certificate;
-import java.util.Map;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -68,9 +58,6 @@ abstract class LoginTest {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
-    public static final char[] KEYSTORE_PASSWORD = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword();
-    public static final String KEYSTORE_LOCALHOST_TEST_JKS = ConfigReader.environmentConfiguration().getTlsConfiguration().getClientKeystore();
-
     protected String getUsername() {
         return USERNAME;
     }
@@ -79,36 +66,9 @@ abstract class LoginTest {
         return PASSWORD;
     }
 
-    protected static RestAssuredConfig clientCertValid;
-    protected static RestAssuredConfig clientCertApiml;
-    protected static RestAssuredConfig tlsWithoutCert;
-
     @BeforeAll
-    static void prepareSslAuthentication() throws Exception {
-        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
-
-        SSLContext sslContext = SSLContextBuilder
-            .create()
-            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
-                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD,
-                (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apimtst")
-            .loadTrustMaterial(null, trustStrategy)
-            .build();
-        clientCertValid = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext)));
-
-        SSLContext sslContext2 = SSLContextBuilder
-            .create()
-            .loadKeyMaterial(ResourceUtils.getFile(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore()),
-                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
-            .loadTrustMaterial(null, trustStrategy)
-            .build();
-        clientCertApiml = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext2)));
-
-        SSLContext sslContext3 = SSLContextBuilder
-            .create()
-            .loadTrustMaterial(null, trustStrategy)
-            .build();
-        tlsWithoutCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3)));
+    public static void init() throws Exception {
+        SslContext.prepareSslAuthentication();
     }
 
 
@@ -127,9 +87,9 @@ abstract class LoginTest {
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(loginUrl)
-        .then()
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
@@ -158,9 +118,9 @@ abstract class LoginTest {
         String token = given()
             .auth().preemptive().basic(getUsername(), getPassword())
             .contentType(JSON)
-        .when()
+            .when()
             .post(loginUrl)
-        .then()
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(COOKIE_NAME);
@@ -189,7 +149,7 @@ abstract class LoginTest {
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     void givenInvalidCredentialsInBody_whenUserAuthenticates_thenUnauthorizedIsReturned(String loginUrl) {
-        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl,"/",3));
+        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl, "/", 3));
         String expectedMessage = "Invalid username or password for URL '" + loginPath + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
@@ -197,9 +157,9 @@ abstract class LoginTest {
         given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(loginUrl)
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
@@ -209,7 +169,7 @@ abstract class LoginTest {
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     void givenInvalidCredentialsInHeader_whenUserAuthenticates_thenUnauthorizedIsReturned(String loginUrl) {
-        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl,"/",3));
+        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl, "/", 3));
         String expectedMessage = "Invalid username or password for URL '" + loginPath + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
@@ -217,9 +177,9 @@ abstract class LoginTest {
         ValidatableResponse response = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(loginUrl)
-        .then();
+            .then();
         response.statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
@@ -229,7 +189,7 @@ abstract class LoginTest {
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     void givenCredentialsInTheWrongJsonFormat_whenUserAuthenticates_then400IsReturned(String loginUrl) {
-        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl,"/",3));
+        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl, "/", 3));
         String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + loginPath + "'";
 
         JSONObject loginRequest = new JSONObject()
@@ -239,9 +199,9 @@ abstract class LoginTest {
         given()
             .contentType(JSON)
             .body(loginRequest.toString())
-        .when()
+            .when()
             .post(loginUrl)
-        .then()
+            .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
@@ -251,7 +211,7 @@ abstract class LoginTest {
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     void givenValidCredentialsInJsonBody_whenUserAuthenticatesViaGetMethod_then405IsReturned(String loginUrl) {
-        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl,"/",3));
+        String loginPath = loginUrl.substring(StringUtils.ordinalIndexOf(loginUrl, "/", 3));
         String expectedMessage = "Authentication method 'GET' is not supported for URL '" + loginPath + "'";
 
         LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
@@ -259,9 +219,9 @@ abstract class LoginTest {
         given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .get(loginUrl)
-        .then()
+            .then()
             .statusCode(is(SC_METHOD_NOT_ALLOWED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
@@ -272,9 +232,9 @@ abstract class LoginTest {
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(url)
-        .then()
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
@@ -294,9 +254,9 @@ abstract class LoginTest {
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     void givenApimlsCert_whenAuth_thenUnauthorized(String loginUrl) throws Exception {
-        given().config(clientCertApiml)
+        given().config(SslContext.clientCertApiml)
             .post(new URI(loginUrl))
-        .then()
+            .then()
             .statusCode(is(SC_BAD_REQUEST));
     }
     //@formatter:on
