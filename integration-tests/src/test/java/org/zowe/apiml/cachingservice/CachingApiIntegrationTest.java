@@ -148,6 +148,7 @@ class CachingApiIntegrationTest {
 
         RestAssuredConfig user1 = SslContext.clientCertValid;
         RestAssuredConfig user2 = SslContext.clientCertUser;
+
         KeyValue keyValue1 = new KeyValue("testKey1", "testValue1");
         KeyValue keyValue2 = new KeyValue("testKey2", "testValue2");
         KeyValue keyValue3 = new KeyValue("testKey3", "testValue3");
@@ -172,6 +173,17 @@ class CachingApiIntegrationTest {
                     "testKey4", isEmptyOrNullString())
                 .statusCode(is(SC_OK));
 
+            given().config(user2)
+                .log().uri()
+                .contentType(JSON)
+                .when()
+                .get(CACHING_PATH)
+                .then().log().all()
+                .body("testKey3", is(not(isEmptyString())),
+                    "testKey4", is(not(isEmptyString())),
+                    "testKey1", isEmptyOrNullString(),
+                    "testKey2", isEmptyOrNullString())
+                .statusCode(is(SC_OK));
         } finally {
             deleteValueUnderServiceIdWithoutValidation("testKey1", user1);
             deleteValueUnderServiceIdWithoutValidation("testKey2", user1);
