@@ -9,22 +9,21 @@
  */
 package org.zowe.apiml.util.service;
 
+import io.restassured.RestAssured;
+import io.restassured.config.SSLConfig;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.ResponseBody;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 /**
  * This utils serve to test base queries on discovery service to get information about registred services. This is way
@@ -46,7 +45,11 @@ public class DiscoveryUtils {
     }
 
     public static final List<InstanceInfo> getInstances(String serviceId) {
-        return getInstances(serviceId, null);
+        SSLConfig originalConfig = RestAssured.config.getSSLConfig();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        List<InstanceInfo> instances = getInstances(serviceId, null);
+        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        return instances;
     }
 
     public static final List<InstanceInfo> getInstances(String serviceId, String instanceId) {

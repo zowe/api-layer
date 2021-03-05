@@ -100,6 +100,13 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
 
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info
+
 ---
 spring:
     profiles: debug
