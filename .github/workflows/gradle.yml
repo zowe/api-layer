@@ -34,7 +34,7 @@ jobs:
                 restore-keys: |
                   ${{ runner.os }}-gradle-
             - name: Build with Gradle
-              run: ./gradlew build --scan
+              run: ./gradlew build coverage runCITests runCITestsInternalPort --scan --info -DexternalJenkinsToggle="true" -Penabler=v1 -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
             - name: Cleanup Gradle Cache
               # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
               # Restoring these files from a GitHub Actions cache might cause problems for future builds.
