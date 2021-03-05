@@ -11,23 +11,18 @@ package org.zowe.apiml.gatewayservice;
 
 
 import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
+import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.config.TlsConfiguration;
-import org.zowe.apiml.util.config.ZosmfServiceConfiguration;
+import org.zowe.apiml.util.config.*;
 
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 
 import static io.restassured.RestAssured.given;
@@ -90,7 +85,10 @@ public class SecurityUtils {
     public static String gatewayToken(String username, String password) {
         LoginRequest loginRequest = new LoginRequest(username, password);
 
-        return given()
+        SSLConfig originalConfig = RestAssured.config().getSSLConfig();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+
+        String cookie = given()
             .contentType(JSON)
             .body(loginRequest)
             .when()
@@ -99,6 +97,9 @@ public class SecurityUtils {
             .statusCode(is(SC_NO_CONTENT))
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
+
+        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        return cookie;
     }
 
     public static String zosmfToken(String username, String password) {
