@@ -16,7 +16,7 @@ case $RELEASE_TYPE in
    #/npm version $RELEASE_VERSION
    #npm publish --access public
    cd ..
-   ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=$RELEASE_VERSION -Prelease.newVersion=$NEW_VERSION $AUTH
+   ./gradlew release -x test -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=$RELEASE_VERSION -Prelease.newVersion=$NEW_VERSION $AUTH
    git archive --format tar.gz -9 --output api-layer.tar.gz "v$RELEASE_VERSION"
 esac
 
