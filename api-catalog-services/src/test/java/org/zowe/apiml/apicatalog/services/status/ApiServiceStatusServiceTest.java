@@ -145,10 +145,28 @@ class ApiServiceStatusServiceTest {
     private List<APIContainer> createContainers() {
         Set<APIService> services = new HashSet<>();
 
-        APIService service = new APIService("service1", "service-1", "service-1", false, "base","home", "base", false, Collections.emptyMap());
+        APIService service =  new APIService.Builder("service1")
+            .title("service-1")
+            .description("service-1")
+            .secured(false)
+            .baseUrl("base")
+            .homePageUrl("home")
+            .basePath("base")
+            .sso(false)
+            .apiId(Collections.emptyMap())
+            .build();
         services.add(service);
 
-        service = new APIService("service2", "service-2", "service-2", true, "base","home", "base", false, Collections.emptyMap());
+        service =  new APIService.Builder("service2")
+            .title("service-2")
+            .description("service-2")
+            .secured(true)
+            .baseUrl("base")
+            .homePageUrl("home")
+            .basePath("base")
+            .sso(false)
+            .apiId(Collections.emptyMap())
+            .build();
         services.add(service);
 
         APIContainer container = new APIContainer("api-one", "API One", "This is API One", services);
