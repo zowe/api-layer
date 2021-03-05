@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.SslContext;
 
 import java.net.URI;
 import java.util.Optional;
@@ -58,7 +59,7 @@ class ZosmfAuthenticationLoginTest extends LoginTest {
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds(String loginUrl) throws Exception {
-        Cookie cookie = given().config(clientCertValid)
+        Cookie cookie = given().config(SslContext.clientCertValid)
             .post(new URI(loginUrl))
             .then()
             .statusCode(is(SC_NO_CONTENT))
@@ -69,7 +70,7 @@ class ZosmfAuthenticationLoginTest extends LoginTest {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
 
-        given().config(tlsWithoutCert)
+        given().config(SslContext.tlsWithoutCert)
             .cookie(cookie)
             .header("X-CSRF-ZOSMF-HEADER", "")
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, ZOSMF_BASE_PATH, ZOSMF_ENDPOINT))
@@ -82,7 +83,7 @@ class ZosmfAuthenticationLoginTest extends LoginTest {
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced(String loginUrl) throws Exception {
-        Cookie cookie = given().config(clientCertValid)
+        Cookie cookie = given().config(SslContext.clientCertValid)
             .post(new URI(loginUrl))
             .then()
             .statusCode(is(SC_NO_CONTENT))
@@ -95,7 +96,7 @@ class ZosmfAuthenticationLoginTest extends LoginTest {
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced(String loginUrl) throws Exception {
-        Cookie cookie = given().config(clientCertValid)
+        Cookie cookie = given().config(SslContext.clientCertValid)
             .auth().basic("Bob", "The Builder")
             .post(new URI(loginUrl))
             .then()

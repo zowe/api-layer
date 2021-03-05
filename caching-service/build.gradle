@@ -39,7 +39,6 @@ gitProperties {
 
 dependencies {
     implementation project(':common-service-core')
-    implementation project(':zaas-client')
 
     implementation project(':onboarding-enabler-spring')
 

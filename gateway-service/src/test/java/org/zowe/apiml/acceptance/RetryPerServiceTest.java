@@ -10,6 +10,7 @@
 package org.zowe.apiml.acceptance;
 
 import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @AcceptanceTest
+@Disabled
 public class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
     @Test
