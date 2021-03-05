@@ -9,12 +9,12 @@
  */
 package org.zowe.apiml.caching.service.redis.config;
 
-import io.lettuce.core.RedisURI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.redis.RedisOperator;
 import org.zowe.apiml.caching.service.redis.RedisStorage;
 
 import java.time.Duration;
@@ -27,11 +27,8 @@ public class RedisConfiguration {
     @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "redis")
     @Bean
     public Storage redis() {
-        // TODO make this configuration
+        // TODO host, port, timeout configurable
         // TODO how do we determine and handle if multiple instances are being used
-        // TODO handle authenticating to redis
-        System.out.println("Carson here");
-        RedisURI redisURI = new RedisURI("127.0.0.1", 6379, Duration.ofSeconds(60));
-        return new RedisStorage(redisConfig, redisURI);
+        return new RedisStorage(redisConfig, new RedisOperator("127.0.0.1", 6379, Duration.ofSeconds(60)));
     }
 }

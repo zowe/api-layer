@@ -9,101 +9,97 @@
  */
 package org.zowe.apiml.caching.service.redis;
 
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisFuture;
-import io.lettuce.core.RedisURI;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.async.RedisAsyncCommands;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
-// TODO abstract out lettuce elements to one file, not here
-// TODO hset fails if key already exists - good for create, bad for update
+/**
+ * Class handles requests from controller and orchestrates operations on the low level RedisOperator class
+ */
 @Slf4j
 public class RedisStorage implements Storage {
-    private RedisConfig config;
-    private RedisAsyncCommands<String, String> redis;
+    private final RedisConfig config;
+    private final RedisOperator redis;
 
-    public RedisStorage(RedisConfig config, RedisURI redisUri) {
+    public RedisStorage(RedisConfig config, RedisOperator redisOperator) {
         this.config = config;
-
-        // TODO should release redis connection on caching service end via connection.close(); client.shutdown();
-        RedisClient redisClient = RedisClient.create(redisUri);
-        StatefulRedisConnection<String, String> connection = redisClient.connect();
-        redis = connection.async();
+        this.redis = redisOperator;
     }
 
     @Override
     public KeyValue create(String serviceId, KeyValue toCreate) {
-        // TODO check if key already exists
-        RedisFuture<Boolean> result = redis.hset(serviceId, toCreate.getKey(), toCreate.getValue());
         try {
-            Boolean boolResult = result.get();
-            // TODO check if result ok, if not need details to know what exception to throw
+            boolean result = redis.set(serviceId, toCreate);
+            if (!result) {
+                throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey(), serviceId);
+            }
             return toCreate;
-        } catch (ExecutionException | InterruptedException e) {
-            // TODO throw a storage exception
-            return null;
+        } catch (Exception e) {
+            // TODO handle
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public KeyValue read(String serviceId, String key) {
-        RedisFuture<String> result = redis.hget(serviceId, key);
         try {
-            String a = result.get();
-            return new KeyValue(key, a);
-        } catch (ExecutionException | InterruptedException e) {
-            // TODO throw a storage exception
-            return null;
+            String result = redis.get(serviceId, key);
+            if (result == null) {
+                throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
+            }
+            return new KeyValue(key, result);
+        } catch (Exception e) {
+            // TODO handle
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public KeyValue update(String serviceId, KeyValue toUpdate) {
-        RedisFuture<Boolean> result = redis.hset(serviceId, toUpdate.getKey(), toUpdate.getValue());
         try {
-            Boolean boolResult = result.get();
-            // TODO check if result ok, if not need details to know what exception to throw
+            boolean result = redis.set(serviceId, toUpdate);
+            if (!result) {
+                throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
+            }
             return toUpdate;
-        } catch (ExecutionException | InterruptedException e) {
-            // TODO throw a storage exception
-            return null;
+        } catch (Exception e) {
+            // TODO handle
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public KeyValue delete(String serviceId, String toDelete) {
-        // TODO check if key already exists
-        RedisFuture<Long> result = redis.hdel(serviceId, toDelete);
         try {
-            Long longResult = result.get();
-            // TODO check if result ok
-            return new KeyValue(toDelete, toDelete); // TODO what is the return here
-        } catch (ExecutionException | InterruptedException e) {
-            // TODO storage exception
-            return null;
+            boolean result = redis.delete(serviceId, toDelete);
+            if (!result) {
+                throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toDelete, serviceId);
+            }
+            return new KeyValue(toDelete, "what?"); // TODO what value here? Should we get key first to ensure it exists?
+        } catch (Exception e) {
+            // TODO handle
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public Map<String, KeyValue> readForService(String serviceId) {
-        RedisFuture<Map<String, String>> result = redis.hgetall(serviceId);
         try {
-            Map<String, String> mapResult = result.get();
-            // TODO check if result ok
-            Map<String, KeyValue> r = new HashMap<>();
-            r.put(serviceId, new KeyValue("key", "value"));
-            return r; // TODO what is return here
-        } catch (ExecutionException | InterruptedException e) {
-            // TODO storage exception
-            return null;
+            Map<String, String> redisResult = redis.get(serviceId);
+            Map<String, KeyValue> readResult = new HashMap<>();
+            for (Map.Entry<String, String> redisEntry : redisResult.entrySet()) {
+                readResult.put(redisEntry.getKey(), new KeyValue(redisEntry.getKey(), redisEntry.getValue()));
+            }
+            return readResult;
+        } catch (Exception e) {
+            // TODO handle
+            throw new RuntimeException(e);
         }
     }
 }
