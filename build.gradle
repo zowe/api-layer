@@ -193,7 +193,6 @@ release {
     tagTemplate = 'v${version}'
     newVersionCommitMessage = 'Create new version:'
     versionPropertyFile = 'gradle.properties'
-    buildTasks = ['build']
 
     if (releaseScope == 'minor') {
         versionPatterns = [
