@@ -20,9 +20,7 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.restassured.RestAssured.given;
@@ -143,6 +141,11 @@ class CachingApiIntegrationTest {
         }
     }
 
+    /**
+     * This test is testing that records from one user do not leak to select all for other user.
+     * The VSAM implementation is dependent on hashcodes of composite key elements.
+     * It is important to test both ways, so that both combinations are validated.
+     */
     @Test
     void givenValidKeyParameter_whenCallingGetAllEndpoint_thenAllTheStoredEntries() {
 
