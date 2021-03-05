@@ -9,8 +9,8 @@
  */
 package org.zowe.apiml.util;
 
+import io.restassured.config.RestAssuredConfig;
 import org.zowe.apiml.cachingservice.KeyValue;
-import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -22,33 +22,28 @@ import static org.hamcrest.core.Is.is;
 
 public class CachingRequests {
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private static String jwtToken = SecurityUtils.gatewayToken();
 
-
-    public void create(KeyValue keyValue) {
-        create(CACHING_PATH, keyValue);
+    public void create(KeyValue keyValue, RestAssuredConfig config) {
+        create(CACHING_PATH, keyValue, config);
     }
 
-    public void create(URI cachingPath, KeyValue keyValue) {
-        given()
+    public void create(URI cachingPath, KeyValue keyValue, RestAssuredConfig config) {
+        given().config(config)
             .contentType(JSON)
             .body(keyValue)
-            .cookie(COOKIE_NAME, jwtToken)
-        .when()
+            .when()
             .post(cachingPath)
-        .then()
+            .then()
             .statusCode(is(SC_CREATED));
     }
 
-    public void deleteValueUnderServiceIdWithoutValidation(String value, String jwtToken) {
-        deleteValueUnderServiceIdWithoutValidation(CACHING_PATH, value, jwtToken);
+    public void deleteValueUnderServiceIdWithoutValidation(String value, RestAssuredConfig config) {
+        deleteValueUnderServiceIdWithoutValidation(CACHING_PATH, value, config);
     }
 
-    public void deleteValueUnderServiceIdWithoutValidation(URI cachingPath, String value, String jwtToken) {
-        given()
+    public void deleteValueUnderServiceIdWithoutValidation(URI cachingPath, String value, RestAssuredConfig config) {
+        given().config(config)
             .contentType(JSON)
-            .cookie(COOKIE_NAME, jwtToken)
             .when()
             .delete(cachingPath + "/" + value);
     }
