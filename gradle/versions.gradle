@@ -26,7 +26,7 @@ ext {
     tomcatVersion = '9.0.13' //8.5.33
     commonsLang3Version = '3.7'
     commonsTextVersion = '1.8'
-    gradleGitPropertiesVersion = '1.5.1'
+    gradleGitPropertiesVersion = '2.2.4'
     jettyWebSocketClientVersion = '9.4.35.v20201120'
     junitJupiterVersion = '5.5.2'
     eurekaClientVersion = '1.9.13'
