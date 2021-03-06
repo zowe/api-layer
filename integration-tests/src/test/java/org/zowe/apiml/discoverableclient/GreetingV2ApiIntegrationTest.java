@@ -14,6 +14,7 @@ import com.jayway.jsonpath.JsonPath;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -22,7 +23,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @TestsNotMeantForZowe
-class GreetingV2ApiIntegrationTest {
+class GreetingV2ApiIntegrationTest implements TestWithStartedInstances {
     @Test
     void givenDiscoverableClient_whenCallGreetingV2_thenGetResponse() throws Exception {
         final HttpResponse response = HttpRequestUtils.getResponse("/discoverableclient/api/v2/greeting", SC_OK);

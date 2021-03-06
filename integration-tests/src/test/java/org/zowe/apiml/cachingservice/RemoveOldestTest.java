@@ -14,7 +14,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.CachingRequests;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
+import org.zowe.apiml.util.service.CachingService;
 import org.zowe.apiml.util.config.SslContext;
 
 import java.net.URI;
@@ -25,7 +27,9 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.hamcrest.core.Is.is;
 
 @NotForMainframeTest
-class RemoveOldestTest {
+class RemoveOldestTest implements TestWithStartedInstances {
+    private final static String COOKIE_NAME = "apimlAuthenticationToken";
+    private final String jwtToken = SecurityUtils.gatewayToken();
     private final CachingRequests requests = new CachingRequests();
     private static final CachingService service = new CachingService();
 

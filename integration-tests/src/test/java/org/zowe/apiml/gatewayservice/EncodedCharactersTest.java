@@ -14,6 +14,7 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -22,7 +23,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.is;
 
-public class EncodedCharactersTest {
+class EncodedCharactersTest implements TestWithStartedInstances {
 
 
     private String scheme;
@@ -30,12 +31,12 @@ public class EncodedCharactersTest {
     private int port;
 
     @BeforeAll
-    public static void beforeClass() {
+    static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
@@ -44,7 +45,7 @@ public class EncodedCharactersTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void shouldCallDiscoverableServiceWithEncodedCharacterAndAllow() {
+    void shouldCallDiscoverableServiceWithEncodedCharacterAndAllow() {
         final String encodedURI = "/api/v1/discoverableclient/wor%2fld/greeting";
 
         given()

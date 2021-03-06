@@ -125,12 +125,7 @@ task environmentCheck(dependsOn: ":integration-tests:environmentCheck") {
     group "Integration tests"
 }
 
-task runIntegrationTestInstances(dependsOn: buildCore) {
-    doFirst {
-    }
-}
-
-task runCITests(dependsOn: [":integration-tests:runCITests", "runIntegrationTestInstances"]) {
+task runCITests(dependsOn: [":integration-tests:runCITests"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
 }
