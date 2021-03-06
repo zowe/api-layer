@@ -28,8 +28,6 @@ import static org.hamcrest.core.Is.is;
 
 @NotForMainframeTest
 class RemoveOldestTest implements TestWithStartedInstances {
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private final String jwtToken = SecurityUtils.gatewayToken();
     private final CachingRequests requests = new CachingRequests();
     private static final CachingService service = new CachingService();
 
