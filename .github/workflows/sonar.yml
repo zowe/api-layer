@@ -34,12 +34,16 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-gradle-
             - name: Build with Gradle
-              run: ./gradlew --info --scan sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN}
+              run: ./gradlew --info --scan sonarqube -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.github.oauth=$GITHUB_TOKEN
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                   SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
                   BRANCH_NAME: $${{ github.ref }}
+                  CHANGE_ID: '1225'
+                  CHANGE_BRANCH: 'apiml/build_via_actions'
+                  CHANGE_TARGET: 'master'
+
             - name: Cleanup Gradle Cache
                 # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
                 # Restoring these files from a GitHub Actions cache might cause problems for future builds.
