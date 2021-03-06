@@ -127,19 +127,6 @@ task environmentCheck(dependsOn: ":integration-tests:environmentCheck") {
 
 task runIntegrationTestInstances(dependsOn: buildCore) {
     doFirst {
-        if (System.properties['os.name'].toLowerCase().contains('windows')) {
-            ext.process = new ProcessBuilder()
-                .directory(projectDir)
-                .inheritIO()
-                .command("npm.cmd", "run", "api-layer-ci")
-                .start()
-        } else {
-            ext.process = new ProcessBuilder()
-                .directory(projectDir)
-                .inheritIO()
-                .command("npm", "run", "api-layer-ci")
-                .start()
-        }
     }
 }
 
