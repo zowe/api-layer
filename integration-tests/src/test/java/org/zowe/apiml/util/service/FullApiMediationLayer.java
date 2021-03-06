@@ -45,10 +45,10 @@ public class FullApiMediationLayer {
     private void prepareNodeJsSampleApp() {
         List<String> parameters = new ArrayList<>();
         parameters.add("node");
-        parameters.add("index.js");
+        parameters.add("src/index.js");
 
         ProcessBuilder builder1 = new ProcessBuilder(parameters);
-        builder1.directory(new File("../onboarding-enabler-nodejs-sample-app/src/"));
+        builder1.directory(new File("../onboarding-enabler-nodejs-sample-app/"));
         nodeJsBuilder = builder1.inheritIO();
     }
 
