@@ -20,8 +20,15 @@ https://gradle.com/s/g3nvjjq6trnie
 node downloaded twice but it's right at the start+
 npm install is very fast
 
-do clean + node_modules
+do clean + node_modules:
 https://gradle.com/s/4ebfssvbrnqv6
 if npm cache is warm, npm install takes 40s (biggest hog)
 npm test takes 12s
 built under minute
+
+after gradle bump to 6.8.3:
+https://gradle.com/s/mzqaaarwjd2p6
+3m 11s
+test tasks show up with :discoverable-client:test taking 1m 21s
+generatePom tasks take some time
+api catalog services is waiting for frontend to be built before starting compile
