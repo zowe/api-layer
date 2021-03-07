@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import org.apache.catalina.LifecycleException;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -195,6 +196,7 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
 
     @Test
     @NotForMainframeTest
+    @Disabled
     void testServiceStatus() throws Exception {
 
         String serviceId = "testservice4";
