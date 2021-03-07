@@ -196,7 +196,7 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
 
     @Test
     @NotForMainframeTest
-    @Disabled
+    @Disabled("The test is flaky and often fails at random on different environments.")
     void testServiceStatus() throws Exception {
 
         String serviceId = "testservice4";
