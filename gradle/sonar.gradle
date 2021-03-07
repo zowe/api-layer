@@ -85,6 +85,13 @@ project(":apiml-common-lib-package") {
     }
 }
 
+// Packaging project; sonar does not apply
+project(":zowe-install") {
+    sonarqube {
+        skipProject = true
+    }
+}
+
 // Onboarding NodeJS enabler; sonar does not apply
 project(":onboarding-enabler-nodejs") {
     sonarqube {
