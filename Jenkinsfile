@@ -85,12 +85,6 @@ pipeline {
     }
 
     stages {
-        stage ('Install') {
-            steps {
-                sh 'npm install'
-            }
-        }
-
         stage('Build and Test') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
@@ -106,6 +100,7 @@ pipeline {
                 }
             }
         }
+
         stage('Sonar') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
