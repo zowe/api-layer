@@ -19,7 +19,6 @@ ext.projectsNeedLicense = [
     'onboarding-enabler-java-sample-app',
     'onboarding-enabler-nodejs-sample-app',
     'onboarding-enabler-spring-v1-sample-app',
-    'zowe-install',
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
     'onboarding-enabler-micronaut',
