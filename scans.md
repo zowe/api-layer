@@ -41,3 +41,8 @@ restore cache 17s, save cache 35s
 
 full build with cache hit: 1m 10s, npm install 19s
 https://gradle.com/s/oaa77ihel272y
+
+https://gradle.com/s/yhqnwmdtaz7ga
+
+The gradle task takes 1 - 1.5 min.
+Rest is infrastructure, totalling under 3 minutes
