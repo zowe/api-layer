@@ -32,3 +32,12 @@ https://gradle.com/s/mzqaaarwjd2p6
 test tasks show up with :discoverable-client:test taking 1m 21s
 generatePom tasks take some time
 api catalog services is waiting for frontend to be built before starting compile
+
+enable caching for node_modules folder
+full build
+https://gradle.com/s/ezkdpfax3vh7e
+npm ci could be used to optimize the time
+restore cache 17s, save cache 35s
+
+full build with cache hit: 1m 10s, npm install 19s
+https://gradle.com/s/oaa77ihel272y
