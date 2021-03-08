@@ -14,6 +14,7 @@ import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -23,7 +24,7 @@ import java.net.URI;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
-class MultipartPutIntegrationTest {
+class MultipartPutIntegrationTest implements TestWithStartedInstances {
     private static final String MULTIPART_PATH = "/discoverableclient/api/v1/multipart";
     private static final String MULTIPART_PATH_OLD_FORMAT = "/api/v1/discoverableclient/multipart";
     private final String configFileName = "example.txt";

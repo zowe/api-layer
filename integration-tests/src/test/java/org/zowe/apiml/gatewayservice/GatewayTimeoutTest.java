@@ -15,6 +15,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.SlowTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpClientUtils;
@@ -30,7 +31,7 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @Slf4j
 @TestsNotMeantForZowe
-class GatewayTimeoutTest {
+class GatewayTimeoutTest implements TestWithStartedInstances {
     private static final String API_V1_GREETING_URI = "/api/v1/discoverableclient/greeting";
     private static final int DEFAULT_TIMEOUT = 30000;
 

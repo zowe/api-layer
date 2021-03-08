@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
@@ -22,17 +23,17 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 @TestsNotMeantForZowe
-public class VersionEndpointTest {
+class VersionEndpointTest implements TestWithStartedInstances {
 
     private String requestString;
 
     @BeforeAll
-    public static void beforeClass() {
+    static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String scheme = serviceConfiguration.getScheme();
         String host = serviceConfiguration.getHost();

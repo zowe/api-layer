@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -28,10 +29,10 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  *
  */
 @TestsNotMeantForZowe
-public class RequestInfoIntegrationTest {
+class RequestInfoIntegrationTest implements TestWithStartedInstances {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
@@ -59,7 +60,7 @@ public class RequestInfoIntegrationTest {
 
     @ParameterizedTest(name = "call endpoint {1} to receive json with signed = {2} : {0}")
     @MethodSource("getInputs")
-    public void testRequestInfo(String description, String url, Boolean signed) {
+    void testRequestInfo(String description, String url, Boolean signed) {
         if (signed) {
             RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         }

@@ -12,6 +12,7 @@ package org.zowe.apiml.discoverableclient;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.SlowTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -26,7 +27,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 
 @TestsNotMeantForZowe
-class IntegratedApiMediationClientTest {
+class IntegratedApiMediationClientTest implements TestWithStartedInstances {
     private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/apiMediationClient");
     private static final URI MEDIATION_CLIENT_URI_OLD_FORMAT = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/apiMediationClient");
 

@@ -12,6 +12,7 @@ package org.zowe.apiml.gatewayservice;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -22,7 +23,7 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.Is.is;
 
-public class ZosmfSsoIntegrationTest {
+class ZosmfSsoIntegrationTest implements TestWithStartedInstances {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
@@ -35,7 +36,7 @@ public class ZosmfSsoIntegrationTest {
     private int port;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
@@ -50,7 +51,7 @@ public class ZosmfSsoIntegrationTest {
     @Test
     @zOSMFAuthTest
     //@formatter:off
-    public void doZosmfCallWithValidToken() {
+    void doZosmfCallWithValidToken() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
 
