@@ -49,6 +49,7 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | security-service-client-spring           | Library - Security Client          |
 | zaas-client                              | APIML SDK - ZAAS Client            |
 | zlux-api-catalog                         | Library - Zlux Api Catalog plugin  |
+| zowe-install                             | Tool - Zowe run scripts            |
 
 ## Pull Requests
 
