@@ -15,8 +15,7 @@ import io.restassured.config.SSLConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.EnvironmentConfiguration;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.util.List;
@@ -24,16 +23,14 @@ import java.util.List;
 import static io.restassured.RestAssured.given;
 
 
-class WebSecurityTest {
+class WebSecurityTest implements TestWithStartedInstances {
 
     private static final String CACHING_PATH = "/cachingservice/api/v1/cache";
     private static final String HEALTH_PATH = "/cachingservice/application/health";
     private static final String INFO_PATH = "/cachingservice/application/info";
     private static final String APIDOC_PATH = "/cachingservice/v2/api-docs";
 
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private static String jwtToken = SecurityUtils.gatewayToken();
-    private final EnvironmentConfiguration environmentConfiguration = ConfigReader.environmentConfiguration();
+    private static String jwtToken;
 
     private String caching_url;
     private static final String CERT_HEADER_NAME = "X-Certificate-DistinguishedName";
@@ -44,6 +41,7 @@ class WebSecurityTest {
     }
     @BeforeEach
     void setupCachingUrl() {
+        jwtToken = SecurityUtils.gatewayToken();
         List<DiscoveryUtils.InstanceInfo> cachingInstances = DiscoveryUtils.getInstances("cachingservice");
         caching_url = cachingInstances.stream().findFirst().map(i -> String.format("%s", i.getUrl()))
             .orElseThrow(() -> new RuntimeException("Cannot determine Caching service from Discovery"));
