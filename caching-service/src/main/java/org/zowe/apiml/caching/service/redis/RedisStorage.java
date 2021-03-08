@@ -19,6 +19,7 @@ import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO add logs
 /**
  * Class handles requests from controller and orchestrates operations on the low level RedisOperator class
  */
@@ -77,11 +78,12 @@ public class RedisStorage implements Storage {
     @Override
     public KeyValue delete(String serviceId, String toDelete) {
         try {
+            String valueToDelete = redis.get(serviceId, toDelete);
             boolean result = redis.delete(serviceId, toDelete);
             if (!result) {
                 throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toDelete, serviceId);
             }
-            return new KeyValue(toDelete, "what?"); // TODO what value here? Should we get key first to ensure it exists?
+            return new KeyValue(toDelete, valueToDelete);
         } catch (Exception e) {
             // TODO handle
             throw new RuntimeException(e);
