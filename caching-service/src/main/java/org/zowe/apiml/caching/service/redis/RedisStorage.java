@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.redis;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -40,77 +41,53 @@ public class RedisStorage implements Storage {
     public KeyValue create(String serviceId, KeyValue toCreate) {
         // TODO eviction
         log.info("Creating entry: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
-        try {
-            boolean result = redis.create(serviceId, toCreate);
-            if (!result) {
-                throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey(), serviceId);
-            }
-            return toCreate;
-        } catch (Exception e) {
-            // TODO handle
-            throw new RuntimeException(e);
+        boolean result = redis.create(serviceId, toCreate);
+        if (!result) {
+            throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey(), serviceId);
         }
+        return toCreate;
     }
 
     @Override
     public KeyValue read(String serviceId, String key) {
         log.info("Reading entry: {}|{}", serviceId, key);
-        try {
-            String result = redis.get(serviceId, key);
-            if (result == null) {
-                throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
-            }
-            return new KeyValue(key, result);
-        } catch (Exception e) {
-            // TODO handle
-            throw new RuntimeException(e);
+        String result = redis.get(serviceId, key);
+        if (result == null) {
+            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
         }
+        return new KeyValue(key, result);
     }
 
     @Override
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         log.info("Updating entry: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
-        try {
-            boolean result = redis.update(serviceId, toUpdate);
-            if (!result) {
-                throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
-            }
-            return toUpdate;
-        } catch (Exception e) {
-            // TODO handle
-            throw new RuntimeException(e);
+        boolean result = redis.update(serviceId, toUpdate);
+        if (!result) {
+            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
         }
+        return toUpdate;
     }
 
     @Override
     public KeyValue delete(String serviceId, String toDelete) {
         log.info("Deleting entry: {}|{}", serviceId, toDelete);
-        try {
-            String valueToDelete = redis.get(serviceId, toDelete);
-            boolean result = redis.delete(serviceId, toDelete);
-            if (!result) {
-                throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toDelete, serviceId);
-            }
-            return new KeyValue(toDelete, valueToDelete);
-        } catch (Exception e) {
-            // TODO handle
-            throw new RuntimeException(e);
+        String valueToDelete = redis.get(serviceId, toDelete);
+        boolean result = redis.delete(serviceId, toDelete);
+        if (!result) {
+            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toDelete, serviceId);
         }
+        return new KeyValue(toDelete, valueToDelete);
     }
 
     @Override
+    @Retryable(value = RetryableRedisException.class)
     public Map<String, KeyValue> readForService(String serviceId) {
         log.info("Reading all entries: {}", serviceId);
-        try {
-            Map<String, String> redisResult = redis.get(serviceId);
-            Map<String, KeyValue> readResult = new HashMap<>();
-            for (Map.Entry<String, String> redisEntry : redisResult.entrySet()) {
-                readResult.put(redisEntry.getKey(), new KeyValue(redisEntry.getKey(), redisEntry.getValue()));
-            }
-            return readResult;
-        } catch (Exception e) {
-            // TODO handle
-            throw new RuntimeException(e);
+        Map<String, String> redisResult = redis.get(serviceId);
+        Map<String, KeyValue> readResult = new HashMap<>();
+        for (Map.Entry<String, String> redisEntry : redisResult.entrySet()) {
+            readResult.put(redisEntry.getKey(), new KeyValue(redisEntry.getKey(), redisEntry.getValue()));
         }
+        return readResult;
     }
 }

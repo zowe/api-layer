@@ -34,34 +34,54 @@ public class RedisOperator {
         // would be better to keep connection open until RedisOperator is destructed
     }
 
-    public boolean create(String serviceId, KeyValue toAdd) throws ExecutionException, InterruptedException {
-        RedisFuture<Boolean> result = redis.hsetnx(serviceId, toAdd.getKey(), toAdd.getValue());
-        return result.get();
-    }
-
-    public boolean update(String serviceId, KeyValue toUpdate) throws ExecutionException, InterruptedException {
-        RedisFuture<Boolean> exists = redis.hexists(serviceId, toUpdate.getKey());
-        if (!exists.get()) {
-            return false;
+    public boolean create(String serviceId, KeyValue toAdd) {
+        try {
+            RedisFuture<Boolean> result = redis.hsetnx(serviceId, toAdd.getKey(), toAdd.getValue());
+            return result.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RetryableRedisException(e);
         }
-
-        RedisFuture<Boolean> result = redis.hset(serviceId, toUpdate.getKey(), toUpdate.getValue());
-        return !result.get(); // hset returns false if field already exists and value was updated
     }
 
-    public String get(String serviceId, String key) throws ExecutionException, InterruptedException {
-        RedisFuture<String> result = redis.hget(serviceId, key);
-        return result.get();
+    public boolean update(String serviceId, KeyValue toUpdate) {
+        try {
+            RedisFuture<Boolean> exists = redis.hexists(serviceId, toUpdate.getKey());
+            if (!exists.get()) {
+                return false;
+            }
+
+            RedisFuture<Boolean> result = redis.hset(serviceId, toUpdate.getKey(), toUpdate.getValue());
+            return !result.get(); // hset returns false if field already exists and value was updated
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RetryableRedisException(e);
+        }
     }
 
-    public Map<String, String> get(String serviceId) throws ExecutionException, InterruptedException {
-        RedisFuture<Map<String, String>> result = redis.hgetall(serviceId);
-        return result.get();
+    public String get(String serviceId, String key) {
+        try {
+            RedisFuture<String> result = redis.hget(serviceId, key);
+            return result.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RetryableRedisException(e);
+        }
     }
 
-    public boolean delete(String serviceId, String toDelete) throws ExecutionException, InterruptedException {
-        RedisFuture<Long> result = redis.hdel(serviceId, toDelete);
-        long recordsDelete = result.get();
-        return recordsDelete >= 1;
+    public Map<String, String> get(String serviceId) {
+        try {
+            RedisFuture<Map<String, String>> result = redis.hgetall(serviceId);
+            return result.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RetryableRedisException(e);
+        }
+    }
+
+    public boolean delete(String serviceId, String toDelete) {
+        try {
+            RedisFuture<Long> result = redis.hdel(serviceId, toDelete);
+            long recordsDelete = result.get();
+            return recordsDelete >= 1;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RetryableRedisException(e);
+        }
     }
 }
