@@ -28,11 +28,11 @@ public class RedisStorage implements Storage {
     private final RedisConfig config;
     private final RedisOperator redis;
 
-    public RedisStorage(RedisConfig config, RedisOperator redisOperator) {
+    public RedisStorage(RedisConfig config) {
         log.info("Using Redis for the cached data");
 
         this.config = config;
-        this.redis = redisOperator;
+        this.redis = new RedisOperator(config);
 
         log.info("Using Redis configuration: {}", config);
     }

@@ -27,8 +27,7 @@ public class RedisConfiguration {
     @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "redis")
     @Bean
     public Storage redis() {
-        // TODO host, port, timeout configurable
         // TODO how do we determine and handle if multiple instances are being used
-        return new RedisStorage(redisConfig, new RedisOperator("127.0.0.1", 6379, Duration.ofSeconds(60)));
+        return new RedisStorage(redisConfig);
     }
 }

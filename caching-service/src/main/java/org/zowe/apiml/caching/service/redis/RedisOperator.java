@@ -15,6 +15,7 @@ import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 
 import java.time.Duration;
 import java.util.Map;
@@ -23,9 +24,9 @@ import java.util.concurrent.ExecutionException;
 public class RedisOperator {
     private final RedisAsyncCommands<String, String> redis;
 
-    public RedisOperator(String host, int port, Duration timeout) {
+    public RedisOperator(RedisConfig config) {
         // TODO how to handle authentication to redis?
-        RedisURI redisUri = new RedisURI(host, port, timeout);
+        RedisURI redisUri = new RedisURI(config.getHostIP(), config.getPort(), Duration.ofSeconds(config.getTimeout()));
         RedisClient redisClient = RedisClient.create(redisUri);
         StatefulRedisConnection<String, String> connection = redisClient.connect();
         redis = connection.async();
