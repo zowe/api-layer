@@ -20,6 +20,7 @@ import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO Fix such that don't create new KeyValue, as this corrupts the created timestamp. Store KeyValue as string and map string to instance.
 /**
  * Class handles requests from controller and orchestrates operations on the low level RedisOperator class
  */
@@ -29,10 +30,14 @@ public class RedisStorage implements Storage {
     private final RedisOperator redis;
 
     public RedisStorage(RedisConfig config) {
+        this(config, new RedisOperator(config));
+    }
+
+    public RedisStorage(RedisConfig config, RedisOperator redisOperator) {
         log.info("Using Redis for the cached data");
 
         this.config = config;
-        this.redis = new RedisOperator(config);
+        this.redis = redisOperator;
 
         log.info("Using Redis configuration: {}", config);
     }

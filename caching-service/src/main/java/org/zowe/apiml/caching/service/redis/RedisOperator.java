@@ -37,7 +37,7 @@ public class RedisOperator {
 
     public boolean create(String serviceId, KeyValue toAdd) {
         try {
-            RedisFuture<Boolean> result = redis.hsetnx(serviceId, toAdd.getKey(), toAdd.getValue());
+            RedisFuture<Boolean> result = redis.hsetnx(serviceId, toAdd.getKey(), toAdd.toString());
             return result.get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RetryableRedisException(e);
