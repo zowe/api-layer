@@ -19,7 +19,6 @@ import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO add logs
 /**
  * Class handles requests from controller and orchestrates operations on the low level RedisOperator class
  */
@@ -29,12 +28,18 @@ public class RedisStorage implements Storage {
     private final RedisOperator redis;
 
     public RedisStorage(RedisConfig config, RedisOperator redisOperator) {
+        log.info("Using Redis for the cached data");
+
         this.config = config;
         this.redis = redisOperator;
+
+        log.info("Using Redis configuration: {}", config);
     }
 
     @Override
     public KeyValue create(String serviceId, KeyValue toCreate) {
+        // TODO eviction
+        log.info("Creating entry: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
         try {
             boolean result = redis.create(serviceId, toCreate);
             if (!result) {
@@ -49,6 +54,7 @@ public class RedisStorage implements Storage {
 
     @Override
     public KeyValue read(String serviceId, String key) {
+        log.info("Reading entry: {}|{}", serviceId, key);
         try {
             String result = redis.get(serviceId, key);
             if (result == null) {
@@ -63,6 +69,7 @@ public class RedisStorage implements Storage {
 
     @Override
     public KeyValue update(String serviceId, KeyValue toUpdate) {
+        log.info("Updating entry: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
         try {
             boolean result = redis.update(serviceId, toUpdate);
             if (!result) {
@@ -77,6 +84,7 @@ public class RedisStorage implements Storage {
 
     @Override
     public KeyValue delete(String serviceId, String toDelete) {
+        log.info("Deleting entry: {}|{}", serviceId, toDelete);
         try {
             String valueToDelete = redis.get(serviceId, toDelete);
             boolean result = redis.delete(serviceId, toDelete);
@@ -92,6 +100,7 @@ public class RedisStorage implements Storage {
 
     @Override
     public Map<String, KeyValue> readForService(String serviceId) {
+        log.info("Reading all entries: {}", serviceId);
         try {
             Map<String, String> redisResult = redis.get(serviceId);
             Map<String, KeyValue> readResult = new HashMap<>();
