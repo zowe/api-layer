@@ -35,7 +35,7 @@ public class RedisStorage implements Storage {
     @Override
     public KeyValue create(String serviceId, KeyValue toCreate) {
         try {
-            boolean result = redis.set(serviceId, toCreate);
+            boolean result = redis.create(serviceId, toCreate);
             if (!result) {
                 throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey(), serviceId);
             }
@@ -63,7 +63,7 @@ public class RedisStorage implements Storage {
     @Override
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         try {
-            boolean result = redis.set(serviceId, toUpdate);
+            boolean result = redis.update(serviceId, toUpdate);
             if (!result) {
                 throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
             }

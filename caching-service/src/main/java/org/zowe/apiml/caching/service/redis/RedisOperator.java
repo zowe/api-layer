@@ -34,10 +34,19 @@ public class RedisOperator {
         // would be better to keep connection open until RedisOperator is destructed
     }
 
-    public boolean set(String serviceId, KeyValue toSet) throws ExecutionException, InterruptedException {
-        // TODO if key exists, this will return false - good for create, but unclear how to update key then
-        RedisFuture<Boolean> result = redis.hset(serviceId, toSet.getKey(), toSet.getValue());
+    public boolean create(String serviceId, KeyValue toAdd) throws ExecutionException, InterruptedException {
+        RedisFuture<Boolean> result = redis.hsetnx(serviceId, toAdd.getKey(), toAdd.getValue());
         return result.get();
+    }
+
+    public boolean update(String serviceId, KeyValue toUpdate) throws ExecutionException, InterruptedException {
+        RedisFuture<Boolean> exists = redis.hexists(serviceId, toUpdate.getKey());
+        if (!exists.get()) {
+            return false;
+        }
+
+        RedisFuture<Boolean> result = redis.hset(serviceId, toUpdate.getKey(), toUpdate.getValue());
+        return !result.get(); // hset returns false if field already exists and value was updated
     }
 
     public String get(String serviceId, String key) throws ExecutionException, InterruptedException {
@@ -53,6 +62,6 @@ public class RedisOperator {
     public boolean delete(String serviceId, String toDelete) throws ExecutionException, InterruptedException {
         RedisFuture<Long> result = redis.hdel(serviceId, toDelete);
         long recordsDelete = result.get();
-        return recordsDelete >= 1; // TODO is it really successful if deleted more than 1 records? Expect just 1 deleted at a time.
+        return recordsDelete >= 1;
     }
 }
