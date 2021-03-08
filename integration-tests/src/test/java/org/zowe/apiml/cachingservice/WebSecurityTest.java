@@ -81,6 +81,11 @@ class WebSecurityTest implements TestWithStartedInstances {
                 .when().get(caching_url + CACHING_PATH)
                 .then().statusCode(HttpStatus.OK.value());
 
+            given().config(SslContext.selfSignedUntrusted)
+                .header(CERT_HEADER_NAME, "value")
+                .when().get(caching_url + CACHING_PATH)
+                .then().statusCode(HttpStatus.FORBIDDEN.value());
+
             given()
                 .header(CERT_HEADER_NAME, "value")
                 .when().get(caching_url + CACHING_PATH)
