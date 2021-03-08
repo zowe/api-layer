@@ -38,6 +38,7 @@ public class RedisStorage implements Storage {
     }
 
     @Override
+    @Retryable(value = RetryableRedisException.class)
     public KeyValue create(String serviceId, KeyValue toCreate) {
         // TODO eviction
         log.info("Creating entry: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
@@ -49,6 +50,7 @@ public class RedisStorage implements Storage {
     }
 
     @Override
+    @Retryable(value = RetryableRedisException.class)
     public KeyValue read(String serviceId, String key) {
         log.info("Reading entry: {}|{}", serviceId, key);
         String result = redis.get(serviceId, key);
@@ -59,6 +61,7 @@ public class RedisStorage implements Storage {
     }
 
     @Override
+    @Retryable(value = RetryableRedisException.class)
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         log.info("Updating entry: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
         boolean result = redis.update(serviceId, toUpdate);
@@ -69,6 +72,7 @@ public class RedisStorage implements Storage {
     }
 
     @Override
+    @Retryable(value = RetryableRedisException.class)
     public KeyValue delete(String serviceId, String toDelete) {
         log.info("Deleting entry: {}|{}", serviceId, toDelete);
         String valueToDelete = redis.get(serviceId, toDelete);
