@@ -18,9 +18,11 @@ import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 // TODO Fix such that don't create new KeyValue, as this corrupts the created timestamp. Store KeyValue as string and map string to instance.
+
 /**
  * Class handles requests from controller and orchestrates operations on the low level RedisOperator class
  */
@@ -47,7 +49,10 @@ public class RedisStorage implements Storage {
     public KeyValue create(String serviceId, KeyValue toCreate) {
         // TODO eviction
         log.info("Creating entry: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
-        boolean result = redis.create(serviceId, toCreate);
+
+        RedisEntry entryToCreate = new RedisEntry(serviceId, toCreate);
+        boolean result = redis.create(entryToCreate);
+
         if (!result) {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey(), serviceId);
         }
@@ -58,18 +63,22 @@ public class RedisStorage implements Storage {
     @Retryable(value = RetryableRedisException.class)
     public KeyValue read(String serviceId, String key) {
         log.info("Reading entry: {}|{}", serviceId, key);
-        String result = redis.get(serviceId, key);
+
+        RedisEntry result = redis.get(serviceId, key);
         if (result == null) {
             throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
         }
-        return new KeyValue(key, result);
+        return result.getEntry();
     }
 
     @Override
     @Retryable(value = RetryableRedisException.class)
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         log.info("Updating entry: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
-        boolean result = redis.update(serviceId, toUpdate);
+
+        RedisEntry entryToUpdate = new RedisEntry(serviceId, toUpdate);
+        boolean result = redis.update(entryToUpdate);
+
         if (!result) {
             throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
         }
@@ -80,22 +89,26 @@ public class RedisStorage implements Storage {
     @Retryable(value = RetryableRedisException.class)
     public KeyValue delete(String serviceId, String toDelete) {
         log.info("Deleting entry: {}|{}", serviceId, toDelete);
-        String valueToDelete = redis.get(serviceId, toDelete);
+
+        RedisEntry entryToDelete = redis.get(serviceId, toDelete);
         boolean result = redis.delete(serviceId, toDelete);
+
         if (!result) {
             throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toDelete, serviceId);
         }
-        return new KeyValue(toDelete, valueToDelete);
+        return entryToDelete.getEntry();
     }
 
     @Override
     @Retryable(value = RetryableRedisException.class)
     public Map<String, KeyValue> readForService(String serviceId) {
         log.info("Reading all entries: {}", serviceId);
-        Map<String, String> redisResult = redis.get(serviceId);
+
+        List<RedisEntry> redisResult = redis.get(serviceId);
         Map<String, KeyValue> readResult = new HashMap<>();
-        for (Map.Entry<String, String> redisEntry : redisResult.entrySet()) {
-            readResult.put(redisEntry.getKey(), new KeyValue(redisEntry.getKey(), redisEntry.getValue()));
+
+        for (RedisEntry redisEntry : redisResult) {
+            readResult.put(redisEntry.getServiceId(), redisEntry.getEntry());
         }
         return readResult;
     }

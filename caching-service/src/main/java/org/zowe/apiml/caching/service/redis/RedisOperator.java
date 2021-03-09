@@ -18,6 +18,8 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -35,17 +37,21 @@ public class RedisOperator {
         // would be better to keep connection open until RedisOperator is destructed
     }
 
-    public boolean create(String serviceId, KeyValue toAdd) {
+    public boolean create(RedisEntry entryToAdd) {
         try {
-            RedisFuture<Boolean> result = redis.hsetnx(serviceId, toAdd.getKey(), toAdd.toString());
+            KeyValue toAdd = entryToAdd.getEntry();
+            RedisFuture<Boolean> result = redis.hsetnx(entryToAdd.getServiceId(), toAdd.getKey(), toAdd.toString());
             return result.get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RetryableRedisException(e);
         }
     }
 
-    public boolean update(String serviceId, KeyValue toUpdate) {
+    public boolean update(RedisEntry entryToUpdate) {
         try {
+            String serviceId = entryToUpdate.getServiceId();
+            KeyValue toUpdate = entryToUpdate.getEntry();
+
             RedisFuture<Boolean> exists = redis.hexists(serviceId, toUpdate.getKey());
             if (!exists.get()) {
                 return false;
@@ -58,21 +64,31 @@ public class RedisOperator {
         }
     }
 
-    public String get(String serviceId, String key) {
+    public RedisEntry get(String serviceId, String key) {
         try {
-            RedisFuture<String> result = redis.hget(serviceId, key);
-            return result.get();
+            String result = redis.hget(serviceId, key).get();
+            return new RedisEntry(serviceId, result);
         } catch (InterruptedException | ExecutionException e) {
             throw new RetryableRedisException(e);
+        } catch (RedisEntryException e) {
+            return null;
         }
     }
 
-    public Map<String, String> get(String serviceId) {
+    public List<RedisEntry> get(String serviceId) {
         try {
-            RedisFuture<Map<String, String>> result = redis.hgetall(serviceId);
-            return result.get();
+            Map<String, String> result = redis.hgetall(serviceId).get();
+            List<RedisEntry> entries = new ArrayList<>();
+
+            for (Map.Entry<String, String> entry : result.entrySet()) {
+                entries.add(new RedisEntry(entry.getKey(), entry.getValue()));
+            }
+
+            return entries;
         } catch (InterruptedException | ExecutionException e) {
             throw new RetryableRedisException(e);
+        } catch (RedisEntryException e) {
+            return null;
         }
     }
 
