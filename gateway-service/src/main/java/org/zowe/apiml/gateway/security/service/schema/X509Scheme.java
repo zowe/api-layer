@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -32,6 +33,8 @@ import java.util.function.Supplier;
 @Slf4j
 public class X509Scheme implements AbstractAuthenticationScheme {
 
+    public static final String allHeaders = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
+
     @Override
     public AuthenticationScheme getScheme() {
         return AuthenticationScheme.X509;
@@ -39,10 +42,14 @@ public class X509Scheme implements AbstractAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
-        String[] headers = authentication.getHeaders().split(",");
-        if (headers.length > 0) {
-            return new X509Command(headers);
-        } else return AuthenticationCommand.EMPTY;
+        String[] headers;
+        if (StringUtils.isEmpty(authentication.getHeaders())) {
+            headers = allHeaders.split(",");
+        } else {
+            headers = authentication.getHeaders().split(",");
+        }
+        return new X509Command(headers);
+
     }
 
     public static class X509Command extends AuthenticationCommand {
@@ -65,6 +72,7 @@ public class X509Scheme implements AbstractAuthenticationScheme {
                 X509Certificate clientCert = certs[0];
                 try {
                     setHeader(context, clientCert);
+                    context.set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
                 } catch (CertificateEncodingException e) {
                     log.error("Exception parsing certificate", e);
                 }

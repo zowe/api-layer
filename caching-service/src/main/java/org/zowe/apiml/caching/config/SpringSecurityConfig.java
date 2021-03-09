@@ -16,6 +16,10 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -37,6 +41,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
             .headers().httpStrictTransportSecurity().disable()
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .authorizeRequests().antMatchers("/**").permitAll();
+            .authorizeRequests().anyRequest().authenticated().and()
+            .x509().userDetailsService(x509UserDetailsService());
         }
+
+    private UserDetailsService x509UserDetailsService() {
+        return username -> new User("cachingUser", "", Collections.emptyList());
+    }
 }

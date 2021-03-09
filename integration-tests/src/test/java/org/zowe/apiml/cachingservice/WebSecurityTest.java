@@ -14,9 +14,8 @@ import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
-import org.zowe.apiml.gatewayservice.SecurityUtils;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.EnvironmentConfiguration;
+import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.util.List;
@@ -24,24 +23,22 @@ import java.util.List;
 import static io.restassured.RestAssured.given;
 
 
-class WebSecurityTest {
+class WebSecurityTest implements TestWithStartedInstances {
 
     private static final String CACHING_PATH = "/cachingservice/api/v1/cache";
     private static final String HEALTH_PATH = "/cachingservice/application/health";
     private static final String INFO_PATH = "/cachingservice/application/info";
     private static final String APIDOC_PATH = "/cachingservice/v2/api-docs";
 
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private static String jwtToken = SecurityUtils.gatewayToken();
-    private final EnvironmentConfiguration environmentConfiguration = ConfigReader.environmentConfiguration();
-
     private String caching_url;
     private static final String CERT_HEADER_NAME = "X-Certificate-DistinguishedName";
 
     @BeforeAll
-    static void setup() {
+    static void setup() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
+        SslContext.prepareSslAuthentication();
     }
+
     @BeforeEach
     void setupCachingUrl() {
         List<DiscoveryUtils.InstanceInfo> cachingInstances = DiscoveryUtils.getInstances("cachingservice");
@@ -69,7 +66,7 @@ class WebSecurityTest {
     }
 
     @Nested
-    class calledWithHeader {
+    class calledWithHeaderAndCertificate {
 
         @BeforeEach
         void setUp() {
@@ -78,24 +75,30 @@ class WebSecurityTest {
 
         @Test
         void cachingApiEndpointsAccessible() {
-            given()
+
+            given().config(SslContext.clientCertApiml)
                 .header(CERT_HEADER_NAME, "value")
                 .when().get(caching_url + CACHING_PATH)
                 .then().statusCode(HttpStatus.OK.value());
+
+            given().config(SslContext.selfSignedUntrusted)
+                .header(CERT_HEADER_NAME, "value")
+                .when().get(caching_url + CACHING_PATH)
+                .then().statusCode(HttpStatus.FORBIDDEN.value());
+
             given()
+                .header(CERT_HEADER_NAME, "value")
+                .when().get(caching_url + CACHING_PATH)
+                .then().statusCode(HttpStatus.FORBIDDEN.value());
+
+            given().config(SslContext.clientCertApiml)
                 .when().get(caching_url + CACHING_PATH)
                 .then().statusCode(HttpStatus.UNAUTHORIZED.value());
-        }
-    }
 
-    @Test
-    void loginEndpointDoesntExist() {
-        given().when()
-            .get(caching_url + "/login")
-            .then().statusCode(HttpStatus.NOT_FOUND.value());
-        given().when()
-            .get(caching_url + "/auth/login")
-            .then().statusCode(HttpStatus.NOT_FOUND.value());
+            given()
+                .when().get(caching_url + CACHING_PATH)
+                .then().statusCode(HttpStatus.FORBIDDEN.value());
+        }
     }
 
     private void clearSsl() {
