@@ -7,11 +7,11 @@ services:
         ports:
             - "6379:6379"
         volumes:
-            - C:\Users\jb892003\IdeaProjects\api-layer-v2\redis\master:/usr/local/etc/redis/
+            - ./master:/usr/local/etc/redis/
 
     redis-slave:
         container_name: redis-replica
         image: redis:latest
         command: redis-server /usr/local/etc/redis/redis.conf
         volumes:
-            - C:\Users\jb892003\IdeaProjects\api-layer-v2\redis\replica:/usr/local/etc/redis/
+            - ./replica:/usr/local/etc/redis/
