@@ -12,10 +12,12 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
+import org.zowe.apiml.security.common.error.InvalidCertificateException;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +34,8 @@ import java.util.function.Supplier;
 @Slf4j
 public class X509Scheme implements AbstractAuthenticationScheme {
 
+    public static final String allHeaders = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
+
     @Override
     public AuthenticationScheme getScheme() {
         return AuthenticationScheme.X509;
@@ -39,14 +43,14 @@ public class X509Scheme implements AbstractAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
-
-        if (authentication.getHeaders() != null) {
-            String[] headers = authentication.getHeaders().split(",");
-            if (headers.length > 0) {
-                return new X509Command(headers);
-            }
+        String[] headers;
+        if (StringUtils.isEmpty(authentication.getHeaders())) {
+            headers = allHeaders.split(",");
+        } else {
+            headers = authentication.getHeaders().split(",");
         }
-        return AuthenticationCommand.EMPTY;
+        return new X509Command(headers);
+
     }
 
     public static class X509Command extends AuthenticationCommand {
@@ -73,6 +77,8 @@ public class X509Scheme implements AbstractAuthenticationScheme {
                 } catch (CertificateEncodingException e) {
                     log.error("Exception parsing certificate", e);
                 }
+            } else {
+                throw new InvalidCertificateException("Service authentication schema set x509 but no client certificate presents in request.");
             }
         }
 

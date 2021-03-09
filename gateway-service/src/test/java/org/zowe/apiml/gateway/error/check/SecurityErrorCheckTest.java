@@ -10,16 +10,6 @@
 
 package org.zowe.apiml.gateway.error.check;
 
-import org.springframework.context.annotation.Import;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.zowe.apiml.config.error.check.MessageServiceConfiguration;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.gateway.error.ErrorUtils;
-import org.zowe.apiml.message.api.ApiMessage;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.core.MessageType;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,13 +17,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.config.error.check.MessageServiceConfiguration;
+import org.zowe.apiml.gateway.error.ErrorUtils;
+import org.zowe.apiml.message.api.ApiMessage;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.security.common.error.InvalidCertificateException;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -118,6 +119,17 @@ class SecurityErrorCheckTest {
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.security.login.invalidCredentials",
             MessageType.ERROR, "ZWEAG120E", "Invalid username or password for URL 'null'")));
+    }
+
+    @Test
+    void whenInvalidCertificateException_thenUnauthorized() {
+        HttpServletRequest request = new MockHttpServletRequest();
+        InvalidCertificateException invalidCertificateException = new InvalidCertificateException("");
+        ZuulException authenticationException = new ZuulException(invalidCertificateException, HttpStatus.UNAUTHORIZED.value(), String.valueOf(invalidCertificateException));
+        ResponseEntity<ApiMessageView> resp = securityErrorCheck.checkError(request, authenticationException);
+        assertNotNull(resp.getBody());
+        assertThat(resp.getBody().getMessages(), hasItem(new ApiMessage("org.zowe.apiml.gateway.security.x509.missingCertificate",
+            MessageType.ERROR, "ZWEAG500E", "Client certificate is missing in request.")));
     }
 }
 

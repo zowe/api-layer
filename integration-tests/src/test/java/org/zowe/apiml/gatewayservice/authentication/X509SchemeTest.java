@@ -65,6 +65,12 @@ class X509SchemeTest {
             .body("publicKey",is(""))
             .body("dn",is(""))
             .body("cn", is("")).statusCode(200);
+    }
 
+    @Test
+    void givenNoClientCertificate_thenUnauthorizedIsReturned() {
+        given().config(SslContext.tlsWithoutCert)
+            .get(X509SchemeTest.URL).then().body("messages[0].messageKey",
+            is("org.zowe.apiml.gateway.security.x509.missingCertificate")).statusCode(401);
     }
 }

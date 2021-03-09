@@ -11,7 +11,9 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
@@ -21,6 +23,7 @@ import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class X509SchemeTest extends CleanCurrentRequestContextTest {
@@ -32,54 +35,94 @@ class X509SchemeTest extends CleanCurrentRequestContextTest {
 
     X509Certificate x509Certificate;
 
-    @BeforeEach
-    void init() throws CertificateEncodingException {
-        context = spy(RequestContext.class);
-        RequestContext.testSetCurrentContext(context);
+    @Nested
+    class WhenCertificateInRequest {
 
-        request = mock(HttpServletRequest.class);
-        when(context.getRequest()).thenReturn(request);
+        @BeforeEach
+        void init() throws CertificateEncodingException {
+            context = spy(RequestContext.class);
+            RequestContext.testSetCurrentContext(context);
 
-        x509Certificate = mock(X509Certificate.class);
-        X509Certificate[] x509Certificates = {x509Certificate};
-        when(request.getAttribute("client.auth.X509Certificate")).thenReturn(x509Certificates);
-        when(x509Certificate.getEncoded()).thenReturn(new byte[]{});
+            request = mock(HttpServletRequest.class);
+            when(context.getRequest()).thenReturn(request);
+
+            x509Certificate = mock(X509Certificate.class);
+            X509Certificate[] x509Certificates = {x509Certificate};
+            when(request.getAttribute("client.auth.X509Certificate")).thenReturn(x509Certificates);
+            when(x509Certificate.getEncoded()).thenReturn(new byte[]{});
+        }
+
+        @Test
+        void whenPublicCertificateIsRequested_onlyCorrectHeaderIsSet() {
+            X509Scheme x509Scheme = new X509Scheme();
+            Authentication authentication =
+                new Authentication(AuthenticationScheme.X509, null, PUBLIC_KEY);
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
+            command.apply(null);
+            verify(context, times(1)).addZuulRequestHeader(PUBLIC_KEY, "");
+        }
+
+        @Test
+        void whenAllHeadersAreRequested_allHeadersAreSet() {
+            X509Scheme x509Scheme = new X509Scheme();
+            Authentication authentication =
+                new Authentication(AuthenticationScheme.X509, null, PUBLIC_KEY + "," + DISTINGUISHED_NAME + "," + COMMON_NAME);
+            Principal principal = mock(Principal.class);
+            when(x509Certificate.getSubjectDN()).thenReturn(principal);
+            when(principal.toString()).thenReturn("");
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
+            command.apply(null);
+
+            verify(context, times(1)).addZuulRequestHeader(PUBLIC_KEY, "");
+            verify(context, times(1)).addZuulRequestHeader(DISTINGUISHED_NAME, "");
+            verify(context, times(1)).addZuulRequestHeader(COMMON_NAME, null);
+        }
+
+        @Test
+        void certificatePassOnIsSetAfterApply() {
+            X509Scheme x509Scheme = new X509Scheme();
+            Authentication authentication =
+                new Authentication(AuthenticationScheme.X509, null, PUBLIC_KEY);
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
+            command.apply(null);
+            verify(context, atLeastOnce()).set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
+        }
+
+        @Test
+        void whenAuthenticationHeadersMissing_thenSendAllHeaders() {
+            X509Scheme x509Scheme = new X509Scheme();
+            Authentication authentication =
+                new Authentication(AuthenticationScheme.X509, null, null);
+            Principal principal = mock(Principal.class);
+            when(x509Certificate.getSubjectDN()).thenReturn(principal);
+            when(principal.toString()).thenReturn("");
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
+            command.apply(null);
+            verify(context, times(1)).addZuulRequestHeader(PUBLIC_KEY, "");
+            verify(context, times(1)).addZuulRequestHeader(DISTINGUISHED_NAME, "");
+            verify(context, times(1)).addZuulRequestHeader(COMMON_NAME, null);
+        }
     }
 
-    @Test
-    void whenPublicCertificateIsRequested_onlyCorrectHeaderIsSet() {
-        X509Scheme x509Scheme = new X509Scheme();
-        Authentication authentication =
-            new Authentication(AuthenticationScheme.X509, null, PUBLIC_KEY);
-        X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
-        command.apply(null);
-        verify(context, times(1)).addZuulRequestHeader(PUBLIC_KEY, "");
+    @Nested
+    class NoCertificateInRequest {
+        @BeforeEach
+        void init() {
+            context = spy(RequestContext.class);
+            RequestContext.testSetCurrentContext(context);
+
+            request = mock(HttpServletRequest.class);
+            when(context.getRequest()).thenReturn(request);
+        }
+
+        @Test
+        void givenNoClientCertificate_andX509SchemeRequired_thenReturnError() {
+            X509Scheme x509Scheme = new X509Scheme();
+            Authentication authentication =
+                new Authentication(AuthenticationScheme.X509, null, null);
+            X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
+            assertThrows(AuthenticationException.class, () -> command.apply(null));
+        }
     }
 
-    @Test
-    void whenAllHeadersAreRequested_allHeadersAreSet() {
-        X509Scheme x509Scheme = new X509Scheme();
-        Authentication authentication =
-            new Authentication(AuthenticationScheme.X509, null, PUBLIC_KEY + "," + DISTINGUISHED_NAME + "," + COMMON_NAME);
-        Principal principal = mock(Principal.class);
-        when(x509Certificate.getSubjectDN()).thenReturn(principal);
-        when(principal.toString()).thenReturn("");
-        X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
-        command.apply(null);
-
-        verify(context, times(1)).addZuulRequestHeader(PUBLIC_KEY, "");
-        verify(context, times(1)).addZuulRequestHeader(DISTINGUISHED_NAME, "");
-        verify(context, times(1)).addZuulRequestHeader(COMMON_NAME, null);
-    }
-
-    @Test
-    void certificatePassOnIsSetAfterApply() {
-        X509Scheme x509Scheme = new X509Scheme();
-        Authentication authentication =
-            new Authentication(AuthenticationScheme.X509, null, PUBLIC_KEY);
-        X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
-        command.apply(null);
-        verify(context, atLeastOnce()).set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
-
-    }
 }
