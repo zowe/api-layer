@@ -105,7 +105,6 @@ public class ZosmfService extends AbstractZosmfService {
 
     }
 
-    private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
     private final ApplicationContext applicationContext;
     private final List<TokenValidationStrategy> tokenValidationStrategy;
 
@@ -283,11 +282,30 @@ public class ZosmfService extends AbstractZosmfService {
 
     /**
      * Check if call to ZOSMF_JWT_END_POINT resolves
+     *
      * @return true if endpoint resolves, otherwise false
      */
     @Cacheable(value = "zosmfJwtEndpoint", key = "#httpMethod.name()")
     public boolean jwtEndpointExists(HttpHeaders headers) {
-        return false; // TODO
+        String url = getURI(getZosmfServiceId()) + ZOSMF_JWT_END_POINT;
+
+        try {
+            restTemplateWithoutKeystore.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), String.class);
+        } catch (HttpClientErrorException hce) {
+            if (HttpStatus.UNAUTHORIZED.equals(hce.getStatusCode())) {
+                return true;
+            } else if (HttpStatus.NOT_FOUND.equals(hce.getStatusCode())) {
+                log.warn("The check of z/OSMF JWT builder endpoint has failed");
+                return false;
+            } else {
+                log.warn("z/OSMF JWT builder endpoint with HTTP method GET has failed with status code: "
+                    + hce.getStatusCode(), hce);
+                return false;
+            }
+        } catch (HttpServerErrorException serverError) {
+            log.warn("z/OSMF internal error", serverError);
+        }
+        return false;
     }
 
     /**
@@ -402,7 +420,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public JWKSet getPublicKeys() {
-        final String url = getURI(getZosmfServiceId()) + PUBLIC_JWK_ENDPOINT;
+        final String url = getURI(getZosmfServiceId()) + ZOSMF_JWT_END_POINT;
 
         try {
             final String json = restTemplateWithoutKeystore.getForObject(url, String.class);
