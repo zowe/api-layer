@@ -31,7 +31,6 @@ public abstract class AbstractZosmfService {
 
     protected static final String ZOSMF_INFO_END_POINT = "/zosmf/info";
     protected static final String ZOSMF_AUTHENTICATE_END_POINT = "/zosmf/services/authenticate";
-    protected static final String ZOSMF_JWT_END_POINT = "/jwt/ibm/api/zOSMFBuilder/jwk"; // TODO config and other place this url exists
     protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
     protected static final String ZOSMF_DOMAIN = "zosmf_saf_realm";
 

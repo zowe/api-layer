@@ -33,7 +33,6 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -453,9 +452,11 @@ class ZosmfServiceTest {
 
     @Test
     void testGetPublicKeys_success() throws JSONException {
+        String zosmfJwtUrl = "/jwt/ibm/api/zOSMFBuilder/jwk";
+        when(authConfigurationProperties.getZosmfJwtEndpoint()).thenReturn(zosmfJwtUrl);
         ZosmfService zosmfService = getZosmfServiceSpy();
         when(restTemplate.getForObject(
-            "http://zosmf:1433/jwt/ibm/api/zOSMFBuilder/jwk",
+            "http://zosmf:1433" + zosmfJwtUrl,
             String.class
         )).thenReturn(ZOSMF_PUBLIC_KEY_JSON);
 

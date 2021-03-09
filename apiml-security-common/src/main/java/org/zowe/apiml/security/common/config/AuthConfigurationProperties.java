@@ -10,6 +10,7 @@
 package org.zowe.apiml.security.common.config;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
@@ -53,6 +54,9 @@ public class AuthConfigurationProperties {
     private AuthConfigurationProperties.PassTicket passTicket;
 
     private String jwtKeyAlias;
+
+    @Value("${apiml.security.auth.zosmfJwtEndpoint:/jwt/ibm/api/zOSMFBuilder/jwk}")
+    private String zosmfJwtEndpoint;
 
     //Token properties
     @Data

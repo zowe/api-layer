@@ -287,7 +287,7 @@ public class ZosmfService extends AbstractZosmfService {
      */
     @Cacheable(value = "zosmfJwtEndpoint", key = "#httpMethod.name()")
     public boolean jwtEndpointExists(HttpHeaders headers) {
-        String url = getURI(getZosmfServiceId()) + ZOSMF_JWT_END_POINT;
+        String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmfJwtEndpoint();
 
         try {
             restTemplateWithoutKeystore.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), String.class);
@@ -420,7 +420,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public JWKSet getPublicKeys() {
-        final String url = getURI(getZosmfServiceId()) + ZOSMF_JWT_END_POINT;
+        final String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmfJwtEndpoint();
 
         try {
             final String json = restTemplateWithoutKeystore.getForObject(url, String.class);
