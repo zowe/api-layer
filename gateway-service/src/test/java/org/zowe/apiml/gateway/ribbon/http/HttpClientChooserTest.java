@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.zowe.apiml.gateway.security.service.schema.RoutingConstants;
 
 import java.security.cert.X509Certificate;
 
@@ -36,6 +37,12 @@ class HttpClientChooserTest {
     @AfterEach
     void tearDown() {
         RequestContext.getCurrentContext().clear();
+    }
+
+    @Test
+    void overrideAlwaysChoosesClientWithCert() {
+        RequestContext.getCurrentContext().set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
+        assertThat(chooser.chooseClient(), is(clientWithCertificate));
     }
 
     @Test

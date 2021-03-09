@@ -39,10 +39,14 @@ public class X509Scheme implements AbstractAuthenticationScheme {
 
     @Override
     public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
-        String[] headers = authentication.getHeaders().split(",");
-        if (headers.length > 0) {
-            return new X509Command(headers);
-        } else return AuthenticationCommand.EMPTY;
+
+        if (authentication.getHeaders() != null) {
+            String[] headers = authentication.getHeaders().split(",");
+            if (headers.length > 0) {
+                return new X509Command(headers);
+            }
+        }
+        return AuthenticationCommand.EMPTY;
     }
 
     public static class X509Command extends AuthenticationCommand {
@@ -65,6 +69,7 @@ public class X509Scheme implements AbstractAuthenticationScheme {
                 X509Certificate clientCert = certs[0];
                 try {
                     setHeader(context, clientCert);
+                    context.set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
                 } catch (CertificateEncodingException e) {
                     log.error("Exception parsing certificate", e);
                 }

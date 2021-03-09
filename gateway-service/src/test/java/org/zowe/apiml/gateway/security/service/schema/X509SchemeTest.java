@@ -71,4 +71,15 @@ class X509SchemeTest extends CleanCurrentRequestContextTest {
         verify(context, times(1)).addZuulRequestHeader(DISTINGUISHED_NAME, "");
         verify(context, times(1)).addZuulRequestHeader(COMMON_NAME, null);
     }
+
+    @Test
+    void certificatePassOnIsSetAfterApply() {
+        X509Scheme x509Scheme = new X509Scheme();
+        Authentication authentication =
+            new Authentication(AuthenticationScheme.X509, null, PUBLIC_KEY);
+        X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
+        command.apply(null);
+        verify(context, atLeastOnce()).set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
+
+    }
 }
