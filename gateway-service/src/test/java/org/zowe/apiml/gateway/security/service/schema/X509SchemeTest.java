@@ -13,7 +13,6 @@ import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
@@ -23,7 +22,6 @@ import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class X509SchemeTest extends CleanCurrentRequestContextTest {
@@ -116,12 +114,14 @@ class X509SchemeTest extends CleanCurrentRequestContextTest {
         }
 
         @Test
-        void givenNoClientCertificate_andX509SchemeRequired_thenReturnError() {
+        void givenNoClientCertificate_andX509SchemeRequired_thenNoHeaderIsSet() {
             X509Scheme x509Scheme = new X509Scheme();
             Authentication authentication =
                 new Authentication(AuthenticationScheme.X509, null, null);
             X509Scheme.X509Command command = (X509Scheme.X509Command) x509Scheme.createCommand(authentication, null);
-            assertThrows(AuthenticationException.class, () -> command.apply(null));
+            verify(context, times(0)).addZuulRequestHeader(PUBLIC_KEY, "");
+            verify(context, times(0)).addZuulRequestHeader(DISTINGUISHED_NAME, "");
+            verify(context, times(0)).addZuulRequestHeader(COMMON_NAME, null);
         }
     }
 
