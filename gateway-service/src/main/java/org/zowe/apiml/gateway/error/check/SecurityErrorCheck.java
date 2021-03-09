@@ -19,7 +19,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.error.ErrorUtils;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.error.InvalidCertificateException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -52,8 +51,6 @@ public class SecurityErrorCheck implements ErrorCheck {
                 messageView = messageService.createMessage("org.zowe.apiml.security.login.invalidCredentials",
                     ErrorUtils.getGatewayUri(request)
                 ).mapToView();
-            } else if (cause instanceof InvalidCertificateException) {
-                messageView = messageService.createMessage("org.zowe.apiml.gateway.security.x509.missingCertificate").mapToView();
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(messageView);
         }

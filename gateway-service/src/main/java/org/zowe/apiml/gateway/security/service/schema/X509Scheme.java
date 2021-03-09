@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
-import org.zowe.apiml.security.common.error.InvalidCertificateException;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
@@ -77,8 +76,6 @@ public class X509Scheme implements AbstractAuthenticationScheme {
                 } catch (CertificateEncodingException e) {
                     log.error("Exception parsing certificate", e);
                 }
-            } else {
-                throw new InvalidCertificateException("Service authentication schema set x509 but no client certificate presents in request.");
             }
         }
 
