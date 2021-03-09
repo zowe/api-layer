@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -28,6 +29,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
+@GeneralAuthenticationTest
 class ApiCatalogSecurityIntegrationTest implements TestWithStartedInstances {
 
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();

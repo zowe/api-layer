@@ -15,6 +15,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.GatewayTest;
 import org.zowe.apiml.util.categories.SlowTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpClientUtils;
@@ -33,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @TestsNotMeantForZowe
+@GatewayTest
 class GatewayConcurrentRequestsTest implements TestWithStartedInstances {
 
     @Test

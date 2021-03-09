@@ -19,6 +19,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.GatewayTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.categories.WebsocketTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -35,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestsNotMeantForZowe
+@WebsocketTest
 class WebSocketProxyTest implements TestWithStartedInstances {
     private final GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
@@ -89,7 +91,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     }
 
     @Test
-    @WebsocketTest
     void shouldRouteWebSocketSession() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 1);
@@ -104,7 +105,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     }
 
     @Test
-    @WebsocketTest
     void shouldRouteHeaders() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
@@ -122,7 +122,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     }
 
     @Test
-    @WebsocketTest
     void shouldCloseSessionAfterClientServerCloses() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 2);
@@ -136,7 +135,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     }
 
     @Test
-    @WebsocketTest
     void shouldFailIfPathIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL + "bad"), response, 1);
@@ -150,7 +148,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     }
 
     @Test
-    @WebsocketTest
     void shouldFailIfServiceIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl("/ws/v1/wrong-service/uppercase"), response, 1);
@@ -164,7 +161,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     }
 
     @Test
-    @WebsocketTest
     void shouldFailIfUrlFormatIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong"), response, 1);

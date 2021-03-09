@@ -16,6 +16,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.CachingServiceTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -33,6 +34,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 @TestsNotMeantForZowe
+@CachingServiceTest
 class CachingApiIntegrationTest implements TestWithStartedInstances {
 
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");

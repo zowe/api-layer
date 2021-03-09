@@ -12,6 +12,7 @@ package org.zowe.apiml.gatewayservice.authentication;
 import io.restassured.http.Header;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.X509Test;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.EnvironmentConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -21,6 +22,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
 
+@X509Test
 class X509SchemeTest {
     private final static EnvironmentConfiguration ENVIRONMENT_CONFIGURATION = ConfigReader.environmentConfiguration();
     private final static GatewayServiceConfiguration GATEWAY_SERVICE_CONFIGURATION =

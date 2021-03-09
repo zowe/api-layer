@@ -155,6 +155,34 @@ task nodejsClean(type: Delete) {
         delete 'onboarding-enabler-nodejs-sample-app/tools/nodejs', 'onboarding-enabler-nodejs-sample-app/tools/npm', 'onboarding-enabler-nodejs-sample-app/tools/yarn'
     }
 }
+
+
+task runBaseTests(dependsOn: ":integration-tests:runBaseTests") {
+    description "Run base tests"
+    group "Integration tests"
+}
+task runServiceDependantTest(dependsOn: ":integration-tests:runServiceDependantTest") {
+    description "Run additional service dependant tests only"
+    group "Integration tests"
+}
+task runSafAuthTest(dependsOn: ":integration-tests:runSafAuthTest") {
+    description "Run SAF dependant authentication tests only"
+    group "Integration tests"
+}
+task runZosmfAuthTest(dependsOn: ":integration-tests:runZosmfAuthTest") {
+    description "Run zOSMF dependant authentication tests only"
+    group "Integration tests"
+}
+task runX509AuthTest(dependsOn: ":integration-tests:runX509AuthTest") {
+    description "Run x509 dependant authentication tests only"
+    group "Integration tests"
+}
+task runBaseTestsInternalPort(dependsOn: ":integration-tests:runBaseTestsInternalPort") {
+    description "Run base tests on internal port"
+    group "Integration tests"
+}
+
+
 clean.dependsOn nodejsClean
 
 publishAllVersions.dependsOn publishSdkArtifacts

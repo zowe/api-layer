@@ -13,12 +13,14 @@ import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.DiscoveryServiceTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@DiscoveryServiceTest
 class StaticClientRoutingEndpointsTest implements TestWithStartedInstances {
     private static final String GREET = "/api/v1/discoverableclient/greeting";
     private static final String STATIC_GREET = "/api/v1/staticclient/greeting";

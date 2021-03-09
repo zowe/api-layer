@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.GatewayTest;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.RandomPorts;
@@ -49,6 +50,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  * - credentials.password = user
  */
 @TestsNotMeantForZowe
+@GatewayTest
 class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
 
     private static final int TIMEOUT = 3;

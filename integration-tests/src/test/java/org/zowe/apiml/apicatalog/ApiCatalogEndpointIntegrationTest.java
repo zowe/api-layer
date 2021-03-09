@@ -23,6 +23,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.CatalogTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -41,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@CatalogTest
 class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String INVALID_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containerz";
