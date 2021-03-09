@@ -118,8 +118,9 @@ class ProvidersTest {
     @Nested
     class whenJwtSupportIsVerified {
         @Test
-        void givenLoginEndpointExists_thenSupportJwtReturnsTrue() {
+        void givenLoginEndpointAndJwtBuilderEndpointExist_thenSupportJwtReturnsTrue() {
             when(zosmfService.loginEndpointExists()).thenReturn(true);
+            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(true);
 
             assertThat(underTest.zosmfSupportsJwt(), is(true));
         }
@@ -127,6 +128,15 @@ class ProvidersTest {
         @Test
         void givenLoginEndpointDoesntExist_thenSupportJwtReturnsFalse() {
             when(zosmfService.loginEndpointExists()).thenReturn(false);
+            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(true);
+
+            assertThat(underTest.zosmfSupportsJwt(), is(false));
+        }
+
+        @Test
+        void givenJwtBuilderEndpointDoesntExist_thenSupportJwtReturnsFalse() {
+            when(zosmfService.loginEndpointExists()).thenReturn(true);
+            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(false);
 
             assertThat(underTest.zosmfSupportsJwt(), is(false));
         }

@@ -68,6 +68,6 @@ public class Providers {
      * @return True is the instance support JWT
      */
     public boolean zosmfSupportsJwt() {
-        return zosmfService.loginEndpointExists();
+        return zosmfService.loginEndpointExists() && zosmfService.jwtBuilderEndpointExists();
     }
 }
