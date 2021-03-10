@@ -9,15 +9,13 @@
  */
 package org.zowe.apiml.gateway.security.login.zosmf;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-
-import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -28,24 +26,26 @@ public class ZosmfJwkToPublicKey {
 
     /**
      * Write public key that can be used to validate z/OSMF JWT tokens.
+     *
      * @param zosmfUrl Base URL of z/OSMF without trailing /
      * @param filename File name of the resulting PEM file
      * @return True when the file has been updated
      * @throws FileNotFoundException when the filename is invalid
      */
     public boolean updateJwtPublicKeyFile(String zosmfUrl, String filename, String caAlias, String caKeyStore,
-    String caKeyStoreType, char[] caKeyStorePassword, char[] caKeyPassword) throws FileNotFoundException {
+                                          String caKeyStoreType, char[] caKeyStorePassword, char[] caKeyPassword) throws FileNotFoundException {
         try {
             String jwkJson = restTemplateWithoutKeystore.getForObject(zosmfUrl + zosmfJwtBuilderPath,
-                    String.class);
+                String.class);
             JwkToPublicKeyConverter converter = new JwkToPublicKeyConverter();
-            String pem = converter.convertFirstPublicKeyJwkToPem(jwkJson, caAlias, caKeyStore, caKeyStoreType, caKeyStorePassword, caKeyPassword) ;
+            String pem = converter.convertFirstPublicKeyJwkToPem(jwkJson, caAlias, caKeyStore, caKeyStoreType, caKeyStorePassword, caKeyPassword);
             try (PrintWriter out = new PrintWriter(filename)) {
                 out.println(pem);
             }
             return true;
         } catch (HttpClientErrorException.NotFound e) {
-            log.warn("Unable to read z/OSMF JWT public key. JWT support might be not configured in z/OSMF: {}", e.getMessage());;
+            log.warn("Unable to read z/OSMF JWT public key. JWT support might be not configured in z/OSMF: {}", e.getMessage());
+            ;
             return false;
         }
     }
