@@ -9,13 +9,14 @@
  */
 package org.zowe.apiml.caching.service.redis;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.zowe.apiml.caching.model.KeyValue;
 
 public class RedisEntry {
     private final String serviceId;
     private final KeyValue entry;
+
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public RedisEntry(String serviceId, KeyValue entry) {
         this.serviceId = serviceId;
@@ -25,9 +26,8 @@ public class RedisEntry {
     public RedisEntry(String serviceId, String redisValue) throws RedisEntryException {
         this.serviceId = serviceId;
         try {
-            ObjectMapper mapper = new ObjectMapper();
             this.entry = mapper.readValue(redisValue, KeyValue.class);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             throw new RedisEntryException("Failure deserializing the entry to a KeyValue object", e);
         }
     }
@@ -38,5 +38,13 @@ public class RedisEntry {
 
     public KeyValue getEntry() {
         return entry;
+    }
+
+    public String getEntryAsString() throws RedisEntryException {
+        try {
+            return mapper.writeValueAsString(this.entry);
+        } catch (Exception e) {
+            throw new RedisEntryException("Failure serializing the entry as a String", e);
+        }
     }
 }

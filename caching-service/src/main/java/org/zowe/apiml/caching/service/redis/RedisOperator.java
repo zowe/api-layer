@@ -14,6 +14,8 @@ import io.lettuce.core.RedisFuture;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 
@@ -23,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+@RequiredArgsConstructor
+@Slf4j
 public class RedisOperator {
     private final RedisAsyncCommands<String, String> redis;
 
@@ -40,10 +44,12 @@ public class RedisOperator {
     public boolean create(RedisEntry entryToAdd) {
         try {
             KeyValue toAdd = entryToAdd.getEntry();
-            RedisFuture<Boolean> result = redis.hsetnx(entryToAdd.getServiceId(), toAdd.getKey(), toAdd.toString());
+            RedisFuture<Boolean> result = redis.hsetnx(entryToAdd.getServiceId(), toAdd.getKey(), entryToAdd.getEntryAsString());
             return result.get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RetryableRedisException(e);
+        } catch (RedisEntryException e) {
+            return false;
         }
     }
 
@@ -52,15 +58,17 @@ public class RedisOperator {
             String serviceId = entryToUpdate.getServiceId();
             KeyValue toUpdate = entryToUpdate.getEntry();
 
-            RedisFuture<Boolean> exists = redis.hexists(serviceId, toUpdate.getKey());
-            if (!exists.get()) {
+            boolean exists = redis.hexists(serviceId, toUpdate.getKey()).get();
+            if (!exists) {
                 return false;
             }
 
-            RedisFuture<Boolean> result = redis.hset(serviceId, toUpdate.getKey(), toUpdate.getValue());
-            return !result.get(); // hset returns false if field already exists and value was updated
+            boolean result = redis.hset(serviceId, toUpdate.getKey(), entryToUpdate.getEntryAsString()).get();
+            return !result; // hset returns false if field already exists and value was updated
         } catch (InterruptedException | ExecutionException e) {
             throw new RetryableRedisException(e);
+        } catch (RedisEntryException e) {
+            return false;
         }
     }
 
@@ -71,6 +79,7 @@ public class RedisOperator {
         } catch (InterruptedException | ExecutionException e) {
             throw new RetryableRedisException(e);
         } catch (RedisEntryException e) {
+            log.warn("Error retrieving entry: {}|{}. Error: {}", serviceId, key, e.getMessage());
             return null;
         }
     }
@@ -81,22 +90,23 @@ public class RedisOperator {
             List<RedisEntry> entries = new ArrayList<>();
 
             for (Map.Entry<String, String> entry : result.entrySet()) {
-                entries.add(new RedisEntry(entry.getKey(), entry.getValue()));
+                try {
+                    entries.add(new RedisEntry(serviceId, entry.getValue()));
+                } catch (RedisEntryException e) {
+                    log.warn("Error retrieving entry: {}|{}. Error: {}", serviceId, entry, e.getMessage());
+                }
             }
 
             return entries;
         } catch (InterruptedException | ExecutionException e) {
             throw new RetryableRedisException(e);
-        } catch (RedisEntryException e) {
-            return null;
         }
     }
 
     public boolean delete(String serviceId, String toDelete) {
         try {
-            RedisFuture<Long> result = redis.hdel(serviceId, toDelete);
-            long recordsDelete = result.get();
-            return recordsDelete >= 1;
+            long recordsDeleted = redis.hdel(serviceId, toDelete).get();
+            return recordsDeleted >= 1;
         } catch (InterruptedException | ExecutionException e) {
             throw new RetryableRedisException(e);
         }

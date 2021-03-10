@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// TODO Fix such that don't create new KeyValue, as this corrupts the created timestamp. Store KeyValue as string and map string to instance.
-
 /**
  * Class handles requests from controller and orchestrates operations on the low level RedisOperator class
  */
