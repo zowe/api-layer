@@ -264,28 +264,19 @@ task runBaseTests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
-        includeTags(
-            'CatalogTest',
-            'GatewayTest',
-            'DiscoveryServiceTest',
-            'WebsocketTest',
-            'GeneralAuthenticationTest',
-            'WebsocketTest'
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'SlowTests',
+            'AdditionalLocalTest',
+            'MainframeDependentTests',
+            'SAFAuthTest',
+            'zOSMFAuthTest',
+            'X509Test'
         )
     }
 }
-task runServiceDependantTest(type: Test) {
-    group "integration tests"
-    description "Run additional service dependant tests only"
 
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
-            'DiscoverableClientDependentTest',
-            'CachingServiceTest'
-        )
-    }
-}
 task runSafAuthTest(type: Test) {
     group "integration tests"
     description "Run SAF dependant authentication tests only"
@@ -325,7 +316,7 @@ task runBaseTestsInternalPort(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
 
-    dependsOn runBaseTests, runServiceDependantTest
+    dependsOn runBaseTests
     systemProperties System.properties
     systemProperty "gateway.port", System.getProperty("internal.gateway.port")
 

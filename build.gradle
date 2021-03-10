@@ -161,10 +161,6 @@ task runBaseTests(dependsOn: ":integration-tests:runBaseTests") {
     description "Run base tests"
     group "Integration tests"
 }
-task runServiceDependantTest(dependsOn: ":integration-tests:runServiceDependantTest") {
-    description "Run additional service dependant tests only"
-    group "Integration tests"
-}
 task runSafAuthTest(dependsOn: ":integration-tests:runSafAuthTest") {
     description "Run SAF dependant authentication tests only"
     group "Integration tests"
