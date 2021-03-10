@@ -37,7 +37,8 @@ public class SaveZosmfPublicKeyConsoleApplication {
 
         String jwkUrl = args[0];
         String filename = args[1];
-        ZosmfJwkToPublicKey zosmfJwkToPublicKey = new ZosmfJwkToPublicKey(restTemplate);
+        String zosmfJwtBuilderPath = System.getProperty("apiml.security.auth.zosmfJwtEndpoint", "/jwt/ibm/api/zOSMFBuilder/jwk");
+        ZosmfJwkToPublicKey zosmfJwkToPublicKey = new ZosmfJwkToPublicKey(restTemplate, zosmfJwtBuilderPath);
 
         System.out.printf("Loading public key of z/OSMF at %s%n", jwkUrl);
         try {

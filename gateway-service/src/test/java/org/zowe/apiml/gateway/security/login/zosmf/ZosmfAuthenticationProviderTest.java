@@ -14,8 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
@@ -37,6 +36,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.gateway.security.login.zosmf.ZosmfConfiguration.JWT_AUTOCONFIGURATION_MODE.*;
 
 class ZosmfAuthenticationProviderTest {
 
@@ -124,7 +124,7 @@ class ZosmfAuthenticationProviderTest {
 
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         mockZosmfRealmRestCallResponse();
         mockZosmfRealmRestCallResponse();
@@ -151,7 +151,7 @@ class ZosmfAuthenticationProviderTest {
 
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         mockZosmfRealmRestCallResponse();
         Exception exception = assertThrows(BadCredentialsException.class,
@@ -169,7 +169,7 @@ class ZosmfAuthenticationProviderTest {
 
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         Exception exception = assertThrows(ServiceNotAccessibleException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
@@ -181,7 +181,7 @@ class ZosmfAuthenticationProviderTest {
     void noZosmfServiceId() {
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         Exception exception = assertThrows(AuthenticationServiceException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
@@ -207,7 +207,7 @@ class ZosmfAuthenticationProviderTest {
 
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         Exception exception = assertThrows(AuthenticationServiceException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
@@ -236,7 +236,7 @@ class ZosmfAuthenticationProviderTest {
 
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         Exception exception = assertThrows(AuthenticationServiceException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
@@ -266,7 +266,7 @@ class ZosmfAuthenticationProviderTest {
 
         mockZosmfRealmRestCallResponse();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
         Exception exception = assertThrows(BadCredentialsException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
             "Expected exception is not BadCredentialsException");
@@ -304,7 +304,7 @@ class ZosmfAuthenticationProviderTest {
 
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         mockZosmfRealmRestCallResponse();
         Authentication tokenAuthentication = zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
@@ -326,7 +326,7 @@ class ZosmfAuthenticationProviderTest {
             .thenThrow(RestClientException.class);
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         Exception exception = assertThrows(AuthenticationServiceException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
@@ -347,7 +347,7 @@ class ZosmfAuthenticationProviderTest {
             .thenThrow(ResourceAccessException.class);
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         Exception exception = assertThrows(ServiceNotAccessibleException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
@@ -363,7 +363,7 @@ class ZosmfAuthenticationProviderTest {
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         boolean supports = zosmfAuthenticationProvider.supports(usernamePasswordAuthentication.getClass());
         assertTrue(supports);
@@ -371,7 +371,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void testSupports() {
-        ZosmfAuthenticationProvider mock = new ZosmfAuthenticationProvider(null, null);
+        ZosmfAuthenticationProvider mock = new ZosmfAuthenticationProvider(null, null, null);
 
         assertTrue(mock.supports(UsernamePasswordAuthenticationToken.class));
         assertFalse(mock.supports(Object.class));
@@ -384,7 +384,7 @@ class ZosmfAuthenticationProviderTest {
     void testAuthenticateJwt() {
         AuthenticationService authenticationService = mock(AuthenticationService.class);
         ZosmfService zosmfService = mock(ZosmfService.class);
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn("user1");
         TokenAuthentication authentication2 = mock(TokenAuthentication.class);
@@ -402,7 +402,7 @@ class ZosmfAuthenticationProviderTest {
     void testJwt_givenZosmfJwt_whenItIsIgnoring_thenCreateZoweJwt() {
         AuthenticationService authenticationService = mock(AuthenticationService.class);
         ZosmfService zosmfService = mock(ZosmfService.class);
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService, ZosmfConfiguration.of(AUTO));
 
         EnumMap<ZosmfService.TokenType, String> tokens = new EnumMap<>(ZosmfService.TokenType.class);
         tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
@@ -411,6 +411,79 @@ class ZosmfAuthenticationProviderTest {
         zosmfAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("userId", "password"));
 
         verify(authenticationService, times(1)).createJwtToken("userId", "domain", "ltpaToken");
+    }
+
+    @Nested
+    class givenOverride {
+
+        private ZosmfAuthenticationProvider underTest;
+        private ZosmfConfiguration zosmfConfiguration;
+        private AuthenticationService authenticationService;
+        private EnumMap<ZosmfService.TokenType, String> tokens;
+        private UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken("userId", "password");
+
+        @BeforeEach
+        void setUp() {
+            authenticationService = mock(AuthenticationService.class);
+            when(authenticationService.createJwtToken(any(), any(), any())).thenReturn("ltpaToken");
+            ZosmfService zosmfService = mock(ZosmfService.class);
+            zosmfConfiguration = ZosmfConfiguration.of(AUTO);
+            underTest = new ZosmfAuthenticationProvider(authenticationService, zosmfService, zosmfConfiguration);
+
+            tokens = new EnumMap<>(ZosmfService.TokenType.class);
+
+
+            when(zosmfService.authenticate(any())).thenReturn(new ZosmfService.AuthenticationResponse("domain", tokens));
+        }
+
+        @Test
+        void willChooseJwtWhenPresent() {
+            tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
+            tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
+
+            underTest.authenticate(usernamePasswordAuthenticationToken);
+            verify(authenticationService, atLeastOnce()).createTokenAuthentication("userId", "jwtToken");
+        }
+
+        @Test
+        void willChooseLtpaWhenOnlyLtpa() {
+            tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
+
+            underTest.authenticate(usernamePasswordAuthenticationToken);
+            verify(authenticationService, atLeastOnce()).createTokenAuthentication("userId", "ltpaToken");
+        }
+
+        @Test
+        void willChooseLtpaWhenOverride() {
+            tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
+            tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
+            zosmfConfiguration.jwtAutoconfigurationMode = LTPA;
+            underTest.authenticate(usernamePasswordAuthenticationToken);
+            verify(authenticationService, atLeastOnce()).createTokenAuthentication("userId", "ltpaToken");
+        }
+
+        @Test
+        void willChooseJwtWhenOverride() {
+            tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
+            tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
+            zosmfConfiguration.jwtAutoconfigurationMode = JWT;
+            underTest.authenticate(usernamePasswordAuthenticationToken);
+            verify(authenticationService, atLeastOnce()).createTokenAuthentication("userId", "jwtToken");
+        }
+
+        @Test
+        void willThrowWhenOverrideAndNoTokens() {
+            tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
+            zosmfConfiguration.jwtAutoconfigurationMode = JWT;
+            assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
+        }
+
+        @Test
+        void willThrowWhenOverrideAndNoTokens2() {
+            tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
+            zosmfConfiguration.jwtAutoconfigurationMode = LTPA;
+            assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
+        }
     }
 
 }

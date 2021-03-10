@@ -10,7 +10,6 @@
 package org.zowe.apiml.client.api;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.services.AparBasedService;
@@ -38,11 +37,6 @@ public class AuthenticationController {
         @RequestHeader Map<String, String> headers
     ) {
         return authentication.process(AUTHENTICATION_SERVICE, "create", response, headers);
-    }
-
-    @GetMapping(value = "/jwt/ibm/api/zOSMFBuilder/**", produces = "application/json; charset=utf-8")
-    public ResponseEntity<?> jwk() {
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping(value = "/zosmf/notifications/inbox", produces = "application/json; charset=utf-8")

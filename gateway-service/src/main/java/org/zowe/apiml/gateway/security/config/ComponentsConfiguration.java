@@ -13,6 +13,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.zowe.apiml.gateway.security.login.Providers;
+import org.zowe.apiml.gateway.security.login.zosmf.ZosmfConfiguration;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -50,9 +51,10 @@ public class ComponentsConfiguration {
         DiscoveryClient discoveryClient,
         AuthConfigurationProperties authConfigurationProperties,
         ZosmfService zosmfService,
-        @Lazy CompoundAuthProvider compoundAuthProvider
+        @Lazy CompoundAuthProvider compoundAuthProvider,
+        ZosmfConfiguration zosmfConfiguration
     ) {
-        return new Providers(discoveryClient, authConfigurationProperties, compoundAuthProvider, zosmfService);
+        return new Providers(discoveryClient, authConfigurationProperties, compoundAuthProvider, zosmfService, zosmfConfiguration);
     }
 
 }

@@ -16,13 +16,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("squid:S1452")
-public class PH12143 extends FunctionalApar {
-    private final String keystorePath;
-
-    public PH12143(List<String> usernames, List<String> passwords, String keystorePath) {
+public class AuthenticateApar extends FunctionalApar {
+    public AuthenticateApar(List<String> usernames, List<String> passwords) {
         super(usernames, passwords);
-        this.keystorePath = keystorePath;
     }
 
     @Override
@@ -31,8 +27,8 @@ public class PH12143 extends FunctionalApar {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        String[] credentials = getPiecesOfCredentials(headers);
-        return validJwtResponse(response, credentials[0], keystorePath);
+        setLtpaToken(response);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
@@ -41,16 +37,8 @@ public class PH12143 extends FunctionalApar {
     }
 
     @Override
-    protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
-        if (isUnauthorized(headers)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @Override
-    protected ResponseEntity<?> handleJwtKeys() {
-        return new ResponseEntity<>(HttpStatus.OK);
+    protected ResponseEntity<?> handleAuthenticationDefault(Map<String, String> headers) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     private boolean isUnauthorized(Map<String, String> headers) {
