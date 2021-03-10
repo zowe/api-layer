@@ -28,10 +28,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-// TODO try unit testing retry
 public class RedisStorageTest {
     private static final String SERVICE_ID = "my-service-id";
     private static final String KEY = "key";
