@@ -9,10 +9,7 @@
  */
 package org.zowe.apiml.client.services.versions;
 
-import org.zowe.apiml.client.services.apars.Apar;
-import org.zowe.apiml.client.services.apars.NoApar;
-import org.zowe.apiml.client.services.apars.PH12143;
-import org.zowe.apiml.client.services.apars.RSU2012;
+import org.zowe.apiml.client.services.apars.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +25,7 @@ public class AvailableApars {
         implementedApars.put("PH28507", new NoApar());
         implementedApars.put("PH28532", new NoApar());
         implementedApars.put("RSU2012", new RSU2012(usernames, passwords, jwtKeystorePath));
+        implementedApars.put("JwtKeys", new JwtKeys(usernames, passwords));
     }
 
     public List<Apar> getApars(List<String> names) {

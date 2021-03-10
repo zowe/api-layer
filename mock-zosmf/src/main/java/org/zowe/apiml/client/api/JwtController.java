@@ -21,6 +21,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@SuppressWarnings("squid:S1452")
 public class JwtController {
     private final AparBasedService jwtHandler;
 
