@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class AuthenticationAparTest {
-    private PHBase underTest;
+    private AuthenticateApar underTest;
     private Map<String, String> headers;
     private HttpServletResponse mockResponse;
 
@@ -36,7 +36,7 @@ class AuthenticationAparTest {
         List<String> usernames = Collections.singletonList("USER");
         List<String> passwords = Collections.singletonList("validPassword");
 
-        underTest = new PHBase(usernames, passwords);
+        underTest = new AuthenticateApar(usernames, passwords);
         headers = new HashMap<>();
         mockResponse = mock(HttpServletResponse.class);
     }

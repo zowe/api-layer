@@ -36,6 +36,11 @@ public class AuthenticateApar extends FunctionalApar {
         return handleAuthenticationCreate(headers, response);
     }
 
+    @Override
+    protected ResponseEntity<?> handleAuthenticationDefault(Map<String, String> headers) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
     private boolean isUnauthorized(Map<String, String> headers) {
         return containsInvalidUser(headers) && noLtpaCookie(headers);
     }
