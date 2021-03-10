@@ -26,6 +26,7 @@ public class AvailableApars {
         implementedApars.put("PH28532", new NoApar());
         implementedApars.put("RSU2012", new RSU2012(usernames, passwords, jwtKeystorePath));
         implementedApars.put("JwtKeys", new JwtKeys(usernames, passwords));
+        implementedApars.put("AuthenticateApar", new AuthenticateApar(usernames, passwords));
     }
 
     public List<Apar> getApars(List<String> names) {
