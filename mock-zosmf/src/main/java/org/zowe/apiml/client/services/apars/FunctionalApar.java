@@ -72,7 +72,18 @@ public class FunctionalApar implements Apar {
             result = handleFiles(headers);
         }
 
+        if (calledService.equals("jwtKeys")) {
+            result = handleJwtKeys();
+        }
+
         return result == null ? originalResult : Optional.of(result);
+    }
+
+    /**
+     * Override to provide response entity when the JWT keys are requested from the zOSMF
+     */
+    protected ResponseEntity<?> handleJwtKeys() {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     /**
