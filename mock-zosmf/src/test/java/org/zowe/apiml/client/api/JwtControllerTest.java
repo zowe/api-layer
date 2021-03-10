@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-public class JwtControllerTest {
+class JwtControllerTest {
     private static final ResponseEntity<?> DEFAULT_RESPONSE = new ResponseEntity<>(HttpStatus.OK);
 
     private MockMvc mockMvc;
