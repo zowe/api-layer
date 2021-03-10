@@ -19,12 +19,12 @@ import org.springframework.web.client.RestTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Component
 @RequiredArgsConstructor
 @Slf4j
 public class ZosmfJwkToPublicKey {
 
     protected final RestTemplate restTemplateWithoutKeystore;
+    private final String zosmfJwtBuilderPath;
 
     /**
      * Write public key that can be used to validate z/OSMF JWT tokens.
@@ -36,7 +36,7 @@ public class ZosmfJwkToPublicKey {
     public boolean updateJwtPublicKeyFile(String zosmfUrl, String filename, String caAlias, String caKeyStore,
     String caKeyStoreType, char[] caKeyStorePassword, char[] caKeyPassword) throws FileNotFoundException {
         try {
-            String jwkJson = restTemplateWithoutKeystore.getForObject(zosmfUrl + "/jwt/ibm/api/zOSMFBuilder/jwk",
+            String jwkJson = restTemplateWithoutKeystore.getForObject(zosmfUrl + zosmfJwtBuilderPath,
                     String.class);
             JwkToPublicKeyConverter converter = new JwkToPublicKeyConverter();
             String pem = converter.convertFirstPublicKeyJwkToPem(jwkJson, caAlias, caKeyStore, caKeyStoreType, caKeyStorePassword, caKeyPassword) ;
