@@ -15,7 +15,7 @@ public class MockPlatformUser implements PlatformUser {
     public static final String VALID_USERID = "USER";
     public static final String VALID_PASSWORD = "validPassword";
     public static final String INVALID_USERID = "notuser";
-    public static final String INVALID_PASSWORD = "notuser";
+    public static final String INVALID_PASSWORD = "notuser"; //NOSONAR
 
     @Override
     public PlatformReturned authenticate(String userid, String password) {

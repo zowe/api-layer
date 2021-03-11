@@ -11,9 +11,10 @@ package org.zowe.apiml.util;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import java.net.*;
+import java.security.SecureRandom;
+import java.util.Arrays;
 
 @Slf4j
 @UtilityClass
@@ -41,7 +42,10 @@ public class UrlUtils {
         if (url != null) {
             return url.replaceAll("\\W", "-");
         } else {
-            return RandomStringUtils.randomAlphanumeric(10);
+            SecureRandom random = new SecureRandom();
+            byte[] bytes = new byte[20];
+            random.nextBytes(bytes);
+            return Arrays.toString(bytes);
         }
     }
 
