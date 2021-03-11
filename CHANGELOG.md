@@ -1,6 +1,23 @@
 # API Mediation Layer Changelog
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
+## `1.20.0 (2021-03-11)`
+* Bugfix(authentication): Support specific zOSMF version, allow override (#1241) ([2da761a](https://github.com/zowe/api-layer/commit/2da761a)), closes [#1241](https://github.com/zowe/api-layer/issues/1241)
+* Feature: caching service mutual authentication (#1231) ([1cfee86](https://github.com/zowe/api-layer/commit/1cfee86)), closes [#1231](https://github.com/zowe/api-layer/issues/1231)
+* Feature(Caching service): replace JWT with client cert in caching service (#1217) ([e496ac8](https://github.com/zowe/api-layer/commit/e496ac8)), closes [#1217](https://github.com/zowe/api-layer/issues/1217)
+* Bugfix(authentication): Ignore wrong or non existing SAF classes when SAF isn't used (#1216) ([c5ea311](https://github.com/zowe/api-layer/commit/c5ea311)), closes [#1216](https://github.com/zowe/api-layer/issues/1216)
+* Bugfix(enabler): Add unregistration method to Node.js enabler (#1214) ([1ecd5c7](https://github.com/zowe/api-layer/commit/1ecd5c7)), closes [#1214](https://github.com/zowe/api-layer/issues/1214)
+* Feature: x509 authentication scheme  (#1208) ([94dbf37](https://github.com/zowe/api-layer/commit/94dbf37)), closes [#1208](https://github.com/zowe/api-layer/issues/1208)
+* Feature: Add NodeJS sample service and enabler (#1140) ([c86a289](https://github.com/zowe/api-layer/commit/c86a289)), closes [#1140](https://github.com/zowe/api-layer/issues/1140)
+* Feature: Allow Zowe to run without a jwtsecret (#1203) ([7dc6dad](https://github.com/zowe/api-layer/commit/7dc6dad)), closes [#1203](https://github.com/zowe/api-layer/issues/1203)
+* Bugfix: Enable /api/v1/gateway path format (#1126) ([13ac9a5](https://github.com/zowe/api-layer/commit/13ac9a5)), closes [#1126](https://github.com/zowe/api-layer/issues/1126)
+* Feature: Introduce token validation providers (#1142) ([80cc790](https://github.com/zowe/api-layer/commit/80cc790)), closes [#1142](https://github.com/zowe/api-layer/issues/1142)
+* Feature: Show base information (SSO, API ID) about service in API Catalog (#1116) ([4b61377](https://github.com/zowe/api-layer/commit/4b61377)), closes [#1116](https://github.com/zowe/api-layer/issues/1116) [#1116](https://github.com/zowe/api-layer/issues/1116)
+* Bugfix: accept swagger/openapi in yaml format (#1202) ([0c412b0](https://github.com/zowe/api-layer/commit/0c412b0)), closes [#1202](https://github.com/zowe/api-layer/issues/1202)
+* Feature(Caching Service): Production logging for the Caching Service (#1185) ([7adffb1](https://github.com/zowe/api-layer/commit/7adffb1)), closes [#1185](https://github.com/zowe/api-layer/issues/1185)
+* Feature: Add reject eviction strategy to VSAM (#1112) ([70c2d71](https://github.com/zowe/api-layer/commit/70c2d71)), closes [#1112](https://github.com/zowe/api-layer/issues/1112)
+* Feature: Externalize services info test users (#1110) ([81783fd](https://github.com/zowe/api-layer/commit/81783fd)), closes [#1110](https://github.com/zowe/api-layer/issues/1110)
+
 ## `1.19.0`
 
 - Feature: The connection limit of the Gateway has been configured to support multiple long-running requests by service. [#843](https://github.com/zowe/api-layer/issues/843)
