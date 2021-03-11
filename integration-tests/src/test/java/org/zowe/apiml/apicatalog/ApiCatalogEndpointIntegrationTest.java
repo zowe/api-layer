@@ -84,7 +84,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
     }
 
     @Test
-    @Disabled
+    @Disabled("The test is flaky, update needed.")
     void givenApiCatalog_whenGetContainerById_thenResponseOk() throws IOException {
         final HttpResponse response = getResponse(GET_CONTAINER_BY_ID_ENDPOINT, HttpStatus.SC_OK);
 
