@@ -20,7 +20,10 @@ spring:
     output:
         ansi:
             enabled: detect
-
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
 apiml:
     enabled: true
     service:

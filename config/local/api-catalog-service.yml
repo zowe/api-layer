@@ -16,11 +16,11 @@ environment:
 
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 5
-        registryFetchIntervalSeconds: 5
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
     instance:
         leaseExpirationDurationInSeconds: 6
-        leaseRenewalIntervalInSeconds: 5
+        leaseRenewalIntervalInSeconds: 1
 
 server:
     ssl:
