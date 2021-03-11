@@ -70,7 +70,9 @@ public class RedisStorageTest {
         @Test
         void givenExistingKey_thenThrowException() throws RedisOutOfMemoryException {
             when(redisOperator.create(any())).thenReturn(false);
-            assertThrows(StorageException.class, () -> underTest.create(SERVICE_ID, KEY_VALUE));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.create(SERVICE_ID, KEY_VALUE));
+
+            assertThat(e.getKey(), is(Messages.DUPLICATE_KEY.getKey()));
         }
 
         @Test
@@ -94,7 +96,9 @@ public class RedisStorageTest {
         @Test
         void givenNotExistingKey_thenThrowException() {
             when(redisOperator.get(anyString(), anyString())).thenReturn(null);
-            assertThrows(StorageException.class, () -> underTest.read(SERVICE_ID, KEY));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.read(SERVICE_ID, KEY));
+
+            assertThat(e.getKey(), is(Messages.KEY_NOT_IN_CACHE.getKey()));
         }
     }
 
@@ -110,7 +114,9 @@ public class RedisStorageTest {
         @Test
         void givenNewKey_thenThrowException() throws RedisOutOfMemoryException {
             when(redisOperator.update(any())).thenReturn(false);
-            assertThrows(StorageException.class, () -> underTest.update(SERVICE_ID, KEY_VALUE));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.update(SERVICE_ID, KEY_VALUE));
+
+            assertThat(e.getKey(), is(Messages.KEY_NOT_IN_CACHE.getKey()));
         }
 
         @Test
@@ -128,6 +134,7 @@ public class RedisStorageTest {
         void givenExistingKey_thenRemoveKey() {
             when(redisOperator.get(anyString(), anyString())).thenReturn(REDIS_ENTRY);
             when(redisOperator.delete(anyString(), anyString())).thenReturn(true);
+
             KeyValue result = underTest.delete(SERVICE_ID, KEY);
             assertThat(result, is(KEY_VALUE));
         }
@@ -135,7 +142,9 @@ public class RedisStorageTest {
         @Test
         void givenNewKey_thenThrowException() {
             when(redisOperator.delete(anyString(), any())).thenReturn(false);
-            assertThrows(StorageException.class, () -> underTest.delete(SERVICE_ID, KEY));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.delete(SERVICE_ID, KEY));
+
+            assertThat(e.getKey(), is(Messages.KEY_NOT_IN_CACHE.getKey()));
         }
     }
 
