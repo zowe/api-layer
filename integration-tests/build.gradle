@@ -264,15 +264,15 @@ task runBaseTests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
-        excludeTags(
-            'StartupCheck',
-            'EnvironmentCheck',
-            'SlowTests',
-            'AdditionalLocalTest',
-            'MainframeDependentTests',
-            'SAFAuthTest',
-            'zOSMFAuthTest',
-            'X509Test'
+        includeTags(
+            'CatalogTest',
+            'GatewayTest',
+            'DiscoveryServiceTest',
+            'WebsocketTest',
+            'GeneralAuthenticationTest',
+            'DiscoverableClientDependentTest',
+            'CachingServiceTest',
+            'WebsocketTest'
         )
     }
 }
