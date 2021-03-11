@@ -46,6 +46,8 @@ public class RedisStorage implements Storage {
     @Retryable(value = RetryableRedisException.class)
     public KeyValue create(String serviceId, KeyValue toCreate) {
         // TODO eviction
+        // I think redis config can handle eviction - reject = noeviction, removeOldest = allkeys-lru
+        // just have to see what the errors returned are, and surface the messages to user here.
         log.info("Creating entry: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
 
         RedisEntry entryToCreate = new RedisEntry(serviceId, toCreate);
@@ -106,7 +108,7 @@ public class RedisStorage implements Storage {
         Map<String, KeyValue> readResult = new HashMap<>();
 
         for (RedisEntry redisEntry : redisResult) {
-            readResult.put(redisEntry.getServiceId(), redisEntry.getEntry());
+            readResult.put(redisEntry.getEntry().getKey(), redisEntry.getEntry());
         }
         return readResult;
     }

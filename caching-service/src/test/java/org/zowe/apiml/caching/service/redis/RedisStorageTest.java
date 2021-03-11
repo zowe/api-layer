@@ -128,7 +128,7 @@ public class RedisStorageTest {
         @Test
         void givenServiceWithEntries_thenReturnEntries() {
             Map<String, KeyValue> expected = new HashMap<>();
-            expected.put(SERVICE_ID, KEY_VALUE);
+            expected.put(KEY, KEY_VALUE);
 
             List<RedisEntry> redisResults = new ArrayList<>();
             redisResults.add(REDIS_ENTRY);
