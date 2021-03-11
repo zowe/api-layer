@@ -22,6 +22,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -83,6 +84,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
     }
 
     @Test
+    @Disabled
     void givenApiCatalog_whenGetContainerById_thenResponseOk() throws IOException {
         final HttpResponse response = getResponse(GET_CONTAINER_BY_ID_ENDPOINT, HttpStatus.SC_OK);
 
