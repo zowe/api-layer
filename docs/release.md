@@ -55,3 +55,17 @@ You can set properties in two ways:
 **Warning!** Do not commit property changes to the Git repository. This is confidential information.
 
 Properties are stored in Jenkins Credentials: https://wash.zowe.org:8443/credentials/store/system/domain/_/credential/zowe/
+
+## Update changelog
+
+You can get commit messages with the tool:
+
+`npm install -g conventional-changelog-cli`
+
+Command to display commit messages for specified number of releases:
+
+`conventional-changelog -r <number_of_releases>`
+
+More information about the tool:
+
+`https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-cli`
