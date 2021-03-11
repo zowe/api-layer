@@ -1,5 +1,3 @@
-caching.storage.mode: redis
-
 logging:
     level:
         ROOT: WARN
