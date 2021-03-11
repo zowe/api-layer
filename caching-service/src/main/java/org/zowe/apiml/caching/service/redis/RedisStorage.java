@@ -23,6 +23,11 @@ import java.util.Map;
 
 /**
  * Class handles requests from controller and orchestrates operations on the low level RedisOperator class.
+ * <p>
+ * Storage eviction and maximum memory usage is left to Redis configuration. If an entry will take more than the maximum
+ * configured memory, or there is not enough memory available and a no eviction policy is used, an error message is returned to the user.
+ * If another entry will be evicted to make space for a create or update operation, no warning is logged and the eviction
+ * is left to Redis.
  */
 @Slf4j
 public class RedisStorage implements Storage {
@@ -45,16 +50,17 @@ public class RedisStorage implements Storage {
     @Override
     @Retryable(value = RetryableRedisException.class)
     public KeyValue create(String serviceId, KeyValue toCreate) {
-        // TODO eviction
-        // I think redis config can handle eviction - reject = noeviction, removeOldest = allkeys-lru
-        // just have to see what the errors returned are, and surface the messages to user here.
         log.info("Creating entry: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
 
         RedisEntry entryToCreate = new RedisEntry(serviceId, toCreate);
-        boolean result = redis.create(entryToCreate);
+        try {
+            boolean result = redis.create(entryToCreate);
 
-        if (!result) {
-            throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey(), serviceId);
+            if (!result) {
+                throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey(), serviceId);
+            }
+        } catch (RedisOutOfMemoryException e) {
+            throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus());
         }
         return toCreate;
     }
@@ -77,10 +83,14 @@ public class RedisStorage implements Storage {
         log.info("Updating entry: {}|{}|{}", serviceId, toUpdate.getKey(), toUpdate.getValue());
 
         RedisEntry entryToUpdate = new RedisEntry(serviceId, toUpdate);
-        boolean result = redis.update(entryToUpdate);
+        try {
+            boolean result = redis.update(entryToUpdate);
 
-        if (!result) {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
+            if (!result) {
+                throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
+            }
+        } catch (RedisOutOfMemoryException e) {
+            throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus());
         }
         return toUpdate;
     }

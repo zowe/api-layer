@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.redis;
 
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
@@ -47,31 +48,38 @@ public class RedisOperator {
 
     /**
      * Creates a given entry in Redis.
+     *
      * @param entryToAdd RedisEntry containing the service ID for which to create the entry, and the key and value.
      * @return true if the key does not exist for the service ID and the entry was created, otherwise false.
      */
-    public boolean create(RedisEntry entryToAdd) {
+    public boolean create(RedisEntry entryToAdd) throws RedisOutOfMemoryException {
+        KeyValue toAdd = entryToAdd.getEntry();
+
         try {
-            KeyValue toAdd = entryToAdd.getEntry();
             RedisFuture<Boolean> result = redis.hsetnx(entryToAdd.getServiceId(), toAdd.getKey(), entryToAdd.getEntryAsString());
             return result.get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (ExecutionException e) {
+            handleWriteOperationExecutionException(e);
+        } catch (InterruptedException e) {
             throw new RetryableRedisException(e);
         } catch (RedisEntryException e) {
             return false;
         }
+
+        return false;
     }
 
     /**
      * Updates a given entry in Redis.
+     *
      * @param entryToUpdate RedisEntry containing the service ID and key to update, with the new value.
      * @return true if the key exists for a service ID and the value was updated, otherwise false.
      */
-    public boolean update(RedisEntry entryToUpdate) {
-        try {
-            String serviceId = entryToUpdate.getServiceId();
-            KeyValue toUpdate = entryToUpdate.getEntry();
+    public boolean update(RedisEntry entryToUpdate) throws RedisOutOfMemoryException {
+        String serviceId = entryToUpdate.getServiceId();
+        KeyValue toUpdate = entryToUpdate.getEntry();
 
+        try {
             boolean exists = redis.hexists(serviceId, toUpdate.getKey()).get();
             if (!exists) {
                 return false;
@@ -79,15 +87,20 @@ public class RedisOperator {
 
             boolean result = redis.hset(serviceId, toUpdate.getKey(), entryToUpdate.getEntryAsString()).get();
             return !result; // hset returns false if field already exists and value was updated
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (ExecutionException e) {
+            handleWriteOperationExecutionException(e);
+        } catch (InterruptedException e) {
             throw new RetryableRedisException(e);
         } catch (RedisEntryException e) {
             return false;
         }
+
+        return false;
     }
 
     /**
      * Retrieve an entry for a given service with the corresponding key.
+     *
      * @return RedisEntry instance if the service ID and key exist, otherwise null.
      */
     public RedisEntry get(String serviceId, String key) {
@@ -104,6 +117,7 @@ public class RedisOperator {
 
     /**
      * Retrieves all entries for a given service.
+     *
      * @return List of RedisEntry instances. If there are no entries an empty List is returned.
      */
     public List<RedisEntry> get(String serviceId) {
@@ -127,6 +141,7 @@ public class RedisOperator {
 
     /**
      * Deletes all entries with the given key for a given service.
+     *
      * @return true if at least one entry was deleted, otherwise false.
      */
     public boolean delete(String serviceId, String toDelete) {
@@ -134,6 +149,15 @@ public class RedisOperator {
             long recordsDeleted = redis.hdel(serviceId, toDelete).get();
             return recordsDeleted >= 1;
         } catch (InterruptedException | ExecutionException e) {
+            throw new RetryableRedisException(e);
+        }
+    }
+
+    private void handleWriteOperationExecutionException(ExecutionException e) throws RedisOutOfMemoryException {
+        Throwable cause = e.getCause();
+        if (cause instanceof RedisCommandExecutionException && cause.getMessage().contains("maxmemory")) {
+            throw new RedisOutOfMemoryException(cause);
+        } else {
             throw new RetryableRedisException(e);
         }
     }

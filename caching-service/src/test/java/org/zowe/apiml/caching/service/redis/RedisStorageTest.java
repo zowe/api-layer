@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.redis.config.RedisConfig;
@@ -28,7 +29,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RedisStorageTest {
     private static final String SERVICE_ID = "my-service-id";
@@ -58,19 +60,25 @@ public class RedisStorageTest {
 
     @Nested
     class whenCreate {
-        // TODO unit test eviction code when that is implemented
-
         @Test
-        void givenNewKey_thenCreateEntry() {
+        void givenNewKey_thenCreateEntry() throws RedisOutOfMemoryException {
             when(redisOperator.create(any())).thenReturn(true);
             KeyValue result = underTest.create(SERVICE_ID, KEY_VALUE);
             assertThat(result, is(KEY_VALUE));
         }
 
         @Test
-        void givenExistingKey_thenThrowException() {
+        void givenExistingKey_thenThrowException() throws RedisOutOfMemoryException {
             when(redisOperator.create(any())).thenReturn(false);
             assertThrows(StorageException.class, () -> underTest.create(SERVICE_ID, KEY_VALUE));
+        }
+
+        @Test
+        void givenRedisOutOfMemory_thenThrowException() throws RedisOutOfMemoryException {
+            when(redisOperator.create(any())).thenThrow(new RedisOutOfMemoryException(new Exception()));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.create(SERVICE_ID, KEY_VALUE));
+
+            assertThat(e.getKey(), is(Messages.INSUFFICIENT_STORAGE.getKey()));
         }
     }
 
@@ -93,16 +101,24 @@ public class RedisStorageTest {
     @Nested
     class whenUpdate {
         @Test
-        void givenExistingKey_thenUpdateKeyPair() {
+        void givenExistingKey_thenUpdateKeyPair() throws RedisOutOfMemoryException {
             when(redisOperator.update(any())).thenReturn(true);
             KeyValue result = underTest.update(SERVICE_ID, KEY_VALUE);
             assertThat(result, is(KEY_VALUE));
         }
 
         @Test
-        void givenNewKey_thenThrowException() {
+        void givenNewKey_thenThrowException() throws RedisOutOfMemoryException {
             when(redisOperator.update(any())).thenReturn(false);
             assertThrows(StorageException.class, () -> underTest.update(SERVICE_ID, KEY_VALUE));
+        }
+
+        @Test
+        void givenRedisOutOfMemory_thenThrowException() throws RedisOutOfMemoryException {
+            when(redisOperator.update(any())).thenThrow(new RedisOutOfMemoryException(new Exception()));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.update(SERVICE_ID, KEY_VALUE));
+
+            assertThat(e.getKey(), is(Messages.INSUFFICIENT_STORAGE.getKey()));
         }
     }
 
