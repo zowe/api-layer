@@ -12,6 +12,11 @@ package org.zowe.apiml.caching.service.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.zowe.apiml.caching.model.KeyValue;
 
+/**
+ * Class used to represent a cache entry in Redis.
+ * <p>
+ * The structure is composed of a String service ID and {@link KeyValue}, serialized to JSON format.
+ */
 public class RedisEntry {
     private final String serviceId;
     private final KeyValue entry;
@@ -23,6 +28,11 @@ public class RedisEntry {
         this.entry = entry;
     }
 
+    /**
+     * @param serviceId  service ID for the entry.
+     * @param redisValue serialized String representation of the KeyValue entry.
+     * @throws RedisEntryException thrown if the serialized entry cannot be deserialized to a KeyValue instance.
+     */
     public RedisEntry(String serviceId, String redisValue) throws RedisEntryException {
         this.serviceId = serviceId;
         try {
@@ -40,6 +50,10 @@ public class RedisEntry {
         return entry;
     }
 
+    /**
+     * @return KeyValue entry as a serialized String.
+     * @throws RedisEntryException thrown if the KeyValue entry cannot be serialized.
+     */
     public String getEntryAsString() throws RedisEntryException {
         try {
             return mapper.writeValueAsString(this.entry);

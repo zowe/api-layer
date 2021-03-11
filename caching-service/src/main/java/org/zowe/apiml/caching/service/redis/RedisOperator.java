@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Class used to connect to and operate on a Redis instance or cluster.
+ * Contains the CRUD operations enacted on Redis with serialized read and write.
+ */
 @RequiredArgsConstructor
 @Slf4j
 public class RedisOperator {
@@ -41,6 +45,11 @@ public class RedisOperator {
         // would be better to keep connection open until RedisOperator is destructed
     }
 
+    /**
+     * Creates a given entry in Redis.
+     * @param entryToAdd RedisEntry containing the service ID for which to create the entry, and the key and value.
+     * @return true if the key does not exist for the service ID and the entry was created, otherwise false.
+     */
     public boolean create(RedisEntry entryToAdd) {
         try {
             KeyValue toAdd = entryToAdd.getEntry();
@@ -53,6 +62,11 @@ public class RedisOperator {
         }
     }
 
+    /**
+     * Updates a given entry in Redis.
+     * @param entryToUpdate RedisEntry containing the service ID and key to update, with the new value.
+     * @return true if the key exists for a service ID and the value was updated, otherwise false.
+     */
     public boolean update(RedisEntry entryToUpdate) {
         try {
             String serviceId = entryToUpdate.getServiceId();
@@ -72,6 +86,10 @@ public class RedisOperator {
         }
     }
 
+    /**
+     * Retrieve an entry for a given service with the corresponding key.
+     * @return RedisEntry instance if the service ID and key exist, otherwise null.
+     */
     public RedisEntry get(String serviceId, String key) {
         try {
             String result = redis.hget(serviceId, key).get();
@@ -84,6 +102,10 @@ public class RedisOperator {
         }
     }
 
+    /**
+     * Retrieves all entries for a given service.
+     * @return List of RedisEntry instances. If there are no entries an empty List is returned.
+     */
     public List<RedisEntry> get(String serviceId) {
         try {
             Map<String, String> result = redis.hgetall(serviceId).get();
@@ -103,6 +125,10 @@ public class RedisOperator {
         }
     }
 
+    /**
+     * Deletes all entries with the given key for a given service.
+     * @return true if at least one entry was deleted, otherwise false.
+     */
     public boolean delete(String serviceId, String toDelete) {
         try {
             long recordsDeleted = redis.hdel(serviceId, toDelete).get();

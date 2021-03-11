@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class handles requests from controller and orchestrates operations on the low level RedisOperator class
+ * Class handles requests from controller and orchestrates operations on the low level RedisOperator class.
  */
 @Slf4j
 public class RedisStorage implements Storage {
