@@ -15,7 +15,6 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
-import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,20 +30,12 @@ import java.util.Map;
  */
 @Slf4j
 public class RedisStorage implements Storage {
-    private final RedisConfig config;
     private final RedisOperator redis;
 
-    public RedisStorage(RedisConfig config) {
-        this(config, new RedisOperator(config));
-    }
-
-    public RedisStorage(RedisConfig config, RedisOperator redisOperator) {
+    public RedisStorage(RedisOperator redisOperator) {
         log.info("Using Redis for the cached data");
 
-        this.config = config;
         this.redis = redisOperator;
-
-        log.info("Using Redis configuration: {}", config);
     }
 
     @Override

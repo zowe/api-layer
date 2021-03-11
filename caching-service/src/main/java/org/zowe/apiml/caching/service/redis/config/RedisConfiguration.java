@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.redis.RedisOperator;
 import org.zowe.apiml.caching.service.redis.RedisStorage;
 
 @Configuration
@@ -25,6 +26,6 @@ public class RedisConfiguration {
     @Bean
     public Storage redis() {
         // TODO how do we determine and handle if multiple instances are being used
-        return new RedisStorage(redisConfig);
+        return new RedisStorage(new RedisOperator(redisConfig));
     }
 }

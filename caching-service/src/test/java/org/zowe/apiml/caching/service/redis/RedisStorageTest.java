@@ -12,12 +12,9 @@ package org.zowe.apiml.caching.service.redis;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.StorageException;
-import org.zowe.apiml.caching.service.Strategies;
-import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,17 +42,8 @@ public class RedisStorageTest {
 
     @BeforeEach
     void setUp() {
-        GeneralConfig generalConfig = new GeneralConfig();
-        generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
-        generalConfig.setMaxDataSize(100);
-
-        RedisConfig redisConfig = new RedisConfig(generalConfig);
-        redisConfig.setHostIP("127.0.0.1");
-        redisConfig.setPort(6379);
-        redisConfig.setTimeout(60);
-
         redisOperator = mock(RedisOperator.class);
-        underTest = new RedisStorage(redisConfig, redisOperator);
+        underTest = new RedisStorage(redisOperator);
     }
 
     @Nested

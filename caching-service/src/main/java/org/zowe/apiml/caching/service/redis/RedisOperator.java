@@ -36,6 +36,8 @@ public class RedisOperator {
     private final RedisAsyncCommands<String, String> redis;
 
     public RedisOperator(RedisConfig config) {
+        log.info("Using Redis configuration: {}", config);
+
         // TODO how to handle authentication to redis?
         RedisURI redisUri = new RedisURI(config.getHostIP(), config.getPort(), Duration.ofSeconds(config.getTimeout()));
         RedisClient redisClient = RedisClient.create(redisUri);
