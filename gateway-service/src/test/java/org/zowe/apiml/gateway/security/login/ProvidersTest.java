@@ -9,12 +9,11 @@
  */
 package org.zowe.apiml.gateway.security.login;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
+import org.zowe.apiml.gateway.security.login.zosmf.ZosmfConfiguration;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
@@ -25,6 +24,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.gateway.security.login.zosmf.ZosmfConfiguration.JWT_AUTOCONFIGURATION_MODE.*;
 
 class ProvidersTest {
     private AuthConfigurationProperties authConfigurationProperties;
@@ -33,6 +33,7 @@ class ProvidersTest {
     private CompoundAuthProvider compoundAuthProvider;
     private ZosmfService zosmfService;
     private static final String ZOSMF_ID = "zosmf";
+    private ZosmfConfiguration zosmfConfiguration = ZosmfConfiguration.of(AUTO);
 
     @BeforeEach
     void setUp() {
@@ -40,8 +41,8 @@ class ProvidersTest {
         compoundAuthProvider = mock(CompoundAuthProvider.class);
         discovery = mock(DiscoveryClient.class);
         zosmfService = mock(ZosmfService.class);
-
-        underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider, zosmfService);
+        zosmfConfiguration = ZosmfConfiguration.of(AUTO);
+        underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider, zosmfService, zosmfConfiguration);
     }
 
     @Nested
@@ -118,8 +119,9 @@ class ProvidersTest {
     @Nested
     class whenJwtSupportIsVerified {
         @Test
-        void givenLoginEndpointExists_thenSupportJwtReturnsTrue() {
+        void givenLoginEndpointAndJwtBuilderEndpointExist_thenSupportJwtReturnsTrue() {
             when(zosmfService.loginEndpointExists()).thenReturn(true);
+            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(true);
 
             assertThat(underTest.zosmfSupportsJwt(), is(true));
         }
@@ -127,8 +129,35 @@ class ProvidersTest {
         @Test
         void givenLoginEndpointDoesntExist_thenSupportJwtReturnsFalse() {
             when(zosmfService.loginEndpointExists()).thenReturn(false);
+            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(true);
 
             assertThat(underTest.zosmfSupportsJwt(), is(false));
+        }
+
+        @Test
+        void givenJwtBuilderEndpointDoesntExist_thenSupportJwtReturnsFalse() {
+            when(zosmfService.loginEndpointExists()).thenReturn(true);
+            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(false);
+
+            assertThat(underTest.zosmfSupportsJwt(), is(false));
+        }
+
+        @Test
+        void givenEndpointsExistAndLtpaOverrideSet_thenSupportJwtRetundsFalse() {
+            zosmfConfiguration.jwtAutoconfigurationMode = LTPA;
+            underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider, zosmfService, zosmfConfiguration);
+            when(zosmfService.loginEndpointExists()).thenReturn(true);
+            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(true);
+            assertThat(underTest.zosmfSupportsJwt(), is(false));
+        }
+
+        @Test
+        void givenEndpointsDontExistAndJwtOverrideSet_thenSupportJwtRetundsTrue() {
+            zosmfConfiguration.jwtAutoconfigurationMode = JWT;
+            underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider, zosmfService, zosmfConfiguration);
+            when(zosmfService.loginEndpointExists()).thenReturn(false);
+            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(false);
+            assertThat(underTest.zosmfSupportsJwt(), is(true));
         }
     }
 

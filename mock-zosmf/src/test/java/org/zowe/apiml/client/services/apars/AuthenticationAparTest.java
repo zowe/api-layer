@@ -23,11 +23,11 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-class PHBaseTest {
-    private PHBase underTest;
+class AuthenticationAparTest {
+    private AuthenticateApar underTest;
     private Map<String, String> headers;
     private HttpServletResponse mockResponse;
 
@@ -36,34 +36,9 @@ class PHBaseTest {
         List<String> usernames = Collections.singletonList("USER");
         List<String> passwords = Collections.singletonList("validPassword");
 
-        underTest = new PHBase(usernames, passwords);
+        underTest = new AuthenticateApar(usernames, passwords);
         headers = new HashMap<>();
         mockResponse = mock(HttpServletResponse.class);
-    }
-
-    @Nested
-    class whenInfoCalled {
-        @Test
-        void givenNothing_Ltpa2TokenIsntReturned() {
-            Optional<ResponseEntity<?>> result = underTest.apply("information", "", Optional.empty(), mockResponse, headers);
-
-            assertThat(result.isPresent(), is(true));
-            assertThat(result.get().getStatusCode(), is(HttpStatus.OK));
-            verify(mockResponse, never()).addCookie(any());
-        }
-
-        @Test
-        void givenValidAuthenticationCredentials_Ltpa2TokenIsReturned() {
-            headers.put("authorization", Base64.encodeBase64String("USER:validPassword".getBytes()));
-
-            underTest.apply("information", "", Optional.empty(), mockResponse, headers);
-
-            ArgumentCaptor<Cookie> called = ArgumentCaptor.forClass(Cookie.class);
-            verify(mockResponse).addCookie(called.capture());
-
-            Cookie ltpa = called.getValue();
-            assertThat(ltpa.getName(), is("LtpaToken2"));
-        }
     }
 
     @Nested
@@ -90,7 +65,7 @@ class PHBaseTest {
 
         @Test
         void givenVerifyMethodWithInvalidUser_returnUnauthorized() {
-            headers.put("authorization", Base64.encodeBase64String("baduser:badpassword".getBytes()));
+            headers.put("authorization", org.apache.tomcat.util.codec.binary.Base64.encodeBase64String("baduser:badpassword".getBytes()));
 
             Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
@@ -147,40 +122,6 @@ class PHBaseTest {
 
             ResponseEntity<?> response = result.get();
             assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-        }
-    }
-
-    @Nested
-    class whenFilesAreCalled {
-        @Test
-        void givenProperAuthorization_validFilesAreReturned() {
-            headers.put("cookie", "LtpaToken2=randomValidValue");
-
-            Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), mockResponse, headers);
-            assertThat(result.isPresent(), is(true));
-
-            ResponseEntity<?> response = result.get();
-            assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        }
-
-        @Test
-        void givenInvalidAuthorization_unauthorizedIsReturned() {
-            Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), mockResponse, headers);
-            assertThat(result.isPresent(), is(true));
-
-            ResponseEntity<?> response = result.get();
-            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
-        }
-    }
-
-    @Nested
-    class whenRetrieveJwtKeys {
-        @Test
-        void thenNotFoundIsReturned() {
-            Optional<ResponseEntity<?>> result = underTest.apply("jwtKeys", "get", null, null, null);
-
-            assertThat(result.isPresent(), is(true));
-            assertThat(result.get().getStatusCode(), is(HttpStatus.NOT_FOUND));
         }
     }
 }

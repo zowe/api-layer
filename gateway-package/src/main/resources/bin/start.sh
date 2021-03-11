@@ -107,6 +107,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
+    -Dapiml.security.auth.zosmfJwtAutoconfiguration=${APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE:-auto}
     -Dapiml.security.x509.enabled=${APIML_SECURITY_X509_ENABLED:-false} \
     -Dapiml.security.x509.externalMapperUrl=http://localhost:${ZOWE_ZSS_SERVER_PORT}/certificate/x509/map \
     -Dapiml.security.x509.externalMapperUser=ZWESVUSR \

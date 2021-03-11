@@ -23,11 +23,11 @@ import org.zowe.apiml.client.services.AparBasedService;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-class AuthenticationControllerTest {
+class JwtControllerTest {
     private static final ResponseEntity<?> DEFAULT_RESPONSE = new ResponseEntity<>(HttpStatus.OK);
 
     private MockMvc mockMvc;
@@ -37,25 +37,13 @@ class AuthenticationControllerTest {
 
     @BeforeEach
     void setUp() {
-        AuthenticationController authenticationController = new AuthenticationController(aparService);
-        mockMvc = MockMvcBuilders.standaloneSetup(authenticationController).build();
+        JwtController jwtController = new JwtController(aparService);
+        mockMvc = MockMvcBuilders.standaloneSetup(jwtController).build();
     }
 
     @Test
-    void whenCallAuthenticateEndpointWithDelete_thenReturnAparServiceProcessResult() throws Exception {
+    void whenCallZosmfBuilderEndpointWithGet_thenReturnOk() throws Exception {
         doReturn(DEFAULT_RESPONSE).when(aparService).process(any(), any(), any(), any());
-        mockMvc.perform(delete("/zosmf/services/authenticate")).andExpect(status().is(SC_OK));
-    }
-
-    @Test
-    void whenCallAuthenticateEndpointWithPost_thenReturnAparServiceProcessResult() throws Exception {
-        doReturn(DEFAULT_RESPONSE).when(aparService).process(any(), any(), any(), any());
-        mockMvc.perform(post("/zosmf/services/authenticate")).andExpect(status().is(SC_OK));
-    }
-
-    @Test
-    void whenCallZosmfNotificationEndpointWithGet_thenReturnAparServiceProcessResult() throws Exception {
-        doReturn(DEFAULT_RESPONSE).when(aparService).process(any(), any(), any(), any());
-        mockMvc.perform(get("/zosmf/notifications/inbox")).andExpect(status().is(SC_OK));
+        mockMvc.perform(get("/jwt/ibm/api/zOSMFBuilder")).andExpect(status().is(SC_OK));
     }
 }
