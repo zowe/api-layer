@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.redis.RedisOperator;
 import org.zowe.apiml.caching.service.redis.RedisStorage;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 @Configuration
 @RequiredArgsConstructor
@@ -24,8 +26,8 @@ public class RedisConfiguration {
 
     @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "redis")
     @Bean
-    public Storage redis() {
+    public Storage redis(MessageService messageService) {
         // TODO how do we determine and handle if multiple instances are being used
-        return new RedisStorage(new RedisOperator(redisConfig));
+        return new RedisStorage(new RedisOperator(redisConfig, ApimlLogger.of(RedisOperator.class, messageService)));
     }
 }

@@ -9,16 +9,14 @@
  */
 package org.zowe.apiml.caching.service.redis;
 
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisCommandExecutionException;
-import io.lettuce.core.RedisFuture;
-import io.lettuce.core.RedisURI;
+import io.lettuce.core.*;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.redis.config.RedisConfig;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -30,19 +28,26 @@ import java.util.concurrent.ExecutionException;
  * Class used to connect to and operate on a Redis instance or cluster.
  * Contains the CRUD operations enacted on Redis with serialized read and write.
  */
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Slf4j
 public class RedisOperator {
-    private final RedisAsyncCommands<String, String> redis;
+    private RedisAsyncCommands<String, String> redis;
 
-    public RedisOperator(RedisConfig config) {
+    public RedisOperator(RedisConfig config, ApimlLogger apimlLog) {
         log.info("Using Redis configuration: {}", config);
 
-        // TODO how to handle authentication to redis?
         RedisURI redisUri = new RedisURI(config.getHostIP(), config.getPort(), Duration.ofSeconds(config.getTimeout()));
-        RedisClient redisClient = RedisClient.create(redisUri);
-        StatefulRedisConnection<String, String> connection = redisClient.connect();
-        redis = connection.async();
+        redisUri.setUsername(config.getUsername());
+        redisUri.setPassword(config.getPassword().toCharArray());
+
+        try {
+            RedisClient redisClient = RedisClient.create(redisUri);
+            StatefulRedisConnection<String, String> connection = redisClient.connect();
+            redis = connection.async();
+        } catch (RedisConnectionException e) {
+            apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "redis", e.getCause().getMessage(), e);
+            System.exit(1);
+        }
         // TODO should release redis connection on caching service end via connection.close(); client.shutdown();
         // this could be via closeable and try with resources, but then re-connecting to redis every time try to CRUD
         // would be better to keep connection open until RedisOperator is destructed
