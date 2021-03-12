@@ -274,6 +274,7 @@ task runBaseTests(type: Test) {
             'CachingServiceTest',
             'WebsocketTest'
         )
+        excludeTags('MainframeDependentTests')
     }
 }
 
