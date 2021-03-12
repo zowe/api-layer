@@ -2,6 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 ## `1.20.0 (2021-03-11)`
+
 * Bugfix(authentication): Support specific zOSMF version, allow override (#1241) ([2da761a](https://github.com/zowe/api-layer/commit/2da761a)), closes [#1241](https://github.com/zowe/api-layer/issues/1241)
 * Bugfix(authentication): Ignore wrong or non existing SAF classes when SAF isn't used (#1216) ([c5ea311](https://github.com/zowe/api-layer/commit/c5ea311)), closes [#1216](https://github.com/zowe/api-layer/issues/1216)
 * Bugfix(enabler): Add unregistration method to Node.js enabler (#1214) ([1ecd5c7](https://github.com/zowe/api-layer/commit/1ecd5c7)), closes [#1214](https://github.com/zowe/api-layer/issues/1214)
