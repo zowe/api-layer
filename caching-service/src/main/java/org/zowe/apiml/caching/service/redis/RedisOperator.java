@@ -18,7 +18,6 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,10 @@ public class RedisOperator {
     public RedisOperator(RedisConfig config, ApimlLogger apimlLog) {
         log.info("Using Redis configuration: {}", config);
 
-        RedisURI redisUri = new RedisURI(config.getHostIP(), config.getPort(), Duration.ofSeconds(config.getTimeout()));
+        //RedisURI redisUri = new RedisURI(config.getHostIP(), config.getPort(), Duration.ofSeconds(config.getTimeout()));
+        // TODO connects to sentinel instance, but then can't get to master. Master is running at different ip, probably
+        // need to expose it, or maybe set it to 127.0.0.1 (probably just expose it)
+        RedisURI redisUri = RedisURI.Builder.sentinel("127.0.0.1", "redismaster").build();
         redisUri.setUsername(config.getUsername());
         redisUri.setPassword(config.getPassword().toCharArray());
 
