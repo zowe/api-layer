@@ -3,8 +3,6 @@
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 ## `1.20.0 (2021-03-11)`
 * Bugfix(authentication): Support specific zOSMF version, allow override (#1241) ([2da761a](https://github.com/zowe/api-layer/commit/2da761a)), closes [#1241](https://github.com/zowe/api-layer/issues/1241)
-* Feature: caching service mutual authentication (#1231) ([1cfee86](https://github.com/zowe/api-layer/commit/1cfee86)), closes [#1231](https://github.com/zowe/api-layer/issues/1231)
-* Feature(Caching service): replace JWT with client cert in caching service (#1217) ([e496ac8](https://github.com/zowe/api-layer/commit/e496ac8)), closes [#1217](https://github.com/zowe/api-layer/issues/1217)
 * Bugfix(authentication): Ignore wrong or non existing SAF classes when SAF isn't used (#1216) ([c5ea311](https://github.com/zowe/api-layer/commit/c5ea311)), closes [#1216](https://github.com/zowe/api-layer/issues/1216)
 * Bugfix(enabler): Add unregistration method to Node.js enabler (#1214) ([1ecd5c7](https://github.com/zowe/api-layer/commit/1ecd5c7)), closes [#1214](https://github.com/zowe/api-layer/issues/1214)
 * Feature: x509 authentication scheme  (#1208) ([94dbf37](https://github.com/zowe/api-layer/commit/94dbf37)), closes [#1208](https://github.com/zowe/api-layer/issues/1208)
