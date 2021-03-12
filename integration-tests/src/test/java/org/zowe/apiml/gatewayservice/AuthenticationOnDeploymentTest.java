@@ -50,7 +50,6 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  * - credentials.password = user
  */
 @TestsNotMeantForZowe
-@GatewayTest
 class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
 
     private static final int TIMEOUT = 3;
