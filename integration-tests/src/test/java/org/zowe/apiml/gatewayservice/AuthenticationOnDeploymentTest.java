@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.GatewayTest;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.RandomPorts;
@@ -27,7 +26,8 @@ import org.zowe.apiml.util.service.VirtualService;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
