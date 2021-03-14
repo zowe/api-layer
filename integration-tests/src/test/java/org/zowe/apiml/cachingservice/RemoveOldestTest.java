@@ -58,28 +58,22 @@ class RemoveOldestTest implements TestWithStartedInstances {
 
     @Test
     void givenStorageIsFull_whenAnotherKeyIsInserted_thenTheOldestIsRemoved() {
-        int amountOfAllowedRecords = numberOfRecords + 1;
+        int amountOfAllowedRecords = numberOfRecords + 5;
         URI removeOldestCachingServiceUri = HttpRequestUtils.getUriFromGateway("/cachingoldest/api/v1/cache");
-        try {
-            KeyValue keyValue;
 
-            for (int i = 0; i < amountOfAllowedRecords; i++) {
-                keyValue = new KeyValue("key" + i, "testValue");
-                requests.create(removeOldestCachingServiceUri, keyValue, SslContext.clientCertValid);
-            }
+        KeyValue keyValue;
 
-            keyValue = new KeyValue("keyThatWillReplaceTheKey0", "testValue");
-            given().config(SslContext.clientCertValid)
-                .contentType(JSON)
-                .body(keyValue)
-                .when()
-                .get(removeOldestCachingServiceUri + "/key0")
-                .then()
-                .statusCode(is(SC_NOT_FOUND));
-        } finally {
-            for (int i = 0; i < amountOfAllowedRecords; i++) {
-                requests.deleteValueUnderServiceIdWithoutValidation(removeOldestCachingServiceUri, "key" + i, SslContext.clientCertValid);
-            }
+        for (int i = 0; i < amountOfAllowedRecords; i++) {
+            keyValue = new KeyValue("key" + i, "testValue");
+            requests.create(removeOldestCachingServiceUri, keyValue, SslContext.clientCertValid);
         }
+
+        given().config(SslContext.clientCertValid)
+            .contentType(JSON)
+            .when()
+            .get(removeOldestCachingServiceUri + "/key0")
+            .then()
+            .statusCode(is(SC_NOT_FOUND));
+
     }
 }
