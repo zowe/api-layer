@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import static org.awaitility.Awaitility.await;
 
 @Slf4j
+@Deprecated
 @RequiredArgsConstructor
 public class CachingService {
     private final String id;
