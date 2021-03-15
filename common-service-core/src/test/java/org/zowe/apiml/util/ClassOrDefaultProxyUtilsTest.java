@@ -25,6 +25,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -147,16 +148,11 @@ class ClassOrDefaultProxyUtilsTest {
 
     @Test
     void testMissingMethod() {
-        try {
-            ClassOrDefaultProxyUtils.createProxy(
-                TestInterface1.class,
-                Object.class.getName(),
-                TestImplementation1B::new
-            );
-            fail();
-        } catch (ExceptionMappingError e) {
-            assertTrue(e.getMessage().contains(" was not found on class java.lang.Object"));
-        }
+        String className = Object.class.getName();
+        Exception e = assertThrows(ExceptionMappingError.class, () -> {
+            ClassOrDefaultProxyUtils.createProxy(TestInterface1.class, className, TestImplementation1B::new);
+        });
+        assertTrue(e.getMessage().contains(" was not found on class java.lang.Object"));
     }
 
     class InnerClass implements TestInterface1 {
@@ -210,42 +206,35 @@ class ClassOrDefaultProxyUtilsTest {
 
     @Test
     void testExceptionMappingSourceMethod() {
-        try {
+        Exception e = assertThrows(ExceptionMappingError.class, () -> {
             new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerException.class, "getOurStackTraceX");
-            fail();
-        } catch (ExceptionMappingError e) {
-            assertEquals("Cannot find method getOurStackTraceX in java.lang.NullPointerException to map exceptions", e.getMessage());
-        }
+        });
+        assertEquals("Cannot find method getOurStackTraceX in java.lang.NullPointerException to map exceptions", e.getMessage());
 
-        try {
-            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerException.class, "getCause").apply(new NullPointerException("x"));
-            fail();
-        } catch (ExceptionMappingError e) {
-            assertEquals("Cannot find constructor on java.lang.NullPointerException with [class java.lang.Throwable]", e.getMessage());
-        }
+        e = assertThrows(ExceptionMappingError.class, () -> {
+            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerException.class, "getCause");
+        });
+        assertEquals("Cannot find constructor on java.lang.NullPointerException with [class java.lang.Throwable]", e.getMessage());
     }
 
     @Test
     void testCannotConstructException() throws NullPointerExceptionPrivate, NullPointerExceptionException {
-        try {
-            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerExceptionPrivate.class, "getMessage").apply(new NullPointerException("x"));
-            fail();
-        } catch (ExceptionMappingError e) {
-            assertEquals("Cannot find constructor on java.lang.NullPointerException with [class java.lang.String]", e.getMessage());
-        }
+        Exception e = assertThrows(ExceptionMappingError.class, () -> {
+            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerExceptionPrivate.class, "getMessage");
+        });
+        assertEquals("Cannot find constructor on java.lang.NullPointerException with [class java.lang.String]", e.getMessage());
 
-        try {
-            new ClassOrDefaultProxyUtils.ByMethodName<>("org.zowe.apiml.util.ClassOrDefaultProxyUtilsTest$NullPointerExceptionPrivate", NullPointerException.class, "getMsg").apply(new NullPointerExceptionPrivate("x"));
-        } catch (ExceptionMappingError e) {
-            assertTrue(e.getMessage().contains("Cannot invoke method private"));
-        }
+        Exception nullPtrExceptionPrivate = new NullPointerExceptionPrivate("x");
+        final ClassOrDefaultProxyUtils.ByMethodName<?> proxyUtilsNullPrivate = 
+            new ClassOrDefaultProxyUtils.ByMethodName<>("org.zowe.apiml.util.ClassOrDefaultProxyUtilsTest$NullPointerExceptionPrivate", NullPointerException.class, "getMsg");
+        e = assertThrows(ExceptionMappingError.class, () -> proxyUtilsNullPrivate.apply(nullPtrExceptionPrivate));
+        assertTrue(e.getMessage().contains("Cannot invoke method private"));
 
-        try {
-            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerExceptionException.class, "getMessage").apply(new NullPointerException("x"));
-            fail();
-        } catch (ExceptionMappingError e) {
-            assertTrue(e.getMessage().startsWith("Cannot construct exception"));
-        }
+        Exception nullPtrException = new NullPointerException("x");
+        final ClassOrDefaultProxyUtils.ByMethodName<?> proxyUtilsNull = 
+            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerExceptionException.class, "getMessage");
+        e = assertThrows(ExceptionMappingError.class, () -> proxyUtilsNull.apply(nullPtrException));
+        assertTrue(e.getMessage().startsWith("Cannot construct exception"));
     }
 
     private static class NullPointerExceptionPrivate extends Exception {
