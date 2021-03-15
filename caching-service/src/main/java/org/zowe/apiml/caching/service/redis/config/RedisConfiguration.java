@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.caching.service.redis.config;
 
+import io.lettuce.core.RedisURI;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,22 +23,22 @@ import org.zowe.apiml.message.log.ApimlLogger;
 
 @Configuration
 @RequiredArgsConstructor
+@Slf4j
 public class RedisConfiguration {
     private final RedisConfig redisConfig;
 
     @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "redis")
     @Bean
     public Storage redis(MessageService messageService) {
-        // TODO lettuce use sentinel address as redis uri to connect, this will return connection to master - can reuse hostip, port, etc
-        // TODO will need RedisConfig to specify if using sentinel or not and have a different way to connect via a new RedisConnection class
+        log.info("Using redis configuration {}", redisConfig);
         // TODO what if sentinel and master have different passwords? Is this possible?
 
-        // TODO should probably use spring data's LettuceConnectionFactory
-        // and other spring integrations: https://medium.com/trendyol-tech/high-availability-with-redis-sentinel-and-spring-lettuce-client-9da40525fc82
-        // another link: https://michaelcgood.com/spring-data-redis-sentinel/
-        // though, if I can just connect to sentinel and then get the master node, this is ok.
-        // but, what if that sentinel goes down? Then what? That is the problem here... we will see.
-        // I think we can just do an array of sentinel nodes and do with sentinel for each one
-        return new RedisStorage(new RedisOperator(redisConfig, ApimlLogger.of(RedisOperator.class, messageService)));
+        // TODO RedisConfig parse the application.yml and here detect if using sentinel or not. Then make URI based on RedisConfig.redisConfig
+        //RedisURI redisUri = new RedisURI(config.getHostIP(), config.getPort(), Duration.ofSeconds(config.getTimeout()));
+        RedisURI redisUri = RedisURI.Builder.sentinel("127.0.0.1", "redismaster").build();
+        redisUri.setUsername(redisConfig.getUsername());
+        redisUri.setPassword(redisConfig.getPassword().toCharArray());
+
+        return new RedisStorage(new RedisOperator(redisUri, ApimlLogger.of(RedisOperator.class, messageService)));
     }
 }

@@ -10,12 +10,13 @@
 package org.zowe.apiml.caching.service.redis;
 
 import io.lettuce.core.*;
-import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.codec.StringCodec;
+import io.lettuce.core.masterreplica.MasterReplica;
+import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.model.KeyValue;
-import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.util.ArrayList;
@@ -32,19 +33,10 @@ import java.util.concurrent.ExecutionException;
 public class RedisOperator {
     private RedisAsyncCommands<String, String> redis;
 
-    public RedisOperator(RedisConfig config, ApimlLogger apimlLog) {
-        log.info("Using Redis configuration: {}", config);
-
-        //RedisURI redisUri = new RedisURI(config.getHostIP(), config.getPort(), Duration.ofSeconds(config.getTimeout()));
-        // TODO connects to sentinel instance, but then can't get to master. Master is running at different ip, probably
-        // need to expose it, or maybe set it to 127.0.0.1 (probably just expose it)
-        RedisURI redisUri = RedisURI.Builder.sentinel("127.0.0.1", "redismaster").build();
-        redisUri.setUsername(config.getUsername());
-        redisUri.setPassword(config.getPassword().toCharArray());
-
+    public RedisOperator(RedisURI redisUri, ApimlLogger apimlLog) {
         try {
-            RedisClient redisClient = RedisClient.create(redisUri);
-            StatefulRedisConnection<String, String> connection = redisClient.connect();
+            RedisClient redisClient = RedisClient.create();
+            StatefulRedisMasterReplicaConnection<String, String> connection = MasterReplica.connect(redisClient, StringCodec.UTF8, redisUri);
             redis = connection.async();
         } catch (RedisConnectionException e) {
             apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "redis", e.getCause().getMessage(), e);
