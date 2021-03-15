@@ -53,5 +53,3 @@ services:
         links:
             - redis-master
             - redis-replica
-
-# TODO links is deprecated, I think network should be used
