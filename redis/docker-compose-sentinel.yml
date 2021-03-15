@@ -5,7 +5,7 @@ services:
         image: redis:latest
         command: redis-server /usr/local/etc/redis/redis.conf
         ports:
-            - "127.0.0.1:6379:6379"
+            - "6379:6379"
         volumes:
             - ./master:/usr/local/etc/redis/
 
@@ -54,6 +54,4 @@ services:
             - redis-master
             - redis-replica
 
-# TODO authentication in sentinel conf
 # TODO links is deprecated, I think network should be used
-# TODO improve networking, ensure hardcoded IPs are correct everywhere
