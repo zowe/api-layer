@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 @Slf4j
 public class X509Scheme implements AbstractAuthenticationScheme {
 
-    public static final String allHeaders = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
+    public static final String ALL_HEADERS = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -44,7 +44,7 @@ public class X509Scheme implements AbstractAuthenticationScheme {
     public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
         String[] headers;
         if (StringUtils.isEmpty(authentication.getHeaders())) {
-            headers = allHeaders.split(",");
+            headers = ALL_HEADERS.split(",");
         } else {
             headers = authentication.getHeaders().split(",");
         }

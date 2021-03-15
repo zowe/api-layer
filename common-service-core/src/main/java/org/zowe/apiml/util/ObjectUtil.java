@@ -81,15 +81,15 @@ public class ObjectUtil {
     /**
      *  Deep merge of two maps. Drills down recursively into Container values - Map and List
      */
-    private static Map<String, Object> mergeMapsDeep(Map map1, Map map2) {
-        for (Map.Entry<String, Object> entry : (Set<Map.Entry>)map2.entrySet()) {
+    private static Map<String, Object> mergeMapsDeep(Map<String, Object> map1, Map<String, Object> map2) {
+        for (Map.Entry<String, Object> entry : (Set<Map.Entry<String, Object>>)map2.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
             if (map1.get(key) instanceof Map && value instanceof Map) {
                 map1.put(key, mergeMapsDeep((Map) map1.get(key), (Map)value));
             } else if (map1.get(key) instanceof List && value instanceof List) {
-                Collection originalChild = (Collection) map1.get(key);
-                for (Object each : (Collection)value) {
+                Collection<Object> originalChild = (Collection<Object>) map1.get(key);
+                for (Object each : (Collection<?>)value) {
                     if (!originalChild.contains(each)) {
                         originalChild.add(each);
                     }
