@@ -67,16 +67,31 @@ public class X509Scheme implements AbstractAuthenticationScheme {
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
             HttpServletRequest request = context.getRequest();
-            X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
-            if (certs != null && certs.length > 0) {
-                X509Certificate clientCert = certs[0];
+            X509Certificate clientCertificate = getCertificateFromRequest(request);
+            if (clientCertificate != null) {
                 try {
-                    setHeader(context, clientCert);
+                    setHeader(context, clientCertificate);
                     context.set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
                 } catch (CertificateEncodingException e) {
                     log.error("Exception parsing certificate", e);
                 }
             }
+        }
+
+        private X509Certificate getCertificateFromRequest(HttpServletRequest request) {
+            X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
+            X509Certificate clientCert = getOne(certs);
+            if (clientCert == null) {
+                certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+                return getOne(certs);
+            }
+            return clientCert;
+        }
+
+        private X509Certificate getOne(X509Certificate[] certs) {
+            if (certs != null && certs.length > 0) {
+                return certs[0];
+            } else return null;
         }
 
         private void setHeader(RequestContext context, X509Certificate clientCert) throws CertificateEncodingException {
