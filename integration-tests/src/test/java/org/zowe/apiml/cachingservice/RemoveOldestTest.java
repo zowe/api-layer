@@ -10,15 +10,14 @@
 package org.zowe.apiml.cachingservice;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.CachingRequests;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
-import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.service.RunningService;
+import org.zowe.apiml.util.service.ServiceJars;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -41,7 +40,7 @@ class RemoveOldestTest implements TestWithStartedInstances {
         parameters.put("-Dapiml.service.port", "10023");
         parameters.put("-Dcaching.storage.size", String.valueOf(numberOfRecords));
         cachingServiceInstance = new RunningService("cachingoldest",
-            "./caching-service/build/libs/caching-service.jar", parameters, new HashMap<>());
+            ServiceJars.CACHING, parameters, new HashMap<>());
     }
 
     @BeforeAll
@@ -49,6 +48,7 @@ class RemoveOldestTest implements TestWithStartedInstances {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication();
         cachingServiceInstance.start();
+        cachingServiceInstance.waitUntilReady();
     }
 
     @AfterAll
