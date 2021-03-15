@@ -13,6 +13,9 @@ import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
@@ -34,7 +37,12 @@ class X509SchemeTest extends CleanCurrentRequestContextTest {
     X509Certificate x509Certificate;
 
     @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WhenCertificateInRequest {
+
+        String[] certificateSource() {
+            return new String[]{"javax.servlet.request.X509Certificate","client.auth.X509Certificate"};
+        }
 
         @BeforeEach
         void init() throws CertificateEncodingException {
@@ -50,8 +58,11 @@ class X509SchemeTest extends CleanCurrentRequestContextTest {
             when(x509Certificate.getEncoded()).thenReturn(new byte[]{});
         }
 
-        @Test
-        void whenPublicCertificateIsRequested_onlyCorrectHeaderIsSet() {
+        @ParameterizedTest
+        @MethodSource("certificateSource")
+        void whenPublicCertificateIsRequested_onlyCorrectHeaderIsSet(String source) {
+            X509Certificate[] x509Certificates = {x509Certificate};
+            when(request.getAttribute(source)).thenReturn(x509Certificates);
             X509Scheme x509Scheme = new X509Scheme();
             Authentication authentication =
                 new Authentication(AuthenticationScheme.X509, null, PUBLIC_KEY);
