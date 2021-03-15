@@ -39,7 +39,7 @@ public class ApimlLogInjector implements BeanPostProcessor {
             // make the field accessible if defined private
             ReflectionUtils.makeAccessible(field);
             if (field.getAnnotation(InjectApimlLogger.class) != null) {
-                Class clazz = getClass(bean);
+                Class<?> clazz = getClass(bean);
                 ApimlLogger log = ApimlLogger.of(clazz, YamlMessageServiceInstance.getInstance());
                 field.set(bean, log);
             }
@@ -47,8 +47,8 @@ public class ApimlLogInjector implements BeanPostProcessor {
         return bean;
     }
 
-    private Class getClass(Object bean) {
-        Class clazz = bean.getClass();
+    private Class<?> getClass(Object bean) {
+        Class<?> clazz = bean.getClass();
 
         String fullName = clazz.getName();
         int index = fullName.indexOf('$');

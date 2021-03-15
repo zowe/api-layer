@@ -27,9 +27,8 @@ public class UrlUtils {
      * @param string input parameter
      * @return input without removed trailing slashes.
      */
-    @SuppressWarnings("squid:L31")
     public static String trimSlashes(String string) {
-        return string.replaceAll("^/|/$", "");
+        return string.replaceAll("(?:^/)|(?:/$)", "");
     }
 
     /**
