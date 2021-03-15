@@ -95,12 +95,10 @@ public class AuthConfigurationProperties {
      * @throws AuthenticationServiceException if the z/OSMF service id is not configured
      */
     public String validatedZosmfServiceId() {
-
-        if (provider.equalsIgnoreCase(AuthenticationScheme.ZOSMF.getScheme())) {
-            if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
-                apimlLog.log("org.zowe.apiml.security.zosmfNotFound");
-                throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
-            }
+        if (provider.equalsIgnoreCase(AuthenticationScheme.ZOSMF.getScheme())
+            && ((zosmfServiceId == null) || zosmfServiceId.isEmpty())) {
+            apimlLog.log("org.zowe.apiml.security.zosmfNotFound");
+            throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
         }
         return zosmfServiceId;
     }

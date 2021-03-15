@@ -12,5 +12,6 @@
     <cache name="zosmfInfo" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="3600" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
     <cache name="zosmfServiceImplementation" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="3600" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
     <cache name="zosmfAuthenticationEndpoint" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="60" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
+    <cache name="zosmfJwtEndpoint" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="60" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
 
 </ehcache>

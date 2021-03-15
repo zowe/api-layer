@@ -104,7 +104,7 @@ objective of this phase is to setup zowe-api-dev and perform first deployment
 
 User variables are stored in `user-zowe-api.json`. You should not need to change `zowe-api.json`. `config/zowe-api-dev/template-bpxbatch.jcl` is used to run main run script on mainframe. This sets the deployment configuration into the stdenv on mainframe.
 
-Wrapper script `config/zowe-api-dev/run-wrapper.sh` is launched on mainframe. This is where you can change things and configure the deployment. This wrapper sets environment, unpacks dependencies and runs Zowe's Apiml start script `zowe-install/src/main/resources/component-scripts/start.sh`, which in turn starts Apiml.
+Wrapper script `config/zowe-api-dev/run-wrapper.sh` is launched on mainframe. This is where you can change things and configure the deployment. This wrapper sets environment, unpacks dependencies and runs Zowe's Apiml start script, which in turn starts Apiml.
 
 *You can use the config deploy to upload the config changes only.*
 
