@@ -18,8 +18,8 @@ services:
         links:
             - redis-master
 
-    redis-sentinel:
-        container_name: redis-sentinel
+    redis-sentinel-1:
+        container_name: redis-sentinel-1
         image: redis:latest
         command: redis-sentinel /usr/local/etc/redis/sentinel.conf
         ports:
@@ -28,6 +28,27 @@ services:
             - ./sentinel:/usr/local/etc/redis/
         links:
             - redis-master
+            - redis-replica
+
+    redis-sentinel-2:
+        container_name: redis-sentinel-2
+        image: redis:latest
+        command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+        volumes:
+            - ./sentinel:/usr/local/etc/redis/
+        links:
+            - redis-master
+            - redis-replica
+
+    redis-sentinel-3:
+        container_name: redis-sentinel-3
+        image: redis:latest
+        command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+        volumes:
+            - ./sentinel:/usr/local/etc/redis/
+        links:
+            - redis-master
+            - redis-replica
 
 # TODO authentication in sentinel conf
 # TODO links is deprecated, I think network should be used
