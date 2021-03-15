@@ -46,7 +46,25 @@ project(":gateway-service") {
 
 project(":api-catalog-ui") {
     sonarqube {
-        skipProject = true
+        properties {
+            property "sonar.sources", "frontend/src"
+        }
+    }
+}
+
+project(":onboarding-enabler-nodejs") {
+    sonarqube {
+        properties {
+            property "sonar.sources", "src"
+        }
+    }
+}
+
+project(":onboarding-enabler-nodejs-sample-app") {
+    sonarqube {
+        properties {
+            property "sonar.sources", "src"
+        }
     }
 }
 
@@ -80,20 +98,6 @@ project(":caching-service-package") {
 
 // Packaging project; sonar does not apply
 project(":apiml-common-lib-package") {
-    sonarqube {
-        skipProject = true
-    }
-}
-
-// Onboarding NodeJS enabler; sonar does not apply
-project(":onboarding-enabler-nodejs") {
-    sonarqube {
-        skipProject = true
-    }
-}
-
-// NodeJS sample service; sonar does not apply
-project(":onboarding-enabler-nodejs-sample-app") {
     sonarqube {
         skipProject = true
     }
