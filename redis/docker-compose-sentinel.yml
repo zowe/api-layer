@@ -1,0 +1,34 @@
+services:
+
+    redis-master:
+        container_name: redis-master
+        image: redis:latest
+        command: redis-server /usr/local/etc/redis/redis.conf
+        ports:
+            - "127.0.0.1:6379:6379"
+        volumes:
+            - ./master:/usr/local/etc/redis/
+
+    redis-replica:
+        container_name: redis-replica
+        image: redis:latest
+        command: redis-server /usr/local/etc/redis/redis.conf
+        volumes:
+            - ./replica:/usr/local/etc/redis/
+        links:
+            - redis-master
+
+    redis-sentinel:
+        container_name: redis-sentinel
+        image: redis:latest
+        command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+        ports:
+            - "26379:26379"
+        volumes:
+            - ./sentinel:/usr/local/etc/redis/
+        links:
+            - redis-master
+
+# TODO authentication in sentinel conf
+# TODO links is deprecated, I think network should be used
+# TODO improve networking, ensure hardcoded IPs are correct everywhere

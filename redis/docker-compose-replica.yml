@@ -9,7 +9,7 @@ services:
         volumes:
             - ./master:/usr/local/etc/redis/
 
-    redis-slave:
+    redis-replica:
         container_name: redis-replica
         image: redis:latest
         command: redis-server /usr/local/etc/redis/redis.conf

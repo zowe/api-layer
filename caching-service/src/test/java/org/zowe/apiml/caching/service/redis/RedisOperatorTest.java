@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.caching.service.redis;
 
+import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +62,7 @@ public class RedisOperatorTest {
         }
 
         @Test
-        void givenNewEntry_thenReturnTrue() throws ExecutionException, InterruptedException {
+        void givenNewEntry_thenReturnTrue() throws ExecutionException, InterruptedException, RedisOutOfMemoryException {
             when(future.get()).thenReturn(true);
 
             boolean result = underTest.create(REDIS_ENTRY);
@@ -69,11 +70,18 @@ public class RedisOperatorTest {
         }
 
         @Test
-        void givenExistingEntry_thenReturnFalse() throws ExecutionException, InterruptedException {
+        void givenExistingEntry_thenReturnFalse() throws ExecutionException, InterruptedException, RedisOutOfMemoryException {
             when(future.get()).thenReturn(false);
 
             boolean result = underTest.create(REDIS_ENTRY);
             assertFalse(result);
+        }
+
+        @Test
+        void givenRedisOutOfMemory_thenThrowOutOfMemoryException() throws ExecutionException, InterruptedException {
+            when(future.get()).thenThrow(new ExecutionException(new RedisCommandExecutionException("maxmemory")));
+
+            assertThrows(RedisOutOfMemoryException.class, () -> underTest.create(REDIS_ENTRY));
         }
 
         @Test
@@ -101,7 +109,7 @@ public class RedisOperatorTest {
         private RedisFuture<Boolean> existsFuture;
 
         @Test
-        void givenExistingEntry_thenUpdateEntry() throws ExecutionException, InterruptedException {
+        void givenExistingEntry_thenUpdateEntry() throws ExecutionException, InterruptedException, RedisOutOfMemoryException {
             when(redisCommands.hset(any(), any(), any())).thenReturn(setFuture);
             when(setFuture.get()).thenReturn(false);
 
@@ -113,7 +121,7 @@ public class RedisOperatorTest {
         }
 
         @Test
-        void givenExistingEntryAndFailureUpdating_thenDontUpdateEntry() throws ExecutionException, InterruptedException {
+        void givenExistingEntryAndFailureUpdating_thenDontUpdateEntry() throws ExecutionException, InterruptedException, RedisOutOfMemoryException {
             when(redisCommands.hset(any(), any(), any())).thenReturn(setFuture);
             when(setFuture.get()).thenReturn(true);
 
@@ -125,12 +133,23 @@ public class RedisOperatorTest {
         }
 
         @Test
-        void givenNotExistingEntry_thenDontUpdateEntry() throws ExecutionException, InterruptedException {
+        void givenNotExistingEntry_thenDontUpdateEntry() throws ExecutionException, InterruptedException, RedisOutOfMemoryException {
             when(redisCommands.hexists(any(), any())).thenReturn(existsFuture);
             when(existsFuture.get()).thenReturn(false);
 
             boolean result = underTest.update(REDIS_ENTRY);
             assertFalse(result);
+        }
+
+        @Test
+        void givenRedisOutOfMemory_thenThrowOutOfMemoryException() throws ExecutionException, InterruptedException {
+            when(redisCommands.hset(any(), any(), any())).thenReturn(setFuture);
+            when(setFuture.get()).thenThrow(new ExecutionException(new RedisCommandExecutionException("maxmemory")));
+
+            when(redisCommands.hexists(any(), any())).thenReturn(existsFuture);
+            when(existsFuture.get()).thenReturn(true);
+
+            assertThrows(RedisOutOfMemoryException.class, () -> underTest.update(REDIS_ENTRY));
         }
 
         @Test

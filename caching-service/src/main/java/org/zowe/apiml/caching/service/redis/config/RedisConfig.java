@@ -23,7 +23,7 @@ import org.zowe.apiml.caching.config.GeneralConfig;
 public class RedisConfig {
     private final GeneralConfig generalConfig;
 
-    @Value("${caching.storage.redis.hostIP:}")
+    @Value("${caching.storage.redis.hostIP}")
     private String hostIP;
 
     @Value("${caching.storage.redis.port:6379}")
@@ -31,4 +31,10 @@ public class RedisConfig {
 
     @Value("${caching.storage.redis.timeout:60}")
     private Integer timeout;
+
+    @Value("${caching.storage.redis.username:default}")
+    private String username;
+
+    @Value("${caching.storage.redis.password:}")
+    private String password;
 }

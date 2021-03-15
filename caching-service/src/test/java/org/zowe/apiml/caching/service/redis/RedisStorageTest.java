@@ -12,11 +12,9 @@ package org.zowe.apiml.caching.service.redis;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.StorageException;
-import org.zowe.apiml.caching.service.Strategies;
-import org.zowe.apiml.caching.service.redis.config.RedisConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +26,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RedisStorageTest {
     private static final String SERVICE_ID = "my-service-id";
@@ -43,34 +42,33 @@ public class RedisStorageTest {
 
     @BeforeEach
     void setUp() {
-        GeneralConfig generalConfig = new GeneralConfig();
-        generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
-        generalConfig.setMaxDataSize(100);
-
-        RedisConfig redisConfig = new RedisConfig(generalConfig);
-        redisConfig.setHostIP("127.0.0.1");
-        redisConfig.setPort(6379);
-        redisConfig.setTimeout(60);
-
         redisOperator = mock(RedisOperator.class);
-        underTest = new RedisStorage(redisConfig, redisOperator);
+        underTest = new RedisStorage(redisOperator);
     }
 
     @Nested
     class whenCreate {
-        // TODO unit test eviction code when that is implemented
-
         @Test
-        void givenNewKey_thenCreateEntry() {
+        void givenNewKey_thenCreateEntry() throws RedisOutOfMemoryException {
             when(redisOperator.create(any())).thenReturn(true);
             KeyValue result = underTest.create(SERVICE_ID, KEY_VALUE);
             assertThat(result, is(KEY_VALUE));
         }
 
         @Test
-        void givenExistingKey_thenThrowException() {
+        void givenExistingKey_thenThrowException() throws RedisOutOfMemoryException {
             when(redisOperator.create(any())).thenReturn(false);
-            assertThrows(StorageException.class, () -> underTest.create(SERVICE_ID, KEY_VALUE));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.create(SERVICE_ID, KEY_VALUE));
+
+            assertThat(e.getKey(), is(Messages.DUPLICATE_KEY.getKey()));
+        }
+
+        @Test
+        void givenRedisOutOfMemory_thenThrowException() throws RedisOutOfMemoryException {
+            when(redisOperator.create(any())).thenThrow(new RedisOutOfMemoryException(new Exception()));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.create(SERVICE_ID, KEY_VALUE));
+
+            assertThat(e.getKey(), is(Messages.INSUFFICIENT_STORAGE.getKey()));
         }
     }
 
@@ -86,23 +84,35 @@ public class RedisStorageTest {
         @Test
         void givenNotExistingKey_thenThrowException() {
             when(redisOperator.get(anyString(), anyString())).thenReturn(null);
-            assertThrows(StorageException.class, () -> underTest.read(SERVICE_ID, KEY));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.read(SERVICE_ID, KEY));
+
+            assertThat(e.getKey(), is(Messages.KEY_NOT_IN_CACHE.getKey()));
         }
     }
 
     @Nested
     class whenUpdate {
         @Test
-        void givenExistingKey_thenUpdateKeyPair() {
+        void givenExistingKey_thenUpdateKeyPair() throws RedisOutOfMemoryException {
             when(redisOperator.update(any())).thenReturn(true);
             KeyValue result = underTest.update(SERVICE_ID, KEY_VALUE);
             assertThat(result, is(KEY_VALUE));
         }
 
         @Test
-        void givenNewKey_thenThrowException() {
+        void givenNewKey_thenThrowException() throws RedisOutOfMemoryException {
             when(redisOperator.update(any())).thenReturn(false);
-            assertThrows(StorageException.class, () -> underTest.update(SERVICE_ID, KEY_VALUE));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.update(SERVICE_ID, KEY_VALUE));
+
+            assertThat(e.getKey(), is(Messages.KEY_NOT_IN_CACHE.getKey()));
+        }
+
+        @Test
+        void givenRedisOutOfMemory_thenThrowException() throws RedisOutOfMemoryException {
+            when(redisOperator.update(any())).thenThrow(new RedisOutOfMemoryException(new Exception()));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.update(SERVICE_ID, KEY_VALUE));
+
+            assertThat(e.getKey(), is(Messages.INSUFFICIENT_STORAGE.getKey()));
         }
     }
 
@@ -112,6 +122,7 @@ public class RedisStorageTest {
         void givenExistingKey_thenRemoveKey() {
             when(redisOperator.get(anyString(), anyString())).thenReturn(REDIS_ENTRY);
             when(redisOperator.delete(anyString(), anyString())).thenReturn(true);
+
             KeyValue result = underTest.delete(SERVICE_ID, KEY);
             assertThat(result, is(KEY_VALUE));
         }
@@ -119,7 +130,9 @@ public class RedisStorageTest {
         @Test
         void givenNewKey_thenThrowException() {
             when(redisOperator.delete(anyString(), any())).thenReturn(false);
-            assertThrows(StorageException.class, () -> underTest.delete(SERVICE_ID, KEY));
+            StorageException e = assertThrows(StorageException.class, () -> underTest.delete(SERVICE_ID, KEY));
+
+            assertThat(e.getKey(), is(Messages.KEY_NOT_IN_CACHE.getKey()));
         }
     }
 
@@ -128,7 +141,7 @@ public class RedisStorageTest {
         @Test
         void givenServiceWithEntries_thenReturnEntries() {
             Map<String, KeyValue> expected = new HashMap<>();
-            expected.put(SERVICE_ID, KEY_VALUE);
+            expected.put(KEY, KEY_VALUE);
 
             List<RedisEntry> redisResults = new ArrayList<>();
             redisResults.add(REDIS_ENTRY);

@@ -9,55 +9,86 @@
  */
 package org.zowe.apiml.caching.service.redis;
 
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisFuture;
-import io.lettuce.core.RedisURI;
+import io.lettuce.core.*;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.redis.config.RedisConfig;
+import org.zowe.apiml.message.log.ApimlLogger;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-@RequiredArgsConstructor
+/**
+ * Class used to connect to and operate on a Redis instance or cluster.
+ * Contains the CRUD operations enacted on Redis with serialized read and write.
+ */
+@AllArgsConstructor
 @Slf4j
 public class RedisOperator {
-    private final RedisAsyncCommands<String, String> redis;
+    private RedisAsyncCommands<String, String> redis;
 
-    public RedisOperator(RedisConfig config) {
-        // TODO how to handle authentication to redis?
-        RedisURI redisUri = new RedisURI(config.getHostIP(), config.getPort(), Duration.ofSeconds(config.getTimeout()));
-        RedisClient redisClient = RedisClient.create(redisUri);
-        StatefulRedisConnection<String, String> connection = redisClient.connect();
-        redis = connection.async();
+    public RedisOperator(RedisConfig config, ApimlLogger apimlLog) {
+        log.info("Using Redis configuration: {}", config);
+
+        //RedisURI redisUri = new RedisURI(config.getHostIP(), config.getPort(), Duration.ofSeconds(config.getTimeout()));
+        // TODO connects to sentinel instance, but then can't get to master. Master is running at different ip, probably
+        // need to expose it, or maybe set it to 127.0.0.1 (probably just expose it)
+        RedisURI redisUri = RedisURI.Builder.sentinel("127.0.0.1", "redismaster").build();
+        redisUri.setUsername(config.getUsername());
+        redisUri.setPassword(config.getPassword().toCharArray());
+
+        try {
+            RedisClient redisClient = RedisClient.create(redisUri);
+            StatefulRedisConnection<String, String> connection = redisClient.connect();
+            redis = connection.async();
+        } catch (RedisConnectionException e) {
+            apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "redis", e.getCause().getMessage(), e);
+            System.exit(1);
+        }
         // TODO should release redis connection on caching service end via connection.close(); client.shutdown();
         // this could be via closeable and try with resources, but then re-connecting to redis every time try to CRUD
         // would be better to keep connection open until RedisOperator is destructed
     }
 
-    public boolean create(RedisEntry entryToAdd) {
+    /**
+     * Creates a given entry in Redis.
+     *
+     * @param entryToAdd RedisEntry containing the service ID for which to create the entry, and the key and value.
+     * @return true if the key does not exist for the service ID and the entry was created, otherwise false.
+     */
+    public boolean create(RedisEntry entryToAdd) throws RedisOutOfMemoryException {
+        KeyValue toAdd = entryToAdd.getEntry();
+
         try {
-            KeyValue toAdd = entryToAdd.getEntry();
             RedisFuture<Boolean> result = redis.hsetnx(entryToAdd.getServiceId(), toAdd.getKey(), entryToAdd.getEntryAsString());
             return result.get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (ExecutionException e) {
+            handleWriteOperationExecutionException(e);
+        } catch (InterruptedException e) {
             throw new RetryableRedisException(e);
         } catch (RedisEntryException e) {
             return false;
         }
+
+        return false;
     }
 
-    public boolean update(RedisEntry entryToUpdate) {
-        try {
-            String serviceId = entryToUpdate.getServiceId();
-            KeyValue toUpdate = entryToUpdate.getEntry();
+    /**
+     * Updates a given entry in Redis.
+     *
+     * @param entryToUpdate RedisEntry containing the service ID and key to update, with the new value.
+     * @return true if the key exists for a service ID and the value was updated, otherwise false.
+     */
+    public boolean update(RedisEntry entryToUpdate) throws RedisOutOfMemoryException {
+        String serviceId = entryToUpdate.getServiceId();
+        KeyValue toUpdate = entryToUpdate.getEntry();
 
+        try {
             boolean exists = redis.hexists(serviceId, toUpdate.getKey()).get();
             if (!exists) {
                 return false;
@@ -65,13 +96,22 @@ public class RedisOperator {
 
             boolean result = redis.hset(serviceId, toUpdate.getKey(), entryToUpdate.getEntryAsString()).get();
             return !result; // hset returns false if field already exists and value was updated
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (ExecutionException e) {
+            handleWriteOperationExecutionException(e);
+        } catch (InterruptedException e) {
             throw new RetryableRedisException(e);
         } catch (RedisEntryException e) {
             return false;
         }
+
+        return false;
     }
 
+    /**
+     * Retrieve an entry for a given service with the corresponding key.
+     *
+     * @return RedisEntry instance if the service ID and key exist, otherwise null.
+     */
     public RedisEntry get(String serviceId, String key) {
         try {
             String result = redis.hget(serviceId, key).get();
@@ -84,6 +124,11 @@ public class RedisOperator {
         }
     }
 
+    /**
+     * Retrieves all entries for a given service.
+     *
+     * @return List of RedisEntry instances. If there are no entries an empty List is returned.
+     */
     public List<RedisEntry> get(String serviceId) {
         try {
             Map<String, String> result = redis.hgetall(serviceId).get();
@@ -103,11 +148,25 @@ public class RedisOperator {
         }
     }
 
+    /**
+     * Deletes all entries with the given key for a given service.
+     *
+     * @return true if at least one entry was deleted, otherwise false.
+     */
     public boolean delete(String serviceId, String toDelete) {
         try {
             long recordsDeleted = redis.hdel(serviceId, toDelete).get();
             return recordsDeleted >= 1;
         } catch (InterruptedException | ExecutionException e) {
+            throw new RetryableRedisException(e);
+        }
+    }
+
+    private void handleWriteOperationExecutionException(ExecutionException e) throws RedisOutOfMemoryException {
+        Throwable cause = e.getCause();
+        if (cause instanceof RedisCommandExecutionException && cause.getMessage().contains("maxmemory")) {
+            throw new RedisOutOfMemoryException(cause);
+        } else {
             throw new RetryableRedisException(e);
         }
     }
