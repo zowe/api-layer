@@ -234,7 +234,7 @@ public final class ClassOrDefaultProxyUtils {
                 // thrown exception in proxied object
                 Throwable t = ite.getCause();
                 // if there is a mapping of exceptions, apply it to use custom Exception
-                for (ExceptionMapping em : exceptionMappings) {
+                for (ExceptionMapping<?> em : exceptionMappings) {
                     em.apply(t);
                 }
                 throw t;
