@@ -1,3 +1,10 @@
+caching:
+    storage:
+        mode: redis
+        redis:
+            hostIP: 127.0.0.1
+            password: heslo
+
 logging:
     level:
         ROOT: WARN
