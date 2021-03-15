@@ -34,8 +34,10 @@ services:
         container_name: redis-sentinel-2
         image: redis:latest
         command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+        ports:
+            - "26380:26380"
         volumes:
-            - ./sentinel:/usr/local/etc/redis/
+            - ./sentinel-2:/usr/local/etc/redis/
         links:
             - redis-master
             - redis-replica
@@ -44,8 +46,10 @@ services:
         container_name: redis-sentinel-3
         image: redis:latest
         command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+        ports:
+            - "26381:26381"
         volumes:
-            - ./sentinel:/usr/local/etc/redis/
+            - ./sentinel-3:/usr/local/etc/redis/
         links:
             - redis-master
             - redis-replica
