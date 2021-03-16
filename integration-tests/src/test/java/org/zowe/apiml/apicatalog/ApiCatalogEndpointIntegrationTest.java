@@ -36,11 +36,7 @@ import java.util.LinkedHashMap;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
@@ -70,6 +66,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
 
     @Test
     void whenGetContainerStatuses_thenResponseWithAtLeastOneUp() throws Exception {
+        fail();
         final HttpResponse response = getResponse(GET_ALL_CONTAINERS_ENDPOINT, HttpStatus.SC_OK);
 
         // When
