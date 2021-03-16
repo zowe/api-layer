@@ -53,8 +53,7 @@ class X509SchemeTest extends CleanCurrentRequestContextTest {
             when(context.getRequest()).thenReturn(request);
 
             x509Certificate = mock(X509Certificate.class);
-            X509Certificate[] x509Certificates = {x509Certificate};
-            when(request.getAttribute("client.auth.X509Certificate")).thenReturn(x509Certificates);
+
             when(x509Certificate.getEncoded()).thenReturn(new byte[]{});
         }
 
@@ -73,6 +72,8 @@ class X509SchemeTest extends CleanCurrentRequestContextTest {
 
         @Test
         void whenAllHeadersAreRequested_allHeadersAreSet() {
+            X509Certificate[] x509Certificates = {x509Certificate};
+            when(request.getAttribute("client.auth.X509Certificate")).thenReturn(x509Certificates);
             X509Scheme x509Scheme = new X509Scheme();
             Authentication authentication =
                 new Authentication(AuthenticationScheme.X509, null, PUBLIC_KEY + "," + DISTINGUISHED_NAME + "," + COMMON_NAME);
@@ -89,6 +90,8 @@ class X509SchemeTest extends CleanCurrentRequestContextTest {
 
         @Test
         void certificatePassOnIsSetAfterApply() {
+            X509Certificate[] x509Certificates = {x509Certificate};
+            when(request.getAttribute("client.auth.X509Certificate")).thenReturn(x509Certificates);
             X509Scheme x509Scheme = new X509Scheme();
             Authentication authentication =
                 new Authentication(AuthenticationScheme.X509, null, PUBLIC_KEY);
@@ -99,6 +102,8 @@ class X509SchemeTest extends CleanCurrentRequestContextTest {
 
         @Test
         void whenAuthenticationHeadersMissing_thenSendAllHeaders() {
+            X509Certificate[] x509Certificates = {x509Certificate};
+            when(request.getAttribute("client.auth.X509Certificate")).thenReturn(x509Certificates);
             X509Scheme x509Scheme = new X509Scheme();
             Authentication authentication =
                 new Authentication(AuthenticationScheme.X509, null, null);
