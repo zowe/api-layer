@@ -49,6 +49,7 @@ project(":api-catalog-ui") {
         properties {
             property "sonar.sources", "frontend/src"
             property "sonar.tests", "frontend/test"
+            property "sonar.javascript.lcov.reportPaths", "frontend/coverage/lcov-report"
         }
     }
 }
