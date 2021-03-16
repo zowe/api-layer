@@ -66,7 +66,6 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
 
     @Test
     void whenGetContainerStatuses_thenResponseWithAtLeastOneUp() throws Exception {
-        fail();
         final HttpResponse response = getResponse(GET_ALL_CONTAINERS_ENDPOINT, HttpStatus.SC_OK);
 
         // When
