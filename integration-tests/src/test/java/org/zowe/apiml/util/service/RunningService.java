@@ -43,18 +43,18 @@ public class RunningService {
         log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
         stop();
 
-        ArrayList<String> discoveryCommand = new ArrayList<>();
-        discoveryCommand.add("java");
+        ArrayList<String> shellCommand = new ArrayList<>();
+        shellCommand.add("java");
         parametersBefore
-            .forEach((key1, value1) -> discoveryCommand.add(key1 + '=' + value1));
+            .forEach((key1, value1) -> shellCommand.add(key1 + '=' + value1));
 
-        discoveryCommand.add("-jar");
-        discoveryCommand.add(jarFile);
+        shellCommand.add("-jar");
+        shellCommand.add(jarFile);
 
         parametersAfter
-            .forEach((key, value) -> discoveryCommand.add(key + '=' + value));
+            .forEach((key, value) -> shellCommand.add(key + '=' + value));
 
-        ProcessBuilder builder1 = new ProcessBuilder(discoveryCommand);
+        ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
         builder1.directory(new File("../"));
         newCachingProcess = builder1.inheritIO().start();
     }

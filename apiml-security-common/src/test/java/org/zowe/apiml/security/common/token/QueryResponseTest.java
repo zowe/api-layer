@@ -16,8 +16,8 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class QueryResponseTest {
 
@@ -40,18 +40,12 @@ class QueryResponseTest {
         assertEquals(QueryResponse.Source.ZOSMF, QueryResponse.Source.valueByIssuer("zOSMF"));
         assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("apiml"));
         assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("APIML"));
-        try {
-            assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer(null));
-            fail();
-        } catch (TokenNotValidException tnve) {
-            assertEquals("Unknown token type : null", tnve.getMessage());
-        }
-        try {
-            assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("unknown"));
-            fail();
-        } catch (TokenNotValidException tnve) {
-            assertEquals("Unknown token type : unknown", tnve.getMessage());
-        }
+
+        Exception tnve = assertThrows(TokenNotValidException.class, () -> QueryResponse.Source.valueByIssuer(null));
+        assertEquals("Unknown token type : null", tnve.getMessage());
+
+        tnve = assertThrows(TokenNotValidException.class, () -> QueryResponse.Source.valueByIssuer("unknown"));
+        assertEquals("Unknown token type : unknown", tnve.getMessage());
     }
 
 }

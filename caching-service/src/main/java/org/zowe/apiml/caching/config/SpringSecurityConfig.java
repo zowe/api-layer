@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.caching.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -25,6 +26,9 @@ import java.util.Collections;
 @EnableWebSecurity
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifyCertificates;
+
     @Override
     public void configure(WebSecurity web) throws Exception {
         String[] noSecurityAntMatchers = {
@@ -39,10 +43,15 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
             .headers().httpStrictTransportSecurity().disable()
-            .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeRequests().anyRequest().authenticated().and()
-            .x509().userDetailsService(x509UserDetailsService());
+            .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        if (verifyCertificates) {
+            http.authorizeRequests().anyRequest().authenticated().and()
+                .x509().userDetailsService(x509UserDetailsService());
+        } else {
+            http.authorizeRequests().anyRequest().permitAll();
+        }
+
         }
 
     private UserDetailsService x509UserDetailsService() {

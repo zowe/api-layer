@@ -10,17 +10,19 @@
 package org.zowe.apiml.cachingservice;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.CachingRequests;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
-import org.zowe.apiml.util.service.CachingService;
 import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.http.HttpRequestUtils;
+import org.zowe.apiml.util.service.RunningService;
+import org.zowe.apiml.util.service.ServiceJars;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -31,45 +33,49 @@ import static org.hamcrest.core.Is.is;
 @CachingServiceTest
 class RemoveOldestTest implements TestWithStartedInstances {
     private final CachingRequests requests = new CachingRequests();
-    private static final CachingService service = new CachingService();
+    private static Map<String, String> parameters = new HashMap<>();
+    private static final int numberOfRecords = 2;
+    private static final RunningService cachingServiceInstance;
+    static {
+        parameters.put("-Dcaching.storage.evictionStrategy", "removeOldest");
+        parameters.put("-Dapiml.service.serviceId", "cachingoldest");
+        parameters.put("-Dapiml.service.port", "10023");
+        parameters.put("-Dcaching.storage.size", String.valueOf(numberOfRecords));
+        cachingServiceInstance = new RunningService("cachingoldest",
+            ServiceJars.CACHING, parameters, new HashMap<>());
+    }
 
     @BeforeAll
     static void setup() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication();
-        service.start();
+        cachingServiceInstance.start();
+        cachingServiceInstance.waitUntilReady();
     }
 
     @AfterAll
     static void tearDown() {
-        service.stop();
+        cachingServiceInstance.stop();
     }
 
     @Test
     void givenStorageIsFull_whenAnotherKeyIsInserted_thenTheOldestIsRemoved() {
-        int amountOfAllowedRecords = 100 + 1;
-        URI removeOldestCachingServiceUri = service.getBaseUrl();
-        try {
-            KeyValue keyValue;
+        int amountOfAllowedRecords = numberOfRecords + 5;
+        URI removeOldestCachingServiceUri = HttpRequestUtils.getUriFromGateway("/cachingoldest/api/v1/cache");
 
-            // The default configuration is to allow 100 records.
-            for (int i = 0; i < amountOfAllowedRecords; i++) {
-                keyValue = new KeyValue("key" + i, "testValue");
-                requests.create(removeOldestCachingServiceUri, keyValue, SslContext.clientCertValid);
-            }
+        KeyValue keyValue;
 
-            keyValue = new KeyValue("keyThatWillReplaceTheKey0", "testValue");
-            given().config(SslContext.clientCertValid)
-                .contentType(JSON)
-                .body(keyValue)
-                .when()
-                .get(service.getBaseUrl() + "/key0")
-                .then()
-                .statusCode(is(SC_NOT_FOUND));
-        } finally {
-            for (int i = 0; i < amountOfAllowedRecords; i++) {
-                requests.deleteValueUnderServiceIdWithoutValidation(removeOldestCachingServiceUri, "key" + i, SslContext.clientCertValid);
-            }
+        for (int i = 0; i < amountOfAllowedRecords; i++) {
+            keyValue = new KeyValue("key" + i, "testValue");
+            requests.create(removeOldestCachingServiceUri, keyValue, SslContext.clientCertValid);
         }
+
+        given().config(SslContext.clientCertValid)
+            .contentType(JSON)
+            .when()
+            .get(removeOldestCachingServiceUri + "/key0")
+            .then()
+            .statusCode(is(SC_NOT_FOUND));
+
     }
 }

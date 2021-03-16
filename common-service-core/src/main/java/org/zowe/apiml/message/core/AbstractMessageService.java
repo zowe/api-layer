@@ -32,7 +32,7 @@ public abstract class AbstractMessageService implements MessageService {
      *
      * @param messagesFilePath path to the file with messages.
      */
-    public AbstractMessageService(String messagesFilePath) {
+    protected AbstractMessageService(String messagesFilePath) {
         messageTemplateStorage = new MessageTemplateStorage();
         loadMessages(messagesFilePath);
     }
