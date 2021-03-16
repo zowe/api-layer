@@ -31,7 +31,7 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     private final AuthenticationService authenticationService;
 
     public ZosAuthenticationProvider(AuthenticationService authenticationService,
-                                     @Value("apiml.security.auth.provider") String authenticationProvider) {
+                                     @Value("${apiml.security.auth.provider}") String authenticationProvider) {
         this.authenticationService = authenticationService;
         this.authenticationProvider = authenticationProvider;
     }
