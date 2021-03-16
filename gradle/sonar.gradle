@@ -14,6 +14,7 @@ sonarqube {
         property "sonar.language", "java"
         property "sonar.links.scm", "https://github.com/zowe/api-layer"
         property "sonar.links.ci", System.getenv()['BUILD_URL'] ?: null
+        property "sonar.javascript.lcov.reportPaths", "api-layer-ui/frontend/coverage/lcov-report"
         if (pullRequest != null) {
             property "sonar.pullrequest.key", System.getenv()['CHANGE_ID'] ?: null
             property "sonar.pullrequest.branch", System.getenv()['CHANGE_BRANCH'] ?: null
@@ -49,7 +50,6 @@ project(":api-catalog-ui") {
         properties {
             property "sonar.sources", "frontend/src"
             property "sonar.tests", "frontend/test"
-            property "sonar.javascript.lcov.reportPaths", "frontend/coverage/lcov-report"
         }
     }
 }
