@@ -50,8 +50,8 @@ class X509SchemeTest {
     void givenApimlCertificateInRequest_thenUsernameIsReturned() {
         given().config(SslContext.clientCertApiml).get(X509SchemeTest.URL)
             .then()
-            .body("dn", startsWith("CN=Zowe Service"))
-            .body("cn", is("Zowe Service")).statusCode(200);
+            .body("dn", startsWith("CN="))
+            .statusCode(200);
     }
 
     @Test
