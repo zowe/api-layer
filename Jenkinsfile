@@ -90,6 +90,7 @@ pipeline {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
                         withSonarQubeEnv('sonarcloud-server') {
+                            sh 'echo ${SONAR_AUTH_TOKEN} | cut -f1 -d-'
                             sh './gradlew --info --scan build coverage -Pgradle.cache.push=true \
                                 -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} \
                                 -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword \
