@@ -28,7 +28,6 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 
 @TestsNotMeantForZowe
-@DiscoverableClientDependentTest
 class IntegratedApiMediationClientTest implements TestWithStartedInstances {
     private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/apiMediationClient");
     private static final URI MEDIATION_CLIENT_URI_OLD_FORMAT = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/apiMediationClient");
@@ -39,6 +38,7 @@ class IntegratedApiMediationClientTest implements TestWithStartedInstances {
     }
 
     @Test
+    @DiscoverableClientDependentTest
     void shouldBeUnregisteredBeforeRegistration() {
         requestIsRegistered(false, MEDIATION_CLIENT_URI);
     }
@@ -60,6 +60,7 @@ class IntegratedApiMediationClientTest implements TestWithStartedInstances {
     }
 
     @Test
+    @DiscoverableClientDependentTest
     void shouldBeUnregisteredBeforeRegistration_OldPathFormat() {
         requestIsRegistered(false, MEDIATION_CLIENT_URI_OLD_FORMAT);
     }

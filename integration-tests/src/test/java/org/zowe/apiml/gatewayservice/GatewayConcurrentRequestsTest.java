@@ -34,7 +34,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @TestsNotMeantForZowe
-@GatewayTest
 class GatewayConcurrentRequestsTest implements TestWithStartedInstances {
 
     @Test

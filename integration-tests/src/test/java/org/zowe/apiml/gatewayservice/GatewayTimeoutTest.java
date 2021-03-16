@@ -32,7 +32,6 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @Slf4j
 @TestsNotMeantForZowe
-@GatewayTest
 class GatewayTimeoutTest implements TestWithStartedInstances {
     private static final String API_V1_GREETING_URI = "/api/v1/discoverableclient/greeting";
     private static final int DEFAULT_TIMEOUT = 30000;
