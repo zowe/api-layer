@@ -51,12 +51,9 @@ jobs:
               with:
                   name: Package
                   path: |
-                      api-catalog-services/build/reports/tests/test/
-                      discovery-service/build/reports/tests/test/
-                      gateway-service/build/reports/tests/test/
-                      ./**/test-results/**/*.xml
-                      api-catalog-ui/frontend/test-results/
-                      api-layer.tar.gz
+                      **/reports/**
+                      **/test-results/**
+                      **/*.log
             - name: Cleanup Gradle Cache
               # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
               # Restoring these files from a GitHub Actions cache might cause problems for future builds.
