@@ -101,18 +101,6 @@ pipeline {
             }
         }
 
-        stage('Sonar') {
-            steps {
-                timeout(time: 10, unit: 'MINUTES') {
-                        withSonarQubeEnv('sonarcloud-server') {
-                            sh 'JAVA_HOME=/usr/java/openjdk-11 && \
-                               ./gradlew --info --scan sonarqube -x test -x compileJava -x compileTestJava \
-                                 -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true'
-                     }
-                }
-            }
-        }
-
         stage('Publish coverage reports') {
             steps {
                    publishHTML(target: [
