@@ -47,17 +47,16 @@ class X509SchemeTest {
     }
 
     @Test
-    void givenApimlCertificateInRequest_thenEmptyBodyIsReturned() {
+    void givenApimlCertificateInRequest_thenUsernameIsReturned() {
         given().config(SslContext.clientCertApiml).get(X509SchemeTest.URL)
             .then()
-            .body("publicKey", is(""))
-            .body("dn", is(""))
-            .body("cn", is("")).statusCode(200);
+            .body("dn", startsWith("CN="))
+            .statusCode(200);
     }
 
     @Test
-    void givenApimlCertificateAndMaliciousHeaderInRequest_thenEmptyBodyIsReturned() {
-        given().config(SslContext.clientCertApiml)
+    void givenSelfSignedUntrustedCertificate_andMaliciousHeaderInRequest_thenEmptyBodyIsReturned() {
+        given().config(SslContext.selfSignedUntrusted)
             .header(new Header("X-Certificate-CommonName", "evil common name"))
             .header(new Header("X-Certificate-Public", "evil public key"))
             .header(new Header("X-Certificate-DistinguishedName", "evil distinguished name"))
