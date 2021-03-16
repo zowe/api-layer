@@ -48,7 +48,10 @@ jobs:
                       ${{ runner.OS }}-node-
                       ${{ runner.OS }}-
             - name: Build with Gradle
-              run: ./gradlew --info --scan build coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN}
+              run: ./gradlew --info --scan build coverage sonarqube -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+              env:
+                 SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
             - name: Cleanup Gradle Cache
                 # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
                 # Restoring these files from a GitHub Actions cache might cause problems for future builds.
