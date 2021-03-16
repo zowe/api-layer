@@ -64,6 +64,7 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
     }
 
     @Test
+    @Disabled("The test is flaky and often fails at random on different environments.")
     void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
 
@@ -148,6 +149,7 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
     }
 
     @Test
+    @Disabled("The test is flaky and often fails at random on different environments.")
     void testReregistration() throws Exception {
 
         List<Integer> ports = RandomPorts.generateUniquePorts(3);
