@@ -1,0 +1,66 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: CI Tests against Internal Port
+
+on:
+    push:
+        branches: [ master ]
+    pull_request:
+        branches: [ master ]
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: ${{ github.head_ref }}
+            - name: Set up JDK 1.8
+              uses: actions/setup-java@v1
+              with:
+                  java-version: 1.8
+            - name: Grant execute permission for gradlew
+              run: chmod +x gradlew
+            - name: Cache Gradle packages
+              uses: actions/cache@v2
+              with:
+                path: |
+                  ~/.gradle/caches
+                  ~/.gradle/wrapper
+                key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                restore-keys: |
+                  ${{ runner.os }}-gradle-
+            - name: Cache Node.js modules
+              uses: actions/cache@v2
+              with:
+                path: |
+                  ~/.npm
+                  **/node_modules
+                key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                restore-keys: |
+                  ${{ runner.OS }}-node-
+                  ${{ runner.OS }}-
+            - name: Build with Gradle
+              run: ./gradlew build runCITestsInternalPort -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1 -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword" -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+            - name: Store results
+              uses: actions/upload-artifact@v2
+              if: always()
+              with:
+                  name: Package
+                  path: |
+                      api-catalog-services/build/reports/tests/test/
+                      discovery-service/build/reports/tests/test/
+                      gateway-service/build/reports/tests/test/
+                      ./**/test-results/**/*.xml
+                      api-catalog-ui/frontend/test-results/
+                      api-layer.tar.gz
+            - name: Cleanup Gradle Cache
+              # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
+              # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+              run: |
+                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                  rm -f ~/.gradle/caches/modules-2/gc.properties
+
