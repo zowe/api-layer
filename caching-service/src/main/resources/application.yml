@@ -2,17 +2,27 @@ caching:
     storage:
         mode: redis
         redis:
-            hostIP: 127.0.0.1
+            masterIP: 127.0.0.1
+            user: default
             password: heslo
+            sentinel:
+                master: redismaster
+                nodes:
+                    - ip: 127.0.0.1
+                      port: 26379
+                    - ip: 127.0.0.1
+                      port: 26380
+                    - ip: 127.0.0.1
+                      port: 26381
 
 logging:
     level:
-        ROOT: WARN
-        org.zowe.apiml: INFO
-        org.zowe.apiml.enable: WARN
-        org.zowe.apiml.caching: WARN
-        org.springframework: WARN
-        org.springframework.boot: OFF
+        ROOT: DEBUG
+        org.zowe.apiml: DEBUG
+        org.zowe.apiml.enable: DEBUG
+        org.zowe.apiml.caching: DEBUG
+        org.springframework: DEBUG
+        org.springframework.boot: DEBUG
         com.netflix: WARN
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR

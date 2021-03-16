@@ -21,6 +21,8 @@ import org.zowe.apiml.caching.service.redis.RedisStorage;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 
+import java.time.Duration;
+
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
@@ -31,14 +33,25 @@ public class RedisConfiguration {
     @Bean
     public Storage redis(MessageService messageService) {
         log.info("Using redis configuration {}", redisConfig);
-        // TODO what if sentinel and master have different passwords? Is this possible?
 
-        // TODO RedisConfig parse the application.yml and here detect if using sentinel or not. Then make URI based on RedisConfig.redisConfig
-        //RedisURI redisUri = new RedisURI(config.getHostIP(), config.getPort(), Duration.ofSeconds(config.getTimeout()));
-        RedisURI redisUri = RedisURI.Builder.sentinel("127.0.0.1", "redismaster").build();
-        redisUri.setUsername(redisConfig.getUsername());
-        redisUri.setPassword(redisConfig.getPassword().toCharArray());
+        RedisURI.Builder uriBuilder = RedisURI.builder();
+        uriBuilder.withAuthentication(redisConfig.getUsername(), redisConfig.getPassword());
 
-        return new RedisStorage(new RedisOperator(redisUri, ApimlLogger.of(RedisOperator.class, messageService)));
+        if (redisConfig.usesSentinel()){
+            RedisConfig.Sentinel sentinelConfig = redisConfig.getSentinel();
+            uriBuilder.withSentinelMasterId(sentinelConfig.getMaster());
+
+            for (RedisConfig.Sentinel.SentinelNode sentinelNode : sentinelConfig.getNodes()){
+                uriBuilder.withSentinel(sentinelNode.getIp(), sentinelNode.getPort());
+            }
+
+        } else {
+            uriBuilder
+                .withHost(redisConfig.getMasterIP())
+                .withPort(redisConfig.getMasterPort())
+                .withTimeout(Duration.ofSeconds(redisConfig.getTimeout()));
+        }
+
+        return new RedisStorage(new RedisOperator(uriBuilder.build(), ApimlLogger.of(RedisOperator.class, messageService)));
     }
 }

@@ -12,29 +12,48 @@ package org.zowe.apiml.caching.service.redis.config;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.config.GeneralConfig;
 
+import java.util.List;
+
 @Configuration
+@ConfigurationProperties("caching.storage.redis")
 @Data
 @ToString
 @RequiredArgsConstructor
 public class RedisConfig {
     private final GeneralConfig generalConfig;
 
-    @Value("${caching.storage.redis.hostIP}")
-    private String hostIP;
+    private String masterIP;
 
-    @Value("${caching.storage.redis.port:6379}")
-    private Integer port;
+    private Integer masterPort = 6379;
 
-    @Value("${caching.storage.redis.timeout:60}")
-    private Integer timeout;
+    private Integer timeout = 60;
 
-    @Value("${caching.storage.redis.username:default}")
-    private String username;
+    private String username = "default";
 
-    @Value("${caching.storage.redis.password:}")
-    private String password;
+    private String password = "";
+
+    private Sentinel sentinel;
+
+    public boolean usesSentinel() {
+        return sentinel != null;
+    }
+
+    @Data
+    @ToString
+    @ConfigurationProperties("caching.storage.redis.sentinel")
+    public static class Sentinel {
+        private String master;
+        private List<SentinelNode> nodes;
+
+        @Data
+        @ToString
+        public static class SentinelNode {
+            private String ip;
+            private Integer port;
+        }
+    }
 }
