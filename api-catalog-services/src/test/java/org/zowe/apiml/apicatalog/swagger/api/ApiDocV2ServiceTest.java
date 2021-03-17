@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.swagger.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.swagger.models.*;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,9 +34,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,23 +61,20 @@ class ApiDocV2ServiceTest {
         gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
         apiDocV2Service = new ApiDocV2Service(gatewayClient);
-
     }
 
     @Test
-    void givenSwaggerJsonNotAsExpectedFormat_whenConvertToSwagger_thenThrowIOException() throws IOException {
+    void givenSwaggerJsonNotAsExpectedFormat_whenConvertToSwagger_thenThrowIOException() {
         String apiDocContent = "Failed content";
 
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, null);
 
-        Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
-            apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
-        });
+        Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo));
         assertEquals("Response is not a Swagger type object.", exception.getMessage());
     }
 
     @Test
-    void givenSwaggerValidJson_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
+    void givenSwaggerValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -124,7 +122,55 @@ class ApiDocV2ServiceTest {
     }
 
     @Test
-    void givenApiInfoNullAndBasePathAsNotRoot_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
+    void givenSwaggerValidYaml_whenApiDocTransform_thenCheckUpdatedValues() {
+        Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
+        String apiDocContent = convertSwaggerToYaml(dummySwaggerObject);
+
+        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+        RoutedService routedService3 = new RoutedService("api_v2", "api/v2", "/apicatalog");
+        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+
+        RoutedServices routedServices = new RoutedServices();
+        routedServices.addRoutedService(routedService);
+        routedServices.addRoutedService(routedService2);
+        routedServices.addRoutedService(routedService3);
+
+        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+
+        String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+        Swagger actualSwagger = convertYamlToSwagger(actualContent);
+
+        assertNotNull(actualSwagger);
+
+        String expectedDescription = dummySwaggerObject.getInfo().getDescription() +
+            "\n\n" +
+            SWAGGER_LOCATION_LINK +
+            "(" +
+            gatewayClient.getGatewayConfigProperties().getScheme() +
+            "://" +
+            gatewayClient.getGatewayConfigProperties().getHostname() +
+            SEPARATOR +
+            CoreService.API_CATALOG.getServiceId() +
+            CATALOG_VERSION +
+            CATALOG_APIDOC_ENDPOINT +
+            SEPARATOR +
+            SERVICE_ID +
+            HARDCODED_VERSION +
+            ")";
+
+        assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
+        assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
+        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
+        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
+        assertEquals("/" + SERVICE_ID + "/api/v1", actualSwagger.getBasePath());
+
+        assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
+        assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
+    }
+
+    @Test
+    void givenApiInfoNullAndBasePathAsNotRoot_whenApiDocTransform_thenCheckUpdatedValues() {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -146,7 +192,7 @@ class ApiDocV2ServiceTest {
     }
 
     @Test
-    void givenApiInfoNullAndBasePathAsRoot_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
+    void givenApiInfoNullAndBasePathAsRoot_whenApiDocTransform_thenCheckUpdatedValues() {
         Swagger dummySwaggerObject = getDummySwaggerObject("/", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -168,7 +214,7 @@ class ApiDocV2ServiceTest {
     }
 
     @Test
-    void givenApimlHiddenTag_whenApiDocTransform_thenShouldBeSameDescriptionAndPaths() throws IOException {
+    void givenApimlHiddenTag_whenApiDocTransform_thenShouldBeSameDescriptionAndPaths() {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", true);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -193,7 +239,7 @@ class ApiDocV2ServiceTest {
     }
 
     @Test
-    void givenMultipleRoutedService_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
+    void givenMultipleRoutedService_whenApiDocTransform_thenCheckUpdatedValues() {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -242,7 +288,7 @@ class ApiDocV2ServiceTest {
     }
 
     @Test
-    void givenServiceUrlAsRoot_whenApiDocTransform_thenCheckUpdatedValues() throws IOException {
+    void givenServiceUrlAsRoot_whenApiDocTransform_thenCheckUpdatedValues() {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -269,6 +315,15 @@ class ApiDocV2ServiceTest {
 
     private String convertSwaggerToJson(Swagger swagger) {
         ObjectMapper objectMapper = new ObjectMapper();
+        return writeOpenApiAsString(swagger, objectMapper);
+    }
+
+    private String convertSwaggerToYaml(Swagger swagger) {
+        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+        return writeOpenApiAsString(swagger, objectMapper);
+    }
+
+    private String writeOpenApiAsString(Swagger swagger, ObjectMapper objectMapper) {
         try {
             return objectMapper.writeValueAsString(swagger);
         } catch (JsonProcessingException e) {
@@ -279,6 +334,15 @@ class ApiDocV2ServiceTest {
 
     private Swagger convertJsonToSwagger(String content) {
         ObjectMapper objectMapper = new ObjectMapper();
+        return readStringToOpenApi(content, objectMapper);
+    }
+
+    private Swagger convertYamlToSwagger(String content) {
+        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+        return readStringToOpenApi(content, objectMapper);
+    }
+
+    private Swagger readStringToOpenApi(String content, ObjectMapper objectMapper) {
         Swagger swagger = null;
         try {
             swagger = objectMapper.readValue(content, Swagger.class);
