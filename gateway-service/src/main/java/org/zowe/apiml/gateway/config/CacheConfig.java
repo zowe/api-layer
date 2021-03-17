@@ -48,7 +48,9 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        return new EhCacheCacheManager(ehCacheCacheManager().getObject());
+        net.sf.ehcache.CacheManager cache = ehCacheCacheManager().getObject();
+        assert cache != null;
+        return new EhCacheCacheManager(cache);
     }
 
     @Bean

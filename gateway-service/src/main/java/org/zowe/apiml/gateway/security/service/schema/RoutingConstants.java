@@ -11,6 +11,6 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 public class RoutingConstants {
+    private RoutingConstants() {}
     public static final String FORCE_CLIENT_WITH_APIML_CERT_KEY = "forceClientWithApimlCertificate";
-
 }

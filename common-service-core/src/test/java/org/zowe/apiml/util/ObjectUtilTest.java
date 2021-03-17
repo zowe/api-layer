@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,19 +31,11 @@ class ObjectUtilTest {
 
     @Test
     void testRequireNotEmpty() {
-        try {
-            ObjectUtil.requireNotEmpty(null, "Parameter can't be empty");
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals("Parameter can't be empty", e.getMessage());
-        }
+        Exception e = assertThrows(IllegalArgumentException.class, () -> ObjectUtil.requireNotEmpty(null, "Parameter can't be empty"));
+        assertEquals("Parameter can't be empty", e.getMessage());
 
-        try {
-            ObjectUtil.requireNotEmpty(new String(), "Parameter can't be empty");
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals("Parameter can't be empty", e.getMessage());
-        }
+        e = assertThrows(IllegalArgumentException.class, () -> ObjectUtil.requireNotEmpty("", "Parameter can't be empty"));
+        assertEquals("Parameter can't be empty", e.getMessage());
 
         ObjectUtil.requireNotEmpty(" ", "Parameter can't be empty");
     }
