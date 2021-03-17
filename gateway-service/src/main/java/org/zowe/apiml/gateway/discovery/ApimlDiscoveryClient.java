@@ -54,7 +54,7 @@ public class ApimlDiscoveryClient extends CloudEurekaClient {
             Optional<Class<?>> cacheRefreshClass = Arrays.stream(DiscoveryClient.class.getDeclaredClasses())
                 .filter(x -> "CacheRefreshThread".equals(x.getSimpleName())).findFirst();  // NOSONAR: This class cannot be imported for usage with instanceof
             if (!cacheRefreshClass.isPresent()) throw new NoSuchMethodException();
-            Constructor cacheRefreshConstructor = cacheRefreshClass.get().getDeclaredConstructor(DiscoveryClient.class);
+            Constructor<?> cacheRefreshConstructor = cacheRefreshClass.get().getDeclaredConstructor(DiscoveryClient.class);
             cacheRefreshConstructor.setAccessible(true);
             cacheRefresh = (Runnable) cacheRefreshConstructor.newInstance(this);
         } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
