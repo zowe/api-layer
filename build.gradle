@@ -197,6 +197,7 @@ release {
     ]
 
     git {
+        requireBranch = 'apiml/GH1234/verify_manual'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = false
