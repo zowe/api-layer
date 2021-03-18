@@ -197,7 +197,7 @@ release {
     ]
 
     git {
-        requireBranch = 'apiml/GH1234/scheduled_manual_workflow'
+        requireBranch = 'master'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = true
