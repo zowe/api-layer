@@ -47,7 +47,7 @@ jobs:
                   restore-keys: |
                       ${{ runner.OS }}-node-
                       ${{ runner.OS }}-
-            - name: Release with Gradle
+            - name: Build with Gradle
               run: ./gradlew build
 
             - name: Clean git
