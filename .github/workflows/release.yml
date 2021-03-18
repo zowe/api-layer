@@ -63,14 +63,6 @@ jobs:
             - name: Set name
               run: git config user.name "Github Robot"
 
-            - name: Release Node enabler to NPM
-              run: npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
-              env:
-                  DEFAULT_SCOPE: 'patch'
-
-            - name: Publish the node version
-              run: npm publish --access public
-
             - name: Release with Gradle
               run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.scope=${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
               env:
