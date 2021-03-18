@@ -1,12 +1,13 @@
 # This workflow will release project with Gradle
 
-name: Relase new version
+name: Relase new patch version
 
 on:
     push:
         branches: [ master ]
     pull_request:
         branches: [ master ]
+    workflow_dispatch:
 
 jobs:
     build:
