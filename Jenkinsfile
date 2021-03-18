@@ -80,10 +80,6 @@ pipeline {
         timestamps ()
     }
 
-    parameters {
-        booleanParam(name: 'PUBLISH_PR_ARTIFACTS', defaultValue: 'false', description: 'If true it will publish the pull requests artifacts', )
-    }
-
     stages {
         stage('Build and Test') {
             steps {
@@ -125,37 +121,6 @@ pipeline {
         stage('Package api-layer source code') {
             steps {
                 sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
-            }
-        }
-
-        stage('Publish snapshot version to Artifactory for master') {
-            when {
-                expression {
-                    return BRANCH_NAME.equals(MASTER_BRANCH);
-                }
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                 sh '''
-                 ./gradlew publishAllVersions -x test -x checkstyleTest -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
-                 '''
-                }
-            }
-        }
-
-        stage('Publish snapshot version to Artifactory for Pull Request') {
-            when {
-                expression {
-                    return BRANCH_NAME.contains("PR-") && params.PUBLISH_PR_ARTIFACTS;
-                }
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh '''
-                    sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
-                    ./gradlew publishAllVersions -x test -x checkstyleTest -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD  -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD -PpullRequest=$BRANCH_NAME
-                    '''
-                }
             }
         }
 
