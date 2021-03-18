@@ -23,7 +23,9 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.SecurityUtils;
 
 import javax.annotation.PostConstruct;
 import java.security.Key;
@@ -87,15 +89,17 @@ public class JwtSecurityInitializer {
         if (!providers.isZosfmUsed()) {
             log.debug("zOSMF isn't used as the Authentication provider");
             loadJwtSecret();
-        // zOSMF is authentication provider
+            // zOSMF is authentication provider
         } else {
-            // zOSMF isn't available at the moment.
             log.debug("zOSMF is used as authentication provider");
-            if (!providers.isZosmfAvailableAndOnline()) {
-                // Wait for some time before giving up. Mainly used in the integration testing.
+            if (providers.zosmfConfigurationSetToLtpa()) {
+                log.debug("Configuration indicates zOSMF supports LTPA token");
+                loadJwtSecret();
+            } else if (!providers.isZosmfAvailableAndOnline()) {
+                // zOSMF isn't available at the moment, wait for some time before able to determine if zOSMF supports JWT
                 waitUntilZosmfIsUp();
             } else {
-                // zOSMF is UP and the APAR PH12143 isn't applied
+                // zOSMF is UP and can determine if zOSMF supports JWT or not
                 if (!providers.zosmfSupportsJwt()) {
                     log.debug("zOSMF is UP and APAR PH12143 was not applied");
                     loadJwtSecret();

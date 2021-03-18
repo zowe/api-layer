@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
@@ -29,7 +30,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
     private final AuthenticationService authenticationService;
     private final ZosmfService zosmfService;
-    private final ZosmfConfiguration zosmfConfiguration;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
     /**
      * Authenticate the credentials with the z/OSMF service
@@ -43,7 +44,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
         final ZosmfService.AuthenticationResponse ar = zosmfService.authenticate(authentication);
 
-        switch (zosmfConfiguration.jwtAutoconfigurationMode) {
+        switch (authConfigurationProperties.getZosmfJwtAutoconfiguration()) {
             case LTPA:
                 if (ar.getTokens().containsKey(LTPA)) {
                     return getApimlJwtToken(user, ar);
