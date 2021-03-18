@@ -154,12 +154,32 @@ class ProvidersTest {
         }
 
         @Test
-        void givenEndpointsDontExistAndJwtOverrideSet_thenSupportJwtRetundsTrue() {
+        void givenEndpointsDontExistAndJwtOverrideSet_thenSupportJwtReturnsTrue() {
             underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider, zosmfService);
             when(zosmfService.loginEndpointExists()).thenReturn(false);
             when(zosmfService.jwtBuilderEndpointExists()).thenReturn(false);
             when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(JWT);
             assertThat(underTest.zosmfSupportsJwt(), is(true));
+        }
+    }
+
+    @Nested
+    class whenZosmfLtpaConfigurationIsTested {
+        @BeforeEach
+        void setUp() {
+            underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider, zosmfService);
+        }
+
+        @Test
+        void givenZosmfAuthConfigurationLtpa_thenReturnTrue() {
+            when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(LTPA);
+            assertThat(underTest.isZosmfConfigurationSetToLtpa(), is(true));
+        }
+
+        @Test
+        void givenZosmfAuthConfigurationNotLtpa_thenReturnFalse() {
+            when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(JWT);
+            assertThat(underTest.isZosmfConfigurationSetToLtpa(), is(false));
         }
     }
 

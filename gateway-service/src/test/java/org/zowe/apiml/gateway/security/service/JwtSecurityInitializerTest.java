@@ -29,19 +29,23 @@ class JwtSecurityInitializerTest {
     private JwtSecurityInitializer underTest;
     private Providers providers;
 
+    @BeforeEach
+    void setUp() {
+        providers = mock(Providers.class);
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(false);
+        when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
+    }
+
     @Nested
     class WhenInitializedWithValidJWT {
         @BeforeEach
         void setUp() {
-            providers = mock(Providers.class);
-            when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
-
             underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), new Duration(10, TimeUnit.MILLISECONDS));
         }
 
         @Test
         void givenZosmfIsUsedWithValidJwt_thenJwtSecretIsIgnored() {
-            when(providers.isZosfmUsed()).thenReturn(true);
             when(providers.zosmfSupportsJwt()).thenReturn(true);
 
             underTest.init();
@@ -58,7 +62,6 @@ class JwtSecurityInitializerTest {
 
         @Test
         void givenZosmfIsUsedWithoutJwt_thenProperKeysAreInitialized() {
-            when(providers.isZosfmUsed()).thenReturn(true);
             when(providers.zosmfSupportsJwt()).thenReturn(false);
 
             underTest.init();
@@ -67,7 +70,6 @@ class JwtSecurityInitializerTest {
 
         @Test
         void givenZosmfIsntRegisteredAtTheStartupButRegistersLater_thenProperKeysAreInitialized() {
-            when(providers.isZosfmUsed()).thenReturn(true);
             when(providers.zosmfSupportsJwt()).thenReturn(false);
             when(providers.isZosmfAvailableAndOnline())
                 .thenReturn(false)
@@ -81,20 +83,25 @@ class JwtSecurityInitializerTest {
                 .pollInterval(new Duration(20, TimeUnit.MILLISECONDS))
                 .until(underTest::getJwtSecret, is(not(nullValue())));
         }
+
+        @Test
+        void givenZosmfConfiguredWithLtpa_thenProperKeysAreInitialized() {
+            when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(true);
+
+            underTest.init();
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
     }
 
     @Nested
     class WhenInitializedWithoutValidJWT {
         @BeforeEach
         void setUp() {
-            providers = mock(Providers.class);
-            when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
             underTest = new JwtSecurityInitializer(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), new Duration(10, TimeUnit.MILLISECONDS));
         }
 
         @Test
         void givenZosmfIsUsedWithValidJwt_thenMissingJwtIsIgnored() {
-            when(providers.isZosfmUsed()).thenReturn(true);
             when(providers.zosmfSupportsJwt()).thenReturn(true);
 
             underTest.init();
@@ -105,19 +112,21 @@ class JwtSecurityInitializerTest {
         void givenSafIsUsed_exceptionIsThrown() {
             when(providers.isZosfmUsed()).thenReturn(false);
 
-            assertThrows(HttpsConfigError.class, () -> {
-                underTest.init();
-            });
+            assertThrows(HttpsConfigError.class, () -> underTest.init());
         }
 
         @Test
         void givenZosmfIsUsedWithoutJwt_exceptionIsThrown() {
-            when(providers.isZosfmUsed()).thenReturn(true);
             when(providers.zosmfSupportsJwt()).thenReturn(false);
 
-            assertThrows(HttpsConfigError.class, () -> {
-                underTest.init();
-            });
+            assertThrows(HttpsConfigError.class, () -> underTest.init());
+        }
+
+        @Test
+        void givenZosmfConfiguredWithLtpa_thenExceptionIsThrown() {
+            when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(true);
+
+            assertThrows(HttpsConfigError.class, () -> underTest.init());
         }
     }
 }

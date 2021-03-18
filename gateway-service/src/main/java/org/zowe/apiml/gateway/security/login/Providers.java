@@ -88,7 +88,7 @@ public class Providers {
      *
      * @return true if configuration was set to indicate zOSMF supports LTPA.
      */
-    public boolean zosmfConfigurationSetToLtpa() {
+    public boolean isZosmfConfigurationSetToLtpa() {
         return authConfigurationProperties.getZosmfJwtAutoconfiguration() == AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.LTPA;
     }
 }

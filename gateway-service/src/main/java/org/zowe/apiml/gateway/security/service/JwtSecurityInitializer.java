@@ -92,7 +92,7 @@ public class JwtSecurityInitializer {
             // zOSMF is authentication provider
         } else {
             log.debug("zOSMF is used as authentication provider");
-            if (providers.zosmfConfigurationSetToLtpa()) {
+            if (providers.isZosmfConfigurationSetToLtpa()) {
                 log.debug("Configuration indicates zOSMF supports LTPA token");
                 loadJwtSecret();
             } else if (!providers.isZosmfAvailableAndOnline()) {
