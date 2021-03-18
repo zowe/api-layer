@@ -168,7 +168,7 @@ release {
     failOnCommitNeeded = true
     failOnPublishNeeded = true
     failOnSnapshotDependencies = true
-    failOnUnversionedFiles = true
+    failOnUnversionedFiles = false
     failOnUpdateNeeded = true
     revertOnFail = true
     preCommitText = '[Gradle Release plugin]'
@@ -197,10 +197,10 @@ release {
     ]
 
     git {
-        requireBranch = 'master'
+        requireBranch = 'apiml/GH1234/scheduled_manual_workflow'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
-        commitVersionFileOnly = false
+        commitVersionFileOnly = true
         signTag = false
     }
 }
