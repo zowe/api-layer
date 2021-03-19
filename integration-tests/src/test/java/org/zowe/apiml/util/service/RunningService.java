@@ -113,10 +113,10 @@ public class RunningService {
             String line;
             int i = 0;
             while ((line = br.readLine()) != null) {
-                System.out.println("Line: " + line);
+                log.info(line);
                 if (line.startsWith("pid")) {
                     this.subprocessPid = line.substring(line.indexOf("=") + 1);
-                    System.out.println("found " + this.subprocessPid);
+                    log.info("found " + this.subprocessPid);
                 }
                 i++;
             }

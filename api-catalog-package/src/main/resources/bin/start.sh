@@ -41,6 +41,11 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [[ ! -z ${APIML_DIAG_MODE_ENABLED} ]]
+then
+  export LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
+fi
+
 if [ `uname` = "OS/390" ]; then
     QUICK_START=-Xquickstart
 fi
