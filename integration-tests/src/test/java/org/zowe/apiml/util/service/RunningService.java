@@ -97,6 +97,7 @@ public class RunningService {
         envVariables.put("APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS", "localhost-multi");
         envVariables.put("APIML_GATEWAY_INTERNAL_SSL_KEYSTORE", "keystore/localhost/localhost-multi.keystore.p12");
         envVariables.put("APIML_DIAG_MODE_ENABLED", "diag");
+        envVariables.put("APIML_GATEWAY_CATALOG_ID","apicatalog");
         builder1.directory(new File("../"));
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         executorService.submit(() -> executeCommand(builder1));
