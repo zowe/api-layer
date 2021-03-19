@@ -2,15 +2,14 @@
 name: Relase new version (automated)
 
 on:
-    schedule:
-        # * is a special character in YAML so you have to quote this string
-        - cron:  '0 0 * * 5'
     workflow_dispatch:
         inputs:
-            scope:
-                description: 'Specify scope that is to be used. The options are patch, minor, major'
+            release_version:
+                description: 'The version that is going to be release'
                 required: true
-                default: 'patch'
+            new_version:
+                description: 'The version that should be used as a new one after the release.'
+                required: true
 
 jobs:
     build:
@@ -63,11 +62,10 @@ jobs:
               run: git config user.name "Zowe Robot"
 
             - name: Release with Gradle automatic
-              run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.scope=${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
+              run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.new_version }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  DEFAULT_SCOPE: 'patch'
 
             - name: Cleanup Gradle Cache
                 # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
