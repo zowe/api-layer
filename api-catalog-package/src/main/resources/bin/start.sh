@@ -27,8 +27,12 @@
 
 JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
 # script assumes it's in the catalog component directory and common_lib needs to be relative path
-COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
-
+if [[ -z ${CMMN_LB} ]]
+then
+    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
+else
+    COMMON_LIB=${CMMN_LB}
+fi
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
@@ -37,6 +41,9 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [ `uname` = "OS/390" ]; then
+    QUICK_START=-Xquickstart
+fi
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -57,7 +64,7 @@ trap 'stop_jobs' INT
 CATALOG_CODE=AC
 _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Xms16m -Xmx512m \
-    -Xquickstart \
+    ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
@@ -85,6 +92,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -jar "${JAR_FILE}" &
-pid=$?
-
+pid=$!
+echo "pid=${pid}"
 wait
