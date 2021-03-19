@@ -30,19 +30,20 @@ jobs:
                   path: |
                       ~/.gradle/caches
                       ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                  key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                   restore-keys: |
-                      ${{ runner.os }}-gradle-
+                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                      ${{ runner.os }}-gradlex-
             - name: Cache Node.js modules
               uses: actions/cache@v2
               with:
                 path: |
                   ~/.npm
                   **/node_modules
-                key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                key: ${{ runner.OS }}-nodex-${{ hashFiles('**/package-lock.json, **/package.json') }}
                 restore-keys: |
-                  ${{ runner.OS }}-node-
-                  ${{ runner.OS }}-
+                  ${{ runner.OS }}-nodex-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                  ${{ runner.OS }}-nodex-
             - name: Build with Gradle
               run: ./gradlew build --scan -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
             - name: Store results
@@ -85,19 +86,20 @@ jobs:
                   path: |
                       ~/.gradle/caches
                       ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                  key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                   restore-keys: |
-                      ${{ runner.os }}-gradle-
+                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                      ${{ runner.os }}-gradlex-
             - name: Cache Node.js modules
               uses: actions/cache@v2
               with:
-                  path: |
-                      ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
+                path: |
+                  ~/.npm
+                  **/node_modules
+                key: ${{ runner.OS }}-nodex-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                restore-keys: |
+                  ${{ runner.OS }}-nodex-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                  ${{ runner.OS }}-nodex-
             - name: Build with Gradle
               run: ./gradlew --scan build coverage sonarqube -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
               env:
