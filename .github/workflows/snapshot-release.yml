@@ -1,6 +1,6 @@
 # This workflow will release project with Gradle
 
-name: Relase new version
+name: Relase new version (snapshot)
 
 on:
     push:
