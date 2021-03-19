@@ -42,9 +42,12 @@ then
   export LOG_LEVEL="debug"
 fi
 
+echo "diagg ${APIML_DIAG_MODE_ENABLED}"
 if [[ ! -z ${APIML_DIAG_MODE_ENABLED} ]]
 then
-  export LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
+    LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
+    echo "log level $LOG_LEVEL"
+    echo "diag ${APIML_DIAG_MODE_ENABLED}"
 fi
 
 if [[ -z ${APIML_GATEWAY_CATALOG_ID} ]]

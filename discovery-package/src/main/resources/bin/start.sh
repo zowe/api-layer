@@ -41,6 +41,15 @@ then
   export LOG_LEVEL="debug"
 fi
 
+echo "diagg ${APIML_DIAG_MODE_ENABLED}"
+
+if [[ ! -z ${APIML_DIAG_MODE_ENABLED} ]]
+then
+    LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
+    echo "log level $LOG_LEVEL"
+    echo "diag ${APIML_DIAG_MODE_ENABLED}"
+fi
+
 # If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
 export APIML_STATIC_DEF=${STATIC_DEF_CONFIG_DIR}
 if [[ ! -z "$ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES" ]]
