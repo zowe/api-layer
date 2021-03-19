@@ -43,9 +43,10 @@ then
 fi
 
 echo "diagg ${APIML_DIAG_MODE_ENABLED}"
-if [[ ! -z "${APIML_DIAG_MODE_ENABLED}" ]]
+DIAG_MODE=${APIML_DIAG_MODE_ENABLED}
+if [ ! -z "$DIAG_MODE" ]
 then
-    LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
+    LOG_LEVEL=$DIAG_MODE
     echo "log level $LOG_LEVEL"
     echo "diag ${APIML_DIAG_MODE_ENABLED}"
 fi
