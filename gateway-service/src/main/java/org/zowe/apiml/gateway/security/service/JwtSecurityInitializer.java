@@ -10,16 +10,17 @@
 
 package org.zowe.apiml.gateway.security.service;
 
+import com.netflix.discovery.CacheRefreshedEvent;
+import com.netflix.discovery.EurekaEvent;
+import com.netflix.discovery.EurekaEventListener;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.awaitility.Duration;
-import org.awaitility.core.ConditionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -33,11 +34,8 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Optional;
 
-import static org.awaitility.Awaitility.await;
-
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class JwtSecurityInitializer {
 
     @Value("${server.ssl.keyStore:#{null}}")
@@ -55,29 +53,27 @@ public class JwtSecurityInitializer {
     @Value("${apiml.security.auth.jwtKeyAlias:}")
     private String keyAlias;
 
-    private Duration pollingInterval;
-
     private SignatureAlgorithm signatureAlgorithm;
     private Key jwtSecret;
     private PublicKey jwtPublicKey;
 
-    private Providers providers;
+    private final Providers providers;
+    private final ApimlDiscoveryClient discoveryClient;
 
     @Autowired
-    public JwtSecurityInitializer(Providers providers) {
+    public JwtSecurityInitializer(Providers providers, ApimlDiscoveryClient discoveryClient) {
         this.providers = providers;
-        this.pollingInterval = Duration.ONE_MINUTE;
+        this.discoveryClient = discoveryClient;
     }
 
-    public JwtSecurityInitializer(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, Duration pollingInterval) {
-        this(providers);
+    public JwtSecurityInitializer(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, ApimlDiscoveryClient discoveryClient) {
+        this(providers, discoveryClient);
 
         this.keyStore = keyStore;
         this.keyStorePassword = keyStorePassword;
         this.keyPassword = keyPassword;
         this.keyAlias = keyAlias;
         this.keyStoreType = "PKCS12";
-        this.pollingInterval = pollingInterval;
     }
 
     @InjectApimlLogger
@@ -115,27 +111,27 @@ public class JwtSecurityInitializer {
      * Therefore the waiting is externalized to another thread, which kills the VM if the setup is unsuccesfull. .
      */
     private void waitUntilZosmfIsUp() {
-        new Thread(() -> {
-            try {
-                await()
-                    .atMost(Duration.FIVE_MINUTES)
-                .with()
-                    .pollInterval(pollingInterval)
-                    .until(providers::isZosmfAvailableAndOnline);
-            } catch (ConditionTimeoutException ex) {
-                apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", "zOSMF");
-
-                System.exit(1);
-            }
-
-            if (!providers.zosmfSupportsJwt()) {
-                try {
-                    loadJwtSecret();
-                } catch (HttpsConfigError exception) {
-                    System.exit(1);
+        EurekaEventListener zosmfRegisteredListener = new EurekaEventListener() {
+            @Override
+            public void onEvent(EurekaEvent event) {
+                if (event instanceof CacheRefreshedEvent) {
+                    boolean zosmf = providers.isZosmfAvailableAndOnline();
+                    if (zosmf) {
+                        discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to load jwt secret
+                        if (!providers.zosmfSupportsJwt()) {
+                            try {
+                                loadJwtSecret();
+                            } catch (HttpsConfigError exception) {
+                                System.exit(1);
+                            }
+                        }
+                    }
                 }
+                // TODO timeout and fail gw
             }
-        }).start();
+        };
+
+        discoveryClient.registerEventListener(zosmfRegisteredListener);
     }
 
     /**

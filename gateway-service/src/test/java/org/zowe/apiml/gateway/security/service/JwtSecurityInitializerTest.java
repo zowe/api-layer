@@ -13,6 +13,10 @@ import org.awaitility.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.security.HttpsConfigError;
 
@@ -25,9 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(SpringExtension.class)
 class JwtSecurityInitializerTest {
     private JwtSecurityInitializer underTest;
     private Providers providers;
+
+    @Mock
+    private ApimlDiscoveryClient discoveryClient;
 
     @BeforeEach
     void setUp() {
@@ -41,7 +49,7 @@ class JwtSecurityInitializerTest {
     class WhenInitializedWithValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), new Duration(10, TimeUnit.MILLISECONDS));
+            underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
         }
 
         @Test
@@ -70,6 +78,7 @@ class JwtSecurityInitializerTest {
 
         @Test
         void givenZosmfIsntRegisteredAtTheStartupButRegistersLater_thenProperKeysAreInitialized() {
+            // TODO this test needs to change
             when(providers.zosmfSupportsJwt()).thenReturn(false);
             when(providers.isZosmfAvailableAndOnline())
                 .thenReturn(false)
@@ -97,7 +106,7 @@ class JwtSecurityInitializerTest {
     class WhenInitializedWithoutValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurityInitializer(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), new Duration(10, TimeUnit.MILLISECONDS));
+            underTest = new JwtSecurityInitializer(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
         }
 
         @Test
