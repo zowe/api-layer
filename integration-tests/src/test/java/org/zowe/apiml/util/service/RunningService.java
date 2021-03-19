@@ -17,6 +17,8 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.awaitility.Awaitility.await;
 
@@ -59,7 +61,7 @@ public class RunningService {
         newCachingProcess = builder1.inheritIO().start();
     }
 
-    public void startWithScript(String bashScript) throws IOException {
+    public void startWithScript(String bashScript) {
         log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
 
         ProcessBuilder builder1 = new ProcessBuilder(bashScript);
@@ -90,31 +92,36 @@ public class RunningService {
         envVariables.put("APIML_CORS_ENABLED", "true");
         envVariables.put("APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE", "JWT");
         envVariables.put("STATIC_DEF_CONFIG_DIR", "config/local/api-defs");
-        envVariables.put("APIML_GATEWAY_INTERNAL_ENABLED","true");
-        envVariables.put("APIML_GATEWAY_INTERNAL_PORT","10017");
-        envVariables.put("APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS","localhost-multi");
-        envVariables.put("APIML_GATEWAY_INTERNAL_SSL_KEYSTORE","keystore/localhost/localhost-multi.keystore.p12");
-        envVariables.put("APIML_DIAG_MODE_ENABLED","diag");
+        envVariables.put("APIML_GATEWAY_INTERNAL_ENABLED", "true");
+        envVariables.put("APIML_GATEWAY_INTERNAL_PORT", "10017");
+        envVariables.put("APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS", "localhost-multi");
+        envVariables.put("APIML_GATEWAY_INTERNAL_SSL_KEYSTORE", "keystore/localhost/localhost-multi.keystore.p12");
+        envVariables.put("APIML_DIAG_MODE_ENABLED", "diag");
         builder1.directory(new File("../"));
-        executeCommand(builder1);
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        executorService.submit(() -> executeCommand(builder1));
+//        executeCommand(builder1);
     }
 
-    private void executeCommand(ProcessBuilder pb) throws IOException {
-        Process terminalCommandProcess = pb.start();
+    private void executeCommand(ProcessBuilder pb) {
+        try {
+            Process terminalCommandProcess = pb.start();
 
-        InputStream inputStream = terminalCommandProcess.getInputStream();
-        BufferedReader br = new BufferedReader(
-            new InputStreamReader(inputStream));
-        String line;
-        int i = 0;
-        while ((line = br.readLine()) != null) {
-            log.info("Line: " + line);
-            if (line.startsWith("pid") || i > 2) {
-                this.subprocessPid = line.substring(line.indexOf("=") + 1);
-                log.info("found " + this.subprocessPid);
-                break;
+            InputStream inputStream = terminalCommandProcess.getInputStream();
+            BufferedReader br = new BufferedReader(
+                new InputStreamReader(inputStream));
+            String line;
+            int i = 0;
+            while ((line = br.readLine()) != null) {
+                System.out.println("Line: " + line);
+                if (line.startsWith("pid")) {
+                    this.subprocessPid = line.substring(line.indexOf("=") + 1);
+                    System.out.println("found " + this.subprocessPid);
+                }
+                i++;
             }
-            i++;
+        } catch (IOException e) {
+            log.error(e.getMessage());
         }
     }
 
