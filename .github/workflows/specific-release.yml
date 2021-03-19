@@ -1,10 +1,15 @@
 # This workflow will release project with Gradle
-
-name: Relase new version (snapshot)
+name: Relase new version (specific)
 
 on:
-    push:
-        branches: [ master ]
+    workflow_dispatch:
+        inputs:
+            release_version:
+                description: 'The version that is going to be release'
+                required: true
+            new_version:
+                description: 'The version that should be used as a new one after the release.'
+                required: true
 
 jobs:
     build:
@@ -44,11 +49,24 @@ jobs:
                   restore-keys: |
                       ${{ runner.OS }}-node-
                       ${{ runner.OS }}-
-            - name: Release with Gradle
-              run: ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
+            - name: Build with Gradle
+              run: ./gradlew build
+
+            - name: Clean git
+              run: git reset --hard HEAD
+
+            - name: Set email
+              run: git config user.email "zowe-robot@users.noreply.github.com"
+
+            - name: Set name
+              run: git config user.name "Zowe Robot"
+
+            - name: Release with Gradle automatic
+              run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.new_version }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             - name: Cleanup Gradle Cache
                 # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
                 # Restoring these files from a GitHub Actions cache might cause problems for future builds.
