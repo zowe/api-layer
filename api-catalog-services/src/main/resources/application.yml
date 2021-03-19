@@ -96,6 +96,8 @@ server:
 
 eureka:
     instance:
+        leaseExpirationDurationInSeconds: 6
+        leaseRenewalIntervalInSeconds: 5
         hostname: ${apiml.service.hostname}
         statusPageUrlPath: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/info
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
@@ -135,6 +137,8 @@ eureka:
                 authentication:
                     sso: true
     client:
+        initialInstanceInfoReplicationIntervalSeconds: 5
+        registryFetchIntervalSeconds: 5
         healthcheck:
             enabled: true
         serviceUrl:
