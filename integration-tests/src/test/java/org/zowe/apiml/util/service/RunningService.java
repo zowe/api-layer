@@ -78,7 +78,7 @@ public class RunningService {
         envVariables.put("APIML_GATEWAY_TIMEOUT_MILLIS", "10000");
         envVariables.put("APIML_SECURITY_X509_ENABLED", "true");
         envVariables.put("APIML_SECURITY_AUTH_PROVIDER", "zosmf");
-        envVariables.put("ZOWE_IP_ADDRESS", "192.168.1.1");
+        envVariables.put("ZOWE_IP_ADDRESS", "127.0.0.1");
         envVariables.put("VERIFY_CERTIFICATES", "true");
         envVariables.put("KEYSTORE", "keystore/localhost/localhost.keystore.p12");
         envVariables.put("KEYSTORE_TYPE", "PKCS12");
