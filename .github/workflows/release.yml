@@ -56,6 +56,11 @@ jobs:
             - name: Clean git
               run: git reset --hard HEAD
 
+            - name: Properly authenticate as a user with access
+              run: git remote set-url origin https://zowe-robot:$ZOWE_ROBOT_TOKEN@github.com/zowe/api-layer.git
+              env:
+                  ZOWE_ROBOT_TOKEN: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+
             - name: Set email
               run: git config user.email "zowe-robot@users.noreply.github.com"
 
