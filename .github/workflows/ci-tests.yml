@@ -45,7 +45,7 @@ jobs:
                   ${{ runner.OS }}-nodex-${{ hashFiles('**/package-lock.json, **/package.json') }}
                   ${{ runner.OS }}-nodex-
             - name: Build with Gradle
-              run: ./gradlew build --scan -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+              run: ./gradlew build --scan --info -Dorg.gradle.caching.debug=true -Penabler=v1
             - name: Store results
               uses: actions/upload-artifact@v2
               if: always()
@@ -102,7 +102,7 @@ jobs:
                   ${{ runner.OS }}-nodex-
             - name: Build with Gradle
               #run: ./gradlew --scan build coverage sonarqube -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
-              run: ./gradlew build --scan -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+              run: ./gradlew build --scan --info -Dorg.gradle.caching.debug=true -Penabler=v1
               env:
                   SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
