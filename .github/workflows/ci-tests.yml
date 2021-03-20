@@ -30,9 +30,9 @@ jobs:
                   path: |
                       ~/.gradle/caches
                       ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                  key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                   restore-keys: |
-                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                       ${{ runner.os }}-gradlex-
 #            - name: Cache Node.js modules
 #              uses: actions/cache@v2
@@ -74,10 +74,6 @@ jobs:
               uses: actions/setup-java@v1
               with:
                   java-version: 1.11
-            - name: Set up Node
-              uses: actions/setup-node@v2
-              with:
-                  node-version: '14'
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
             - name: Cache Gradle packages
@@ -86,9 +82,9 @@ jobs:
                   path: |
                       ~/.gradle/caches
                       ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                  key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                   restore-keys: |
-                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                       ${{ runner.os }}-gradlex-
 #            - name: Cache Node.js modules
 #              uses: actions/cache@v2
