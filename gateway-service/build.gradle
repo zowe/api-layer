@@ -119,3 +119,8 @@ java {
         vendor = JvmVendorSpec.ADOPTOPENJDK
     }
 }
+
+tasks.withType(JavaCompile) {
+    //enable compilation in a separate daemon process
+    options.fork = true
+}
