@@ -54,8 +54,15 @@ allprojects {
 
     repositories mavenRepositories
 
-    sourceCompatibility = 1.8
-    version = version
+    //sourceCompatibility = 1.8
+    //version = version
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(8)
+            vendor = JvmVendorSpec.ADOPTOPENJDK
+        }
+    }
 
     idea {
         module {
