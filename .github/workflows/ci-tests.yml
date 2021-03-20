@@ -32,7 +32,6 @@ jobs:
                       ~/.gradle/wrapper
                   key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                   restore-keys: |
-                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                       ${{ runner.os }}-gradlex-
 #            - name: Cache Node.js modules
 #              uses: actions/cache@v2
@@ -84,7 +83,6 @@ jobs:
                       ~/.gradle/wrapper
                   key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                   restore-keys: |
-                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                       ${{ runner.os }}-gradlex-
 #            - name: Cache Node.js modules
 #              uses: actions/cache@v2
