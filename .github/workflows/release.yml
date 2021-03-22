@@ -86,9 +86,6 @@ jobs:
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                   DEFAULT_SCOPE: 'patch'
 
-            - name: Clean git
-              run: git reset --hard HEAD
-
             - name: Cleanup Gradle Cache
                 # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
                 # Restoring these files from a GitHub Actions cache might cause problems for future builds.
