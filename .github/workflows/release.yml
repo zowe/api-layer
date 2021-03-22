@@ -64,6 +64,21 @@ jobs:
             - name: Set name
               run: git config user.name "Zowe Robot"
 
+            - name: Release to NPM automatic
+              run: |
+                  cd onboarding-enabler-nodejs
+                  echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+                  echo "registry=$DIST_REGISTRY" >> ~/.npmrc
+                  npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
+                  npm publish --access public
+                  git add package.json
+                  cd ..
+              env:
+                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                  DEFAULT_SCOPE: 'patch'
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
             - name: Release with Gradle automatic
               run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.scope=${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
               env:
