@@ -71,7 +71,7 @@ jobs:
                   npm version ${{ github.event.inputs.release_version }}
                   npm publish --access public
                   git add package.json
-                  git comit -m "Update version"
+                  git commit -m "Update version"
                   cd ..
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
