@@ -1,4 +1,4 @@
-After new cache key:
+## After new cache key:
 
 Run actions/cache@v2
 Cache not found for input keys: Linux-gradlex-8f4a04a3f7f761dc704b97b8274bc8d0aab5ec4491462bee75f5838d33c8042a, Linux-gradlex-8f4a04a3f7f761dc704b97b8274bc8d0aab5ec4491462bee75f5838d33c8042a, Linux-gradlex-
@@ -22,7 +22,7 @@ Cache restored from key: Linux-gradlex-8f4a04a3f7f761dc704b97b8274bc8d0aab5ec449
 https://gradle.com/s/gsbte4wh52qmo
 
 
-Effects of clear local cache:
+## Effects of clear local cache:
 
 first build:
 https://scans.gradle.com/s/vj3ko57dygzem
@@ -38,7 +38,7 @@ build on jdk8: https://scans.gradle.com/s/42vlt4tjisndu
 all hits
 1:53
 
-Repeated execution:
+## Repeated execution:
 
 first build:
 https://gradle.com/s/4jvziqptzcg5u
@@ -51,3 +51,8 @@ https://gradle.com/s/5gq6qpaz7brbo
 build on jdk8:
 2:02
 https://scans.gradle.com/s/wrajxxyd37zye
+
+## Without local gradle cache:
+
+Build around 9m
+negligible ammount of cache hits
