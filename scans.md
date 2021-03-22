@@ -20,3 +20,34 @@ Cache Size: ~535 MB (560605967 B)
 Cache restored from key: Linux-gradlex-8f4a04a3f7f761dc704b97b8274bc8d0aab5ec4491462bee75f5838d33c8042a
 
 https://gradle.com/s/gsbte4wh52qmo
+
+
+Effects of clear local cache:
+
+first build:
+https://scans.gradle.com/s/vj3ko57dygzem
+almost everything misses
+10:34/8:37
+
+IT:
+https://scans.gradle.com/s/crj2rffkmg5va
+almost all hits
+8:46/1m 4.009s for build, 6m 38.957s for IT
+
+build on jdk8: https://scans.gradle.com/s/42vlt4tjisndu
+all hits
+1:53
+
+Repeated execution:
+
+first build:
+https://gradle.com/s/4jvziqptzcg5u
+3:49
+
+IT:
+https://gradle.com/s/5gq6qpaz7brbo
+9:30
+
+build on jdk8:
+2:02
+https://scans.gradle.com/s/wrajxxyd37zye
