@@ -67,3 +67,4 @@ instanceEnv:
     APIML_GATEWAY_INTERNAL_SSL_KEYSTORE: keystore/localhost/localhost-multi.keystore.p12
     APIML_DIAG_MODE_ENABLED: diag
     APIML_GATEWAY_CATALOG_ID: apicatalog
+    APIML_ZOSMF_ID: mockzosmf
