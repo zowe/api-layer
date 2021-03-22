@@ -71,6 +71,20 @@ jobs:
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                   DEFAULT_SCOPE: 'patch'
 
+            - name: Clean git
+              run: git reset --hard HEAD
+
+            - name: Release to NPM automatic
+              run: |
+                cd onboarding-enabler-nodejs
+                npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
+                npm publish --access public
+              env:
+                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                  DEFAULT_SCOPE: 'patch'
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
             - name: Cleanup Gradle Cache
                 # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
                 # Restoring these files from a GitHub Actions cache might cause problems for future builds.
