@@ -73,6 +73,7 @@ jobs:
                   npm publish --access public
                   git add package.json
                   git commit -m "Update version"
+                  git push origin master
                   cd ..
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}

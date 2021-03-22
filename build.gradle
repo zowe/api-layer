@@ -169,7 +169,7 @@ release {
     failOnPublishNeeded = true
     failOnSnapshotDependencies = true
     failOnUnversionedFiles = false
-    failOnUpdateNeeded = false
+    failOnUpdateNeeded = true
     revertOnFail = true
     preCommitText = '[Gradle Release plugin]'
     preTagCommitMessage = 'Before tag commit'
