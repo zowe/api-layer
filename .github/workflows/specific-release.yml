@@ -1,13 +1,15 @@
-# This workflow will build a Java project with Gradle
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
-
-name: Sonarqube gradle
+# This workflow will release project with Gradle
+name: Relase new version (specific)
 
 on:
-    push:
-        branches: [ master ]
-    pull_request:
-        branches: [ master ]
+    workflow_dispatch:
+        inputs:
+            release_version:
+                description: 'The version that is going to be release'
+                required: true
+            new_version:
+                description: 'The version that should be used as a new one after the release.'
+                required: true
 
 jobs:
     build:
@@ -19,14 +21,15 @@ jobs:
             - uses: actions/checkout@v2
               with:
                   ref: ${{ github.head_ref }}
-            - name: Set up JDK 1.11
+                  token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+            - name: Set up JDK 1.8
               uses: actions/setup-java@v1
               with:
-                  java-version: 1.11
+                  java-version: 1.8
             - name: Set up Node
               uses: actions/setup-node@v2
               with:
-                  node-version: '14'
+                  node-version: '10'
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
             - name: Cache Gradle packages
@@ -49,15 +52,26 @@ jobs:
                       ${{ runner.OS }}-node-
                       ${{ runner.OS }}-
             - name: Build with Gradle
-              run: ./gradlew --info --scan build coverage sonarqube -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+              run: ./gradlew build
+
+            - name: Clean git
+              run: git reset --hard HEAD
+
+            - name: Set email
+              run: git config user.email "zowe-robot@users.noreply.github.com"
+
+            - name: Set name
+              run: git config user.name "Zowe Robot"
+
+            - name: Release with Gradle automatic
+              run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.new_version }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
               env:
-                 SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             - name: Cleanup Gradle Cache
                 # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
                 # Restoring these files from a GitHub Actions cache might cause problems for future builds.
               run: |
                   rm -f ~/.gradle/caches/modules-2/modules-2.lock
                   rm -f ~/.gradle/caches/modules-2/gc.properties
-

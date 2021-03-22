@@ -32,6 +32,7 @@ public class FullApiMediationLayer {
     private boolean firstCheck = true;
 
     private static FullApiMediationLayer instance = new FullApiMediationLayer();
+
     private FullApiMediationLayer() {
         prepareCaching();
         prepareCatalog();
@@ -53,50 +54,26 @@ public class FullApiMediationLayer {
     }
 
     private void prepareDiscovery() {
-        Map<String, String> before = new HashMap<>();
-        before.put("-Dloader.path", "build/libs/api-layer-lite-lib-all.jar");
-
-        Map<String, String> after = new HashMap<>();
-        after.put("--spring.profiles.active", "https");
-        after.put("--spring.config.additional-location", "file:./config/local/discovery-service.yml");
-        after.put("--apiml.security.ssl.verifySslCertificatesOfServices", "true");
-
-        discoveryService = new RunningService("discovery", "discovery-service/build/libs/discovery-service-lite.jar", before, after);
+        discoveryService = new RunningService("discovery", "discovery-service/build/libs", null, null);
     }
 
     private void prepareGateway() {
-        Map<String, String> before = new HashMap<>();
-        before.put("-Dloader.path", "build/libs/api-layer-lite-lib-all.jar");
-
-        Map<String, String> after = new HashMap<>();
-        after.put("--spring.config.additional-location", "file:./config/local/gateway-service.yml");
-        after.put("--apiml.security.ssl.verifySslCertificatesOfServices", "true");
-
-        gatewayService = new RunningService("gateway", "gateway-service/build/libs/gateway-service-lite.jar", before, after);
+        gatewayService = new RunningService("gateway", "gateway-service/build/libs", null, null);
     }
 
     private void prepareCatalog() {
-        Map<String, String> before = new HashMap<>();
-        before.put("-Dloader.path", "build/libs/api-layer-lite-lib-all.jar");
-
-        Map<String, String> after = new HashMap<>();
-        after.put("--spring.config.additional-location", "file:./config/local/api-catalog-service.yml");
-        after.put("--apiml.security.ssl.verifySslCertificatesOfServices", "true");
-
-        apiCatalogService = new RunningService("apicatalog", "api-catalog-services/build/libs/api-catalog-services-lite.jar", before, after);
+        apiCatalogService = new RunningService("apicatalog", "api-catalog-services/build/libs", null, null);
     }
 
     public void prepareCaching() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
-
         cachingService = new RunningService("cachingservice", "caching-service/build/libs/caching-service.jar", before, after);
     }
 
     private void prepareMockZosmf() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
-
         mockZosmfService = new RunningService("zosmf", "mock-zosmf/build/libs/mock-zosmf.jar", before, after);
     }
 
@@ -114,11 +91,11 @@ public class FullApiMediationLayer {
 
     public void start() {
         try {
-            discoveryService.start();
-            gatewayService.start();
+            discoveryService.startWithScript("discovery-package/src/main/resources/bin/start.sh");
+            gatewayService.startWithScript("gateway-package/src/main/resources/bin/start.sh");
             mockZosmfService.start();
 
-            apiCatalogService.start();
+            apiCatalogService.startWithScript("api-catalog-package/src/main/resources/bin/start.sh");
             discoverableClientService.start();
         } catch (IOException ex) {
             ex.printStackTrace();

@@ -1,6 +1,6 @@
 # This workflow will release project with Gradle
 
-name: Relase new version
+name: Relase new version (snapshot)
 
 on:
     push:
@@ -10,6 +10,7 @@ jobs:
     build:
 
         runs-on: ubuntu-latest
+        timeout-minutes: 20
 
         steps:
             - uses: actions/checkout@v2

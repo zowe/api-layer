@@ -66,7 +66,8 @@ public class ConfigReader {
                             discoverableClientConfiguration,
                             tlsConfiguration,
                             zosmfServiceConfiguration,
-                            auxiliaryUserList);
+                            auxiliaryUserList,
+                            null);
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
