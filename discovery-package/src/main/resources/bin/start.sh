@@ -41,13 +41,9 @@ then
   export LOG_LEVEL="debug"
 fi
 
-echo "diagg ${APIML_DIAG_MODE_ENABLED}"
-
 if [[ ! -z "${APIML_DIAG_MODE_ENABLED}" ]]
 then
     LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
-    echo "log level $LOG_LEVEL"
-    echo "diag ${APIML_DIAG_MODE_ENABLED}"
 fi
 
 # If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
@@ -106,35 +102,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -jar "${JAR_FILE}" &
-echo "${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START} \
-    -Dibm.serversocket.recover=true \
-    -Dfile.encoding=UTF-8 \
-    -Djava.io.tmpdir=/tmp \
-    -Dspring.profiles.active=https \
-    -Dspring.profiles.include=$LOG_LEVEL \
-    -Dserver.address=0.0.0.0 \
-    -Dapiml.discovery.userid=eureka \
-    -Dapiml.discovery.password=password \
-    -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
-    -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
-    -Dapiml.service.port=${DISCOVERY_PORT} \
-    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
-    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
-    -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
-    -Dserver.ssl.enabled=true \
-    -Dserver.ssl.keyStore=${KEYSTORE} \
-    -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
-    -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
-    -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
-    -Dserver.ssl.trustStore=${TRUSTSTORE} \
-    -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
-    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
-    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${COMMON_LIB} \
-    -jar ${JAR_FILE}"
 pid=$!
 echo "pid=${pid}"
 wait

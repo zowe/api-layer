@@ -41,12 +41,9 @@ then
   export LOG_LEVEL="debug"
 fi
 
-echo "diagg ${APIML_DIAG_MODE_ENABLED}"
 if [[ ! -z "${APIML_DIAG_MODE_ENABLED}" ]]
 then
     LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
-    echo "log level $LOG_LEVEL"
-    echo "diag ${APIML_DIAG_MODE_ENABLED}"
 fi
 
 if [ `uname` = "OS/390" ]; then
@@ -100,36 +97,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -jar "${JAR_FILE}" &
-echo "${ZOWE_PREFIX}${CATALOG_CODE} java \
-    -Xms16m -Xmx512m \
-    ${QUICK_START} \
-    -Dibm.serversocket.recover=true \
-    -Dfile.encoding=UTF-8 \
-    -Djava.io.tmpdir=/tmp \
-    -Denvironment.hostname=${ZOWE_EXPLORER_HOST} \
-    -Denvironment.port=${CATALOG_PORT} \
-    -Denvironment.discoveryLocations=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
-    -Denvironment.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
-    -Denvironment.gatewayHostname=${ZOWE_EXPLORER_HOST} \
-    -Denvironment.eurekaUserId=eureka \
-    -Denvironment.eurekaPassword=password \
-    -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
-    -Dspring.profiles.include=$LOG_LEVEL \
-    -Dserver.address=0.0.0.0 \
-    -Dserver.ssl.enabled=true \
-    -Dserver.ssl.keyStore=${KEYSTORE} \
-    -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
-    -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
-    -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
-    -Dserver.ssl.trustStore=${TRUSTSTORE} \
-    -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
-    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
-    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${COMMON_LIB} \
-    -jar ${JAR_FILE}"
 pid=$!
 echo "pid=${pid}"
 wait
