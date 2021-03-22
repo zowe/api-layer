@@ -31,9 +31,9 @@ jobs:
                   path: |
                       ~/.gradle/caches
                       ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
+                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                   restore-keys: |
-                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
+                      ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
             - name: Cache Node.js modules
               uses: actions/cache@v2
               with:
@@ -88,9 +88,9 @@ jobs:
                   path: |
                       ~/.gradle/caches
                       ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
+                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                   restore-keys: |
-                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
+                      ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
             - name: Cache Node.js modules
               uses: actions/cache@v2
               with:
@@ -137,9 +137,9 @@ jobs:
                   path: |
                       ~/.gradle/caches
                       ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
+                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
                   restore-keys: |
-                      ${{ runner.os }}-gradlex-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
+                      ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
             - name: Cache Node.js modules
               uses: actions/cache@v2
               with:
