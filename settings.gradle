@@ -4,16 +4,16 @@ ext.isPush = getProperty('gradle.cache.push')
 ext.artifactory_user = getProperty('artifactory_user')
 ext.artifactory_password = getProperty('artifactory_password')
 
-//buildCache {
-//    remote(HttpBuildCache) {
-//        url = 'https://zowe.jfrog.io/zowe/cache/'
-//        credentials {
-//            username = "${artifactory_user}"
-//            password = "${artifactory_password}"
-//        }
-//        push = isPush
-//    }
-//}
+buildCache {
+    remote(HttpBuildCache) {
+        url = 'https://zowe.jfrog.io/zowe/cache/'
+        credentials {
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+        }
+        push = isPush
+    }
+}
 
 include 'discovery-service'
 include 'discovery-package'

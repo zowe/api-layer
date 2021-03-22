@@ -54,5 +54,12 @@ https://scans.gradle.com/s/wrajxxyd37zye
 
 ## Without local gradle cache:
 
-Build around 9m
+Build around 10:36/9m (build)
 negligible ammount of cache hits
+https://gradle.com/s/pypnhkqzgx3so
+
+## with local gradle cache with just artefacts
+
+gradle build:
+8:40/6m 34s(just build)
+https://gradle.com/s/k3ukoobxv5obo
