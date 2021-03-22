@@ -169,7 +169,7 @@ release {
     failOnPublishNeeded = true
     failOnSnapshotDependencies = true
     failOnUnversionedFiles = false
-    failOnUpdateNeeded = true
+    failOnUpdateNeeded = false
     revertOnFail = true
     preCommitText = '[Gradle Release plugin]'
     preTagCommitMessage = 'Before tag commit'
@@ -197,7 +197,7 @@ release {
     ]
 
     git {
-        requireBranch = 'master'
+        requireBranch = 'apiml/GH1211/updated_release_procedure'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = true
