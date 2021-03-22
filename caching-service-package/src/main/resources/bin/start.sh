@@ -83,6 +83,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
   -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+  -Deureka.client.registry-fetch-interval-seconds=5 \
+  -Deureka.instance.lease-expiration-duration-in-seconds=45 \
   -jar ${JAR_FILE} &
 pid=$!
 echo "pid=${pid}"
