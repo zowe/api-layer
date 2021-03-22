@@ -41,8 +41,8 @@ task npmTest(type: NpmTask) {
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
-    outputs.file('frontend/test-results/test-report-unit.html').withPathSensitivity(PathSensitivity.RELATIVE)
-    outputs.dir('frontend/coverage').withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.file('frontend/test-results/test-report-unit.html')
+    outputs.dir('frontend/coverage')
 
     outputs.cacheIf { true }
 
