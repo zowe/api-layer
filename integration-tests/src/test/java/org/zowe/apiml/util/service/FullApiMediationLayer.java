@@ -66,9 +66,7 @@ public class FullApiMediationLayer {
     }
 
     public void prepareCaching() {
-        Map<String, String> before = new HashMap<>();
-        Map<String, String> after = new HashMap<>();
-        cachingService = new RunningService("cachingservice", "caching-service/build/libs/caching-service.jar", before, after);
+        cachingService = new RunningService("cachingservice", "caching-service/build/libs", null, null);
     }
 
     private void prepareMockZosmf() {
@@ -129,7 +127,7 @@ public class FullApiMediationLayer {
 
             try {
                 nodeJsSampleApp = nodeJsBuilder.start();
-                cachingService.start();
+                cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh");
                 cachingService.waitUntilReady();
             } catch (IOException ex) {
                 ex.printStackTrace();
