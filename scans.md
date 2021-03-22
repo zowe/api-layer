@@ -63,3 +63,28 @@ https://gradle.com/s/pypnhkqzgx3so
 gradle build:
 8:40/6m 34s(just build)
 https://gradle.com/s/k3ukoobxv5obo
+
+## local artifact cache and enabled remote cache
+1:40/5:30 (build)
+https://gradle.com/s/ucimpv6fnmvxe
+lots of misses and stores
+
+retry
+https://gradle.com/s/j7e7u3zhnugzo
+4/1:46 (build)
+
+
+## conclusions
+
+- Incremental build in-place working reasonably well
+- Incremental build relocatable has some issues. js structure and js cleaning plays some role in this
+- caching gradle is usefull but only for dl of artifacts. Task history is not useful
+- Gradle cache is done once and never refreshed. Unbound restore keys is pulling in latest cache, which is not ideal.
+- There are cache misses between workers with jdk8 and jdk11 because of toolChain.version cache key
+- We are building with ZULU jdk
+- Gradle is capable of forking the build jdk but this seem to not change toolChain.version cache key
+- Chaining of build and trying to use task history between workers is slow and hits limitation of gradle cache storing on gh actions.  
+- Gradle has to have credentials to build cache to push to it on every build
+- Parallel execution relying on remote build cache is preferred for speed
+- Biggest impact is from the remote cache
+- JS tasks are not cacheable and they present some real opportunitty
