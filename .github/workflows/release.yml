@@ -71,7 +71,7 @@ jobs:
                   echo "registry=$DIST_REGISTRY" >> ~/.npmrc
                   npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
                   npm publish --access public
-                  git add package.json
+                  git add onboarding-enabler-nodejs/package.json
                   cd ..
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
