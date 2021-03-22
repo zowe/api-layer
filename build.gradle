@@ -197,7 +197,7 @@ release {
     ]
 
     git {
-        requireBranch = 'apiml/GH1211/updated_release_procedure'
+        requireBranch = 'master'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = true
