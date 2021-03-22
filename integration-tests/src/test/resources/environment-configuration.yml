@@ -35,3 +35,35 @@ zosmfServiceConfiguration:
     serviceId: mockzosmf
 auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
+instanceEnv:
+    CMMN_LB: build/libs/api-layer-lite-lib-all.jar
+    ZOWE_EXPLORER_HOST: localhost
+    ZOWE_PREFIX: ZWE
+    CATALOG_PORT: 10014
+    DISCOVERY_PORT: 10011
+    GATEWAY_PORT: 10010
+    APIML_ALLOW_ENCODED_SLASHES: true
+    APIML_PREFER_IP_ADDRESS: false
+    APIML_GATEWAY_TIMEOUT_MILLIS: 10000
+    APIML_SECURITY_X509_ENABLED: true
+    APIML_SECURITY_AUTH_PROVIDER: zosmf
+    ZOWE_IP_ADDRESS: 127.0.0.1
+    VERIFY_CERTIFICATES: true
+    KEYSTORE: keystore/localhost/localhost.keystore.p12
+    KEYSTORE_TYPE: PKCS12
+    KEYSTORE_PASSWORD: password
+    KEY_ALIAS: localhost
+    TRUSTSTORE: keystore/localhost/localhost.truststore.p12
+    ZWE_DISCOVERY_SERVICES_LIST: https://localhost:10011/eureka/
+    WORKSPACE_DIR: ./workspace
+    APIML_MAX_CONNECTIONS_PER_ROUTE: 10
+    APIML_MAX_TOTAL_CONNECTIONS: 100
+    APIML_CORS_ENABLED: true
+    APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE: JWT
+    STATIC_DEF_CONFIG_DIR: config/local/api-defs
+    APIML_GATEWAY_INTERNAL_ENABLED: true
+    APIML_GATEWAY_INTERNAL_PORT: 10017
+    APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS: localhost-multi
+    APIML_GATEWAY_INTERNAL_SSL_KEYSTORE: keystore/localhost/localhost-multi.keystore.p12
+    APIML_DIAG_MODE_ENABLED: diag
+    APIML_GATEWAY_CATALOG_ID: apicatalog
