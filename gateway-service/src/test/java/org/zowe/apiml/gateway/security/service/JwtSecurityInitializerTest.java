@@ -139,7 +139,7 @@ class JwtSecurityInitializerTest {
             underTest.init();
             verify(discoveryClient, times(1)).registerEventListener(any());
 
-            EurekaEventListener zosmfEventListener = underTest.getZosmfRegisteredListener();
+            EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
             zosmfEventListener.onEvent(new CacheRefreshedEvent());
 
             verify(providers, times(2)).isZosmfAvailableAndOnline();
@@ -157,7 +157,7 @@ class JwtSecurityInitializerTest {
             underTest.init();
             verify(discoveryClient, times(1)).registerEventListener(any());
 
-            EurekaEventListener zosmfEventListener = underTest.getZosmfRegisteredListener();
+            EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
             zosmfEventListener.onEvent(new CacheRefreshedEvent());
 
             verify(discoveryClient, times(1)).unregisterEventListener(any());
@@ -176,7 +176,7 @@ class JwtSecurityInitializerTest {
             underTest.init();
             verify(discoveryClient, times(1)).registerEventListener(any());
 
-            EurekaEventListener zosmfEventListener = underTest.getZosmfRegisteredListener();
+            EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
             zosmfEventListener.onEvent(new CacheRefreshedEvent());
             zosmfEventListener.onEvent(new StatusChangeEvent(null, null));
 
@@ -195,7 +195,7 @@ class JwtSecurityInitializerTest {
             underTest.init();
             verify(discoveryClient, times(1)).registerEventListener(any());
 
-            EurekaEventListener zosmfEventListener = underTest.getZosmfRegisteredListener();
+            EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
             zosmfEventListener.onEvent(new CacheRefreshedEvent());
             zosmfEventListener.onEvent(new CacheRefreshedEvent());
 

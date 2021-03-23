@@ -62,35 +62,12 @@ public class JwtSecurityInitializer {
     private PublicKey jwtPublicKey;
 
     private final Providers providers;
-    private final ApimlDiscoveryClient discoveryClient;
-    private boolean isZosmfReady = false;
-
-    // instance variable so can create an accessor for unit testing purposes
-    private final EurekaEventListener zosmfRegisteredListener = new EurekaEventListener() {
-        @Override
-        public void onEvent(EurekaEvent event) {
-            if (event instanceof CacheRefreshedEvent) {
-                boolean zosmf = providers.isZosmfAvailableAndOnline();
-                if (zosmf) {
-                    discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to load jwt secret
-                    if (!providers.zosmfSupportsJwt()) {
-                        try {
-                            loadJwtSecret();
-                        } catch (HttpsConfigError exception) {
-                            System.exit(1);
-                        }
-                    }
-
-                    isZosmfReady = true;
-                }
-            }
-        }
-    };
+    private final ZosmfListener zosmfListener;
 
     @Autowired
     public JwtSecurityInitializer(Providers providers, ApimlDiscoveryClient discoveryClient) {
         this.providers = providers;
-        this.discoveryClient = discoveryClient;
+        this.zosmfListener = new ZosmfListener(discoveryClient);
     }
 
     public JwtSecurityInitializer(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, ApimlDiscoveryClient discoveryClient) {
@@ -137,7 +114,7 @@ public class JwtSecurityInitializer {
      * Register event listener
      */
     private void waitUntilZosmfIsUp() {
-        discoveryClient.registerEventListener(zosmfRegisteredListener);
+        zosmfListener.register();
 
         new Thread(() -> {
             try {
@@ -145,26 +122,12 @@ public class JwtSecurityInitializer {
                     .atMost(Duration.FIVE_MINUTES)
                 .with()
                     .pollInterval(Duration.ONE_MINUTE)
-                    .until(this::isZosmfReady);
+                    .until(zosmfListener::isZosmfReady);
             } catch (ConditionTimeoutException e) {
                 apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", "zOSMF");
                 System.exit(1);
             }
         }).start();
-    }
-
-    /**
-     * Awaitility requires a method, can't use an instance variable.
-     */
-    private boolean isZosmfReady() {
-        return isZosmfReady;
-    }
-
-    /**
-     * Only for unit testing the event listener.
-     */
-    EurekaEventListener getZosmfRegisteredListener() {
-        return zosmfRegisteredListener;
     }
 
     /**
@@ -207,5 +170,57 @@ public class JwtSecurityInitializer {
 
         final RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) jwtPublicKey).build();
         return Optional.of(rsaKey.toPublicJWK());
+    }
+
+    /**
+     * Only for unit testing
+     */
+    ZosmfListener getZosmfListener() {
+        return zosmfListener;
+    }
+
+    class ZosmfListener {
+        private boolean isZosmfReady = false;
+        private final ApimlDiscoveryClient discoveryClient;
+
+        private ZosmfListener(ApimlDiscoveryClient discoveryClient) {
+            this.discoveryClient = discoveryClient;
+        }
+
+        // instance variable so can create an accessor for unit testing purposes
+        private final EurekaEventListener zosmfRegisteredListener = new EurekaEventListener() {
+            @Override
+            public void onEvent(EurekaEvent event) {
+                if (event instanceof CacheRefreshedEvent) {
+                    if (providers.isZosmfAvailableAndOnline()) {
+                        discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to load jwt secret
+                        if (!providers.zosmfSupportsJwt()) {
+                            try {
+                                loadJwtSecret();
+                            } catch (HttpsConfigError exception) {
+                                System.exit(1);
+                            }
+                        }
+
+                        isZosmfReady = true;
+                    }
+                }
+            }
+        };
+
+        public void register() {
+            discoveryClient.registerEventListener(zosmfRegisteredListener);
+        }
+
+        public boolean isZosmfReady() {
+            return isZosmfReady;
+        }
+
+        /**
+         * Only for unit testing the event listener.
+         */
+        EurekaEventListener getZosmfRegisteredListener() {
+            return zosmfRegisteredListener;
+        }
     }
 }
