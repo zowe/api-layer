@@ -10,7 +10,7 @@ on:
         branches: [ master ]
 
 jobs:
-    build:
+    runCITests:
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -31,9 +31,9 @@ jobs:
                   path: |
                       ~/.gradle/caches
                       ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                   restore-keys: |
-                      ${{ runner.os }}-gradle-
+                      ${{ runner.os }}-gradle001-
             - name: Cache Node.js modules
               uses: actions/cache@v2
               with:
@@ -45,20 +45,26 @@ jobs:
                   ${{ runner.OS }}-node-
                   ${{ runner.OS }}-
             - name: Build with Gradle
-              run: ./gradlew build runCITests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1 -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword" -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+              run: ./gradlew build runCITests --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1 \
+                -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword" \
+                -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 \
+                -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017 \
+                -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+              env:
+                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
             - name: Store results
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: Package
+                  name: runCITests
                   path: |
                       **/reports/**
                       **/test-results/**
                       **/*.log
             - name: Cleanup Gradle Cache
-                # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
-                # Restoring these files from a GitHub Actions cache might cause problems for future builds.
               run: |
                   rm -f ~/.gradle/caches/modules-2/modules-2.lock
                   rm -f ~/.gradle/caches/modules-2/gc.properties
+                  rm -rf ~/.gradle/caches/build-cache-1
 
