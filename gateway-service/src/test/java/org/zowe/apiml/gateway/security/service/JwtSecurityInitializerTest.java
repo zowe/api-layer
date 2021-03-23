@@ -24,7 +24,7 @@ import org.zowe.apiml.security.HttpsConfigError;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
@@ -138,10 +138,12 @@ class JwtSecurityInitializerTest {
 
             underTest.init();
             verify(discoveryClient, times(1)).registerEventListener(any());
+            assertFalse(underTest.getZosmfListener().isZosmfReady());
 
             EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
             zosmfEventListener.onEvent(new CacheRefreshedEvent());
 
+            assertTrue(underTest.getZosmfListener().isZosmfReady());
             verify(providers, times(2)).isZosmfAvailableAndOnline();
             verify(discoveryClient, times(1)).unregisterEventListener(any());
             assertThat(underTest.getJwtSecret(), is(not(nullValue())));
@@ -156,10 +158,12 @@ class JwtSecurityInitializerTest {
 
             underTest.init();
             verify(discoveryClient, times(1)).registerEventListener(any());
+            assertFalse(underTest.getZosmfListener().isZosmfReady());
 
             EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
             zosmfEventListener.onEvent(new CacheRefreshedEvent());
 
+            assertTrue(underTest.getZosmfListener().isZosmfReady());
             verify(discoveryClient, times(1)).unregisterEventListener(any());
             assertThat(underTest.getJwtSecret(), is(nullValue()));
         }
@@ -172,14 +176,14 @@ class JwtSecurityInitializerTest {
                 .thenReturn(true);
 
             underTest.init();
-
-            underTest.init();
             verify(discoveryClient, times(1)).registerEventListener(any());
+            assertFalse(underTest.getZosmfListener().isZosmfReady());
 
             EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
             zosmfEventListener.onEvent(new CacheRefreshedEvent());
             zosmfEventListener.onEvent(new StatusChangeEvent(null, null));
 
+            assertTrue(underTest.getZosmfListener().isZosmfReady());
             verify(discoveryClient, times(1)).unregisterEventListener(any());
             assertThat(underTest.getJwtSecret(), is(not(nullValue())));
         }
@@ -194,11 +198,13 @@ class JwtSecurityInitializerTest {
 
             underTest.init();
             verify(discoveryClient, times(1)).registerEventListener(any());
+            assertFalse(underTest.getZosmfListener().isZosmfReady());
 
             EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
             zosmfEventListener.onEvent(new CacheRefreshedEvent());
             zosmfEventListener.onEvent(new CacheRefreshedEvent());
 
+            assertTrue(underTest.getZosmfListener().isZosmfReady());
             verify(providers, times(3)).isZosmfAvailableAndOnline();
             verify(discoveryClient, times(1)).unregisterEventListener(any());
             assertThat(underTest.getJwtSecret(), is(not(nullValue())));
