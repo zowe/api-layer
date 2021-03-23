@@ -17,6 +17,8 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
+import org.awaitility.Duration;
+import org.awaitility.core.ConditionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,8 @@ import java.security.Key;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Optional;
+
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 @Service
@@ -59,6 +63,7 @@ public class JwtSecurityInitializer {
 
     private final Providers providers;
     private final ApimlDiscoveryClient discoveryClient;
+    private boolean isZosmfReady = false;
 
     // instance variable so can create an accessor for unit testing purposes
     private final EurekaEventListener zosmfRegisteredListener = new EurekaEventListener() {
@@ -75,9 +80,10 @@ public class JwtSecurityInitializer {
                             System.exit(1);
                         }
                     }
+
+                    isZosmfReady = true;
                 }
             }
-            // TODO timeout and fail gw
         }
     };
 
@@ -114,17 +120,44 @@ public class JwtSecurityInitializer {
                 loadJwtSecret();
             } else if (!providers.isZosmfAvailableAndOnline()) {
                 // zOSMF isn't available at the moment, listen for registration and then check if zOSMF supports JWT
-                discoveryClient.registerEventListener(zosmfRegisteredListener);
+                waitUntilZosmfIsUp();
             } else {
                 // zOSMF is UP and can determine if zOSMF supports JWT or not
                 if (!providers.zosmfSupportsJwt()) {
-                    log.debug("zOSMF is UP and APAR PH12143 was not applied");
+                    log.debug("zOSMF is UP and does not support JWT");
                     loadJwtSecret();
                 } else {
-                    log.debug("zOSMF is UP and APAR PH12143 was applied");
+                    log.debug("zOSMF is UP and supports JWT");
                 }
             }
         }
+    }
+
+    /**
+     * Register event listener
+     */
+    private void waitUntilZosmfIsUp() {
+        discoveryClient.registerEventListener(zosmfRegisteredListener);
+
+        new Thread(() -> {
+            try {
+                await()
+                    .atMost(Duration.FIVE_MINUTES)
+                .with()
+                    .pollInterval(Duration.ONE_MINUTE)
+                    .until(this::isZosmfReady);
+            } catch (ConditionTimeoutException e) {
+                apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", "zOSMF");
+                System.exit(1);
+            }
+        }).start();
+    }
+
+    /**
+     * Awaitility requires a method, can't use an instance variable.
+     */
+    private boolean isZosmfReady() {
+        return isZosmfReady;
     }
 
     /**
@@ -175,5 +208,4 @@ public class JwtSecurityInitializer {
         final RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) jwtPublicKey).build();
         return Optional.of(rsaKey.toPublicJWK());
     }
-
 }

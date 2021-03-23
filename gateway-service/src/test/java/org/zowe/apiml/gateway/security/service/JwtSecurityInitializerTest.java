@@ -203,11 +203,6 @@ class JwtSecurityInitializerTest {
             verify(discoveryClient, times(1)).unregisterEventListener(any());
             assertThat(underTest.getJwtSecret(), is(not(nullValue())));
         }
-
-        @Test
-        void givenZosmfNeverRegistered_thenTimeoutAndFailGatewayStart() {
-            // TODO not sure if can test this
-        }
     }
 }
 
