@@ -1,7 +1,7 @@
 # This workflow will build a Java project with Gradle
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 
-name: CI Testing Against zOSMF with RSU2012 applied
+name: CI Testing with zOSMF without JWT APAR applied
 
 on:
     push:
@@ -45,7 +45,10 @@ jobs:
                   ${{ runner.OS }}-node-
                   ${{ runner.OS }}-
             - name: Build with Gradle
-              run: ./gradlew build runCITests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1 -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword" -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017 -Dzosmf.appliedApars=PH12143,RSU2012
+              run: ./gradlew build runCITests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+              -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+              -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+              -Dzosmf.appliedApars=
             - name: Store results
               uses: actions/upload-artifact@v2
               if: always()
