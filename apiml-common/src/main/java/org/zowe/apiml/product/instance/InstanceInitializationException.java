@@ -21,11 +21,9 @@ public class InstanceInitializationException extends RuntimeException {
 
     public void uselessMethodPleaseDeleteMe() {
         System.out.println("WOW");
-        System.out.println("WOW");
+        System.out.println("SUGOI");
 
-        System.out.println("WOW");
-        System.out.println("WOW");
-        System.out.println("WOW");
+
         System.out.println("WOW");
 
     }
