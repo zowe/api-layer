@@ -60,6 +60,27 @@ public class JwtSecurityInitializer {
     private final Providers providers;
     private final ApimlDiscoveryClient discoveryClient;
 
+    // instance variable so can create an accessor for unit testing purposes
+    private final EurekaEventListener zosmfRegisteredListener = new EurekaEventListener() {
+        @Override
+        public void onEvent(EurekaEvent event) {
+            if (event instanceof CacheRefreshedEvent) {
+                boolean zosmf = providers.isZosmfAvailableAndOnline();
+                if (zosmf) {
+                    discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to load jwt secret
+                    if (!providers.zosmfSupportsJwt()) {
+                        try {
+                            loadJwtSecret();
+                        } catch (HttpsConfigError exception) {
+                            System.exit(1);
+                        }
+                    }
+                }
+            }
+            // TODO timeout and fail gw
+        }
+    };
+
     @Autowired
     public JwtSecurityInitializer(Providers providers, ApimlDiscoveryClient discoveryClient) {
         this.providers = providers;
@@ -92,8 +113,8 @@ public class JwtSecurityInitializer {
                 log.debug("Configuration indicates zOSMF supports LTPA token");
                 loadJwtSecret();
             } else if (!providers.isZosmfAvailableAndOnline()) {
-                // zOSMF isn't available at the moment, wait for some time before able to determine if zOSMF supports JWT
-                waitUntilZosmfIsUp();
+                // zOSMF isn't available at the moment, listen for registration and then check if zOSMF supports JWT
+                discoveryClient.registerEventListener(zosmfRegisteredListener);
             } else {
                 // zOSMF is UP and can determine if zOSMF supports JWT or not
                 if (!providers.zosmfSupportsJwt()) {
@@ -107,31 +128,10 @@ public class JwtSecurityInitializer {
     }
 
     /**
-     * The PostConstruct happens on the main thread and as such waiting on this thread stops the whole application.
-     * Therefore the waiting is externalized to another thread, which kills the VM if the setup is unsuccesfull. .
+     * Only for unit testing the event listener.
      */
-    private void waitUntilZosmfIsUp() {
-        EurekaEventListener zosmfRegisteredListener = new EurekaEventListener() {
-            @Override
-            public void onEvent(EurekaEvent event) {
-                if (event instanceof CacheRefreshedEvent) {
-                    boolean zosmf = providers.isZosmfAvailableAndOnline();
-                    if (zosmf) {
-                        discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to load jwt secret
-                        if (!providers.zosmfSupportsJwt()) {
-                            try {
-                                loadJwtSecret();
-                            } catch (HttpsConfigError exception) {
-                                System.exit(1);
-                            }
-                        }
-                    }
-                }
-                // TODO timeout and fail gw
-            }
-        };
-
-        discoveryClient.registerEventListener(zosmfRegisteredListener);
+    EurekaEventListener getZosmfRegisteredListener() {
+        return zosmfRegisteredListener;
     }
 
     /**

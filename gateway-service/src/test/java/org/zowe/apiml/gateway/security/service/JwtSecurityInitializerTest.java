@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
-import org.awaitility.Duration;
+import com.netflix.discovery.CacheRefreshedEvent;
+import com.netflix.discovery.EurekaEventListener;
+import com.netflix.discovery.StatusChangeEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,14 +22,11 @@ import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.security.HttpsConfigError;
 
-import java.util.concurrent.TimeUnit;
-
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 class JwtSecurityInitializerTest {
@@ -77,23 +76,6 @@ class JwtSecurityInitializerTest {
         }
 
         @Test
-        void givenZosmfIsntRegisteredAtTheStartupButRegistersLater_thenProperKeysAreInitialized() {
-            // TODO this test needs to change
-            when(providers.zosmfSupportsJwt()).thenReturn(false);
-            when(providers.isZosmfAvailableAndOnline())
-                .thenReturn(false)
-                .thenReturn(true);
-
-            underTest.init();
-
-            await()
-                .atMost(Duration.TEN_SECONDS)
-            .with()
-                .pollInterval(new Duration(20, TimeUnit.MILLISECONDS))
-                .until(underTest::getJwtSecret, is(not(nullValue())));
-        }
-
-        @Test
         void givenZosmfConfiguredWithLtpa_thenProperKeysAreInitialized() {
             when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(true);
 
@@ -136,6 +118,95 @@ class JwtSecurityInitializerTest {
             when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(true);
 
             assertThrows(HttpsConfigError.class, () -> underTest.init());
+        }
+    }
+
+    @Nested
+    class WhenZosmfNotOnlineAndAvailableAtStart {
+
+        @BeforeEach
+        void setUp() {
+            underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+        }
+
+        @Test
+        void givenLtpaZosmfIsntRegisteredAtTheStartupButRegistersLater_thenProperKeysAreInitialized() {
+            when(providers.zosmfSupportsJwt()).thenReturn(false);
+            when(providers.isZosmfAvailableAndOnline())
+                .thenReturn(false)
+                .thenReturn(true);
+
+            underTest.init();
+            verify(discoveryClient, times(1)).registerEventListener(any());
+
+            EurekaEventListener zosmfEventListener = underTest.getZosmfRegisteredListener();
+            zosmfEventListener.onEvent(new CacheRefreshedEvent());
+
+            verify(providers, times(2)).isZosmfAvailableAndOnline();
+            verify(discoveryClient, times(1)).unregisterEventListener(any());
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
+
+        @Test
+        void givenJwtZosmfIsntRegisteredAtStartupButRegistersLater_thenKeyAreNotInitialized() {
+            when(providers.zosmfSupportsJwt()).thenReturn(true);
+            when(providers.isZosmfAvailableAndOnline())
+                .thenReturn(false)
+                .thenReturn(true);
+
+            underTest.init();
+            verify(discoveryClient, times(1)).registerEventListener(any());
+
+            EurekaEventListener zosmfEventListener = underTest.getZosmfRegisteredListener();
+            zosmfEventListener.onEvent(new CacheRefreshedEvent());
+
+            verify(discoveryClient, times(1)).unregisterEventListener(any());
+            assertThat(underTest.getJwtSecret(), is(nullValue()));
+        }
+
+        @Test
+        void givenMultipleEurekaEvents_thenCheckZosmfWhenCacheRefreshedEvent() {
+            when(providers.zosmfSupportsJwt()).thenReturn(false);
+            when(providers.isZosmfAvailableAndOnline())
+                .thenReturn(false)
+                .thenReturn(true);
+
+            underTest.init();
+
+            underTest.init();
+            verify(discoveryClient, times(1)).registerEventListener(any());
+
+            EurekaEventListener zosmfEventListener = underTest.getZosmfRegisteredListener();
+            zosmfEventListener.onEvent(new CacheRefreshedEvent());
+            zosmfEventListener.onEvent(new StatusChangeEvent(null, null));
+
+            verify(discoveryClient, times(1)).unregisterEventListener(any());
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
+
+        @Test
+        void givenCacheRefreshedEvents_thenCheckZosmfForEach() {
+            when(providers.zosmfSupportsJwt()).thenReturn(false);
+            when(providers.isZosmfAvailableAndOnline())
+                .thenReturn(false)
+                .thenReturn(false)
+                .thenReturn(true);
+
+            underTest.init();
+            verify(discoveryClient, times(1)).registerEventListener(any());
+
+            EurekaEventListener zosmfEventListener = underTest.getZosmfRegisteredListener();
+            zosmfEventListener.onEvent(new CacheRefreshedEvent());
+            zosmfEventListener.onEvent(new CacheRefreshedEvent());
+
+            verify(providers, times(3)).isZosmfAvailableAndOnline();
+            verify(discoveryClient, times(1)).unregisterEventListener(any());
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
+
+        @Test
+        void givenZosmfNeverRegistered_thenTimeoutAndFailGatewayStart() {
+            // TODO not sure if can test this
         }
     }
 }
