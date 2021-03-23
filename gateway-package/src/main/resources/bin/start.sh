@@ -140,8 +140,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -Deureka.client.registry-fetch-interval-seconds=5 \
-    -Deureka.instance.lease-expiration-duration-in-seconds=45 \
     -jar ${JAR_FILE} &
 pid=$!
 echo "pid=${pid}"

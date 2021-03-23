@@ -101,8 +101,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
-    -Deureka.server.leaseRenewalIntervalInseconds=10 \
-    -Deureka.server.renewal-percent-threshold=0.85 \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"
