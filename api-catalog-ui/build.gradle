@@ -38,11 +38,13 @@ task npmTest(type: NpmTask) {
     group = 'npm'
     description = "Javascript unit tests"
 
-    inputs.dir('frontend/src')
-    inputs.file('frontend/package.json')
+    inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.file('frontend/test-results/test-report-unit.html')
     outputs.dir('frontend/coverage')
+
+    outputs.cacheIf { true }
 
     args = ['run', 'test']
 }
