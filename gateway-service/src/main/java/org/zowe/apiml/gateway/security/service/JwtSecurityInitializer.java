@@ -191,19 +191,17 @@ public class JwtSecurityInitializer {
         private final EurekaEventListener zosmfRegisteredListener = new EurekaEventListener() {
             @Override
             public void onEvent(EurekaEvent event) {
-                if (event instanceof CacheRefreshedEvent) {
-                    if (providers.isZosmfAvailableAndOnline()) {
-                        discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to load jwt secret
-                        if (!providers.zosmfSupportsJwt()) {
-                            try {
-                                loadJwtSecret();
-                            } catch (HttpsConfigError exception) {
-                                System.exit(1);
-                            }
+                if (event instanceof CacheRefreshedEvent && providers.isZosmfAvailableAndOnline()) {
+                    discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to load jwt secret
+                    if (!providers.zosmfSupportsJwt()) {
+                        try {
+                            loadJwtSecret();
+                        } catch (HttpsConfigError exception) {
+                            System.exit(1);
                         }
-
-                        isZosmfReady = true;
                     }
+
+                    isZosmfReady = true;
                 }
             }
         };

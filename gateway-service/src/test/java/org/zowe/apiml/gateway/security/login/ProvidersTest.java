@@ -12,6 +12,10 @@ package org.zowe.apiml.gateway.security.login;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
@@ -20,6 +24,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
 import java.util.Collections;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -116,32 +121,17 @@ class ProvidersTest {
     }
 
     @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class whenJwtSupportIsVerified {
-        @Test
-        void givenLoginEndpointAndJwtBuilderEndpointExist_thenSupportJwtReturnsTrue() {
-            when(zosmfService.loginEndpointExists()).thenReturn(true);
-            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(true);
+
+        @ParameterizedTest
+        @MethodSource("provideZosmfConfiguration")
+        void givenZosmfConfiguration_thenSupportJwtReturnsProperly(boolean loginEndpointExists, boolean jwtBuilderEndpointExists, boolean zosmfShouldSupportJwt) {
+            when(zosmfService.loginEndpointExists()).thenReturn(loginEndpointExists);
+            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(jwtBuilderEndpointExists);
             when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(AUTO);
 
-            assertThat(underTest.zosmfSupportsJwt(), is(true));
-        }
-
-        @Test
-        void givenLoginEndpointDoesntExist_thenSupportJwtReturnsFalse() {
-            when(zosmfService.loginEndpointExists()).thenReturn(false);
-            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(true);
-            when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(AUTO);
-
-            assertThat(underTest.zosmfSupportsJwt(), is(false));
-        }
-
-        @Test
-        void givenJwtBuilderEndpointDoesntExist_thenSupportJwtReturnsFalse() {
-            when(zosmfService.loginEndpointExists()).thenReturn(true);
-            when(zosmfService.jwtBuilderEndpointExists()).thenReturn(false);
-            when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(AUTO);
-
-            assertThat(underTest.zosmfSupportsJwt(), is(false));
+            assertThat(underTest.zosmfSupportsJwt(), is(zosmfShouldSupportJwt));
         }
 
         @Test
@@ -160,6 +150,14 @@ class ProvidersTest {
             when(zosmfService.jwtBuilderEndpointExists()).thenReturn(false);
             when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(JWT);
             assertThat(underTest.zosmfSupportsJwt(), is(true));
+        }
+
+        private Stream<Arguments> provideZosmfConfiguration() {
+            return Stream.of(
+                Arguments.of(true, true, true),
+                Arguments.of(false, true, false),
+                Arguments.of(true, false, false)
+            );
         }
     }
 
