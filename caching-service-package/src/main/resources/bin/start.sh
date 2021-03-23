@@ -71,6 +71,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
   -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY} \
   -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE} \
+  -Dcaching.storage.mode=${ZWE_CACHING_SERVICE_PERSISTENT} \
   -Denvironment.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=true \
