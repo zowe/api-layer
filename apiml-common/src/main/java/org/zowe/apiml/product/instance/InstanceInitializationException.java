@@ -24,7 +24,5 @@ public class InstanceInitializationException extends RuntimeException {
         System.out.println("SUGOI");
 
 
-        System.out.println("WOW");
-
     }
 }
