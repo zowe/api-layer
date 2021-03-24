@@ -8,6 +8,7 @@ This document is a living summary of conventions and best practices for developm
   - [Code Guidelines](#code-guidelines)
   - [File Naming Guidelines](#file-naming-guidelines)
   - [Branch Naming Guidelines](#branch-naming-guidelines)
+  - [Commit Message Structure Guideline](#commit-message-structure-guideline)
   - [Testing Guidelines](#testing-guidelines)
   - [Build Process Guidelines](#build-process-guidelines)
   - [Documentation Guidelines](#documentation-guidelines)
