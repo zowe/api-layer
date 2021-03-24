@@ -35,6 +35,11 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [ ! -z ${ZWE_CACHING_SERVICE_VSAM_DATASET} ]
+then
+    VSAM_FILE_NAME=//\'${ZWE_CACHING_SERVICE_VSAM_DATASET}\'
+fi
+
 if [ `uname` = "OS/390" ]
 then
     QUICK_START=-Xquickstart
@@ -72,7 +77,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY} \
   -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE} \
   -Dcaching.storage.mode=${ZWE_CACHING_SERVICE_PERSISTENT:-inMemory} \
-  -Dcaching.storage.vsam.name=${ZWE_CACHING_SERVICE_VSAM_DATASET} \
+  -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
   -Denvironment.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=true \
@@ -86,6 +91,35 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -jar ${JAR_FILE} &
+echo "${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
+   ${QUICK_START} \
+  -Dibm.serversocket.recover=true \
+  -Dfile.encoding=UTF-8 \
+  -Djava.io.tmpdir=/tmp \
+  -Dspring.profiles.include=$LOG_LEVEL \
+  -Dapiml.service.port=${ZWE_CACHING_SERVICE_PORT} \
+  -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
+  -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
+  -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
+  -Dapiml.service.customMetadata.apiml.gatewayPort=${GATEWAY_PORT} \
+  -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
+  -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY} \
+  -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE} \
+  -Dcaching.storage.mode=${ZWE_CACHING_SERVICE_PERSISTENT:-inMemory} \
+  -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
+  -Denvironment.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
+  -Dserver.address=0.0.0.0 \
+  -Dserver.ssl.enabled=true \
+  -Dserver.ssl.keyStore=${KEYSTORE} \
+  -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
+  -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
+  -Dserver.ssl.keyAlias=${KEY_ALIAS} \
+  -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
+  -Dserver.ssl.trustStore=${TRUSTSTORE} \
+  -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
+  -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
+  -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+  -jar ${JAR_FILE}"
 pid=$!
 echo "pid=${pid}"
 wait
