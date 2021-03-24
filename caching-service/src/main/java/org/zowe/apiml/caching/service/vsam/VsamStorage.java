@@ -181,4 +181,9 @@ public class VsamStorage implements Storage {
         return result;
     }
 
+    @Override
+    public void deleteForService(String serviceId) {
+
+    }
+
 }

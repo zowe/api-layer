@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.api;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -33,10 +34,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-public class CachingControllerTest {
+class CachingControllerTest {
     private static final String SERVICE_ID = "test-service";
     private static final String KEY = "key";
     private static final String VALUE = "value";
@@ -49,10 +49,6 @@ public class CachingControllerTest {
     private final MessageService messageService = new YamlMessageService("/caching-log-messages.yml");
     private CachingController underTest;
 
-    static Stream<String> emptyStrings() {
-        return Stream.of("", null);
-    }
-
     @BeforeEach
     void setUp() {
         mockRequest = mock(HttpServletRequest.class);
@@ -62,132 +58,173 @@ public class CachingControllerTest {
         underTest = new CachingController(mockStorage, messageService);
     }
 
-    @Test
-    void givenStorageReturnsValidValue_whenGetByKey_thenReturnProperValue() {
-        when(mockStorage.read(SERVICE_ID, KEY)).thenReturn(KEY_VALUE);
+    @Nested
+    class WhenLoadingAllKeysForService {
+        @Test
+        void givenStorageReturnsValidValues_thenReturnProperValues() {
+            Map<String, KeyValue> values = new HashMap<>();
+            values.put(KEY, new KeyValue("key2", VALUE));
+            when(mockStorage.readForService(SERVICE_ID)).thenReturn(values);
 
-        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+            ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
 
-        KeyValue body = (KeyValue) response.getBody();
-        assertThat(body.getValue(), is(VALUE));
+            Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
+            assertThat(result, is(values));
+        }
+
+        @Test
+        void givenStorageThrowsInternalException_thenProperlyReturnError() {
+            when(mockStorage.readForService(SERVICE_ID)).thenThrow(new RuntimeException());
+
+            ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
     }
 
+    @Nested
+    class WhenDeletingAllKeysForService {
+        @Test
+        void givenStorageRaisesNoException_thenReturnOk() {
+            ResponseEntity<?> response = underTest.deleteAllValues(mockRequest);
 
-    @Test
-    void givenNoKey_whenGetByKey_thenResponseBadRequest() {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided", SERVICE_ID).mapToView();
+            verify(mockStorage).deleteForService(SERVICE_ID);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        }
 
-        ResponseEntity<?> response = underTest.getValue(null, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), is(expectedBody));
+        @Test
+        void givenStorageThrowsInternalException_thenProperlyReturnError() {
+            when(mockStorage.readForService(SERVICE_ID)).thenThrow(new RuntimeException());
+
+            ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
     }
 
-    @Test
-    void givenStoreWithNoKey_whenGetByKey_thenResponseNotFound() {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
-        when(mockStorage.read(any(), any())).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), new Exception("the cause"), KEY, SERVICE_ID));
+    @Nested
+    class WhenGetKey {
+        @Test
+        void givenStorageReturnsValidValue_thenReturnProperValue() {
+            when(mockStorage.read(SERVICE_ID, KEY)).thenReturn(KEY_VALUE);
 
-        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-        assertThat(response.getBody(), is(expectedBody));
+            ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+
+            KeyValue body = (KeyValue) response.getBody();
+            assertThat(body.getValue(), is(VALUE));
+        }
+
+
+        @Test
+        void givenNoKey_thenResponseBadRequest() {
+            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided", SERVICE_ID).mapToView();
+
+            ResponseEntity<?> response = underTest.getValue(null, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+            assertThat(response.getBody(), is(expectedBody));
+        }
+
+        @Test
+        void givenStoreWithNoKey_thenResponseNotFound() {
+            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
+            when(mockStorage.read(any(), any())).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), new Exception("the cause"), KEY, SERVICE_ID));
+
+            ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+            assertThat(response.getBody(), is(expectedBody));
+        }
+
+        @Test
+        void givenErrorReadingStorage_thenResponseInternalError() {
+            when(mockStorage.read(any(), any())).thenThrow(new RuntimeException("error"));
+
+            ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
     }
 
-    @Test
-    void givenErrorReadingStorage_whenGetByKey_thenResponseInternalError() {
-        when(mockStorage.read(any(), any())).thenThrow(new RuntimeException("error"));
+    @Nested
+    class WhenCreateKey {
+        @Test
+        void givenStorage_thenResponseCreated() {
+            when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenReturn(KEY_VALUE);
 
-        ResponseEntity<?> response = underTest.getValue(KEY, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+            ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+            assertThat(response.getBody(), is(nullValue()));
+        }
+
+        @Test
+        void givenStorageWithExistingKey_thenResponseConflict() {
+            when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), KEY));
+            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyCollision", KEY).mapToView();
+
+            ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
+            assertThat(response.getBody(), is(expectedBody));
+        }
+
+        @Test
+        void givenStorageWithError_thenResponseInternalError() {
+            when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenThrow(new RuntimeException("error"));
+
+            ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+
     }
 
-    @Test
-    void givenStorageReturnsValidValues_whenGetByService_thenReturnProperValues() {
-        Map<String, KeyValue> values = new HashMap<>();
-        values.put(KEY, new KeyValue("key2", VALUE));
-        when(mockStorage.readForService(SERVICE_ID)).thenReturn(values);
+    @Nested
+    class WhenUpdateKey {
+        @Test
+        void givenStorageWithKey_thenResponseNoContent() {
+            when(mockStorage.update(SERVICE_ID, KEY_VALUE)).thenReturn(KEY_VALUE);
 
-        ResponseEntity<?> response = underTest.getAllValues(mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+            ResponseEntity<?> response = underTest.update(KEY_VALUE, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.NO_CONTENT));
+            assertThat(response.getBody(), is(nullValue()));
+        }
 
-        Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
-        assertThat(result, is(values));
+        @Test
+        void givenStorageWithNoKey_thenResponseNotFound() {
+            when(mockStorage.update(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), KEY, SERVICE_ID));
+            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
+
+            ResponseEntity<?> response = underTest.update(KEY_VALUE, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+            assertThat(response.getBody(), is(expectedBody));
+        }
     }
 
+    @Nested
+    class WhenDeleteKey {
+        @Test
+        void givenStorageWithKey_thenResponseNoContent() {
+            when(mockStorage.delete(any(), any())).thenReturn(KEY_VALUE);
 
-    @Test
-    void givenStorage_whenCreateKey_thenResponseCreated() {
-        when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenReturn(KEY_VALUE);
+            ResponseEntity<?> response = underTest.delete(KEY, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.NO_CONTENT));
+            assertThat(response.getBody(), is(KEY_VALUE));
+        }
 
-        ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
-        assertThat(response.getBody(), is(nullValue()));
-    }
+        @Test
+        void givenNoKey_thenResponseBadRequest() {
+            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided").mapToView();
 
-    @Test
-    void givenStorageWithExistingKey_whenCreateKey_thenResponseConflict() {
-        when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), KEY));
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyCollision", KEY).mapToView();
+            ResponseEntity<?> response = underTest.delete(null, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+            assertThat(response.getBody(), is(expectedBody));
+        }
 
-        ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
-        assertThat(response.getBody(), is(expectedBody));
-    }
+        @Test
+        void givenStorageWithNoKey_thenResponseNotFound() {
+            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
+            when(mockStorage.delete(any(), any())).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), KEY, SERVICE_ID));
 
-    @Test
-    void givenStorageWithError_whenCreateKey_thenResponseInternalError() {
-        when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenThrow(new RuntimeException("error"));
-
-        ResponseEntity<?> response = underTest.createKey(KEY_VALUE, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
-    }
-
-
-    @Test
-    void givenStorageWithKey_whenUpdateKey_thenResponseNoContent() {
-        when(mockStorage.update(SERVICE_ID, KEY_VALUE)).thenReturn(KEY_VALUE);
-
-        ResponseEntity<?> response = underTest.update(KEY_VALUE, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.NO_CONTENT));
-        assertThat(response.getBody(), is(nullValue()));
-    }
-
-    @Test
-    void givenStorageWithNoKey_whenUpdateKey_thenResponseNotFound() {
-        when(mockStorage.update(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), KEY, SERVICE_ID));
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
-
-        ResponseEntity<?> response = underTest.update(KEY_VALUE, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
-    void givenStorageWithKey_whenDeleteKey_thenResponseNoContent() {
-        when(mockStorage.delete(any(), any())).thenReturn(KEY_VALUE);
-
-        ResponseEntity<?> response = underTest.delete(KEY, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.NO_CONTENT));
-        assertThat(response.getBody(), is(KEY_VALUE));
-    }
-
-    @Test
-    void givenNoKey_whenDeleteKey_thenResponseBadRequest() {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided").mapToView();
-
-        ResponseEntity<?> response = underTest.delete(null, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), is(expectedBody));
-    }
-
-    @Test
-    void givenStorageWithNoKey_whenDeleteKey_thenResponseNotFound() {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
-        when(mockStorage.delete(any(), any())).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), KEY, SERVICE_ID));
-
-        ResponseEntity<?> response = underTest.delete(KEY, mockRequest);
-        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-        assertThat(response.getBody(), is(expectedBody));
+            ResponseEntity<?> response = underTest.delete(KEY, mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+            assertThat(response.getBody(), is(expectedBody));
+        }
     }
 
     @Test
@@ -226,10 +263,14 @@ public class CachingControllerTest {
         when(mockStorage.read(SERVICE_ID, KEY)).thenReturn(KEY_VALUE);
         when(httpServletRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
         ResponseEntity<?> response = underTest.getAllValues(httpServletRequest);
+
         assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.missingCertificate",
             "parameter").mapToView();
         assertThat(response.getBody(), is(expectedBody));
     }
 
+    static Stream<String> emptyStrings() {
+        return Stream.of("", null);
+    }
 }
