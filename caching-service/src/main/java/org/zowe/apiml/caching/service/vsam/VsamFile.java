@@ -72,7 +72,7 @@ public class VsamFile implements Closeable {
 
         if (!REGEX_CORRECT_FILENAME.matcher(vsamConfig.getFileName()).find()) {
             String nonConformance = "VsamFile name does not conform to //'VSAM.DATASET.NAME' pattern";
-            apimlLog.log(ERROR_INITIALIZING_STORAGE_MESSAGE_KEY, "vsam", "wrong Configuration", nonConformance);
+            apimlLog.log(ERROR_INITIALIZING_STORAGE_MESSAGE_KEY, "vsam", "wrong vsam name: " + vsamConfig.getFileName(), nonConformance);
 
             throw new IllegalArgumentException(nonConformance);
         }
