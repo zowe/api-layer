@@ -52,14 +52,6 @@ class JwtSecurityInitializerTest {
         }
 
         @Test
-        void givenZosmfIsUsedWithValidJwt_thenJwtSecretIsIgnored() {
-            when(providers.zosmfSupportsJwt()).thenReturn(true);
-
-            underTest.init();
-            assertThat(underTest.getJwtSecret(), is(nullValue()));
-        }
-
-        @Test
         void givenSafIsUsed_thenProperKeysAreInitialized() {
             when(providers.isZosfmUsed()).thenReturn(false);
 
@@ -130,8 +122,7 @@ class JwtSecurityInitializerTest {
         }
 
         @Test
-        void givenLtpaZosmfIsntRegisteredAtTheStartupButRegistersLater_thenProperKeysAreInitialized() {
-            when(providers.zosmfSupportsJwt()).thenReturn(false);
+        void givenZosmfIsntRegisteredAtTheStartupButRegistersLater_thenProperKeysAreInitialized() {
             when(providers.isZosmfAvailableAndOnline())
                 .thenReturn(false)
                 .thenReturn(true);
@@ -150,27 +141,7 @@ class JwtSecurityInitializerTest {
         }
 
         @Test
-        void givenJwtZosmfIsntRegisteredAtStartupButRegistersLater_thenKeyAreNotInitialized() {
-            when(providers.zosmfSupportsJwt()).thenReturn(true);
-            when(providers.isZosmfAvailableAndOnline())
-                .thenReturn(false)
-                .thenReturn(true);
-
-            underTest.init();
-            verify(discoveryClient, times(1)).registerEventListener(any());
-            assertFalse(underTest.getZosmfListener().isZosmfReady());
-
-            EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
-            zosmfEventListener.onEvent(new CacheRefreshedEvent());
-
-            assertTrue(underTest.getZosmfListener().isZosmfReady());
-            verify(discoveryClient, times(1)).unregisterEventListener(any());
-            assertThat(underTest.getJwtSecret(), is(nullValue()));
-        }
-
-        @Test
         void givenMultipleEurekaEvents_thenCheckZosmfWhenCacheRefreshedEvent() {
-            when(providers.zosmfSupportsJwt()).thenReturn(false);
             when(providers.isZosmfAvailableAndOnline())
                 .thenReturn(false)
                 .thenReturn(true);
@@ -190,7 +161,6 @@ class JwtSecurityInitializerTest {
 
         @Test
         void givenCacheRefreshedEvents_thenCheckZosmfForEach() {
-            when(providers.zosmfSupportsJwt()).thenReturn(false);
             when(providers.isZosmfAvailableAndOnline())
                 .thenReturn(false)
                 .thenReturn(false)

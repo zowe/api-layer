@@ -85,27 +85,21 @@ public class JwtSecurityInitializer {
 
     @PostConstruct
     public void init() {
-        // zOSMF isn't the authentication provider.
+        loadJwtSecret();
+
+        // check if JWT secret is actually needed and if so validate it
         if (!providers.isZosfmUsed()) {
             log.debug("zOSMF isn't used as the Authentication provider");
-            loadJwtSecret();
-            // zOSMF is authentication provider
+            validateJwtSecret();
         } else {
             log.debug("zOSMF is used as authentication provider");
             if (providers.isZosmfConfigurationSetToLtpa()) {
                 log.debug("Configuration indicates zOSMF supports LTPA token");
-                loadJwtSecret();
-            } else if (!providers.isZosmfAvailableAndOnline()) {
-                // zOSMF isn't available at the moment, listen for registration and then check if zOSMF supports JWT
-                waitUntilZosmfIsUp();
+                validateJwtSecret();
+            } else if (providers.isZosmfAvailableAndOnline()) {
+                validateInitializationAgainstZosmf();
             } else {
-                // zOSMF is UP and can determine if zOSMF supports JWT or not
-                if (!providers.zosmfSupportsJwt()) {
-                    log.debug("zOSMF is UP and does not support JWT");
-                    loadJwtSecret();
-                } else {
-                    log.debug("zOSMF is UP and supports JWT");
-                }
+                validateInitializationWhenZosmfIsAvailable();
             }
         }
     }
@@ -113,7 +107,7 @@ public class JwtSecurityInitializer {
     /**
      * Register event listener
      */
-    private void waitUntilZosmfIsUp() {
+    private void validateInitializationWhenZosmfIsAvailable() {
         zosmfListener.register();
 
         new Thread(() -> {
@@ -131,7 +125,7 @@ public class JwtSecurityInitializer {
     }
 
     /**
-     * Load the JWT secret. If there is an configuration issue the error is thrown.
+     * Load the JWT secret. If there is a configuration issue the error is thrown.
      */
     private void loadJwtSecret() {
         signatureAlgorithm = SignatureAlgorithm.RS256;
@@ -143,11 +137,29 @@ public class JwtSecurityInitializer {
         } catch (HttpsConfigError er) {
             apimlLog.log("org.zowe.apiml.gateway.jwtInitConfigError", er.getCode(), er.getMessage());
         }
+    }
 
+    /**
+     * Validate JWT secret. If there is an issue fail the Gateway startup. Should only validate the JWT secret
+     * when the secret is required.
+     */
+    private void validateJwtSecret() {
         if (jwtSecret == null || jwtPublicKey == null) {
-            String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
             apimlLog.log("org.zowe.apiml.gateway.jwtKeyMissing", keyAlias, keyStore);
+
+            String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
+            HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
+                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
             throw new HttpsConfigError(errorMessage, HttpsConfigError.ErrorCode.WRONG_KEY_ALIAS, config);
+        }
+    }
+
+    private void validateInitializationAgainstZosmf() {
+        if (!providers.zosmfSupportsJwt()) {
+            log.debug("zOSMF is UP and does not support JWT");
+            validateJwtSecret();
+        } else {
+            log.debug("zOSMF is UP and supports JWT");
         }
     }
 
@@ -192,16 +204,14 @@ public class JwtSecurityInitializer {
             @Override
             public void onEvent(EurekaEvent event) {
                 if (event instanceof CacheRefreshedEvent && providers.isZosmfAvailableAndOnline()) {
-                    discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to load jwt secret
-                    if (!providers.zosmfSupportsJwt()) {
-                        try {
-                            loadJwtSecret();
-                        } catch (HttpsConfigError exception) {
-                            System.exit(1);
-                        }
-                    }
-
+                    discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to validate jwt secret
                     isZosmfReady = true;
+
+                    try {
+                        validateInitializationAgainstZosmf();
+                    } catch (HttpsConfigError e) {
+                        System.exit(1);
+                    }
                 }
             }
         };
