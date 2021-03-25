@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.vsam;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.service.EvictionStrategy;
@@ -40,32 +41,35 @@ class EvictionStrategyProducerTest {
         vsamFile = mock(VsamFile.class);
     }
 
-    @Test
-    void givenUseOldStrategy_whenGetStrategy_thenReturnOldestStrategy() {
-        generalConfig.setEvictionStrategy(Strategies.REMOVE_OLDEST.getKey());
+    @Nested
+    class WhenGetStrategy {
+        @Test
+        void givenUseOldStrategy_thenReturnOldestStrategy() {
+            generalConfig.setEvictionStrategy(Strategies.REMOVE_OLDEST.getKey());
 
-        underTest = new EvictionStrategyProducer(generalConfig, vsamConfig, messageService);
-        EvictionStrategy result = underTest.evictionStrategy(vsamFile);
-        assertThat(result, instanceOf(RemoveOldestStrategy.class));
-    }
+            underTest = new EvictionStrategyProducer(generalConfig, vsamConfig, messageService);
+            EvictionStrategy result = underTest.evictionStrategy(vsamFile);
+            assertThat(result, instanceOf(RemoveOldestStrategy.class));
+        }
 
-    @Test
-    void givenUseRejectStrategy_whenGetStrategy_thenReturnRejectStrategy() {
-        generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
+        @Test
+        void givenUseRejectStrategy_thenReturnRejectStrategy() {
+            generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
 
-        underTest = new EvictionStrategyProducer(generalConfig, vsamConfig, messageService);
-        EvictionStrategy result = underTest.evictionStrategy(vsamFile);
-        assertThat(result, instanceOf(RejectStrategy.class));
-    }
+            underTest = new EvictionStrategyProducer(generalConfig, vsamConfig, messageService);
+            EvictionStrategy result = underTest.evictionStrategy(vsamFile);
+            assertThat(result, instanceOf(RejectStrategy.class));
+        }
 
-    @Test
-    void givenExistingRejectStrategy_whenGetRejectStrategy_thenReturnExistingStrategy() {
-        generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
-        underTest = new EvictionStrategyProducer(generalConfig, vsamConfig, messageService);
+        @Test
+        void givenExistingRejectStrategy_thenReturnExistingStrategy() {
+            generalConfig.setEvictionStrategy(Strategies.REJECT.getKey());
+            underTest = new EvictionStrategyProducer(generalConfig, vsamConfig, messageService);
 
-        EvictionStrategy first = underTest.evictionStrategy(vsamFile);
-        EvictionStrategy second = underTest.evictionStrategy(vsamFile);
-        assertThat(second, is(first));
+            EvictionStrategy first = underTest.evictionStrategy(vsamFile);
+            EvictionStrategy second = underTest.evictionStrategy(vsamFile);
+            assertThat(second, is(first));
 
+        }
     }
 }

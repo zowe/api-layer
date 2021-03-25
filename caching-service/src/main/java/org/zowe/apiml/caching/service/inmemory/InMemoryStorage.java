@@ -107,7 +107,7 @@ public class InMemoryStorage implements Storage {
 
     @Override
     public void deleteForService(String serviceId) {
-
+        storage.remove(serviceId);
     }
 
     private boolean isKeyNotInCache(String serviceId, String keyToTest) {
