@@ -202,6 +202,36 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
     }
 
     @Test
+    void givenValidKeyParameter_whenCallingDeleteAllEndpoint_thenAllTheStoredEntriesFor() {
+
+        RestAssuredConfig clientCert = SslContext.clientCertValid;
+
+        KeyValue keyValue1 = new KeyValue("testKey1", "testValue1");
+        KeyValue keyValue2 = new KeyValue("testKey2", "testValue2");
+
+        loadValueUnderServiceId(keyValue1, clientCert);
+        loadValueUnderServiceId(keyValue2, clientCert);
+
+        given().config(clientCert)
+            .log()
+            .uri()
+            .contentType(JSON)
+        .when()
+            .delete(CACHING_PATH)
+        .then()
+            .log().all()
+            .statusCode(is(SC_OK));
+
+        given().config(SslContext.clientCertValid)
+            .contentType(JSON)
+        .when()
+            .get(CACHING_PATH + "/testKey1")
+        .then()
+            .body(not(isEmptyString()))
+            .statusCode(is(SC_NOT_FOUND));
+    }
+
+    @Test
     void givenNonExistingKeyParameter_whenCallingGetEndpoint_thenReturnKeyNotFound() {
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
