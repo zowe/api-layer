@@ -44,7 +44,6 @@ class CachingControllerTest {
     private static final KeyValue KEY_VALUE = new KeyValue(KEY, VALUE);
 
     private HttpServletRequest mockRequest;
-    private HttpServletRequest httpServletRequest;
     private Storage mockStorage;
     private final MessageService messageService = new YamlMessageService("/caching-log-messages.yml");
     private CachingController underTest;
@@ -52,9 +51,9 @@ class CachingControllerTest {
     @BeforeEach
     void setUp() {
         mockRequest = mock(HttpServletRequest.class);
-        when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn("test-service");
+        when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(SERVICE_ID);
+        when(mockRequest.getHeader("X-CS-Service-ID")).thenReturn(null);
         mockStorage = mock(Storage.class);
-        httpServletRequest = mock(HttpServletRequest.class);
         underTest = new CachingController(mockStorage, messageService);
     }
 
@@ -257,12 +256,11 @@ class CachingControllerTest {
         );
     }
 
-    @ParameterizedTest
-    @MethodSource("emptyStrings")
+    @Test
     void givenNoCertificateInformationInHeader_whenGetAllValues_thenReturnUnauthorized() {
         when(mockStorage.read(SERVICE_ID, KEY)).thenReturn(KEY_VALUE);
-        when(httpServletRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
-        ResponseEntity<?> response = underTest.getAllValues(httpServletRequest);
+        when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
+        ResponseEntity<?> response = underTest.getAllValues(mockRequest);
 
         assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.missingCertificate",
@@ -270,7 +268,41 @@ class CachingControllerTest {
         assertThat(response.getBody(), is(expectedBody));
     }
 
-    static Stream<String> emptyStrings() {
-        return Stream.of("", null);
+    @Nested
+    class WhenUseSpecificServiceHeader {
+        @BeforeEach
+        void setUp() {
+            when(mockRequest.getHeader("X-CS-Service-ID")).thenReturn(SERVICE_ID);
+        }
+
+        @Test
+        void givenServiceIdHeader_thenReturnProperValues() {
+            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
+
+            Map<String, KeyValue> values = new HashMap<>();
+            values.put(KEY, new KeyValue("key2", VALUE));
+            when(mockStorage.readForService(SERVICE_ID)).thenReturn(values);
+
+            ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+
+            Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
+            assertThat(result, is(values));
+        }
+
+        @Test
+        void givenServiceIdHeaderAndCertificateHeaderForReadForService_thenReturnProperValues() {
+            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn("certificate");
+
+            Map<String, KeyValue> values = new HashMap<>();
+            values.put(KEY, new KeyValue("key2", VALUE));
+            when(mockStorage.readForService("certificate-" + SERVICE_ID)).thenReturn(values);
+
+            ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+
+            Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
+            assertThat(result, is(values));
+        }
     }
 }

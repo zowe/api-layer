@@ -168,7 +168,20 @@ public class CachingController {
     }
 
     private Optional<String> getServiceId(HttpServletRequest request) {
-        String serviceId = request.getHeader("X-Certificate-DistinguishedName");
+        Optional<String> certificateServiceId = getHeader(request, "X-Certificate-DistinguishedName");
+        Optional<String> specificServiceId = getHeader(request, "X-CS-Service-ID");
+
+        if (certificateServiceId.isPresent() && specificServiceId.isPresent()) {
+            return Optional.of(certificateServiceId.get() + "-" + specificServiceId.get());
+        } else if (!specificServiceId.isPresent()) {
+            return certificateServiceId;
+        } else {
+            return specificServiceId;
+        }
+    }
+
+    private Optional<String> getHeader(HttpServletRequest request, String headerName) {
+        String serviceId = request.getHeader(headerName);
         if (StringUtils.isEmpty(serviceId)) {
             return Optional.empty();
         } else {
