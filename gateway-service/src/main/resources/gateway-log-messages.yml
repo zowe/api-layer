@@ -54,7 +54,7 @@ messages:
     - key: org.zowe.apiml.gateway.jwtKeyMissing
       number: ZWEAG705
       type: ERROR
-      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'."
+      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'. Gateway is shutting down."
       reason: "Failed to load a public or private key from the keystore during JWT Token initialization."
       action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
 
