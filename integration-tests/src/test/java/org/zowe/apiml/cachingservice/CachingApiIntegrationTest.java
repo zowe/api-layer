@@ -13,7 +13,8 @@ package org.zowe.apiml.cachingservice;
 import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.SslContext;
@@ -31,7 +32,6 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
-@Tag("OnlyTestToRun")
 @TestsNotMeantForZowe
 class CachingApiIntegrationTest implements TestWithStartedInstances {
 

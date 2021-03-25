@@ -225,25 +225,6 @@ task runCITests(type: Test) {
     }
 }
 
-task runCITestsOnlyOne(type: Test) {
-    group "Integration tests"
-    description "Run only one IT test"
-
-    systemProperties System.properties
-    useJUnitPlatform {
-        includeTags('OnlyTestToRun')
-
-        excludeTags(
-            'StartupCheck',
-            'EnvironmentCheck',
-            'SlowTests',
-            'AdditionalLocalTest',
-            'MainframeDependentTests',
-            'SAFAuthTest'
-        )
-    }
-}
-
 task runCITestsInternalPort(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
