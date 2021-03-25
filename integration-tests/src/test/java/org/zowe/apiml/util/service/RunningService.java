@@ -66,7 +66,7 @@ public class RunningService {
     public void startWithScript(String bashScript) {
         log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
 
-        ProcessBuilder builder1 = new ProcessBuilder(bashScript);
+        ProcessBuilder builder1 = new ProcessBuilder("bash", bashScript);
         Map<String, String> envVariables = builder1.environment();
         envVariables.putAll(instanceEnv);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
