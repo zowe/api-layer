@@ -10,7 +10,7 @@ on:
         branches: [ master ]
 
 jobs:
-    runUnitAndCITests:
+    UnitAndCITests:
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -58,7 +58,7 @@ jobs:
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: runUnitAndCITests
+                  name: UnitAndCITests
                   path: |
                       **/reports/**
                       **/test-results/**
@@ -70,7 +70,7 @@ jobs:
                   rm -rf ~/.gradle/caches/build-cache-1
 
 
-    runCITestsInternalPort:
+    CITestsInternalPort:
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -118,7 +118,7 @@ jobs:
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: runCITestsInternalPort
+                  name: CITestsInternalPort
                   path: |
                       **/reports/**
                       **/test-results/**
@@ -130,7 +130,7 @@ jobs:
                   rm -rf ~/.gradle/caches/build-cache-1
 
 
-    runCITestsZosmfRsu2012:
+    CITestsZosmfRsu2012:
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -179,7 +179,7 @@ jobs:
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: runCITestsZosmfRsu2012
+                  name: CITestsZosmfRsu2012
                   path: |
                       **/reports/**
                       **/test-results/**
@@ -191,7 +191,7 @@ jobs:
                   rm -rf ~/.gradle/caches/build-cache-1
 
 
-    runCITestsZosmfWithoutJwt:
+    CITestsZosmfWithoutJwt:
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -240,7 +240,7 @@ jobs:
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: runCITestsZosmfWithoutJwt
+                  name: CITestsZosmfWithoutJwt
                   path: |
                       **/reports/**
                       **/test-results/**
@@ -252,7 +252,7 @@ jobs:
                   rm -rf ~/.gradle/caches/build-cache-1
 
 
-    runCITestsZosmfWithoutJwtWithAuthenticateEndpoint:
+    CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -301,7 +301,7 @@ jobs:
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: runCITestsZosmfWithoutJwtWithAuthenticateEndpoint
+                  name: CITestsZosmfWithoutJwtWithAuthenticateEndpoint
                   path: |
                       **/reports/**
                       **/test-results/**
