@@ -10,7 +10,7 @@ on:
         branches: [ master ]
 
 jobs:
-    runCITests:
+    runUnitAndCITests:
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -58,7 +58,7 @@ jobs:
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: runCITests
+                  name: runUnitAndCITests
                   path: |
                       **/reports/**
                       **/test-results/**
