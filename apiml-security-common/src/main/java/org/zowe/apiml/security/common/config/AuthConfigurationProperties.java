@@ -10,14 +10,13 @@
 package org.zowe.apiml.security.common.config;
 
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.auth.AuthenticationScheme;
 
 
 /**
@@ -54,9 +53,15 @@ public class AuthConfigurationProperties {
     private AuthConfigurationProperties.PassTicket passTicket;
 
     private String jwtKeyAlias;
+    private String zosmfJwtEndpoint = "/jwt/ibm/api/zOSMFBuilder/jwk";
 
-    @Value("${apiml.security.auth.zosmfJwtEndpoint:/jwt/ibm/api/zOSMFBuilder/jwk}")
-    private String zosmfJwtEndpoint;
+    private JWT_AUTOCONFIGURATION_MODE zosmfJwtAutoconfiguration = JWT_AUTOCONFIGURATION_MODE.AUTO;
+
+    public enum JWT_AUTOCONFIGURATION_MODE {
+        AUTO,
+        LTPA,
+        JWT
+    }
 
     //Token properties
     @Data
