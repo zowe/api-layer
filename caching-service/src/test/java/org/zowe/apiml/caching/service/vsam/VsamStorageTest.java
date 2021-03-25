@@ -29,8 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class VsamStorageTest {
     private VsamStorage underTest;
@@ -236,6 +235,19 @@ class VsamStorageTest {
             Map<String, KeyValue> tests = underTest.readForService(VALID_SERVICE_ID);
             assertThat(tests.get("key-1"), is(record1));
             assertThat(tests.get("key-2"), is(record2));
+        }
+    }
+
+    @Nested
+    class WhenDeleteAllForService {
+        @Test
+        void givenValidVsamFileIsCreated_thenAllAreRemoved() {
+            VsamFile returnedFile = mock(VsamFile.class);
+            when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
+
+            underTest.deleteForService(VALID_SERVICE_ID);
+
+            verify(returnedFile).deleteForService(VALID_SERVICE_ID);
         }
     }
 }
