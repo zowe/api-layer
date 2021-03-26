@@ -210,8 +210,9 @@ public class InMemoryStorageTest {
             testingStorage.put(serviceId, serviceStorage);
             serviceStorage.put("username", new KeyValue("username", "Name 1"));
 
-            Map<String, KeyValue> result = underTest.readForService(serviceId);
-            assertThat(result.containsKey("username"), is(true));
+            underTest.deleteForService(serviceId);
+
+            assertThat(testingStorage.containsKey("username"), is(false));
         }
     }
 }
