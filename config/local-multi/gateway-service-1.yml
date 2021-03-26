@@ -4,7 +4,7 @@ apiml:
         hostname: localhost
         ipAddress: 0.0.0.0
         port: 10010
-        discoveryServiceUrls: https://localhost:10011/eureka/
+        discoveryServiceUrls: https://localhost:10011/eureka/,https://localhost2:10021/eureka/
     security:
         auth:
             provider: zosmf
