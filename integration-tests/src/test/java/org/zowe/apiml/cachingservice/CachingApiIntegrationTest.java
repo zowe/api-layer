@@ -51,14 +51,11 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
 
         AtomicInteger ai = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
-            service.execute(() -> {
-                given().config(SslContext.clientCertValid)
-                    .contentType(JSON)
-                    .body(new KeyValue(String.valueOf(ai.getAndIncrement()), "someValue"))
-                .when()
-                    .post(CACHING_PATH).then().statusCode(201);
-
-            });
+            service.execute(() -> given().config(SslContext.clientCertValid)
+                .contentType(JSON)
+                .body(new KeyValue(String.valueOf(ai.getAndIncrement()), "someValue"))
+            .when()
+                .post(CACHING_PATH).then().statusCode(201));
         }
 
         service.shutdown();
@@ -76,13 +73,10 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
 
         AtomicInteger ai2 = new AtomicInteger(20);
         for (int i = 0; i < 3; i++) {
-            deleteService.execute(() -> {
-                given().config(SslContext.clientCertValid)
-                    .contentType(JSON)
-                    .when()
-                    .delete(CACHING_PATH + "/" + ai2.getAndIncrement());
-
-            });
+            deleteService.execute(() -> given().config(SslContext.clientCertValid)
+                .contentType(JSON)
+                .when()
+                .delete(CACHING_PATH + "/" + ai2.getAndIncrement()));
         }
 
         deleteService.shutdown();
@@ -96,7 +90,6 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
             .body("22", isEmptyOrNullString())
             .statusCode(200);
     }
-
 
     @Test
     void givenValidKeyValue_whenCallingCreateEndpoint_thenStoreIt() {
@@ -195,11 +188,6 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
             deleteValueUnderServiceIdWithoutValidation("testKey2", user1);
             deleteValueUnderServiceIdWithoutValidation("testKey3", user2);
             deleteValueUnderServiceIdWithoutValidation("testKey4", user2);
-
-            deleteValueUnderServiceIdWithoutValidation("testKey1", user1);
-            deleteValueUnderServiceIdWithoutValidation("testKey2", user1);
-            deleteValueUnderServiceIdWithoutValidation("testKey3", user2);
-            deleteValueUnderServiceIdWithoutValidation("testKey4", user2);
         }
     }
 
@@ -275,11 +263,6 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
                     "testKey2", isEmptyOrNullString())
                 .statusCode(is(SC_OK));
         } finally {
-            deleteValueUnderServiceIdWithoutValidation("testKey1", user1, serviceSpecificId1);
-            deleteValueUnderServiceIdWithoutValidation("testKey2", user1, serviceSpecificId2);
-            deleteValueUnderServiceIdWithoutValidation("testKey3", user2, serviceSpecificId1);
-            deleteValueUnderServiceIdWithoutValidation("testKey4", user2, serviceSpecificId2);
-
             deleteValueUnderServiceIdWithoutValidation("testKey1", user1, serviceSpecificId1);
             deleteValueUnderServiceIdWithoutValidation("testKey2", user1, serviceSpecificId2);
             deleteValueUnderServiceIdWithoutValidation("testKey3", user2, serviceSpecificId1);
@@ -413,7 +396,7 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
     private static void deleteValueUnderServiceIdWithoutValidation(String value, RestAssuredConfig config) {
         given().config(config)
             .contentType(JSON)
-            .when()
+        .when()
             .delete(CACHING_PATH + "/" + value);
     }
 
