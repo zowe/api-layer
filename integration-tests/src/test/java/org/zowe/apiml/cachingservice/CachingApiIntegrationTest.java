@@ -21,7 +21,9 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.restassured.RestAssured.given;
@@ -36,6 +38,7 @@ import static org.hamcrest.core.IsNot.not;
 class CachingApiIntegrationTest implements TestWithStartedInstances {
 
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
+    private static final String SPECIFIC_SERVICE_HEADER = "X-CS-Service-ID";
 
     @BeforeAll
     static void setup() throws Exception {
@@ -202,6 +205,90 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
     }
 
     @Test
+    void givenValidKeyParameter_whenCallingGetAllEndpointWithServiceSpecificId_thenReturnAllTheStoredEntries() {
+        String serviceSpecificId1 = "service1";
+        String serviceSpecificId2 = "service2";
+
+        RestAssuredConfig user1 = SslContext.clientCertValid;
+        RestAssuredConfig user2 = SslContext.clientCertUser;
+
+        KeyValue keyValue1 = new KeyValue("testKey1", "testValue1");
+        KeyValue keyValue2 = new KeyValue("testKey2", "testValue2");
+        KeyValue keyValue3 = new KeyValue("testKey3", "testValue3");
+        KeyValue keyValue4 = new KeyValue("testKey4", "testValue4");
+
+        try {
+            loadValueUnderServiceId(keyValue1, user1, serviceSpecificId1);
+            loadValueUnderServiceId(keyValue2, user1, serviceSpecificId2);
+
+            loadValueUnderServiceId(keyValue3, user2, serviceSpecificId1);
+            loadValueUnderServiceId(keyValue4, user2, serviceSpecificId2);
+
+            given().config(user1)
+                .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId1)
+                .log().uri()
+                .contentType(JSON)
+                .when()
+                .get(CACHING_PATH)
+                .then().log().all()
+                .body("testKey1", is(not(isEmptyString())),
+                    "testKey2", isEmptyOrNullString(),
+                    "testKey3", isEmptyOrNullString(),
+                    "testKey4", isEmptyOrNullString())
+                .statusCode(is(SC_OK));
+
+            given().config(user1)
+                .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId2)
+                .log().uri()
+                .contentType(JSON)
+                .when()
+                .get(CACHING_PATH)
+                .then().log().all()
+                .body("testKey2", is(not(isEmptyString())),
+                    "testKey1", isEmptyOrNullString(),
+                    "testKey3", isEmptyOrNullString(),
+                    "testKey4", isEmptyOrNullString())
+                .statusCode(is(SC_OK));
+
+            given().config(user2)
+                .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId1)
+                .log().uri()
+                .contentType(JSON)
+                .when()
+                .get(CACHING_PATH)
+                .then().log().all()
+                .body("testKey3", is(not(isEmptyString())),
+                    "testKey4", is(not(isEmptyString())),
+                    "testKey1", isEmptyOrNullString(),
+                    "testKey2", isEmptyOrNullString())
+                .statusCode(is(SC_OK));
+
+            given().config(user2)
+                .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId2)
+                .log().uri()
+                .contentType(JSON)
+                .when()
+                .get(CACHING_PATH)
+                .then().log().all()
+                .body("testKey4", is(not(isEmptyString())),
+                    "testKey3", isEmptyOrNullString(),
+                    "testKey1", isEmptyOrNullString(),
+                    "testKey2", isEmptyOrNullString())
+                .statusCode(is(SC_OK));
+        } finally {
+            deleteValueUnderServiceIdWithoutValidation("testKey1", user1, serviceSpecificId1);
+            deleteValueUnderServiceIdWithoutValidation("testKey2", user1, serviceSpecificId2);
+            deleteValueUnderServiceIdWithoutValidation("testKey3", user2, serviceSpecificId1);
+            deleteValueUnderServiceIdWithoutValidation("testKey4", user2, serviceSpecificId2);
+
+            deleteValueUnderServiceIdWithoutValidation("testKey1", user1, serviceSpecificId1);
+            deleteValueUnderServiceIdWithoutValidation("testKey2", user1, serviceSpecificId2);
+            deleteValueUnderServiceIdWithoutValidation("testKey3", user2, serviceSpecificId1);
+            deleteValueUnderServiceIdWithoutValidation("testKey4", user2, serviceSpecificId2);
+        }
+    }
+
+    @Test
     void givenNonExistingKeyParameter_whenCallingGetEndpoint_thenReturnKeyNotFound() {
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
@@ -262,7 +349,6 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
         } finally {
             deleteValueUnderServiceIdWithoutValidation("testkey", SslContext.clientCertValid);
         }
-
     }
 
     @Test
@@ -285,8 +371,27 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
             .statusCode(is(SC_CREATED));
     }
 
+    private static void loadValueUnderServiceId(KeyValue value, RestAssuredConfig config, String specificServiceId) {
+        given().config(config)
+            .header(SPECIFIC_SERVICE_HEADER, specificServiceId)
+            .contentType(JSON)
+            .body(value)
+            .when()
+            .post(CACHING_PATH)
+            .then()
+            .statusCode(is(SC_CREATED));
+    }
+
     private static void deleteValueUnderServiceIdWithoutValidation(String value, RestAssuredConfig config) {
         given().config(config)
+            .contentType(JSON)
+            .when()
+            .delete(CACHING_PATH + "/" + value);
+    }
+
+    private static void deleteValueUnderServiceIdWithoutValidation(String value, RestAssuredConfig config, String specificServiceId) {
+        given().config(config)
+            .header(SPECIFIC_SERVICE_HEADER, specificServiceId)
             .contentType(JSON)
             .when()
             .delete(CACHING_PATH + "/" + value);
