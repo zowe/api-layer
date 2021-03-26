@@ -67,7 +67,7 @@ fi
 
 if [[ ! -z ${ZOWE_ZSS_SERVER_PORT} ]]
 then
-    APIML_GATEWAY_EXTERNAL_MAPPER=http://localhost:${ZOWE_ZSS_SERVER_PORT}/certificate/x509/map
+    APIML_GATEWAY_EXTERNAL_MAPPER=https://localhost:${ZOWE_ZSS_SERVER_PORT}/certificate/x509/map
     APIML_GATEWAY_MAPPER_USER=ZWESVUSR
 fi
 echo "Setting loader path: "${GATEWAY_LOADER_PATH}
