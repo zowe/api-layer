@@ -296,7 +296,7 @@ class CachingControllerTest {
 
             Map<String, KeyValue> values = new HashMap<>();
             values.put(KEY, new KeyValue("key2", VALUE));
-            when(mockStorage.readForService("certificate-" + SERVICE_ID)).thenReturn(values);
+            when(mockStorage.readForService("certificate, SERVICE=" + SERVICE_ID)).thenReturn(values);
 
             ResponseEntity<?> response = underTest.getAllValues(mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.OK));

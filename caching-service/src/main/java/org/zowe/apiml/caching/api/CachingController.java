@@ -172,7 +172,7 @@ public class CachingController {
         Optional<String> specificServiceId = getHeader(request, "X-CS-Service-ID");
 
         if (certificateServiceId.isPresent() && specificServiceId.isPresent()) {
-            return Optional.of(certificateServiceId.get() + "-" + specificServiceId.get());
+            return Optional.of(certificateServiceId.get() + ", SERVICE=" + specificServiceId.get());
         } else if (!specificServiceId.isPresent()) {
             return certificateServiceId;
         } else {
