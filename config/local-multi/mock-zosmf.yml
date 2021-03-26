@@ -1,0 +1,10 @@
+server:
+    ssl:
+        keyAlias: localhost-multi
+        keyPassword: password
+        keyStore: keystore/localhost/localhost-multi.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost-multi.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
