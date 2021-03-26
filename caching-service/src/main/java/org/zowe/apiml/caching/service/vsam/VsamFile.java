@@ -198,17 +198,13 @@ public class VsamFile implements Closeable {
     public List<VsamRecord> readForService(String serviceId) {
         List<VsamRecord> returned = new ArrayList<>();
 
-        serviceWideOperation(serviceId, (zfile, record) -> {
-            returned.add(record);
-        });
+        serviceWideOperation(serviceId, (zfile, record) -> returned.add(record));
 
         return returned;
     }
 
     public void deleteForService(String serviceId) {
-        serviceWideOperation(serviceId, (zfile, record) -> {
-            zfile.delrec();
-        });
+        serviceWideOperation(serviceId, (zfile, record) -> zfile.delrec());
     }
 
     private void serviceWideOperation(String serviceId, ServiceWideOperation operation) {
