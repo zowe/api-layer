@@ -54,7 +54,7 @@ public class CachingController {
     @ApiOperation(value = "Delete all values for service from the cache",
         notes = "Will delete all key-value pairs for specific service")
     @ResponseBody
-    public ResponseEntity<?> deleteAllValues(HttpServletRequest request) {
+    public ResponseEntity<Object> deleteAllValues(HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
                 try {

@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 package org.zowe.apiml.cachingservice;
 
 import io.restassured.RestAssured;
@@ -56,7 +55,7 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
                 given().config(SslContext.clientCertValid)
                     .contentType(JSON)
                     .body(new KeyValue(String.valueOf(ai.getAndIncrement()), "someValue"))
-                    .when()
+                .when()
                     .post(CACHING_PATH).then().statusCode(201);
 
             });
@@ -67,7 +66,7 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
 
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
-            .when()
+        .when()
             .get(CACHING_PATH).then().body("20", is(not(isEmptyString())))
             .body("21", is(not(isEmptyString())))
             .body("22", is(not(isEmptyString())))
@@ -91,7 +90,7 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
 
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
-            .when()
+        .when()
             .get(CACHING_PATH).then().body("20", isEmptyOrNullString())
             .body("21", isEmptyOrNullString())
             .body("22", isEmptyOrNullString())
@@ -107,9 +106,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
             given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .body(keyValue)
-                .when()
+            .when()
                 .post(CACHING_PATH)
-                .then()
+            .then()
                 .statusCode(is(SC_CREATED));
         } finally {
             deleteValueUnderServiceIdWithoutValidation("testKey", SslContext.clientCertValid);
@@ -121,9 +120,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
     void givenEmptyBody_whenCallingCreateEndpoint_thenReturn400() {
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
-            .when()
+        .when()
             .post(CACHING_PATH)
-            .then()
+        .then()
             .statusCode(is(SC_BAD_REQUEST));
     }
 
@@ -135,9 +134,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
 
             given().config(SslContext.clientCertValid)
                 .contentType(JSON)
-                .when()
+            .when()
                 .get(CACHING_PATH + "/testKey")
-                .then()
+            .then()
                 .body(not(isEmptyString()))
                 .statusCode(is(SC_OK));
         } finally {
@@ -171,9 +170,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
             given().config(user1)
                 .log().uri()
                 .contentType(JSON)
-                .when()
+            .when()
                 .get(CACHING_PATH)
-                .then().log().all()
+            .then().log().all()
                 .body("testKey1", is(not(isEmptyString())),
                     "testKey2", is(not(isEmptyString())),
                     "testKey3", isEmptyOrNullString(),
@@ -183,9 +182,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
             given().config(user2)
                 .log().uri()
                 .contentType(JSON)
-                .when()
+            .when()
                 .get(CACHING_PATH)
-                .then().log().all()
+            .then().log().all()
                 .body("testKey3", is(not(isEmptyString())),
                     "testKey4", is(not(isEmptyString())),
                     "testKey1", isEmptyOrNullString(),
@@ -228,9 +227,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
                 .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId1)
                 .log().uri()
                 .contentType(JSON)
-                .when()
+            .when()
                 .get(CACHING_PATH)
-                .then().log().all()
+            .then().log().all()
                 .body("testKey1", is(not(isEmptyString())),
                     "testKey2", isEmptyOrNullString(),
                     "testKey3", isEmptyOrNullString(),
@@ -241,9 +240,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
                 .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId2)
                 .log().uri()
                 .contentType(JSON)
-                .when()
+            .when()
                 .get(CACHING_PATH)
-                .then().log().all()
+            .then().log().all()
                 .body("testKey2", is(not(isEmptyString())),
                     "testKey1", isEmptyOrNullString(),
                     "testKey3", isEmptyOrNullString(),
@@ -254,9 +253,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
                 .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId1)
                 .log().uri()
                 .contentType(JSON)
-                .when()
+            .when()
                 .get(CACHING_PATH)
-                .then().log().all()
+            .then().log().all()
                 .body("testKey3", is(not(isEmptyString())),
                     "testKey4", is(not(isEmptyString())),
                     "testKey1", isEmptyOrNullString(),
@@ -267,9 +266,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
                 .header(SPECIFIC_SERVICE_HEADER, serviceSpecificId2)
                 .log().uri()
                 .contentType(JSON)
-                .when()
+            .when()
                 .get(CACHING_PATH)
-                .then().log().all()
+            .then().log().all()
                 .body("testKey4", is(not(isEmptyString())),
                     "testKey3", isEmptyOrNullString(),
                     "testKey1", isEmptyOrNullString(),
@@ -289,12 +288,41 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
     }
 
     @Test
+    void givenValidServiceParameter_whenCallingDeleteAllEndpoint_thenAllTheStoredEntriesAreDeleted() {
+        RestAssuredConfig clientCert = SslContext.clientCertValid;
+
+        KeyValue keyValue1 = new KeyValue("testKey1", "testValue1");
+        KeyValue keyValue2 = new KeyValue("testKey2", "testValue2");
+
+        loadValueUnderServiceId(keyValue1, clientCert);
+        loadValueUnderServiceId(keyValue2, clientCert);
+
+        given().config(clientCert)
+            .log()
+            .uri()
+            .contentType(JSON)
+        .when()
+            .delete(CACHING_PATH)
+        .then()
+            .log().all()
+            .statusCode(is(SC_OK));
+
+        given().config(clientCert)
+            .contentType(JSON)
+        .when()
+            .get(CACHING_PATH + "/testKey1")
+        .then()
+            .body(not(isEmptyString()))
+            .statusCode(is(SC_NOT_FOUND));
+    }
+
+    @Test
     void givenNonExistingKeyParameter_whenCallingGetEndpoint_thenReturnKeyNotFound() {
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
-            .when()
+        .when()
             .get(CACHING_PATH + "/invalidKey")
-            .then()
+        .then()
             .body(not(isEmptyString()))
             .statusCode(is(SC_NOT_FOUND));
     }
@@ -310,16 +338,16 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
             given().config(SslContext.clientCertValid)
                 .contentType(JSON)
                 .body(newValue)
-                .when()
+            .when()
                 .put(CACHING_PATH)
-                .then()
+            .then()
                 .statusCode(is(SC_NO_CONTENT));
 
             given().config(SslContext.clientCertValid)
                 .contentType(JSON)
-                .when()
+            .when()
                 .get(CACHING_PATH + "/testKey")
-                .then()
+            .then()
                 .body("value", Matchers.is("newValue"))
                 .statusCode(is(SC_OK));
         } finally {
@@ -335,16 +363,16 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
 
             given().config(SslContext.clientCertValid)
                 .contentType(JSON)
-                .when()
+            .when()
                 .delete(CACHING_PATH + "/testKey")
-                .then()
+            .then()
                 .statusCode(is(SC_NO_CONTENT));
 
             given().config(SslContext.clientCertValid)
                 .contentType(JSON)
-                .when()
+            .when()
                 .get(CACHING_PATH + "/testKey")
-                .then()
+            .then()
                 .statusCode(is(SC_NOT_FOUND));
         } finally {
             deleteValueUnderServiceIdWithoutValidation("testkey", SslContext.clientCertValid);
@@ -355,9 +383,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
     void givenInvalidParameter_whenCallingDeleteEndpoint_thenNotFound() {
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
-            .when()
+        .when()
             .delete(CACHING_PATH + "/invalidKey")
-            .then()
+        .then()
             .statusCode(is(SC_NOT_FOUND));
     }
 
@@ -365,9 +393,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
         given().config(config)
             .contentType(JSON)
             .body(value)
-            .when()
+        .when()
             .post(CACHING_PATH)
-            .then()
+        .then()
             .statusCode(is(SC_CREATED));
     }
 
@@ -376,9 +404,9 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
             .header(SPECIFIC_SERVICE_HEADER, specificServiceId)
             .contentType(JSON)
             .body(value)
-            .when()
+        .when()
             .post(CACHING_PATH)
-            .then()
+        .then()
             .statusCode(is(SC_CREATED));
     }
 
@@ -393,7 +421,7 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
         given().config(config)
             .header(SPECIFIC_SERVICE_HEADER, specificServiceId)
             .contentType(JSON)
-            .when()
+        .when()
             .delete(CACHING_PATH + "/" + value);
     }
 }
