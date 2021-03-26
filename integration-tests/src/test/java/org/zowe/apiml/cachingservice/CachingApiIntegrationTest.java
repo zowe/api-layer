@@ -202,7 +202,7 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
     }
 
     @Test
-    void givenValidKeyParameter_whenCallingDeleteAllEndpoint_thenAllTheStoredEntriesFor() {
+    void givenValidServiceParameter_whenCallingDeleteAllEndpoint_thenAllTheStoredEntriesAreDeleted() {
 
         RestAssuredConfig clientCert = SslContext.clientCertValid;
 
@@ -222,7 +222,7 @@ class CachingApiIntegrationTest implements TestWithStartedInstances {
             .log().all()
             .statusCode(is(SC_OK));
 
-        given().config(SslContext.clientCertValid)
+        given().config(clientCert)
             .contentType(JSON)
         .when()
             .get(CACHING_PATH + "/testKey1")

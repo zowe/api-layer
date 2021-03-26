@@ -185,7 +185,7 @@ public class VsamStorage implements Storage {
     public void deleteForService(String serviceId) {
         log.info("Deleting All Records: {}|{}|{}", serviceId, "-", "-");
 
-        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.READ, apimlLog)) {
+        try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE, apimlLog)) {
             file.deleteForService(serviceId);
         }
     }
