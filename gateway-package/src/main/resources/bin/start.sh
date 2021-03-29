@@ -65,11 +65,6 @@ else
     GATEWAY_LOADER_PATH=${COMMON_LIB}
 fi
 
-if [[ ! -z ${ZOWE_ZSS_SERVER_PORT} ]]
-then
-    APIML_GATEWAY_EXTERNAL_MAPPER=https://localhost:${ZOWE_ZSS_SERVER_PORT}/certificate/x509/map
-    APIML_GATEWAY_MAPPER_USER=ZWESVUSR
-fi
 echo "Setting loader path: "${GATEWAY_LOADER_PATH}
 
 LIBPATH="$LIBPATH":"/lib"
@@ -131,7 +126,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.auth.zosmfJwtAutoconfiguration=${APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE:-auto} \
     -Dapiml.security.x509.enabled=${APIML_SECURITY_X509_ENABLED:-false} \
     -Dapiml.security.x509.externalMapperUrl=${APIML_GATEWAY_EXTERNAL_MAPPER} \
-    -Dapiml.security.x509.externalMapperUser=${APIML_GATEWAY_MAPPER_USER} \
+    -Dapiml.security.x509.externalMapperUser=${APIML_GATEWAY_MAPPER_USER:-ZWESVUSR} \
     -Dapiml.security.authorization.provider=${APIML_SECURITY_AUTHORIZATION_PROVIDER:-} \
     -Dapiml.security.authorization.endpoint.enabled=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_ENABLED:-false} \
     -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL:-http://localhost:${ZOWE_ZSS_SERVER_PORT}/saf-auth} \
