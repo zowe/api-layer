@@ -18,4 +18,5 @@ public class InstanceInitializationException extends RuntimeException {
     public InstanceInitializationException(String message) {
         super(message);
     }
+
 }

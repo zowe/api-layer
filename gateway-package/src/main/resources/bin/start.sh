@@ -67,7 +67,7 @@ fi
 
 if [[ ! -z ${ZOWE_ZSS_SERVER_PORT} ]]
 then
-    APIML_GATEWAY_EXTERNAL_MAPPER=http://localhost:${ZOWE_ZSS_SERVER_PORT}/certificate/x509/map
+    APIML_GATEWAY_EXTERNAL_MAPPER=https://localhost:${ZOWE_ZSS_SERVER_PORT}/certificate/x509/map
     APIML_GATEWAY_MAPPER_USER=ZWESVUSR
 fi
 echo "Setting loader path: "${GATEWAY_LOADER_PATH}
@@ -125,9 +125,9 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.internal.enabled=${APIML_GATEWAY_INTERNAL_ENABLED:-false} \
-    -Dserver.internal.port=${APIML_GATEWAY_INTERNAL_PORT:-} \
-    -Dserver.internal.ssl.keyAlias=${APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS:-} \
-    -Dserver.internal.ssl.keyStore=${APIML_GATEWAY_INTERNAL_SSL_KEYSTORE:-} \
+    -Dserver.internal.port=${APIML_GATEWAY_INTERNAL_PORT:-10017} \
+    -Dserver.internal.ssl.keyAlias=${APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS:-localhost-multi} \
+    -Dserver.internal.ssl.keyStore=${APIML_GATEWAY_INTERNAL_SSL_KEYSTORE:-keystore/localhost/localhost-multi.keystore.p12} \
     -Dapiml.security.auth.zosmfJwtAutoconfiguration=${APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE:-auto} \
     -Dapiml.security.x509.enabled=${APIML_SECURITY_X509_ENABLED:-false} \
     -Dapiml.security.x509.externalMapperUrl=${APIML_GATEWAY_EXTERNAL_MAPPER} \

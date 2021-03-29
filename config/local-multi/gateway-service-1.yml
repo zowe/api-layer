@@ -1,0 +1,40 @@
+spring.profiles.include: diag
+apiml:
+    service:
+        hostname: localhost
+        ipAddress: 0.0.0.0
+        port: 10010
+        discoveryServiceUrls: https://localhost:10011/eureka/,https://localhost2:10021/eureka/
+    security:
+        auth:
+            provider: zosmf
+            zosmfServiceId: mockzosmf  # Replace me with the correct z/OSMF service id
+            passTicket:
+                timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
+        ssl:
+            verifySslCertificatesOfServices: true
+        x509:
+            enabled: true
+    banner: console
+
+spring:
+    output:
+        ansi:
+            enabled: always
+    cache:
+        ehcache:
+            config: classpath:ehcache.xml
+
+server:
+    internal:
+        enabled: true
+        port: 10017
+    ssl:
+        keyAlias: localhost-multi
+        keyPassword: password
+        keyStore: keystore/localhost/localhost-multi.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost-multi.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12

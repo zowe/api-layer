@@ -35,6 +35,11 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [ ! -z ${ZWE_CACHING_SERVICE_VSAM_DATASET} ]
+then
+    VSAM_FILE_NAME=//\'${ZWE_CACHING_SERVICE_VSAM_DATASET}\'
+fi
+
 if [ `uname` = "OS/390" ]
 then
     QUICK_START=-Xquickstart
@@ -72,7 +77,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY} \
   -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE} \
   -Dcaching.storage.mode=${ZWE_CACHING_SERVICE_PERSISTENT:-inMemory} \
-  -Dcaching.storage.vsam.name=${ZWE_CACHING_SERVICE_VSAM_DATASET} \
+  -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
   -Denvironment.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=true \
