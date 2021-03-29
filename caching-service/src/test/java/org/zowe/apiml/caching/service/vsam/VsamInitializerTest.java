@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.vsam;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
@@ -36,23 +37,26 @@ class VsamInitializerTest {
         zFile = mock(ZFile.class);
     }
 
-    @Test
-    void givenValidZFileBehavior_whenInitializing_thenRecordIsInsertedAndDeleted() throws ZFileException, VsamRecordException {
-        when(zFile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ)).thenReturn(true);
-        underTest.warmUpVsamFile(zFile, vsamConfiguration);
+    @Nested
+    class WhenInitializing {
+        @Test
+        void givenValidZFileBehavior_thenRecordIsInsertedAndDeleted() throws ZFileException, VsamRecordException {
+            when(zFile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ)).thenReturn(true);
+            underTest.warmUpVsamFile(zFile, vsamConfiguration);
 
-        verify(zFile).write(any());
-        verify(zFile).read(any());
-        verify(zFile).delrec();
-    }
+            verify(zFile).write(any());
+            verify(zFile).read(any());
+            verify(zFile).delrec();
+        }
 
-    @Test
-    void givenZFileNotLocated_whenInitializing_thenRecordIsNotDeleted() throws ZFileException, VsamRecordException {
-        when(zFile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ)).thenReturn(false);
-        underTest.warmUpVsamFile(zFile, vsamConfiguration);
+        @Test
+        void givenZFileNotLocated_thenRecordIsNotDeleted() throws ZFileException, VsamRecordException {
+            when(zFile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ)).thenReturn(false);
+            underTest.warmUpVsamFile(zFile, vsamConfiguration);
 
-        verify(zFile, times(1)).write(any());
-        verify(zFile, times(0)).read(any());
-        verify(zFile, times(0)).delrec();
+            verify(zFile, times(1)).write(any());
+            verify(zFile, times(0)).read(any());
+            verify(zFile, times(0)).delrec();
+        }
     }
 }

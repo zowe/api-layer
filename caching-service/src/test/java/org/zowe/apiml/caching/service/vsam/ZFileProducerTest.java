@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.vsam;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -26,16 +27,19 @@ class ZFileProducerTest {
         underTest = new ZFileProducer(vsamConfiguration, VsamConfig.VsamOptions.WRITE, ApimlLogger.empty());
     }
 
-    @Test
-    void givenInvalidName_whenFileOpened_ExceptionIsThrown() {
-        vsamConfiguration.setFileName("Invalid-file-name");
-        assertThrows(IllegalStateException.class, () -> underTest.openZfile());
-    }
+    @Nested
+    class WhenFileOpened {
+        @Test
+        void givenInvalidName_ExceptionIsThrown() {
+            vsamConfiguration.setFileName("Invalid-file-name");
+            assertThrows(IllegalStateException.class, () -> underTest.openZfile());
+        }
 
-    @Test
-    void givenValidName_whenFileOpened_JzosNotFound() {
-        // test code does not run with com.ibm.jzos available
-        vsamConfiguration.setFileName("//'TEST'");
-        assertThrows(JzosImplementationException.class, () -> underTest.openZfile());
+        @Test
+        void givenValidName_JzosNotFound() {
+            // test code does not run with com.ibm.jzos available
+            vsamConfiguration.setFileName("//'TEST'");
+            assertThrows(JzosImplementationException.class, () -> underTest.openZfile());
+        }
     }
 }
