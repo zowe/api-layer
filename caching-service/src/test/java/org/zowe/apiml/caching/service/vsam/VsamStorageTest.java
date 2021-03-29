@@ -237,4 +237,17 @@ class VsamStorageTest {
             assertThat(tests.get("key-2"), is(record2));
         }
     }
+
+    @Nested
+    class WhenDeleteAllForService {
+        @Test
+        void givenValidVsamFileIsCreated_thenAllAreRemoved() {
+            VsamFile returnedFile = mock(VsamFile.class);
+            when(producer.newVsamFile(any(), any(), any())).thenReturn(returnedFile);
+
+            underTest.deleteForService(VALID_SERVICE_ID);
+
+            verify(returnedFile).deleteForService(VALID_SERVICE_ID);
+        }
+    }
 }

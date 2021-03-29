@@ -201,4 +201,18 @@ public class InMemoryStorageTest {
             assertThat(result.containsKey("username"), is(true));
         }
     }
+
+    @Nested
+    class WhenDeletingAllForService {
+        @Test
+        void givenServiceHasStoredValues_thenNoneRemains() {
+            Map<String, KeyValue> serviceStorage = new HashMap<>();
+            testingStorage.put(serviceId, serviceStorage);
+            serviceStorage.put("username", new KeyValue("username", "Name 1"));
+
+            underTest.deleteForService(serviceId);
+
+            assertThat(testingStorage.containsKey("username"), is(false));
+        }
+    }
 }

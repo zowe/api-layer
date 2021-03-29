@@ -39,7 +39,32 @@ public class CachingController {
         notes = "Values returned for the calling service")
     @ResponseBody
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
-        return getServiceId(request).<ResponseEntity<Object>>map(s -> new ResponseEntity<>(storage.readForService(s), HttpStatus.OK)).orElseGet(this::getUnauthorizedResponse);
+        return getServiceId(request).<ResponseEntity<Object>>map(
+            s -> {
+                try {
+                    return new ResponseEntity<>(storage.readForService(s), HttpStatus.OK);
+                } catch (Exception exception) {
+                    return handleInternalError(exception, request.getRequestURL());
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse);
+    }
+
+    @DeleteMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Delete all values for service from the cache",
+        notes = "Will delete all key-value pairs for specific service")
+    @ResponseBody
+    public ResponseEntity<Object> deleteAllValues(HttpServletRequest request) {
+        return getServiceId(request).map(
+            s -> {
+                try {
+                    storage.deleteForService(s);
+                    return new ResponseEntity<>(HttpStatus.OK);
+                } catch (Exception exception) {
+                    return handleInternalError(exception, request.getRequestURL());
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse);
     }
 
     private ResponseEntity<Object> getUnauthorizedResponse() {
@@ -143,7 +168,20 @@ public class CachingController {
     }
 
     private Optional<String> getServiceId(HttpServletRequest request) {
-        String serviceId = request.getHeader("X-Certificate-DistinguishedName");
+        Optional<String> certificateServiceId = getHeader(request, "X-Certificate-DistinguishedName");
+        Optional<String> specificServiceId = getHeader(request, "X-CS-Service-ID");
+
+        if (certificateServiceId.isPresent() && specificServiceId.isPresent()) {
+            return Optional.of(certificateServiceId.get() + ", SERVICE=" + specificServiceId.get());
+        } else if (!specificServiceId.isPresent()) {
+            return certificateServiceId;
+        } else {
+            return specificServiceId;
+        }
+    }
+
+    private Optional<String> getHeader(HttpServletRequest request, String headerName) {
+        String serviceId = request.getHeader(headerName);
         if (StringUtils.isEmpty(serviceId)) {
             return Optional.empty();
         } else {

@@ -61,4 +61,11 @@ public interface Storage {
      * @return Map with the key/value pairs or null if there is none existing.
      */
     Map<String, KeyValue> readForService(String serviceId);
+
+    /**
+     * Delete all key value pairs.
+     *
+     * @param serviceId Id of the service to delete all key/value pairs for.
+     */
+    void deleteForService(String serviceId);
 }

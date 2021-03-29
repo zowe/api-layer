@@ -196,11 +196,28 @@ public class VsamFile implements Closeable {
     }
 
     public List<VsamRecord> readForService(String serviceId) {
+        List<VsamRecord> returned = new ArrayList<>();
+
+        serviceWideOperation(serviceId, (zfile, record) -> {
+            log.debug("Retrieve the record");
+            returned.add(record);
+        });
+
+        return returned;
+    }
+
+    public void deleteForService(String serviceId) {
+        serviceWideOperation(serviceId, (zfile, record) -> {
+            log.debug("Delete the record");
+            zfile.delrec();
+        });
+    }
+
+    private void serviceWideOperation(String serviceId, ServiceWideOperation operation) {
         if (serviceId == null || serviceId.isEmpty()) {
             throw new IllegalArgumentException("serviceId cannot be null");
         }
 
-        List<VsamRecord> returned = new ArrayList<>();
         VsamKey key = new VsamKey(vsamConfig);
 
         try {
@@ -241,7 +258,7 @@ public class VsamFile implements Closeable {
                     log.info("read record starts with serviceId's keyGe, retrieving this record");
                 }
 
-                returned.add(record);
+                operation.resolveValidRecord(zfile, record);
 
                 overflowProtection--;
                 if (overflowProtection <= 0) {
@@ -256,8 +273,6 @@ public class VsamFile implements Closeable {
         } catch (VsamRecordException e) {
             log.info(VSAM_RECORD_ERROR_MESSAGE, e.toString());
         }
-
-        return returned;
     }
 
     public Optional<byte[]> readBytes(byte[] arrayToStoreIn) throws ZFileException {
@@ -306,5 +321,10 @@ public class VsamFile implements Closeable {
             log.info("No record found");
             return Optional.empty();
         }
+    }
+
+    @FunctionalInterface
+    private interface ServiceWideOperation {
+        void resolveValidRecord(ZFile zFile, VsamRecord record) throws ZFileException;
     }
 }

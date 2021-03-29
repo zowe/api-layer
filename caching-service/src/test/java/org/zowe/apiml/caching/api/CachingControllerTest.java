@@ -71,6 +71,33 @@ class CachingControllerTest {
             Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
             assertThat(result, is(values));
         }
+
+        @Test
+        void givenStorageThrowsInternalException_thenProperlyReturnError() {
+            when(mockStorage.readForService(SERVICE_ID)).thenThrow(new RuntimeException());
+
+            ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @Nested
+    class WhenDeletingAllKeysForService {
+        @Test
+        void givenStorageRaisesNoException_thenReturnOk() {
+            ResponseEntity<?> response = underTest.deleteAllValues(mockRequest);
+
+            verify(mockStorage).deleteForService(SERVICE_ID);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        }
+
+        @Test
+        void givenStorageThrowsInternalException_thenProperlyReturnError() {
+            when(mockStorage.readForService(SERVICE_ID)).thenThrow(new RuntimeException());
+
+            ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
     }
 
     @Nested
@@ -241,4 +268,41 @@ class CachingControllerTest {
         assertThat(response.getBody(), is(expectedBody));
     }
 
+    @Nested
+    class WhenUseSpecificServiceHeader {
+        @BeforeEach
+        void setUp() {
+            when(mockRequest.getHeader("X-CS-Service-ID")).thenReturn(SERVICE_ID);
+        }
+
+        @Test
+        void givenServiceIdHeader_thenReturnProperValues() {
+            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
+
+            Map<String, KeyValue> values = new HashMap<>();
+            values.put(KEY, new KeyValue("key2", VALUE));
+            when(mockStorage.readForService(SERVICE_ID)).thenReturn(values);
+
+            ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+
+            Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
+            assertThat(result, is(values));
+        }
+
+        @Test
+        void givenServiceIdHeaderAndCertificateHeaderForReadForService_thenReturnProperValues() {
+            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn("certificate");
+
+            Map<String, KeyValue> values = new HashMap<>();
+            values.put(KEY, new KeyValue("key2", VALUE));
+            when(mockStorage.readForService("certificate, SERVICE=" + SERVICE_ID)).thenReturn(values);
+
+            ResponseEntity<?> response = underTest.getAllValues(mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.OK));
+
+            Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
+            assertThat(result, is(values));
+        }
+    }
 }
