@@ -212,6 +212,8 @@ task runCITests(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
 
+    outputs.cacheIf { false }
+
     systemProperties System.properties
     useJUnitPlatform {
         excludeTags(
@@ -228,6 +230,8 @@ task runCITests(type: Test) {
 task runCITestsInternalPort(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
+
+    outputs.cacheIf { false }
 
     systemProperties System.properties
     systemProperty "gateway.port", System.getProperty("internal.gateway.port")
