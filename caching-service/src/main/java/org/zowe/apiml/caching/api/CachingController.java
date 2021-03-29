@@ -12,14 +12,10 @@ package org.zowe.apiml.caching.api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.caching.model.KeyValue;
-import org.zowe.apiml.caching.service.Messages;
-import org.zowe.apiml.caching.service.Storage;
-import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.caching.service.*;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 
@@ -178,9 +174,6 @@ public class CachingController {
         String key = keyValue.getKey();
         if (key == null) {
             invalidPayload(keyValue.toString(), "No key provided in the payload");
-        }
-        if (!StringUtils.isAlphanumeric(key)) {
-            invalidPayload(keyValue.toString(), "Key is not alphanumeric");
         }
     }
 
