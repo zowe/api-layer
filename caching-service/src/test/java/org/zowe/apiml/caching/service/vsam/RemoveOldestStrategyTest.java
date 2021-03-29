@@ -11,6 +11,7 @@
 package org.zowe.apiml.caching.service.vsam;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.zowe.apiml.caching.config.GeneralConfig;
@@ -52,48 +53,51 @@ class RemoveOldestStrategyTest {
         underTest = new RemoveOldestStrategy(vsamConfiguration, file);
     }
 
-    @Test
-    void givenThereAreNoItems_whenEvictIsCalled_thenNothingIsRemoved() throws ZFileException {
-        when(file.readBytes(any())).thenReturn(Optional.empty());
+    @Nested
+    class WhenEvictIsCalled {
+        @Test
+        void givenThereAreNoItems_thenNothingIsRemoved() throws ZFileException {
+            when(file.readBytes(any())).thenReturn(Optional.empty());
 
-        underTest.evict("new-key");
-        verify(file, times(0)).delete(recordArgumentCaptor.capture());
-    }
+            underTest.evict("new-key");
+            verify(file, times(0)).delete(recordArgumentCaptor.capture());
+        }
 
-    @Test
-    void givenThereIsOneItem_whenEvictIsCalled_thenItIsRemoved() throws ZFileException, VsamRecordException {
-        KeyValue record1 = new KeyValue("key-1", "value-1", "1");
-        record1.setServiceId(VALID_SERVICE_ID);
+        @Test
+        void givenThereIsOneItem_thenItIsRemoved() throws ZFileException, VsamRecordException {
+            KeyValue record1 = new KeyValue("key-1", "value-1", "1");
+            record1.setServiceId(VALID_SERVICE_ID);
 
-        VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
-        when(file.readBytes(any())).thenReturn(Optional.of(fullRecord1.getBytes()));
-        when(file.delete(any())).thenReturn(Optional.of(fullRecord1));
+            VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
+            when(file.readBytes(any())).thenReturn(Optional.of(fullRecord1.getBytes()));
+            when(file.delete(any())).thenReturn(Optional.of(fullRecord1));
 
-        underTest.evict("new-key");
-        verify(file).delete(recordArgumentCaptor.capture());
+            underTest.evict("new-key");
+            verify(file).delete(recordArgumentCaptor.capture());
 
-        VsamRecord deleted = recordArgumentCaptor.getValue();
-        assertThat(deleted.getKeyValue().getKey(), is("key-1"));
-    }
+            VsamRecord deleted = recordArgumentCaptor.getValue();
+            assertThat(deleted.getKeyValue().getKey(), is("key-1"));
+        }
 
-    @Test
-    void givenThereIsMoreItems_whenEvictIsCalled_thenTheOlderOneIsRemoved() throws ZFileException, VsamRecordException {
-        KeyValue record1 = new KeyValue("key-1", "value-1", "1");
-        record1.setServiceId(VALID_SERVICE_ID);
-        KeyValue record2 = new KeyValue("key-2", "value-2", "2");
-        record2.setServiceId(VALID_SERVICE_ID);
+        @Test
+        void givenThereIsMoreItems_thenTheOlderOneIsRemoved() throws ZFileException, VsamRecordException {
+            KeyValue record1 = new KeyValue("key-1", "value-1", "1");
+            record1.setServiceId(VALID_SERVICE_ID);
+            KeyValue record2 = new KeyValue("key-2", "value-2", "2");
+            record2.setServiceId(VALID_SERVICE_ID);
 
-        VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
-        VsamRecord fullRecord2 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record2);
-        when(file.readBytes(any()))
-            .thenReturn(Optional.of(fullRecord2.getBytes()))
-            .thenReturn(Optional.of(fullRecord1.getBytes()));
+            VsamRecord fullRecord1 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record1);
+            VsamRecord fullRecord2 = new VsamRecord(vsamConfiguration, VALID_SERVICE_ID, record2);
+            when(file.readBytes(any()))
+                .thenReturn(Optional.of(fullRecord2.getBytes()))
+                .thenReturn(Optional.of(fullRecord1.getBytes()));
 
-        underTest.evict("new-key");
-        verify(file).delete(recordArgumentCaptor.capture());
+            underTest.evict("new-key");
+            verify(file).delete(recordArgumentCaptor.capture());
 
-        VsamRecord deleted = recordArgumentCaptor.getValue();
-        assertThat(deleted.getKeyValue().getKey(), is("key-1"));
+            VsamRecord deleted = recordArgumentCaptor.getValue();
+            assertThat(deleted.getKeyValue().getKey(), is("key-1"));
 
+        }
     }
 }
