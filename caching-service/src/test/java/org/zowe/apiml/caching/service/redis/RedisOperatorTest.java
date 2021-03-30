@@ -324,4 +324,44 @@ public class RedisOperatorTest {
             assertThrows(RetryableRedisException.class, () -> underTest.delete(SERVICE_ID, KEY));
         }
     }
+
+    @Nested
+    class whenDeletingAllEntries {
+
+        @Mock
+        private RedisFuture<Long> future;
+
+        @BeforeEach
+        void mockRedisCommand() {
+            when(redisCommands.del(any())).thenReturn(future);
+        }
+
+        @Test
+        void givenExistingEntries_thenDeleteAllEntries() throws ExecutionException, InterruptedException {
+            when(future.get()).thenReturn((long) 2);
+            boolean result = underTest.delete(SERVICE_ID);
+            assertTrue(result);
+        }
+
+        @Test
+        void givenNoEntries_thenReturnFalse() throws ExecutionException, InterruptedException {
+            when(future.get()).thenReturn((long) 0);
+            boolean result = underTest.delete(SERVICE_ID);
+            assertFalse(result);
+        }
+
+        @Test
+        void givenInterruptedException_thenThrowRetryException() throws ExecutionException, InterruptedException {
+            when(future.get()).thenThrow(new InterruptedException());
+
+            assertThrows(RetryableRedisException.class, () -> underTest.delete(SERVICE_ID));
+        }
+
+        @Test
+        void givenExecutionException_thenThrowRetryException() throws ExecutionException, InterruptedException {
+            when(future.get()).thenThrow(new ExecutionException(new Exception()));
+
+            assertThrows(RetryableRedisException.class, () -> underTest.delete(SERVICE_ID));
+        }
+    }
 }

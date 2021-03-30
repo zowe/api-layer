@@ -26,8 +26,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class RedisStorageTest {
     private static final String SERVICE_ID = "my-service-id";
@@ -157,6 +156,16 @@ public class RedisStorageTest {
 
             Map<String, KeyValue> result = underTest.readForService(SERVICE_ID);
             assertThat(result.size(), is(0));
+        }
+    }
+
+    @Nested
+    class whenDeleteForService{
+        @Test
+        void givenServiceId_callDeleteWithServiceId(){
+            when(redisOperator.delete(SERVICE_ID)).thenReturn(true);
+            underTest.deleteForService(SERVICE_ID);
+            verify(redisOperator, times(1)).delete(SERVICE_ID);
         }
     }
 }
