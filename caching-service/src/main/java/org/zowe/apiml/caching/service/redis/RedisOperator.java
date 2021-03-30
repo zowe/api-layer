@@ -154,6 +154,20 @@ public class RedisOperator {
         }
     }
 
+    /**
+     * Deletes all entries for a given service.
+     *
+     * @return true if at least one entry was deleted, otherwise false.
+     */
+    public boolean delete(String serviceId) {
+        try {
+            long recordsDeleted = redis.del(serviceId).get();
+            return recordsDeleted >= 1;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RetryableRedisException(e);
+        }
+    }
+
     private void handleWriteOperationExecutionException(ExecutionException e) throws RedisOutOfMemoryException {
         Throwable cause = e.getCause();
         if (cause instanceof RedisCommandExecutionException && cause.getMessage().contains("maxmemory")) {

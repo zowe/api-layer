@@ -113,4 +113,12 @@ public class RedisStorage implements Storage {
         }
         return readResult;
     }
+
+    @Override
+    public void deleteForService(String serviceId) {
+        log.info("Deleting all entries: {}", serviceId);
+
+        redis.delete(serviceId);
+        // TODO use result to throw error here? Internal error? Only would happen in serviceId doesn't exist/has no entries
+    }
 }
