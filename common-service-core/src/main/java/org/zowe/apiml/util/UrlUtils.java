@@ -11,9 +11,10 @@ package org.zowe.apiml.util;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import java.net.*;
+import java.security.SecureRandom;
+import java.util.Arrays;
 
 @Slf4j
 @UtilityClass
@@ -26,9 +27,8 @@ public class UrlUtils {
      * @param string input parameter
      * @return input without removed trailing slashes.
      */
-    @SuppressWarnings("squid:L31")
     public static String trimSlashes(String string) {
-        return string.replaceAll("^/|/$", "");
+        return string.replaceAll("(?:^/)|(?:/$)", "");
     }
 
     /**
@@ -41,7 +41,10 @@ public class UrlUtils {
         if (url != null) {
             return url.replaceAll("\\W", "-");
         } else {
-            return RandomStringUtils.randomAlphanumeric(10);
+            SecureRandom random = new SecureRandom();
+            byte[] bytes = new byte[20];
+            random.nextBytes(bytes);
+            return Arrays.toString(bytes);
         }
     }
 

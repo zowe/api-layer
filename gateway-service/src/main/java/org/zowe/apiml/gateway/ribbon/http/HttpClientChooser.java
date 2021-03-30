@@ -14,6 +14,7 @@ import com.netflix.zuul.context.RequestContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.zowe.apiml.gateway.security.service.schema.RoutingConstants;
 
 import java.security.cert.X509Certificate;
 
@@ -45,6 +46,10 @@ public class HttpClientChooser {
     }
 
     public CloseableHttpClient chooseClient() {
+        if (RequestContext.getCurrentContext().get(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY) != null) {
+            return clientWithCertificate;
+        }
+
         if (isRequestToSign()) {
             return clientWithCertificate;
         } else {

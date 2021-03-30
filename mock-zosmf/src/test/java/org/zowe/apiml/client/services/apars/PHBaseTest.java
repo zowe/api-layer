@@ -172,4 +172,15 @@ class PHBaseTest {
             assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         }
     }
+
+    @Nested
+    class whenRetrieveJwtKeys {
+        @Test
+        void thenNotFoundIsReturned() {
+            Optional<ResponseEntity<?>> result = underTest.apply("jwtKeys", "get", null, null, null);
+
+            assertThat(result.isPresent(), is(true));
+            assertThat(result.get().getStatusCode(), is(HttpStatus.NOT_FOUND));
+        }
+    }
 }

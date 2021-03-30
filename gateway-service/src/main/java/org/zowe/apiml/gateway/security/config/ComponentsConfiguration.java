@@ -10,7 +10,9 @@
 package org.zowe.apiml.gateway.security.config;
 
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;

@@ -12,6 +12,7 @@ package org.zowe.apiml.enablejavasampleapp;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.AdditionalLocalTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -22,7 +23,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 
 @AdditionalLocalTest
-public class EnablerJavaSampleAppEndpointTest {
+class EnablerJavaSampleAppEndpointTest implements TestWithStartedInstances {
     private static final String UI_V1_PATH = "/ui/v1/enablerJavaSampleApp/";
     private static final String APP_INFO_PATH = "/api/v1/enablerJavaSampleApp/application/info/";
     private static final String APP_INFO_HEALTH = "/api/v1/enablerJavaSampleApp/application/health/";
@@ -31,7 +32,7 @@ public class EnablerJavaSampleAppEndpointTest {
     private static final String JSON_CONTENT_TYPE = "application/json";
 
     @BeforeAll
-    public static void beforeClass() {
+    static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 

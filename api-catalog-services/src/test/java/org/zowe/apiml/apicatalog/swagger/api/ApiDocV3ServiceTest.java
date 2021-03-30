@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.swagger.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
@@ -33,8 +34,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ApiDocV3ServiceTest {
@@ -101,7 +102,51 @@ class ApiDocV3ServiceTest {
         assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
         assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
         assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
+    }
 
+    @Test
+    void givenOpenApiValidYaml_whenApiDocTransform_thenCheckUpdatedValues() {
+        List<Server> servers = new ArrayList<>();
+        servers.add(0, new Server().url("/api/v1/apicatalog"));
+        servers.add(1, new Server().url("http://localhost:8080/apicatalog"));
+        servers.add(2, new Server().url("http://localhost2:8080/serviceId"));
+        OpenAPI dummyOpenApiObject = getDummyOpenApiObject(servers, false);
+        String apiDocContent = convertOpenApiToYaml(dummyOpenApiObject);
+
+        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+
+        RoutedServices routedServices = new RoutedServices();
+        routedServices.addRoutedService(routedService);
+        routedServices.addRoutedService(routedService2);
+        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+
+        String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+        OpenAPI actualSwagger = convertYamlToOpenApi(actualContent);
+        assertNotNull(actualSwagger);
+        String expectedDescription = dummyOpenApiObject.getInfo().getDescription() +
+            "\n\n" +
+            SWAGGER_LOCATION_LINK +
+            "(" +
+            gatewayClient.getGatewayConfigProperties().getScheme() +
+            "://" +
+            gatewayClient.getGatewayConfigProperties().getHostname() +
+            SEPARATOR +
+            CoreService.API_CATALOG.getServiceId() +
+            CATALOG_VERSION +
+            CATALOG_APIDOC_ENDPOINT +
+            SEPARATOR +
+            SERVICE_ID +
+            HARDCODED_VERSION +
+            ")";
+
+        assertEquals("https://localhost:10010/serviceId/api/v1", actualSwagger.getServers().get(0).getUrl());
+        assertThat(actualSwagger.getPaths(), is(dummyOpenApiObject.getPaths()));
+
+        assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
+        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
+        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
     }
 
     @Test
@@ -153,6 +198,15 @@ class ApiDocV3ServiceTest {
 
     private String convertOpenApiToJson(OpenAPI openApi) {
         ObjectMapper objectMapper = new ObjectMapper();
+        return writeOpenApiAsString(openApi, objectMapper);
+    }
+
+    private String convertOpenApiToYaml(OpenAPI openApi) {
+        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+        return writeOpenApiAsString(openApi, objectMapper);
+    }
+
+    private String writeOpenApiAsString(OpenAPI openApi, ObjectMapper objectMapper) {
         try {
             return objectMapper.writeValueAsString(openApi);
         } catch (JsonProcessingException e) {
@@ -163,6 +217,15 @@ class ApiDocV3ServiceTest {
 
     private OpenAPI convertJsonToOpenApi(String content) {
         ObjectMapper objectMapper = new ObjectMapper();
+        return readStringToOpenApi(content, objectMapper);
+    }
+
+    private OpenAPI convertYamlToOpenApi(String content) {
+        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+        return readStringToOpenApi(content, objectMapper);
+    }
+
+    private OpenAPI readStringToOpenApi(String content, ObjectMapper objectMapper) {
         OpenAPI openAPI = null;
         try {
             openAPI = objectMapper.readValue(content, OpenAPI.class);

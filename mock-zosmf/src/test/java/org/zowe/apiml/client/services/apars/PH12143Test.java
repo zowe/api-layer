@@ -176,20 +176,34 @@ class PH12143Test {
         }
     }
 
-    @Test
-    void givenAuthenticationMethodNotHandled_whenApplyApar_thenReturnOriginalResult() {
-        Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+    @Nested
+    class whenApplyApar {
+        @Test
+        void givenAuthenticationMethodNotHandled_thenReturnOriginalResult() {
+            Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-        Optional<ResponseEntity<?>> result = underTest.apply("authentication", "default", previousResult, mockResponse, headers);
-        assertThat(result, is(previousResult));
+            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "default", previousResult, mockResponse, headers);
+            assertThat(result, is(previousResult));
+        }
+
+        @Test
+        void givenServiceNotHandled_thenReturnOriginalResult() {
+            Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+
+            Optional<ResponseEntity<?>> result = underTest.apply("badservice", "", previousResult, mockResponse, headers);
+            assertThat(result, is(previousResult));
+        }
     }
 
-    @Test
-    void givenServiceNotHandled_whenApplyApar_thenReturnOriginalResult() {
-        Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+    @Nested
+    class whenRetrieveJwtKeys {
+        @Test
+        void thenOkIsReturned() {
+            Optional<ResponseEntity<?>> result = underTest.apply("jwtKeys", "get", null, null, null);
 
-        Optional<ResponseEntity<?>> result = underTest.apply("badservice", "", previousResult, mockResponse, headers);
-        assertThat(result, is(previousResult));
+            assertThat(result.isPresent(), is(true));
+            assertThat(result.get().getStatusCode(), is(HttpStatus.OK));
+        }
     }
 
     private String getBasicAuthorizationHeader(String user, String password) {

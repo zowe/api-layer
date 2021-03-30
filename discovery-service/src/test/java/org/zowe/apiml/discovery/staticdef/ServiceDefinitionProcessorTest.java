@@ -12,6 +12,8 @@ package org.zowe.apiml.discovery.staticdef;
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -136,46 +138,20 @@ class ServiceDefinitionProcessorTest {
         assertThat(result.getInstances().size(), is(0));
     }
 
-    @Test
-    void givenMalformedUrlAmongBaseUrls_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
+    @ParameterizedTest
+    @CsvSource(value = {
+        "localhost:10019/casamplerestapiservice/;is malformed. The instance of casamplerestapiservice will not be created: unknown protocol: localhost",
+        "ftp://localhost:10019/casamplerestapiservice/;is malformed. The instance of casamplerestapiservice will not be created: Invalid protocol",
+        "https:///casamplerestapiservice/;does not contain a hostname. The instance of casamplerestapiservice will not be created",
+        "https://host/casamplerestapiservice/;does not contain a port number. The instance of casamplerestapiservice will not be created"
+    }, delimiter = ';')
+    void givenIncorrectUrl_whenTheDefinitionIsLoaded_thenErrorIsReturned(String url, String errorMessage) {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
-            "        - localhost:10019/casamplerestapiservice/\n";
+            "        - " + url + "\n";
         StaticRegistrationResult result = processServicesData(routedServiceYaml);
-
-        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
-            result,
-            "The URL localhost:10019/casamplerestapiservice/ is malformed. The instance of casamplerestapiservice will not be created: unknown protocol: localhost"
-        );
-    }
-
-    @Test
-    void givenUnsupportedSchemaAmongBaseUrls_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
-        String routedServiceYaml = "services:\n" +
-            "    - serviceId: casamplerestapiservice\n" +
-            "      instanceBaseUrls:\n" +
-            "        - ftp://localhost:10019/casamplerestapiservice/\n";
-        StaticRegistrationResult result = processServicesData(routedServiceYaml);
-
-        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
-            result,
-            "The URL ftp://localhost:10019/casamplerestapiservice/ is malformed. The instance of casamplerestapiservice will not be created: Invalid protocol"
-        );
-    }
-
-    @Test
-    void givenNoHostnameInBaseUrl_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
-        String routedServiceYaml = "services:\n" +
-            "    - serviceId: casamplerestapiservice\n" +
-            "      instanceBaseUrls:\n" +
-            "        - https:///casamplerestapiservice/\n";
-        StaticRegistrationResult result = processServicesData(routedServiceYaml);
-
-        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
-            result,
-            "The URL https:///casamplerestapiservice/ does not contain a hostname. The instance of casamplerestapiservice will not be created"
-        );
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(result, "The URL " + url + " " + errorMessage);
     }
 
     @Test
@@ -197,20 +173,6 @@ class ServiceDefinitionProcessorTest {
             result,
             "Metadata creation failed. The instance of casamplerestapiservice will not be created: " +
                 "org.zowe.apiml.exception.MetadataValidationException: The documentation URL &quot;httpBlah://localhost:10021/hellospring/api-doc&quot; for service casamplerestapiservice is not valid"
-        );
-    }
-
-    @Test
-    void givenBaseInstanceUrlHasNoPort_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
-        String routedServiceYaml = "services:\n" +
-            "    - serviceId: casamplerestapiservice\n" +
-            "      instanceBaseUrls:\n" +
-            "        - https://host/casamplerestapiservice/\n";
-        StaticRegistrationResult result = processServicesData(routedServiceYaml);
-
-        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
-            result,
-            "The URL https://host/casamplerestapiservice/ does not contain a port number. The instance of casamplerestapiservice will not be created"
         );
     }
 

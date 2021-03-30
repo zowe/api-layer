@@ -18,7 +18,7 @@ import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.SslContext;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
 
 class X509SchemeTest {
@@ -31,6 +31,7 @@ class X509SchemeTest {
     private final static String DISCOVERABLE_CLIENT_BASE_PATH = "/api/v1/discoverableclient";
     private static final String X509_ENDPOINT = "/x509";
     private static String URL;
+
     @BeforeAll
     static void init() throws Exception {
         SslContext.prepareSslAuthentication();
@@ -41,30 +42,28 @@ class X509SchemeTest {
     void givenCorrectClientCertificateInRequest_thenUsernameIsReturned() {
         given().config(SslContext.clientCertValid).get(X509SchemeTest.URL)
             .then()
-            .body("dn",startsWith("CN=APIMTST"))
+            .body("dn", startsWith("CN=APIMTST"))
             .body("cn", is("APIMTST")).statusCode(200);
     }
 
     @Test
-    void givenApimlCertificateInRequest_thenEmptyBodyIsReturned() {
+    void givenApimlCertificateInRequest_thenUsernameIsReturned() {
         given().config(SslContext.clientCertApiml).get(X509SchemeTest.URL)
             .then()
-            .body("publicKey",is(""))
-            .body("dn",is(""))
-            .body("cn", is("")).statusCode(200);
+            .body("dn", startsWith("CN="))
+            .statusCode(200);
     }
 
     @Test
-    void givenApimlCertificateAndMaliciousHeaderInRequest_thenEmptyBodyIsReturned() {
-        given().config(SslContext.clientCertApiml)
+    void givenSelfSignedUntrustedCertificate_andMaliciousHeaderInRequest_thenEmptyBodyIsReturned() {
+        given().config(SslContext.selfSignedUntrusted)
             .header(new Header("X-Certificate-CommonName", "evil common name"))
             .header(new Header("X-Certificate-Public", "evil public key"))
             .header(new Header("X-Certificate-DistinguishedName", "evil distinguished name"))
             .get(X509SchemeTest.URL)
             .then()
-            .body("publicKey",is(""))
-            .body("dn",is(""))
+            .body("publicKey", is(""))
+            .body("dn", is(""))
             .body("cn", is("")).statusCode(200);
-
     }
 }

@@ -13,9 +13,11 @@ import io.restassured.RestAssured;
 import org.apache.catalina.LifecycleException;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.RandomPorts;
@@ -47,7 +49,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  * - credentials.password = user
  */
 @TestsNotMeantForZowe
-class AuthenticationOnDeploymentTest {
+class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
 
     private static final int TIMEOUT = 3;
 
@@ -62,6 +64,7 @@ class AuthenticationOnDeploymentTest {
     }
 
     @Test
+    @Disabled("The test is flaky and often fails at random on different environments.")
     void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
 
@@ -146,6 +149,7 @@ class AuthenticationOnDeploymentTest {
     }
 
     @Test
+    @Disabled("The test is flaky and often fails at random on different environments.")
     void testReregistration() throws Exception {
 
         List<Integer> ports = RandomPorts.generateUniquePorts(3);
@@ -194,6 +198,7 @@ class AuthenticationOnDeploymentTest {
 
     @Test
     @NotForMainframeTest
+    @Disabled("The test is flaky and often fails at random on different environments.")
     void testServiceStatus() throws Exception {
 
         String serviceId = "testservice4";

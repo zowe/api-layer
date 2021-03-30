@@ -32,7 +32,7 @@ class ZosmfJwkToPublicKeyTest {
         when(restTemplate.getForObject("https://zosmf:1433/jwt/ibm/api/zOSMFBuilder/jwk", String.class))
                 .thenReturn(jwk);
 
-        ZosmfJwkToPublicKey zosmfJwkToPublicKey = new ZosmfJwkToPublicKey(restTemplate);
+        ZosmfJwkToPublicKey zosmfJwkToPublicKey = new ZosmfJwkToPublicKey(restTemplate, "/jwt/ibm/api/zOSMFBuilder/jwk");
 
         File f = File.createTempFile("jwt", null, new File(System.getProperty("java.io.tmpdir")));
         try {

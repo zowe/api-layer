@@ -24,7 +24,7 @@ public class WebServerSecurityConfig {
     @Bean
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
         return factory -> factory.addConnectorCustomizers(connector -> {
-            AbstractHttp11Protocol abstractProtocol = (AbstractHttp11Protocol<?>) connector.getProtocolHandler();
+            AbstractHttp11Protocol<?> abstractProtocol = (AbstractHttp11Protocol<?>) connector.getProtocolHandler();
             abstractProtocol.setUseServerCipherSuitesOrder(true);
         });
     }

@@ -2,63 +2,40 @@
 
 ## Introduction
 
-Integration tests are meant to test a functionality that requires multiple running services.
-We recommend you test most test cases using unit tests in the module. Use integration tests
-only when necessary.
+Integration tests are meant to test a functionality that requires multiple running services. We recommend you test most test cases using unit tests in the module. Use integration tests only when necessary.
 
-Integration tests require running instances of all services.
-These services must be started by the user.
+The Integration tests can be run against specific setup and instance or they can start the services itself. Either way the test suite detects when services are started up and are ready to begin testing.
 
-The integration test suite detects when services are started up and are ready to begin testing.
+## The tests take care of the services. 
 
-## General Quick start
-
-Perform a general quick start to execute tests within the pipeline.
+In this setup the integration test suite starts and stops the service. It isaimed at all runs for testing the integrations off-platform. 
 
 **Follow these steps:**
-
-1. Deploy and run all services.
-
-2. Run the following shell script:
-
-    ```sh
-    ./gradlew runIntegrationTests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD>
-    ```
-
-3. (Optional) Change the host/port/scheme for the Gateway and Discovery Service with the following shell script:
-
-    ```sh
-    ./gradlew runIntegrationTests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD> -Ddiscovery.host=<DS_HOST> -Ddiscovery.port=<DS_PORT>  -Dgateway.host=<GW_HOST> -Dgateway.port=<GW_PORT> -Dgateway.scheme=https
-    ```
-
-## Localhost Quick start
 
 Perform a Localhost Quick start when you need to run the tests on your local machine.
 
+1. Run the following shell script:
+
+    ```shell
+    ./gradlew runCITests
+    ```
+
+2. (Optional) Change the host/port/scheme for the Gateway and Discovery Service with the following shell script:
+
+    ```sh
+    ./gradlew runCITests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD> -Ddiscovery.host=<DS_HOST> -Ddiscovery.port=<DS_PORT>  -Dgateway.host=<GW_HOST> -Dgateway.port=<GW_PORT> -Dgateway.scheme=https
+    ```
+
+## The services run elsewhere. 
+
+In this case the services are running somewhere and the integration tests verify that the services work well. 
+
 **Follow these steps:**
 
-1. Start all services locally. You can do it using:
+1. Run the following shell script:
 
-    ```shell
-    npm run api-layer-ci
-    ```
-
-2. Run the following shell script:
-
-    ```shell
-    ./gradlew runLocalIntegrationTests
-    ```
-
-    or you can use:
-
-    ```shell
-    npm run test:local
-    ```
-
-3. (Optional) Run all local tests including all sample services with the following shell script:
-
-    ```shell
-    ./gradlew runAllLocalIntegrationTests
+    ```sh
+   ./gradlew runAllIntegrationTests -Dcredentials.user=${MF_USERID} -Dcredentials.password=${MF_PASSWORD}
     ```
 
 ## Manual testing of Discovery Service in HTTP mode
@@ -85,11 +62,11 @@ Run special integration tests for tests that need to be performed slowly such as
 **Note:** Executing these slow steps with other tests causes
 the entire test suite to take longer to execute.
 
-Slow tests are annotated using @Category(SlowTests.class) as in the following example:
+Slow tests are annotated using @SlowTests as in the following example:
 
 ```java
 @Test
-@Category(SlowTests.class)
+@SlowTests
 @SuppressWarnings("squid:S1160")
 public void shouldCallLongButBelowTimeoutRequest() throws IOException {
 ```
@@ -114,4 +91,4 @@ Run special integration tests to test a Zowe instance as part of the RC testing 
 ./gradlew :integration-tests:runAllIntegrationTestsForZoweTesting
 ```
 
-Tests annotated with `@Category(TestsNotMeantForZowe.class)` are excluded from this test suite (e.g Discoverable Client tests, PassTicket tests, etc...).
+Tests annotated with `@TestsNotMeantForZowe` are excluded from this test suite (e.g Discoverable Client tests, PassTicket tests, etc...).

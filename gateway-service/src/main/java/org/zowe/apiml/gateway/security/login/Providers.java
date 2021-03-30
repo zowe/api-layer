@@ -28,6 +28,7 @@ public class Providers {
 
     /**
      * This method decides whether the Zosmf service is available.
+     *
      * @return Availability of the ZOSMF service in the system.
      * @throws AuthenticationServiceException if the z/OSMF service id is not configured
      */
@@ -39,6 +40,7 @@ public class Providers {
 
     /**
      * Verify that the zOSMF is registered in the Discovery service and that we can actually reach it.
+     *
      * @return true if the service is registered and properly responds.
      */
     public boolean isZosmfAvailableAndOnline() {
@@ -57,6 +59,7 @@ public class Providers {
 
     /**
      * This method decides whether the Zosmf is used for authentication
+     *
      * @return Usage of the ZOSMF service in the system.
      */
     public boolean isZosfmUsed() {
@@ -65,9 +68,27 @@ public class Providers {
 
     /**
      * This method decides whether used zOSMF instance supports JWT tokens.
+     *
      * @return True is the instance support JWT
      */
     public boolean zosmfSupportsJwt() {
-        return zosmfService.loginEndpointExists();
+        switch (authConfigurationProperties.getZosmfJwtAutoconfiguration()) {
+            case JWT:
+                return true;
+            case LTPA:
+                return false;
+            default: // AUTO
+                return zosmfService.loginEndpointExists() && zosmfService.jwtBuilderEndpointExists();
+        }
+    }
+
+    /**
+     * This method is used to access configuration provided by the user to determine if zOSMF supports LTPA token
+     * instead of JWT.
+     *
+     * @return true if configuration was set to indicate zOSMF supports LTPA.
+     */
+    public boolean isZosmfConfigurationSetToLtpa() {
+        return authConfigurationProperties.getZosmfJwtAutoconfiguration() == AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.LTPA;
     }
 }

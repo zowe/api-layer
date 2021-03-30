@@ -11,6 +11,8 @@ package org.zowe.apiml.util.config;
 
 import lombok.*;
 
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,4 +24,5 @@ public class EnvironmentConfiguration {
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
     private AuxiliaryUserList auxiliaryUserList;
+    private Map<String, String> instanceEnv;
 }

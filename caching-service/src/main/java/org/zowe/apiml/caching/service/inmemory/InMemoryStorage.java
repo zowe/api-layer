@@ -105,6 +105,11 @@ public class InMemoryStorage implements Storage {
         return storage.get(serviceId);
     }
 
+    @Override
+    public void deleteForService(String serviceId) {
+        storage.remove(serviceId);
+    }
+
     private boolean isKeyNotInCache(String serviceId, String keyToTest) {
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
         return serviceSpecificStorage == null || serviceSpecificStorage.get(keyToTest) == null;

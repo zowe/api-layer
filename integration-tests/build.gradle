@@ -63,6 +63,7 @@ task startUpCheck(type: Test) {
     description "Check that the API Mediation Layer is up and runnig"
 
     systemProperties System.properties
+    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags 'StartupCheck'
     }
@@ -74,6 +75,7 @@ task environmentCheck(type: Test) {
     description "Check that the Integration environment is healthy"
 
     systemProperties System.properties
+    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags 'EnvironmentCheck'
     }
@@ -147,6 +149,7 @@ task runAllIntegrationTestsNormal(type: Test) {
     group "Integration tests"
     description "Run all integration tests normal"
     systemProperties System.properties
+    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
@@ -169,6 +172,7 @@ task runAllIntegrationTests(type: Test) {
     String itags = System.getProperty("includeTags") ?
         System.getProperty("includeTags") : 'zOSMFAuthTest'
     systemProperties System.properties
+    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags(
             itags
@@ -208,7 +212,8 @@ task runCITests(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
 
-    dependsOn startUpCheck
+    outputs.cacheIf { false }
+
     systemProperties System.properties
     useJUnitPlatform {
         excludeTags(
@@ -226,7 +231,8 @@ task runCITestsInternalPort(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
 
-    dependsOn startUpCheck
+    outputs.cacheIf { false }
+
     systemProperties System.properties
     systemProperty "gateway.port", System.getProperty("internal.gateway.port")
     useJUnitPlatform {

@@ -282,6 +282,20 @@ class VsamFileTest {
     }
 
     @Nested
+    class WhenDeletingForService {
+        @Test
+        void givenValidServiceId_allServiceRecordsAreReturned() throws ZFileException, UnsupportedEncodingException {
+            int amountOfReturnedRecords = 1;
+
+            when(zFile.locate(key.getKeyBytesSidOnly(VALID_SERVICE_ID), ZFileConstants.LOCATE_KEY_GE)).thenReturn(true);
+            when(zFile.read(any())).thenAnswer(prepareAnswer(amountOfReturnedRecords));
+
+            underTest.deleteForService(VALID_SERVICE_ID);
+            verify(zFile).delrec();
+        }
+    }
+
+    @Nested
     class whenClosingRecord {
         @Test
         void givenZFile_fileIsClosed() throws VsamRecordException, ZFileException {

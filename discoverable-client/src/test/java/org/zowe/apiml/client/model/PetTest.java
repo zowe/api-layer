@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class PetTest {
     @Test
@@ -39,7 +39,7 @@ class PetTest {
         Pet firstPet = new Pet(1L, "Falco");
         Pet secondPet = new Pet(2L, "Molly");
 
-        assertFalse(firstPet.equals(secondPet));
-        assertFalse(firstPet.equals(null));
+        assertNotEquals(firstPet, secondPet);
+        assertNotEquals(firstPet, null);
     }
 }

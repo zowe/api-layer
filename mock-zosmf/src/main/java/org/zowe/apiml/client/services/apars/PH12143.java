@@ -48,6 +48,11 @@ public class PH12143 extends FunctionalApar {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Override
+    protected ResponseEntity<?> handleJwtKeys() {
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     private boolean isUnauthorized(Map<String, String> headers) {
         return containsInvalidUser(headers) && noLtpaCookie(headers);
     }

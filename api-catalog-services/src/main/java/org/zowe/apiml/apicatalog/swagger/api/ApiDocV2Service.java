@@ -14,6 +14,7 @@ import io.swagger.models.ExternalDocs;
 import io.swagger.models.Path;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
+import io.swagger.parser.SwaggerParser;
 import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
@@ -22,7 +23,6 @@ import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import javax.validation.UnexpectedTypeException;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -34,12 +34,10 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
     }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
-        Swagger swagger;
 
-        try {
-            swagger = Json.mapper().readValue(apiDocInfo.getApiDocContent(), Swagger.class);
-        } catch (IOException e) {
-            log.debug("Could not convert response body to a Swagger object.", e);
+        Swagger swagger = new SwaggerParser().readWithInfo(apiDocInfo.getApiDocContent()).getSwagger();
+        if (swagger == null) {
+            log.debug("Could not convert response body to a Swagger object.");
             throw new UnexpectedTypeException("Response is not a Swagger type object.");
         }
 

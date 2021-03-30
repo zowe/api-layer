@@ -8,6 +8,7 @@ This document is a living summary of conventions and best practices for developm
   - [Code Guidelines](#code-guidelines)
   - [File Naming Guidelines](#file-naming-guidelines)
   - [Branch Naming Guidelines](#branch-naming-guidelines)
+  - [Commit Message Structure Guideline](#commit-message-structure-guideline)
   - [Testing Guidelines](#testing-guidelines)
   - [Build Process Guidelines](#build-process-guidelines)
   - [Documentation Guidelines](#documentation-guidelines)
@@ -49,7 +50,6 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | security-service-client-spring           | Library - Security Client          |
 | zaas-client                              | APIML SDK - ZAAS Client            |
 | zlux-api-catalog                         | Library - Zlux Api Catalog plugin  |
-| zowe-install                             | Tool - Zowe run scripts            |
 
 ## Pull Requests
 
@@ -209,7 +209,8 @@ around how to implement the solution.
 
 ### Examples of given size
 
--   1 The smallest meaningful issue that delivers value on its own. Usually no collaboration within the squad is necessary and fix can be delivered mainly by one team member. An example: [Streamline Single Sign On Documentation](https://github.com/zowe/api-layer/issues/677) 
+-   0.5 The smallest meaningful issue that delivers value on its own. An example: [Explore CodeQL for for Github Actions](https://github.com/zowe/api-layer/issues/1263)
+-   1 Usually no collaboration within the squad is necessary and fix can be delivered mainly by one team member. An example: [Streamline Single Sign On Documentation](https://github.com/zowe/api-layer/issues/677) 
 -   2 Ideal size of the story. It allows meaningful collaboration (i.e. to split the issue into separate tasks among multiple members). The issue is delivered within a Sprint. An example: [Add logout functionality to the ZAAS client](https://github.com/zowe/api-layer/issues/808) 
 -   3 Good size of the story. It is posible to collaborate among multiple members. The fix to the issue is usually delivered within a Sprint. An example: [Alpha of client certificate using SAF API](https://github.com/zowe/api-layer/issues/758)
 -   5 The problems start at this size. If possible split the issue into multiple smaller ones and focus namely on the value delivered (i.e. do the smaller issues still bring value if delivered separately?). Unless it is possible to collaborate on the issue among more members of the squad, it is possible that the issue won't fit into one sprint. An example: [Support the x509 client certificate authentication via x509](https://github.com/zowe/api-layer/issues/827)

@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.is;
 
 @TestsNotMeantForZowe
 @NotForMainframeTest
-public class EnablerNodejsSampleAppEndpointTest {
+class EnablerNodejsSampleAppEndpointTest {
 
     private static final String APP_INFO_PATH = "/hwexpress/api/v1/info/";
     private static final String APP_INFO_HEALTH = "/hwexpress/api/v1/status/";

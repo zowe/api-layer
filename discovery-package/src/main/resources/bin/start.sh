@@ -27,8 +27,12 @@
 
 JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
 # script assumes it's in the discovery component directory and common_lib needs to be relative path
-COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
-
+if [[ -z ${CMMN_LB} ]]
+then
+    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
+else
+    COMMON_LIB=${CMMN_LB}
+fi
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
@@ -37,13 +41,20 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [[ ! -z "${APIML_DIAG_MODE_ENABLED}" ]]
+then
+    LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
+fi
+
 # If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
 export APIML_STATIC_DEF=${STATIC_DEF_CONFIG_DIR}
 if [[ ! -z "$ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES" ]]
 then
   export APIML_STATIC_DEF="${APIML_STATIC_DEF};${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
 fi
-
+if [ `uname` = "OS/390" ]; then
+    QUICK_START=-Xquickstart
+fi
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -62,7 +73,7 @@ stop_jobs()
 trap 'stop_jobs' INT
 
 DISCOVERY_CODE=AD
-_BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart \
+_BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
@@ -91,6 +102,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -jar "${JAR_FILE}" &
-pid=$?
-
+pid=$!
+echo "pid=${pid}"
 wait

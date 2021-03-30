@@ -13,8 +13,9 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;    
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -27,7 +28,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-class ApiCatalogSecurityIntegrationTest {
+class ApiCatalogSecurityIntegrationTest implements TestWithStartedInstances {
 
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();

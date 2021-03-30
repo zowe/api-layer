@@ -14,27 +14,39 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
 import java.text.ParseException;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -93,7 +105,6 @@ public class ZosmfService extends AbstractZosmfService {
 
     }
 
-    private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
     private final ApplicationContext applicationContext;
     private final List<TokenValidationStrategy> tokenValidationStrategy;
 
@@ -189,6 +200,7 @@ public class ZosmfService extends AbstractZosmfService {
 
     /**
      * Verify whether the service is actually accessible.
+     *
      * @return true when it's possible to access the Info endpoint via GET.
      */
     public boolean isAccessible() {
@@ -269,6 +281,34 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     /**
+     * Check if call to ZOSMF_JWT_END_POINT resolves
+     *
+     * @return true if endpoint resolves, otherwise false
+     */
+    @Cacheable(value = "zosmfJwtEndpoint")
+    public boolean jwtEndpointExists(HttpHeaders headers) {
+        String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmfJwtEndpoint();
+
+        try {
+            restTemplateWithoutKeystore.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), String.class);
+        } catch (HttpClientErrorException hce) {
+            if (HttpStatus.UNAUTHORIZED.equals(hce.getStatusCode())) {
+                return true;
+            } else if (HttpStatus.NOT_FOUND.equals(hce.getStatusCode())) {
+                log.warn("The check of z/OSMF JWT builder endpoint has failed");
+                return false;
+            } else {
+                log.warn("z/OSMF JWT builder endpoint with HTTP method GET has failed with status code: "
+                    + hce.getStatusCode(), hce);
+                return false;
+            }
+        } catch (HttpServerErrorException serverError) {
+            log.warn("z/OSMF internal error", serverError);
+        }
+        return false;
+    }
+
+    /**
      * Tries to call ZOSMF authentication endpoint with HTTP Post method
      *
      * @return true, if zosmf login endpoint is presented
@@ -285,9 +325,20 @@ public class ZosmfService extends AbstractZosmfService {
      *
      * @return true, if zosmf logout endpoint is presented
      */
-
     public boolean logoutEndpointExists() {
         return meAsProxy.authenticationEndpointExists(HttpMethod.DELETE, null);
+    }
+
+    /**
+     * Tries to call ZOSMF JWT Builder endpoint
+     *
+     * @return true if endpoint exists, otherwise false
+     */
+    public boolean jwtBuilderEndpointExists() {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(ZOSMF_CSRF_HEADER, "");
+        headers.add("Authorization", "Basic Og==");
+        return meAsProxy.jwtEndpointExists(headers);
     }
 
     public boolean validate(String token) {
@@ -369,7 +420,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public JWKSet getPublicKeys() {
-        final String url = getURI(getZosmfServiceId()) + PUBLIC_JWK_ENDPOINT;
+        final String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmfJwtEndpoint();
 
         try {
             final String json = restTemplateWithoutKeystore.getForObject(url, String.class);
