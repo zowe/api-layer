@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters.pre;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.util.Arrays;
 
@@ -26,6 +27,7 @@ class HeaderSanitizerFilterTest {
     private static final String COMMON_NAME = "X-Certificate-CommonName";
     HeaderSanitizerFilter headerSanitizerFilter;
     private RequestContext context;
+    private MockHttpServletRequest request;
 
     @BeforeEach
     void setUp() {
@@ -34,6 +36,9 @@ class HeaderSanitizerFilterTest {
 
         context = spy(new RequestContext());
         RequestContext.testSetCurrentContext(context);
+
+        request = new MockHttpServletRequest();
+        context.setRequest(request);
     }
 
     @Test
@@ -80,5 +85,18 @@ class HeaderSanitizerFilterTest {
 
         assertTrue(context.getZuulRequestHeaders().containsKey("SomeOtherHeader"));
         assertTrue(context.getZuulRequestHeaders().containsValue("someValue"));
+    }
+
+    @Test
+    void whenHeadersOnRequest_thenTakeThemIntoAccount() {
+        // because headers that live on Request are not part of zuulRequestHeaders
+        request.addHeader(DISTINGUISHED_NAME, "value");
+        assertFalse(context.getZuulRequestHeaders().containsKey(DISTINGUISHED_NAME));
+        assertFalse(context.getZuulRequestHeaders().containsKey(DISTINGUISHED_NAME.toLowerCase()));
+
+        headerSanitizerFilter.run();
+
+        assertTrue(context.getZuulRequestHeaders().containsKey(DISTINGUISHED_NAME.toLowerCase()));
+        assertNull(context.getZuulRequestHeaders().get(DISTINGUISHED_NAME.toLowerCase()));
     }
 }
