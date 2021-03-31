@@ -49,7 +49,9 @@ public class HeaderSanitizerFilter extends ZuulFilter {
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
         for (String header : headersToBeCleared) {
-            context.addZuulRequestHeader(header, null);
+            if (context.getZuulRequestHeaders().containsKey(header.toLowerCase())) {
+                context.addZuulRequestHeader(header, null);
+            }
         }
         return null;
     }

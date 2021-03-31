@@ -10,8 +10,13 @@
 package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
@@ -20,16 +25,40 @@ class HeaderSanitizerFilterTest {
     private static final String DISTINGUISHED_NAME = "X-Certificate-DistinguishedName";
     private static final String COMMON_NAME = "X-Certificate-CommonName";
     HeaderSanitizerFilter headerSanitizerFilter;
+    private RequestContext context;
 
-    @Test
-    void test() {
+    @BeforeEach
+    void setUp() {
         String[] headers = {PUBLIC_KEY, DISTINGUISHED_NAME, COMMON_NAME};
         headerSanitizerFilter = spy(new HeaderSanitizerFilter(headers));
-        RequestContext context = spy(RequestContext.class);
+
+        context = spy(new RequestContext());
         RequestContext.testSetCurrentContext(context);
-        headerSanitizerFilter.run();
+
+
+    }
+
+    @Test
+    void whenHeaderPresent_thenNullsHeader() {
         context.addZuulRequestHeader(PUBLIC_KEY, "evil header");
+        assertTrue(context.getZuulRequestHeaders().containsKey(PUBLIC_KEY.toLowerCase()));
+        headerSanitizerFilter.run();
         verify(context, times(1)).addZuulRequestHeader(PUBLIC_KEY, null);
-        assertNull(context.getZuulRequestHeaders().get(PUBLIC_KEY));
+        assertTrue(context.getZuulRequestHeaders().containsKey(PUBLIC_KEY.toLowerCase()));
+        assertNull(context.getZuulRequestHeaders().get(PUBLIC_KEY.toLowerCase()));
+    }
+
+    @Test
+    void whenHeaderNotPresent_thenDoesntDoAnything() {
+        Arrays.stream(new String[] {PUBLIC_KEY, DISTINGUISHED_NAME, COMMON_NAME})
+            .forEach(h -> assertFalse(context.getZuulRequestHeaders().containsKey(h.toLowerCase()), "Unexpected header in RequestContext: " + h));
+
+        headerSanitizerFilter.run();
+
+        Arrays.stream(new String[] {PUBLIC_KEY, DISTINGUISHED_NAME, COMMON_NAME})
+            .forEach(h -> {
+                assertFalse(context.getZuulRequestHeaders().containsKey(h.toLowerCase()), "Unexpected header in RequestContext: " + h);
+                verify(context, times(0)).addZuulRequestHeader(PUBLIC_KEY, null);
+            });
     }
 }
