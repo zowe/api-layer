@@ -34,18 +34,24 @@ class HeaderSanitizerFilterTest {
 
         context = spy(new RequestContext());
         RequestContext.testSetCurrentContext(context);
-
-
     }
 
     @Test
     void whenHeaderPresent_thenNullsHeader() {
-        context.addZuulRequestHeader(PUBLIC_KEY, "evil header");
+        context.addZuulRequestHeader(PUBLIC_KEY, "evil header"); //this lowercases the header
+        context.getZuulRequestHeaders().put(DISTINGUISHED_NAME, "evil header"); //this preserves case
         assertTrue(context.getZuulRequestHeaders().containsKey(PUBLIC_KEY.toLowerCase()));
+        assertTrue(context.getZuulRequestHeaders().containsKey(DISTINGUISHED_NAME));
+
         headerSanitizerFilter.run();
-        verify(context, times(1)).addZuulRequestHeader(PUBLIC_KEY, null);
-        assertTrue(context.getZuulRequestHeaders().containsKey(PUBLIC_KEY.toLowerCase()));
+
+        verify(context, times(1)).addZuulRequestHeader(PUBLIC_KEY.toLowerCase(), null);
+        verify(context, times(1)).addZuulRequestHeader(DISTINGUISHED_NAME, null);
+
+        assertTrue(context.getZuulRequestHeaders().containsKey(PUBLIC_KEY.toLowerCase())); //headers are lowercased when nulled
+        assertTrue(context.getZuulRequestHeaders().containsKey(DISTINGUISHED_NAME.toLowerCase())); //headers are lowercased when nulled
         assertNull(context.getZuulRequestHeaders().get(PUBLIC_KEY.toLowerCase()));
+        assertNull(context.getZuulRequestHeaders().get(DISTINGUISHED_NAME.toLowerCase()));
     }
 
     @Test
@@ -60,5 +66,19 @@ class HeaderSanitizerFilterTest {
                 assertFalse(context.getZuulRequestHeaders().containsKey(h.toLowerCase()), "Unexpected header in RequestContext: " + h);
                 verify(context, times(0)).addZuulRequestHeader(PUBLIC_KEY, null);
             });
+    }
+
+    @Test
+    void whenOtherHeadersPresent_thenDoesntChangeThem() {
+        Arrays.stream(new String[] {PUBLIC_KEY, DISTINGUISHED_NAME, COMMON_NAME})
+            .forEach(h -> assertFalse(context.getZuulRequestHeaders().containsKey(h.toLowerCase()), "Unexpected header in RequestContext: " + h));
+        context.getZuulRequestHeaders().put("SomeOtherHeader", "someValue");
+        assertTrue(context.getZuulRequestHeaders().containsKey("SomeOtherHeader"));
+        assertTrue(context.getZuulRequestHeaders().containsValue("someValue"));
+
+        headerSanitizerFilter.run();
+
+        assertTrue(context.getZuulRequestHeaders().containsKey("SomeOtherHeader"));
+        assertTrue(context.getZuulRequestHeaders().containsValue("someValue"));
     }
 }

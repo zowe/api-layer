@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.*;
+
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 
@@ -48,11 +50,15 @@ public class HeaderSanitizerFilter extends ZuulFilter {
     @Override
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
-        for (String header : headersToBeCleared) {
-            if (context.getZuulRequestHeaders().containsKey(header.toLowerCase())) {
-                context.addZuulRequestHeader(header, null);
-            }
-        }
+
+        Map<String, String> zuulRequestHeaders = new HashMap<>(context.getZuulRequestHeaders());
+
+        Arrays.stream(headersToBeCleared).forEach( toBeCleared -> //for each header to be cleared
+            zuulRequestHeaders.entrySet().stream() //in all zuulRequestHeaders
+                .filter(entry -> entry.getKey().equalsIgnoreCase(toBeCleared)) // find headers that match ignoring case
+                .forEach(entry -> context.addZuulRequestHeader(entry.getKey(), null)) // and null it
+        );
+
         return null;
     }
 
