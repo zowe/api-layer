@@ -33,7 +33,15 @@ public class RedisConfiguration {
     @Bean
     public Storage redis(MessageService messageService) {
         log.info("Using redis configuration {}", redisConfig);
+        RedisURI redisUri = createRedisUri();
 
+        return new RedisStorage(new RedisOperator(redisUri, ApimlLogger.of(RedisOperator.class, messageService)));
+    }
+
+    /**
+     * Package protected for unit testing.
+     */
+    RedisURI createRedisUri() {
         RedisURI.Builder uriBuilder = RedisURI.builder();
         uriBuilder.withAuthentication(redisConfig.getUsername(), redisConfig.getPassword());
 
@@ -52,6 +60,6 @@ public class RedisConfiguration {
                 .withTimeout(Duration.ofSeconds(redisConfig.getTimeout()));
         }
 
-        return new RedisStorage(new RedisOperator(uriBuilder.build(), ApimlLogger.of(RedisOperator.class, messageService)));
+        return uriBuilder.build();
     }
 }
