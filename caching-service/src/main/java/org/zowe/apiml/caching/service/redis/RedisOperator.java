@@ -62,7 +62,7 @@ public class RedisOperator {
         } catch (ExecutionException e) {
             handleWriteOperationExecutionException(e);
         } catch (InterruptedException e) {
-            throw new RetryableRedisException(e);
+            handleInterruptedException(e);
         } catch (RedisEntryException e) {
             return false;
         }
@@ -91,7 +91,7 @@ public class RedisOperator {
         } catch (ExecutionException e) {
             handleWriteOperationExecutionException(e);
         } catch (InterruptedException e) {
-            throw new RetryableRedisException(e);
+            handleInterruptedException(e);
         } catch (RedisEntryException e) {
             return false;
         }
@@ -108,12 +108,15 @@ public class RedisOperator {
         try {
             String result = redis.hget(serviceId, key).get();
             return new RedisEntry(serviceId, result);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            handleInterruptedException(e);
+        } catch (ExecutionException e) {
             throw new RetryableRedisException(e);
         } catch (RedisEntryException e) {
             log.warn("Error retrieving entry: {}|{}. Error: {}", serviceId, key, e.getMessage());
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -124,20 +127,28 @@ public class RedisOperator {
     public List<RedisEntry> get(String serviceId) {
         try {
             Map<String, String> result = redis.hgetall(serviceId).get();
-            List<RedisEntry> entries = new ArrayList<>();
-
-            for (Map.Entry<String, String> entry : result.entrySet()) {
-                try {
-                    entries.add(new RedisEntry(serviceId, entry.getValue()));
-                } catch (RedisEntryException e) {
-                    log.warn("Error retrieving entry: {}|{}. Error: {}", serviceId, entry, e.getMessage());
-                }
-            }
-
-            return entries;
-        } catch (InterruptedException | ExecutionException e) {
+            return collectEntries(serviceId, result);
+        } catch (InterruptedException e) {
+            handleInterruptedException(e);
+        } catch (ExecutionException e) {
             throw new RetryableRedisException(e);
         }
+
+        return null;
+    }
+
+    private List<RedisEntry> collectEntries(String serviceId, Map<String, String> redisEntries) {
+        List<RedisEntry> entries = new ArrayList<>();
+
+        for (Map.Entry<String, String> entry : redisEntries.entrySet()) {
+            try {
+                entries.add(new RedisEntry(serviceId, entry.getValue()));
+            } catch (RedisEntryException e) {
+                log.warn("Error retrieving entry: {}|{}. Error: {}", serviceId, entry, e.getMessage());
+            }
+        }
+
+        return entries;
     }
 
     /**
@@ -149,9 +160,13 @@ public class RedisOperator {
         try {
             long recordsDeleted = redis.hdel(serviceId, toDelete).get();
             return recordsDeleted >= 1;
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            handleInterruptedException(e);
+        } catch (ExecutionException e) {
             throw new RetryableRedisException(e);
         }
+
+        return false;
     }
 
     /**
@@ -163,9 +178,13 @@ public class RedisOperator {
         try {
             long recordsDeleted = redis.del(serviceId).get();
             return recordsDeleted >= 1;
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            handleInterruptedException(e);
+        } catch (ExecutionException e) {
             throw new RetryableRedisException(e);
         }
+
+        return false;
     }
 
     private void handleWriteOperationExecutionException(ExecutionException e) throws RedisOutOfMemoryException {
@@ -175,5 +194,10 @@ public class RedisOperator {
         } else {
             throw new RetryableRedisException(e);
         }
+    }
+
+    private void handleInterruptedException(InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new RetryableRedisException(e);
     }
 }
