@@ -37,11 +37,11 @@ public class RedisConfiguration {
         RedisURI.Builder uriBuilder = RedisURI.builder();
         uriBuilder.withAuthentication(redisConfig.getUsername(), redisConfig.getPassword());
 
-        if (redisConfig.usesSentinel()){
+        if (redisConfig.usesSentinel()) {
             RedisConfig.Sentinel sentinelConfig = redisConfig.getSentinel();
             uriBuilder.withSentinelMasterId(sentinelConfig.getMaster());
 
-            for (RedisConfig.Sentinel.SentinelNode sentinelNode : sentinelConfig.getNodes()){
+            for (RedisConfig.Sentinel.SentinelNode sentinelNode : sentinelConfig.getNodes()) {
                 uriBuilder.withSentinel(sentinelNode.getIp(), sentinelNode.getPort());
             }
 

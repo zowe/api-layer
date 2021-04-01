@@ -160,9 +160,9 @@ public class RedisStorageTest {
     }
 
     @Nested
-    class whenDeleteForService{
+    class whenDeleteForService {
         @Test
-        void givenServiceId_callDeleteWithServiceId(){
+        void givenServiceId_callDeleteWithServiceId() {
             when(redisOperator.delete(SERVICE_ID)).thenReturn(true);
             underTest.deleteForService(SERVICE_ID);
             verify(redisOperator, times(1)).delete(SERVICE_ID);
