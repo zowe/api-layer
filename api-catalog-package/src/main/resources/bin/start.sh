@@ -59,13 +59,6 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 export LIBPATH="$LIBPATH":
 
-stop_jobs()
-{
-  kill -15 $pid
-}
-
-trap 'stop_jobs' INT
-
 CATALOG_CODE=AC
 _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Xms16m -Xmx512m \
@@ -97,6 +90,3 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -jar "${JAR_FILE}" &
-pid=$!
-echo "pid=${pid}"
-wait
