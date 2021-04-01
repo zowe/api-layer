@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import org.zowe.apiml.caching.model.KeyValue;
 
 /**
@@ -17,15 +18,17 @@ import org.zowe.apiml.caching.model.KeyValue;
  * <p>
  * The structure is composed of a String service ID and {@link KeyValue}, serialized to JSON format.
  */
+@AllArgsConstructor
 public class RedisEntry {
     private final String serviceId;
     private final KeyValue entry;
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
 
     public RedisEntry(String serviceId, KeyValue entry) {
         this.serviceId = serviceId;
         this.entry = entry;
+        this.mapper = new ObjectMapper();
     }
 
     /**
@@ -34,6 +37,7 @@ public class RedisEntry {
      * @throws RedisEntryException thrown if the serialized entry cannot be deserialized to a KeyValue instance.
      */
     public RedisEntry(String serviceId, String redisValue) throws RedisEntryException {
+        this.mapper = new ObjectMapper();
         this.serviceId = serviceId;
         try {
             this.entry = mapper.readValue(redisValue, KeyValue.class);

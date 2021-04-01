@@ -23,6 +23,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -162,10 +163,16 @@ public class RedisStorageTest {
     @Nested
     class whenDeleteForService {
         @Test
-        void givenServiceId_callDeleteWithServiceId() {
+        void givenServiceId_thenCallDeleteWithServiceId() {
             when(redisOperator.delete(SERVICE_ID)).thenReturn(true);
             underTest.deleteForService(SERVICE_ID);
             verify(redisOperator, times(1)).delete(SERVICE_ID);
+        }
+
+        @Test
+        void givenFailureToDelete_thenDontThrowException() {
+            when(redisOperator.delete(any())).thenReturn(false);
+            assertDoesNotThrow(() -> underTest.deleteForService(SERVICE_ID));
         }
     }
 }

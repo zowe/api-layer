@@ -30,6 +30,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -99,6 +100,18 @@ public class RedisOperatorTest {
         }
     }
 
+    // Outside whenCreating because test fails with unnecessary stubbings error
+    @Test
+    void givenRedisEntryException_thenReturnFalse() throws RedisEntryException, RedisOutOfMemoryException {
+        RedisEntry entry = mock(RedisEntry.class);
+        when(entry.getServiceId()).thenReturn(SERVICE_ID);
+        when(entry.getEntry()).thenReturn(KEY_VALUE);
+        when(entry.getEntryAsString()).thenThrow(new RedisEntryException("error"));
+
+        boolean result = underTest.create(entry);
+        assertFalse(result);
+    }
+
     @Nested
     class whenUpdating {
 
@@ -166,6 +179,20 @@ public class RedisOperatorTest {
             when(existsFuture.get()).thenThrow(new ExecutionException(new Exception()));
 
             assertThrows(RetryableRedisException.class, () -> underTest.update(REDIS_ENTRY));
+        }
+
+        @Test
+        void givenRedisEntryException_thenReturnFalse() throws RedisEntryException, RedisOutOfMemoryException, ExecutionException, InterruptedException {
+            RedisEntry entry = mock(RedisEntry.class);
+            when(entry.getServiceId()).thenReturn(SERVICE_ID);
+            when(entry.getEntry()).thenReturn(KEY_VALUE);
+            when(entry.getEntryAsString()).thenThrow(new RedisEntryException("error"));
+
+            when(redisCommands.hexists(any(), any())).thenReturn(existsFuture);
+            when(existsFuture.get()).thenReturn(true);
+
+            boolean result = underTest.update(entry);
+            assertFalse(result);
         }
     }
 
@@ -363,5 +390,14 @@ public class RedisOperatorTest {
 
             assertThrows(RetryableRedisException.class, () -> underTest.delete(SERVICE_ID));
         }
+    }
+
+    @Test
+    void givenRedisExecutionExceptionNotOutOfMemory_thenThrowRetryableRedisException() throws ExecutionException, InterruptedException {
+        RedisFuture<Boolean> future = (RedisFuture<Boolean>) mock(RedisFuture.class);
+        when(redisCommands.hsetnx(any(), any(), any())).thenReturn(future);
+        when(future.get()).thenThrow(new ExecutionException(new RedisCommandExecutionException("error")));
+
+        assertThrows(RetryableRedisException.class, () -> underTest.create(REDIS_ENTRY));
     }
 }

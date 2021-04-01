@@ -20,6 +20,7 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -134,7 +135,7 @@ public class RedisOperator {
             throw new RetryableRedisException(e);
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     private List<RedisEntry> collectEntries(String serviceId, Map<String, String> redisEntries) {

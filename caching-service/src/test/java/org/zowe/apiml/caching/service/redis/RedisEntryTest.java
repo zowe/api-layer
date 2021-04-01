@@ -10,6 +10,7 @@
 package org.zowe.apiml.caching.service.redis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
@@ -18,6 +19,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RedisEntryTest {
     private static final String SERVICE_ID = "my-service";
@@ -61,6 +65,16 @@ public class RedisEntryTest {
             RedisEntry underTest = new RedisEntry(SERVICE_ID, KEY_VALUE);
             String result = underTest.getEntryAsString();
             assertThat(result, is(KEY_VALUE_SERIALIZED));
+        }
+
+        @Test
+        void givenSerializingError_thenThrowRedisEntryException() throws JsonProcessingException {
+            ObjectMapper mapper = mock(ObjectMapper.class);
+            when(mapper.writeValueAsString(any())).thenThrow(new RuntimeException("error"));
+
+            RedisEntry underTest = new RedisEntry(SERVICE_ID, KEY_VALUE, mapper);
+            RedisEntryException ex = assertThrows(RedisEntryException.class, underTest::getEntryAsString);
+            assertThat(ex.getMessage(), is("Failure serializing the entry as a String"));
         }
     }
 }
