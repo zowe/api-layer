@@ -42,8 +42,9 @@ public class RedisConfiguration {
      * Package protected for unit testing.
      */
     RedisURI createRedisUri() {
-        RedisURI.Builder uriBuilder = RedisURI.builder();
-        uriBuilder.withAuthentication(redisConfig.getUsername(), redisConfig.getPassword());
+        RedisURI.Builder uriBuilder = RedisURI.builder()
+            .withAuthentication(redisConfig.getUsername(), redisConfig.getPassword())
+            .withTimeout(Duration.ofSeconds(redisConfig.getTimeout()));
 
         if (redisConfig.usesSentinel()) {
             RedisConfig.Sentinel sentinelConfig = redisConfig.getSentinel();
@@ -56,8 +57,7 @@ public class RedisConfiguration {
         } else {
             uriBuilder
                 .withHost(redisConfig.getMasterIP())
-                .withPort(redisConfig.getMasterPort())
-                .withTimeout(Duration.ofSeconds(redisConfig.getTimeout()));
+                .withPort(redisConfig.getMasterPort());
         }
 
         return uriBuilder.build();
