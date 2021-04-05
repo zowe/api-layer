@@ -17,7 +17,6 @@ INITIAL_ERRORS_FOUND=$ERRORS_FOUND
 
 validate_port_is_available ${DISCOVERY_PORT}
 validate_variables_are_set "KEYSTORE,KEYSTORE_PASSWORD,KEY_ALIAS,VERIFY_CERTIFICATES"
-validate_zosmf_host_and_port "${ZOSMF_HOST}" "${ZOSMF_PORT}"
 validate_directories_are_accessible "${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
 
 return $(($ERRORS_FOUND-$INITIAL_ERRORS_FOUND))
