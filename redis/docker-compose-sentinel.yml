@@ -25,7 +25,7 @@ services:
         ports:
             - "26379:26379"
         volumes:
-            - ./sentinel:/usr/local/etc/redis/
+            - ./sentinel-1:/usr/local/etc/redis/
         links:
             - redis-master
             - redis-replica
