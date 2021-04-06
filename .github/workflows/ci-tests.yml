@@ -361,6 +361,7 @@ jobs:
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                  ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
             - name: Store results
               uses: actions/upload-artifact@v2
               if: always()
