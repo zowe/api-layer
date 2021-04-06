@@ -15,6 +15,7 @@ import io.restassured.config.SSLConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.CachingServiceTest;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.*;
@@ -25,6 +26,7 @@ import static io.restassured.RestAssured.given;
 
 @NotForMainframeTest
 @Disabled // Move to different set of tests.
+@CachingServiceTest
 public class WebSecurityVerifySslCertificatesOffTest implements TestWithStartedInstances {
 
     private static Map<String, String> parameters = new HashMap<>();

@@ -11,6 +11,7 @@ package org.zowe.apiml.cachingservice;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.CachingRequests;
 import org.zowe.apiml.util.TestWithStartedInstances;
@@ -26,6 +27,7 @@ import static org.apache.http.HttpStatus.SC_INSUFFICIENT_STORAGE;
 import static org.hamcrest.core.Is.is;
 
 @CachingServiceTest
+@Disabled
 class RejectEvictionTest implements TestWithStartedInstances {
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
     private final CachingRequests requests = new CachingRequests();
