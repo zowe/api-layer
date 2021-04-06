@@ -29,6 +29,7 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.hamcrest.core.Is.is;
 
 @NotForMainframeTest
+@Disabled
 class RemoveOldestTest implements TestWithStartedInstances {
     private final CachingRequests requests = new CachingRequests();
     private static Map<String, String> parameters = new HashMap<>();

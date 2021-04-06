@@ -24,6 +24,7 @@ import java.util.*;
 import static io.restassured.RestAssured.given;
 
 @NotForMainframeTest
+@Disabled // Move to different set of tests.
 public class WebSecurityVerifySslCertificatesOffTest implements TestWithStartedInstances {
 
     private static Map<String, String> parameters = new HashMap<>();

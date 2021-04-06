@@ -348,7 +348,7 @@ jobs:
                       ${{ runner.OS }}-
             - name: Start Redis
               run: |
-                  docker run --name redis --publish 6379:6379 --detach redis:6.2.1-alpine
+                  docker-compose -f redis/docker-compose-sentinel.yml up -d
 
             - name: Build with Gradle
               run: >
