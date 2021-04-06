@@ -84,3 +84,5 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -jar ${JAR_FILE} &
+pid=$!
+echo "pid=${pid}"

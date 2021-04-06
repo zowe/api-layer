@@ -129,3 +129,5 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -jar ${JAR_FILE} &
+pid=$!
+echo "pid=${pid}"
