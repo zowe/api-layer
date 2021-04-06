@@ -4,16 +4,6 @@ caching:
         redis:
             masterIP: 127.0.0.1
             user: default
-            password: heslo
-            sentinel:
-                master: redismaster
-                nodes:
-                    - ip: 127.0.0.1
-                      port: 26379
-                    - ip: 127.0.0.1
-                      port: 26380
-                    - ip: 127.0.0.1
-                      port: 26381
 
 logging:
     level:
