@@ -7,12 +7,12 @@ import BigShield from './BigShield';
 // ignoring with xit does not work for some reason
 
 const Child = () => {
-    throw 'error';
+    throw new Error('error');
 };
 
 const pauseErrorLogging = codeToRun => {
     const logger = console.error;
-    console.error = () => {};
+    console.error = () => {/* This is intentional */};
 
     codeToRun();
 
