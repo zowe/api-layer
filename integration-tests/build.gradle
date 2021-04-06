@@ -260,3 +260,69 @@ task runMainFrameTests(type: Test) {
     }
     outputs.upToDateWhen { false }
 }
+
+
+task runBaseTests(type: Test) {
+    group "integration tests"
+    description "Run base tests"
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CatalogTest',
+            'GatewayTest',
+            'DiscoveryServiceTest',
+            'WebsocketTest',
+            'GeneralAuthenticationTest',
+            'DiscoverableClientDependentTest',
+            'CachingServiceTest',
+            'WebsocketTest'
+        )
+        excludeTags('MainframeDependentTests')
+    }
+}
+
+task runSafAuthTest(type: Test) {
+    group "integration tests"
+    description "Run SAF dependant authentication tests only"
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'SAFAuthTest'
+        )
+    }
+}
+task runZosmfAuthTest(type: Test) {
+    group "integration tests"
+    description "Run zOSMF dependant authentication tests only"
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'zOSMFAuthTest'
+        )
+    }
+}
+
+task runX509AuthTest(type: Test) {
+    group "integration tests"
+    description "Run x509 dependant authentication tests only"
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'X509Test'
+        )
+    }
+}
+
+task runBaseTestsInternalPort(type: Test) {
+    group "Integration tests"
+    description "Run only tests without long tests"
+
+    dependsOn runBaseTests
+    systemProperties System.properties
+    systemProperty "gateway.port", System.getProperty("internal.gateway.port")
+
+}

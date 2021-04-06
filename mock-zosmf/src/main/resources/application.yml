@@ -23,7 +23,10 @@ server:
         keyStorePassword: password
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
-
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
 zosmf:
     username: USER,APIMTST,USER1,USER2
     password: validPassword,PASSTICKET

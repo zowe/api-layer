@@ -15,6 +15,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -25,10 +26,8 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-/**
- *
- */
 @TestsNotMeantForZowe
+@DiscoverableClientDependentTest
 class RequestInfoIntegrationTest implements TestWithStartedInstances {
 
     @BeforeEach

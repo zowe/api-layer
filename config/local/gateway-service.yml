@@ -16,7 +16,10 @@ apiml:
         x509:
             enabled: true
     banner: console
-
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
 spring:
     output:
         ansi:

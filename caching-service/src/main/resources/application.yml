@@ -30,7 +30,10 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
 apiml:
     enabled: true
     service:

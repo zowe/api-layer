@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.CachingRequests;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.CachingServiceTest;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -29,6 +30,7 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.hamcrest.core.Is.is;
 
 @NotForMainframeTest
+@CachingServiceTest
 @Disabled
 class RemoveOldestTest implements TestWithStartedInstances {
     private final CachingRequests requests = new CachingRequests();

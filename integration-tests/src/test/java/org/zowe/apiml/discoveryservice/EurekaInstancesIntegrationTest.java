@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.DiscoveryServiceTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
@@ -41,6 +42,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 /**
  * This test suite must be run with HTTPS on and Certificate validation ON for Discovery service
  */
+@DiscoveryServiceTest
 class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
 
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";

@@ -16,6 +16,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.GatewayTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
@@ -41,6 +42,7 @@ import static org.springframework.http.HttpHeaders.LOCATION;
  * <li>Checks the Location in response header, verify that it has been tranformed to gateway url</li>
  * </ol>
  */
+@GatewayTest
 class PageRedirectionTest implements TestWithStartedInstances {
     private final String EUREKA_APP = "/eureka/apps";
     private final String SERVICE_ID = "staticclient";
