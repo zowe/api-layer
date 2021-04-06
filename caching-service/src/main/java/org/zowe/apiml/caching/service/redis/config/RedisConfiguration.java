@@ -47,6 +47,7 @@ public class RedisConfiguration {
             .withTimeout(Duration.ofSeconds(redisConfig.getTimeout()));
 
         if (redisConfig.usesSentinel()) {
+            System.out.println("Using sentinel");
             RedisConfig.Sentinel sentinelConfig = redisConfig.getSentinel();
             uriBuilder.withSentinelMasterId(sentinelConfig.getMaster());
 
@@ -55,6 +56,7 @@ public class RedisConfiguration {
             }
 
         } else {
+            System.out.println("Create redis: " + redisConfig.getMasterIP() + " " + redisConfig.getMasterPort());
             uriBuilder
                 .withHost(redisConfig.getMasterIP())
                 .withPort(redisConfig.getMasterPort());

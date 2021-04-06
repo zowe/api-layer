@@ -3,6 +3,7 @@ caching:
         mode: redis
         redis:
             masterIP: 127.0.0.1
+            port: 6379
             user: default
 
 logging:
