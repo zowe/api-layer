@@ -58,6 +58,7 @@ tasks.getByPath(":integration-tests:runCITestsInternalPort").dependsOn([liteLibJ
 tasks.getByPath(":integration-tests:runBaseTestsInternalPort").dependsOn([liteLibJarAll, ":caching-service:build"])
 tasks.getByPath(":integration-tests:runBaseTests").dependsOn([liteLibJarAll, ":caching-service:build"])
 tasks.getByPath(":integration-tests:runZosmfAuthTest").dependsOn([liteLibJarAll, ":caching-service:build"])
+tasks.getByPath(":integration-tests:runCachingServiceTests").dependsOn([liteLibJarAll, ":caching-service:build"])
 
 build.dependsOn(liteLibJarAll)
 liteLibJarAll.dependsOn(":gateway-service:build")

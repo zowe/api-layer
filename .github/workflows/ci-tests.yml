@@ -106,7 +106,7 @@ jobs:
                       ${{ runner.OS }}-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runCITestsInternalPort -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew build runBaseTestsInternalPort -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -166,7 +166,7 @@ jobs:
                       ${{ runner.OS }}-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runCITests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -227,7 +227,7 @@ jobs:
                       ${{ runner.OS }}-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runCITests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -288,7 +288,7 @@ jobs:
                       ${{ runner.OS }}-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runCITests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -352,7 +352,7 @@ jobs:
 
             - name: Build with Gradle
               run: >
-                  ./gradlew build runCITests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew build runCachingServiceTests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017

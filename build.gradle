@@ -177,6 +177,10 @@ task runBaseTestsInternalPort(dependsOn: ":integration-tests:runBaseTestsInterna
     description "Run base tests on internal port"
     group "Integration tests"
 }
+task runCachingServiceTests(dependsOn: ":integration-tests:runCachingServiceTests") {
+    description "Run base tests on internal port"
+    group "Integration tests"
+}
 
 
 clean.dependsOn nodejsClean

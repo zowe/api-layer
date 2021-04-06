@@ -317,6 +317,18 @@ task runX509AuthTest(type: Test) {
     }
 }
 
+task runCachingServiceTests(type: Test) {
+    group "integration tests"
+    description "Run Caching service tests only"
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CachingServiceTest'
+        )
+    }
+}
+
 task runBaseTestsInternalPort(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
