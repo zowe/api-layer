@@ -266,6 +266,8 @@ task runBaseTests(type: Test) {
     group "integration tests"
     description "Run base tests"
 
+    outputs.cacheIf { false }
+
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
@@ -286,6 +288,8 @@ task runSafAuthTest(type: Test) {
     group "integration tests"
     description "Run SAF dependant authentication tests only"
 
+    outputs.cacheIf { false }
+
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
@@ -296,6 +300,8 @@ task runSafAuthTest(type: Test) {
 task runZosmfAuthTest(type: Test) {
     group "integration tests"
     description "Run zOSMF dependant authentication tests only"
+
+    outputs.cacheIf { false }
 
     systemProperties System.getProperties()
     useJUnitPlatform {
@@ -309,6 +315,8 @@ task runX509AuthTest(type: Test) {
     group "integration tests"
     description "Run x509 dependant authentication tests only"
 
+    outputs.cacheIf { false }
+
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
@@ -321,6 +329,8 @@ task runCachingServiceTests(type: Test) {
     group "integration tests"
     description "Run Caching service tests only"
 
+    outputs.cacheIf { false }
+
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
@@ -332,6 +342,8 @@ task runCachingServiceTests(type: Test) {
 task runBaseTestsInternalPort(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
+
+    outputs.cacheIf { false }
 
     dependsOn runBaseTests
     systemProperties System.properties
