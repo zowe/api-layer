@@ -69,7 +69,6 @@ jobs:
                   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
                   echo "registry=$DIST_REGISTRY" >> ~/.npmrc
                   npm version ${{ github.event.inputs.release_version }}
-                  cat ~/.npmrc
                   npm publish --access public
                   git add package.json
                   git commit -m "Update version"
