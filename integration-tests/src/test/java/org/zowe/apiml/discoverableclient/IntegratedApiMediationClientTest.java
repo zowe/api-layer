@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.SlowTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -37,6 +38,7 @@ class IntegratedApiMediationClientTest implements TestWithStartedInstances {
     }
 
     @Test
+    @DiscoverableClientDependentTest
     void shouldBeUnregisteredBeforeRegistration() {
         requestIsRegistered(false, MEDIATION_CLIENT_URI);
     }
@@ -58,6 +60,7 @@ class IntegratedApiMediationClientTest implements TestWithStartedInstances {
     }
 
     @Test
+    @DiscoverableClientDependentTest
     void shouldBeUnregisteredBeforeRegistration_OldPathFormat() {
         requestIsRegistered(false, MEDIATION_CLIENT_URI_OLD_FORMAT);
     }

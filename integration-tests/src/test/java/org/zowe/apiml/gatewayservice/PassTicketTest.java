@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.ticket.TicketRequest;
 import org.zowe.apiml.security.common.ticket.TicketResponse;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.*;
 
@@ -34,6 +35,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 
 @Slf4j
+@GeneralAuthenticationTest
 class PassTicketTest implements TestWithStartedInstances {
 
     private final static EnvironmentConfiguration ENVIRONMENT_CONFIGURATION = ConfigReader.environmentConfiguration();
