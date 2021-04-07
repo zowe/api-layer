@@ -80,6 +80,7 @@ jobs:
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                   DEFAULT_SCOPE: 'patch'
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  DIST_REGISTRY: https://registry.npmjs.org/
 
             - name: Release with Gradle automatic
               run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.scope=${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
