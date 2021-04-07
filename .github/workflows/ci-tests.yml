@@ -39,11 +39,9 @@ jobs:
               with:
                 path: |
                   ~/.npm
-                  **/node_modules
-                key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                 restore-keys: |
-                  ${{ runner.OS }}-node-
-                  ${{ runner.OS }}-
+                  ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
                 ./gradlew build runCITests --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
@@ -99,11 +97,10 @@ jobs:
               with:
                   path: |
                       ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+
+                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                   restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
+                      ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
                   ./gradlew build runBaseTestsInternalPort -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
@@ -159,11 +156,9 @@ jobs:
               with:
                   path: |
                       ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                   restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
+                      ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
                   ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
@@ -220,11 +215,9 @@ jobs:
               with:
                   path: |
                       ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                   restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
+                      ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
                   ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
@@ -281,11 +274,9 @@ jobs:
               with:
                   path: |
                       ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                   restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
+                      ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
                   ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
@@ -472,11 +463,9 @@ jobs:
               with:
                   path: |
                       ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                   restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
+                      ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
                   ./gradlew --info --scan coverage sonarqube

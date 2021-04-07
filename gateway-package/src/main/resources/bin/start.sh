@@ -77,13 +77,6 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 export LIBPATH="$LIBPATH":
 
-stop_jobs()
-{
-  kill -15 $pid
-}
-
-trap 'stop_jobs' INT
-
 GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Xms32m -Xmx256m \
@@ -129,7 +122,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.x509.externalMapperUser=${APIML_GATEWAY_MAPPER_USER:-ZWESVUSR} \
     -Dapiml.security.authorization.provider=${APIML_SECURITY_AUTHORIZATION_PROVIDER:-} \
     -Dapiml.security.authorization.endpoint.enabled=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_ENABLED:-false} \
-    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL:-http://localhost:${ZOWE_ZSS_SERVER_PORT}/saf-auth} \
+    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL} \
     -Dapiml.security.authorization.resourceClass=${RESOURCE_CLASS:-ZOWE} \
     -Dapiml.security.authorization.resourceNamePrefix=${RESOURCE_NAME_PREFIX:-APIML.} \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
@@ -138,4 +131,3 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -jar ${JAR_FILE} &
 pid=$!
 echo "pid=${pid}"
-wait

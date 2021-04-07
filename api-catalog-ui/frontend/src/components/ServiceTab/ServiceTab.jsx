@@ -14,7 +14,21 @@ export default class ServiceTab extends Component {
         };
     }
 
-    render() {
+    get basePath() {
+        const { selectedService } = this.props;
+        const { selectedVersion } = this.state;
+
+        let basePath = '';
+        if (selectedService.basePath) {
+            const version = selectedVersion || selectedService.defaultApiVersion;
+            basePath = selectedService.basePath.replace('{api-version}', version);
+        }
+        return basePath;
+    }
+
+    get currentService() {
+        let currentService = null;
+
         const {
             match: {
                 params: { tileID, serviceId },
@@ -24,32 +38,34 @@ export default class ServiceTab extends Component {
             selectedTile,
             selectService,
         } = this.props;
-        const { selectedVersion } = this.state;
-        let basePath = '';
-        if (selectedService.basePath) {
-            const version = selectedVersion || selectedService.defaultApiVersion;
-            basePath = selectedService.basePath.replace('{api-version}', version);
-        }
-        let currentService = null;
-        let invalidService = true;
+
         tiles[0].services.forEach(service => {
             if (service.serviceId === serviceId) {
                 if (service.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
                     selectService(service, tileID);
                 }
-                invalidService = false;
                 currentService = service;
             }
         });
-        const message = 'The API documentation was retrieved but could not be displayed.';
-        const hasHomepage =
+
+        return currentService;
+    }
+
+    get hasHomepage() {
+        const { selectedService } = this.props;
+        return (
             selectedService.homePageUrl !== null &&
             selectedService.homePageUrl !== undefined &&
-            selectedService.homePageUrl.length > 0;
-        if (tiles === null || tiles === undefined || tiles.length === 0) {
-            throw new Error('No tile is selected.');
-        }
+            selectedService.homePageUrl.length > 0
+        );
+    }
+
+    get apiVersions() {
         let apiVersions = [];
+
+        const { selectedVersion } = this.state;
+        const { currentService } = this;
+
         if (currentService && currentService.apiVersions) {
             apiVersions = currentService.apiVersions.map(version => {
                 // Pre select default version or if only one version exists select that
@@ -93,12 +109,32 @@ export default class ServiceTab extends Component {
                 );
             }
         }
+        return apiVersions;
+    }
 
+    render() {
+        const {
+            match: {
+                params: { serviceId },
+            },
+            tiles,
+            selectedService,
+        } = this.props;
+        if (tiles === null || tiles === undefined || tiles.length === 0) {
+            throw new Error('No tile is selected.');
+        }
+
+        const { selectedVersion } = this.state;
+        const { basePath } = this;
+        const { currentService } = this;
+        const { hasHomepage } = this;
+        const { apiVersions } = this;
+        const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
 
         return (
             <React.Fragment>
-                {invalidService && (
+                {currentService === null && (
                     <Text element="h3" style={{ margin: '0 auto', background: '#ffff', width: '100vh' }}>
                         <br />
                         <br />
