@@ -26,7 +26,6 @@ import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_INSUFFICIENT_STORAGE;
 import static org.hamcrest.core.Is.is;
 
-@CachingServiceTest
 @MainframeDependentTests
 class RejectEvictionTest implements TestWithStartedInstances {
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
