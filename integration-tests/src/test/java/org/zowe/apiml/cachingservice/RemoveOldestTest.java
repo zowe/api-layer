@@ -31,7 +31,7 @@ import static org.hamcrest.core.Is.is;
 
 @NotForMainframeTest
 @CachingServiceTest
-@Disabled
+@Disabled("Makes sense only for VSAM where we won't start the instances and run the whole thing differently instead.")
 class RemoveOldestTest implements TestWithStartedInstances {
     private final CachingRequests requests = new CachingRequests();
     private static Map<String, String> parameters = new HashMap<>();

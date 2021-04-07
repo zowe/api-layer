@@ -11,11 +11,11 @@ package org.zowe.apiml.cachingservice;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.CachingRequests;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
+import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -27,7 +27,7 @@ import static org.apache.http.HttpStatus.SC_INSUFFICIENT_STORAGE;
 import static org.hamcrest.core.Is.is;
 
 @CachingServiceTest
-@Disabled
+@MainframeDependentTests
 class RejectEvictionTest implements TestWithStartedInstances {
     private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
     private final CachingRequests requests = new CachingRequests();
