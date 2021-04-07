@@ -15,6 +15,7 @@ import io.restassured.config.SSLConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.CachingServiceTest;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -22,7 +23,7 @@ import java.util.List;
 
 import static io.restassured.RestAssured.given;
 
-
+@CachingServiceTest
 class WebSecurityTest implements TestWithStartedInstances {
 
     private static final String CACHING_PATH = "/cachingservice/api/v1/cache";

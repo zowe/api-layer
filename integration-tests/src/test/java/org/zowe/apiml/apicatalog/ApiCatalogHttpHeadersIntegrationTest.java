@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.CatalogTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import java.util.*;
@@ -24,6 +25,7 @@ import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@CatalogTest
 class ApiCatalogHttpHeadersIntegrationTest implements TestWithStartedInstances {
 
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/ui/v1/apicatalog/#";

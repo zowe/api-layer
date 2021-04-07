@@ -23,6 +23,7 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.Is.is;
 
+@zOSMFAuthTest
 class ZosmfSsoIntegrationTest implements TestWithStartedInstances {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -49,7 +50,6 @@ class ZosmfSsoIntegrationTest implements TestWithStartedInstances {
     }
 
     @Test
-    @zOSMFAuthTest
     //@formatter:off
     void doZosmfCallWithValidToken() {
         String dsname1 = "SYS1.PARMLIB";
@@ -67,7 +67,6 @@ class ZosmfSsoIntegrationTest implements TestWithStartedInstances {
     }
 
     @Test
-    @zOSMFAuthTest
     void doZosmfCallWithValidCookie() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
