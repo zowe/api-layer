@@ -366,7 +366,7 @@ jobs:
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: CITestsZosmfWithoutJwtWithAuthenticateEndpoint
+                  name: CITestsWithRedis
                   path: |
                       **/reports/**
                       **/test-results/**
