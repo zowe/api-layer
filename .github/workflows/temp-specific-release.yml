@@ -2,14 +2,10 @@
 name: TEMP - Relase new version (specific)
 
 on:
-    workflow_dispatch:
-        inputs:
-            release_version:
-                description: 'The version that is going to be release'
-                required: true
-            new_version:
-                description: 'The version that should be used as a new one after the release.'
-                required: true
+    push:
+        branches: [ master ]
+    pull_request:
+        branches: [ master ]
 
 jobs:
     build:
@@ -51,11 +47,6 @@ jobs:
                   restore-keys: |
                       ${{ runner.OS }}-node-
                       ${{ runner.OS }}-
-            - name: Build with Gradle
-              run: ./gradlew build
-
-            - name: Clean git
-              run: git reset --hard HEAD
 
             - name: Set email
               run: git config user.email "zowe-robot@users.noreply.github.com"
@@ -68,24 +59,16 @@ jobs:
                   cd onboarding-enabler-nodejs
                   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
                   echo "registry=$DIST_REGISTRY" >> ~/.npmrc
-                  npm version ${{ github.event.inputs.release_version }}
+                  npm version 1.21.4-PR1340-SNAPSHOT
                   cat ~/.npmrc
                   npm publish --access public
-                  git add package.json
-                  git commit -m "Update version"
-                  git push
+                  git status
                   cd ..
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
                   DIST_REGISTRY: https://registry.npmjs.org/
-
-            - name: Release with Gradle automatic
-              run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.new_version }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
-              env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             - name: Cleanup Gradle Cache
                 # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
