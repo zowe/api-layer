@@ -34,7 +34,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class RedisOperatorTest {
+class RedisOperatorTest {
     private RedisOperator underTest;
     private static final String SERVICE_ID = "serviceId";
     private static final String KEY = "key";

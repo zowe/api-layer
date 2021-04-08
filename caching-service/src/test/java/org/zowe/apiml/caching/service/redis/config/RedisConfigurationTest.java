@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class RedisConfigurationTest {
+class RedisConfigurationTest {
     private static final String USERNAME = "username";
     private static final String PASSWORD = "password";
     private static final String MASTER_IP = "127.0.0.1";
