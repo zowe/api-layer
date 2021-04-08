@@ -34,6 +34,26 @@ won't persist.
 
 TO BE DONE
 
+### Redis
+
+Redis is another valid option for the storage to use. The main goal for redis is the running of the storage and the caching service off platform. 
+
+For development the repository contains docker compose scripts. There are two setups provided.  
+
+1) redis/docker-compose-replica.yml - Starts two containers in master/replica setup
+2) redis/docker-compose-sentinel.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails. 
+
+The first setup works well for testing. In order to properly configure the caching service following configuration is needed either in application.yml in the caching service or passed in via command line parameters.
+
+    caching:
+        storage:
+            mode: redis
+            redis:
+                masterIP: 127.0.0.1
+                port: 6379
+                user: default
+                password: heslo
+
 ### Additional Storage Support
 
 To add a new implementation it is necessary to provide the library with the implementation
