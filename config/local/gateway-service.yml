@@ -7,7 +7,7 @@ apiml:
         discoveryServiceUrls: https://localhost:10011/eureka/
     security:
         auth:
-            provider: zosmf
+            provider: dummy
             zosmfServiceId: mockzosmf  # Replace me with the correct z/OSMF service id
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)

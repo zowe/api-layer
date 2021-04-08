@@ -18,6 +18,7 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -30,6 +31,7 @@ import org.zowe.apiml.security.HttpsConfigError.ErrorCode;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -225,8 +227,9 @@ public class HttpsFactory {
 
     private ConnectionSocketFactory createSecureSslSocketFactory() {
         return new SSLConnectionSocketFactory(createSecureSslContext(),
-            SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-    }
+//            SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+            (s, sslsesion) -> true);
+        }
 
     public SSLContext createSslContext() {
         if (config.isVerifySslCertificatesOfServices()) {
@@ -272,6 +275,7 @@ public class HttpsFactory {
         builder.withConnectionIdleTimeout(10);
         builder.withConnectionTimeout(5000);
         builder.withReadTimeout(5000);
+        builder.withHostnameVerifier((s,a)->true);
         // See:
         // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
         if (eurekaServerUrl.startsWith("http://")) {
