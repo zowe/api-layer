@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.*;
+
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 
@@ -48,10 +50,35 @@ public class HeaderSanitizerFilter extends ZuulFilter {
     @Override
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
-        for (String header : headersToBeCleared) {
-            context.addZuulRequestHeader(header, null);
-        }
+
+        Map<String, String> requestHeaders = new HashMap<>();
+
+        includeHeadersFromZuul(context, requestHeaders);
+        includeHeadersFromRequest(context, requestHeaders);
+
+        nullHeadersOfInterestIntoZuulRequestHeaders(context, requestHeaders);
+
         return null;
+    }
+
+    private void nullHeadersOfInterestIntoZuulRequestHeaders(RequestContext context, Map<String, String> requestHeaders) {
+        Arrays.stream(headersToBeCleared).forEach( toBeCleared -> //for each header to be cleared
+            requestHeaders.entrySet().stream() //in all requestHeaders
+                .filter(entry -> entry.getKey().equalsIgnoreCase(toBeCleared)) // find headers that match ignoring case
+                .forEach(entry -> context.addZuulRequestHeader(entry.getKey(), null)) // and null it
+        );
+    }
+
+    private void includeHeadersFromZuul(RequestContext context, Map<String, String> requestHeaders) {
+        requestHeaders.putAll(context.getZuulRequestHeaders());
+    }
+
+    private void includeHeadersFromRequest(RequestContext context, Map<String, String> requestHeaders) {
+        Enumeration<String> headerNames = context.getRequest().getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            requestHeaders.put(headerName, "");
+        }
     }
 
 }
