@@ -98,7 +98,7 @@ public class RunningService {
 
     public void waitUntilReady() {
         await()
-            .atMost(Duration.FIVE_MINUTES)
+            .atMost(Duration.TWO_MINUTES)
             .with()
             .pollInterval(Duration.TEN_SECONDS)
             .until(this::isServiceProperlyRegistered);
