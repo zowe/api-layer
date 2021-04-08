@@ -36,7 +36,7 @@ TO BE DONE
 
 ### Redis
 
-Redis is another valid option for the storage to use. The main goal for redis is the running of the storage and the caching service off platform. 
+Redis is another valid option for the storage to use. The main goal for redis is the running of the storage, and the caching service off platform. 
 
 For development the repository contains docker compose scripts. There are two setups provided.  
 
