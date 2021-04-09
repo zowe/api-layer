@@ -425,7 +425,8 @@ class ZosmfServiceTest {
     void testGetPublicKeys_zosm404() {
         ZosmfService zosmfService = getZosmfServiceSpy();
         when(restTemplate.getForObject(anyString(), any()))
-            .thenThrow(mock(HttpClientErrorException.NotFound.class));
+            .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND,
+                "", new HttpHeaders(), new byte[]{}, null));
         assertTrue(zosmfService.getPublicKeys().getKeys().isEmpty());
     }
 

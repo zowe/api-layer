@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {GreetingV2Controller.class}, secure = false)
+@WebMvcTest(controllers = {GreetingV2Controller.class})
 class GreetingV2ControllerTest {
     private static final String NAME = "Carson";
 
