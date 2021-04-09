@@ -15,6 +15,7 @@ import io.lettuce.core.codec.StringCodec;
 import io.lettuce.core.masterreplica.MasterReplica;
 import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.caching.model.KeyValue;
@@ -32,6 +33,7 @@ import java.util.concurrent.ExecutionException;
  * Contains the CRUD operations enacted on Redis with serialized read and write.
  */
 @AllArgsConstructor
+@NoArgsConstructor
 @Slf4j
 @Component
 public class RedisOperator {
@@ -51,7 +53,7 @@ public class RedisOperator {
     }
 
     @PreDestroy
-    void closeConnection() {
+    public void closeConnection() {
         redisConnection.close();
         redisClient.shutdown();
     }
