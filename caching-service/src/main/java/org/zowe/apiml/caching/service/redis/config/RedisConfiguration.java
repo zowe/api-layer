@@ -51,7 +51,7 @@ public class RedisConfiguration {
             uriBuilder.withSentinelMasterId(sentinelConfig.getMaster());
 
             for (RedisConfig.Sentinel.SentinelNode sentinelNode : sentinelConfig.getNodes()) {
-                uriBuilder.withSentinel(sentinelNode.getIp(), sentinelNode.getPort());
+                uriBuilder.withSentinel(sentinelNode.getIp(), sentinelNode.getPort(), sentinelConfig.getPassword());
             }
 
         } else {

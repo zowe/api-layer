@@ -47,6 +47,7 @@ public class RedisConfig {
     @ConfigurationProperties("caching.storage.redis.sentinel")
     public static class Sentinel {
         private String master;
+        private String password = "";
         private List<SentinelNode> nodes;
 
         @Data
