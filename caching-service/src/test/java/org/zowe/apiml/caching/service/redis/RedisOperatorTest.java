@@ -9,9 +9,11 @@
  */
 package org.zowe.apiml.caching.service.redis;
 
+import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,8 +32,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RedisOperatorTest {
@@ -46,9 +47,15 @@ class RedisOperatorTest {
     @Mock
     private RedisAsyncCommands<String, String> redisCommands;
 
+    @Mock
+    private StatefulRedisMasterReplicaConnection<String, String> redisConnection;
+
+    private RedisClient redisClient;
+
     @BeforeEach
     void setUp() {
-        underTest = new RedisOperator(redisCommands);
+        redisClient = mock(RedisClient.class);
+        underTest = new RedisOperator(redisClient, redisConnection, redisCommands);
     }
 
     @Nested
@@ -399,5 +406,12 @@ class RedisOperatorTest {
         when(future.get()).thenThrow(new ExecutionException(new RedisCommandExecutionException("error")));
 
         assertThrows(RetryableRedisException.class, () -> underTest.create(REDIS_ENTRY));
+    }
+
+    @Test
+    void givenConnection_whenDestroying_thenCloseConnection() {
+        underTest.closeConnection();
+        verify(redisConnection, times(1)).close();
+        verify(redisClient, times(1)).shutdown();
     }
 }

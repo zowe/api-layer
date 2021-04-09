@@ -16,9 +16,11 @@ import io.lettuce.core.masterreplica.MasterReplica;
 import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.message.log.ApimlLogger;
 
+import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,21 +33,27 @@ import java.util.concurrent.ExecutionException;
  */
 @AllArgsConstructor
 @Slf4j
+@Component
 public class RedisOperator {
+    private RedisClient redisClient;
+    private StatefulRedisMasterReplicaConnection<String, String> redisConnection;
     private RedisAsyncCommands<String, String> redis;
 
     public RedisOperator(RedisURI redisUri, ApimlLogger apimlLog) {
         try {
-            RedisClient redisClient = RedisClient.create();
-            StatefulRedisMasterReplicaConnection<String, String> connection = MasterReplica.connect(redisClient, StringCodec.UTF8, redisUri);
-            redis = connection.async();
+            redisClient = RedisClient.create();
+            redisConnection = MasterReplica.connect(redisClient, StringCodec.UTF8, redisUri);
+            redis = redisConnection.async();
         } catch (RedisConnectionException e) {
             apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "redis", e.getCause().getMessage(), e);
             System.exit(1);
         }
-        // TODO should release redis connection on caching service end via connection.close(); client.shutdown();
-        // this could be via closeable and try with resources, but then re-connecting to redis every time try to CRUD
-        // would be better to keep connection open until RedisOperator is destructed
+    }
+
+    @PreDestroy
+    void closeConnection() {
+        redisConnection.close();
+        redisClient.shutdown();
     }
 
     /**
