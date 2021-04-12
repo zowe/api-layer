@@ -1,5 +1,5 @@
 ext {
-    springBootVersion = '2.2.13.RELEASE'
+    springBootVersion = '2.3.9.RELEASE'
     springBootVersionV1 = '1.5.9.RELEASE'
     springCloudVersion = '2.2.6.RELEASE'
     springSecurityVersion = '5.1.2.RELEASE'
@@ -27,7 +27,7 @@ ext {
     commonsLang3Version = '3.7'
     commonsTextVersion = '1.8'
     gradleGitPropertiesVersion = '2.2.4'
-    jettyWebSocketClientVersion = '9.4.35.v20201120'
+    jettyWebSocketClientVersion = '9.4.39.v20210325'
     junitJupiterVersion = '5.5.2'
     eurekaClientVersion = '1.9.13'
     netflixServoVersion = '0.12.28'
@@ -69,6 +69,7 @@ ext {
         spring_boot_starter                : "org.springframework.boot:spring-boot-starter:${springBootVersion}",
         spring_boot_starter_actuator       : "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}",
         spring_boot_starter_security       : "org.springframework.boot:spring-boot-starter-security:${springBootVersion}",
+            spring_boot_starter_validation     : "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}",
         spring_boot_starter_web            : "org.springframework.boot:spring-boot-starter-web:${springBootVersion}",
         spring_boot_starter_websocket      : "org.springframework.boot:spring-boot-starter-websocket:${springBootVersion}",
         spring_boot_starter_test           : "org.springframework.boot:spring-boot-starter-test:${springBootVersion}",
