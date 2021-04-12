@@ -4,7 +4,7 @@ const sessionDefaultState = {
     sessionOn: false,
 };
 
-function authenticationReducer(state = sessionDefaultState, action) {
+function authenticationReducer(state = sessionDefaultState, action = {}) {
     switch (action.type) {
         case userConstants.USERS_LOGIN_REQUEST:
             return {

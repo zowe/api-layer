@@ -1,4 +1,4 @@
-const loadingReducer = (state = {}, action) => {
+const loadingReducer = (state = {}, action = {}) => {
     const { type } = action;
     const matches = /(.*)_(REQUEST|SUCCESS|FAILURE|FAILED)/.exec(type);
 
