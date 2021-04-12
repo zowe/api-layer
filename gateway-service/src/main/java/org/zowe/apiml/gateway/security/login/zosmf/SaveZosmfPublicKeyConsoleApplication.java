@@ -71,11 +71,13 @@ public class SaveZosmfPublicKeyConsoleApplication {
         String trustStore = System.getProperty("server.ssl.trustStore");
         boolean verifySslCertificatesOfServices = !System
                 .getProperty("apiml.security.ssl.verifySslCertificatesOfServices", "true").equalsIgnoreCase("false");
-
+        boolean nonStrictVerifySslCertificatesOfServices = System
+            .getProperty("apiml.security.ssl.nonStrictVerifySslCertificatesOfServices", "false").equalsIgnoreCase("true");
         return HttpsConfig.builder().protocol(protocol).trustStore(trustStore)
                 .trustStoreType(trustStoreType)
                 .trustStorePassword(trustStorePassword == null ? null : trustStorePassword.toCharArray())
                 .trustStoreRequired(verifySslCertificatesOfServices)
-                .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
+                .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
+                .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices).build();
     }
 }

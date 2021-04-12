@@ -18,7 +18,6 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -31,7 +30,6 @@ import org.zowe.apiml.security.HttpsConfigError.ErrorCode;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -56,6 +54,8 @@ public class HttpsFactory {
         this.apimlLog = ApimlLogger.of(HttpsFactory.class, YamlMessageServiceInstance.getInstance());
     }
 
+    private HostnameVerifier dontVerifyHostname = (sslContext, hostnameVerifier) -> true;
+
     public CloseableHttpClient createSecureHttpClient() {
         Registry<ConnectionSocketFactory> socketFactoryRegistry;
         RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
@@ -72,7 +72,7 @@ public class HttpsFactory {
         connectionManager.closeIdleConnections(config.getIdleConnTimeoutSeconds(), TimeUnit.SECONDS);
         connectionManager.setMaxTotal(config.getMaxTotalConnections());
 
-        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig)
+        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setSSLHostnameVerifier(createHostnameVerifier())
             .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .disableAuthCaching().build();
@@ -80,7 +80,7 @@ public class HttpsFactory {
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {
-        if (config.isVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
             return createSecureSslSocketFactory();
         } else {
             apimlLog.log("org.zowe.apiml.common.ignoringSsl");
@@ -226,13 +226,15 @@ public class HttpsFactory {
     }
 
     private ConnectionSocketFactory createSecureSslSocketFactory() {
-        return new SSLConnectionSocketFactory(createSecureSslContext(),
-//            SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-            (s, sslsesion) -> true);
-        }
+
+        return new SSLConnectionSocketFactory(
+            createSecureSslContext(),
+            createHostnameVerifier()
+        );
+    }
 
     public SSLContext createSslContext() {
-        if (config.isVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
             return createSecureSslContext();
         } else {
             return createIgnoringSslContext();
@@ -260,7 +262,7 @@ public class HttpsFactory {
     }
 
     public HostnameVerifier createHostnameVerifier() {
-        if (config.isVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices()) {
             return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
         } else {
             return new NoopHostnameVerifier();
@@ -275,7 +277,6 @@ public class HttpsFactory {
         builder.withConnectionIdleTimeout(10);
         builder.withConnectionTimeout(5000);
         builder.withReadTimeout(5000);
-        builder.withHostnameVerifier((s,a)->true);
         // See:
         // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
         if (eurekaServerUrl.startsWith("http://")) {

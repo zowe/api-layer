@@ -91,6 +91,9 @@ public class HttpsWebSecurityConfig {
         @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
         private boolean verifySslCertificatesOfServices;
 
+        @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+        private boolean nonStrictVerifySslCertificatesOfServices;
+
         @Override
         public void configure(WebSecurity web) {
             String[] noSecurityAntMatchers = {
@@ -105,7 +108,7 @@ public class HttpsWebSecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.antMatcher("/eureka/**"));
-            if (verifySslCertificatesOfServices) {
+            if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
                 http.authorizeRequests()
                     .anyRequest().authenticated()
                     .and().x509().userDetailsService(x509UserDetailsService());
@@ -125,6 +128,9 @@ public class HttpsWebSecurityConfig {
         @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
         private boolean verifySslCertificatesOfServices;
 
+        @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+        private boolean nonStrictVerifySslCertificatesOfServices;
+
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
@@ -137,7 +143,7 @@ public class HttpsWebSecurityConfig {
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .httpBasic().realmName(DISCOVERY_REALM);
-            if (verifySslCertificatesOfServices) {
+            if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
                 http.authorizeRequests().anyRequest().authenticated().and()
                 .x509().userDetailsService(x509UserDetailsService());
             }

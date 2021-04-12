@@ -10,7 +10,7 @@ environment:
     ipAddress: 127.0.0.1
     port: 10014
     preferIpAddress: false
-    truststore: keystore/localhost/localhost.truststore.p12
+    truststore: ../keystore/ca3x/apiml.truststore.p12
     truststorePassword: password
     truststoreType: PKCS12
 
@@ -24,12 +24,14 @@ eureka:
 
 server:
     ssl:
-        enabled: true
-        keyAlias: localhost
+        keyAlias: apiml
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: ../keystore/ca3x/apiml.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
+        trustStore: ../keystore/ca3x/apiml.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
 
 apiml:
     service-registry:
@@ -38,7 +40,9 @@ apiml:
         cacheRefreshUpdateThresholdInMillis: 120000
         serviceFetchDelayInMillis: 10000
     banner: console
-
+    service:
+        ssl:
+            nonStrictVerifySslCertificatesOfServices: true
 spring:
     output:
         ansi:

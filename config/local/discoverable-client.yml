@@ -14,7 +14,8 @@ apiml:
         port: 10012  # Default port for discoverable-client service
           # IP address that is advertised in Eureka. Default is valid only for localhost
         discoveryServiceUrls: https://localhost:10011/eureka/
-
+        ssl:
+            nonStrictVerifySslCertificatesOfServices: true
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1

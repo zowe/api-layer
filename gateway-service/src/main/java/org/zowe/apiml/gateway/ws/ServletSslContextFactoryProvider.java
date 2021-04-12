@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.ws;
 
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class ServletSslContextFactoryProvider implements SslContextFactoryProvid
 
     @Autowired
     public ServletSslContextFactoryProvider(SslContextFactory.Server sslContextFactory) {
+        sslContextFactory.setHostnameVerifier(new NoopHostnameVerifier());
         this.sslContextFactory = sslContextFactory;
     }
 

@@ -9,7 +9,7 @@ apiml:
         staticApiDefinitionsDirectories: config/local/api-defs
     security:
         ssl:
-            verifySslCertificatesOfServices: true
+            nonStrictVerifySslCertificatesOfServices: true
     banner: console
 
 spring:
@@ -26,11 +26,11 @@ eureka:
 
 server:
     ssl:
-        keyAlias: localhost
+        keyAlias: apiml
         keyPassword: password
-        keyStoreType: PKCS12
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: ../keystore/ca3x/apiml.keystore.p12
         keyStorePassword: password
-        trustStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
+        keyStoreType: PKCS12
+        trustStore: ../keystore/ca3x/apiml.truststore.p12
         trustStorePassword: password
+        trustStoreType: PKCS12

@@ -35,6 +35,8 @@ public class HttpsConfig {
     @Builder.Default
     private boolean verifySslCertificatesOfServices = true;
     @Builder.Default
+    private boolean nonStrictVerifySslCertificatesOfServices = false;
+    @Builder.Default
     private int maxConnectionsPerRoute = 10;
     @Builder.Default
     private int maxTotalConnections = 100;
