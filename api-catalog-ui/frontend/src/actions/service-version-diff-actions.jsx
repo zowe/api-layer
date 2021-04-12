@@ -2,8 +2,9 @@ export const REQUEST_VERSION_DIFF = 'REQUEST_VERSION_DIFF';
 export const RECEIVE_VERSION_DIFF = 'RECEIVE_VERSION_DIFF';
 
 export function getDiff(serviceId, oldVersion, newVersion) {
+    // prettier-ignore
     // eslint-disable-next-line no-shadow
-    function request(serviceId, oldVersion, newVersion) {
+    function request(serviceId, oldVersion, newVersion) {   // NOSONAR
         return {
             type: REQUEST_VERSION_DIFF,
             serviceId,

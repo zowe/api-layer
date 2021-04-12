@@ -9,7 +9,7 @@ const staticApisDefaultState = {
     error: null,
 };
 
-const refreshStaticApisReducer = (state = staticApisDefaultState, action) => {
+const refreshStaticApisReducer = (state = staticApisDefaultState, action = {}) => {
     switch (action.type) {
         case REFRESH_STATIC_APIS_SUCCESS:
             return {

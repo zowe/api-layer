@@ -1,0 +1,57 @@
+services:
+
+    redis-master:
+        container_name: redis-master
+        image: redis:latest
+        command: redis-server /usr/local/etc/redis/redis.conf
+        ports:
+            - "6379:6379"
+        volumes:
+            - ./master:/usr/local/etc/redis/
+
+    redis-replica:
+        container_name: redis-replica
+        image: redis:latest
+        command: redis-server /usr/local/etc/redis/redis.conf
+        ports:
+            - "6380:6380"
+        volumes:
+            - ./replica:/usr/local/etc/redis/
+        links:
+            - redis-master
+
+    redis-sentinel-1:
+        container_name: redis-sentinel-1
+        image: redis:latest
+        command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+        ports:
+            - "26379:26379"
+        volumes:
+            - ./sentinel-1:/usr/local/etc/redis/
+        links:
+            - redis-master
+            - redis-replica
+
+    redis-sentinel-2:
+        container_name: redis-sentinel-2
+        image: redis:latest
+        command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+        ports:
+            - "26380:26380"
+        volumes:
+            - ./sentinel-2:/usr/local/etc/redis/
+        links:
+            - redis-master
+            - redis-replica
+
+    redis-sentinel-3:
+        container_name: redis-sentinel-3
+        image: redis:latest
+        command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+        ports:
+            - "26381:26381"
+        volumes:
+            - ./sentinel-3:/usr/local/etc/redis/
+        links:
+            - redis-master
+            - redis-replica
