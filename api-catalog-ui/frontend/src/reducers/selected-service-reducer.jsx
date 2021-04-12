@@ -5,7 +5,7 @@ const defaultState = {
     selectedTile: null,
 };
 
-const selectedServiceReducer = (state = defaultState, action) => {
+const selectedServiceReducer = (state = defaultState, action = {}) => {
     switch (action.type) {
         case SELECT_SERVICE:
             return {

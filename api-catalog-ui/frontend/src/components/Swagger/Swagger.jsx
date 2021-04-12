@@ -38,8 +38,9 @@ export default class SwaggerUI extends Component {
             },
         },
         wrapComponents: {
+            // prettier-ignore
             // eslint-disable-next-line no-shadow
-            operations: (Original, { React }) => props => {
+            operations: (Original, { React }) => props => { // NOSONAR
                 const { selectedService, selectedVersion } = this.props;
                 return (
                     <div>
@@ -47,7 +48,7 @@ export default class SwaggerUI extends Component {
                         <Original {...props} />
                     </div>
                 );
-            },
+            }
         },
     });
 
