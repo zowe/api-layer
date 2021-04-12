@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {PageRedirectionController.class}, secure = false)
+@WebMvcTest(controllers = {PageRedirectionController.class})
 @Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
 class PageRedirectionControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();

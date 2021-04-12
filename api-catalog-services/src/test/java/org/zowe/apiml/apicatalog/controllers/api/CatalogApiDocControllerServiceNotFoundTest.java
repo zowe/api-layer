@@ -9,6 +9,10 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
 import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
@@ -32,7 +36,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {CatalogApiDocController.class}, secure = false)
+@WebMvcTest(controllers = {CatalogApiDocController.class},
+    excludeFilters = { @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class) },
+    excludeAutoConfiguration = { SecurityAutoConfiguration.class}
+)
 @DirtiesContext
 class CatalogApiDocControllerServiceNotFoundTest {
 

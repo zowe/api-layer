@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {GreetingController.class}, secure = false)
+@WebMvcTest(controllers = {GreetingController.class})
 class GreetingControllerTest {
     @Autowired
     private MockMvc mockMvc;

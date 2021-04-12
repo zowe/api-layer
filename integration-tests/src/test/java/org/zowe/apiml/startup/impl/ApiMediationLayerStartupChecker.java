@@ -44,9 +44,9 @@ public class ApiMediationLayerStartupChecker {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status"));
-        servicesToCheck.add(new Service("Api Catalog", "$.details.gateway.details.apicatalog"));
-        servicesToCheck.add(new Service("Discovery Service", "$.details.gateway.details.discovery"));
-        servicesToCheck.add(new Service("Authentication Service", "$.details.gateway.details.auth"));
+        servicesToCheck.add(new Service("Api Catalog", "$.components.gateway.details.apicatalog"));
+        servicesToCheck.add(new Service("Discovery Service", "$.components.gateway.details.discovery"));
+        servicesToCheck.add(new Service("Authentication Service", "$.components.gateway.details.auth"));
     }
 
     public void waitUntilReady() {
@@ -111,11 +111,11 @@ public class ApiMediationLayerStartupChecker {
                 }
             }
 
-            boolean isTestApplicationUp = context.read("$.details.discoveryComposite.details.discoveryClient.details.services").toString()
+            boolean isTestApplicationUp = context.read("$.components.discoveryComposite.components.discoveryClient.details.services").toString()
                 .contains("discoverableclient");
             logDebug("Discoverable Client is {}", isTestApplicationUp);
 
-            Integer amountOfActiveGateways = context.read("$.details.gateway.details.gatewayCount");
+            Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
             boolean isValidAmountOfGatewaysUp = amountOfActiveGateways != null &&
                 amountOfActiveGateways.equals(gatewayConfiguration.getInstances());
             log.debug("There is {} gateways", amountOfActiveGateways);

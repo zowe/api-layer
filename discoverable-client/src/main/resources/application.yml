@@ -97,6 +97,9 @@ apiml:
                 corsEnabled: false
 
 server:
+    error:
+        include-message: always
+
     port: ${apiml.service.port}
 
     servlet:
