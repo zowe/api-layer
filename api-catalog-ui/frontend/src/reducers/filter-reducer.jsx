@@ -4,7 +4,7 @@ const filtersReducerDefaultState = {
     text: '',
 };
 
-const filtersReducer = (state = filtersReducerDefaultState, action) => {
+const filtersReducer = (state = filtersReducerDefaultState, action = {}) => {
     switch (action.type) {
         case FILTER_TEXT:
             return {

@@ -63,7 +63,6 @@ class App extends Component {
                             </>
                         </Router>
                     </Suspense>
-                    {/* {authentication.showHeader !== undefined && authentication.showHeader === true && <Footer />} */}
                 </BigShield>
             </div>
         );
