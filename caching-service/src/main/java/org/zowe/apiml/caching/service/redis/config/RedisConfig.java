@@ -26,12 +26,12 @@ import java.util.List;
 public class RedisConfig {
     private final GeneralConfig generalConfig;
 
-    private String masterIP;
-    private Integer masterPort = 6379;
+    private String host;
+    private Integer port = 6379;
     private Integer timeout = 60;
     private String username = "default";
     private String password = "";
-    private Boolean tls = false;
+
     private Sentinel sentinel;
 
     public boolean usesSentinel() {
@@ -40,7 +40,7 @@ public class RedisConfig {
 
     @Data
     @ToString
-    @ConfigurationProperties("caching.storage.redis.sentinel")
+    @ConfigurationProperties(value = "caching.storage.redis.sentinel")
     public static class Sentinel {
         private String master;
         private List<SentinelNode> nodes;

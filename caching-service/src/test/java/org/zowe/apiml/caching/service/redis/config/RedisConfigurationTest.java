@@ -9,11 +9,9 @@
  */
 package org.zowe.apiml.caching.service.redis.config;
 
-import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.SslOptions;
-import io.lettuce.core.resource.DefaultClientResources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -45,8 +43,8 @@ class RedisConfigurationTest {
         redisConfig = mock(RedisConfig.class);
         when(redisConfig.getUsername()).thenReturn(USERNAME);
         when(redisConfig.getPassword()).thenReturn(PASSWORD);
-        when(redisConfig.getMasterIP()).thenReturn(MASTER_IP);
-        when(redisConfig.getMasterPort()).thenReturn(MASTER_PORT);
+        when(redisConfig.getHost()).thenReturn(MASTER_IP);
+        when(redisConfig.getPort()).thenReturn(MASTER_PORT);
         when(redisConfig.getTimeout()).thenReturn(TIMEOUT);
 
         underTest = new RedisConfiguration(redisConfig);
@@ -62,28 +60,6 @@ class RedisConfigurationTest {
         assertThat(result.getHost(), is(MASTER_IP));
         assertThat(result.getPort(), is(MASTER_PORT));
         assertThat(result.getTimeout(), is(Duration.ofSeconds(TIMEOUT)));
-    }
-
-    @Nested
-    class WhenCreatingRedisClient {
-        @Test
-        void givenTlsFalse_thenReturnStandardRedisClient() {
-            when(redisConfig.getTls()).thenReturn(false);
-
-            RedisClient expected = RedisClient.create();
-            RedisClient actual = underTest.createRedisClient();
-
-            assertThat(actual.getOptions().getSslOptions(), samePropertyValuesAs(SslOptions.create()));
-        }
-
-        @Test
-        void givenTlsTrue_thenReturnRedisClientWithSslOptions() {
-            when(redisConfig.getTls()).thenReturn(true);
-
-            RedisClient result = underTest.createRedisClient();
-            assertThat(result.getOptions(), is(not(nullValue())));
-            assertThat(result.getOptions().getSslOptions(), is(not(nullValue())));
-        }
     }
 
     @Nested

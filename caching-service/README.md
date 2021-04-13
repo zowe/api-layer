@@ -40,8 +40,10 @@ Redis is another valid option for the storage to use. The main goal for redis is
 
 For development the repository contains docker compose scripts. There are two setups provided.  
 
-1) redis/docker-compose-replica.yml - Starts two containers in master/replica setup
-2) redis/docker-compose-sentinel.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails. 
+1) redis/docker-compose-replica.yml - Starts two containers in master/replica setup.
+2) redis/docker-compose-replica-tls - Starts two containers in master/replica setup with TLS enabled.
+3) redis/docker-compose-sentinel.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails.
+4) redis/docker-compose-sentinel-tls.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails. TLS is enabled.
 
 The first setup works well for testing. In order to properly configure the caching service following configuration is needed either in application.yml in the caching service or passed in via command line parameters.
 
@@ -49,10 +51,50 @@ The first setup works well for testing. In order to properly configure the cachi
         storage:
             mode: redis
             redis:
-                masterIP: 127.0.0.1
+                host: localhost
                 port: 6379
-                user: default
+                username: default
                 password: heslo
+                
+ In order to enable TLS, the following configuration is required:
+ 
+    caching:
+         storage:
+             mode: redis
+             redis:
+                 host: localhost
+                 port: 6379
+                 username: default
+                 password: heslo
+                ssl:
+                    enabled: true
+                    keyStore: ${server.ssl.keyStore}
+                    keyStorePassword: ${server.ssl.keyStorePassword}
+                    trustStore: ${server.ssl.trustStore}
+                    trustStorePassword: ${server.ssl.trustStorePassword}
+                 
+ In order to connect to sentinel, the following configuration can be used:
+ 
+     caching:
+         storage:
+             mode: redis
+             redis:
+                 host: localhost
+                 port: 6379
+                 username: default
+                 password: heslo
+                 sentinel:
+                     master: redismaster
+                     nodes:
+                         - ip: 127.0.0.1
+                           port: 26379
+                           password: sentinelpassword
+                         - ip: 127.0.0.1
+                           port: 26380
+                           password: sentinelpassword
+                         - ip: 127.0.0.1
+                           port: 26381
+                           password: sentinelpassword
 
 ### Additional Storage Support
 

@@ -2,11 +2,10 @@ caching:
     storage:
         mode: redis
         redis:
-            masterIP: localhost
-            port: 6379
+            host: localhost
+            port: 639
             username: default
             password: heslo
-            tls: false
 
 logging:
     level:

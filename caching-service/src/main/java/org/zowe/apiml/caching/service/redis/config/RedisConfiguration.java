@@ -9,10 +9,8 @@
  */
 package org.zowe.apiml.caching.service.redis.config;
 
-import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
-import io.lettuce.core.SslOptions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,7 +22,6 @@ import org.zowe.apiml.caching.service.redis.RedisStorage;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 
-import java.io.File;
 import java.time.Duration;
 
 @Configuration
@@ -49,7 +46,6 @@ public class RedisConfiguration {
      */
     RedisURI createRedisUri() {
         RedisURI.Builder uriBuilder = RedisURI.builder()
-            .withSsl(redisConfig.getTls())
             .withAuthentication(redisConfig.getUsername(), redisConfig.getPassword())
             .withTimeout(Duration.ofSeconds(redisConfig.getTimeout()));
 
@@ -63,8 +59,8 @@ public class RedisConfiguration {
 
         } else {
             uriBuilder
-                .withHost(redisConfig.getMasterIP())
-                .withPort(redisConfig.getMasterPort());
+                .withHost(redisConfig.getHost())
+                .withPort(redisConfig.getPort());
         }
 
         return uriBuilder.build();
@@ -75,15 +71,6 @@ public class RedisConfiguration {
      */
     RedisClient createRedisClient() {
         RedisClient redisClient = RedisClient.create();
-
-        if (redisConfig.getTls()) {
-            SslOptions sslOptions = SslOptions.builder()
-                .jdkSslProvider()
-                .keystore(new File("keystore/localhost/localhost.keystore.p12"), "password".toCharArray())
-                .truststore(new File("keystore/localhost/localhost.truststore.p12"), "password")
-                .build();
-            redisClient.setOptions(ClientOptions.builder().sslOptions(sslOptions).build());
-        }
 
         return redisClient;
     }
