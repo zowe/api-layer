@@ -28,7 +28,6 @@ tlsConfiguration:
     trustStoreType: PKCS12
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
-    nonStrictVerifySslCertificatesOfServices: true
 zosmfServiceConfiguration:
     scheme: https
     host: localhost
@@ -49,7 +48,6 @@ instanceEnv:
     APIML_SECURITY_X509_ENABLED: true
     APIML_SECURITY_AUTH_PROVIDER: zosmf
     ZOWE_IP_ADDRESS: 127.0.0.1
-    NONSTRICT_VERIFY_CERTIFICATES: true
     KEYSTORE: keystore/localhost/localhost.keystore.p12
     KEYSTORE_TYPE: PKCS12
     KEYSTORE_PASSWORD: password

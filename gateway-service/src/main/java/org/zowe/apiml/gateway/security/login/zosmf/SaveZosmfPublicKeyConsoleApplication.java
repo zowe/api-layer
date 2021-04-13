@@ -34,7 +34,10 @@ public class SaveZosmfPublicKeyConsoleApplication {
     public static void main(String[] args) {
         HttpsConfig httpsConfig = readHttpsConfig();
         RestTemplate restTemplate = restTemplate(httpsConfig);
+        saveJWTSecretWithJWKFromZosmf(restTemplate, args);
+    }
 
+    public static boolean saveJWTSecretWithJWKFromZosmf(RestTemplate restTemplate, String[] args){
         String jwkUrl = args[0];
         String filename = args[1];
         String zosmfJwtBuilderPath = System.getProperty("apiml.security.auth.zosmfJwtEndpoint", "/jwt/ibm/api/zOSMFBuilder/jwk");
@@ -46,6 +49,7 @@ public class SaveZosmfPublicKeyConsoleApplication {
                 jwkUrl, filename, args[2], args[3], args[4], args[5].toCharArray(), args[6].toCharArray())
             ) {
                 System.out.printf("Public key of z/OSMF at stored as a certificate to %s%n", filename);
+                return true;
             }
         } catch (FileNotFoundException e) {
             System.err.println(e.getMessage());  // NOSONAR: It is a console application
@@ -54,6 +58,7 @@ public class SaveZosmfPublicKeyConsoleApplication {
             System.err.println(e.getMessage());  // NOSONAR
             System.exit(2);  // NOSONAR
         }
+        return false;
     }
 
     private static RestTemplate restTemplate(HttpsConfig httpsConfig) {
@@ -64,7 +69,7 @@ public class SaveZosmfPublicKeyConsoleApplication {
         return new RestTemplate(clientFactory);
     }
 
-    private static HttpsConfig readHttpsConfig() {
+    public static HttpsConfig readHttpsConfig() {
         String protocol = System.getProperty("server.ssl.protocol", "TLSv1.2");
         String trustStoreType = System.getProperty("server.ssl.trustStoreType", "PKCS12");
         String trustStorePassword = System.getProperty("server.ssl.trustStorePassword");
