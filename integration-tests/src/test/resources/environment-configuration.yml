@@ -19,14 +19,14 @@ discoveryServiceConfiguration:
 discoverableClientConfiguration:
     applId: ZOWEAPPL
 tlsConfiguration:
-    keyAlias: apiml
+    keyAlias: localhost
     keyPassword: password
     keyStoreType: PKCS12
-    keyStore: ../../keystore/ca3x/apiml.keystore.p12
-    clientKeystore: ../../keystore/client-cert/client-certs.p12
+    keyStore: ../keystore/localhost/localhost.keystore.p12
+    clientKeystore: ../keystore/client_cert/client-certs.p12
     keyStorePassword: password
     trustStoreType: PKCS12
-    trustStore: ../../keystore/ca3x/apiml.truststore.p12
+    trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
     nonStrictVerifySslCertificatesOfServices: true
 zosmfServiceConfiguration:
@@ -50,11 +50,11 @@ instanceEnv:
     APIML_SECURITY_AUTH_PROVIDER: zosmf
     ZOWE_IP_ADDRESS: 127.0.0.1
     NONSTRICT_VERIFY_CERTIFICATES: true
-    KEYSTORE: ../keystore/ca3x/apiml.keystore.p12
+    KEYSTORE: keystore/localhost/localhost.keystore.p12
     KEYSTORE_TYPE: PKCS12
     KEYSTORE_PASSWORD: password
-    KEY_ALIAS: apiml
-    TRUSTSTORE: ../keystore/ca3x/apiml.truststore.p12
+    KEY_ALIAS: localhost
+    TRUSTSTORE: keystore/localhost/localhost.truststore.p12
     ZWE_DISCOVERY_SERVICES_LIST: https://localhost:10011/eureka/
     WORKSPACE_DIR: ./workspace
     APIML_MAX_CONNECTIONS_PER_ROUTE: 10
@@ -63,8 +63,6 @@ instanceEnv:
     APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE: JWT
     STATIC_DEF_CONFIG_DIR: config/local/api-defs
     APIML_GATEWAY_INTERNAL_ENABLED: true
-    APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS: apiml
-    APIML_GATEWAY_INTERNAL_SSL_KEYSTORE: ../keystore/ca3x/apiml.keystore.p12
     APIML_DIAG_MODE_ENABLED: diag
     APIML_GATEWAY_CATALOG_ID: apicatalog
     APIML_ZOSMF_ID: mockzosmf

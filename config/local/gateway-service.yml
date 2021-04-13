@@ -12,7 +12,7 @@ apiml:
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
         ssl:
-            nonStrictVerifySslCertificatesOfServices: true
+            verifySslCertificatesOfServices: true
         x509:
             enabled: true
     banner: console
@@ -34,14 +34,14 @@ server:
         enabled: true
         port: 10017
         ssl:
-            keyAlias: apiml
-            keyStore: ../keystore/ca3x/apiml.keystore.p12
+            keyAlias: localhost-multi
+            keyStore: keystore/localhost/localhost-multi.keystore.p12
     ssl:
-        keyAlias: apiml
+        keyAlias: localhost
         keyPassword: password
-        keyStore: ../keystore/ca3x/apiml.keystore.p12
+        keyStore: keystore/localhost/localhost.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
-        trustStore: ../keystore/ca3x/apiml.truststore.p12
+        trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12

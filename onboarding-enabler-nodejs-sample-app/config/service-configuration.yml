@@ -62,7 +62,7 @@ instance:
     apiml.service.description: 'The Proxy Server is an HTTP HTTPS, and Websocket server built upon NodeJS and ExpressJS.'
 
 ssl:
-  certificate: ../../keystore/ca3x/apiml.keystore.cer
-  keystore: ../../keystore/ca3x/apiml.keystore.key
-  caFile: ../../keystore/ca3x/apiml.server.pem
+  certificate: ../keystore/localhost/localhost.keystore.cer
+  keystore: ../keystore/localhost/localhost.keystore.key
+  caFile: ../keystore/localhost/localhost.pem
   keyPassword: password
