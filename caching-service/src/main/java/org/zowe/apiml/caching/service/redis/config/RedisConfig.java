@@ -31,6 +31,7 @@ public class RedisConfig {
     private Integer timeout = 60;
     private String username = "default";
     private String password = "";
+    private Boolean tls = false;
     private Sentinel sentinel;
 
     public boolean usesSentinel() {
@@ -42,13 +43,8 @@ public class RedisConfig {
     @ConfigurationProperties("caching.storage.redis.sentinel")
     public static class Sentinel {
         private String master;
-
         private List<SentinelNode> nodes;
 
-        /**
-         * Class that holds sentinel node-specific configuration. Getters are defined such that
-         * if there is no sentinel node-specific setting, it defaults to general Sentinel configuration.
-         */
         @Data
         @ToString
         public static class SentinelNode {

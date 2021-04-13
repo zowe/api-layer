@@ -9,7 +9,10 @@
  */
 package org.zowe.apiml.caching.service.redis.config;
 
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import io.lettuce.core.SslOptions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -21,6 +24,7 @@ import org.zowe.apiml.caching.service.redis.RedisStorage;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 
+import java.io.File;
 import java.time.Duration;
 
 @Configuration
@@ -33,9 +37,11 @@ public class RedisConfiguration {
     @Bean
     public Storage redis(MessageService messageService) {
         log.info("Using redis configuration {}", redisConfig);
-        RedisURI redisUri = createRedisUri();
 
-        return new RedisStorage(new RedisOperator(redisUri, ApimlLogger.of(RedisOperator.class, messageService)));
+        RedisURI redisUri = createRedisUri();
+        RedisClient redisClient = createRedisClient();
+
+        return new RedisStorage(new RedisOperator(redisClient, redisUri, ApimlLogger.of(RedisOperator.class, messageService)));
     }
 
     /**
@@ -43,6 +49,7 @@ public class RedisConfiguration {
      */
     RedisURI createRedisUri() {
         RedisURI.Builder uriBuilder = RedisURI.builder()
+            .withSsl(redisConfig.getTls())
             .withAuthentication(redisConfig.getUsername(), redisConfig.getPassword())
             .withTimeout(Duration.ofSeconds(redisConfig.getTimeout()));
 
@@ -61,5 +68,23 @@ public class RedisConfiguration {
         }
 
         return uriBuilder.build();
+    }
+
+    /**
+     * Package protected for unit testing.
+     */
+    RedisClient createRedisClient() {
+        RedisClient redisClient = RedisClient.create();
+
+        if (redisConfig.getTls()) {
+            SslOptions sslOptions = SslOptions.builder()
+                .jdkSslProvider()
+                .keystore(new File("keystore/localhost/localhost.keystore.p12"), "password".toCharArray())
+                .truststore(new File("keystore/localhost/localhost.truststore.p12"), "password")
+                .build();
+            redisClient.setOptions(ClientOptions.builder().sslOptions(sslOptions).build());
+        }
+
+        return redisClient;
     }
 }

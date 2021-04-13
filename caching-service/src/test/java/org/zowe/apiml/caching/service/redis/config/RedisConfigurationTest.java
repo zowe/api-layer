@@ -9,7 +9,11 @@
  */
 package org.zowe.apiml.caching.service.redis.config;
 
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import io.lettuce.core.SslOptions;
+import io.lettuce.core.resource.DefaultClientResources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,6 +25,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -60,6 +65,28 @@ class RedisConfigurationTest {
     }
 
     @Nested
+    class WhenCreatingRedisClient {
+        @Test
+        void givenTlsFalse_thenReturnStandardRedisClient() {
+            when(redisConfig.getTls()).thenReturn(false);
+
+            RedisClient expected = RedisClient.create();
+            RedisClient actual = underTest.createRedisClient();
+
+            assertThat(actual.getOptions().getSslOptions(), samePropertyValuesAs(SslOptions.create()));
+        }
+
+        @Test
+        void givenTlsTrue_thenReturnRedisClientWithSslOptions() {
+            when(redisConfig.getTls()).thenReturn(true);
+
+            RedisClient result = underTest.createRedisClient();
+            assertThat(result.getOptions(), is(not(nullValue())));
+            assertThat(result.getOptions().getSslOptions(), is(not(nullValue())));
+        }
+    }
+
+    @Nested
     class WhenUsingSentinel {
         private static final String MASTER = "redismaster";
 
@@ -86,13 +113,17 @@ class RedisConfigurationTest {
             String ip2 = "5.6.7.8";
             int port1 = 6379;
             int port2 = 6380;
+            String password1 = "password1";
+            String password2 = "password2";
 
             RedisConfig.Sentinel.SentinelNode node1 = new RedisConfig.Sentinel.SentinelNode();
             node1.setIp(ip1);
             node1.setPort(port1);
+            node1.setPassword(password1);
             RedisConfig.Sentinel.SentinelNode node2 = new RedisConfig.Sentinel.SentinelNode();
             node2.setIp(ip2);
             node2.setPort(port2);
+            node2.setPassword(password2);
 
             List<RedisConfig.Sentinel.SentinelNode> nodesList = new ArrayList<>();
             nodesList.add(node1);
@@ -108,14 +139,15 @@ class RedisConfigurationTest {
             assertThat(sentinelUris, is(not(nullValue())));
             assertThat(sentinelUris.size(), is(2));
 
-
             RedisURI sentinel1 = sentinelUris.get(0);
             assertThat(sentinel1.getHost(), is(ip1));
             assertThat(sentinel1.getPort(), is(port1));
+            assertThat(sentinel1.getPassword(), is(password1.toCharArray()));
 
             RedisURI sentinel2 = sentinelUris.get(1);
             assertThat(sentinel2.getHost(), is(ip2));
             assertThat(sentinel2.getPort(), is(port2));
+            assertThat(sentinel2.getPassword(), is(password2.toCharArray()));
         }
     }
 }

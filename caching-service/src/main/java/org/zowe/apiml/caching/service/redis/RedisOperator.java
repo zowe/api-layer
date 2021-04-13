@@ -9,7 +9,10 @@
  */
 package org.zowe.apiml.caching.service.redis;
 
-import io.lettuce.core.*;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisCommandExecutionException;
+import io.lettuce.core.RedisFuture;
+import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.codec.StringCodec;
 import io.lettuce.core.masterreplica.MasterReplica;
@@ -41,12 +44,12 @@ public class RedisOperator {
     private StatefulRedisMasterReplicaConnection<String, String> redisConnection;
     private RedisAsyncCommands<String, String> redis;
 
-    public RedisOperator(RedisURI redisUri, ApimlLogger apimlLog) {
+    public RedisOperator(RedisClient redisClient, RedisURI redisUri, ApimlLogger apimlLog) {
         try {
-            redisClient = RedisClient.create();
-            redisConnection = MasterReplica.connect(redisClient, StringCodec.UTF8, redisUri);
+            this.redisClient = redisClient;
+            redisConnection = MasterReplica.connect(this.redisClient, StringCodec.UTF8, redisUri);
             redis = redisConnection.async();
-        } catch (RedisConnectionException e) {
+        } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "redis", e.getCause().getMessage(), e);
             System.exit(1);
         }

@@ -9,15 +9,3 @@ services:
         volumes:
             - ../keystore:/usr/local/etc/keystore
             - ./config:/usr/local/etc/redis/
-
-    redis-replica:
-        container_name: redis-replica
-        image: redis:latest
-        command: redis-server /usr/local/etc/redis/replica-tls.conf
-        ports:
-            - "6380:6380"
-        volumes:
-            - ../keystore:/usr/local/etc/keystore
-            - ./config:/usr/local/etc/redis/
-        links:
-            - redis-master
