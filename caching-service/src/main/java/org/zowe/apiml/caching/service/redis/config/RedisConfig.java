@@ -11,17 +11,15 @@ package org.zowe.apiml.caching.service.redis.config;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.config.GeneralConfig;
 
 import java.util.List;
 
+@Data
 @Configuration
 @ConfigurationProperties(value = "caching.storage.redis")
-@Data
-@ToString
 @RequiredArgsConstructor
 public class RedisConfig {
     private final GeneralConfig generalConfig;
@@ -33,24 +31,35 @@ public class RedisConfig {
     private String password = "";
 
     private Sentinel sentinel;
+    private SslConfig ssl;
 
     public boolean usesSentinel() {
         return sentinel != null;
     }
 
+    public boolean usesSsl() {
+        return ssl != null && ssl.getEnabled();
+    }
+
     @Data
-    @ToString
-    @ConfigurationProperties(value = "caching.storage.redis.sentinel")
     public static class Sentinel {
         private String master;
         private List<SentinelNode> nodes;
 
         @Data
-        @ToString
         public static class SentinelNode {
             private String ip;
             private Integer port;
             private String password;
         }
+    }
+
+    @Data
+    public static class SslConfig {
+        private Boolean enabled = false;
+        private String keyStore;
+        private String keyStorePassword;
+        private String trustStore;
+        private String trustStorePassword;
     }
 }

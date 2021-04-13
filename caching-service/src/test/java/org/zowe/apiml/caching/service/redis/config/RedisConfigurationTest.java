@@ -63,6 +63,17 @@ class RedisConfigurationTest {
     }
 
     @Nested
+    class WhenCreatingRedisClient {
+        @Test
+        void givenTlsFalse_thenReturnStandardRedisClient() {
+            when(redisConfig.usesSsl()).thenReturn(false);
+
+            RedisClient actual = underTest.createRedisClient();
+            assertThat(actual.getOptions().getSslOptions(), samePropertyValuesAs(SslOptions.create()));
+        }
+    }
+
+    @Nested
     class WhenUsingSentinel {
         private static final String MASTER = "redismaster";
 

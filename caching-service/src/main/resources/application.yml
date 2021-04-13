@@ -3,7 +3,7 @@ caching:
         mode: redis
         redis:
             host: localhost
-            port: 639
+            port: 6379
             username: default
             password: heslo
 
