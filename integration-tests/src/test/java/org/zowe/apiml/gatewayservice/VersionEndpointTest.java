@@ -22,6 +22,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @TestsNotMeantForZowe
 @GeneralAuthenticationTest
@@ -45,6 +46,7 @@ class VersionEndpointTest implements TestWithStartedInstances {
 
     @Test
     void shouldCallVersionEndpointAndReceivedVersion() {
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         given()
             .when()
             .get(requestString)

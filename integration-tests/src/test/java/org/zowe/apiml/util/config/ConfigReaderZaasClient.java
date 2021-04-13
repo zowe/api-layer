@@ -17,7 +17,7 @@ import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 @Slf4j
 public class ConfigReaderZaasClient {
 
-        public static ConfigProperties getConfigProperties () {
+        public static ConfigProperties getConfigProperties() {
 
             ConfigProperties configProperties = new ConfigProperties();
 
@@ -31,7 +31,7 @@ public class ConfigReaderZaasClient {
             configProperties.setTrustStorePath(environmentConfiguration().getTlsConfiguration().getTrustStore());
             configProperties.setTrustStorePassword(environmentConfiguration().getTlsConfiguration().getTrustStorePassword());
             configProperties.setTrustStoreType(environmentConfiguration().getTlsConfiguration().getTrustStoreType());
-
+            configProperties.setNonStrictVerifySslCertificatesOfServices(environmentConfiguration().getTlsConfiguration().isNonStrictVerifySslCertificatesOfServices());
             return configProperties;
         }
 }

@@ -44,6 +44,9 @@ public class DefaultZaasClientConfiguration {
     @Value("${apiml.service.ssl.trustStoreType}")
     private String trustStoreType;
 
+    @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+    private boolean nonStrictVerifySslCertificatesOfServices;
+
     @Bean
     public ConfigProperties getConfigProperties() {
         ConfigProperties configProperties = new ConfigProperties();
@@ -56,7 +59,7 @@ public class DefaultZaasClientConfiguration {
         configProperties.setTrustStorePath(trustStorePath);
         configProperties.setTrustStorePassword(trustStorePassword);
         configProperties.setTrustStoreType(trustStoreType);
-
+        configProperties.setNonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices);
         return configProperties;
     }
 

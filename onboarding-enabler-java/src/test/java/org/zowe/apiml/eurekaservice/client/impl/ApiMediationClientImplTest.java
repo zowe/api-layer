@@ -42,9 +42,9 @@ class ApiMediationClientImplTest {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0"));
         Authentication authentication = new Authentication("bypass", null, null);
-        Ssl ssl = new Ssl(false, false, "TLSv1.2", "localhost", PASSWORD,
-                "../keystore/localhost/localhost.keystore.p12", PASSWORD, "PKCS12",
-                "../keystore/localhost/localhost.truststore.p12", PASSWORD, "PKCS12");
+        Ssl ssl = new Ssl(false, false, false, "TLSv1.2", "localhost", PASSWORD,
+            "../keystore/localhost/localhost.keystore.p12", PASSWORD, "PKCS12",
+            "../keystore/localhost/localhost.truststore.p12", PASSWORD, "PKCS12");
         List<Route> routes = new ArrayList<>();
         Route apiRoute = new Route("api/v1", "/hellospring/api/v1");
         Route apiDocRoute = new Route("api/v1/api-doc", "/hellospring/api-doc");
@@ -52,21 +52,21 @@ class ApiMediationClientImplTest {
         routes.add(apiDocRoute);
 
         return ApiMediationServiceConfig.builder()
-                .apiInfo(Collections.singletonList(apiInfo))
-                .catalog(catalogUiTile)
-                .authentication(authentication)
-                .routes(routes)
-                .description("Example for exposing a Spring REST API")
-                .title("Hello Spring REST API")
-                .serviceId("service")
-                .baseUrl("http://host:1000/service")
-                .healthCheckRelativeUrl("")
-                .homePageRelativeUrl("")
-                .statusPageRelativeUrl("")
-                .discoveryServiceUrls(Collections.singletonList("https://localhost:10011/eureka"))
-                .ssl(ssl)
-                .serviceIpAddress("127.0.0.1")
-                .build();
+            .apiInfo(Collections.singletonList(apiInfo))
+            .catalog(catalogUiTile)
+            .authentication(authentication)
+            .routes(routes)
+            .description("Example for exposing a Spring REST API")
+            .title("Hello Spring REST API")
+            .serviceId("service")
+            .baseUrl("http://host:1000/service")
+            .healthCheckRelativeUrl("")
+            .homePageRelativeUrl("")
+            .statusPageRelativeUrl("")
+            .discoveryServiceUrls(Collections.singletonList("https://localhost:10011/eureka"))
+            .ssl(ssl)
+            .serviceIpAddress("127.0.0.1")
+            .build();
     }
 
     @Test
@@ -98,7 +98,7 @@ class ApiMediationClientImplTest {
     }
 
     @Test
-    // It just tests that the https base configuration won't throw any exception.
+        // It just tests that the https base configuration won't throw any exception.
     void httpsBaseUrlFormat() throws ServiceDefinitionException {
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -171,10 +171,10 @@ class ApiMediationClientImplTest {
 
     private ApiMediationClient createApiMediationClient(DefaultCustomMetadataHelper defaultCustomMetadataHelper) {
         return new ApiMediationClientImpl(
-                new DiscoveryClientProvider(),
-                new ApiMlEurekaClientConfigProvider(),
-                new EurekaInstanceConfigCreator(),
-                defaultCustomMetadataHelper
+            new DiscoveryClientProvider(),
+            new ApiMlEurekaClientConfigProvider(),
+            new EurekaInstanceConfigCreator(),
+            defaultCustomMetadataHelper
         );
     }
 
@@ -205,6 +205,7 @@ class ApiMediationClientImplTest {
             {
                 setZUtil(getZUtilZosValue());
             }
+
             @Override
             protected boolean isRunningOnZos() {
                 return mockZos;
