@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.gateway.security.login.zosmf;
 
-import java.io.FileNotFoundException;
-
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.ResourceAccessException;
@@ -19,10 +17,12 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
 
+import java.io.FileNotFoundException;
+
 /**
  * Gets z/OSMF public key for JWT validation.
  * It is used by Zowe certificate setup script.
- *
+ * <p>
  * This can be started using this command:
  * java -cp gateway-service/build/libs/gateway-service.jar
  * -Dapiml.security.ssl.verifySslCertificatesOfServices=false
@@ -37,7 +37,7 @@ public class SaveZosmfPublicKeyConsoleApplication {
         saveJWTSecretWithJWKFromZosmf(restTemplate, args);
     }
 
-    public static boolean saveJWTSecretWithJWKFromZosmf(RestTemplate restTemplate, String[] args){
+    public static boolean saveJWTSecretWithJWKFromZosmf(RestTemplate restTemplate, String[] args) {
         String jwkUrl = args[0];
         String filename = args[1];
         String zosmfJwtBuilderPath = System.getProperty("apiml.security.auth.zosmfJwtEndpoint", "/jwt/ibm/api/zOSMFBuilder/jwk");
@@ -65,7 +65,7 @@ public class SaveZosmfPublicKeyConsoleApplication {
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         CloseableHttpClient secureHttpClient = httpsFactory.createSecureHttpClient();
         HttpComponentsClientHttpRequestFactory clientFactory = new HttpComponentsClientHttpRequestFactory(
-                secureHttpClient);
+            secureHttpClient);
         return new RestTemplate(clientFactory);
     }
 
@@ -75,14 +75,14 @@ public class SaveZosmfPublicKeyConsoleApplication {
         String trustStorePassword = System.getProperty("server.ssl.trustStorePassword");
         String trustStore = System.getProperty("server.ssl.trustStore");
         boolean verifySslCertificatesOfServices = !System
-                .getProperty("apiml.security.ssl.verifySslCertificatesOfServices", "true").equalsIgnoreCase("false");
+            .getProperty("apiml.security.ssl.verifySslCertificatesOfServices", "true").equalsIgnoreCase("false");
         boolean nonStrictVerifySslCertificatesOfServices = System
             .getProperty("apiml.security.ssl.nonStrictVerifySslCertificatesOfServices", "false").equalsIgnoreCase("true");
         return HttpsConfig.builder().protocol(protocol).trustStore(trustStore)
-                .trustStoreType(trustStoreType)
-                .trustStorePassword(trustStorePassword == null ? null : trustStorePassword.toCharArray())
-                .trustStoreRequired(verifySslCertificatesOfServices)
-                .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
-                .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices).build();
+            .trustStoreType(trustStoreType)
+            .trustStorePassword(trustStorePassword == null ? null : trustStorePassword.toCharArray())
+            .trustStoreRequired(verifySslCertificatesOfServices)
+            .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
+            .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices).build();
     }
 }
