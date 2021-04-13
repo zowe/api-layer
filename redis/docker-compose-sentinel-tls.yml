@@ -7,7 +7,8 @@ services:
         ports:
             - "6379:6379"
         volumes:
-            - ./master:/usr/local/etc/redis/
+            - ../keystore:/usr/local/etc/keystore
+            - ./config:/usr/local/etc/redis/
 
     redis-replica:
         container_name: redis-replica
@@ -16,7 +17,8 @@ services:
         ports:
             - "6380:6380"
         volumes:
-            - ./replica:/usr/local/etc/redis/
+            - ../keystore:/usr/local/etc/keystore
+            - ./config:/usr/local/etc/redis/
         links:
             - redis-master
 
@@ -27,7 +29,8 @@ services:
         ports:
             - "26379:26379"
         volumes:
-            - ./sentinel-1:/usr/local/etc/redis/
+            - ../keystore:/usr/local/etc/keystore
+            - ./config:/usr/local/etc/redis/
         links:
             - redis-master
             - redis-replica
@@ -39,7 +42,8 @@ services:
         ports:
             - "26380:26380"
         volumes:
-            - ./sentinel-2:/usr/local/etc/redis/
+            - ../keystore:/usr/local/etc/keystore
+            - ./config:/usr/local/etc/redis/
         links:
             - redis-master
             - redis-replica
@@ -51,7 +55,8 @@ services:
         ports:
             - "26381:26381"
         volumes:
-            - ./sentinel-3:/usr/local/etc/redis/
+            - ../keystore:/usr/local/etc/keystore
+            - ./config:/usr/local/etc/redis/
         links:
             - redis-master
             - redis-replica
