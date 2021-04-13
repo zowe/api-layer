@@ -45,6 +45,7 @@ dependencies {
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
+    implementation libraries.spring_boot_starter_validation
 
     implementation libraries.bootstrap
     implementation libraries.jquery

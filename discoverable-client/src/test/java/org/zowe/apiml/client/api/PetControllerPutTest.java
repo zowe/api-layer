@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {PetController.class}, secure = false)
+@WebMvcTest(controllers = {PetController.class})
 @Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
 class PetControllerPutTest {
     @Autowired
