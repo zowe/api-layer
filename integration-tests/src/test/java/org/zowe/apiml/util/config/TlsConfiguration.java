@@ -28,4 +28,5 @@ public class TlsConfiguration {
     private String trustStoreType;
     private String trustStore;
     private char[] trustStorePassword;
+    private boolean nonStrictVerifySslCertificatesOfServices;
 }

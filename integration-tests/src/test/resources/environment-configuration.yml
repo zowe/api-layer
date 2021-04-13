@@ -28,6 +28,7 @@ tlsConfiguration:
     trustStoreType: PKCS12
     trustStore: ../../keystore/ca3x/apiml.truststore.p12
     trustStorePassword: password
+    nonStrictVerifySslCertificatesOfServices: true
 zosmfServiceConfiguration:
     scheme: https
     host: localhost

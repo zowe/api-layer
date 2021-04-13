@@ -45,7 +45,9 @@ public class SslContext {
     private static AtomicBoolean isInitialized = new AtomicBoolean(false);
 
     public synchronized static void prepareSslAuthentication() throws Exception {
-        X509HostnameVerifier hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+        TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
+
+        X509HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER : SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
         if (!isInitialized.get()) {
             log.info("SSLContext is constructing. This should happen only once.");
             TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;

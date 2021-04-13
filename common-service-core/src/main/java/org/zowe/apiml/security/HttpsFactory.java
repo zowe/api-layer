@@ -54,7 +54,6 @@ public class HttpsFactory {
         this.apimlLog = ApimlLogger.of(HttpsFactory.class, YamlMessageServiceInstance.getInstance());
     }
 
-    private HostnameVerifier dontVerifyHostname = (sslContext, hostnameVerifier) -> true;
 
     public CloseableHttpClient createSecureHttpClient() {
         Registry<ConnectionSocketFactory> socketFactoryRegistry;
