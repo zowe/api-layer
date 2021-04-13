@@ -65,7 +65,11 @@ dependencies {
     implementation libraries.spring_cloud_starter_ribbon
     implementation libraries.jetty_websocket_common
     implementation libraries.jetty_websocket_client
+    implementation libraries.jetty_client
+    implementation libraries.jetty_http
+    implementation libraries.jetty_io
     implementation libraries.jetty_util
+    implementation libraries.jetty_websocket_api
     implementation libraries.jjwt
     implementation libraries.nimbusJoseJwt
     implementation libraries.eh_cache

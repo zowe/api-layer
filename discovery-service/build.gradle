@@ -54,7 +54,11 @@ dependencies {
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_cloud_starter_eureka_server
     implementation libraries.jackson_dataformat_yaml
+    implementation libraries.jetty_client
+    implementation libraries.jetty_http
+    implementation libraries.jetty_io
     implementation libraries.jetty_util
+    implementation libraries.jetty_websocket_api
     implementation libraries.jetty_websocket_client
     implementation libraries.jetty_websocket_common
 
