@@ -28,7 +28,6 @@ eureka:
         registryFetchIntervalSeconds: 1
 apiml:
     enabled: true
-    security.ssl.verifySslCertificatesOfServices: false
     service:
         preferIpAddress: false
 
