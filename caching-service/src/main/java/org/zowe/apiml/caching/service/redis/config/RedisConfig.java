@@ -48,7 +48,7 @@ public class RedisConfig {
 
         @Data
         public static class SentinelNode {
-            private String ip;
+            private String host;
             private Integer port;
             private String password;
         }

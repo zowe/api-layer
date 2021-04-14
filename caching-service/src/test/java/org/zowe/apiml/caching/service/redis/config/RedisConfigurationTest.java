@@ -104,11 +104,11 @@ class RedisConfigurationTest {
             String password2 = "password2";
 
             RedisConfig.Sentinel.SentinelNode node1 = new RedisConfig.Sentinel.SentinelNode();
-            node1.setIp(ip1);
+            node1.setHost(ip1);
             node1.setPort(port1);
             node1.setPassword(password1);
             RedisConfig.Sentinel.SentinelNode node2 = new RedisConfig.Sentinel.SentinelNode();
-            node2.setIp(ip2);
+            node2.setHost(ip2);
             node2.setPort(port2);
             node2.setPassword(password2);
 

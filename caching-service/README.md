@@ -86,13 +86,13 @@ The first setup works well for testing. In order to properly configure the cachi
                  sentinel:
                      master: redismaster
                      nodes:
-                         - ip: 127.0.0.1
+                         - host: localhost
                            port: 26379
                            password: sentinelpassword
-                         - ip: 127.0.0.1
+                         - host: localhost
                            port: 26380
                            password: sentinelpassword
-                         - ip: 127.0.0.1
+                         - host: localhost
                            port: 26381
                            password: sentinelpassword
 
