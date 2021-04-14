@@ -45,6 +45,7 @@ dependencies {
     implementation libraries.jjwt
     implementation libraries.jjwt_impl
     implementation libraries.jjwt_jackson
+    implementation libraries.xstream
 
     implementation libraries.springFox
     implementation libraries.spring_boot_starter

@@ -9,6 +9,7 @@ dependencies {
     compile libraries.logback_classic
     compile(libraries.slf4j_api)
     compile(libraries.snakeyaml)
+    compile libraries.xstream
 
     compile libraries.apache_commons_lang3
     compile libraries.apache_commons_text
