@@ -352,7 +352,7 @@ jobs:
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  ZWE_CACHING_SERVICE_PERSISTENT: 'inMemory'
+                  ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
             - name: Store results
               uses: actions/upload-artifact@v2
               if: always()
@@ -404,7 +404,7 @@ jobs:
                       ${{ runner.OS }}-
             - name: Start Redis
               run: |
-                  docker run --name redis --publish 6379:6379 --detach redis:6.2.1-alpine
+                  docker-compose -f ../../redis/docker-compose-replica.yml up
 
             - name: Build with Gradle
               run: >
@@ -417,7 +417,7 @@ jobs:
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  ZWE_CACHING_SERVICE_PERSISTENT: 'inMemory'
+                  ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
                   VERIFY_CERTIFICATES: false
             - name: Store results
               uses: actions/upload-artifact@v2
