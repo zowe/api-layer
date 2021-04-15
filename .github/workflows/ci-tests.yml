@@ -339,7 +339,7 @@ jobs:
                       ${{ runner.OS }}-
             - name: Start Redis
               run: |
-                  docker run --name redis --publish 6379:6379 --detach redis:6.2.1-alpine
+                  docker-compose -f redis/docker-compose-replica-tls.yml up --detach
 
             - name: Build with Gradle
               run: >
@@ -353,6 +353,11 @@ jobs:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                   ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
+                  CACHING_STORAGE_REDIS_SSL_ENABLED: true
+                  CACHING_STORAGE_REDIS_SSL_KEYSTORE: keystore/localhost/localhost.keystore.p12
+                  CACHING_STORAGE_REDIS_SSL_KEYSTOREPASSWORD: password
+                  CACHING_STORAGE_REDIS_SSL_TRUSTSTORE: keystore/localhost/localhost.truststore.p12
+                  CACHING_STORAGE_REDIS_SSL_TRUSTSTOREPASSWORD: password
             - name: Store results
               uses: actions/upload-artifact@v2
               if: always()
