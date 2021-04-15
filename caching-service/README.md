@@ -95,6 +95,12 @@ The first setup works well for testing. In order to properly configure the cachi
                          - host: localhost
                            port: 26381
                            password: sentinelpassword
+                           
+The library used to connect to Redis, Lettuce, uses node registration information to automatically discover instances downstream from
+the master (in master/replica topology) or the sentinels (in sentinel topology). This means the IP address used to connect from the Caching service
+is the IP address used to register, which with the above docker compose files is the container IP address. This means the Caching service tries to
+connect using the container IP address, which does not resolve properly. The ports are published, however, so if the container IP addresses are aliased
+to localhost, the Caching service can connect. Another option, if running on Linux, is to use a host network in the docker compose file.
 
 ### Additional Storage Support
 
