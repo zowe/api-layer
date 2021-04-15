@@ -282,8 +282,12 @@ public class HttpsFactory {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
         } else {
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-            setSystemSslProperties();
-            builder.withCustomSSL(createSecureSslContext());
+
+            if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
+                setSystemSslProperties();
+            }
+            builder.withCustomSSL(createSslContext());
+
             builder.withHostnameVerifier(createHostnameVerifier());
         }
         return builder;
