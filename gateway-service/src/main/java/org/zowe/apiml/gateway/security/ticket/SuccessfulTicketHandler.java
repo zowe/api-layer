@@ -50,7 +50,7 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
     @SneakyThrows
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         try {
             response.setStatus(HttpStatus.OK.value());

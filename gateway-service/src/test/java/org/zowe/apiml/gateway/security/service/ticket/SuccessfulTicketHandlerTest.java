@@ -56,7 +56,7 @@ class SuccessfulTicketHandlerTest {
 
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
 
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
         assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
         assertTrue(httpServletResponse.getContentAsString().contains(ZOWE_DUMMY_PASS_TICKET_PREFIX));
         assertTrue(httpServletResponse.isCommitted());
@@ -66,7 +66,7 @@ class SuccessfulTicketHandlerTest {
     void shouldFailWhenNoApplicationName() throws UnsupportedEncodingException, JsonProcessingException {
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
 
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
         assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
         assertTrue(httpServletResponse.getContentAsString().contains("ZWEAG140E"));
         assertTrue(httpServletResponse.isCommitted());
@@ -75,7 +75,7 @@ class SuccessfulTicketHandlerTest {
         httpServletResponse.setStatus(HttpStatus.EXPECTATION_FAILED.value());
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
 
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
         assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
         assertTrue(httpServletResponse.getContentAsString().contains("ZWEAG140E"));
         assertTrue(httpServletResponse.isCommitted());
@@ -87,7 +87,7 @@ class SuccessfulTicketHandlerTest {
 
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
 
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
         assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
         assertTrue(httpServletResponse.getContentAsString().contains("ZWEAG141E"));
         assertTrue(httpServletResponse.isCommitted());

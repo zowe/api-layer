@@ -172,25 +172,25 @@ class SafMethodSecurityExpressionControllerTest {
             return new ResponseEntity<>("It is OK", HttpStatus.OK);
         }
 
-        @GetMapping(value = "/hasSafResourceAccessRead", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+        @GetMapping(value = "/hasSafResourceAccessRead", produces = MediaType.APPLICATION_JSON_VALUE)
         @PreAuthorize("hasSafResourceAccess('CLASS', 'RESOURCE', 'READ')")
         public ResponseEntity<String> test1read() {
             return getResponse();
         }
 
-        @GetMapping(value = "/hasSafResourceAccessUpdate", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+        @GetMapping(value = "/hasSafResourceAccessUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
         @PreAuthorize("hasSafResourceAccess('CLASS', 'RESOURCE', 'UPDATE')")
         public ResponseEntity<String> test1update() {
             return getResponse();
         }
 
-        @GetMapping(value = "/hasSafServiceResourceAccessRead", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+        @GetMapping(value = "/hasSafServiceResourceAccessRead", produces = MediaType.APPLICATION_JSON_VALUE)
         @PreAuthorize("hasSafServiceResourceAccess('RESOURCE', 'READ')")
         public ResponseEntity<String> test2read() {
             return getResponse();
         }
 
-        @GetMapping(value = "/hasSafServiceResourceAccessUpdate", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+        @GetMapping(value = "/hasSafServiceResourceAccessUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
         @PreAuthorize("hasSafServiceResourceAccess('RESOURCE', 'UPDATE')")
         public ResponseEntity<String> test2update() {
             return getResponse();
