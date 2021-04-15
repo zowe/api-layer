@@ -38,7 +38,7 @@ ext {
     nimbusJoseJwtVersion = '8.10'
     velocityVersion = '2.0'
     jsoupVersion = '1.8.3'
-    httpCoreVersion = '4.4.10'
+    httpCoreVersion = '4.4.14'
     snakeyamlVersion = '1.27'
     springHateoasVersion = '0.23.0.RELEASE'
     springRetryVersion = '1.2.2.RELEASE'

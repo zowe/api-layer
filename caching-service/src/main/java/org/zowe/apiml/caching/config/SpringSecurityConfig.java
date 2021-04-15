@@ -26,8 +26,11 @@ import java.util.Collections;
 @EnableWebSecurity
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifyCertificates;
+
+    @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+    private boolean nonStrictVerifyCerts;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -45,14 +48,14 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
             .headers().httpStrictTransportSecurity().disable()
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        if (verifyCertificates) {
+        if (verifyCertificates || nonStrictVerifyCerts) {
             http.authorizeRequests().anyRequest().authenticated().and()
                 .x509().userDetailsService(x509UserDetailsService());
         } else {
             http.authorizeRequests().anyRequest().permitAll();
         }
 
-        }
+    }
 
     private UserDetailsService x509UserDetailsService() {
         return username -> new User("cachingUser", "", Collections.emptyList());
