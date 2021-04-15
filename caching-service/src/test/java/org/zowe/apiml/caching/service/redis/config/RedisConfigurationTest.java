@@ -50,18 +50,6 @@ class RedisConfigurationTest {
         underTest = new RedisConfiguration(redisConfig);
     }
 
-    @Test
-    void givenRedisConfig_whenUsingMasterReplica_thenReturnRedisUriWithProperties() {
-        when(redisConfig.usesSentinel()).thenReturn(false);
-        RedisURI result = underTest.createRedisUri();
-
-        assertThat(result.getUsername(), is(USERNAME));
-        assertThat(result.getPassword(), is(PASSWORD.toCharArray()));
-        assertThat(result.getHost(), is(MASTER_IP));
-        assertThat(result.getPort(), is(MASTER_PORT));
-        assertThat(result.getTimeout(), is(Duration.ofSeconds(TIMEOUT)));
-    }
-
     @Nested
     class WhenCreatingRedisClient {
         @Test
@@ -73,8 +61,20 @@ class RedisConfigurationTest {
         }
     }
 
+    @Test
+    void givenRedisConfig_whenCreatingUriWithMasterReplica_thenReturnRedisUriWithProperties() {
+        when(redisConfig.usesSentinel()).thenReturn(false);
+        RedisURI result = underTest.createRedisUri();
+
+        assertThat(result.getUsername(), is(USERNAME));
+        assertThat(result.getPassword(), is(PASSWORD.toCharArray()));
+        assertThat(result.getHost(), is(MASTER_IP));
+        assertThat(result.getPort(), is(MASTER_PORT));
+        assertThat(result.getTimeout(), is(Duration.ofSeconds(TIMEOUT)));
+    }
+
     @Nested
-    class WhenUsingSentinel {
+    class WhenCreatingUriWithSentinel {
         private static final String MASTER = "redismaster";
 
         private RedisConfig.Sentinel sentinelConfig;
