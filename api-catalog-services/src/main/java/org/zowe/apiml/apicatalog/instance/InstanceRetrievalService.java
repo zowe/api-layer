@@ -9,11 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.instance;
 
-import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.instance.InstanceInitializationException;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.product.registry.ApplicationWrapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +22,11 @@ import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.instance.InstanceInitializationException;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.product.registry.ApplicationWrapper;
 
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
@@ -34,6 +34,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Service for instance retrieval from Eureka
@@ -71,15 +72,15 @@ public class InstanceRetrievalService {
         if (serviceId.equalsIgnoreCase(UNKNOWN)) {
             return null;
         }
-
-        InstanceInfo instanceInfo = null;
         try {
-            Pair<String, Pair<String, String>> requestInfo = constructServiceInfoQueryRequest(serviceId, false);
-
-            // call Eureka REST endpoint to fetch single or all Instances
-            ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
-            if (response.getStatusCode().is2xxSuccessful()) {
-                instanceInfo = extractSingleInstanceFromApplication(serviceId, requestInfo.getLeft(), response);
+            List<Pair<String, Pair<String, String>>> requestInfoList = constructServiceInfoQueryRequest(serviceId, false);
+            // iterate over list of discovery services, return at first success
+            for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
+                // call Eureka REST endpoint to fetch single or all Instances
+                ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    return extractSingleInstanceFromApplication(serviceId, requestInfo.getLeft(), response);
+                }
             }
         } catch (Exception e) {
             String msg = "An error occurred when trying to get instance info for:  " + serviceId;
@@ -87,7 +88,7 @@ public class InstanceRetrievalService {
             throw new InstanceInitializationException(msg);
         }
 
-        return instanceInfo;
+        return null;
     }
 
     /**
@@ -98,12 +99,17 @@ public class InstanceRetrievalService {
      */
     public Applications getAllInstancesFromDiscovery(boolean delta) {
 
-        Pair<String, Pair<String, String>> requestInfo = constructServiceInfoQueryRequest(null, delta);
-
+        List<Pair<String, Pair<String, String>>> requestInfoList = constructServiceInfoQueryRequest(null, delta);
+        for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
+            try {
+                ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
+                return extractApplications(requestInfo, response);
+            } catch (Exception e) {
+                log.error("Not able to contact discovery service: " + requestInfo.getKey(), e);
+            }
+        }
         //  call Eureka REST endpoint to fetch single or all Instances
-        ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
-
-        return extractApplications(requestInfo, response);
+        return null;
     }
 
     /**
@@ -188,28 +194,33 @@ public class InstanceRetrievalService {
      * @param serviceId optional service id
      * @return request information
      */
-    private Pair<String, Pair<String, String>> constructServiceInfoQueryRequest(String serviceId, boolean getDelta) {
-        String discoveryServiceLocatorUrl = discoveryConfigProperties.getLocations() + APPS_ENDPOINT;
-        if (getDelta) {
-            discoveryServiceLocatorUrl += DELTA_ENDPOINT;
-        } else {
-            if (serviceId != null) {
-                discoveryServiceLocatorUrl += serviceId.toLowerCase();
+    private List<Pair<String, Pair<String, String>>> constructServiceInfoQueryRequest(String serviceId, boolean getDelta) {
+        String[] discoveryServiceUrls = discoveryConfigProperties.getLocations().split(",");
+        List<Pair<String, Pair<String, String>>> discoveryPairs = new ArrayList<>(discoveryServiceUrls.length);
+        for (String discoveryUrl : discoveryServiceUrls) {
+            String discoveryServiceLocatorUrl = discoveryUrl + APPS_ENDPOINT;
+            if (getDelta) {
+                discoveryServiceLocatorUrl += DELTA_ENDPOINT;
+            } else {
+                if (serviceId != null) {
+                    discoveryServiceLocatorUrl += serviceId.toLowerCase();
+                }
             }
+
+            String eurekaUsername = discoveryConfigProperties.getEurekaUserName();
+            String eurekaUserPassword = discoveryConfigProperties.getEurekaUserPassword();
+
+            Pair<String, String> discoveryServiceCredentials = Pair.of(eurekaUsername, eurekaUserPassword);
+
+            log.debug("Eureka credentials retrieved for user: {} {}",
+                eurekaUsername,
+                (!eurekaUserPassword.isEmpty() ? "*******" : "NO PASSWORD")
+            );
+
+            log.debug("Checking instance info from: " + discoveryServiceLocatorUrl);
+            discoveryPairs.add(Pair.of(discoveryServiceLocatorUrl, discoveryServiceCredentials));
         }
-
-        String eurekaUsername = discoveryConfigProperties.getEurekaUserName();
-        String eurekaUserPassword = discoveryConfigProperties.getEurekaUserPassword();
-
-        Pair<String, String> discoveryServiceCredentials = Pair.of(eurekaUsername, eurekaUserPassword);
-
-        log.debug("Eureka credentials retrieved for user: {} {}",
-            eurekaUsername,
-            (!eurekaUserPassword.isEmpty() ? "*******" : "NO PASSWORD")
-        );
-
-        log.debug("Checking instance info from: " + discoveryServiceLocatorUrl);
-        return Pair.of(discoveryServiceLocatorUrl, discoveryServiceCredentials);
+        return discoveryPairs;
     }
 
     /**
