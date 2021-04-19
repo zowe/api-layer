@@ -72,23 +72,22 @@ public class InstanceRetrievalService {
         if (serviceId.equalsIgnoreCase(UNKNOWN)) {
             return null;
         }
-        try {
+
             List<Pair<String, Pair<String, String>>> requestInfoList = constructServiceInfoQueryRequest(serviceId, false);
             // iterate over list of discovery services, return at first success
             for (Pair<String, Pair<String, String>> requestInfo : requestInfoList) {
                 // call Eureka REST endpoint to fetch single or all Instances
-                ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    return extractSingleInstanceFromApplication(serviceId, requestInfo.getLeft(), response);
-                }
+                    try {
+                        ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
+                        if (response.getStatusCode().is2xxSuccessful()) {
+                            return extractSingleInstanceFromApplication(serviceId, requestInfo.getLeft(), response);
+                        }
+                    } catch (Exception e) {
+                        log.debug("Error getting instance info from {}, error message: {}", requestInfo.getLeft(), e.getMessage());
+                    }
             }
-        } catch (Exception e) {
-            String msg = "An error occurred when trying to get instance info for:  " + serviceId;
-            log.debug(msg, e.getMessage());
-            throw new InstanceInitializationException(msg);
-        }
-
-        return null;
+        String msg = "An error occurred when trying to get instance info for:  " + serviceId;
+        throw new InstanceInitializationException(msg);
     }
 
     /**
@@ -105,7 +104,7 @@ public class InstanceRetrievalService {
                 ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
                 return extractApplications(requestInfo, response);
             } catch (Exception e) {
-                log.error("Not able to contact discovery service: " + requestInfo.getKey(), e);
+                log.debug("Not able to contact discovery service: " + requestInfo.getKey(), e);
             }
         }
         //  call Eureka REST endpoint to fetch single or all Instances
