@@ -76,14 +76,15 @@ class InstanceRetrievalServiceTest {
 
     @Test
     void providedNoInstanceInfoIsReturned_thenInstanceInitializationExceptionIsThrown() {
+        String serviceId = CoreService.API_CATALOG.getServiceId();
         when(
             restTemplate.exchange(
-                discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
+                discoveryServiceAllAppsUrl + serviceId,
                 HttpMethod.GET,
                 getHttpEntity(),
                 String.class
             )).thenReturn(new ResponseEntity<>(null, HttpStatus.FORBIDDEN));
-        assertThrows(InstanceInitializationException.class, () -> instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId()));
+        assertThrows(InstanceInitializationException.class, () -> instanceRetrievalService.getInstanceInfo(serviceId));
 
     }
 
