@@ -58,7 +58,7 @@ class PetControllerPutTest {
 
         this.mockMvc.perform(
             put("/api/v1/pets/" + id)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(id)))
@@ -78,7 +78,7 @@ class PetControllerPutTest {
 
         this.mockMvc.perform(
             put("/api/v1/pets/" + id)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0001E')].messageContent", hasItem(message)));
@@ -96,7 +96,7 @@ class PetControllerPutTest {
 
         this.mockMvc.perform(
             put("/api/v1/pets/" + id)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0004E')].messageContent", hasItem(message)));
@@ -119,7 +119,7 @@ class PetControllerPutTest {
 
         this.mockMvc.perform(
             put("/api/v1/pets/" + id)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(json.toString()))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0005E')].messageContent", hasItem(message)));
@@ -136,7 +136,7 @@ class PetControllerPutTest {
 
         this.mockMvc.perform(
             put("/api/v1/pets/" + pathId)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0003E')].messageContent", hasItem(message)));
@@ -153,7 +153,7 @@ class PetControllerPutTest {
 
         this.mockMvc.perform(
             put("/api/v1/pets/" + pathId)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0002E')].messageContent", hasItem(message)));
@@ -174,7 +174,7 @@ class PetControllerPutTest {
 
         this.mockMvc.perform(
             put("/api/v1/pets/" + pathId)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(json.toString()))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0007E')].messageContent", hasItem(message)));

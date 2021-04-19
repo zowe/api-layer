@@ -41,7 +41,7 @@ class PageRedirectionControllerTest {
 
         this.mockMvc.perform(
             post("/api/v1/redirect")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isTemporaryRedirect())
             .andExpect(redirectedUrl(redirectLocation.getLocation()));
