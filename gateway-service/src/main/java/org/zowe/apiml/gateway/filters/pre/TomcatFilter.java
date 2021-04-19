@@ -53,7 +53,7 @@ public class TomcatFilter implements Filter {
         Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedSlash", uri);
         if (!allowEncodedSlashes && isRequestEncoded) {
             res.setStatus(HttpStatus.BAD_REQUEST.value());
-            res.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+            res.setContentType(MediaType.APPLICATION_JSON_VALUE);
             try {
                 mapper.writeValue(res.getWriter(), message.mapToView());
             } catch (IOException e) {
