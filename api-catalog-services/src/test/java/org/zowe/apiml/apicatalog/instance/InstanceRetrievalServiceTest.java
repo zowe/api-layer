@@ -37,8 +37,8 @@ import org.zowe.apiml.product.registry.ApplicationWrapper;
 
 import java.util.*;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -75,7 +75,7 @@ class InstanceRetrievalServiceTest {
     }
 
     @Test
-    void testGetInstanceInfo_whenResponseCodeIsNotSuccess() {
+    void providedNoInstanceInfoIsReturned_thenInstanceInitializationExceptionIsThrown() {
         when(
             restTemplate.exchange(
                 discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
@@ -83,9 +83,8 @@ class InstanceRetrievalServiceTest {
                 getHttpEntity(),
                 String.class
             )).thenReturn(new ResponseEntity<>(null, HttpStatus.FORBIDDEN));
+        assertThrows(InstanceInitializationException.class, () -> instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId()));
 
-        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
-        assertNull(instanceInfo);
     }
 
     @Test
