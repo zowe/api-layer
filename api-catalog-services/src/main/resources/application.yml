@@ -38,13 +38,13 @@ logging:
 ##############################################################################################
 apiml:
     service:
-        hostname: ${environment.hostname}
-        ipAddress: ${environment.ipAddress}
-        port: ${environment.port}
+        hostname: ${apiml.service.hostname}
+        ipAddress: ${apiml.service.ipAddress}
+        port: ${apiml.service.port}
         contextPath: /apicatalog
         scheme: https
 
-        discoveryServiceUrls: ${environment.discoveryLocations}
+        discoveryServiceUrls: ${apiml.service.discoveryServiceUrls}
         nonSecurePortEnabled: false
         securePortEnabled: true
         eurekaUserName: ${environment.eurekaUserId}
