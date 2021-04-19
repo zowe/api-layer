@@ -55,7 +55,7 @@ class PetControllerPostPetTest {
 
         this.mockMvc.perform(
             post("/api/v1/pets")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id", is(id)))
