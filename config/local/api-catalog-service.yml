@@ -1,14 +1,4 @@
-spring.profiles.include: diag
-
-environment:
-    dsIpAddress: 0.0.0.0
-    eurekaPassword: password
-    eurekaUserId: eureka
-    gatewayHostname: https://localhost:10010
-    preferIpAddress: false
-    truststore: keystore/localhost/localhost.truststore.p12
-    truststorePassword: password
-    truststoreType: PKCS12
+spring.profiles.include: diag 
 
 eureka:
     client:
@@ -33,6 +23,14 @@ apiml:
         ipAddress: 127.0.0.1
         port: 10014
         discoveryServiceUrls: https://localhost:10011/eureka/
+        dsIpAddress: 0.0.0.0
+        eurekaPassword: password
+        eurekaUserId: eureka
+        gatewayHostname: https://localhost:10010
+        preferIpAddress: false
+        truststore: keystore/localhost/localhost.truststore.p12
+        truststorePassword: password
+        truststoreType: PKCS12
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
         cacheRefreshRetryDelayInMillis: 10000
