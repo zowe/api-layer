@@ -42,7 +42,7 @@ public abstract class AbstractZosmfService {
     protected final RestTemplate restTemplateWithoutKeystore;
     protected final ObjectMapper securityObjectMapper;
 
-    public AbstractZosmfService(
+    protected AbstractZosmfService(
         AuthConfigurationProperties authConfigurationProperties,
         DiscoveryClient discovery,
         @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,

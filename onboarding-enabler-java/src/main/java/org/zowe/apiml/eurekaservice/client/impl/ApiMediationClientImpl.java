@@ -154,7 +154,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         EurekaJerseyClient eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(
             config.getDiscoveryServiceUrls().get(0), config.getServiceId()).build();
 
-        AbstractDiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
+        AbstractDiscoveryClientOptionalArgs<?> args = new DiscoveryClient.DiscoveryClientOptionalArgs();
         args.setEurekaJerseyClient(eurekaJerseyClient);
         applicationInfoManager.setInstanceStatus(InstanceInfo.InstanceStatus.UP);
         return this.eurekaClientProvider.client(applicationInfoManager, clientConfig, args);
