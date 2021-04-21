@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.caching.service.redis.exceptions.RedisOutOfMemoryException;
 
 import java.util.ArrayList;
 import java.util.HashMap;

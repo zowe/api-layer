@@ -21,6 +21,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.redis.exceptions.RedisEntryException;
+import org.zowe.apiml.caching.service.redis.exceptions.RedisOutOfMemoryException;
+import org.zowe.apiml.caching.service.redis.exceptions.RetryableRedisException;
 
 import java.util.HashMap;
 import java.util.List;

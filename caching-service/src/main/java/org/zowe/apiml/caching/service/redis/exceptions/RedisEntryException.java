@@ -7,10 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.caching.service.redis;
+package org.zowe.apiml.caching.service.redis.exceptions;
 
-public class RetryableRedisException extends RuntimeException {
-    public RetryableRedisException(Throwable e) {
-        super(e);
+public class RedisEntryException extends Exception {
+    public RedisEntryException(String message) {
+        super(message);
+    }
+
+    public RedisEntryException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

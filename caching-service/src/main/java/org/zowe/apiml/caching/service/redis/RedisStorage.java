@@ -15,6 +15,8 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.caching.service.redis.exceptions.RedisOutOfMemoryException;
+import org.zowe.apiml.caching.service.redis.exceptions.RetryableRedisException;
 
 import java.util.HashMap;
 import java.util.List;

@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.service.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.redis.exceptions.RedisEntryException;
 
 /**
  * Class used to represent a cache entry in Redis.
