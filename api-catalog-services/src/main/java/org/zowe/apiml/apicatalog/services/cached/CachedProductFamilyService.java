@@ -326,7 +326,7 @@ public class CachedProductFamilyService {
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
         String apiBasePath = getApiBasePath(instanceInfo);
-        Map<String, String> apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().collect(
+        Map<String, String> apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
             Collectors.toMap(
                 apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : "v" + apiInfo.getMajorVersion(),
                 ApiInfo::getApiId
