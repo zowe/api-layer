@@ -35,7 +35,6 @@ import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.registry.ApplicationWrapper;
 
-import java.io.IOException;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -73,25 +72,25 @@ class InstanceRetrievalServiceTest {
     }
 
     @Test
-    void whenDiscoveryServiceIsNotAvailable_thenTryOthersFromTheList(){
+    void whenDiscoveryServiceIsNotAvailable_thenTryOthersFromTheList() {
         when(
             restTemplate.exchange(
-                discoveryServiceList[0]+APPS_ENDPOINT,
+                discoveryServiceList[0] + APPS_ENDPOINT,
                 HttpMethod.GET,
                 getHttpEntity(),
                 String.class
             )).thenThrow(RuntimeException.class);
         when(
             restTemplate.exchange(
-                discoveryServiceList[1]+APPS_ENDPOINT,
+                discoveryServiceList[1] + APPS_ENDPOINT,
                 HttpMethod.GET,
                 getHttpEntity(),
                 String.class
             )).thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
         instanceRetrievalService.getAllInstancesFromDiscovery(false);
         verify(restTemplate
-        , times(1)).exchange(
-            discoveryServiceList[1]+APPS_ENDPOINT,
+            , times(1)).exchange(
+            discoveryServiceList[1] + APPS_ENDPOINT,
             HttpMethod.GET,
             getHttpEntity(),
             String.class
@@ -243,7 +242,7 @@ class InstanceRetrievalServiceTest {
 
     @Test
     void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithDeltaFilter() throws JsonProcessingException {
-        String discoveryServiceAppsUrl = discoveryConfigProperties.getLocations() + APPS_ENDPOINT + DELTA_ENDPOINT;
+        String discoveryServiceAppsUrl = this.discoveryServiceAllAppsUrl + DELTA_ENDPOINT;
 
         Map<String, InstanceInfo> instanceInfoMap = createInstances();
 
