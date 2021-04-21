@@ -67,7 +67,11 @@ dependencies {
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.apache_velocity
     implementation libraries.openapidiff
+    implementation libraries.jetty_client
+    implementation libraries.jetty_http
+    implementation libraries.jetty_io
     implementation libraries.jetty_util
+    implementation libraries.jetty_websocket_api
     implementation libraries.jetty_websocket_client
     implementation libraries.jetty_websocket_common
 

@@ -25,7 +25,7 @@ public class ApiDocController {
 
     private final ApiDocReader apiDocReader;
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public String getApiDoc() {
         return apiDocReader.load(API_DOC_LOCATION);
     }

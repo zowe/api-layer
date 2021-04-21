@@ -55,7 +55,7 @@ public class PetControllerExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .contentType(MediaType.APPLICATION_JSON)
             .body(message.mapToView());
     }
 
@@ -71,7 +71,7 @@ public class PetControllerExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .contentType(MediaType.APPLICATION_JSON)
             .body(message.mapToView());
     }
 
@@ -87,7 +87,7 @@ public class PetControllerExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .contentType(MediaType.APPLICATION_JSON)
             .body(message.mapToView());
     }
 
@@ -118,7 +118,7 @@ public class PetControllerExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .contentType(MediaType.APPLICATION_JSON)
             .body(new ApiMessageView(listApiMessage));
     }
 
@@ -134,7 +134,7 @@ public class PetControllerExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .contentType(MediaType.APPLICATION_JSON)
             .body(message.mapToView());
     }
 
@@ -150,7 +150,7 @@ public class PetControllerExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .contentType(MediaType.APPLICATION_JSON)
             .body(message.mapToView());
     }
 
@@ -167,7 +167,7 @@ public class PetControllerExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .contentType(MediaType.APPLICATION_JSON)
             .body(message.mapToView());
     }
 }

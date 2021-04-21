@@ -36,6 +36,9 @@ public class DiscoverableClientConfig {
     @Value("${apiml.service.ssl.verifySslCertificatesOfServices:false}")
     private boolean verifyCerts;
 
+    @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+    private boolean nonStrictVerifyCerts;
+
     @Value("${server.ssl.protocol}")
     private String sslProtocol;
 

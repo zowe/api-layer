@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {PageRedirectionController.class}, secure = false)
+@WebMvcTest(controllers = {PageRedirectionController.class})
 @Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
 class PageRedirectionControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -41,7 +41,7 @@ class PageRedirectionControllerTest {
 
         this.mockMvc.perform(
             post("/api/v1/redirect")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isTemporaryRedirect())
             .andExpect(redirectedUrl(redirectLocation.getLocation()));

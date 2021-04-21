@@ -32,7 +32,7 @@ public class ServicesInfoController {
 
     private final ServicesInfoService servicesInfoService;
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ServiceInfo>> getServices(@RequestParam(required = false) String apiId) {
         List<ServiceInfo> services = servicesInfoService.getServicesInfo(apiId);
         HttpStatus status = (services.isEmpty()) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
@@ -43,7 +43,7 @@ public class ServicesInfoController {
                 .body(services);
     }
 
-    @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ServiceInfo> getService(@PathVariable String serviceId) {
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(serviceId);
         HttpStatus status = (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) ?

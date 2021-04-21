@@ -2,6 +2,7 @@ dependencies {
     compile project(':apiml-utility')
 
     compile libraries.spring_boot_starter_web
+    compile libraries.spring_boot_starter_validation
     compile libraries.commons_validator
     compile libraries.jackson_databind
     compile libraries.apache_commons_lang3

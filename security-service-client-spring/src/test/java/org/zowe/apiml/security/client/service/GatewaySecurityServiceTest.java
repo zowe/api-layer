@@ -178,7 +178,7 @@ class GatewaySecurityServiceTest {
         loginRequest.put("password", PASSWORD);
 
         HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         return new HttpEntity<>(loginRequest, requestHeaders);
     }
 }

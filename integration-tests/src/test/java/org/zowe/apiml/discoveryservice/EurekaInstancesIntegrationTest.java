@@ -17,6 +17,8 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoveryServiceTest;
@@ -133,74 +135,39 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
     }
 
     // /application endpoints
-    @Test
-    void testApplicationBeansEndpoints_whenProvidedNothing() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"/application/beans", "/discovery/api/v1/staticApi", "/"})
+    void testApplicationBeansEndpoints_Get(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
         .when()
-            .get(getDiscoveryUriWithPath("/application/beans"))
+            .get(getDiscoveryUriWithPath(path))
         .then()
             .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
             .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
     }
 
-    @Test
-    @TestsNotMeantForZowe
-    void testApplicationInfoEndpoints_whenProvidedBasicAuthentication() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"/application/info", "/discovery/api/v1/staticApi", "/"})
+    void testApplicationInfoEndpoints_Auth(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .auth().basic(username, password)
         .when()
-            .get(getDiscoveryUriWithPath("/application/info"))
+            .get(getDiscoveryUriWithPath(path))
         .then()
             .statusCode(is(HttpStatus.SC_OK));
     }
 
-    @Test
-    @TestsNotMeantForZowe
-    void testApplicationInfoEndpoints_whenProvidedToken() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"/application/info", "/discovery/api/v1/staticApi", "/"})
+    void testApplicationInfoEndpoints_Cookie(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
         given()
             .cookie(COOKIE, jwtToken)
         .when()
-            .get(getDiscoveryUriWithPath("/application/info"))
-        .then()
-            .statusCode(is(HttpStatus.SC_OK));
-
-    }
-
-    // /discovery endpoints
-    @Test
-    void testDiscoveryEndpoints_whenProvidedNothing() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-        .when()
-            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
-        .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
-            .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
-    }
-
-    @Test
-    void testDiscoveryEndpoints_whenProvidedBasicAuthentication() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .auth().basic(username, password)
-        .when()
-            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
-        .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-
-    @Test
-    void testDiscoveryEndpoints_whenProvidedToken() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        String jwtToken = SecurityUtils.gatewayToken(username, password);
-        given()
-            .cookie(COOKIE, jwtToken)
-        .when()
-            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
+            .get(getDiscoveryUriWithPath(path))
         .then()
             .statusCode(is(HttpStatus.SC_OK));
 
@@ -214,42 +181,6 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
             .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
         .then()
             .statusCode(is(HttpStatus.SC_OK));
-    }
-
-    // root & ui
-    @Test
-    void testUIEndpoints_whenProvidedNothing() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-        .when()
-            .get(getDiscoveryUriWithPath("/"))
-        .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
-            .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
-    }
-
-    @Test
-    void testUIEndpoints_whenProvidedBasicAuthentication() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .auth().basic(username, password)
-        .when()
-            .get(getDiscoveryUriWithPath("/"))
-        .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-
-    @Test
-    void testUIEndpoints_whenProvidedToken() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        String jwtToken = SecurityUtils.gatewayToken(username, password);
-        given()
-            .cookie(COOKIE, jwtToken)
-        .when()
-            .get(getDiscoveryUriWithPath("/"))
-        .then()
-            .statusCode(is(HttpStatus.SC_OK));
-
     }
 
     @Test

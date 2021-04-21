@@ -67,7 +67,7 @@ public class RibbonRetryErrorCheck implements ErrorCheck {
 
     private ResponseEntity<ApiMessageView> getApiMessageViewResponseEntity(ApiMessageView messageView) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .contentType(MediaType.APPLICATION_JSON)
             .body(messageView);
     }
 

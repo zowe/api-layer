@@ -30,7 +30,7 @@ public class VersionController {
 
     private VersionService versionService;
 
-    @GetMapping(value = "/version", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/version", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VersionInfo> getVersion() {
         return new ResponseEntity<>(versionService.getVersion(), HttpStatus.OK);
     }

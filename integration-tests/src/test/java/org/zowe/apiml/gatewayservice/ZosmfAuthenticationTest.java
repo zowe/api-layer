@@ -248,7 +248,7 @@ class ZosmfAuthenticationTest implements TestWithStartedInstances {
                 resp.setHeader(HttpHeaders.SET_COOKIE, cookiesOnSuccess);
             }
             if (bodyOnSuccess != null) {
-                resp.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
+                resp.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
                 resp.getOutputStream().write(bodyOnSuccess.getBytes());
                 resp.setStatus(HttpStatus.OK.value());
             } else {

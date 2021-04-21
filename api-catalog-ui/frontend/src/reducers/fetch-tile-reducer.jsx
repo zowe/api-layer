@@ -13,7 +13,7 @@ const tilesReducerDefaultState = {
     error: null,
 };
 
-const tilesReducer = (state = tilesReducerDefaultState, action) => {
+const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
     switch (action.type) {
         case FETCH_TILES_SUCCESS:
             return { ...state, tiles: [...action.payload], error: null };

@@ -21,6 +21,8 @@ public class Ssl {
 
     private Boolean verifySslCertificatesOfServices = true;
 
+    private Boolean nonStrictVerifySslCertificatesOfServices = false;
+
     private String protocol;
 
     private String keyAlias;

@@ -55,7 +55,7 @@ public class PetController {
      */
     @GetMapping(
         value = "/pets",
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+        produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiOperation(
         value = "List all existing pets",
@@ -79,7 +79,7 @@ public class PetController {
      */
     @PostMapping(
         value = "/pets",
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE,
         consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.CREATED)
@@ -110,7 +110,7 @@ public class PetController {
      */
     @GetMapping(
         value = "/pets/{id}",
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+        produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiOperation(value = "Find pet by id", notes = "Returns a single pet",
         authorizations = {
@@ -141,7 +141,7 @@ public class PetController {
      */
     @PutMapping(
         value = "/pets/{id}",
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE,
         consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.OK)
@@ -178,7 +178,7 @@ public class PetController {
      */
     @DeleteMapping(
         value = "/pets/{id}",
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+        produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ApiOperation(value = "Delete a pet", notes = "Removes an existing pet",

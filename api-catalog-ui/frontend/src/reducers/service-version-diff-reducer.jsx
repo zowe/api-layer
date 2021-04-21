@@ -6,7 +6,7 @@ const defaultState = {
     newVersion: undefined,
 };
 
-const serviceVersionDiffReducer = (state = defaultState, action) => {
+const serviceVersionDiffReducer = (state = defaultState, action = {}) => {
     switch (action.type) {
         case REQUEST_VERSION_DIFF:
             return {

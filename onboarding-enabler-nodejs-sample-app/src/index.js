@@ -22,6 +22,7 @@ const args = {
 
 const app = express();
 let httpsServer;
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
 /**
  * Registers the service to the APIML Discovery service
  */

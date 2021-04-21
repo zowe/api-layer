@@ -68,7 +68,7 @@ public class ApiCatalogController {
      *
      * @return a list of all containers
      */
-    @GetMapping(value = "/containers", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/containers", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Lists catalog dashboard tiles",
         notes = "Returns a list of tiles including status and tile description",
         authorizations = {
@@ -97,7 +97,7 @@ public class ApiCatalogController {
      *
      * @return a containers by id
      */
-    @GetMapping(value = "/containers/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/containers/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Retrieves a specific dashboard tile information",
         notes = "Returns information for a specific tile {id} including status and tile description",
         authorizations = {

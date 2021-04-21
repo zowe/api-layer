@@ -10,7 +10,7 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -48,8 +48,8 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
     private static String token;
 
-    @BeforeAll
-    static void setUp() {
+    @BeforeEach
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
@@ -57,16 +57,16 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
     @ParameterizedTest(name = "cannotBeAccessedWithoutAuthentication({0})")
     @ValueSource(strings = {
-            SERVICES_ENDPOINT,
-            SERVICES_ENDPOINT_NOT_VERSIONED,
-            SERVICES_ENDPOINT + "/" + API_CATALOG_SERVICE_ID,
-            SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
+        SERVICES_ENDPOINT,
+        SERVICES_ENDPOINT_NOT_VERSIONED,
+        SERVICES_ENDPOINT + "/" + API_CATALOG_SERVICE_ID,
+        SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
     })
     void cannotBeAccessedWithoutAuthentication(String endpoint) {
         //@formatter:off
         when()
             .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, endpoint))
-       .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX);
         //@formatter:on
@@ -77,13 +77,13 @@ class ServicesInfoTest implements TestWithStartedInstances {
     void providesAllServicesInformation() {
         //@formatter:off
         given()
-                .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-        .when()
-                .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT))
-        .then()
-                .statusCode(is(SC_OK))
-                .header(VERSION_HEADER, CURRENT_VERSION)
-                .body("serviceId", hasItems("gateway", "discovery", API_CATALOG_SERVICE_ID));
+            .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
+            .when()
+            .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT))
+            .then()
+            .statusCode(is(SC_OK))
+            .header(VERSION_HEADER, CURRENT_VERSION)
+            .body("serviceId", hasItems("gateway", "discovery", API_CATALOG_SERVICE_ID));
         //@formatter:on
     }
 
@@ -92,14 +92,14 @@ class ServicesInfoTest implements TestWithStartedInstances {
     void providesServicesInformationByApiId() {
         //@formatter:off
         given()
-                .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-        .when()
-                .get(String.format("%s://%s:%d/%s?apiId=%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, API_CATALOG_SERVICE_API_ID))
-        .then()
-                .statusCode(is(SC_OK))
-                .header(VERSION_HEADER, CURRENT_VERSION)
-                .body("size()", is(1))
-                .body("serviceId", hasItem(API_CATALOG_SERVICE_ID));
+            .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
+            .when()
+            .get(String.format("%s://%s:%d/%s?apiId=%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, API_CATALOG_SERVICE_API_ID))
+            .then()
+            .statusCode(is(SC_OK))
+            .header(VERSION_HEADER, CURRENT_VERSION)
+            .body("size()", is(1))
+            .body("serviceId", hasItem(API_CATALOG_SERVICE_ID));
         //@formatter:on
     }
 
@@ -108,14 +108,14 @@ class ServicesInfoTest implements TestWithStartedInstances {
     void providesApiCatalogServiceInformation() {
         //@formatter:off
         given()
-                .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-       .when()
-                .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, API_CATALOG_SERVICE_ID))
-       .then()
-                .statusCode(is(SC_OK))
-                .header(VERSION_HEADER, CURRENT_VERSION)
-                .body("apiml.apiInfo[0].apiId", equalTo(API_CATALOG_SERVICE_API_ID))
-                .body("apiml.apiInfo[0].basePath", equalTo("/apicatalog/api/v1"));
+            .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
+            .when()
+            .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, API_CATALOG_SERVICE_ID))
+            .then()
+            .statusCode(is(SC_OK))
+            .header(VERSION_HEADER, CURRENT_VERSION)
+            .body("apiml.apiInfo[0].apiId", equalTo(API_CATALOG_SERVICE_API_ID))
+            .body("apiml.apiInfo[0].basePath", equalTo("/apicatalog/api/v1"));
         //@formatter:on
     }
 
@@ -124,13 +124,13 @@ class ServicesInfoTest implements TestWithStartedInstances {
     void providesGatewayServiceInformation() {
         //@formatter:off
         given()
-                .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-       .when()
-                .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, "gateway"))
-       .then()
-                .statusCode(is(SC_OK))
-                .header(VERSION_HEADER, CURRENT_VERSION)
-                .body("apiml.apiInfo[0].apiId", equalTo("zowe.apiml.gateway"));
+            .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
+            .when()
+            .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, "gateway"))
+            .then()
+            .statusCode(is(SC_OK))
+            .header(VERSION_HEADER, CURRENT_VERSION)
+            .body("apiml.apiInfo[0].apiId", equalTo("zowe.apiml.gateway"));
         //@formatter:on
     }
 
@@ -141,12 +141,12 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
         //@formatter:off
         given()
-                .auth().basic(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD)
-        .when()
-                .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT))
-        .then()
-                .statusCode(is(SC_FORBIDDEN))
-                .body("messages.find { it.messageNumber == 'ZWEAT403E' }.messageContent", startsWith(expectedMessage));
+            .auth().basic(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD)
+            .when()
+            .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT))
+            .then()
+            .statusCode(is(SC_FORBIDDEN))
+            .body("messages.find { it.messageNumber == 'ZWEAT403E' }.messageContent", startsWith(expectedMessage));
         //@formatter:on
     }
 

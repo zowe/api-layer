@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = { PassTicketTestController.class }, secure = false)
+@WebMvcTest(controllers = { PassTicketTestController.class })
 @Import(PassTicketTestControllerTest.Context.class)
 class PassTicketTestControllerTest {
 
@@ -69,7 +69,7 @@ class PassTicketTestControllerTest {
 
     @Test
     void callToPassTicketTestEndpointWitBadTicketFails() throws Exception {
-        assertThrows(ServletException.class, () -> 
+        assertThrows(ServletException.class, () ->
             this.mockMvc.perform(get("/api/v1/passticketTest").header("Authorization", BAD_PASSTICKET_AUTH_HEADER)));
     }
 
