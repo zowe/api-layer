@@ -28,7 +28,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-public class InMemoryStorageTest {
+class InMemoryStorageTest {
     private InMemoryStorage underTest;
     private InMemoryConfig config;
 

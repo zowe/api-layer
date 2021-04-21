@@ -245,7 +245,7 @@ public class VsamFile implements Closeable {
                 if (nread < 0) {
                     log.info("nread is < 0, stopping the retrieval");
                     found = false;
-                    continue;
+                    continue;    //NOSONAR
                 }
 
                 log.trace("convertedStringValue: >{}<", convertedStringValue);
@@ -253,7 +253,7 @@ public class VsamFile implements Closeable {
                 if (!convertedStringValue.trim().startsWith(keyGe.trim())) {
                     log.info("read record does not start with serviceId's keyGe, stopping the retrieval");
                     found = false;
-                    continue;
+                    continue;   //NOSONAR
                 } else {
                     log.info("read record starts with serviceId's keyGe, retrieving this record");
                 }
@@ -263,7 +263,7 @@ public class VsamFile implements Closeable {
                 overflowProtection--;
                 if (overflowProtection <= 0) {
                     log.info("Maximum number of records retrieved, stopping the retrieval");
-                    break;
+                    break;  //NOSONAR
                 }
             }
         } catch (UnsupportedEncodingException e) {

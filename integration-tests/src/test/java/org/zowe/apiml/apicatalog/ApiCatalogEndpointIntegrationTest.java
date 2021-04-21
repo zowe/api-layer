@@ -136,7 +136,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
 
     @Test
     @TestsNotMeantForZowe
-    public void whenDiscoveryClientApiDoc_thenResponseOK() throws Exception {
+    void whenDiscoveryClientApiDoc_thenResponseOK() throws Exception {
         final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT, HttpStatus.SC_OK);
         String jsonResponse = EntityUtils.toString(response.getEntity());
         DocumentContext jsonContext = JsonPath.parse(jsonResponse);
@@ -146,7 +146,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
 
     @Test
     @TestsNotMeantForZowe
-    public void givenDiscoveryClient_whenGetApiDocV2_thenResponseOk() throws IOException {
+    void givenDiscoveryClient_whenGetApiDocV2_thenResponseOk() throws IOException {
         final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2, HttpStatus.SC_OK);
         final String jsonResponse = EntityUtils.toString(response.getEntity());
 

@@ -78,11 +78,7 @@ class GatewaySecurityServiceTest {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.SET_COOKIE, cookie);
 
-        when(restTemplate.exchange(
-            eq(uri),
-            eq(HttpMethod.POST),
-            eq(loginRequest),
-            eq(String.class)))
+        when(restTemplate.exchange(uri, HttpMethod.POST, loginRequest, String.class))
             .thenReturn(new ResponseEntity<>(responseHeaders, HttpStatus.NO_CONTENT));
 
         Optional<String> token = securityService.login(USERNAME, PASSWORD);
@@ -98,11 +94,7 @@ class GatewaySecurityServiceTest {
 
         HttpEntity loginRequest = createLoginRequest();
 
-        when(restTemplate.exchange(
-            eq(uri),
-            eq(HttpMethod.POST),
-            eq(loginRequest),
-            eq(String.class)))
+        when(restTemplate.exchange(uri, HttpMethod.POST, loginRequest, String.class))
             .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
         Optional<String> token = securityService.login(USERNAME, PASSWORD);
@@ -117,11 +109,7 @@ class GatewaySecurityServiceTest {
 
         HttpEntity loginRequest = createLoginRequest();
 
-        when(restTemplate.exchange(
-            eq(uri),
-            eq(HttpMethod.POST),
-            eq(loginRequest),
-            eq(String.class)))
+        when(restTemplate.exchange(uri, HttpMethod.POST, loginRequest, String.class))
             .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
         Exception exception = assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD));
@@ -139,11 +127,7 @@ class GatewaySecurityServiceTest {
         headers.add(HttpHeaders.COOKIE, cookie);
         HttpEntity httpEntity = new HttpEntity<>(headers);
 
-        when(restTemplate.exchange(
-            eq(uri),
-            eq(HttpMethod.GET),
-            eq(httpEntity),
-            eq(QueryResponse.class)))
+        when(restTemplate.exchange(uri, HttpMethod.GET, httpEntity, QueryResponse.class))
             .thenReturn(new ResponseEntity<>(expectedQueryResponse, HttpStatus.OK));
 
         QueryResponse query = securityService.query("token");
@@ -160,11 +144,7 @@ class GatewaySecurityServiceTest {
         headers.add(HttpHeaders.COOKIE, cookie);
         HttpEntity httpEntity = new HttpEntity<>(headers);
 
-        when(restTemplate.exchange(
-            eq(uri),
-            eq(HttpMethod.GET),
-            eq(httpEntity),
-            eq(QueryResponse.class)))
+        when(restTemplate.exchange(uri, HttpMethod.GET, httpEntity, QueryResponse.class))
             .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
         Exception exception = assertThrows(TokenNotValidException.class, () -> securityService.query("token"));
