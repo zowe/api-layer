@@ -18,10 +18,7 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,8 +48,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void testInit() {
-        // happy day
+    void testInit_OK() {
         new AuthenticationSchemeFactory(
             mock(AuthenticationService.class),
             Arrays.asList(
@@ -61,54 +57,49 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
                 createScheme(AuthenticationScheme.ZOWE_JWT, false)
             )
         );
+    }
+
+    @Test
+    void testInit_NoDefault() {
+        List<AbstractAuthenticationScheme> schemes = Arrays.asList(
+            createScheme(AuthenticationScheme.BYPASS, false),
+            createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
+            createScheme(AuthenticationScheme.ZOWE_JWT, false)
+        );
 
         // no default
-        try {
-            new AuthenticationSchemeFactory(
-                mock(AuthenticationService.class),
-                Arrays.asList(
-                    createScheme(AuthenticationScheme.BYPASS, false),
-                    createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
-                    createScheme(AuthenticationScheme.ZOWE_JWT, false)
-                )
-            );
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("No scheme"));
-        }
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            new AuthenticationSchemeFactory(mock(AuthenticationService.class), schemes);
+        });
+        assertTrue(exception.getMessage().contains("No scheme"));
+    }
 
-        // multiple default
-        try {
-            new AuthenticationSchemeFactory(
-                mock(AuthenticationService.class),
-                Arrays.asList(
-                    createScheme(AuthenticationScheme.BYPASS, true),
-                    createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, true),
-                    createScheme(AuthenticationScheme.ZOWE_JWT, false)
-                )
-            );
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Multiple scheme"));
-            assertTrue(e.getMessage().contains("as default"));
-            assertTrue(e.getMessage().contains(AuthenticationScheme.BYPASS.getScheme()));
-            assertTrue(e.getMessage().contains(AuthenticationScheme.HTTP_BASIC_PASSTICKET.getScheme()));
-        }
+    @Test
+    void testInit_MultipleDefaults() {
+        List<AbstractAuthenticationScheme> schemes = Arrays.asList(
+            createScheme(AuthenticationScheme.BYPASS, true),
+            createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, true),
+            createScheme(AuthenticationScheme.ZOWE_JWT, false)
+        );
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            new AuthenticationSchemeFactory(mock(AuthenticationService.class), schemes);
+        });
+        assertTrue(exception.getMessage().contains("Multiple scheme"));
+        assertTrue(exception.getMessage().contains("as default"));
+        assertTrue(exception.getMessage().contains(AuthenticationScheme.BYPASS.getScheme()));
+        assertTrue(exception.getMessage().contains(AuthenticationScheme.HTTP_BASIC_PASSTICKET.getScheme()));
+    }
 
-        // multiple same scheme
-        try {
-            new AuthenticationSchemeFactory(
-                mock(AuthenticationService.class),
-                Arrays.asList(
-                    createScheme(AuthenticationScheme.BYPASS, true),
-                    createScheme(AuthenticationScheme.BYPASS, false)
-                )
-            );
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Multiple beans for scheme"));
-            assertTrue(e.getMessage().contains("AuthenticationSchemeFactoryTest$1"));
-        }
+    @Test
+    void testInit_MultipleSameScheme() {
+        List<AbstractAuthenticationScheme> schemes = Arrays.asList(
+            createScheme(AuthenticationScheme.BYPASS, true),
+            createScheme(AuthenticationScheme.BYPASS, false));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            new AuthenticationSchemeFactory(mock(AuthenticationService.class), schemes);
+        });
+        assertTrue(exception.getMessage().contains("Multiple beans for scheme"));
+        assertTrue(exception.getMessage().contains("AuthenticationSchemeFactoryTest$1"));
     }
 
     @Test
@@ -193,23 +184,18 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
         assertNotNull(asf.getSchema(AuthenticationScheme.BYPASS));
         assertNotNull(asf.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET));
         assertNotNull(asf.getSchema(AuthenticationScheme.ZOWE_JWT));
-        try {
-            // missing implementation
-            asf.getSchema(AuthenticationScheme.ZOSMF);
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Unknown scheme"));
-        }
+
+        // missing implementation
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> asf.getSchema(AuthenticationScheme.ZOSMF));
+        assertTrue(exception.getMessage().contains("Unknown scheme"));
 
         assertSame(COMMAND, asf.getAuthenticationCommand(new Authentication(AuthenticationScheme.ZOWE_JWT, "applid")));
         assertSame(COMMAND, asf.getAuthenticationCommand(new Authentication(null, "applid")));
-        try {
-            // missing implementation
-            assertSame(COMMAND, asf.getAuthenticationCommand(new Authentication(AuthenticationScheme.ZOSMF, "applid")));
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Unknown scheme"));
-        }
+
+        // missing implementation
+        Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, "applid");
+        exception = assertThrows(IllegalArgumentException.class, () -> asf.getAuthenticationCommand(authentication));
+        assertTrue(exception.getMessage().contains("Unknown scheme"));
     }
 
 }

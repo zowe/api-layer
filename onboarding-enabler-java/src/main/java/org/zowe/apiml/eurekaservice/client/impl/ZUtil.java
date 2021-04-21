@@ -54,7 +54,7 @@ public interface ZUtil {
     void setDefaultPlatformEncoding(String encoding);
     void setEnv(String varName, String varValue);
     void setLoggingLevel(int level);
-    void smfRecord(int type, int subtype, byte[] record);
+    void smfRecord(int type, int subtype, byte[] rec);
     String substituteSystemSymbols(String pattern);
     String substituteSystemSymbols(String pattern, boolean warn);
     void touch();

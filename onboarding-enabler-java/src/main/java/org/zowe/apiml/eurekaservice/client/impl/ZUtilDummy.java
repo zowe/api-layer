@@ -196,7 +196,7 @@ public class ZUtilDummy implements ZUtil {
     }
 
     @Override
-    public void smfRecord(int type, int subtype, byte[] record) {
+    public void smfRecord(int type, int subtype, byte[] rec) {
         // dummy implementation - do nothing
     }
 

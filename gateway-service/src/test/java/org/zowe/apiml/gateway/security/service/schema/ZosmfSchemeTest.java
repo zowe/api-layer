@@ -22,10 +22,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -113,9 +113,8 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         when(authenticationService.getLtpaTokenWithValidation("jwtToken3")).thenThrow(new TokenNotValidException("Token is not valid"));
         when(authenticationService.parseJwtToken("jwtToken3")).thenReturn(queryResponse);
 
-        Exception exception = assertThrows(TokenNotValidException.class,
-            () -> zosmfScheme.createCommand(authentication, () -> queryResponse).apply(null),
-            " Token is not valid");
+        AuthenticationCommand command = zosmfScheme.createCommand(authentication, () -> queryResponse);
+        Exception exception = assertThrows(TokenNotValidException.class, () -> command.apply(null), " Token is not valid");
         assertEquals("Token is not valid", exception.getMessage());
 
     }
@@ -126,9 +125,8 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         when(authenticationService.getLtpaTokenWithValidation("jwtToken3")).thenThrow(new JwtException("Token is expired"));
         when(authenticationService.parseJwtToken("jwtToken3")).thenReturn(queryResponse);
 
-        Exception exception = assertThrows(JwtException.class,
-            () -> zosmfScheme.createCommand(authentication, () -> queryResponse).apply(null),
-            " Token is expired");
+        AuthenticationCommand command = zosmfScheme.createCommand(authentication, () -> queryResponse);
+        Exception exception = assertThrows(JwtException.class, () -> command.apply(null), "Token is expired");
         assertEquals("Token is expired", exception.getMessage());
 
     }
@@ -255,7 +253,7 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
         zosmfScheme.createCommand(authentication, () -> queryResponse).applyToRequest(httpRequest);
 
-        assertEquals(null, httpRequest.getFirstHeader(HttpHeaders.AUTHORIZATION));
+        assertNull(httpRequest.getFirstHeader(HttpHeaders.AUTHORIZATION));
     }
 
     @Test
