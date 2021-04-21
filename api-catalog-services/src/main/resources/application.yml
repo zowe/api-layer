@@ -4,8 +4,8 @@ spring:
         name: apicatalog
     cloud:
         client:
-            hostname: ${environment.hostname}
-            ipAddress: ${environment.ipAddress}
+            hostname: ${apiml.service.hostname}
+            ipAddress: ${apiml.service.ipAddress}
     mvc:
         throw-exception-if-no-handler-found: true
     output:
@@ -38,17 +38,17 @@ logging:
 ##############################################################################################
 apiml:
     service:
-        hostname: ${environment.hostname}
-        ipAddress: ${environment.ipAddress}
-        port: ${environment.port}
+        hostname: ${apiml.service.hostname}
+        ipAddress: ${apiml.service.ipAddress}
+        port: ${apiml.service.port}
         contextPath: /apicatalog
         scheme: https
 
-        discoveryServiceUrls: ${environment.discoveryLocations}
+        discoveryServiceUrls: ${apiml.service.discoveryServiceUrls}
         nonSecurePortEnabled: false
         securePortEnabled: true
-        eurekaUserName: ${environment.eurekaUserId}
-        eurekaUserPassword: ${environment.eurekaPassword}
+        eurekaUserName: ${apiml.service.eurekaUserId}
+        eurekaUserPassword: ${apiml.service.eurekaPassword}
 
         apiDoc:
             title: API Catalog
@@ -59,9 +59,9 @@ apiml:
         ssl:
             sslEnabled: true
             protocol: TLSv1.2
-            trustStore: ${environment.truststore}
-            trustStoreType: ${environment.truststoreType}
-            trustStorePassword: ${environment.truststorePassword}
+            trustStore: ${apiml.service.truststore}
+            trustStoreType: ${apiml.service.truststoreType}
+            trustStorePassword: ${apiml.service.truststorePassword}
 
     catalog:
         id: apimediationlayer
