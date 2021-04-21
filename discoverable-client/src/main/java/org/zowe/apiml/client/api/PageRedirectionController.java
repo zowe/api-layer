@@ -40,7 +40,7 @@ public class PageRedirectionController {
      */
     @PostMapping(
         value = "/api/v1/redirect",
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE,
         consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.TEMPORARY_REDIRECT)

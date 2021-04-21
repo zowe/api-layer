@@ -259,7 +259,7 @@ public class VirtualService implements AutoCloseable {
             while (true) {
                 try {
                     final ResponseBody responseBody = given().when()
-                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .get(url)
                         .body();
                     assertEquals(instanceId, responseBody.print());
@@ -304,7 +304,7 @@ public class VirtualService implements AutoCloseable {
                 try {
                     for (int i = 0; i < instanceCountBefore; i++) {
                         final ResponseBody responseBody = given().when()
-                            .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .get(url)
                             .body();
                         assertNotEquals(instanceId, responseBody.print());
@@ -393,7 +393,7 @@ public class VirtualService implements AutoCloseable {
 
     public Response postRegistration(String status) throws UnknownHostException {
         return given().when()
-            .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body(new JSONObject()
                 .put("instance", new JSONObject()
                     .put("instanceId", instanceId)
@@ -632,7 +632,7 @@ public class VirtualService implements AutoCloseable {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             resp.setStatus(HttpStatus.SC_OK);
-            resp.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+            resp.setContentType(MediaType.APPLICATION_JSON_VALUE);
             final Status status = healthService == null ? Status.UNKNOWN : healthService.getStatus();
             resp.getWriter().print("{\"status\":\"" + status + "\"}");
             resp.getWriter().close();

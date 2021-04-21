@@ -71,7 +71,7 @@ class AuthExceptionHandlerTest {
             new InsufficientAuthenticationException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
 
         Message message = messageService.createMessage(ErrorType.AUTH_REQUIRED.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
@@ -85,7 +85,7 @@ class AuthExceptionHandlerTest {
             new BadCredentialsException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
 
         Message message = messageService.createMessage(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
@@ -99,7 +99,7 @@ class AuthExceptionHandlerTest {
             new AuthenticationCredentialsNotFoundException("ERROR"));
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
 
         Message message = messageService.createMessage(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
@@ -111,7 +111,7 @@ class AuthExceptionHandlerTest {
         authExceptionHandler.handleException(httpServletRequest, httpServletResponse, authMethodNotSupportedException);
 
         assertEquals(HttpStatus.METHOD_NOT_ALLOWED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
 
         Message message = messageService.createMessage(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getErrorMessageKey(), authMethodNotSupportedException.getMessage(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
@@ -125,7 +125,7 @@ class AuthExceptionHandlerTest {
             new TokenNotValidException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
 
         Message message = messageService.createMessage(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
@@ -139,7 +139,7 @@ class AuthExceptionHandlerTest {
             new TokenNotProvidedException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
 
         Message message = messageService.createMessage(ErrorType.TOKEN_NOT_PROVIDED.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
@@ -153,7 +153,7 @@ class AuthExceptionHandlerTest {
             new TokenFormatNotValidException("ERROR"));
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
 
         Message message = messageService.createMessage(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
@@ -166,7 +166,7 @@ class AuthExceptionHandlerTest {
         authExceptionHandler.handleException(httpServletRequest, httpServletResponse, serviceException);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
 
         Message message = messageService.createMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), serviceException.getMessage(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
