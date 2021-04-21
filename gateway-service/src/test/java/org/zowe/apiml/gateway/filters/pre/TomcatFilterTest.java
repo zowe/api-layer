@@ -120,7 +120,7 @@ class TomcatFilterTest {
 
         when(mockedRequest.getRequestURI()).thenReturn(ENCODED_REQUEST_URI);
         when(mockedResponse.getWriter()).thenThrow(new IOException());
-        
+
         assertThrows(ServletException.class, () -> filter.doFilter(mockedRequest, mockedResponse, filterChain));
     }
 }

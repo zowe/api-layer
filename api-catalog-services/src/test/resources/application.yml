@@ -1,0 +1,3 @@
+apiml:
+    service:
+        discoveryServiceUrls: https://localhost2:10021/eureka/,https://localhost:10011/eureka/
