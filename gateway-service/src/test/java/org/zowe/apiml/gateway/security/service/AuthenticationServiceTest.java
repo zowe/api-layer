@@ -254,9 +254,10 @@ public class AuthenticationServiceTest {
 
     @Test
     void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
+        String expiredJwtToken = createExpiredJwtToken(privateKey);
         assertThrows(
             TokenExpireException.class,
-            () -> authService.getLtpaTokenWithValidation(createExpiredJwtToken(privateKey))
+            () -> authService.getLtpaTokenWithValidation(expiredJwtToken)
         );
     }
 

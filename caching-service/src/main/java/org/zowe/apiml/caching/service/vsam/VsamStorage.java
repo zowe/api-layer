@@ -69,7 +69,7 @@ public class VsamStorage implements Storage {
 
         try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE, apimlLog)) {
             toCreate.setServiceId(serviceId);
-            VsamRecord record = new VsamRecord(vsamConfig, serviceId, toCreate);
+            VsamRecord vsamRec = new VsamRecord(vsamConfig, serviceId, toCreate);
             int currentSize = file.countAllRecords();
             log.info("Current Size {}.", currentSize);
 
@@ -78,7 +78,7 @@ public class VsamStorage implements Storage {
                 log.info("Evicting record using the {} strategy", vsamConfig.getGeneralConfig().getEvictionStrategy());
                 strategy.evict(toCreate.getKey());
             }
-            Optional<VsamRecord> returned = file.create(record);
+            Optional<VsamRecord> returned = file.create(vsamRec);
             if (returned.isPresent()) {
                 result = returned.get().getKeyValue();
             }
@@ -103,9 +103,9 @@ public class VsamStorage implements Storage {
 
         try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.READ, apimlLog)) {
 
-            VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(key, "", serviceId));
+            VsamRecord vsamRec = new VsamRecord(vsamConfig, serviceId, new KeyValue(key, "", serviceId));
 
-            Optional<VsamRecord> returned = file.read(record);
+            Optional<VsamRecord> returned = file.read(vsamRec);
             if (returned.isPresent()) {
                 result = returned.get().getKeyValue();
             }
@@ -126,9 +126,9 @@ public class VsamStorage implements Storage {
 
         try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE, apimlLog)) {
             toUpdate.setServiceId(serviceId);
-            VsamRecord record = new VsamRecord(vsamConfig, serviceId, toUpdate);
+            VsamRecord vsamRec = new VsamRecord(vsamConfig, serviceId, toUpdate);
 
-            Optional<VsamRecord> returned = file.update(record);
+            Optional<VsamRecord> returned = file.update(vsamRec);
             if (returned.isPresent()) {
                 result = returned.get().getKeyValue();
             }
@@ -150,9 +150,9 @@ public class VsamStorage implements Storage {
 
         try (VsamFile file = producer.newVsamFile(vsamConfig, VsamConfig.VsamOptions.WRITE, apimlLog)) {
 
-            VsamRecord record = new VsamRecord(vsamConfig, serviceId, new KeyValue(toDelete, "", serviceId));
+            VsamRecord vsamRec = new VsamRecord(vsamConfig, serviceId, new KeyValue(toDelete, "", serviceId));
 
-            Optional<VsamRecord> returned = file.delete(record);
+            Optional<VsamRecord> returned = file.delete(vsamRec);
             if (returned.isPresent()) {
                 result = returned.get().getKeyValue();
             }
