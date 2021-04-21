@@ -37,10 +37,10 @@ public class ServiceErrorCheck implements ErrorCheck {
                     ErrorUtils.getGatewayUri(request),
                     t.getCause()
                 ).mapToView();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON_UTF8).body(messageView);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(messageView);
             } else if (exception.nStatusCode == HttpStatus.NOT_FOUND.value()) {
                 messageView = messageService.createMessage("org.zowe.apiml.common.endPointNotFound", exception.errorCause).mapToView();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON_UTF8).body(messageView);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(messageView);
             }
         }
 

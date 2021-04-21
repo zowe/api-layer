@@ -268,7 +268,7 @@ public class APIDocRetrievalService {
      */
     private String getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         ResponseEntity<String> response = restTemplate.exchange(
             apiDocUrl,
