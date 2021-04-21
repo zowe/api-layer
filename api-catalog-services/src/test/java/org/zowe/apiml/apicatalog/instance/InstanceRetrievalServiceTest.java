@@ -35,12 +35,13 @@ import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.registry.ApplicationWrapper;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "/application.yml")
@@ -61,11 +62,40 @@ class InstanceRetrievalServiceTest {
     RestTemplate restTemplate;
 
     private String discoveryServiceAllAppsUrl;
+    private String[] discoveryServiceList;
 
     @BeforeEach
     void setup() {
+
         instanceRetrievalService = new InstanceRetrievalService(discoveryConfigProperties, restTemplate);
-        discoveryServiceAllAppsUrl = discoveryConfigProperties.getLocations() + APPS_ENDPOINT;
+        discoveryServiceList = discoveryConfigProperties.getLocations().split(",");
+        discoveryServiceAllAppsUrl = discoveryServiceList[0] + APPS_ENDPOINT;
+    }
+
+    @Test
+    void whenDiscoveryServiceIsNotAvailable_thenTryOthersFromTheList(){
+        when(
+            restTemplate.exchange(
+                discoveryServiceList[0]+APPS_ENDPOINT,
+                HttpMethod.GET,
+                getHttpEntity(),
+                String.class
+            )).thenThrow(RuntimeException.class);
+        when(
+            restTemplate.exchange(
+                discoveryServiceList[1]+APPS_ENDPOINT,
+                HttpMethod.GET,
+                getHttpEntity(),
+                String.class
+            )).thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
+        instanceRetrievalService.getAllInstancesFromDiscovery(false);
+        verify(restTemplate
+        , times(1)).exchange(
+            discoveryServiceList[1]+APPS_ENDPOINT,
+            HttpMethod.GET,
+            getHttpEntity(),
+            String.class
+        );
     }
 
     @Test
