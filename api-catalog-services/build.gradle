@@ -121,6 +121,13 @@ bootRun {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            artifact jar
+        }
+
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml.sdk'
+            artifactId = 'api-catalog-fat-jar'
+
             artifact bootJar
         }
     }

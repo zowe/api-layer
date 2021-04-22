@@ -69,6 +69,13 @@ bootJar.archiveName = "${bootJar.baseName}.jar"
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            artifact jar
+        }
+
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml.sdk'
+            artifactId = 'caching-fat-jar'
+
             artifact bootJar
         }
     }
