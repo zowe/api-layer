@@ -93,6 +93,13 @@ bootRun {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            artifact 'build/libs/discovery-service-lite.jar'
+        }
+
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml.sdk'
+            artifactId = 'discovery-fat-jar'
+
             artifact bootJar
         }
     }

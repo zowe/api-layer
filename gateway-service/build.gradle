@@ -112,6 +112,13 @@ bootRun {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            artifact 'build/libs/gateway-service-lite.jar'
+        }
+
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml.sdk'
+            artifactId = 'gateway-fat-jar'
+
             artifact bootJar
         }
     }
