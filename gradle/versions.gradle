@@ -58,6 +58,7 @@ ext {
     openApiDiffVersion = '2.0.0-beta.6'
     javaxAnnotationVersion = '1.3.2'
     jaxbApiVersion = '2.3.1'
+    lettuceVersion = '6.0.2.RELEASE'
 
     libraries = [
         jaxb_api                           : "javax.xml.bind:jaxb-api:${jaxbApiVersion}",
@@ -136,6 +137,7 @@ ext {
         jetty_util                         : "org.eclipse.jetty:jetty-util:${jettyWebSocketClientVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
         netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
+        lettuce                            : "io.lettuce:lettuce-core:${lettuceVersion}",
 
         junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
         mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
