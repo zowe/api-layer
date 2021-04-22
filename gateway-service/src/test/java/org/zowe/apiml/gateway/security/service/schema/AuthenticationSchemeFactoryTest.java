@@ -49,14 +49,16 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
     @Test
     void testInit_OK() {
-        new AuthenticationSchemeFactory(
-            mock(AuthenticationService.class),
-            Arrays.asList(
-                createScheme(AuthenticationScheme.BYPASS, true),
-                createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
-                createScheme(AuthenticationScheme.ZOWE_JWT, false)
-            )
-        );
+        assertDoesNotThrow(() -> {
+            new AuthenticationSchemeFactory(
+                mock(AuthenticationService.class),
+                Arrays.asList(
+                    createScheme(AuthenticationScheme.BYPASS, true),
+                    createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false),
+                    createScheme(AuthenticationScheme.ZOWE_JWT, false)
+                )
+            );
+        });
     }
 
     @Test

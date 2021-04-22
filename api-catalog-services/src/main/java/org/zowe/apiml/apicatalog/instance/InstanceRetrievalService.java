@@ -30,7 +30,7 @@ import org.zowe.apiml.product.registry.ApplicationWrapper;
 
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -241,6 +241,6 @@ public class InstanceRetrievalService {
 
     private void configureUnicode(RestTemplate restTemplate) {
         restTemplate.getMessageConverters()
-            .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+            .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
 }

@@ -27,7 +27,7 @@ public class GatewayWebSocketConfigurer implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        String webSocketPath = "/ws/**";
+        String webSocketPath = "/ws/**";    // NOSONAR
         log.debug("Registering WebSocket proxy handler to " + webSocketPath);
         registry.addHandler(webSocketProxyServerHandler, webSocketPath);
     }
