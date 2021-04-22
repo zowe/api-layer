@@ -16,17 +16,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class MultipartController {
-    @RequestMapping(
+    @PostMapping(
         value = "api/v1/multipart",
-        method = RequestMethod.POST,
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public UploadFileResponse uploadFileWithPost(@RequestParam("file") MultipartFile file) {
         return new UploadFileResponse(file.getOriginalFilename(), file.getContentType(), file.getSize());
     }
 
-    @RequestMapping(
+    @PutMapping(
         value = "api/v1/multipart",
-        method = RequestMethod.PUT,
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public UploadFileResponse uploadFileWithPut(@RequestParam("file") MultipartFile file) {
         return new UploadFileResponse(file.getOriginalFilename(), file.getContentType(), file.getSize());

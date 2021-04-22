@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 
 @Disabled
 @AcceptanceTest
-public class ForwardedProxyHeadersTest extends AcceptanceTestWithTwoServices {
+class ForwardedProxyHeadersTest extends AcceptanceTestWithTwoServices {
     @Test
     void givenServiceWithOverwritenTimeoutAndAnotherWithout_whenOverwritingConfigurationForOneService_thenTheOtherServicesKeepDefault() throws IOException {
         mockValid200HttpResponse();

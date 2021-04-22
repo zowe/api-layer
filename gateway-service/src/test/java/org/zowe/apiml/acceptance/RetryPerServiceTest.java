@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verify;
 
 @Disabled
 @AcceptanceTest
-public class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
+class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
     @Test
     void givenRetryOnAllOperationsIsDisabled_whenGetReturnsUnavailable_thenRetry() throws Exception {

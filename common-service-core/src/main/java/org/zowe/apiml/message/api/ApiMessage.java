@@ -12,7 +12,7 @@ package org.zowe.apiml.message.api;
 import org.zowe.apiml.message.core.MessageType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.EqualsAndHashCode;
-import lombok.Setter;;
+import lombok.Setter;
 
 /**
  * User facing messages that can be provided with API responses.

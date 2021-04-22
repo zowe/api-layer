@@ -29,7 +29,7 @@ import static org.mockito.Mockito.verify;
 
 @Disabled("Failing only on release pipeline")
 @AcceptanceTest
-public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
+class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
     private int SECOND = 1000;
 
     @Test

@@ -45,7 +45,6 @@ public class ZosmfJwkToPublicKey {
             return true;
         } catch (HttpClientErrorException.NotFound e) {
             log.warn("Unable to read z/OSMF JWT public key. JWT support might be not configured in z/OSMF: {}", e.getMessage());
-            ;
             return false;
         }
     }
