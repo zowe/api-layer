@@ -83,6 +83,11 @@ bootJar {
     }
 }
 
+jar {
+    enabled(true)
+    archiveName("discovery-service-lib.jar")
+}
+
 bootRun {
     if (project.hasProperty('args')) {
         args project.args.split(',')
@@ -93,7 +98,7 @@ bootRun {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact 'build/libs/discovery-service-lite.jar'
+            artifact jar
         }
 
         mavenJavaFat(MavenPublication) {

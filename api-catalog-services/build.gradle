@@ -93,6 +93,11 @@ bootJar {
     }
 }
 
+jar {
+    enabled true
+    archiveName "api-catalog-services-lib.jar"
+}
+
 def uiModule = "${project(':api-catalog-ui').projectDir}"
 
 processResources {
@@ -121,7 +126,7 @@ bootRun {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact 'build/libs/api-catalog-services-lite.jar'
+            artifact jar
         }
 
         mavenJavaFat(MavenPublication) {

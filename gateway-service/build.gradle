@@ -102,6 +102,11 @@ bootJar {
     }
 }
 
+jar {
+    enabled(true)
+    archiveName("gateway-service-lib.jar")
+}
+
 bootRun {
     if (project.hasProperty('args')) {
         args project.args.split(',')
@@ -112,7 +117,7 @@ bootRun {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact 'build/libs/gateway-service-lite.jar'
+            artifact jar
         }
 
         mavenJavaFat(MavenPublication) {
