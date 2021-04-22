@@ -3,19 +3,21 @@ services:
     redis-master:
         container_name: redis-master
         image: redis:latest
-        command: redis-server /usr/local/etc/redis/master.conf
+        command: redis-server /usr/local/etc/redis/master-tls.conf
         ports:
             - "6379:6379"
         volumes:
+            - ../keystore:/usr/local/etc/keystore
             - ./config:/usr/local/etc/redis/
 
     redis-replica:
         container_name: redis-replica
         image: redis:latest
-        command: redis-server /usr/local/etc/redis/replica.conf
+        command: redis-server /usr/local/etc/redis/replica-tls.conf
         ports:
             - "6380:6380"
         volumes:
+            - ../keystore:/usr/local/etc/keystore
             - ./config:/usr/local/etc/redis/
         links:
             - redis-master
@@ -23,10 +25,11 @@ services:
     redis-sentinel-1:
         container_name: redis-sentinel-1
         image: redis:latest
-        command: redis-sentinel /usr/local/etc/redis/sentinel-1.conf
+        command: redis-sentinel /usr/local/etc/redis/sentinel-1-tls.conf
         ports:
             - "26379:26379"
         volumes:
+            - ../keystore:/usr/local/etc/keystore
             - ./config:/usr/local/etc/redis/
         links:
             - redis-master
@@ -35,10 +38,11 @@ services:
     redis-sentinel-2:
         container_name: redis-sentinel-2
         image: redis:latest
-        command: redis-sentinel /usr/local/etc/redis/sentinel-2.conf
+        command: redis-sentinel /usr/local/etc/redis/sentinel-2-tls.conf
         ports:
             - "26380:26380"
         volumes:
+            - ../keystore:/usr/local/etc/keystore
             - ./config:/usr/local/etc/redis/
         links:
             - redis-master
@@ -47,10 +51,11 @@ services:
     redis-sentinel-3:
         container_name: redis-sentinel-3
         image: redis:latest
-        command: redis-sentinel /usr/local/etc/redis/sentinel-3.conf
+        command: redis-sentinel /usr/local/etc/redis/sentinel-3-tls.conf
         ports:
             - "26381:26381"
         volumes:
+            - ../keystore:/usr/local/etc/keystore
             - ./config:/usr/local/etc/redis/
         links:
             - redis-master
