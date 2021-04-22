@@ -112,7 +112,7 @@ bootRun {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact('$buildDir/gateway-service-lite.jar')
+            artifact 'build/libs/gateway-service-lite.jar'
         }
 
         mavenJavaFat(MavenPublication) {

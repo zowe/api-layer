@@ -121,7 +121,7 @@ bootRun {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact jar
+            artifact 'build/libs/api-catalog-services-lite.jar'
         }
 
         mavenJavaFat(MavenPublication) {

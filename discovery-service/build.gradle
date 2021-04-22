@@ -93,7 +93,7 @@ bootRun {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact jar
+            artifact 'build/libs/discovery-service-lite.jar'
         }
 
         mavenJavaFat(MavenPublication) {
