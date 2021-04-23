@@ -226,7 +226,7 @@ release {
     ]
 
     git {
-        requireBranch = 'apiml/GH1375/update-publishing'
+        requireBranch = 'master'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = true
