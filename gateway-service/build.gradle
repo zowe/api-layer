@@ -100,6 +100,11 @@ bootJar {
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
+    archiveClassifier = "application"
+}
+
+jar {
+    enabled true
 }
 
 bootRun {
@@ -111,7 +116,14 @@ bootRun {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenJavaLib(MavenPublication) {
+            artifact jar
+        }
+
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml.sdk'
+            artifactId = 'gateway-fat-jar'
+
             artifact bootJar
         }
     }

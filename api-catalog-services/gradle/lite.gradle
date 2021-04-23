@@ -34,6 +34,7 @@ task liteJar(type: BootJar) {
     from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }}
     exclude { details -> details.file && details.file.name.endsWith('.jar') && !modulesJar.contains(details.file.name) }
     with bootJar
+    archiveClassifier = "lite"
 }
 
 configurations {
@@ -53,6 +54,8 @@ task liteLibJar(type: Jar) {
     include '*.jar'
     exclude getModulesJarFilters()
     with bootJar
+
+    archiveClassifier = "lite-lib"
 }
 
 jar.dependsOn liteLibJar
