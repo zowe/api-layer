@@ -100,11 +100,11 @@ bootJar {
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
+    archiveClassifier = "application"
 }
 
 jar {
-    enabled(true)
-    archiveName("gateway-service-lib.jar")
+    enabled true
 }
 
 bootRun {
@@ -116,7 +116,7 @@ bootRun {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenJavaLib(MavenPublication) {
             artifact jar
         }
 

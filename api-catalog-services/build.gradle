@@ -91,11 +91,11 @@ bootJar {
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
+    archiveClassifier = "application"
 }
 
 jar {
     enabled true
-    archiveName "api-catalog-services-lib.jar"
 }
 
 def uiModule = "${project(':api-catalog-ui').projectDir}"
@@ -125,7 +125,7 @@ bootRun {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenJavaLib(MavenPublication) {
             artifact jar
         }
 
