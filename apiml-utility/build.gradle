@@ -2,7 +2,6 @@ dependencies {
     compile(project(':common-service-core'))
 
     implementation libraries.spring_boot_starter_web
-    compile libraries.commons_validator
     compile libraries.jackson_databind
     compile libraries.apache_commons_lang3
     compile libraries.http_client
