@@ -55,13 +55,18 @@ function logout() {
     };
 }
 
+/* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 function authenticationFailure(error) {
     function failure(err) {
         return { type: userConstants.AUTHENTICATION_FAILURE, err };
     }
     return dispatch => {
         dispatch(failure(error));
-        history.push('/login');
+        if (error.xhr.getResponseHeader('WWW-Authenticate')) {
+            window.location.href = process.env.REACT_APP_CATALOG_HOMEPAGE;
+        } else {
+            history.push('/login');
+        }
     };
 }
 
