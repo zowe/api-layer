@@ -4,15 +4,15 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `1.21.1 (2021-04-26)`
 
-* Feature: Redis as an off-platform storage for the Caching service ([a7f4ad](https://github.com/zowe/api-layer/commit/a7f4ad17a1121b3e47b124f9beac095593b25ee2)), closes [1128](https://github.com/zowe/api-layer/issues/1128)
-* Feature: Allow the configuration of the API ML run where the hostname in the certificate won't be verified in a strict manner (#1334) ([2da761a](https://github.com/zowe/api-layer/commit/2da761a)), closes [#1334](https://github.com/zowe/api-layer/issues/1355) 
-* Feature: Caching service: Remove alphanumeric constraint for keys stored in the service (#1317) ([237420](https://github.com/zowe/api-layer/commit/23742017fb37815dc40b5e7c8645acfac5a92ccb))
-* Feature: Add endpoint to delete all keys for specific service (#1253) ([0c3e01](https://github.com/zowe/api-layer/commit/0c3e01900ea646bd959472bae3bd9c1fbd7d3e31)), closes [1253](https://github.com/zowe/api-layer/issues/1253)
+* Feature: The dockered deployment of Zowe now supports Redis as an off-platform storage for the Caching service. ([a7f4ad](https://github.com/zowe/api-layer/commit/a7f4ad17a1121b3e47b124f9beac095593b25ee2)), closes [1128](https://github.com/zowe/api-layer/issues/1128)
+* Feature: Configuration of the API ML run is now permitted where the hostname in the certificate is not verified in a strict manner. This facilitates deployment to Marist when certificates are valid but do not contain a valid hostname. (#1334) ([2da761a](https://github.com/zowe/api-layer/commit/2da761a)), closes [#1334](https://github.com/zowe/api-layer/issues/1355) 
+* Feature: Caching service: The alphanumeric constraint for keys stored in the service has been removed. (#1317) ([237420](https://github.com/zowe/api-layer/commit/23742017fb37815dc40b5e7c8645acfac5a92ccb))
+* Feature: An endpoint has been added to delete all keys for a specific service (#1253) ([0c3e01](https://github.com/zowe/api-layer/commit/0c3e01900ea646bd959472bae3bd9c1fbd7d3e31)), closes [1253](https://github.com/zowe/api-layer/issues/1253)
 
 * Bugfix: Stop leaking X-Certificate headers (#1328) ([b2737a](https://github.com/zowe/api-layer/commit/b2737a921bb543f7b6865739b8a618cca72691e3))
-* Bugfix: Remove wait from start.sh to reduce address spaces (#1335) ([2ba780](https://github.com/zowe/api-layer/commit/2ba7803902d7796518cf1c9a5806b9c81b7360bb))
-* Bugfix: Make the version endpoint available at URL: /application/version (#1312) ([0ac95a4](https://github.com/zowe/api-layer/commit/0ac95a41333e3b13dd7dedfd147a7c24d5d3088f))
-* Bugfix: Load JWT secret properly when concurrently loaded and requested (#1255) ([1644a8c](https://github.com/zowe/api-layer/commit/1644a8c)), closes [#1255](https://github.com/zowe/api-layer/issues/1255) 
+* Bugfix: Remove the wait from start.sh to reduce address spaces (#1335) ([2ba780](https://github.com/zowe/api-layer/commit/2ba7803902d7796518cf1c9a5806b9c81b7360bb))
+* Bugfix: Make the version endpoint available at the URL: /application/version (#1312) ([0ac95a4](https://github.com/zowe/api-layer/commit/0ac95a41333e3b13dd7dedfd147a7c24d5d3088f))
+* Bugfix: Load the JWT secret properly when concurrently loaded and requested (#1255) ([1644a8c](https://github.com/zowe/api-layer/commit/1644a8c)), closes [#1255](https://github.com/zowe/api-layer/issues/1255) 
 * Bugfix: Swagger v2 yaml parsed and rendered (#1269) ([a1f2cc0](https://github.com/zowe/api-layer/commit/a1f2cc0c3580e6d36a878e0fff23b943857b38e4)), closes [1229](https://github.com/zowe/api-layer/issues/1229)
 
 
