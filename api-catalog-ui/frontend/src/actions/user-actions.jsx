@@ -55,7 +55,6 @@ function logout() {
     };
 }
 
-/* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 function authenticationFailure(error) {
     function failure(err) {
         return { type: userConstants.AUTHENTICATION_FAILURE, err };
