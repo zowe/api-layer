@@ -10,46 +10,48 @@
 package org.zowe.apiml.product.tomcat;
 
 import org.apache.coyote.AbstractProtocol;
-import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.AbstractEndpoint;
+import org.apache.tomcat.util.net.SecureNioChannel;
 import org.apache.tomcat.util.net.SocketEvent;
 import org.apache.tomcat.util.net.SocketWrapperBase;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
+import org.zowe.commons.attls.InboundAttls;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.channels.SocketChannel;
 import java.util.Set;
 
 @Component
-public class ApimlTomcatCustomizer<S,U> implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
 
 
     @Override
     public void customize(TomcatServletWebServerFactory factory) {
         factory.addConnectorCustomizers(connector -> {
-            Http11NioProtocol protocolHandler = (Http11NioProtocol)connector.getProtocolHandler();
+            Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
             try {
 
                 Field handlerField = AbstractProtocol.class.getDeclaredField("handler");
                 handlerField.setAccessible(true);
 
-                AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>)handlerField.get(protocolHandler);
+                AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>) handlerField.get(protocolHandler);
                 handler = new ApimlAttlHandler<S>(handler);
                 Method method = AbstractProtocol.class.getDeclaredMethod("getEndpoint");
                 method.setAccessible(true);
-                AbstractEndpoint<S,U> abstractEndpoint = (AbstractEndpoint<S, U>)method.invoke(protocolHandler);
+                AbstractEndpoint<S, U> abstractEndpoint = (AbstractEndpoint<S, U>) method.invoke(protocolHandler);
+
                 abstractEndpoint.setHandler(handler);
-                handlerField.set(protocolHandler,handler);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
     }
 
-    private static class ApimlAttlHandler<S> implements AbstractEndpoint.Handler<S>{
+    private static class ApimlAttlHandler<S> implements AbstractEndpoint.Handler<S> {
 
         private final AbstractEndpoint.Handler<S> handler;
 
@@ -59,8 +61,19 @@ public class ApimlTomcatCustomizer<S,U> implements WebServerFactoryCustomizer<To
 
         @Override
         public SocketState process(SocketWrapperBase<S> socket, SocketEvent status) {
-
-            return handler.process(socket,status);
+            SecureNioChannel secureChannel = (SecureNioChannel) socket.getSocket();
+            SocketChannel socketChannel = secureChannel.getIOChannel();
+            try {
+                Class<?> socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
+                Field fdField = socketChannelImpl.getDeclaredField("fdVal");
+                fdField.setAccessible(true);
+                int fileDescriptor = fdField.getInt(socketChannel);
+                System.out.println(fileDescriptor);
+                InboundAttls.init(fileDescriptor);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return handler.process(socket, status);
         }
 
         @Override
