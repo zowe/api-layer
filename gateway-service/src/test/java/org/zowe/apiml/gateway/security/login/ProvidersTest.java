@@ -43,6 +43,7 @@ class ProvidersTest {
     @BeforeEach
     void setUp() {
         authConfigurationProperties = mock(AuthConfigurationProperties.class);
+        when(authConfigurationProperties.getZosmf()).thenReturn(mock(AuthConfigurationProperties.Zosmf.class));
         compoundAuthProvider = mock(CompoundAuthProvider.class);
         discovery = mock(DiscoveryClient.class);
         zosmfService = mock(ZosmfService.class);

@@ -118,7 +118,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void loginWithExistingUser() {
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
@@ -147,7 +147,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void loginWithBadUser() {
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
@@ -172,7 +172,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void noZosmfInstance() {
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         final Application application = createApplication();
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
@@ -201,7 +201,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void notValidZosmfResponse() {
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
@@ -227,7 +227,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void noDomainInResponse() throws IOException {
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
@@ -258,7 +258,7 @@ class ZosmfAuthenticationProviderTest {
     void invalidCookieInResponse() {
         String invalidCookie = "LtpaToken=test";
 
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
@@ -299,7 +299,7 @@ class ZosmfAuthenticationProviderTest {
     void cookieWithSemicolon() {
         String cookie = "LtpaToken2=test;";
 
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
@@ -325,7 +325,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void shouldThrowNewExceptionIfRestClientException() {
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
@@ -346,7 +346,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void shouldThrowNewExceptionIfResourceAccessException() {
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
@@ -367,7 +367,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void shouldReturnTrueWhenSupportMethodIsCalledWithCorrectClass() {
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);

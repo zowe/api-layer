@@ -55,6 +55,7 @@ class ZosmfServiceTest {
     private final List<TokenValidationStrategy> validationStrategyList = new ArrayList<>();
 
     {
+        when(authConfigurationProperties.getZosmf()).thenReturn(mock(AuthConfigurationProperties.Zosmf.class));
         validationStrategyList.add(tokenValidationStrategy1);
         validationStrategyList.add(tokenValidationStrategy2);
     }
@@ -454,7 +455,7 @@ class ZosmfServiceTest {
     @Test
     void testGetPublicKeys_success() throws JSONException {
         String zosmfJwtUrl = "/jwt/ibm/api/zOSMFBuilder/jwk";
-        when(authConfigurationProperties.getZosmfJwtEndpoint()).thenReturn(zosmfJwtUrl);
+        when(authConfigurationProperties.getZosmf().getJwtEndpoint()).thenReturn(zosmfJwtUrl);
         ZosmfService zosmfService = getZosmfServiceSpy();
         when(restTemplate.getForObject(
             "http://zosmf:1433" + zosmfJwtUrl,

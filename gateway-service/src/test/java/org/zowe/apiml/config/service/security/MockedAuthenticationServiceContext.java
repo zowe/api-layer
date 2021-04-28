@@ -35,7 +35,7 @@ public class MockedAuthenticationServiceContext {
     @Bean
     public AuthConfigurationProperties getAuthConfigurationProperties() {
         final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
         return authConfigurationProperties;
     }
 

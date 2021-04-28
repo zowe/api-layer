@@ -47,13 +47,12 @@ public class AuthConfigurationProperties {
     private AuthConfigurationProperties.TokenProperties tokenProperties;
     private AuthConfigurationProperties.CookieProperties cookieProperties;
 
-    private String zosmfServiceId;
     private String provider = "zosmf";
 
     private AuthConfigurationProperties.PassTicket passTicket;
 
+    private AuthConfigurationProperties.Zosmf zosmf = new AuthConfigurationProperties.Zosmf();
     private String jwtKeyAlias;
-    private String zosmfJwtEndpoint = "/jwt/ibm/api/zOSMFBuilder/jwk";
 
     private JWT_AUTOCONFIGURATION_MODE zosmfJwtAutoconfiguration = JWT_AUTOCONFIGURATION_MODE.AUTO;
 
@@ -87,6 +86,12 @@ public class AuthConfigurationProperties {
         private Integer timeout = 540;
     }
 
+    @Data
+    public static class Zosmf {
+        private String serviceId;
+        private String jwtEndpoint = "/jwt/ibm/api/zOSMFBuilder/jwk";
+    }
+
     public AuthConfigurationProperties() {
         this.cookieProperties = new AuthConfigurationProperties.CookieProperties();
         this.tokenProperties = new AuthConfigurationProperties.TokenProperties();
@@ -101,10 +106,10 @@ public class AuthConfigurationProperties {
      */
     public String validatedZosmfServiceId() {
         if (provider.equalsIgnoreCase(AuthenticationScheme.ZOSMF.getScheme())
-            && ((zosmfServiceId == null) || zosmfServiceId.isEmpty())) {
+            && ((zosmf.getServiceId() == null) || zosmf.getServiceId().isEmpty())) {
             apimlLog.log("org.zowe.apiml.security.zosmfNotFound");
             throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
         }
-        return zosmfServiceId;
+        return zosmf.getServiceId();
     }
 }
