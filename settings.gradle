@@ -43,4 +43,5 @@ include 'onboarding-enabler-nodejs'
 include 'zaas-client'
 include 'mock-zosmf'
 include 'onboarding-enabler-micronaut-sample-app'
+include 'certificate-analyser'
 
