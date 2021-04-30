@@ -5,9 +5,7 @@ artifact_name=gateway-package
 path=https://zowe.jfrog.io/artifactory/libs-snapshot-local/org/zowe/apiml/sdk/$artifact_name
 version=$(curl -s $path/maven-metadata.xml | grep latest | sed "s/.*<latest>\([^<]*\)<\/latest>.*/\1/")
 build=$(curl -s $path/"$version"/maven-metadata.xml | grep '<value>' | head -1 | sed "s/.*<value>\([^<]*\)<\/value>.*/\1/")
-#echo "$version"
 zip=$artifact_name-$build.zip
-#echo "$zip"
 
 echo "Downloading the Gateway artifact..."
 curl -s --output ./gateway.zip \
@@ -26,9 +24,7 @@ artifact_name=api-catalog-package
 path=https://zowe.jfrog.io/artifactory/libs-snapshot-local/org/zowe/apiml/sdk/$artifact_name
 version=$(curl -s $path/maven-metadata.xml | grep latest | sed "s/.*<latest>\([^<]*\)<\/latest>.*/\1/")
 build=$(curl -s $path/"$version"/maven-metadata.xml | grep '<value>' | head -1 | sed "s/.*<value>\([^<]*\)<\/value>.*/\1/")
-#echo "$version"
 zip=$artifact_name-$build.zip
-#echo "$zip"
 
 echo "Downloading the API Catalog Service artifact..."
 curl -s --output ./api-catalog.zip \
@@ -47,9 +43,7 @@ artifact_name=discovery-package
 path=https://zowe.jfrog.io/artifactory/libs-snapshot-local/org/zowe/apiml/sdk/$artifact_name
 version=$(curl -s $path/maven-metadata.xml | grep latest | sed "s/.*<latest>\([^<]*\)<\/latest>.*/\1/")
 build=$(curl -s $path/"$version"/maven-metadata.xml | grep '<value>' | head -1 | sed "s/.*<value>\([^<]*\)<\/value>.*/\1/")
-#echo "$version"
 zip=$artifact_name-$build.zip
-#echo "$zip"
 
 echo "Downloading the Discovery Service artifact..."
 curl -s --output ./discovery.zip \
@@ -68,9 +62,7 @@ artifact_name=caching-service-package
 path=https://zowe.jfrog.io/artifactory/libs-snapshot-local/org/zowe/apiml/sdk/$artifact_name
 version=$(curl -s $path/maven-metadata.xml | grep latest | sed "s/.*<latest>\([^<]*\)<\/latest>.*/\1/")
 build=$(curl -s $path/"$version"/maven-metadata.xml | grep '<value>' | head -1 | sed "s/.*<value>\([^<]*\)<\/value>.*/\1/")
-#echo "$version"
 zip=$artifact_name-$build.zip
-#echo "$zip"
 
 echo "Downloading the Caching Service artifact..."
 curl -s --output ./caching.zip \
@@ -82,7 +74,23 @@ if [ $rc != 0 ]; then
   exit 1
 else
   echo "The Caching Service artifact has been downloaded."
-  exit 0
 fi
 
-##TODO upload the downloaded artifacts into the correct location on z/OS
+#Unzipping the files and copying them into the known components directory
+echo "Copying the jars into the Zowe components directory..."
+
+components_folder=../..
+unzip ./gateway.zip -d "${components_folder}/gateway"
+rm ./gateway.zip
+
+unzip ./discovery.zip -d "${components_folder}/discovery"
+rm ./discovery.zip
+
+unzip ./api-catalog.zip -d "${components_folder}/api-catalog"
+rm ./api-catalog.zip
+
+unzip ./caching.zip -d "${components_folder}/caching-service"
+rm ./caching.zip
+
+echo "The API Mediation Layer binaries have been updated. Please restart it."
+exit 0
