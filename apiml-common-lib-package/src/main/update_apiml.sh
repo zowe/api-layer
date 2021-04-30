@@ -92,5 +92,5 @@ rm ./api-catalog.zip
 unzip ./caching.zip -d "${components_folder}/caching-service"
 rm ./caching.zip
 
-echo "The API Mediation Layer have been updated, please restart Zowe."
+echo "The API Mediation Layer has been updated, please restart Zowe."
 exit 0
