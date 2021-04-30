@@ -44,7 +44,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
         final ZosmfService.AuthenticationResponse ar = zosmfService.authenticate(authentication);
 
-        switch (authConfigurationProperties.getZosmfJwtAutoconfiguration()) {
+        switch (authConfigurationProperties.getZosmf().getJwtAutoconfiguration()) {
             case LTPA:
                 if (ar.getTokens().containsKey(LTPA)) {
                     return getApimlJwtToken(user, ar);

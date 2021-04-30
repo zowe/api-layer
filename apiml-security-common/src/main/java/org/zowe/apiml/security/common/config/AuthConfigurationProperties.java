@@ -54,8 +54,6 @@ public class AuthConfigurationProperties {
     private AuthConfigurationProperties.Zosmf zosmf = new AuthConfigurationProperties.Zosmf();
     private String jwtKeyAlias;
 
-    private JWT_AUTOCONFIGURATION_MODE zosmfJwtAutoconfiguration = JWT_AUTOCONFIGURATION_MODE.AUTO;
-
     public enum JWT_AUTOCONFIGURATION_MODE {
         AUTO,
         LTPA,
@@ -90,6 +88,7 @@ public class AuthConfigurationProperties {
     public static class Zosmf {
         private String serviceId;
         private String jwtEndpoint = "/jwt/ibm/api/zOSMFBuilder/jwk";
+        private JWT_AUTOCONFIGURATION_MODE jwtAutoconfiguration = JWT_AUTOCONFIGURATION_MODE.AUTO;
     }
 
     public AuthConfigurationProperties() {
@@ -108,7 +107,7 @@ public class AuthConfigurationProperties {
         if (provider.equalsIgnoreCase(AuthenticationScheme.ZOSMF.getScheme())
             && ((zosmf.getServiceId() == null) || zosmf.getServiceId().isEmpty())) {
             apimlLog.log("org.zowe.apiml.security.zosmfNotFound");
-            throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
+            throw new AuthenticationServiceException("The parameter 'apiml.security.auth.zosmf.serviceId' is not configured.");
         }
         return zosmf.getServiceId();
     }
