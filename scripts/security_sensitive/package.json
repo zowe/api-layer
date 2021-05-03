@@ -1,0 +1,11 @@
+{
+  "name": "security_sensitive",
+  "version": "1.0.0",
+  "description": "Script for analysis of which files within the API ML contains the security sensitive content",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
