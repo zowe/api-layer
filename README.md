@@ -97,6 +97,12 @@ If you use Visual Studio Code, see [how to configure Visual Studio Code](docs/vs
 
 For guidelines to onboard services, see [Zowe Docs#Onboarding Overview](https://docs.zowe.org/stable/extend/extend-apiml/onboard-overview.html).
 
+## Update the API Mediation Layer
+
+The [API ML updater](apiml-common-lib-package/src/main/update_apiml.sh) script allows the user to update the API ML to 
+the latest version without having to update the whole Zowe. 
+After the script being successfully executed, the user just needs to restart Zowe.
+
 ## More Information
 
 | To learn about:                       | Refer to:                                                                                                                                                                             |
