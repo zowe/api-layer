@@ -9,51 +9,36 @@
  */
 package org.zowe.apiml;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import picocli.CommandLine;
+
+import java.net.URL;
 
 public class Main {
 
     public static void main(String[] args) {
-        try (InputStream keyStoreIStream = new FileInputStream("./keystore/localhost/localhost.keystore.p12");
-             InputStream trustStoreIStream = new FileInputStream("./keystore/localhost/localhost.trustore.p12")) {
-            KeyStore keyStore = readKeyStore(keyStoreIStream, "password".toCharArray());
-            Certificate[] certificate = keyStore.getCertificateChain("localhost");
-            KeyStore trustStore = readKeyStore(trustStoreIStream, "password".toCharArray());
-            List<Certificate> caList = new ArrayList<>();
-            Enumeration<String> aliases = trustStore.aliases();
-            while (aliases.hasMoreElements()) {
-                caList.add(trustStore.getCertificate(aliases.nextElement()));
-            }
-            X509Certificate x509Certificate = (X509Certificate) certificate[0];
-            for (Certificate cert : caList) {
-                try {
-                    x509Certificate.verify(cert.getPublicKey());
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
+        try {
+            ApimlConf conf = new ApimlConf();
+            CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
+            Stores stores = new Stores(conf);
 
+            if (conf.getRemoteUrl() != null) {
+                URL remote = new URL(conf.getRemoteUrl());
+                RemoteVerifier remoteVerifier = new RemoteVerifier();
+                int returnCode = remoteVerifier.verifyEndpoint(stores, remote);
+                System.out.println("API ML CA is in trustStore:" + (returnCode != 0));
+            } else {
+                System.out.println("No remote will be verified. Specify \"-r\" or \"--remoteurl\" if you wish to verify this certificate");
             }
+            LocalVerifier localVerifier = new LocalVerifier();
+            boolean trustedCert = localVerifier.verifyLocalKeystore(stores);
+            System.out.println("Certificate is trusted by services: " + trustedCert);
+            localVerifier.printDetails(stores);
 
-        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    static KeyStore readKeyStore(InputStream is, char[] pass) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        keyStore.load(is, pass);
-        return keyStore;
-    }
+
 }
