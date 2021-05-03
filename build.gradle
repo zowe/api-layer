@@ -226,7 +226,7 @@ release {
     ]
 
     git {
-        requireBranch = 'master'
+        requireBranch = 'apiml/GH1432/oe-java-dependencies'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = true
