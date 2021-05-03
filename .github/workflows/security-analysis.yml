@@ -13,15 +13,12 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v2
-            - name: Changed files
-              uses: trilom/file-changes-action@v1.2.3
-            - name: Echo changed files
-              run: |
-                  echo ${{ steps.file_changes_outputs_files }}
-                  echo ${{ steps.file_changes.outputs.files_modified }}
-                  echo ${{ steps.file_changes.outputs.files_added }}
-                  echo ${{ steps.file_changes.outputs.files_removed }}
-
+            - id: files
+              uses: jitterbit/get-changed-files@v1
+            - run: |
+                  for changed_file in ${{ steps.files.outputs.all }}; do
+                    echo "Do something with this ${changed_file}."
+                  done
 
 
     # How do I get files changed in PR
