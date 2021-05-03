@@ -38,9 +38,9 @@ messages:
     - key: org.zowe.apiml.security.zosmfNotFound
       number: ZWEAT601
       type: ERROR
-      text: "z/OSMF service name not found. Set parameter apiml.security.auth.zosmfServiceId to your service ID."
+      text: "z/OSMF service name not found. Set parameter apiml.security.auth.zosmf.serviceId to your service ID."
       reason: "The parameter zosmfserviceId was not configured correctly and could not be validated."
-      action: "Ensure that the parameter apiml.security.auth.zosmfServiceId is correctly entered with a valid z/OSMF service ID."
+      action: "Ensure that the parameter apiml.security.auth.zosmf.serviceId is correctly entered with a valid z/OSMF service ID."
 
     - key: org.zowe.apiml.security.common.auth.saf.endpoint.nonZoweClass
       number: ZWEAT602

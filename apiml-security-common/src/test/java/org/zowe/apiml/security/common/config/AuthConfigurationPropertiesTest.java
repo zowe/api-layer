@@ -21,13 +21,13 @@ class AuthConfigurationPropertiesTest {
 
     @Test
     void shouldThrowWhenZosmfIsNotConfigured() {
-        authConfigurationProperties.setZosmfServiceId(null);
+        authConfigurationProperties.getZosmf().setServiceId(null);
         assertThrows(AuthenticationServiceException.class, () -> authConfigurationProperties.validatedZosmfServiceId());
     }
 
     @Test
     void shouldReturnWhenZosmfIsConfigured() {
-        authConfigurationProperties.setZosmfServiceId("ZOSMF_SID");
+        authConfigurationProperties.getZosmf().setServiceId("ZOSMF_SID");
         assertEquals("ZOSMF_SID", authConfigurationProperties.validatedZosmfServiceId());
     }
 }

@@ -44,7 +44,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  *  Instance settings
  *  - gateway-service.yml
  *   - apiml.security.auth.provider = zosmf
- *   - apiml.security.auth.zosmfServiceId = <setting for integration tests, see environment-configuration.yml:zosmfServiceConfiguration.serviceId>
+ *   - apiml.security.auth.zosmf.serviceId = <setting for integration tests, see environment-configuration.yml:zosmfServiceConfiguration.serviceId>
  *  - environment-configuration.yml
  *   - credentials.user = user
  *   - credentials.password = user
