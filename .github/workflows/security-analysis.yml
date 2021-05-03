@@ -1,0 +1,32 @@
+name: "Flag the PRs touching security related code"
+
+on:
+    pull_request:
+        branches: [ master ]
+
+jobs:
+    analyze:
+        name: Analyze
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v2
+            - name: Changed files
+              uses: trilom/file-changes-action@v1.2.3
+            - name: Store results
+              uses: actions/upload-artifact@v2
+              if: always()
+              with:
+                  name: ChangedFiles
+                  path: |
+                      $HOME/*.json
+
+
+
+    # How do I get files changed in PR
+
+# How do I recognize such files are security related? // Easy to do locally
+  # Baseline is that we know that some files are security related
+  # Next step is that we know of some packages that are risky and that we may look at files using e.g. spring security classes
