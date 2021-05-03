@@ -128,7 +128,7 @@ public class GatewayConfig {
     }
 
     public static String getInstanceId(PropertyResolver resolver) {
-        String hostname = resolver.getProperty("spring.cloud.client.hostname");
+        String hostname = resolver.getProperty("apiml.service.hostname");
         String appName = resolver.getProperty("spring.application.name");
 
         String namePart = IdUtils.combineParts(hostname, SEPARATOR, appName);
