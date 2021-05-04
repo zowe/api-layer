@@ -6,23 +6,22 @@ on:
 
 jobs:
     analyze:
-        name: Analyze
+        name: Identify security related PR
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
         steps:
+            - name: Set up Node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '14'
+
             - name: Checkout repository
               uses: actions/checkout@v2
-            - id: files
-              uses: jitterbit/get-changed-files@v1
-            - run: |
-                  for changed_file in ${{ steps.files.outputs.all }}; do
-                    echo "Do something with this ${changed_file}."
-                  done
 
-
-    # How do I get files changed in PR
-
-# How do I recognize such files are security related? // Easy to do locally
-  # Baseline is that we know that some files are security related
-  # Next step is that we know of some packages that are risky and that we may look at files using e.g. spring security classes
+            - name: Setup and run the node
+              run: |
+                  cd scripts/security_sensitive
+                  npm install
+                  node index.js zowe api-layer ${{ github.event.pull_request.number }} ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                  cd ..
