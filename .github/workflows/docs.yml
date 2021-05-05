@@ -1,4 +1,4 @@
-name: "Flag the PRs touching security related code"
+name: "Flag the error message changes and label the PR"
 
 on:
     pull_request:
@@ -24,15 +24,9 @@ jobs:
                   git clone https://github.com/zowe/docs-site.git
                   cd docs/docgen/
                   java -jar Docgen-1.0.jar ./config.yml
-                  diff ErrorMessagesDocumentation.md ../../docs-site/docs/troubleshoot/troubleshoot-apiml-error-codes.md
-                  comp_value=$?
-
-                  if [ $comp_value -eq 1 ]
-                  then
-                      cd ../../scripts/docs
-                      npm install
-                      node index.js zowe api-layer ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.pull_request.number }}
-                  fi
+                  cd ../../scripts/docs
+                  npm install
+                  node index.js zowe api-layer ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.pull_request.number }}
 
             - name: Store results
               uses: actions/upload-artifact@v2
