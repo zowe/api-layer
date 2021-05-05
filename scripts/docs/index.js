@@ -1,0 +1,24 @@
+import {Octokit} from "octokit";
+
+// Get the directory with files
+const owner = process.argv[2];
+const repository = process.argv[3];  //${{ github.repository }} // Would it contain owner or is it separated? But I know these values could be set
+const githubToken = process.argv[4];
+const prNumber = process.argv[5];
+
+(async function () {
+
+    const octokit = new Octokit({auth: githubToken});
+
+    try {
+        await octokit.rest.issues.addLabels({
+            owner,
+            repo: repository,
+            issue_number: prNumber,
+            labels: ['docs']
+        });
+    } catch (e) {
+        console.log(e);
+    }
+})()
+

@@ -1,0 +1,43 @@
+name: "Flag the PRs touching security related code"
+
+on:
+    pull_request:
+        branches: [ master ]
+
+jobs:
+    analyze:
+        name: Identify security related PR
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - name: Set up Node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '14'
+
+            - name: Checkout repository
+              uses: actions/checkout@v2
+
+            - name: Generate and compare the Error messages
+              run: |
+                  git clone https://github.com/zowe/docs-site.git
+                  cd docs/docgen/
+                  java -jar Docgen-1.0.jar ./config.yml
+                  diff ErrorMessagesDocumentation.md ../../docs-site/docs/troubleshoot/troubleshoot-apiml-error-codes.md
+                  comp_value=$?
+
+                  if [ $comp_value -eq 1 ]
+                  then
+                      cd ../../scripts/docs
+                      npm install
+                      node index.js zowe api-layer ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.pull_request.number }}
+                  fi
+
+            - name: Store results
+              uses: actions/upload-artifact@v2
+              with:
+                  name: ErrorMessage
+                  path: |
+                      docs/docgen/ErrorMessagesDocumentation.md
+
