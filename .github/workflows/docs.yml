@@ -6,7 +6,7 @@ on:
 
 jobs:
     analyze:
-        name: Identify security related PR
+        name: Identify and generate changes in the Error messages
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -22,7 +22,9 @@ jobs:
             - name: Generate and compare the Error messages
               run: |
                   git clone https://github.com/zowe/docs-site.git
-                  cd docs/docgen/
+                  cd docs-site
+                  git checkout staging
+                  cd ../docs/docgen/
                   java -jar Docgen-1.0.jar ./config.yml
                   cd ../../scripts/docs
                   npm install
