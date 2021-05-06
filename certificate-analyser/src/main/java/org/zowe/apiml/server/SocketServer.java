@@ -10,8 +10,6 @@
 package org.zowe.apiml.server;
 
 import javax.net.ssl.SSLServerSocket;
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -22,6 +20,7 @@ public class SocketServer implements Runnable {
 
     public SocketServer(SSLServerSocket serverSocket) {
         this.serverSocket = serverSocket;
+        System.out.println("Opening socket.");
         newListener();
         System.out.println("Listening on port: " + serverSocket.getLocalPort());
     }
@@ -42,7 +41,6 @@ public class SocketServer implements Runnable {
     private void newListener() {
         (new Thread(this)).start();
     }
-
 
 
 }

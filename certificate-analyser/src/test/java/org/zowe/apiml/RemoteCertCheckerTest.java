@@ -20,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.net.URL;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -46,7 +45,7 @@ class RemoteCertCheckerTest {
             "--truststore", "../keystore/localhost/localhost.keystore.p12",
             "--keypasswd", "password",
             "--keyalias", "localhost",
-            "-r","https://localhost:10010"};
+            "-r", "https://localhost:10010"};
 
         ApimlConf conf = new ApimlConf();
         CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);

@@ -72,7 +72,7 @@ public class LocalVerifier implements Verifier {
             serverCert.getSubjectAlternativeNames().forEach(System.out::println);
             boolean clientAuth = serverCert.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.2");
 
-            if(clientAuth){
+            if (clientAuth) {
                 System.out.println("Certificate can be used for client authentication.");
             } else {
                 System.out.println("Certificate can't be used for client authentication. " +

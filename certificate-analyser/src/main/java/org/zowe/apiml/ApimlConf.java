@@ -26,10 +26,10 @@ public class ApimlConf {
     private String trustPasswd;
     @Option(names = {"-kp", "--keypasswd"}, arity = "0..1", interactive = true, description = "Keystore password")
     private String keyPasswd;
-    @Option(names = {"-tt", "--truststoretype"}, description = "Truststore type, i.e. PKCS12")
+    @Option(names = {"-tt", "--truststoretype"}, description = "Truststore type, default is PKCS12")
     private String trustStoreType;
-    @Option(names = {"-kt", "--keystoretype"}, description = "Keystore type, i.e. PKCS12")
-    private String keyStoreType;
+    @Option(names = {"-kt", "--keystoretype"}, description = "Keystore type, default is PKCS12")
+    private String keyStoreType = "PKCS12";
     @Option(names = {"-a", "--keyalias"}, description = "Alias under which this key is stored")
     private String keyAlias;
     @Option(names = {"-r", "--remoteurl"}, description = "URL of service to be verified")

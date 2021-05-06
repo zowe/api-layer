@@ -18,20 +18,21 @@ public class Main {
             ApimlConf conf = new ApimlConf();
             CommandLine cmd = new CommandLine(conf);
             cmd.parseArgs(args);
-            Stores stores = new Stores(conf);
-            VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContext(stores);
             if (conf.isHelpRequested()) {
                 cmd.printVersionHelp(System.out);
                 CommandLine.usage(new ApimlConf(), System.out);
                 return;
             }
+            Stores stores = new Stores(conf);
+            VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContext(stores);
+
             Verifier verifier;
             if (conf.getRemoteUrl() != null) {
                 verifier = new RemoteHandshakeVerifier(verifierSslContext);
                 verifier.verify();
 
             } else {
-                System.out.println("No remote will be verified. Specify \"-r\" or \"--remoteurl\" if you wish to verify this certificate");
+                System.out.println("No remote will be verified. Specify \"-r\" or \"--remoteurl\" if you wish to verify the trust.");
             }
 
             if (conf.isDoLocalHandshake()) {

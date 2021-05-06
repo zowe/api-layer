@@ -23,4 +23,5 @@ public abstract class HandshakeVerifier implements Verifier {
         return con.getResponseCode();
 
     }
+
 }

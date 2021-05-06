@@ -39,6 +39,7 @@ public class Stores {
                 this.trustStore = this.keyStore;
             } catch (Exception e) {
                 System.out.println(e.getMessage());
+                System.exit(0);
             }
         } else {
             try (InputStream keyStoreIStream = new FileInputStream(conf.getKeyStore());
@@ -48,14 +49,16 @@ public class Stores {
             } catch (FileNotFoundException e) {
                 System.err.println("Error while loading keystore file. Error message: " + e.getMessage() + "\n" +
                     "Possible solution: Verify correct path to the keystore. Change owner or permission to the keystore file.");
+                System.exit(0);
             } catch (Exception e) {
+                System.exit(0);
                 System.out.println(e.getMessage());
             }
         }
     }
 
     public static KeyStore readKeyStore(InputStream is, char[] pass, String type) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        KeyStore keyStore = KeyStore.getInstance(type);
         keyStore.load(is, pass);
         return keyStore;
     }

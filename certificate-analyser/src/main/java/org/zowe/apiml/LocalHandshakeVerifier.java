@@ -42,15 +42,14 @@ public class LocalHandshakeVerifier extends HandshakeVerifier {
                 System.out.println("Start of the local SSL handshake.");
                 executeCall(new URL(address));
                 System.out.println("Handshake was successful. Certificate stored under alias \"" + keyAlias + "\" is trusted by truststore \"" + trustStore
-                    +"\".");
+                    + "\".");
             } catch (SSLHandshakeException e) {
                 System.out.println("Handshake failed. Certificate stored under alias \"" + keyAlias + "\" is not trusted by truststore \"" + trustStore
-                    +"\". Error message: " + e.getMessage());
+                    + "\". Error message: " + e.getMessage());
             } catch (IOException e) {
                 System.out.println("Failed when calling local server. Error message: " + e.getMessage());
             }
-        }
-         catch (IOException e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }

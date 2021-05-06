@@ -34,7 +34,7 @@ public class RemoteHandshakeVerifier extends HandshakeVerifier {
             System.out.println("Start of the remote SSL handshake.");
             executeCall(new URL(serviceAddress));
             System.out.println("Handshake was successful. Service \"" + serviceAddress + "\" is trusted by truststore \"" + trustStore
-                +"\".");
+                + "\".");
         } catch (MalformedURLException e) {
             System.out.println("Incorrect url " + serviceAddress + " Error message: " + e.getMessage());
         } catch (SSLHandshakeException e) {
