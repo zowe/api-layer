@@ -21,7 +21,7 @@ jobs:
 
             - name: Generate and compare the Error messages
               run: |
-                  git clone https://github.com/zowe/docs-site.git
+                  git clone https://zowe-robot:${{ secrets.ZOWE_ROBOT_TOKEN }}@github.com/zowe/docs-site.git
                   cd docs-site
                   git checkout docs-staging
                   cd ../docs/docgen/
