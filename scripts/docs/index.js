@@ -34,7 +34,8 @@ const prNumber = process.argv[5];
             let gitExistingCode = `git checkout apiml/pr${prNumber}/changed_errors && git pull origin apiml/pr${prNumber}/changed_errors && cp ../docs/docgen/ErrorMessagesDocumentation.md docs/troubleshoot/troubleshoot-apiml-error-codes.md && git add docs/troubleshoot/troubleshoot-apiml-error-codes.md && git commit --signoff -m "Update error codes"`;
             let gitNewCode = `git branch apiml/pr${prNumber}/changed_errors && git checkout apiml/pr${prNumber}/changed_errors && cp ../docs/docgen/ErrorMessagesDocumentation.md docs/troubleshoot/troubleshoot-apiml-error-codes.md && git add docs/troubleshoot/troubleshoot-apiml-error-codes.md && git commit --signoff -m "Update error codes"`;
 
-            if(pulls.data.length > 0) {
+            const isExisting = pulls.data.length > 0;
+            if(isExisting) {
                 execSync(gitExistingCode, {
                     cwd: '../../docs-site'
                 });
@@ -46,7 +47,7 @@ const prNumber = process.argv[5];
 
 
             // If the PR already exists don't create new.
-            if(pulls.data.length > 0) {
+            if(!isExisting) {
                 // Create the PR from this
                 const {data} = await octokit.rest.pulls.create({
                     owner,
