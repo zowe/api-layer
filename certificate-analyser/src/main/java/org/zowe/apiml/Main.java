@@ -11,28 +11,37 @@ package org.zowe.apiml;
 
 import picocli.CommandLine;
 
-import java.net.URL;
-
 public class Main {
 
     public static void main(String[] args) {
         try {
             ApimlConf conf = new ApimlConf();
-            CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
+            CommandLine cmd = new CommandLine(conf);
+            cmd.parseArgs(args);
             Stores stores = new Stores(conf);
-
+            VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContext(stores);
+            if (conf.isHelpRequested()) {
+                cmd.printVersionHelp(System.out);
+                CommandLine.usage(new ApimlConf(), System.out);
+                return;
+            }
+            Verifier verifier;
             if (conf.getRemoteUrl() != null) {
-                URL remote = new URL(conf.getRemoteUrl());
-                RemoteVerifier remoteVerifier = new RemoteVerifier();
-                int returnCode = remoteVerifier.verifyEndpoint(stores, remote);
-                System.out.println("API ML CA is in trustStore:" + (returnCode != 0));
+                verifier = new RemoteHandshakeVerifier(verifierSslContext);
+                verifier.verify();
+
             } else {
                 System.out.println("No remote will be verified. Specify \"-r\" or \"--remoteurl\" if you wish to verify this certificate");
             }
-            LocalVerifier localVerifier = new LocalVerifier();
-            boolean trustedCert = localVerifier.verifyLocalKeystore(stores);
-            System.out.println("Certificate is trusted by services: " + trustedCert);
-            localVerifier.printDetails(stores);
+
+            if (conf.isDoLocalHandshake()) {
+                verifier = new LocalHandshakeVerifier(verifierSslContext);
+                verifier.verify();
+            }
+
+            Verifier localVerifier = new LocalVerifier(stores);
+            localVerifier.verify();
+
 
         } catch (Exception e) {
             e.printStackTrace();

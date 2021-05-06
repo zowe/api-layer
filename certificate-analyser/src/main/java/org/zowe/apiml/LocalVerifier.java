@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml;
 
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
@@ -18,42 +17,60 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LocalVerifier {
+public class LocalVerifier implements Verifier {
 
-    boolean verifyLocalKeystore(Stores stores) throws KeyStoreException {
-        Certificate[] certificate = stores.getKeyStore().getCertificateChain(stores.getConf().getKeyAlias());
-        Map<String, Certificate> caList = new HashMap<>();
-        Enumeration<String> aliases = stores.getTrustStore().aliases();
+    private Stores stores;
 
-        while (aliases.hasMoreElements()) {
-            String certAuthAlias = aliases.nextElement();
-            caList.put(certAuthAlias, stores.getTrustStore().getCertificate(certAuthAlias));
-        }
-        X509Certificate x509Certificate = (X509Certificate) certificate[0];
-        for (Map.Entry<String, Certificate> cert : caList.entrySet()) {
-            try {
-                x509Certificate.verify(cert.getValue().getPublicKey());
-                if (cert.getValue() instanceof X509Certificate) {
-                    X509Certificate trustedCA = (X509Certificate) cert.getValue();
-                    System.out.println("Trusted certificate is stored under alias: "+cert.getKey());
-                    System.out.println("valid CA " + trustedCA.getSubjectDN());
-                    return true;
-                }
-            } catch (Exception e) {
-//                intentionally ignore, this means that cert is not valid
-            }
-
-        }
-        System.out.println("Add this CA to trustStore " + x509Certificate.getIssuerDN());
-        return false;
+    public LocalVerifier(Stores stores) {
+        this.stores = stores;
     }
 
-    void printDetails(Stores stores) throws KeyStoreException{
-        Certificate[] certificate = stores.getKeyStore().getCertificateChain(stores.getConf().getKeyAlias());
-        X509Certificate serverCert = (X509Certificate)certificate[0];
+    public void verify() {
+        System.out.println("=============");
+        System.out.println("Verifying keystore: " + stores.getConf().getKeyStore() +
+            "  against truststore: " + stores.getConf().getTrustStore());
         try {
+            Certificate[] certificate = stores.getKeyStore().getCertificateChain(stores.getConf().getKeyAlias());
+            Map<String, Certificate> caList = new HashMap<>();
+            Enumeration<String> aliases = stores.getTrustStore().aliases();
+
+            while (aliases.hasMoreElements()) {
+                String certAuthAlias = aliases.nextElement();
+                caList.put(certAuthAlias, stores.getTrustStore().getCertificate(certAuthAlias));
+            }
+            X509Certificate x509Certificate = (X509Certificate) certificate[0];
+            for (Map.Entry<String, Certificate> cert : caList.entrySet()) {
+                try {
+                    x509Certificate.verify(cert.getValue().getPublicKey());
+                    if (cert.getValue() instanceof X509Certificate) {
+                        X509Certificate trustedCA = (X509Certificate) cert.getValue();
+                        System.out.println("Trusted certificate is stored under alias: " + cert.getKey());
+                        System.out.println("valid CA " + trustedCA.getSubjectDN());
+                        System.out.println("Certificate is trusted by services.");
+                        printDetails();
+                        return;
+                    }
+                } catch (Exception e) {
+//               this means that cert is not valid, intentionally ignore
+                }
+
+            }
+            System.out.println("Add " + x509Certificate.getIssuerDN() + " certificate authority to the trust store ");
+        } catch (KeyStoreException e) {
+            System.err.println("Error loading secret from keystore" + e.getMessage());
+        }
+
+    }
+
+    void printDetails() throws KeyStoreException {
+        Certificate[] certificate = stores.getKeyStore().getCertificateChain(stores.getConf().getKeyAlias());
+        X509Certificate serverCert = (X509Certificate) certificate[0];
+        try {
+            System.out.println("++++++++");
             System.out.println("Possible hostname values:");
             serverCert.getSubjectAlternativeNames().forEach(System.out::println);
+            boolean clientAuth = serverCert.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.2");
+            System.out.println("Contains client auth key usage: " + clientAuth);
             System.out.println("++++++++");
 
         } catch (CertificateParsingException e) {

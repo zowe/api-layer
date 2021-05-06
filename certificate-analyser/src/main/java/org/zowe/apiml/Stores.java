@@ -10,6 +10,7 @@
 package org.zowe.apiml;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -34,7 +35,7 @@ public class Stores {
     void init(ApimlConf conf) {
         if (conf.getKeyStore().startsWith(SAFKEYRING)) {
             try (InputStream keyringIStream = keyRingUrl(conf.getKeyStore()).openStream()) {
-                this.keyStore = readKeyStore(keyringIStream, conf.getKeyPasswd().toCharArray(),conf.getKeyStoreType());
+                this.keyStore = readKeyStore(keyringIStream, conf.getKeyPasswd().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = this.keyStore;
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -44,6 +45,9 @@ public class Stores {
                  InputStream trustStoreIStream = new FileInputStream(conf.getTrustStore())) {
                 this.keyStore = readKeyStore(keyStoreIStream, conf.getKeyPasswd().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
+            } catch (FileNotFoundException e) {
+                System.err.println("Error while loading keystore file. Error message: " + e.getMessage() + "\n" +
+                    "Possible solution: Verify correct path to the keystore. Change owner or permission to the keystore file.");
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }

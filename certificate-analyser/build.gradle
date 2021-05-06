@@ -1,4 +1,6 @@
-
+plugins {
+    id 'java'
+}
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile libraries.mockito_core
@@ -10,4 +12,15 @@ dependencies {
 
 compileJava {
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'org.zowe.apiml.Main'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }

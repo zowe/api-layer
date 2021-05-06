@@ -9,8 +9,7 @@
  */
 package org.zowe.apiml;
 
-public class KeystoreException extends RuntimeException{
-    public KeystoreException(String message, Throwable cause) {
-        super(message, cause);
-    }
+public interface Verifier {
+
+    void verify();
 }

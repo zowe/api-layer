@@ -10,44 +10,54 @@
 
 package org.zowe.apiml;
 
-import org.apache.commons.cli.DefaultParser;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import picocli.CommandLine;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.net.URL;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 class RemoteCertCheckerTest {
 
+    private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
 
+    @BeforeEach
+    void setupStreams() {
+        System.setOut(new PrintStream(outputStream));
+    }
+
+    @AfterEach
+    void restoreStreams() {
+        System.setOut(originalOut);
+    }
 
     @Test
-    void providedCorrectKey_thenRequestPasses() throws Exception{
+    void providedCorrectKey_thenRequestPasses() throws Exception {
         String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore","../keystore/localhost/localhost.keystore.p12",
-            "--keypasswd","password",
-            "--keyalias","localhost"};
-        CLISetup cli = new CLISetup(new DefaultParser(),args);
+            "--truststore", "../keystore/localhost/localhost.keystore.p12",
+            "--keypasswd", "password",
+            "--keyalias", "localhost",
+            "-r","https://localhost:10010"};
 
         ApimlConf conf = new ApimlConf();
         CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
         Stores stores = new Stores(conf);
-        RemoteVerifier remoteVerifier = new RemoteVerifier();
+        VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContext(stores);
+        RemoteHandshakeVerifier remoteHandshakeVerifier = new RemoteHandshakeVerifier(verifierSslContext);
         HttpsURLConnection conn = mock(HttpsURLConnection.class);
         URL url = mock(URL.class);
         when(url.openConnection()).thenReturn(conn);
         when(conn.getResponseCode()).thenReturn(200);
-        assertEquals(200,remoteVerifier.verifyEndpoint(stores,url));
+        remoteHandshakeVerifier.verify();
+//        assertEquals("",outputStream.toString());
     }
 }

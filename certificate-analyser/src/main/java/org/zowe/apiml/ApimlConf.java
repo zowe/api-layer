@@ -9,26 +9,35 @@
  */
 package org.zowe.apiml;
 
+import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
+@CommandLine.Command(version = {
+    "Versioned Command 1.0",
+    "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
+    "OS: ${os.name} ${os.version} ${os.arch}"})
 public class ApimlConf {
 
-    @Option(names = {"-ks", "--keystore"}, description = "Path to keystore file or keyring")
+    @Option(names = {"-k", "--keystore"}, description = "Path to keystore file or keyring")
     private String keyStore;
-    @Option(names = {"-ts", "--truststore"}, description = "Path to truststore file or keyring")
+    @Option(names = {"-t", "--truststore"}, description = "Path to truststore file or keyring")
     private String trustStore;
-    @Option(names = {"-tpw", "--trustpasswd"}, description = "Truststore password")
+    @Option(names = {"-tp", "--trustpasswd"}, arity = "0..1", interactive = true, description = "Truststore password")
     private String trustPasswd;
-    @Option(names = {"-kpw", "--keypasswd"}, description = "Keystore password")
+    @Option(names = {"-kp", "--keypasswd"}, arity = "0..1", interactive = true, description = "Keystore password")
     private String keyPasswd;
-    @Option(names = {"-tst", "--truststoretype"}, description = "Truststore type, i.e. PKCS12")
+    @Option(names = {"-tt", "--truststoretype"}, description = "Truststore type, i.e. PKCS12")
     private String trustStoreType;
-    @Option(names = {"-kst", "--keystoretype"}, description = "Keystore type, i.e. PKCS12")
+    @Option(names = {"-kt", "--keystoretype"}, description = "Keystore type, i.e. PKCS12")
     private String keyStoreType;
     @Option(names = {"-a", "--keyalias"}, description = "Alias under which this key is stored")
     private String keyAlias;
     @Option(names = {"-r", "--remoteurl"}, description = "URL of service to be verified")
     private String remoteUrl;
+    @Option(names = {"-l", "--local"}, description = "Do SSL handshake on localhost")
+    private boolean doLocalHandshake;
+    @Option(names = {"-h", "--help"}, usageHelp = true, description = "display a help message")
+    private boolean helpRequested = false;
 
     public String getKeyStore() {
         return keyStore;
@@ -47,7 +56,7 @@ public class ApimlConf {
     }
 
     public String getTrustStoreType() {
-        return defaultValue(trustStoreType,keyStoreType);
+        return defaultValue(trustStoreType, keyStoreType);
     }
 
     public String getKeyStoreType() {
@@ -62,7 +71,15 @@ public class ApimlConf {
         return remoteUrl;
     }
 
-    private String defaultValue(String value, String defaultVal){
+    public boolean isHelpRequested() {
+        return helpRequested;
+    }
+
+    public boolean isDoLocalHandshake() {
+        return doLocalHandshake;
+    }
+
+    private String defaultValue(String value, String defaultVal) {
         return value != null ? value : defaultVal;
     }
 }
