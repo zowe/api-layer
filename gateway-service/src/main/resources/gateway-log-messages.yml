@@ -14,7 +14,7 @@ messages:
       number: ZWEAG500
       type: ERROR
       text: "Client certificate is missing in request."
-      reason: "No client certificate presents in HTTPS request."
+      reason: "No client certificate is present in the HTTPS request."
       action: "Properly configure client to send client certificate."
 
     # Various messages
@@ -148,8 +148,8 @@ messages:
       number: ZWEAG108
       type: ERROR
       text: "z/OSMF instance '%s' not found or incorrectly configured. Gateway is shutting down."
-      reason: "The Gateway could not find the z/OSMF instance from the Discovery Service or it could not communicate with provided z/OSMF instance."
-      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that API Mediation Layer can communicate with provided z/OSMF instance."
+      reason: "The Gateway could not find the z/OSMF instance from the Discovery Service or it could not communicate with the provided z/OSMF instance."
+      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that the API Mediation Layer can communicate with provided z/OSMF instance."
 
     - key: org.zowe.apiml.security.zosmfDomainIsEmpty
       number: ZWEAG109

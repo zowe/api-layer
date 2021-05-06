@@ -4,7 +4,7 @@ import {execSync} from "child_process";
 
 // Get the directory with files
 const owner = process.argv[2];
-const repository = process.argv[3];  //${{ github.repository }} // Would it contain owner or is it separated? But I know these values could be set
+const repository = process.argv[3];
 const githubToken = process.argv[4];
 const prNumber = process.argv[5];
 

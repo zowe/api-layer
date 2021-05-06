@@ -37,7 +37,7 @@ messages:
       number: ZWEAS170
       type: ERROR
       text: "An exception occurred while trying to get the token"
-      reason: "General exception. There are more information in the message"
+      reason: "General exception. There are more pieces of information in the message"
       action: "Log the message from the exception and then handle the exception based on the information provided there. "
 
     # HTTP,Protocol messages
@@ -60,7 +60,7 @@ messages:
       number: ZWEAS404
       type: ERROR
       text: "Gateway service is unavailable"
-      reason: "Gateway service doesn't respond."
+      reason: "Gateway service does not respond."
       action: "Ensure that the Gateway service is up and that the path to the gateway service is properly set."
 
     - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND
@@ -83,14 +83,14 @@ messages:
       number: ZWEAS500
       type: ERROR
       text: "There was no path to the trust store."
-      reason: "The Zaas Client configuration didn't contain the path to the trust store"
+      reason: "The Zaas Client configuration does not contain the path to the trust store"
       action: "Ensure that the configuration contains the trustStorePath and that it points to valid trust store."
 
     - key: org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.KEY_STORE_NOT_PROVIDED
       number: ZWEAS501
       type: ERROR
       text: "There was no path to the key store."
-      reason: "The Zaas Client configuration didn't contain the path to the key store"
+      reason: "The Zaas Client configuration does not contain the path to the key store"
       action: "Ensure that the configuration contains the keyStorePath and that it points to valid key store."
 
     - key: org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION
