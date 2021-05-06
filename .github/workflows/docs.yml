@@ -36,7 +36,7 @@ jobs:
                   git commit -m "Update error codes. Signed-off-by: Zowe Robot <zowe-robot@users.noreply.github.com>"
                   git config --get remote.origin.url
                   git push -u origin apiml/pr${{ github.event.pull_request.number }}/changed_errors
-                  cd ../../scripts/docs
+                  cd ../scripts/docs
                   npm install
                   node index.js zowe api-layer ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.pull_request.number }}
 
