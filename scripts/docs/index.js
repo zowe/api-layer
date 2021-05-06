@@ -17,7 +17,7 @@ const prNumber = process.argv[5];
         const file2 = await readFile("../../docs/docgen/original-codes.md");
 
         if (file1.toString() != file2.toString()) {
-            /*await octokit.rest.issues.addLabels({
+            await octokit.rest.issues.addLabels({
                 owner,
                 repo: repository,
                 issue_number: prNumber,
@@ -27,7 +27,7 @@ const prNumber = process.argv[5];
             const gitCommand = `git push -u origin apiml/pr${prNumber}/changed_errors`;
             execSync(gitCommand, {
                 cwd: '../../docs-site'
-            });*/
+            });
 
             // Create the PR from this
             const {data} = await octokit.rest.pulls.create({
