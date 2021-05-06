@@ -33,7 +33,7 @@ jobs:
                   git config --global user.name "Zowe Robot"
                   git checkout -b apiml/pr${{ github.event.pull_request.number }}/changed_errors
                   git add docs/troubleshoot/troubleshoot-apiml-error-codes.md
-                  git commit -m "Update error codes. Signed-off-by: Zowe Robot <zowe-robot@users.noreply.github.com>"
+                  git commit --signoff -m "Update error codes"
                   git config --get remote.origin.url
                   git push -u origin apiml/pr${{ github.event.pull_request.number }}/changed_errors
                   cd ../scripts/docs
