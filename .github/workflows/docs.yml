@@ -35,7 +35,6 @@ jobs:
                   git add docs/troubleshoot/troubleshoot-apiml-error-codes.md
                   git commit --signoff -m "Update error codes"
                   git config --get remote.origin.url
-                  git push -u origin apiml/pr${{ github.event.pull_request.number }}/changed_errors
                   cd ../scripts/docs
                   npm install
                   node index.js zowe api-layer ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.pull_request.number }}
