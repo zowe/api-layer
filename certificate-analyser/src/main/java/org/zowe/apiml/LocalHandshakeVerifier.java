@@ -33,16 +33,21 @@ public class LocalHandshakeVerifier extends HandshakeVerifier {
     public void verify() {
         try {
             SSLServerSocket listener = (SSLServerSocket) verifierSslContext.getSslContext().getServerSocketFactory().createServerSocket(0);
+//            start listening on socket to do a SSL handshake
             SocketServer server = new SocketServer(listener);
             String address = "https://localhost:" + listener.getLocalPort();
+            String keyAlias = verifierSslContext.getStores().getConf().getKeyAlias();
+            String trustStore = verifierSslContext.getStores().getConf().getTrustStore();
             try {
-                int response = executeCall(new URL(address));
-                System.out.println("Certificate for " + address + " is trusted. Response code: " + response);
+                System.out.println("Start of the local SSL handshake.");
+                executeCall(new URL(address));
+                System.out.println("Handshake was successful. Certificate stored under alias \"" + keyAlias + "\" is trusted by truststore \"" + trustStore
+                    +"\".");
             } catch (SSLHandshakeException e) {
-                System.out.println("Certificate at " + address +
-                    " is not trusted. Please add CA of this certificate to your truststore." + getVerifierSslContext().getStores().getConf().getTrustStore());
+                System.out.println("Handshake failed. Certificate stored under alias \"" + keyAlias + "\" is not trusted by truststore \"" + trustStore
+                    +"\". Error message: " + e.getMessage());
             } catch (IOException e) {
-                System.out.println("Error calling endpoint " + e.getMessage());
+                System.out.println("Failed when calling local server. Error message: " + e.getMessage());
             }
         }
          catch (IOException e) {

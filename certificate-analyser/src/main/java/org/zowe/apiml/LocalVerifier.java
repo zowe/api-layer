@@ -46,8 +46,9 @@ public class LocalVerifier implements Verifier {
                         X509Certificate trustedCA = (X509Certificate) cert.getValue();
                         System.out.println("Trusted certificate is stored under alias: " + cert.getKey());
                         System.out.println("valid CA " + trustedCA.getSubjectDN());
-                        System.out.println("Certificate is trusted by services.");
+                        System.out.println("Details about valid certificate:");
                         printDetails();
+
                         return;
                     }
                 } catch (Exception e) {
@@ -70,7 +71,13 @@ public class LocalVerifier implements Verifier {
             System.out.println("Possible hostname values:");
             serverCert.getSubjectAlternativeNames().forEach(System.out::println);
             boolean clientAuth = serverCert.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.2");
-            System.out.println("Contains client auth key usage: " + clientAuth);
+
+            if(clientAuth){
+                System.out.println("Certificate can be used for client authentication.");
+            } else {
+                System.out.println("Certificate can't be used for client authentication. " +
+                    "Provide certificate with extended key usage: 1.3.6.1.5.5.7.3.2");
+            }
             System.out.println("++++++++");
 
         } catch (CertificateParsingException e) {
