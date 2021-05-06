@@ -9,10 +9,10 @@
  */
 package org.zowe.apiml;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.*;
+import java.net.Socket;
 import java.security.*;
+import java.security.cert.X509Certificate;
 
 public class VerifierSSLContext {
 
@@ -39,7 +39,38 @@ public class VerifierSSLContext {
         KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         keyFactory.init(stores.getKeyStore(), stores.getConf().getKeyPasswd().toCharArray());
         conf.sslContext = SSLContext.getInstance("TLSv1.2");
-        conf.sslContext.init(keyFactory.getKeyManagers(), trustFactory.getTrustManagers(), new SecureRandom());
+        X509KeyManager originalKm = (X509KeyManager) keyFactory.getKeyManagers()[0];
+        X509KeyManager km = new X509KeyManager() {
+            public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
+                return stores.getConf().getKeyAlias();
+            }
+
+            public X509Certificate[] getCertificateChain(String alias) {
+                return originalKm.getCertificateChain(alias);
+            }
+
+            @Override
+            public String[] getClientAliases(String s, Principal[] principals) {
+                return originalKm.getClientAliases(s, principals);
+            }
+
+            @Override
+            public String[] getServerAliases(String s, Principal[] principals) {
+                return originalKm.getServerAliases(s,principals);
+            }
+
+            @Override
+            public String chooseServerAlias(String s, Principal[] principals, Socket socket) {
+                return stores.getConf().getKeyAlias();
+            }
+
+            @Override
+            public PrivateKey getPrivateKey(String s) {
+                return originalKm.getPrivateKey(s);
+            }
+            // Delegate the rest of the methods from origKm too...
+        };
+        conf.sslContext.init(new KeyManager[]{km}, trustFactory.getTrustManagers(), new SecureRandom());
         return conf;
 
     }

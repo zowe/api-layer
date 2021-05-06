@@ -30,7 +30,12 @@ public class LocalVerifier implements Verifier {
         System.out.println("Verifying keystore: " + stores.getConf().getKeyStore() +
             "  against truststore: " + stores.getConf().getTrustStore());
         try {
-            Certificate[] certificate = stores.getKeyStore().getCertificateChain(stores.getConf().getKeyAlias());
+            String alias = stores.getConf().getKeyAlias();
+            Certificate[] certificate = stores.getKeyStore().getCertificateChain(alias);
+            if (certificate == null) {
+                System.out.println("Alias \"" + alias + "\" is not available in keystore.");
+                return;
+            }
             Map<String, Certificate> caList = new HashMap<>();
             Enumeration<String> aliases = stores.getTrustStore().aliases();
 
@@ -45,7 +50,7 @@ public class LocalVerifier implements Verifier {
                     if (cert.getValue() instanceof X509Certificate) {
                         X509Certificate trustedCA = (X509Certificate) cert.getValue();
                         System.out.println("Trusted certificate is stored under alias: " + cert.getKey());
-                        System.out.println("valid CA " + trustedCA.getSubjectDN());
+                        System.out.println("Certificate authority: " + trustedCA.getSubjectDN());
                         System.out.println("Details about valid certificate:");
                         printDetails();
 
