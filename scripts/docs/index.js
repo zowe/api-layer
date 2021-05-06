@@ -24,28 +24,41 @@ const prNumber = process.argv[5];
                 labels: ['docs']
             });
 
-            const gitCommand = `git push -u origin apiml/pr${prNumber}/changed_errors`;
+            const branch = `apiml/pr${prNumber}/changed_errors`;
+            const pulls = await octokit.rest.pulls.list({
+                owner,
+                repo: 'docs-site',
+                head: branch
+            });
+
+            let gitCommand = `git push -u origin ${branch}`;
+            if(pulls.data.length > 0) {
+                gitCommand = `git push origin ${branch}`;
+            }
             execSync(gitCommand, {
                 cwd: '../../docs-site'
             });
 
-            // Create the PR from this
-            const {data} = await octokit.rest.pulls.create({
-                owner,
-                repo: 'docs-site',
-                title: 'Automatic update for the Error messages in API-Layer PR',
-                head: `apiml/pr${prNumber}/changed_errors`,
-                base: 'docs-staging',
-                body: 'Updated API ML error messages'
-            });
+            // If the PR already exists don't create new.
+            if(pulls.data.length > 0) {
+                // Create the PR from this
+                const {data} = await octokit.rest.pulls.create({
+                    owner,
+                    repo: 'docs-site',
+                    title: 'Automatic update for the Error messages in API-Layer PR',
+                    head: branch,
+                    base: 'docs-staging',
+                    body: 'Updated API ML error messages'
+                });
 
-            // To comment on the current PR I need the url so data.url
-            await octokit.rest.issues.createComment({
-                owner,
-                repo: repository,
-                issue_number: prNumber,
-                body: `The changes to the error code documentation are available in this PR: ${data.html_url}`,
-            });
+                // To comment on the current PR I need the url so data.url
+                await octokit.rest.issues.createComment({
+                    owner,
+                    repo: repository,
+                    issue_number: prNumber,
+                    body: `The changes to the error code documentation are available in this PR: ${data.html_url}`,
+                });
+            }
 
             console.log("Created a PR and updated the changes");
         }
