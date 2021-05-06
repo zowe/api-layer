@@ -34,7 +34,8 @@ jobs:
                   git branch apiml/pr${{ github.event.pull_request.number }}/changed_errors
                   git add docs/troubleshoot/troubleshoot-apiml-error-codes.md
                   git commit -m "Update error codes. Signed-off-by: Zowe Robot <zowe-robot@users.noreply.github.com>"
-                  git push origin apiml/pr${{ github.event.pull_request.number }}/changed_errors
+                  git config --get remote.origin.url
+                  git push -u origin apiml/pr${{ github.event.pull_request.number }}/changed_errors
                   cd ../../scripts/docs
                   npm install
                   node index.js zowe api-layer ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.pull_request.number }}
