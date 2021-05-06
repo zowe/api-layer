@@ -13,7 +13,7 @@ const prNumber = process.argv[5];
 
     try {
         const file1 = await readFile("../../docs/docgen/ErrorMessagesDocumentation.md");
-        const file2 = await readFile("../../docs-site/docs/troubleshoot/troubleshoot-apiml-error-codes.md");
+        const file2 = await readFile("../../docs/docgen/original-codes.md");
 
         if(file1.toString() != file2.toString()) {
             await octokit.rest.issues.addLabels({
