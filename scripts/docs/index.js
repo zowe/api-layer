@@ -31,8 +31,8 @@ const prNumber = process.argv[5];
                 head: branch
             });
 
-            let gitExistingCode = `git checkout apiml/pr${prNumber}/changed_errors && git pull origin apiml/pr${prNumber}/changed_errors && git add docs/troubleshoot/troubleshoot-apiml-error-codes.md && git commit --signoff -m "Update error codes"`;
-            let gitNewCode = `git branch apiml/pr${prNumber}/changed_errors && git checkout apiml/pr${prNumber}/changed_errors && git add docs/troubleshoot/troubleshoot-apiml-error-codes.md && git commit --signoff -m "Update error codes"`;
+            let gitExistingCode = `git checkout apiml/pr${prNumber}/changed_errors && git pull origin apiml/pr${prNumber}/changed_errors && cp ../docs/docgen/ErrorMessagesDocumentation.md docs/troubleshoot/troubleshoot-apiml-error-codes.md && git add docs/troubleshoot/troubleshoot-apiml-error-codes.md && git commit --signoff -m "Update error codes"`;
+            let gitNewCode = `git branch apiml/pr${prNumber}/changed_errors && git checkout apiml/pr${prNumber}/changed_errors && cp ../docs/docgen/ErrorMessagesDocumentation.md docs/troubleshoot/troubleshoot-apiml-error-codes.md && git add docs/troubleshoot/troubleshoot-apiml-error-codes.md && git commit --signoff -m "Update error codes"`;
 
             if(pulls.data.length > 0) {
                 execSync(gitExistingCode, {
