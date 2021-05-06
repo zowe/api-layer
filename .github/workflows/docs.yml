@@ -23,7 +23,7 @@ jobs:
               run: |
                   git clone https://github.com/zowe/docs-site.git
                   cd docs-site
-                  git checkout staging
+                  git checkout docs-staging
                   cd ../docs/docgen/
                   java -jar Docgen-1.0.jar ./config.yml
                   cp ../../docs-site/docs/troubleshoot/troubleshoot-apiml-error-codes.md original-codes.md
