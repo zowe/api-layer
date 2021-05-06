@@ -31,13 +31,19 @@ const prNumber = process.argv[5];
                 head: branch
             });
 
-            let gitCommand = `git push -u origin ${branch}`;
+            let gitExistingCode = `git checkout apiml/pr${prNumber}/changed_errors && git pull origin apiml/pr${prNumber}/changed_errors && git add docs/troubleshoot/troubleshoot-apiml-error-codes.md && git commit --signoff -m "Update error codes"`;
+            let gitNewCode = `git branch apiml/pr${prNumber}/changed_errors && git checkout apiml/pr${prNumber}/changed_errors && git add docs/troubleshoot/troubleshoot-apiml-error-codes.md && git commit --signoff -m "Update error codes"`;
+
             if(pulls.data.length > 0) {
-                gitCommand = `git push origin ${branch}`;
+                execSync(gitExistingCode, {
+                    cwd: '../../docs-site'
+                });
+            } else {
+                execSync(gitNewCode, {
+                    cwd: '../../docs-site'
+                });
             }
-            execSync(gitCommand, {
-                cwd: '../../docs-site'
-            });
+
 
             // If the PR already exists don't create new.
             if(pulls.data.length > 0) {
