@@ -31,6 +31,7 @@ class RemoteHandshakeTest {
 
     @BeforeEach
     void setupStreams() {
+
         System.setOut(new PrintStream(outputStream));
     }
 
@@ -57,6 +58,25 @@ class RemoteHandshakeTest {
         remoteHandshake.verify();
         String expectedMsg = "Start of the remote SSL handshake.\n" +
             "Handshake was successful. Service \"https://localhost:10010\" is trusted by truststore \"../keystore/localhost/localhost.truststore.p12\".\n";
+        assertEquals(expectedMsg, outputStream.toString());
+    }
+    @Test
+    void providedMalformedUrl_thenUserIsInformed() throws Exception {
+        String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
+            "--truststore", "../keystore/localhost/localhost.truststore.p12",
+            "--keypasswd", "password",
+            "--keyalias", "localhost",
+            "-r", "malformedurl"};
+
+        ApimlConf conf = new ApimlConf();
+        CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
+        Stores stores = new Stores(conf);
+        VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContext(stores);
+        HttpClient client = mock(HttpClient.class);
+        RemoteHandshake remoteHandshake = new RemoteHandshake(verifierSslContext, client);
+        when(client.executeCall(any())).thenReturn(200);
+        remoteHandshake.verify();
+        String expectedMsg = "Incorrect url \"malformedurl\". Error message: no protocol: malformedurl\n";
         assertEquals(expectedMsg, outputStream.toString());
     }
 }

@@ -34,7 +34,7 @@ public class RemoteHandshake implements Verifier {
             System.out.println("Handshake was successful. Service \"" + serviceAddress + "\" is trusted by truststore \"" + trustStore
                 + "\".");
         } catch (MalformedURLException e) {
-            System.out.println("Incorrect url " + serviceAddress + " Error message: " + e.getMessage());
+            System.out.println("Incorrect url \"" + serviceAddress + "\". Error message: " + e.getMessage());
         } catch (SSLHandshakeException e) {
             System.out.println("Handshake failed. Service \"" + serviceAddress +
                 "\" is not trusted. Please add CA of this certificate to your truststore " + trustStore);
