@@ -44,47 +44,102 @@ download_other_artifacts() {
   fi
 }
 
+download_jobs_and_files_artifacts() {
+  artifact_group=$1
+  path=https://zowe.jfrog.io/artifactory/api/storage/libs-release-local/org/zowe/$artifact_group/?lastModified
+  echo $path
+  url=$(curl -s "$path" | jq -r '.uri')
+  url=$(curl -s "$url" | jq -r '.downloadUri')
+  echo $url
+  echo "Downloading the ${artifact_name} artifact..."
+  curl -s --output ./"${full_name}" \
+  "$url"
+  rc=$?;
+
+  if [ $rc != 0 ]; then
+    echo "The ${artifact_name} artifact download failed."
+    exit 1
+  else
+    echo "The ${artifact_name} artifact has been downloaded."
+  fi
+}
+
+unzip_artifacts() {
+  #Unzipping the files and copying them into the known components directory
+  echo "Copying the components into the target directory..."
+  components_folder=../..
+  unzip ./"${full_name}" -d "${components_folder}/${artifact_name}"
+  rc=$?;
+  rm ./"${full_name}"
+
+  if [ $rc != 0 ]; then
+    echo "Could not unzip the ${full_name} artifact."
+    exit 1
+  else
+    echo "The ${full_name} artifact has been unzipped."
+  fi
+}
+
+# TODO figure out why pax command fails
+unpax_artifacts() {
+  #Unpaxing the files and copying them into the known components directory
+  echo "Copying the components into the target directory..."
+  components_folder=../..
+  echo $full_name
+  pax -ppx -rf ./"${full_name}" "${components_folder}/${artifact_name}"
+  rc=$?;
+  rm ./"${full_name}"
+
+  if [ $rc != 0 ]; then
+    echo "Could not unpax the ${full_name} artifact."
+    exit 1
+  else
+    echo "The ${full_name} artifact has been unpaxed."
+  fi
+}
+
 case $artifact_name in
   launcher)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "$repository_path" "launcher" "$full_name"
+    unpax_artifacts
     ;;
   jobs-api-package)
     full_name=$artifact_name-[RELEASE].zip
-    download_other_artifacts "libs-release-local" "explorer/jobs" "$full_name"
+    download_jobs_and_files_artifacts "explorer/jobs"
+    unzip_artifacts
     ;;
   files-api-package)
     full_name=$artifact_name-[RELEASE].zip
-    download_other_artifacts "libs-release-local" "explorer/files" "$full_name"
+    download_jobs_and_files_artifacts "explorer/files"
+    unzip_artifacts
     ;;
   api-catalog-package | discovery-package | gateway-package | caching-service-package | apiml-common-lib-package)
     download_apiml_artifacts
+    unzip_artifacts
     ;;
   explorer-ui-server)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-ui-server" "$full_name"
+    unpax_artifacts
     ;;
   explorer-jes)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-jes" "$full_name"
+    unpax_artifacts
     ;;
   explorer-mvs)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-mvs" "$full_name"
+    unpax_artifacts
     ;;
   explorer-uss)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-uss" "$full_name"
+    unpax_artifacts
     ;;
 esac
 
-#Unzipping the files and copying them into the known components directory
-echo "Copying the jars into the Zowe components directory..."
-
-components_folder=../..
-unzip ./"${full_name}" -d "${components_folder}/${artifact_name}"
-rm ./"${full_name}"
-
-# TODO leverage Zowe launcher to automatise the restart of Zowe
+# TODO leverage Zowe launcher to automatise the restart of Zowe. How we should integrate this script in zowe-install-packaging?
 echo "The Zowe components have been updated, please restart Zowe."
 exit 0
