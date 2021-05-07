@@ -1,0 +1,39 @@
+# This workflow will release project with Gradle
+name: Calculate statistics
+
+on:
+    pull_request:
+        branches: [ master ]
+    schedule:
+        # * is a special character in YAML so you have to quote this string
+        - cron:  '0 0 * * 5'
+    workflow_dispatch:
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - name: Set up Node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '14'
+
+            - name: Checkout repository
+              uses: actions/checkout@v2
+
+            - name: Generate stats
+              run: |
+                  cd scripts/statistics
+                  npm install
+                  node index.js zowe api-layer ${{ secrets.ZOWE_ROBOT_TOKEN }}
+
+            - name: Store results
+              uses: actions/upload-artifact@v2
+              with:
+                  name: Stats
+                  path: |
+                      scripts/statistics/*.json
+
