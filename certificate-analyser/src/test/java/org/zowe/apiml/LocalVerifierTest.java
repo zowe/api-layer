@@ -37,7 +37,7 @@ class LocalVerifierTest {
     @Test
     void providedCorrectInputs_thenCertificateIsVerified() {
         String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.keystore.p12",
+            "--truststore", "../keystore/localhost/localhost.truststore.p12",
             "--keypasswd", "password",
             "--keyalias", "localhost",
             "-l"};

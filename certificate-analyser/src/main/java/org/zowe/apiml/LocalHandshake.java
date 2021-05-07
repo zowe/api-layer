@@ -31,7 +31,7 @@ public class LocalHandshake implements Verifier {
         try {
             SSLServerSocket listener = (SSLServerSocket) verifierSslContext.getSslContext().getServerSocketFactory().createServerSocket(0);
 //            start listening on socket to do a SSL handshake
-            SocketServer server = new SocketServer(listener);
+            new SocketServer(listener);
             String address = "https://localhost:" + listener.getLocalPort();
             String keyAlias = verifierSslContext.getStores().getConf().getKeyAlias();
             String trustStore = verifierSslContext.getStores().getConf().getTrustStore();
@@ -43,11 +43,9 @@ public class LocalHandshake implements Verifier {
             } catch (SSLHandshakeException e) {
                 System.out.println("Handshake failed. Certificate stored under alias \"" + keyAlias + "\" is not trusted by truststore \"" + trustStore
                     + "\". Error message: " + e.getMessage());
-            } catch (IOException e) {
-                System.out.println("Failed when calling local server. Error message: " + e.getMessage());
             }
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Failed when calling local server. Error message: " + e.getMessage());
         }
     }
 }

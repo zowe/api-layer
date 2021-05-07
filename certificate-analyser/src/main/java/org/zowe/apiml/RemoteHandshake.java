@@ -39,7 +39,7 @@ public class RemoteHandshake implements Verifier {
         } catch (SSLHandshakeException e) {
             System.out.println("Handshake failed. Service \"" + serviceAddress +
                 "\" is not trusted. Please add CA of this certificate to your truststore " + trustStore);
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Failed when calling url: \"" + serviceAddress + "\" Error message: " + e.getMessage());
         }
     }

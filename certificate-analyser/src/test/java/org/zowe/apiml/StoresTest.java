@@ -19,7 +19,7 @@ class StoresTest {
     @Test
     void providedWrongPassword_thenStoresNotInitializeExceptionIsThrown() {
         String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.keystore.p12",
+            "--truststore", "../keystore/localhost/localhost.truststore.p12",
             "--keypasswd", "wrongPass",
             "--keyalias", "localhost"};
         ApimlConf conf = new ApimlConf();

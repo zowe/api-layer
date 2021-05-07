@@ -42,7 +42,7 @@ class RemoteHandshakeTest {
     @Test
     void providedCorrectKey_thenRequestPasses() throws Exception {
         String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.keystore.p12",
+            "--truststore", "../keystore/localhost/localhost.truststore.p12",
             "--keypasswd", "password",
             "--keyalias", "localhost",
             "-r", "https://localhost:10010"};

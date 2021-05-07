@@ -41,7 +41,7 @@ class LocalHandshakeTest {
     @Test
     void providedCorrectInputs_thenSuccessMessageIsDisplayed() throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.keystore.p12",
+            "--truststore", "../keystore/localhost/localhost.truststore.p12",
             "--keypasswd", "password",
             "--keyalias", "localhost",
             "-l"};
@@ -55,5 +55,23 @@ class LocalHandshakeTest {
         localHandshake.verify();
         assertTrue(outputStream.toString().contains("Handshake was successful. Certificate stored under alias \"" + conf.getKeyAlias() + "\" is trusted by truststore \"" + conf.getTrustStore()
             + "\"."));
+    }
+
+    @Test
+    void providedNotTrustedKey_thenHandshakeExceptionIsDisplayed() throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String[] args = {"--keystore", "../keystore/selfsigned/localhost.keystore.p12",
+            "--truststore", "../keystore/localhost/localhost.truststore.p12",
+            "--keypasswd", "password",
+            "--keyalias", "localhost",
+            "-l"};
+        ApimlConf conf = new ApimlConf();
+        CommandLine cmdLine = new CommandLine(conf);
+        cmdLine.parseArgs(args);
+        Stores stores = new Stores(conf);
+        VerifierSSLContext sslContext = VerifierSSLContext.initSSLContext(stores);
+        HttpClient client = new HttpClient(sslContext.getSslContext());
+        Verifier localHandshake = new LocalHandshake(sslContext, client);
+        localHandshake.verify();
+        assertTrue(outputStream.toString().contains("Handshake failed. Certificate stored under alias \"" + conf.getKeyAlias() + "\" is not trusted by truststore"));
     }
 }
