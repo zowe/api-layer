@@ -34,7 +34,7 @@ public class SocketServer implements Runnable {
             out.flush();
             outStream.flush();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 

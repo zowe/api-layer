@@ -12,15 +12,13 @@ package org.zowe.apiml;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import picocli.CommandLine;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class LocalVerifierTest {
-
+class MainTest {
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
 
@@ -35,20 +33,13 @@ class LocalVerifierTest {
     }
 
     @Test
-    void providedCorrectInputs_thenCertificateIsVerified() {
+    void providedCorrectInputs_certificateIsVerified() {
         String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
             "--truststore", "../keystore/localhost/localhost.truststore.p12",
             "--keypasswd", "password",
             "--keyalias", "localhost",
             "-l"};
-
-        ApimlConf conf = new ApimlConf();
-        CommandLine cmdLine = new CommandLine(conf);
-        cmdLine.parseArgs(args);
-        Stores stores = new Stores(conf);
-        LocalVerifier localVerifier = new LocalVerifier(stores);
-        localVerifier.verify();
+        Main.main(args);
         assertTrue(outputStream.toString().contains("Trusted certificate is stored under alias:"));
     }
-
 }

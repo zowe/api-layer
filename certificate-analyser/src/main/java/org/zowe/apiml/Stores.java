@@ -34,7 +34,7 @@ public class Stores {
 
     void init(ApimlConf conf) {
         if (conf.getKeyStore() == null) {
-            throw new StoresNotInitializeException("Stores can't be created. Please specify \"-k\" or \"--keystore\" parameterΩ.");
+            throw new StoresNotInitializeException("Stores can't be created. Please specify \"-k\" or \"--keystore\" parameter.");
         }
         if (conf.getKeyStore().startsWith(SAFKEYRING)) {
             try (InputStream keyringIStream = keyRingUrl(conf.getKeyStore()).openStream()) {

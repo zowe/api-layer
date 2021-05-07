@@ -32,22 +32,19 @@ public class Main {
             List<Verifier> verifiers = new ArrayList<>();
             HttpClient client = new HttpClient(verifierSslContext.getSslContext());
             if (conf.getRemoteUrl() != null) {
-                verifiers.add(new RemoteHandshake(verifierSslContext,client));
+                verifiers.add(new RemoteHandshake(verifierSslContext, client));
             } else {
                 System.out.println("No remote will be verified. Specify \"-r\" or \"--remoteurl\" if you wish to verify the trust.");
             }
 
             if (conf.isDoLocalHandshake()) {
-                verifiers.add(new LocalHandshake(verifierSslContext,client));
+                verifiers.add(new LocalHandshake(verifierSslContext, client));
             }
-
             verifiers.add(new LocalVerifier(stores));
-
             verifiers.forEach(Verifier::verify);
 
-
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
     }

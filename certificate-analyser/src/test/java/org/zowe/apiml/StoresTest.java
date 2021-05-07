@@ -12,6 +12,7 @@ package org.zowe.apiml;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class StoresTest {
@@ -24,7 +25,21 @@ class StoresTest {
             "--keyalias", "localhost"};
         ApimlConf conf = new ApimlConf();
         new CommandLine(conf).parseArgs(args);
-        assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
+        StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
+        assertEquals("keystore password was incorrect",e.getMessage());
+    }
+
+    @Test
+    void providedNoKeystore_thenStoresNotInitializeExceptionIsThrown() {
+        String[] args = {
+            "--truststore", "../keystore/localhost/localhost.truststore.p12",
+            "--keypasswd", "wrongPass",
+            "--keyalias", "localhost"};
+        ApimlConf conf = new ApimlConf();
+        new CommandLine(conf).parseArgs(args);
+
+        StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
+        assertEquals("Stores can't be created. Please specify \"-k\" or \"--keystore\" parameter.",e.getMessage());
     }
 
 }

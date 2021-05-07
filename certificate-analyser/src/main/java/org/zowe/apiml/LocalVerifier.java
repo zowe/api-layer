@@ -86,7 +86,7 @@ public class LocalVerifier implements Verifier {
             System.out.println("++++++++");
 
         } catch (CertificateParsingException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
     }
