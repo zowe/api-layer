@@ -91,7 +91,8 @@ async function loadPage (octokit, owner, repo, page) {
         repo,
         per_page: 100,
         state: 'all',
-        page: page
+        page: page,
+        since: '2020-06-01T00:00:00Z'
     });
 
     return result.data;
