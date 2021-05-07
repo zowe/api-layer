@@ -48,6 +48,11 @@ then
     LOG_LEVEL=$DIAG_MODE
 fi
 
+if [[ -z ${PKCS11_TOKEN_LABEL} && ! -z ${APIML_SECURITY_AUTH_JWTKEYALIAS} ]]
+then
+    PKCS11_TOKEN_LABEL=${APIML_SECURITY_AUTH_JWTKEYALIAS}
+fi
+
 if [[ -z ${APIML_GATEWAY_CATALOG_ID} ]]
 then
     APIML_GATEWAY_CATALOG_ID="apicatalog"
@@ -78,7 +83,7 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 export LIBPATH="$LIBPATH":
 
 GATEWAY_CODE=AG
-_BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
+echo "_BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Xms32m -Xmx256m \
     ${QUICK_START} \
     -Dibm.serversocket.recover=true \
@@ -130,6 +135,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -jar ${JAR_FILE} &
+    -jar ${JAR_FILE} & "
 pid=$!
 echo "pid=${pid}"
