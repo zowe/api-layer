@@ -1,10 +1,12 @@
-async function gatherPrStats(octokit, owner, repo, includeSize = true) {
+const fs = require('fs/promises');
+
+async function gatherPrStats(octokit, owner, repo, from) {
     let pullRequests = await loadPage(octokit, owner, repo, 0);
 
     let page = 1;
     let time = 0;
     let amountOfPrs = 0;
-    let timeSince = new Date('2021-03-01T00:00:00Z');
+    let timeSince = from;
 
     let stats = {
         commits: 0,
@@ -29,13 +31,11 @@ async function gatherPrStats(octokit, owner, repo, includeSize = true) {
             time += timeToClose;
             amountOfPrs++;
 
-            if(includeSize) {
-                pullRequest.size = await getSizeForPR(octokit, owner, repo, pullRequest.number);
+            pullRequest.size = await getSizeForPR(octokit, owner, repo, pullRequest.number);
 
-                types.forEach(type => {
-                    stats[type] += pullRequest.size[type];
-                });
-            }
+            types.forEach(type => {
+                stats[type] += pullRequest.size[type];
+            });
         }
 
         pullRequests = await loadPage(octokit, owner, repo, page);
@@ -53,6 +53,8 @@ async function gatherPrStats(octokit, owner, repo, includeSize = true) {
     });
     stats.averageTime = `Days: ${days}, Hours: ${hours}`;
     stats.amountOfPrs = amountOfPrs;
+
+    await fs.writeFile('pr.json', JSON.stringify(stats));
 
     console.log(stats);
 }

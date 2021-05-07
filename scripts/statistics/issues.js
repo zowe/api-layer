@@ -1,5 +1,7 @@
-async function gatherIssueStats(octokit, owner, repo) {
-    let issues = await loadPage(octokit, owner, repo, 0);
+const fs = require('fs/promises');
+
+async function gatherIssueStats(octokit, owner, repo, from) {
+    let issues = await loadPage(octokit, owner, repo, 0, from);
 
     // while issues are loaded
     const squadMembers = ['balhar-jakub', 'jandadav', 'achmelo', 'CarsonCook', 'jalel01', 'taban03', 'jordanCain'];
@@ -27,7 +29,7 @@ async function gatherIssueStats(octokit, owner, repo) {
                 }
             });
 
-        issues = await loadPage(octokit, owner, repo, page);
+        issues = await loadPage(octokit, owner, repo, page, from);
         page++;
     }
 
@@ -82,17 +84,19 @@ async function gatherIssueStats(octokit, owner, repo) {
         })
     });
 
+    await fs.writeFile('issues.json', JSON.stringify(issueStatistics));
+
     console.log(issueStatistics);
 }
 
-async function loadPage (octokit, owner, repo, page) {
+async function loadPage (octokit, owner, repo, page, from) {
     const result = await octokit.rest.issues.listForRepo({
         owner,
         repo,
         per_page: 100,
         state: 'all',
         page: page,
-        since: '2020-06-01T00:00:00Z'
+        since: from
     });
 
     return result.data;

@@ -1,10 +1,12 @@
-async function gatherCiStats(octokit, owner, repo) {
+const fs = require('fs/promises');
+
+async function gatherCiStats(octokit, owner, repo, from, to) {
     // Let's get data for the last month.
     let workflowRuns = await loadPage(octokit, owner, repo, 0);
 
     let page = 1;
-    let timeSince = new Date('2021-02-01T00:00:00Z');
-    let timeTo = new Date('2021-03-01T00:00:00Z');
+    let timeSince = from;
+    let timeTo = to;
 
     let runTime = 0;
     let amountOfRuns = 0;
@@ -26,13 +28,15 @@ async function gatherCiStats(octokit, owner, repo) {
         page++;
     }
 
-    // JSON data
-    console.log({
+    const stats = {
         averageRunTime: Math.round(runTime / amountOfRuns / 1000),
         amountOfRuns: amountOfRuns
-    });
+    };
 
-    console.log("PR is done");
+    await fs.writeFile('ci.json', JSON.stringify(stats));
+
+    // JSON data
+    console.log(stats);
 }
 
 async function loadRunTimeForAction(octokit, owner, repo, runId) {

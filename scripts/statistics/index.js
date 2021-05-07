@@ -1,4 +1,6 @@
 const Octokit = require('octokit').Octokit;
+const moment = require('moment');
+
 const gatherCiStats = require('./ci').gatherCiStats;
 const gatherIssueStats = require('./issues').gatherIssueStats;
 const gatherPrStats = require('./pullRequests').gatherPrStats;
@@ -12,9 +14,17 @@ const githubToken = process.argv[4];
     const octokit = new Octokit({auth: githubToken});
 
     try {
-        await gatherCiStats(octokit, owner, repository);
-        await gatherPrStats(octokit, owner, repository);
-        await gatherIssueStats(octokit, owner, repository);
+        const to = new Date();
+        const from = moment().subtract(7, 'days').toDate();
+
+        // Ci stats makes sense once a week
+        await gatherCiStats(octokit, owner, repository, from, to);
+        // PR stats makes sense once a week
+        await gatherPrStats(octokit, owner, repository, from, to);
+
+        const fromIssues = moment().subtract(1, 'month').toDate();
+        // Issue stats makes sense once a week but starting from the beginning of year.
+        await gatherIssueStats(octokit, owner, repository, fromIssues, to);
     } catch (e) {
         console.log(e);
     }
