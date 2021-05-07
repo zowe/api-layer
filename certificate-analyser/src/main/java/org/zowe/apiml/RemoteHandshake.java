@@ -10,7 +10,6 @@
 package org.zowe.apiml;
 
 import javax.net.ssl.SSLHandshakeException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
