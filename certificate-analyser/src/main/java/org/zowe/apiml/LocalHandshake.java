@@ -16,7 +16,7 @@ import javax.net.ssl.SSLServerSocket;
 import java.io.IOException;
 import java.net.URL;
 
-public class LocalHandshake implements Verifier{
+public class LocalHandshake implements Verifier {
 
     private VerifierSSLContext verifierSslContext;
     private HttpClient client;

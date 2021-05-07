@@ -23,7 +23,7 @@ class StoresTest {
             "--keypasswd", "wrongPass",
             "--keyalias", "localhost"};
         ApimlConf conf = new ApimlConf();
-        CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
+        new CommandLine(conf).parseArgs(args);
         assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
     }
 

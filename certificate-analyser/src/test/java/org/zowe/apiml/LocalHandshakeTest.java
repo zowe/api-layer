@@ -21,7 +21,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LocalHandshakeTest {
 
@@ -51,7 +51,7 @@ class LocalHandshakeTest {
         Stores stores = new Stores(conf);
         VerifierSSLContext sslContext = VerifierSSLContext.initSSLContext(stores);
         HttpClient client = new HttpClient(sslContext.getSslContext());
-        Verifier localHandshake = new LocalHandshake(sslContext,client);
+        Verifier localHandshake = new LocalHandshake(sslContext, client);
         localHandshake.verify();
         assertTrue(outputStream.toString().contains("Handshake was successful. Certificate stored under alias \"" + conf.getKeyAlias() + "\" is trusted by truststore \"" + conf.getTrustStore()
             + "\"."));

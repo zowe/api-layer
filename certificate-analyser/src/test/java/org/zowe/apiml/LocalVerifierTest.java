@@ -17,7 +17,7 @@ import picocli.CommandLine;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LocalVerifierTest {
 
@@ -35,7 +35,7 @@ class LocalVerifierTest {
     }
 
     @Test
-    void providedCorrectInputs_thenCertificateIsVerified(){
+    void providedCorrectInputs_thenCertificateIsVerified() {
         String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
             "--truststore", "../keystore/localhost/localhost.keystore.p12",
             "--keypasswd", "password",

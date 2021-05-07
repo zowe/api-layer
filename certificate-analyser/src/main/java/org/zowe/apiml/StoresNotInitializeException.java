@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml;
 
-public class StoresNotInitializeException extends RuntimeException{
+public class StoresNotInitializeException extends RuntimeException {
 
     public StoresNotInitializeException(String message) {
         super(message);
