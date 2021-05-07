@@ -18,7 +18,7 @@ import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class MainTest {
+class AnalyserTest {
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
 
@@ -39,7 +39,7 @@ class MainTest {
             "--keypasswd", "password",
             "--keyalias", "localhost",
             "-l"};
-        Main.main(args);
+        Analyser.main(args);
         assertTrue(outputStream.toString().contains("Trusted certificate is stored under alias:"));
     }
 }

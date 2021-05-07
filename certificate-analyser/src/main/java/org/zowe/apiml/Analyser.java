@@ -14,7 +14,7 @@ import picocli.CommandLine;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main {
+public class Analyser {
 
     public static void main(String[] args) {
         try {
