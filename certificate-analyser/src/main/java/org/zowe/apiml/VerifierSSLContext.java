@@ -68,7 +68,6 @@ public class VerifierSSLContext {
             public PrivateKey getPrivateKey(String s) {
                 return originalKm.getPrivateKey(s);
             }
-            // Delegate the rest of the methods from origKm too...
         };
         conf.sslContext.init(new KeyManager[]{km}, trustFactory.getTrustManagers(), new SecureRandom());
         return conf;
