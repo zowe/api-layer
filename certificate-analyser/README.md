@@ -11,7 +11,9 @@ Usage: <main class> [-hl] [-kp[=<keyPasswd>]] [-tp[=<trustPasswd>]]
                 Alias under which this key is stored
   -h, --help    display a help message
   -k, --keystore=<keyStore>
-                Path to keystore file or keyring
+                Path to keystore file or keyring. When using keyring, pass
+                                  -Djava.protocol.handler.pkgs=com.ibm.crypto.provider in
+                                  command line.
       -kp, --keypasswd[=<keyPasswd>]
                 Keystore password
       -kt, --keystoretype=<keyStoreType>
@@ -38,6 +40,10 @@ truststoretype - if this parameter is omitted completely, value from keystoretyp
 ### Do local handshake
 
 java -jar -Djavax.net.debug=ssl:handshake:verbose certificate-analyser-<version>.jar --keystore ../../../keystore/localhost/localhost.keystore.p12 --truststore ../../../keystore/localhost/localhost.truststore.p12 --keypasswd password --keyalias localhost --local 
+
+### Keyring
+
+If you are using SAF keyrings, you need to provide an additional parameter in command line `-Djava.protocol.handler.pkgs=com.ibm.crypto.provider`.
 
 ### Possible issues:
 
