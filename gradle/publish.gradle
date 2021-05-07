@@ -13,7 +13,8 @@ ext.javaLibraries = [
     'gateway-service',
     'security-service-client-spring',
     'zaas-client',
-    'discoverable-client'
+    'discoverable-client',
+    'certificate-analyser'
 ]
 
 ext.serviceJars = [ 'api-catalog-package', 'discovery-package', 'gateway-package', 'caching-service-package', 'apiml-common-lib-package' ]
