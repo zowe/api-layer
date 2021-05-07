@@ -33,13 +33,15 @@ public class Stores {
     }
 
     void init(ApimlConf conf) {
+        if(conf.getKeyStore() == null) {
+            throw new StoresNotInitializeException("Stores can't be created. Please specify \"-k\" or \"--keystore\" parameter.");
+        }
         if (conf.getKeyStore().startsWith(SAFKEYRING)) {
             try (InputStream keyringIStream = keyRingUrl(conf.getKeyStore()).openStream()) {
                 this.keyStore = readKeyStore(keyringIStream, conf.getKeyPasswd().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = this.keyStore;
             } catch (Exception e) {
-                System.out.println(e.getMessage());
-                System.exit(0);
+                throw new StoresNotInitializeException(e.getMessage());
             }
         } else {
             try (InputStream keyStoreIStream = new FileInputStream(conf.getKeyStore());
@@ -47,12 +49,10 @@ public class Stores {
                 this.keyStore = readKeyStore(keyStoreIStream, conf.getKeyPasswd().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
             } catch (FileNotFoundException e) {
-                System.err.println("Error while loading keystore file. Error message: " + e.getMessage() + "\n" +
+                throw new StoresNotInitializeException("Error while loading keystore file. Error message: " + e.getMessage() + "\n" +
                     "Possible solution: Verify correct path to the keystore. Change owner or permission to the keystore file.");
-                System.exit(0);
             } catch (Exception e) {
-                System.exit(0);
-                System.out.println(e.getMessage());
+                throw new StoresNotInitializeException(e.getMessage());
             }
         }
     }
@@ -77,7 +77,7 @@ public class Stores {
 
     public static URL keyRingUrl(String uri) throws MalformedURLException {
         if (!uri.startsWith(SAFKEYRING + ":////")) {
-            System.out.println("Incorrect key ring format: " + uri
+            throw new StoresNotInitializeException("Incorrect key ring format: " + uri
                 + ". Make sure you use format safkeyring:////userId/keyRing");
         }
 

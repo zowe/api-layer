@@ -16,17 +16,14 @@ import javax.net.ssl.SSLServerSocket;
 import java.io.IOException;
 import java.net.URL;
 
-public class LocalHandshakeVerifier extends HandshakeVerifier {
+public class LocalHandshake implements Verifier{
 
     private VerifierSSLContext verifierSslContext;
+    private HttpClient client;
 
-    public LocalHandshakeVerifier(VerifierSSLContext verifierSslContext) {
+    public LocalHandshake(VerifierSSLContext verifierSslContext, HttpClient client) {
         this.verifierSslContext = verifierSslContext;
-    }
-
-    @Override
-    public VerifierSSLContext getVerifierSslContext() {
-        return verifierSslContext;
+        this.client = client;
     }
 
     @Override
@@ -40,7 +37,7 @@ public class LocalHandshakeVerifier extends HandshakeVerifier {
             String trustStore = verifierSslContext.getStores().getConf().getTrustStore();
             try {
                 System.out.println("Start of the local SSL handshake.");
-                executeCall(new URL(address));
+                client.executeCall(new URL(address));
                 System.out.println("Handshake was successful. Certificate stored under alias \"" + keyAlias + "\" is trusted by truststore \"" + trustStore
                     + "\".");
             } catch (SSLHandshakeException e) {

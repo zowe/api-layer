@@ -9,37 +9,37 @@
  */
 package org.zowe.apiml;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class RemoteHandshakeVerifier extends HandshakeVerifier {
+public class RemoteHandshake implements Verifier {
 
     private VerifierSSLContext verifierSslContext;
+    private HttpClient httpClient;
 
-    @Override
-    public VerifierSSLContext getVerifierSslContext() {
-        return verifierSslContext;
-    }
-
-    public RemoteHandshakeVerifier(VerifierSSLContext verifierSslContext) {
+    public RemoteHandshake(VerifierSSLContext verifierSslContext, HttpClient httpClient) {
         this.verifierSslContext = verifierSslContext;
+        this.httpClient = httpClient;
     }
 
     public void verify() {
         String serviceAddress = verifierSslContext.getStores().getConf().getRemoteUrl();
         String trustStore = verifierSslContext.getStores().getConf().getTrustStore();
+
         try {
+            URL url = new URL(serviceAddress);
             System.out.println("Start of the remote SSL handshake.");
-            executeCall(new URL(serviceAddress));
+            httpClient.executeCall(url);
             System.out.println("Handshake was successful. Service \"" + serviceAddress + "\" is trusted by truststore \"" + trustStore
                 + "\".");
         } catch (MalformedURLException e) {
             System.out.println("Incorrect url " + serviceAddress + " Error message: " + e.getMessage());
         } catch (SSLHandshakeException e) {
             System.out.println("Handshake failed. Service \"" + serviceAddress +
-                "\" is not trusted. Please add CA of this certificate to your truststore " + getVerifierSslContext().getStores().getConf().getTrustStore());
+                "\" is not trusted. Please add CA of this certificate to your truststore " + trustStore);
         } catch (IOException e) {
             System.out.println("Failed when calling url: \"" + serviceAddress + "\" Error message: " + e.getMessage());
         }

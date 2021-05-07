@@ -10,18 +10,23 @@
 package org.zowe.apiml;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.URL;
 
-public abstract class HandshakeVerifier implements Verifier {
-    abstract VerifierSSLContext getVerifierSslContext();
+public class HttpClient {
 
-    int executeCall(URL url) throws IOException {
-        HttpsURLConnection.setDefaultSSLSocketFactory(getVerifierSslContext().getSslContext().getSocketFactory());
+    private final SSLContext sslContext;
+
+    public HttpClient(SSLContext sslContext) {
+        this.sslContext = sslContext;
+    }
+
+    public int executeCall(URL url) throws IOException {
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
         HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         return con.getResponseCode();
-
     }
 
 }

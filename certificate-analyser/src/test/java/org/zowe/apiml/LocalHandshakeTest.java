@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 package org.zowe.apiml;
 
 import org.junit.jupiter.api.AfterEach;
@@ -15,16 +14,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
-import javax.net.ssl.HttpsURLConnection;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
 
-
-class RemoteCertCheckerTest {
+class LocalHandshakeTest {
 
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
@@ -40,23 +39,21 @@ class RemoteCertCheckerTest {
     }
 
     @Test
-    void providedCorrectKey_thenRequestPasses() throws Exception {
+    void providedCorrectInputs_thenSuccessMessageIsDisplayed() throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
             "--truststore", "../keystore/localhost/localhost.keystore.p12",
             "--keypasswd", "password",
             "--keyalias", "localhost",
-            "-r", "https://localhost:10010"};
-
+            "-l"};
         ApimlConf conf = new ApimlConf();
-        CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
+        CommandLine cmdLine = new CommandLine(conf);
+        cmdLine.parseArgs(args);
         Stores stores = new Stores(conf);
-        VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContext(stores);
-        RemoteHandshakeVerifier remoteHandshakeVerifier = new RemoteHandshakeVerifier(verifierSslContext);
-        HttpsURLConnection conn = mock(HttpsURLConnection.class);
-        URL url = mock(URL.class);
-        when(url.openConnection()).thenReturn(conn);
-        when(conn.getResponseCode()).thenReturn(200);
-        remoteHandshakeVerifier.verify();
-//        assertEquals("",outputStream.toString());
+        VerifierSSLContext sslContext = VerifierSSLContext.initSSLContext(stores);
+        HttpClient client = new HttpClient(sslContext.getSslContext());
+        Verifier localHandshake = new LocalHandshake(sslContext,client);
+        localHandshake.verify();
+        assertTrue(outputStream.toString().contains("Handshake was successful. Certificate stored under alias \"" + conf.getKeyAlias() + "\" is trusted by truststore \"" + conf.getTrustStore()
+            + "\"."));
     }
 }
