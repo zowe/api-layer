@@ -1,8 +1,26 @@
 #!/usr/bin/env sh
 
+################################################################################
+# This program and the accompanying materials are made available under the terms of the
+# Eclipse Public License v2.0 which accompanies this distribution, and is available at
+# https://www.eclipse.org/legal/epl-v20.html
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+# Copyright IBM Corporation 2019, 2020
+################################################################################
+
+################################################################################
+# Zowe updater script
+#
+# This script will download all the Zowe components from the Artifactory and
+# will be afterwards consumed by the zowe-install script.
+################################################################################
+
 #Downloading the Zowe components artifact from Zowe artifactory
-artifact_name=$2
+artifact_name=$(basename $2)
 repository_path="libs-snapshot-local"
+temporary_components_directory=$PWD/$(cd ..)
 
 download_apiml_artifacts() {
   artifact_group="apiml/sdk"
@@ -12,7 +30,7 @@ download_apiml_artifacts() {
   full_name=$artifact_name-$build.zip
   echo $path/"$version"/"$full_name"
   echo "Downloading the ${artifact_name} artifact..."
-  curl -s --output ./"${full_name}" \
+  curl -s --output "${temporary_components_directory}" \
   $path/"$version"/"$full_name"
   rc=$?;
 
@@ -32,7 +50,7 @@ download_other_artifacts() {
   path=https://zowe.jfrog.io/artifactory/$repository_path/org/zowe/$artifact_group/[RELEASE]/$full_name
   echo $path
   echo "Downloading the ${artifact_name} artifact..."
-  curl -s --output ./"${full_name}" \
+  curl -s --output "${temporary_components_directory}" \
   $path
   rc=$?;
 
@@ -40,7 +58,7 @@ download_other_artifacts() {
     echo "The ${artifact_name} artifact download failed."
     exit 1
   else
-    echo "The ${artifact_name} artifact has been downloaded."
+    echo "The ${artifact_name} artifact has been downloaded into the directory ${temporary_components_directory}"
   fi
 }
 
@@ -52,7 +70,7 @@ download_jobs_and_files_artifacts() {
   url=$(curl -s "$url" | jq -r '.downloadUri')
   echo $url
   echo "Downloading the ${artifact_name} artifact..."
-  curl -s --output ./"${full_name}" \
+  curl -s --output "${temporary_components_directory}" \
   "$url"
   rc=$?;
 
@@ -60,41 +78,7 @@ download_jobs_and_files_artifacts() {
     echo "The ${artifact_name} artifact download failed."
     exit 1
   else
-    echo "The ${artifact_name} artifact has been downloaded."
-  fi
-}
-
-unzip_artifacts() {
-  #Unzipping the files and copying them into the known components directory
-  echo "Copying the components into the target directory..."
-  components_folder=../..
-  unzip ./"${full_name}" -d "${components_folder}/${artifact_name}"
-  rc=$?;
-  rm ./"${full_name}"
-
-  if [ $rc != 0 ]; then
-    echo "Could not unzip the ${full_name} artifact."
-    exit 1
-  else
-    echo "The ${full_name} artifact has been unzipped."
-  fi
-}
-
-# TODO figure out why pax command fails
-unpax_artifacts() {
-  #Unpaxing the files and copying them into the known components directory
-  echo "Copying the components into the target directory..."
-  components_folder=../..
-  echo $full_name
-  pax -ppx -rf ./"${full_name}" "${components_folder}/${artifact_name}"
-  rc=$?;
-  rm ./"${full_name}"
-
-  if [ $rc != 0 ]; then
-    echo "Could not unpax the ${full_name} artifact."
-    exit 1
-  else
-    echo "The ${full_name} artifact has been unpaxed."
+    echo "The ${artifact_name} artifact has been downloaded into the directory ${temporary_components_directory}"
   fi
 }
 
@@ -102,44 +86,34 @@ case $artifact_name in
   launcher)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "$repository_path" "launcher" "$full_name"
-    unpax_artifacts
     ;;
   jobs-api-package)
     full_name=$artifact_name-[RELEASE].zip
     download_jobs_and_files_artifacts "explorer/jobs"
-    unzip_artifacts
     ;;
   files-api-package)
     full_name=$artifact_name-[RELEASE].zip
     download_jobs_and_files_artifacts "explorer/files"
-    unzip_artifacts
     ;;
   api-catalog-package | discovery-package | gateway-package | caching-service-package | apiml-common-lib-package)
     download_apiml_artifacts
-    unzip_artifacts
     ;;
   explorer-ui-server)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-ui-server" "$full_name"
-    unpax_artifacts
     ;;
   explorer-jes)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-jes" "$full_name"
-    unpax_artifacts
     ;;
   explorer-mvs)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-mvs" "$full_name"
-    unpax_artifacts
     ;;
   explorer-uss)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-uss" "$full_name"
-    unpax_artifacts
     ;;
 esac
 
-# TODO leverage Zowe launcher to automatise the restart of Zowe. How we should integrate this script in zowe-install-packaging?
-echo "The Zowe components have been updated, please restart Zowe."
 exit 0
