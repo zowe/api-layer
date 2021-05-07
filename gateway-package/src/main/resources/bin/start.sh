@@ -83,7 +83,7 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 export LIBPATH="$LIBPATH":
 
 GATEWAY_CODE=AG
-echo "_BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
+_BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Xms32m -Xmx256m \
     ${QUICK_START} \
     -Dibm.serversocket.recover=true \
@@ -135,6 +135,6 @@ echo "_BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -jar ${JAR_FILE} & "
+    -jar ${JAR_FILE} &
 pid=$!
 echo "pid=${pid}"
