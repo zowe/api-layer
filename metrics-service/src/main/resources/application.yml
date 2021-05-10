@@ -79,7 +79,8 @@ spring:
 
 server:
     port: ${apiml.service.port}
-    context-path: ${apiml.service.contextPath}
+    servlet:
+        contextPath: ${apiml.service.contextPath}
 
     ssl:
         enabled: true
