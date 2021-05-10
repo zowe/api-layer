@@ -1,0 +1,48 @@
+ext {
+    artifactName = 'metrics-service-package'
+    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
+}
+
+configurations {
+    metricsServiceJar
+    zip
+}
+
+dependencies {
+    metricsServiceJar(project(path: ":metrics-service", configuration: "bootArchives"))
+}
+
+task packageMetricsService(type: Zip) {
+    archiveName = artifactName + pullNo + ".zip"
+    includeEmptyDirs = true
+    def resourceDir = 'src/main/resources/'
+
+    into('/') {
+        from "$resourceDir/manifest.yaml"
+    }
+
+    into('bin/') {
+        from configurations.metricsServiceJar
+        from "$resourceDir/bin/start.sh"
+        from "$resourceDir/bin/validate.sh"
+    }
+}
+
+jar.dependsOn(packageMetricsService)
+build.dependsOn(packageMetricsService)
+
+artifacts {
+    zip packageMetricsService
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+        }
+    }
+}
+
+jar {
+    enabled false
+}

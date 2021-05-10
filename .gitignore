@@ -47,6 +47,7 @@ bin
 !api-catalog-package/src/main/resources/bin
 !discovery-package/src/main/resources/bin
 !caching-service-package/src/main/resources/bin
+!metrics-service-package/src/main/resources/bin
 var
 sdist
 develop-eggs
