@@ -9,7 +9,7 @@ apiml:
         staticApiDefinitionsDirectories: config/local/api-defs
     security:
         ssl:
-            verifySslCertificatesOfServices: true
+            verifySslCertificatesOfServices: false
     banner: console
 
 spring:
@@ -31,6 +31,16 @@ server:
         keyStoreType: PKCS12
         keyStore: keystore/localhost/localhost.keystore.p12
         keyStorePassword: password
+        trustStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+
+---
+spring:
+    profiles: attls
+
+server:
+    ssl:
         trustStoreType: PKCS12
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password

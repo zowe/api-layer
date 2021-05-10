@@ -261,3 +261,17 @@ spring:
         - diag
 
 logbackServiceName: ZWEAGW1
+
+---
+spring:
+    profiles: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+apiml:
+    service:
+        scheme: http

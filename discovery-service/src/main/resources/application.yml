@@ -49,6 +49,8 @@ spring:
         banner-mode: ${apiml.banner:"off"}
 
 server:
+    attls:
+        enabled: false
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
     ssl:
@@ -157,3 +159,32 @@ spring:
         - diag
 
 logbackServiceName: ZWEADS1
+
+---
+spring:
+    profiles: attls
+
+
+apiml:
+    discovery:
+        allPeersUrls: http://${apiml.service.hostname}:${apiml.service.port}/eureka/
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+eureka:
+    instance:
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+        port: 0
+        securePort: ${server.port}
+        homePageUrl: http://${apiml.service.hostname}:${apiml.service.port}/
+        statusPageUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
+    client:
+        serviceUrl:
+            defaultZone: ${apiml.discovery.allPeersUrls}

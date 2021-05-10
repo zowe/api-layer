@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -42,6 +44,7 @@ import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
+import org.zowe.apiml.product.filter.AttlsFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
@@ -91,6 +94,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final Set<String> publicKeyCertificatesBase64;
     private final ZuulProperties zuulProperties;
     private final X509AuthenticationProvider x509AuthenticationProvider;
+    @Value("${server.attls.enabled}")
+    private boolean isAttlsEnabled;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
@@ -181,6 +186,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        if(isAttlsEnabled){
+            http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+        }
     }
 
     @Bean
@@ -334,6 +343,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         web.ignoring()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.PUBLIC_KEYS_PATH + "/**");
     }
-
 
 }

@@ -4,7 +4,7 @@ apiml:
         hostname: localhost
         ipAddress: 127.0.0.1
         port: 10010
-        discoveryServiceUrls: https://localhost:10011/eureka/
+        discoveryServiceUrls: http://localhost:10011/eureka/
     security:
         auth:
             provider: zosmf
@@ -32,7 +32,7 @@ spring:
 
 server:
     internal:
-        enabled: true
+        enabled: false
         port: 10017
         ssl:
             keyAlias: localhost-multi
@@ -46,3 +46,13 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+
+---
+spring:
+    profiles: attls
+
+server:
+    ssl:
+        trustStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
