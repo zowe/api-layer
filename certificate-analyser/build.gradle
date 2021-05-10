@@ -17,7 +17,7 @@ compileJava {
 jar {
     manifest {
         attributes(
-            'Main-Class': 'org.zowe.apiml.Main'
+            'Main-Class': 'org.zowe.apiml.Analyser'
         )
     }
     from {
