@@ -19,7 +19,17 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 import java.util.Collections;
 
 @Configuration
@@ -31,6 +41,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifyCerts;
+
+    @Value("${server.attls.enabled}")
+    private boolean isAttlsEnabled;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -51,6 +64,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         if (verifyCertificates || nonStrictVerifyCerts) {
             http.authorizeRequests().anyRequest().authenticated().and()
                 .x509().userDetailsService(x509UserDetailsService());
+            if(isAttlsEnabled){
+                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+            }
         } else {
             http.authorizeRequests().anyRequest().permitAll();
         }
@@ -59,5 +75,30 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private UserDetailsService x509UserDetailsService() {
         return username -> new User("cachingUser", "", Collections.emptyList());
+    }
+
+    static class AttlsFilter extends OncePerRequestFilter {
+
+        private static X509Certificate certificate;
+
+        static {
+            try {
+                KeyStore store = KeyStore.getInstance("PKCS12");
+                store.load(new FileInputStream("./keystore/localhost/localhost.keystore.p12"), "password".toCharArray());
+                certificate = (X509Certificate) store.getCertificate("localhost");
+
+            } catch (Exception e) {
+
+            }
+        }
+
+        @Override
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+            X509Certificate[] certificates = new X509Certificate[1];
+            certificates[0] = certificate;
+            request.setAttribute("javax.servlet.request.X509Certificate", certificates);
+            filterChain.doFilter(request, response);
+        }
+
     }
 }

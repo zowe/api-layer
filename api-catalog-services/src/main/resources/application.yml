@@ -194,3 +194,50 @@ spring:
 
 
 logbackServiceName: ZWEAAC1
+
+---
+spring:
+    profiles: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+eureka:
+    instance:
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
+        metadata-map:
+            apiml:
+                catalog:
+                    tile:
+                        id: ${apiml.catalog.id}
+                        title: ${apiml.catalog.title}
+                        description: ${apiml.catalog.description}
+                        version: ${apiml.catalog.version}
+
+                routes:
+                    ui-v1:
+                        gatewayUrl: "/ui/v1"
+                        serviceUrl: /apicatalog
+                    api-v1:
+                        gatewayUrl: "/api/v1"
+                        serviceUrl: /apicatalog
+
+                apiInfo:
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+
+                service:
+                    title: API Catalog
+                    description: API Catalog service to display service details and API documentation for discovered API services.
+
+                authentication:
+                    sso: true
+apiml:
+    service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
