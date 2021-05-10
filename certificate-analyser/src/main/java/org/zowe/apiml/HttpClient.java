@@ -25,6 +25,8 @@ public class HttpClient {
     public int executeCall(URL url) throws IOException {
         HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
         HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+        con.setConnectTimeout(2000);
+        con.setReadTimeout(2000);
         con.setRequestMethod("GET");
         return con.getResponseCode();
     }
