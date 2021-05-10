@@ -40,6 +40,8 @@ gitProperties {
 dependencies {
     implementation project(':onboarding-enabler-spring')
 
+    implementation libraries.spring_security_web
+    implementation libraries.spring_security_config
     implementation libraries.gson
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
