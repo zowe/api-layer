@@ -62,6 +62,7 @@ public class GatewayHomepageController {
     @GetMapping("/")
     public String home(Model model) {
         initializeCatalogAttributes(model);
+        initializeMetricsAttributes(model);
         initializeDiscoveryAttributes(model);
         initializeAuthenticationAttributes(model);
 
@@ -152,6 +153,36 @@ public class GatewayHomepageController {
         String gatewayUrl = catalogInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_GATEWAY_URL));
         String serviceUrl = catalogInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_SERVICE_URL));
         return serviceUrl + gatewayUrl;
+    }
+
+    private void initializeMetricsAttributes(Model model) {
+        boolean metricsEnabled = true; // TODO set this properly
+        model.addAttribute("metricsEnabled", metricsEnabled);
+
+        boolean metricsLinkEnabled = false;
+        String metricsLink = null;
+        String metricsStatusText = "The Metrics Service is not running";
+
+        String metricsIconName = "warning";
+
+        List<ServiceInstance> metricsServiceInstances = discoveryClient.getInstances("metrics");
+        boolean metricsUp = !metricsServiceInstances.isEmpty();
+
+        if (metricsUp && metricsEnabled) {
+            metricsLinkEnabled = true;
+            metricsIconName = SUCCESS_ICON_NAME;
+            metricsLink = getMetricsLink(metricsServiceInstances.get(0));
+            metricsStatusText = "The Metrics service is running";
+        }
+
+        model.addAttribute("metricsLinkEnabled", metricsLinkEnabled);
+        model.addAttribute("metricsStatusText", metricsStatusText);
+        model.addAttribute("metricsIconName", metricsIconName);
+        model.addAttribute("metricsLink", metricsLink);
+    }
+
+    private String getMetricsLink(ServiceInstance metricsInstance) {
+        return metricsInstance.getMetadata().get(String.format("%s.api-v1.%s", ROUTES, ROUTES_SERVICE_URL));
     }
 
     private boolean authorizationServiceUp() {
