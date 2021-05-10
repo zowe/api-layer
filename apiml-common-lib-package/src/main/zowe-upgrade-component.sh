@@ -7,17 +7,17 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-# Copyright IBM Corporation 2019, 2020
+# Copyright IBM Corporation 2021
 ################################################################################
 
 ################################################################################
 # Zowe updater script
 #
-# This script will download all the Zowe components from the Artifactory and
-# will be afterwards consumed by the zowe-install script.
+# This script will upgrade a specified Zowe component to the latest version. It will
+# get consumed by the zowe-install script during the Zowe installation.
 ################################################################################
 
-#Downloading the Zowe components artifact from Zowe artifactory
+#Downloading the Zowe component artifact from Zowe artifactory and saving it into the temporary components directory.
 artifact_name=$(basename $2)
 repository_path="libs-snapshot-local"
 temporary_components_directory=$PWD/$(cd ..)
