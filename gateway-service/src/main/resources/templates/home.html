@@ -175,8 +175,8 @@
                 </a>
             </div>
         </li>
-        <li class="list-item">
-            <div class="wrap" th:if="${metricsEnabled == true}"><img class="status-icon"
+        <li class="list-item" th:if="${metricsEnabled == true}">
+            <div class="wrap"><img class="status-icon"
                                                                      th:src="@{${'/images/icon-notification-intent-' + metricsIconName + '.png'}}"
                                                                      alt="Metrics service running icon"/>
                 <a class="active"

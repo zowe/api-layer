@@ -37,8 +37,7 @@ class GatewayHomepageControllerTest {
     private GatewayHomepageController gatewayHomepageController;
     private BuildInfo buildInfo;
 
-    private final String API_CATALOG_ID = "apicatalog";
-    private final String METRICS_SERVICE_ID = "metrics-service";
+    private final String API_CATALOG_ID = "apicatalog";z
     private final String AUTHORIZATION_SERVICE_ID = "zosmf";
 
     @BeforeEach
@@ -52,7 +51,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, providers, buildInfo, API_CATALOG_ID, METRICS_SERVICE_ID);
+            discoveryClient, providers, buildInfo, API_CATALOG_ID);
     }
 
     @Test
@@ -76,7 +75,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, providers, buildInfo, API_CATALOG_ID, METRICS_SERVICE_ID);
+            discoveryClient, providers, buildInfo, API_CATALOG_ID);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -103,7 +102,7 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenApiCatalogueIsEmpty_whenHomePageIsCalled_thenThereIsNoMessageAroundTheCatalog() {
-        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, providers, buildInfo, null, METRICS_SERVICE_ID);
+        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, providers, buildInfo, null);
         Model model = new ConcurrentModel();
         underTest.home(model);
 

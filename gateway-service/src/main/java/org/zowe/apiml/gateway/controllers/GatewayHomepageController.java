@@ -40,6 +40,7 @@ public class GatewayHomepageController {
 
     private final String apiCatalogServiceId;
     private final String metricsServiceId;
+    private final boolean metricsServiceEnabled;
 
     // TODO unit test
 
@@ -47,20 +48,30 @@ public class GatewayHomepageController {
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
                                      @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId,
-                                     @Value("${apiml.metrics.serviceId:}") String metricsServiceId) {
-        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId, metricsServiceId);
+                                     @Value("${apiml.metrics.serviceId:}") String metricsServiceId,
+                                     @Value("${apiml.metrics.enabled:false}") boolean metricsServiceEnabled) {
+        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId, metricsServiceId, metricsServiceEnabled);
+    }
+
+    public GatewayHomepageController(DiscoveryClient discoveryClient,
+                                     Providers providers,
+                                     BuildInfo buildInfo,
+                                     String apiCatalogServiceId) {
+        this(discoveryClient, providers, buildInfo, apiCatalogServiceId, null, false);
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
                                      BuildInfo buildInfo,
                                      String apiCatalogServiceId,
-                                     String metricsServiceId) {
+                                     String metricsServiceId,
+                                     boolean metricsServiceEnabled) {
         this.discoveryClient = discoveryClient;
         this.providers = providers;
         this.buildInfo = buildInfo;
         this.apiCatalogServiceId = apiCatalogServiceId;
         this.metricsServiceId = metricsServiceId;
+        this.metricsServiceEnabled = metricsServiceEnabled;
 
         initializeBuildInfos();
     }
@@ -162,8 +173,7 @@ public class GatewayHomepageController {
     }
 
     private void initializeMetricsAttributes(Model model) {
-        boolean metricsEnabled = true; // TODO set this properly
-        model.addAttribute("metricsEnabled", metricsEnabled);
+        model.addAttribute("metricsEnabled", metricsServiceEnabled);
 
         boolean metricsLinkEnabled = false;
         String metricsLink = null;
@@ -174,7 +184,7 @@ public class GatewayHomepageController {
         List<ServiceInstance> metricsServiceInstances = discoveryClient.getInstances(metricsServiceId);
         boolean metricsUp = !metricsServiceInstances.isEmpty();
 
-        if (metricsUp && metricsEnabled) {
+        if (metricsUp && metricsServiceEnabled) {
             metricsLinkEnabled = true;
             metricsIconName = SUCCESS_ICON_NAME;
             metricsLink = getMetricsLink(metricsServiceInstances.get(0));
