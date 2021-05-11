@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.functional.config;
+package org.zowe.apiml.acceptance.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -15,8 +15,8 @@ import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.functional.netflix.ApimlRouteLocatorStub;
-import org.zowe.apiml.functional.netflix.ApplicationRegistry;
+import org.zowe.apiml.acceptance.netflix.ApimlRouteLocatorStub;
+import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
 import org.zowe.apiml.gateway.filters.pre.*;

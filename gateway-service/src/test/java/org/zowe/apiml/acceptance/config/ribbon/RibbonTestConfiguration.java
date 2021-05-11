@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.functional.config.ribbon;
+package org.zowe.apiml.acceptance.config.ribbon;
 
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
@@ -20,8 +20,8 @@ import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpCl
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.zowe.apiml.functional.netflix.ApimlLoadBalancerStub;
-import org.zowe.apiml.functional.netflix.ApplicationRegistry;
+import org.zowe.apiml.acceptance.netflix.ApimlLoadBalancerStub;
+import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 import org.zowe.apiml.gateway.ribbon.AbortingRetryListener;
 import org.zowe.apiml.gateway.ribbon.ApimlRetryableClient;

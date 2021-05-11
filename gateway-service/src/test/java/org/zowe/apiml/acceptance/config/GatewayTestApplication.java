@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.functional.config;
+package org.zowe.apiml.acceptance.config;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
@@ -19,7 +19,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.zowe.apiml.functional.config.ribbon.RibbonTestConfiguration;
+import org.zowe.apiml.acceptance.config.ribbon.RibbonTestConfiguration;
 import org.zowe.apiml.gateway.config.DiscoveryClientConfig;
 import org.zowe.apiml.gateway.routing.ApimlRoutingConfig;
 

@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.functional.common;
+package org.zowe.apiml.acceptance.common;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -21,8 +21,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.zowe.apiml.functional.netflix.ApimlDiscoveryClientStub;
-import org.zowe.apiml.functional.netflix.ApplicationRegistry;
+import org.zowe.apiml.acceptance.netflix.ApimlDiscoveryClientStub;
+import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

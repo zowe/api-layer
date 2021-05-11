@@ -7,14 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.functional.netflix;
+package org.zowe.apiml.acceptance.netflix;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
-import org.zowe.apiml.functional.common.Service;
+import org.zowe.apiml.acceptance.common.Service;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;

@@ -7,13 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.functional;
+package org.zowe.apiml.acceptance;
 
 import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
-import org.zowe.apiml.functional.common.AcceptanceTest;
-import org.zowe.apiml.functional.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
 import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
@@ -22,6 +23,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@Disabled
 @AcceptanceTest
 class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
