@@ -7,14 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.acceptance;
+package org.zowe.apiml.functional;
 
 import org.apache.http.client.methods.HttpUriRequest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.zowe.apiml.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.functional.common.AcceptanceTest;
+import org.zowe.apiml.functional.common.AcceptanceTestWithTwoServices;
 
 import java.io.IOException;
 
@@ -25,7 +24,6 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@Disabled
 @AcceptanceTest
 class ForwardedProxyHeadersTest extends AcceptanceTestWithTwoServices {
     @Test

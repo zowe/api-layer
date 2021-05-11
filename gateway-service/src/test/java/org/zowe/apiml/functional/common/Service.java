@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.acceptance.common;
+package org.zowe.apiml.functional.common;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

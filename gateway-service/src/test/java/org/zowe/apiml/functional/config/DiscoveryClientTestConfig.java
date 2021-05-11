@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.acceptance.config;
+package org.zowe.apiml.functional.config;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
@@ -25,8 +25,8 @@ import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.zowe.apiml.acceptance.netflix.ApimlDiscoveryClientStub;
-import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
+import org.zowe.apiml.functional.netflix.ApimlDiscoveryClientStub;
+import org.zowe.apiml.functional.netflix.ApplicationRegistry;
 
 import java.util.List;
 

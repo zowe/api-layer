@@ -7,14 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.acceptance.common;
+package org.zowe.apiml.functional.common;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
-import org.zowe.apiml.acceptance.config.DiscoveryClientTestConfig;
-import org.zowe.apiml.acceptance.config.GatewayOverrideConfig;
-import org.zowe.apiml.acceptance.config.GatewayTestApplication;
+import org.zowe.apiml.functional.config.ApimlRoutingConfig;
+import org.zowe.apiml.functional.config.DiscoveryClientTestConfig;
+import org.zowe.apiml.functional.config.GatewayOverrideConfig;
+import org.zowe.apiml.functional.config.GatewayTestApplication;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.acceptance.netflix;
+package org.zowe.apiml.functional.netflix;
 
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
