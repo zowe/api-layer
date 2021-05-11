@@ -16,5 +16,3 @@ build:
   number: "{{build.number}}"
   commitHash: "{{build.commitHash}}"
   timestamp: "{{build.timestamp}}"
-commands:
-    install: bin/install.sh
