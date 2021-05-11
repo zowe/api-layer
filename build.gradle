@@ -226,7 +226,7 @@ release {
     ]
 
     git {
-        requireBranch = 'master'
+        requireBranch = 'rip/taban03/extend_apiml_updater'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = true
