@@ -28,7 +28,7 @@ const prNumber = process.argv[5];
             const pulls = await octokit.rest.pulls.list({
                 owner,
                 repo: 'docs-site',
-                head: branch
+                head: `zowe:${branch}`
             });
 
             let gitExistingCode = `git checkout apiml/pr${prNumber}/changed_errors && git pull origin apiml/pr${prNumber}/changed_errors && cp ../docs/docgen/ErrorMessagesDocumentation.md docs/troubleshoot/troubleshoot-apiml-error-codes.md && git add docs/troubleshoot/troubleshoot-apiml-error-codes.md && git commit --signoff -m "Update error codes" && git push origin apiml/pr${prNumber}/changed_errors`;
