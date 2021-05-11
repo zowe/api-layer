@@ -10,7 +10,9 @@
 package org.zowe.apiml.integration.zos;
 
 import io.restassured.RestAssured;
-import io.restassured.response.*;
+import io.restassured.response.ResponseBody;
+import io.restassured.response.ResponseOptions;
+import io.restassured.response.ValidatableResponseOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +22,10 @@ import org.zowe.apiml.security.common.ticket.TicketResponse;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
+import org.zowe.apiml.util.config.EnvironmentConfiguration;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import java.util.Base64;
 
@@ -31,8 +36,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.zowe.apiml.util.SecurityUtils.*;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 @Slf4j
 @GeneralAuthenticationTest

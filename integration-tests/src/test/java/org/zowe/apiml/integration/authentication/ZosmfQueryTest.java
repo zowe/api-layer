@@ -16,7 +16,7 @@ import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 @zOSMFAuthTest
-public class ZosmfQueryTest extends QueryTest{
+public class ZosmfQueryTest extends QueryTest {
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.useRelaxedHTTPSValidation();

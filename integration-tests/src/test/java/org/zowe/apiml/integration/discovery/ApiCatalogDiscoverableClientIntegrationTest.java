@@ -11,18 +11,12 @@ package org.zowe.apiml.integration.discovery;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import net.minidev.json.JSONArray;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
@@ -36,7 +30,6 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.http.HttpSecurityUtils;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.LinkedHashMap;
 
 import static org.hamcrest.MatcherAssert.assertThat;
