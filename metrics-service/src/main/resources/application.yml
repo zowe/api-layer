@@ -38,6 +38,8 @@ apiml:
         statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
         routes:
+            -   gateway-url: "ui/v1"
+                service-url: ${apiml.service.contextPath}/ui/v1
             -   gateway-url: "api/v1"
                 service-url: ${apiml.service.contextPath}/api/v1
         apiInfo:

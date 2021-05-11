@@ -42,8 +42,6 @@ public class GatewayHomepageController {
     private final String metricsServiceId;
     private final boolean metricsServiceEnabled;
 
-    // TODO unit test
-
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
@@ -162,7 +160,7 @@ public class GatewayHomepageController {
 
         model.addAttribute("catalogLink", catalogLink);
         model.addAttribute("catalogIconName", catalogIconName);
-        model.addAttribute("linkEnabled", linkEnabled);
+        model.addAttribute("catalogLinkEnabled", linkEnabled);
         model.addAttribute("catalogStatusText", catalogStatusText);
     }
 
@@ -175,30 +173,29 @@ public class GatewayHomepageController {
     private void initializeMetricsAttributes(Model model) {
         model.addAttribute("metricsEnabled", metricsServiceEnabled);
 
-        boolean metricsLinkEnabled = false;
         String metricsLink = null;
         String metricsStatusText = "The Metrics Service is not running";
-
         String metricsIconName = "warning";
 
-        List<ServiceInstance> metricsServiceInstances = discoveryClient.getInstances(metricsServiceId);
-        boolean metricsUp = !metricsServiceInstances.isEmpty();
+        if (metricsServiceEnabled) {
+            List<ServiceInstance> metricsServiceInstances = discoveryClient.getInstances(metricsServiceId);
+            boolean metricsUp = !metricsServiceInstances.isEmpty();
 
-        if (metricsUp && metricsServiceEnabled) {
-            metricsLinkEnabled = true;
-            metricsIconName = SUCCESS_ICON_NAME;
-            metricsLink = getMetricsLink(metricsServiceInstances.get(0));
-            metricsStatusText = "The Metrics service is running";
+            if (metricsUp) {
+                metricsIconName = SUCCESS_ICON_NAME;
+                metricsLink = getMetricsLink(metricsServiceInstances.get(0));
+                metricsStatusText = "The Metrics Service is running";
+            }
         }
 
-        model.addAttribute("metricsLinkEnabled", metricsLinkEnabled);
+        model.addAttribute("metricsLinkEnabled", metricsLink != null);
         model.addAttribute("metricsStatusText", metricsStatusText);
         model.addAttribute("metricsIconName", metricsIconName);
         model.addAttribute("metricsLink", metricsLink);
     }
 
     private String getMetricsLink(ServiceInstance metricsInstance) {
-        return metricsInstance.getMetadata().get(String.format("%s.api-v1.%s", ROUTES, ROUTES_SERVICE_URL));
+        return metricsInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_SERVICE_URL));
     }
 
     private boolean authorizationServiceUp() {
