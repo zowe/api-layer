@@ -35,26 +35,32 @@ public class GatewayHomepageController {
     private final DiscoveryClient discoveryClient;
     private final Providers providers;
 
-    private BuildInfo buildInfo;
+    private final BuildInfo buildInfo;
     private String buildString;
 
-    private String apiCatalogServiceId;
+    private final String apiCatalogServiceId;
+    private final String metricsServiceId;
+
+    // TODO unit test
 
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
-                                     @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
-        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId);
+                                     @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId,
+                                     @Value("${apiml.metrics.serviceId:}") String metricsServiceId) {
+        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId, metricsServiceId);
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
                                      BuildInfo buildInfo,
-                                     String apiCatalogServiceId) {
+                                     String apiCatalogServiceId,
+                                     String metricsServiceId) {
         this.discoveryClient = discoveryClient;
         this.providers = providers;
         this.buildInfo = buildInfo;
         this.apiCatalogServiceId = apiCatalogServiceId;
+        this.metricsServiceId = metricsServiceId;
 
         initializeBuildInfos();
     }
@@ -165,7 +171,7 @@ public class GatewayHomepageController {
 
         String metricsIconName = "warning";
 
-        List<ServiceInstance> metricsServiceInstances = discoveryClient.getInstances("metrics");
+        List<ServiceInstance> metricsServiceInstances = discoveryClient.getInstances(metricsServiceId);
         boolean metricsUp = !metricsServiceInstances.isEmpty();
 
         if (metricsUp && metricsEnabled) {
