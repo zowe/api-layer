@@ -32,6 +32,7 @@ public class RunningService {
     private final String id;
     private String subprocessPid;
     private Map<String,String> instanceEnv = ConfigReader.environmentConfiguration().getInstanceEnv();
+    private Map<String,String> instanceEnvAttls = ConfigReader.environmentConfiguration().getInstanceEnvAttls();
 
     private final Map<String, String> parametersBefore;
     private final Map<String, String> parametersAfter;
@@ -68,7 +69,7 @@ public class RunningService {
 
         ProcessBuilder builder1 = new ProcessBuilder(bashScript);
         Map<String, String> envVariables = builder1.environment();
-        envVariables.putAll(instanceEnv);
+        envVariables.putAll(instanceEnvAttls);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
 
         builder1.directory(new File("../"));

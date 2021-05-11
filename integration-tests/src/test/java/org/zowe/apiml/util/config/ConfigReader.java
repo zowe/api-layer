@@ -67,6 +67,7 @@ public class ConfigReader {
                             tlsConfiguration,
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
+                            null,
                             null);
                     }
 

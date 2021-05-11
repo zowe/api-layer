@@ -89,6 +89,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
+    -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
     -Dapiml.service.port=${GATEWAY_PORT} \

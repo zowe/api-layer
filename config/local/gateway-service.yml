@@ -7,7 +7,7 @@ apiml:
         discoveryServiceUrls: http://localhost:10011/eureka/
     security:
         auth:
-            provider: zosmf
+            provider: dummy
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
             passTicket:

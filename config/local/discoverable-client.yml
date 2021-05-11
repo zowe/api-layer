@@ -13,7 +13,7 @@ apiml:
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10012  # Default port for discoverable-client service
           # IP address that is advertised in Eureka. Default is valid only for localhost
-        discoveryServiceUrls: http://localhost:10011/eureka/
+        discoveryServiceUrls: https://localhost:10011/eureka/
 
 eureka:
     client:
@@ -27,3 +27,16 @@ server:
         keyStorePassword: password
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+---
+spring:
+    profiles: attls
+
+apiml:
+    service:
+        discoveryServiceUrls: http://localhost:10011/eureka/
+        scheme: http
+
+server:
+    ssl:
+        enabled: false
