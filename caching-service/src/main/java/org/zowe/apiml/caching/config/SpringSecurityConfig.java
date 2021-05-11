@@ -42,7 +42,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifyCerts;
 
-    @Value("${server.attls.enabled}")
+    @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
     @Override
@@ -64,7 +64,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         if (verifyCertificates || nonStrictVerifyCerts) {
             http.authorizeRequests().anyRequest().authenticated().and()
                 .x509().userDetailsService(x509UserDetailsService());
-            if(isAttlsEnabled){
+            if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
             }
         } else {
