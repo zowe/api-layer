@@ -112,9 +112,9 @@ messages:
     - key: org.zowe.apiml.security.zosmfInstanceNotFound
       number: ZWEAG108
       type: ERROR
-      text: "z/OSMF instance '%s' not found or incorrectly configured. Gateway is shutting down."
-      reason: "The Gateway could not find the z/OSMF instance from the Discovery Service or it could not communicate with provided z/OSMF instance."
-      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that API Mediation Layer can communicate with provided z/OSMF instance."
+      text: "z/OSMF instance '%s' not found or is incorrectly configured. Gateway is shutting down."
+      reason: "The Gateway could not find the z/OSMF instance from the Discovery Service or it could not communicate with the provided z/OSMF instance."
+      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that API Mediation Layer can communicate with the provided z/OSMF instance."
 
     - key: org.zowe.apiml.security.zosmfDomainIsEmpty
       number: ZWEAG109
