@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class MetricsServiceHomepageController {
-    @GetMapping("/")
+    @GetMapping("/ui/v1")
     public String home(Model model) {
         return "home";
     }
