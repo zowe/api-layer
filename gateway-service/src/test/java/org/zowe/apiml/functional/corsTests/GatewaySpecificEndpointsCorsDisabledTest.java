@@ -12,16 +12,16 @@ package org.zowe.apiml.functional.corsTests;
 import io.restassured.http.Header;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.functional.common.FunctionalTest;
-import org.zowe.apiml.functional.common.FunctionalTestWithBasePath;
+import org.zowe.apiml.functional.common.AcceptanceTest;
+import org.zowe.apiml.functional.common.AcceptanceTestWithBasePath;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-@FunctionalTest
-class GatewaySpecificEndpointsCorsDisabledTest extends FunctionalTestWithBasePath {
+@AcceptanceTest
+class GatewaySpecificEndpointsCorsDisabledTest extends AcceptanceTestWithBasePath {
     @Nested
     class GivenDefaultConfiguration {
         @Test

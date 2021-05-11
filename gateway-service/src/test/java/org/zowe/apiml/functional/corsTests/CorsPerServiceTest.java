@@ -16,8 +16,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.context.ActiveProfiles;
-import org.zowe.apiml.functional.common.FunctionalTest;
-import org.zowe.apiml.functional.common.FunctionalTestWithTwoServices;
+import org.zowe.apiml.functional.common.AcceptanceTest;
+import org.zowe.apiml.functional.common.AcceptanceTestWithTwoServices;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
@@ -45,10 +45,10 @@ import static org.mockito.Mockito.*;
  *  What can the headers do?
  *  If the pre-flight request comes and we
  */
-@FunctionalTest
+@AcceptanceTest
 @ActiveProfiles("test")
 @Disabled
-class CorsPerServiceTest extends FunctionalTestWithTwoServices {
+class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     @Nested
     class GivenCorsIsDelegatedToGatewayButServiceDoesntAllowCors {
 

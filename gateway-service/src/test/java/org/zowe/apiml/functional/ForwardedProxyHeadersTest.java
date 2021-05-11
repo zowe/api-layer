@@ -12,8 +12,8 @@ package org.zowe.apiml.functional;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.zowe.apiml.functional.common.FunctionalTest;
-import org.zowe.apiml.functional.common.FunctionalTestWithTwoServices;
+import org.zowe.apiml.functional.common.AcceptanceTest;
+import org.zowe.apiml.functional.common.AcceptanceTestWithTwoServices;
 
 import java.io.IOException;
 
@@ -24,8 +24,8 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@FunctionalTest
-class ForwardedProxyHeadersTest extends FunctionalTestWithTwoServices {
+@AcceptanceTest
+class ForwardedProxyHeadersTest extends AcceptanceTestWithTwoServices {
     @Test
     void givenServiceWithOverwritenTimeoutAndAnotherWithout_whenOverwritingConfigurationForOneService_thenTheOtherServicesKeepDefault() throws IOException {
         mockValid200HttpResponse();

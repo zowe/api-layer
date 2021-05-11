@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.context.ActiveProfiles;
-import org.zowe.apiml.functional.common.FunctionalTest;
-import org.zowe.apiml.functional.common.FunctionalTestWithTwoServices;
+import org.zowe.apiml.functional.common.AcceptanceTest;
+import org.zowe.apiml.functional.common.AcceptanceTestWithTwoServices;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -27,10 +27,10 @@ import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 
-@FunctionalTest
+@AcceptanceTest
 @ActiveProfiles("test")
 @Disabled
-class GatewayCorsEnabledTest extends FunctionalTestWithTwoServices {
+class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
     @Nested
     class GivenCorsIsAllowed {
 
