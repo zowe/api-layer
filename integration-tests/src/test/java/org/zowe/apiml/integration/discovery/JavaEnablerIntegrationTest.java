@@ -11,6 +11,7 @@ package org.zowe.apiml.integration.discovery;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GatewayTest;
@@ -30,6 +31,7 @@ import static org.hamcrest.Matchers.is;
 @TestsNotMeantForZowe
 @NotForMainframeTest
 @GatewayTest
+@Disabled("The java sample app needs to be started.")
 class JavaEnablerIntegrationTest implements TestWithStartedInstances {
     private static final String UI_V1_PATH = "/ui/v1/enablerJavaSampleApp/";
     private static final String APP_INFO_HEALTH = "/api/v1/enablerJavaSampleApp/application/health/";
