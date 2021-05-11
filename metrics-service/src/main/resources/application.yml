@@ -17,6 +17,11 @@ eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
+        healthcheck:
+            enabled: true
+        serviceUrl:
+            defaultZone: ${apiml.service.discoveryServiceUrls}
+        region: default
 
 apiml:
     enabled: true

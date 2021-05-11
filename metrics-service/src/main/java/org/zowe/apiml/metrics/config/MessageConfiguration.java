@@ -11,15 +11,16 @@ package org.zowe.apiml.metrics.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
 @Configuration
 public class MessageConfiguration {
     @Bean
-    public MessageService messageService() {
-        MessageService messageService = YamlMessageServiceInstance.getInstance();
+    @Primary
+    public MessageService messageServiceMetrics(MessageService messageService) {
         messageService.loadMessages("/utility-log-messages.yml");
+        messageService.loadMessages("/security-common-log-messages.yml");
         return messageService;
     }
 }
