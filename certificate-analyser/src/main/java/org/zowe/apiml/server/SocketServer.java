@@ -35,6 +35,8 @@ public class SocketServer implements Runnable {
             out.flush();
             outStream.flush();
             Thread.sleep(10); //primitive server closes too fast, client fails to read response, so it has to wait.
+        } catch(InterruptedException e) {
+            Thread.currentThread().interrupted();
         } catch ( Exception e) {
             System.err.println(e.getMessage());
         }
