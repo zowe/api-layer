@@ -23,7 +23,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 /**
  * This utils serve to test base queries on discovery service to get information about registred services. This is way
@@ -34,10 +34,6 @@ public class DiscoveryUtils {
     public static final String getDiscoveryUrl() {
         DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         return discoveryServiceConfiguration.getScheme() + "://" + discoveryServiceConfiguration.getHost() + ":" + discoveryServiceConfiguration.getPort();
-    }
-
-    public static final List<String> getDiscoveryUrls() {
-        return getInstances("discovery").stream().filter(InstanceInfo.ONLY_UP).map(InstanceInfo::getUrl).collect(Collectors.toList());
     }
 
     public static final List<String> getGatewayUrls() {
