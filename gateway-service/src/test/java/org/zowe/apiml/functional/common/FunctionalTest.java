@@ -26,5 +26,5 @@ import java.lang.annotation.Target;
 @SpringBootTest(classes = GatewayTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"management.server.port=10090","server.internal.enabled=false"})
 @Import({GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class})
-public @interface AcceptanceTest {
+public @interface FunctionalTest {
 }

@@ -12,8 +12,8 @@ package org.zowe.apiml.functional.common;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.web.server.LocalServerPort;
 
-@AcceptanceTest
-public class AcceptanceTestWithBasePath {
+@FunctionalTest
+public class FunctionalTestWithBasePath {
     protected String basePath;
 
     @LocalServerPort

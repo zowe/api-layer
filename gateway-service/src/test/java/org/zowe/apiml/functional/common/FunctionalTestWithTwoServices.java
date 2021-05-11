@@ -31,8 +31,8 @@ import java.util.Locale;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
-@AcceptanceTest
-public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
+@FunctionalTest
+public class FunctionalTestWithTwoServices extends FunctionalTestWithBasePath {
     @Autowired
     @Qualifier("mockProxy")
     protected CloseableHttpClient mockClient;
