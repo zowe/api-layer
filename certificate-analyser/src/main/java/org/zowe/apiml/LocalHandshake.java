@@ -45,7 +45,6 @@ public class LocalHandshake implements Verifier {
                     + "\". Error message: " + e.getMessage());
             }
         } catch (IOException e) {
-            e.printStackTrace();
             System.out.println("Failed when calling local server. Error message: " + e.getMessage());
         }
     }
