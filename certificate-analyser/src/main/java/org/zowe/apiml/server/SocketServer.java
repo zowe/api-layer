@@ -27,14 +27,17 @@ public class SocketServer implements Runnable {
 
     @Override
     public void run() {
-        try (Socket socket = serverSocket.accept()) {
-            OutputStream outStream = socket.getOutputStream();
-            PrintWriter out = new PrintWriter(outStream);
-            out.print("HTTP/1.0 200 OK\r\n");
-            out.flush();
-            outStream.flush();
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
+        while (true) {
+            try (Socket socket = serverSocket.accept()) {
+                OutputStream outStream = socket.getOutputStream();
+                PrintWriter out = new PrintWriter(outStream);
+                out.print("HTTP/1.0 200 OK\r\n");
+                out.flush();
+                outStream.flush();
+                Thread.sleep(10); //don't ask, we went too deep...
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
         }
     }
 
