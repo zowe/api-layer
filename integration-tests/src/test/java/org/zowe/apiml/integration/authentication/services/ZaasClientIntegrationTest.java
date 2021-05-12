@@ -14,6 +14,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.codec.binary.Base64;
 import org.hamcrest.core.Is;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -48,7 +49,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * TODO: Verify whether this set of tests make sense, but integration between ZAAS client and Gateway needs to be tested.
+ * Test the integration of the ZAAS Client with the ZAAS provider living in the Gateway.
  */
 @GeneralAuthenticationTest
 class ZaasClientIntegrationTest implements TestWithStartedInstances {
@@ -114,13 +115,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         tokenService = new ZaasClientImpl(configProperties);
     }
 
-    @Test
-    void givenValidCredentials_whenUserLogsIn_thenValidTokenIsObtained() throws ZaasClientException {
-        String token = tokenService.login(USERNAME, PASSWORD);
-        assertNotNull(token);
-        assertThat(token, is(not(EMPTY_STRING)));
-    }
-
+    // Sources for the codes
     private static Stream<Arguments> provideInvalidUsernamePassword() {
         return Stream.of(
             Arguments.of(INVALID_USER, PASSWORD, ZaasClientErrorCodes.INVALID_AUTHENTICATION),
@@ -129,29 +124,11 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         );
     }
 
-
-    @ParameterizedTest
-    @MethodSource("provideInvalidUsernamePassword")
-    void giveInvalidCredentials_whenLoginIsRequested_thenProperExceptionIsRaised(String username, String password, ZaasClientErrorCodes expectedCode) {
-        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
-
-        assertThatExceptionContainValidCode(exception, expectedCode);
-    }
-
     private static Stream<Arguments> provideInvalidPassword() {
         return Stream.of(
             Arguments.of(USERNAME, INVALID_PASS, ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(USERNAME, NULL_PASS, ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD)
         );
-    }
-
-    @NotForMainframeTest
-    @ParameterizedTest
-    @MethodSource("provideInvalidPassword")
-    void giveInvalidPassword_whenLoginIsRequested_thenProperExceptionIsRaised(String username, String password, ZaasClientErrorCodes expectedCode) {
-        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
-
-        assertThatExceptionContainValidCode(exception, expectedCode);
     }
 
     private static Stream<Arguments> provideInvalidAuthHeaders() {
@@ -164,15 +141,6 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         );
     }
 
-
-    @ParameterizedTest
-    @MethodSource("provideInvalidAuthHeaders")
-    void doLoginWithAuthHeaderInvalidUsername(String authHeader, ZaasClientErrorCodes expectedCode) {
-        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));
-
-        assertThatExceptionContainValidCode(exception, expectedCode);
-    }
-
     private static Stream<Arguments> provideInvalidPasswordAuthHeaders() {
         return Stream.of(
             Arguments.of(getAuthHeader(USERNAME, INVALID_PASS), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
@@ -181,98 +149,161 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         );
     }
 
-    @NotForMainframeTest
-    @ParameterizedTest
-    @MethodSource("provideInvalidPasswordAuthHeaders")
-    void doLoginWithAuthHeaderInvalidPassword(String authHeader, ZaasClientErrorCodes expectedCode) {
-        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));
+    @Nested
+    class WhenLoggingIn {
 
-        assertThatExceptionContainValidCode(exception, expectedCode);
+        @Nested
+        class ValidTokenIsReturned {
+            @Test
+            void givenValidCredentials() throws ZaasClientException {
+                String token = tokenService.login(USERNAME, PASSWORD);
+                assertNotNull(token);
+                assertThat(token, is(not(EMPTY_STRING)));
+            }
+
+            @Test
+            void givenValidCredentialsInHeader() throws ZaasClientException {
+                String token = tokenService.login(getAuthHeader(USERNAME, PASSWORD));
+                assertNotNull(token);
+                assertThat(token, is(not(EMPTY_STRING)));
+            }
+        }
+
+        @Nested
+        class ProperExceptionIsRaised {
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidUsernamePassword")
+            void givenInvalidCredentials(String username, String password, ZaasClientErrorCodes expectedCode) {
+                ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
+
+                assertThatExceptionContainValidCode(exception, expectedCode);
+            }
+
+            @NotForMainframeTest
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidPassword")
+            void givenInvalidPassword(String username, String password, ZaasClientErrorCodes expectedCode) {
+                ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
+
+                assertThatExceptionContainValidCode(exception, expectedCode);
+            }
+
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidAuthHeaders")
+            void givenInvalidHeader(String authHeader, ZaasClientErrorCodes expectedCode) {
+                ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));
+
+                assertThatExceptionContainValidCode(exception, expectedCode);
+            }
+
+            @NotForMainframeTest
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidPasswordAuthHeaders")
+            void givenInvalidPasswordInHeader(String authHeader, ZaasClientErrorCodes expectedCode) {
+                ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));
+
+                assertThatExceptionContainValidCode(exception, expectedCode);
+            }
+        }
     }
 
-    @Test
-    void givenValidCredentials_whenUserLogsIn_thenValidTokenIsReceived() throws ZaasClientException {
-        String token = tokenService.login(getAuthHeader(USERNAME, PASSWORD));
-        assertNotNull(token);
-        assertThat(token, is(not(EMPTY_STRING)));
+    @Nested
+    class WhenQueriedForDetails {
+
+        @Test
+        void givenValidToken_thenValidDetailsAreProvided() throws ZaasClientException {
+            String token = tokenService.login(USERNAME, PASSWORD);
+            ZaasToken zaasToken = tokenService.query(token);
+            assertNotNull(zaasToken);
+            assertThat(zaasToken.getUserId(), is(USERNAME));
+            assertThat(zaasToken.isExpired(), is(Boolean.FALSE));
+        }
+
+        @Nested
+        class ProperExceptionIsRaised {
+
+            @Test
+            void givenInvalidToken() {
+                assertThrows(ZaasClientException.class, () -> {
+                    String invalidToken = "INVALID_TOKEN";
+                    tokenService.query(invalidToken);
+                });
+            }
+
+            @Test
+            void givenExpiredToken() {
+                assertThrows(ZaasClientException.class, () -> {
+                    String expiredToken = getToken(now, expirationForExpiredToken, getDummyKey(configProperties));
+                    tokenService.query(expiredToken);
+                });
+            }
+
+            @Test
+            void givenEmptyToken() {
+                assertThrows(ZaasClientException.class, () -> {
+                    String emptyToken = "";
+                    tokenService.query(emptyToken);
+                });
+            }
+
+        }
     }
 
-    @Test
-    void givenValidToken_whenQueriedForDetails_thenValidDetailsAreProvided() throws ZaasClientException {
-        String token = tokenService.login(USERNAME, PASSWORD);
-        ZaasToken zaasToken = tokenService.query(token);
-        assertNotNull(zaasToken);
-        assertThat(zaasToken.getUserId(), is(USERNAME));
-        assertThat(zaasToken.isExpired(), is(Boolean.FALSE));
+    @Nested
+    class WhenPassTicketRequested {
+        @Test
+        void givenValidToken_thenValidPassTicketIsReturned() throws ZaasClientException, ZaasConfigurationException {
+            String token = tokenService.login(USERNAME, PASSWORD);
+            String passTicket = tokenService.passTicket(token, "ZOWEAPPL");
+            assertNotNull(passTicket);
+            assertThat(token, is(not(EMPTY_STRING)));
+        }
+
+        @Nested
+        class ProperExceptionIsRaised {
+
+            @Test
+            void givenInvalidToken() {
+                assertThrows(ZaasClientException.class, () -> {
+                    String invalidToken = "INVALID_TOKEN";
+                    tokenService.passTicket(invalidToken, "ZOWEAPPL");
+                });
+            }
+
+            @Test
+            void givenEmptyToken() {
+                assertThrows(ZaasClientException.class, () -> {
+                    String emptyToken = "";
+                    tokenService.passTicket(emptyToken, "ZOWEAPPL");
+                });
+            }
+
+            @Test
+            void givenValidTokenButInvalidApplicationId() throws ZaasClientException {
+                String token = tokenService.login(USERNAME, PASSWORD);
+                assertThrows(ZaasClientException.class, () -> {
+                    String emptyApplicationId = "";
+                    tokenService.passTicket(token, emptyApplicationId);
+                });
+            }
+
+        }
     }
 
-    @Test
-    void givenInvalidToken_whenQueriedForDetails_thenExceptionIsThrown() {
-        assertThrows(ZaasClientException.class, () -> {
-            String invalidToken = "INVALID_TOKEN";
-            tokenService.query(invalidToken);
-        });
-    }
+    @Nested
+    class WhenLoggingOut {
 
-    @Test
-    void givenExpiredToken_whenQueriedForDetails_thenExceptionIsThrown() {
-        assertThrows(ZaasClientException.class, () -> {
-            String expiredToken = getToken(now, expirationForExpiredToken, getDummyKey(configProperties));
-            tokenService.query(expiredToken);
-        });
-    }
+        @Test
+        void givenValidTokenBut_thenSuccess() throws ZaasClientException {
+            String token = tokenService.login(USERNAME, PASSWORD);
+            assertDoesNotThrow(() -> tokenService.logout(token));
+        }
 
-    @Test
-    void givenEmptyToken_whenDetailsAboutTheTokenAreRequested_thenTheExceptionIsThrown() {
-        assertThrows(ZaasClientException.class, () -> {
-            String emptyToken = "";
-            tokenService.query(emptyToken);
-        });
-    }
-
-    @Test
-    void givenValidTicket_whenPassTicketIsRequested_thenValidPassTicketIsReturned() throws ZaasClientException, ZaasConfigurationException {
-        String token = tokenService.login(USERNAME, PASSWORD);
-        String passTicket = tokenService.passTicket(token, "ZOWEAPPL");
-        assertNotNull(passTicket);
-        assertThat(token, is(not(EMPTY_STRING)));
-    }
-
-    @Test
-    void givenInvalidToken_whenPassTicketIsRequested_thenExceptionIsThrown() {
-        assertThrows(ZaasClientException.class, () -> {
-            String invalidToken = "INVALID_TOKEN";
-            tokenService.passTicket(invalidToken, "ZOWEAPPL");
-        });
-    }
-
-    @Test
-    void givenEmptyToken_whenPassTicketIsRequested_thenExceptionIsThrown() {
-        assertThrows(ZaasClientException.class, () -> {
-            String emptyToken = "";
-            tokenService.passTicket(emptyToken, "ZOWEAPPL");
-        });
-    }
-
-    @Test
-    void givenValidTokenButInvalidApplicationId_whenPassTicketIsRequested_thenExceptionIsThrown() throws ZaasClientException {
-        String token = tokenService.login(USERNAME, PASSWORD);
-        assertThrows(ZaasClientException.class, () -> {
-            String emptyApplicationId = "";
-            tokenService.passTicket(token, emptyApplicationId);
-        });
-    }
-
-    @Test
-    void givenValidTokenBut_whenLogoutIsCalled_thenSuccess() throws ZaasClientException {
-        String token = tokenService.login(USERNAME, PASSWORD);
-        assertDoesNotThrow(() -> tokenService.logout(token));
-    }
-
-    @Test
-    void givenInvalidTokenBut_whenLogoutIsCalled_thenExceptionIsThrown() {
-        String token = "";
-        assertThrows(ZaasClientException.class, () ->
-            tokenService.logout(token));
+        @Test
+        void givenInvalidTokenBut_thenExceptionIsThrown() {
+            String token = "";
+            assertThrows(ZaasClientException.class, () ->
+                tokenService.logout(token));
+        }
     }
 }

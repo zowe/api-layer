@@ -7,9 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.integration.proxy;
+package org.zowe.apiml.integration.authentication;
 
 import io.restassured.RestAssured;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,10 @@ import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.http.HttpRequestUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -32,35 +38,28 @@ import static org.hamcrest.core.Is.is;
  * The tests depends on the availability of either the zOSMF or the mock.
  */
 @zOSMFAuthTest
-class ServiceIntegrationTest implements TestWithStartedInstances {
+class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstances {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
-    private final static String BASE_PATH = "/api/" + ZOSMF_SERVICE_ID;
-    private final static String ZOSMF_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
+    private final static String ZOSMF_ENDPOINT = "/api/" + ZOSMF_SERVICE_ID + "/zosmf/restfiles/ds";
+    private List<NameValuePair> arguments;
 
     private String token;
-    private String scheme;
-    private String host;
-    private int port;
 
     @BeforeEach
     void setUp() {
-        GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        scheme = serviceConfiguration.getScheme();
-        host = serviceConfiguration.getHost();
-        port = serviceConfiguration.getPort();
-
-        RestAssured.port = port;
-        RestAssured.basePath = BASE_PATH;
         RestAssured.useRelaxedHTTPSValidation();
         token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+        arguments = new ArrayList<>();
+        arguments.add(new BasicNameValuePair("dslevel", "sys1.p*"));
     }
 
+    //@formatter:off
     @Nested
     class GivenValidToken {
         @Test
-            //@formatter:off
         void authenticateViaBearerHeader() {
             String dsname1 = "SYS1.PARMLIB";
             String dsname2 = "SYS1.PROCLIB";
@@ -68,9 +67,9 @@ class ServiceIntegrationTest implements TestWithStartedInstances {
             given()
                 .header("Authorization", "Bearer " + token)
                 .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-                .when()
-                .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-                .then()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+            .then()
                 .statusCode(is(SC_OK))
                 .body(
                     "items.dsname", hasItems(dsname1, dsname2));
@@ -84,9 +83,9 @@ class ServiceIntegrationTest implements TestWithStartedInstances {
             given()
                 .cookie("apimlAuthenticationToken", token)
                 .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-                .when()
-                .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-                .then()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+            .then()
                 .statusCode(is(SC_OK))
                 .body(
                     "items.dsname", hasItems(dsname1, dsname2));
@@ -100,9 +99,9 @@ class ServiceIntegrationTest implements TestWithStartedInstances {
             given()
                 .auth().preemptive().basic(USERNAME, PASSWORD)
                 .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-                .when()
-                .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-                .then()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+            .then()
                 .statusCode(is(SC_OK))
                 .body(
                     "items.dsname", hasItems(dsname1, dsname2));
@@ -119,9 +118,9 @@ class ServiceIntegrationTest implements TestWithStartedInstances {
             given()
                 .header("Authorization", "Bearer " + invalidToken)
                 .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-                .when()
-                .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-                .then()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+            .then()
                 .statusCode(is(SC_UNAUTHORIZED));
         }
 
@@ -132,9 +131,9 @@ class ServiceIntegrationTest implements TestWithStartedInstances {
             given()
                 .cookie("apimlAuthenticationToken", invalidToken)
                 .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-                .when()
-                .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-                .then()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+            .then()
                 .statusCode(is(SC_UNAUTHORIZED));
         }
     }
@@ -145,9 +144,9 @@ class ServiceIntegrationTest implements TestWithStartedInstances {
         void withoutAnyAuthenticationMethod() {
             given()
                 .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-                .when()
-                .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-                .then()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+            .then()
                 .statusCode(is(SC_UNAUTHORIZED));
         }
 
@@ -158,9 +157,9 @@ class ServiceIntegrationTest implements TestWithStartedInstances {
             given()
                 .header("Authorization", "Bearer " + emptyToken)
                 .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-                .when()
-                .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-                .then()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+            .then()
                 .statusCode(is(SC_UNAUTHORIZED));
         }
 
@@ -171,9 +170,9 @@ class ServiceIntegrationTest implements TestWithStartedInstances {
             given()
                 .cookie("apimlAuthenticationToken", emptyToken)
                 .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-                .when()
-                .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-                .then()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+            .then()
                 .statusCode(is(SC_UNAUTHORIZED));
         }
     }

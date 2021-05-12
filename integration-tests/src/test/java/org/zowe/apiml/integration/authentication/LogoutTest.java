@@ -22,6 +22,9 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
+/**
+ * Basic set of logout related tests that needs to pass against every valid authentication provider.
+ */
 abstract class LogoutTest implements TestWithStartedInstances {
 
     protected final static String QUERY_ENDPOINT = "/auth/query";
@@ -42,9 +45,9 @@ abstract class LogoutTest implements TestWithStartedInstances {
 
         given()
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-            .when()
+        .when()
             .get(SecurityUtils.getGatewayUrl(QUERY_ENDPOINT))
-            .then()
+        .then()
             .statusCode(status.value());
     }
 
@@ -74,9 +77,9 @@ abstract class LogoutTest implements TestWithStartedInstances {
     protected void assertLogout(String url, String jwtToken, int expectedStatusCode) {
         given()
             .cookie(COOKIE_NAME, jwtToken)
-            .when()
+        .when()
             .post(url)
-            .then()
+        .then()
             .statusCode(is(expectedStatusCode));
     }
 }

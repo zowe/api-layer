@@ -12,7 +12,8 @@ package org.zowe.apiml.integration.proxy;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -30,34 +31,25 @@ class DownloadApiIntegrationTest implements TestWithStartedInstances {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    @Test
-    @TestsNotMeantForZowe
-    void shouldSendGetRequestAndDownloadCompressedImage() {
-        RestAssured.registerParser("image/png", Parser.JSON);
-        URI uri = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/get-file");
-        given().
-            contentType("application/octet-stream").
-            accept("image/png").
-            when().
-            get(uri).
-            then().
-            statusCode(200).
-            header("Content-Disposition", "attachment;filename=api-catalog.png").
-            header("Content-Encoding", "gzip").
-            contentType("image/png");
+    protected static String[] discoverableClientSource() {
+        return new String[]{
+            "/discoverableclient/api/v1/get-file",
+            "/api/v1/discoverableclient/get-file"
+        };
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("discoverableClientSource")
     @TestsNotMeantForZowe
-    void shouldSendGetRequestAndDownloadCompressedImage_OldPathFormat() {
+    void shouldSendGetRequestAndDownloadCompressedImage(String url) {
         RestAssured.registerParser("image/png", Parser.JSON);
-        URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/get-file");
+        URI uri = HttpRequestUtils.getUriFromGateway(url);
         given().
             contentType("application/octet-stream").
             accept("image/png").
-            when().
+        when().
             get(uri).
-            then().
+        then().
             statusCode(200).
             header("Content-Disposition", "attachment;filename=api-catalog.png").
             header("Content-Encoding", "gzip").

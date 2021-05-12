@@ -38,6 +38,9 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 
+/**
+ * Basic set of login related tests that needs to pass against every valid authentication provider.
+ */
 abstract class LoginTest implements TestWithStartedInstances {
     protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     protected final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
@@ -89,9 +92,9 @@ abstract class LoginTest implements TestWithStartedInstances {
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
+        .when()
             .post(loginUrl)
-            .then()
+        .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
@@ -120,9 +123,9 @@ abstract class LoginTest implements TestWithStartedInstances {
         String token = given()
             .auth().preemptive().basic(getUsername(), getPassword())
             .contentType(JSON)
-            .when()
+        .when()
             .post(loginUrl)
-            .then()
+        .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(COOKIE_NAME);
@@ -159,9 +162,9 @@ abstract class LoginTest implements TestWithStartedInstances {
         given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
+        .when()
             .post(loginUrl)
-            .then()
+        .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
@@ -179,9 +182,10 @@ abstract class LoginTest implements TestWithStartedInstances {
         ValidatableResponse response = given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
+        .when()
             .post(loginUrl)
-            .then();
+        .then();
+
         response.statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
@@ -201,9 +205,9 @@ abstract class LoginTest implements TestWithStartedInstances {
         given()
             .contentType(JSON)
             .body(loginRequest.toString())
-            .when()
+        .when()
             .post(loginUrl)
-            .then()
+        .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
@@ -221,9 +225,9 @@ abstract class LoginTest implements TestWithStartedInstances {
         given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
+        .when()
             .get(loginUrl)
-            .then()
+        .then()
             .statusCode(is(SC_METHOD_NOT_ALLOWED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
@@ -234,9 +238,9 @@ abstract class LoginTest implements TestWithStartedInstances {
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
+        .when()
             .post(url)
-            .then()
+        .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);

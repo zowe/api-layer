@@ -10,6 +10,8 @@
 package org.zowe.apiml.integration.zos;
 
 import io.restassured.RestAssured;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,6 +21,11 @@ import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.http.HttpRequestUtils;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
@@ -36,11 +43,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
+
     private final static String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getUser();
     private final static String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getPassword();
-    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
-    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
-    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
 
     private static final String SERVICES_ENDPOINT = "gateway/api/v1/services";
     private static final String SERVICES_ENDPOINT_NOT_VERSIONED = "gateway/services";
@@ -66,8 +71,8 @@ class ServicesInfoTest implements TestWithStartedInstances {
     void cannotBeAccessedWithoutAuthentication(String endpoint) {
         //@formatter:off
         when()
-            .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, endpoint))
-            .then()
+            .get(HttpRequestUtils.getUriFromGateway(endpoint))
+        .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX);
         //@formatter:on
@@ -79,9 +84,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
         //@formatter:off
         given()
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-            .when()
-            .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT))
-            .then()
+        .when()
+            .get(HttpRequestUtils.getUriFromGateway(SERVICES_ENDPOINT))
+        .then()
             .statusCode(is(SC_OK))
             .header(VERSION_HEADER, CURRENT_VERSION)
             .body("serviceId", hasItems("gateway", "discovery", API_CATALOG_SERVICE_ID));
@@ -91,12 +96,15 @@ class ServicesInfoTest implements TestWithStartedInstances {
     @Test
     @SuppressWarnings({"squid:S2699", "Assets are after then()"})
     void providesServicesInformationByApiId() {
+        List<NameValuePair> arguments = new ArrayList<>();
+        arguments.add(new BasicNameValuePair("apiId", API_CATALOG_SERVICE_API_ID));
+
         //@formatter:off
         given()
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-            .when()
-            .get(String.format("%s://%s:%d/%s?apiId=%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, API_CATALOG_SERVICE_API_ID))
-            .then()
+        .when()
+            .get(HttpRequestUtils.getUriFromGateway(SERVICES_ENDPOINT, arguments))
+        .then()
             .statusCode(is(SC_OK))
             .header(VERSION_HEADER, CURRENT_VERSION)
             .body("size()", is(1))
@@ -110,9 +118,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
         //@formatter:off
         given()
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-            .when()
-            .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, API_CATALOG_SERVICE_ID))
-            .then()
+        .when()
+            .get(HttpRequestUtils.getUriFromGateway(SERVICES_ENDPOINT + "/" + API_CATALOG_SERVICE_ID))
+        .then()
             .statusCode(is(SC_OK))
             .header(VERSION_HEADER, CURRENT_VERSION)
             .body("apiml.apiInfo[0].apiId", equalTo(API_CATALOG_SERVICE_API_ID))
@@ -126,9 +134,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
         //@formatter:off
         given()
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-            .when()
-            .get(String.format("%s://%s:%d/%s/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT, "gateway"))
-            .then()
+        .when()
+            .get(HttpRequestUtils.getUriFromGateway(SERVICES_ENDPOINT + "/gateway"))
+        .then()
             .statusCode(is(SC_OK))
             .header(VERSION_HEADER, CURRENT_VERSION)
             .body("apiml.apiInfo[0].apiId", equalTo("zowe.apiml.gateway"));
@@ -143,9 +151,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
         //@formatter:off
         given()
             .auth().basic(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD)
-            .when()
-            .get(String.format("%s://%s:%d/%s", SCHEME, HOST, PORT, SERVICES_ENDPOINT))
-            .then()
+        .when()
+            .get(HttpRequestUtils.getUriFromGateway(SERVICES_ENDPOINT))
+        .then()
             .statusCode(is(SC_FORBIDDEN))
             .body("messages.find { it.messageNumber == 'ZWEAT403E' }.messageContent", startsWith(expectedMessage));
         //@formatter:on

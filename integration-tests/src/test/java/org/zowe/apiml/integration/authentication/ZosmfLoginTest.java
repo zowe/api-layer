@@ -32,7 +32,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 @zOSMFAuthTest
-class ZosmfAuthenticationLoginTest extends LoginTest {
+class ZosmfLoginTest extends LoginTest {
     private String scheme;
     private String host;
     private int port;

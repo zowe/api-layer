@@ -26,7 +26,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 
 /**
- * Verify that querying of the token works properly.
+ * Verify that querying of the token works properly. The tests needs to pass against every valid authentication provider.
  */
 abstract class QueryTest implements TestWithStartedInstances {
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();

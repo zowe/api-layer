@@ -13,6 +13,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -24,11 +26,19 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 @DiscoverableClientDependentTest
 class UiIntegrationTest implements TestWithStartedInstances {
-    @Test
+    protected static String[] discoverableClientSource() {
+        return new String[]{
+            "/discoverableclient/ui/v1",
+            "/ui/v1/discoverableclient"
+        };
+    }
+
+    @ParameterizedTest
+    @MethodSource("discoverableClientSource")
     @TestsNotMeantForZowe
-    void shouldCallDiscoverableUiWithSlashAtPathEnd() throws Exception {
+    void shouldCallDiscoverableUiWithSlashAtPathEnd(String url) throws Exception {
         // Given
-        HttpGet request = HttpRequestUtils.getRequest("/discoverableclient/ui/v1/");
+        HttpGet request = HttpRequestUtils.getRequest(url + "/");
 
         // When
         final HttpResponse response = HttpClientUtils.client().execute(request);
@@ -37,37 +47,12 @@ class UiIntegrationTest implements TestWithStartedInstances {
         assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("discoverableClientSource")
     @TestsNotMeantForZowe
-    void shouldRedirectToDiscoverableUiWithoutSlashAtPathEnd() throws Exception {
+    void shouldRedirectToDiscoverableUiWithoutSlashAtPathEnd(String url) throws Exception {
         // Given
-        HttpGet request = HttpRequestUtils.getRequest("/discoverableclient/ui/v1");
-
-        // When
-        final HttpResponse response = HttpClientUtils.client(true).execute(request);
-
-        // Then
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
-    }
-
-    @Test
-    @TestsNotMeantForZowe
-    void shouldCallDiscoverableUiWithSlashAtPathEnd_OldPathFormat() throws Exception {
-        // Given
-        HttpGet request = HttpRequestUtils.getRequest("/ui/v1/discoverableclient/");
-
-        // When
-        final HttpResponse response = HttpClientUtils.client().execute(request);
-
-        // Then
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
-    }
-
-    @Test
-    @TestsNotMeantForZowe
-    void shouldRedirectToDiscoverableUiWithoutSlashAtPathEnd_OldPathFormat() throws Exception {
-        // Given
-        HttpGet request = HttpRequestUtils.getRequest("/ui/v1/discoverableclient");
+        HttpGet request = HttpRequestUtils.getRequest(url);
 
         // When
         final HttpResponse response = HttpClientUtils.client(true).execute(request);

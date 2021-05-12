@@ -29,7 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
-public class EurekaReplicationTest {
+/**
+ * Verify that eureka is aware of other replicas if they are online.
+ */
+class EurekaReplicationTest {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private String scheme;
     private String username;

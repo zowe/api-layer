@@ -12,6 +12,9 @@ package org.zowe.apiml.integration.discovery;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.SlowTests;
@@ -38,48 +41,32 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    @Test
-    @DiscoverableClientDependentTest
-    void shouldBeUnregisteredBeforeRegistration() {
-        requestIsRegistered(false, MEDIATION_CLIENT_URI);
+    protected static URI[] discoverableClientSource() {
+        return new URI[]{MEDIATION_CLIENT_URI, MEDIATION_CLIENT_URI_OLD_FORMAT};
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("discoverableClientSource")
+    void shouldBeUnregisteredBeforeRegistration(URI url) {
+        requestIsRegistered(false, url);
+    }
+
+    @ParameterizedTest
+    @MethodSource("discoverableClientSource")
     @SlowTests
-    void shouldBeRegisteredAfterRegistration() {
-        requestToRegister(MEDIATION_CLIENT_URI);
-        requestIsRegistered(true, MEDIATION_CLIENT_URI);
+    void shouldBeRegisteredAfterRegistration(URI url) {
+        requestToRegister(url);
+        requestIsRegistered(true, url);
 
-        requestToUnregister(MEDIATION_CLIENT_URI);
+        requestToUnregister(url);
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("discoverableClientSource")
     @SlowTests
-    void shouldNotBeRegisteredAfterUnregistration() {
-        requestToRegister(MEDIATION_CLIENT_URI);
-        requestToUnregister(MEDIATION_CLIENT_URI);
-    }
-
-    @Test
-    @DiscoverableClientDependentTest
-    void shouldBeUnregisteredBeforeRegistration_OldPathFormat() {
-        requestIsRegistered(false, MEDIATION_CLIENT_URI_OLD_FORMAT);
-    }
-
-    @Test
-    @SlowTests
-    void shouldBeRegisteredAfterRegistration_OldPathFormat() {
-        requestToRegister(MEDIATION_CLIENT_URI_OLD_FORMAT);
-        requestIsRegistered(true, MEDIATION_CLIENT_URI_OLD_FORMAT);
-
-        requestToUnregister(MEDIATION_CLIENT_URI_OLD_FORMAT);
-    }
-
-    @Test
-    @SlowTests
-    void shouldNotBeRegisteredAfterUnregistration_OldPathFormat() {
-        requestToRegister(MEDIATION_CLIENT_URI_OLD_FORMAT);
-        requestToUnregister(MEDIATION_CLIENT_URI_OLD_FORMAT);
+    void shouldNotBeRegisteredAfterUnregistration(URI url) {
+        requestToRegister(url);
+        requestToUnregister(url);
     }
 
     private void requestIsRegistered(boolean expectedRegistrationState, URI uri) {

@@ -7,8 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.integration.authentication.schemes;
-
-// Look for the other schemes that we support. Shouldn't this become Functional test for Gateway?
-public class BypassScheme {
-}
+/**
+ * Temporary package to store the tests that are functional in nature and doesn't test integration. At some point these
+ * tests should be removed from integration tests and moved to specific packages.
+ */
+package org.zowe.apiml.functional;

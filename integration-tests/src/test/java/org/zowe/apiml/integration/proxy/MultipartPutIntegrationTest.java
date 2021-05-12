@@ -13,7 +13,8 @@ package org.zowe.apiml.integration.proxy;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -37,8 +38,15 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    //@formatter:off
-    @Test
+    protected static String[] discoverableClientSource() {
+        return new String[]{
+            MULTIPART_PATH,
+            MULTIPART_PATH_OLD_FORMAT
+        };
+    }
+
+    @ParameterizedTest
+    @MethodSource("discoverableClientSource")
     @TestsNotMeantForZowe
     void shouldDoPutRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
@@ -54,7 +62,8 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
             put(uri);
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("discoverableClientSource")
     @TestsNotMeantForZowe
     void shouldDoPostRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
@@ -69,37 +78,4 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
         when().
             post(uri);
     }
-    @Test
-    @TestsNotMeantForZowe
-    void shouldDoPutRequestAndMatchReturnBody_OldPathFormat() {
-        RestAssured.registerParser("text/plain", Parser.JSON);
-        URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH_OLD_FORMAT);
-        given().
-            contentType("multipart/form-data").
-            multiPart(new File(classLoader.getResource(configFileName).getFile())).
-            expect().
-            statusCode(200).
-            body("fileName", equalTo("example.txt")).
-            body("fileType", equalTo("application/octet-stream")).
-            when().
-            put(uri);
-    }
-
-    @Test
-    @TestsNotMeantForZowe
-    void shouldDoPostRequestAndMatchReturnBody_OldPathFormat() {
-        RestAssured.registerParser("text/plain", Parser.JSON);
-        URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH_OLD_FORMAT);
-        given().
-            contentType("multipart/form-data").
-            multiPart(new File(classLoader.getResource(configFileName).getFile())).
-            expect().
-            statusCode(200).
-            body("fileName", equalTo("example.txt")).
-            body("fileType", equalTo("application/octet-stream")).
-            when().
-            post(uri);
-    }
-
-    //@formatter:on
 }

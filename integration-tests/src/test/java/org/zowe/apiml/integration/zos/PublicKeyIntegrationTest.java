@@ -69,7 +69,7 @@ class PublicKeyIntegrationTest implements TestWithStartedInstances {
     @MainframeDependentTests
     void testAllPublicKeys() throws ParseException {
         String response = given()
-            .when()
+        .when()
             .get(GATEWAY_URL + ALL_PUBLIC_KEY_ENDPOINT)
         .then()
             .statusCode(is(SC_OK))
@@ -84,9 +84,9 @@ class PublicKeyIntegrationTest implements TestWithStartedInstances {
     void testCurrentPublicKeys() throws ParseException {
         String response = given()
             .accept(ContentType.JSON)
-            .when()
+        .when()
             .get(GATEWAY_URL + CURRENT_PUBLIC_KEY_ENDPOINT)
-            .then()
+        .then()
             .statusCode(is(SC_OK))
             .extract().body().asString();
         JWKSet jwkSet = JWKSet.parse(response);

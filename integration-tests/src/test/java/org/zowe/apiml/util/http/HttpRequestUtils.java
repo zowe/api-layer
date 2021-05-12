@@ -11,6 +11,7 @@ package org.zowe.apiml.util.http;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -19,6 +20,9 @@ import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -43,7 +47,7 @@ public class HttpRequestUtils {
 
     public static HttpResponse getResponse(String endpoint, int returnCode, int port) throws IOException {
         HttpGet request = new HttpGet(
-            getUriFromGateway(endpoint, port)
+            getUriFromGateway(endpoint, port, Collections.emptyList())
         );
 
         // When
@@ -61,7 +65,7 @@ public class HttpRequestUtils {
         return new HttpGet(uri);
     }
 
-    public static URI getUriFromGateway(String endpoint, int port) {
+    public static URI getUriFromGateway(String endpoint, int port, List<NameValuePair> arguments) {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String scheme = gatewayServiceConfiguration.getScheme();
         String host = gatewayServiceConfiguration.getHost();
@@ -72,6 +76,7 @@ public class HttpRequestUtils {
                 .setHost(host)
                 .setPort(port)
                 .setPath(endpoint)
+                .addParameters(arguments)
                 .build();
         } catch (URISyntaxException e) {
             log.error("Can't create URI for endpoint '{}'", endpoint);
@@ -81,7 +86,11 @@ public class HttpRequestUtils {
         return uri;
     }
 
+    public static URI getUriFromGateway(String endpoint, List<NameValuePair> arguments) {
+        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), arguments);
+    }
+
     public static URI getUriFromGateway(String endpoint) {
-        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort());
+        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), Collections.emptyList());
     }
 }

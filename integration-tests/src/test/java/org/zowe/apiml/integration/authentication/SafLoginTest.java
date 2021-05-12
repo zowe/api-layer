@@ -27,7 +27,7 @@ import static org.hamcrest.core.IsNot.not;
  * Also verify that the invalid credentials will be properly rejected.
  */
 @SAFAuthTest
-class SafAuthenticationLoginTest extends LoginTest {
+class SafLoginTest extends LoginTest {
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.port = PORT;
