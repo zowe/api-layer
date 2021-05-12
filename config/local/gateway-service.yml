@@ -33,26 +33,4 @@ spring:
 server:
     internal:
         enabled: false
-        port: 10017
-        ssl:
-            keyAlias: localhost-multi
-            keyStore: keystore/localhost/localhost-multi.keystore.p12
-    ssl:
-        keyAlias: localhost
-        keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
-        keyStorePassword: password
-        keyStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
-        trustStorePassword: password
-        trustStoreType: PKCS12
 
----
-spring:
-    profiles: attls
-
-server:
-    ssl:
-        trustStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
-        trustStorePassword: password

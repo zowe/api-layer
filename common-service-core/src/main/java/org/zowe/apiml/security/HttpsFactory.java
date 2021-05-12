@@ -12,6 +12,7 @@ package org.zowe.apiml.security;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.UserTokenHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
@@ -116,7 +117,7 @@ public class HttpsFactory {
 
     private void loadTrustMaterial(SSLContextBuilder sslContextBuilder)
         throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-        if (config.getTrustStore() != null) {
+        if (StringUtils.isNotEmpty(config.getTrustStore())) {
             sslContextBuilder.setKeyStoreType(config.getTrustStoreType()).setProtocol(config.getProtocol());
 
             if (!config.getTrustStore().startsWith(SecurityUtils.SAFKEYRING)) {
@@ -152,7 +153,7 @@ public class HttpsFactory {
 
     private void loadKeyMaterial(SSLContextBuilder sslContextBuilder) throws NoSuchAlgorithmException,
         KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
-        if (config.getKeyStore() != null) {
+        if (StringUtils.isNotEmpty(config.getKeyStore())) {
             sslContextBuilder.setKeyStoreType(config.getKeyStoreType()).setProtocol(config.getProtocol());
 
             if (!config.getKeyStore().startsWith(SecurityUtils.SAFKEYRING)) {
@@ -171,7 +172,7 @@ public class HttpsFactory {
 
     private void loadKeystoreMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
         NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-        if (config.getKeyStore() == null) {
+        if (StringUtils.isEmpty(config.getKeyStore())) {
             apimlLog.log("org.zowe.apiml.common.keystoreNotDefined");
             throw new HttpsConfigError("server.ssl.keyStore configuration parameter is not defined",
                 ErrorCode.KEYSTORE_NOT_DEFINED, config);
@@ -205,6 +206,7 @@ public class HttpsFactory {
                 return secureSslContext;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                 | UnrecoverableKeyException | KeyManagementException e) {
+                log.error("error", e);
                 apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
                 throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
                     ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
@@ -215,7 +217,7 @@ public class HttpsFactory {
     }
 
     private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        if (config.getKeyAlias() != null) {
+        if (StringUtils.isNotEmpty(config.getKeyAlias())) {
             KeyStore ks = SecurityUtils.loadKeyStore(config);
             if (!ks.containsAlias(config.getKeyAlias())) {
                 apimlLog.log("org.zowe.apiml.common.invalidKeyAlias", config.getKeyAlias());
