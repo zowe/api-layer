@@ -11,6 +11,7 @@ package org.zowe.apiml.security;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
@@ -37,7 +38,7 @@ public class SecurityUtils {
      * @return {@link PrivateKey} or {@link javax.crypto.SecretKey} from keystore or key ring
      */
     public static Key loadKey(HttpsConfig config) {
-        if (config.getKeyStore() != null) {
+        if (StringUtils.isNotEmpty(config.getKeyStore())) {
             try {
                 KeyStore ks = loadKeyStore(config);
                 char[] keyPasswordInChars = config.getKeyPassword();
@@ -69,7 +70,7 @@ public class SecurityUtils {
      * @throws IOException
      */
     public static Certificate[] loadCertificateChain(HttpsConfig config) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-        if (config.getKeyStore() != null) {
+        if (StringUtils.isNotEmpty(config.getKeyStore())) {
             KeyStore ks = loadKeyStore(config);
             return ks.getCertificateChain(config.getKeyAlias());
         }
@@ -103,7 +104,7 @@ public class SecurityUtils {
      * @return {@link PublicKey} from keystore or key ring
      */
     public static PublicKey loadPublicKey(HttpsConfig config) {
-        if (config.getKeyStore() != null) {
+        if (StringUtils.isNotEmpty(config.getKeyStore())) {
             try {
                 KeyStore ks = loadKeyStore(config);
                 Certificate cert = null;
@@ -138,7 +139,7 @@ public class SecurityUtils {
      * @return {@link PrivateKey} from keystore or key ring
      */
     public static Key findPrivateKeyByPublic(HttpsConfig config, byte[] publicKey) {
-        if (config.getKeyStore() != null) {
+        if (StringUtils.isNotEmpty(config.getKeyStore())) {
             try {
                 KeyStore ks = loadKeyStore(config);
                 char[] keyPasswordInChars = config.getKeyPassword();

@@ -13,6 +13,7 @@ import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -163,7 +164,7 @@ public class HttpConfig {
     @Bean
     public SslContextFactory.Server jettySslContextFactory() {
         SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-        if (keyStore != null) {
+        if (StringUtils.isNotEmpty(keyStore)) {
             sslContextFactory.setKeyStorePath(SecurityUtils.replaceFourSlashes(keyStore));
         }
         sslContextFactory.setProtocol(protocol);
@@ -172,7 +173,7 @@ public class HttpConfig {
         sslContextFactory.setCertAlias(keyAlias);
         sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$");
 
-        if (trustStore != null) {
+        if (StringUtils.isNotEmpty(trustStore)) {
             sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
             sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
