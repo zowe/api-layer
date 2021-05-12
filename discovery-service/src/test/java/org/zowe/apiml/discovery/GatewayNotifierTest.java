@@ -55,17 +55,18 @@ class GatewayNotifierTest {
         gatewayNotifierSync = new GatewayNotifierSync(restTemplate, messageService);
     }
 
-    private InstanceInfo createInstanceInfo(String serviceId, String hostName, int port, int securePort) {
+    private InstanceInfo createInstanceInfo(String serviceId, String hostName, int port, int securePort, boolean isSecureEnabled) {
         InstanceInfo out = mock(InstanceInfo.class);
         when(out.getHostName()).thenReturn(hostName);
         when(out.getPort()).thenReturn(port);
         when(out.getSecurePort()).thenReturn(securePort);
         when(out.getInstanceId()).thenReturn(hostName + ":" + serviceId + ":" + (securePort == 0 ? port : securePort));
+        when(out.isPortEnabled(InstanceInfo.PortType.SECURE)).thenReturn(isSecureEnabled);
         return out;
     }
 
-    private InstanceInfo createInstanceInfo(String hostName, int port, int securePort) {
-        return createInstanceInfo("service", hostName, port, securePort);
+    private InstanceInfo createInstanceInfo(String hostName, int port, int securePort, boolean isSecureEnabled) {
+        return createInstanceInfo("service", hostName, port, securePort, isSecureEnabled);
     }
 
     private Message createMessage(String messageKey, Object... params) {
@@ -81,8 +82,8 @@ class GatewayNotifierTest {
         verify(restTemplate, never()).delete(anyString());
 
         List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("hostname1", 1000, 1433),
-            createInstanceInfo("hostname2", 1000, 0)
+            createInstanceInfo("hostname1", 1000, 1433, true),
+            createInstanceInfo("hostname2", 1000, 0, false)
         );
 
         Application application = mock(Application.class);
@@ -105,8 +106,8 @@ class GatewayNotifierTest {
         verify(restTemplate, never()).delete(anyString());
 
         List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("hostname1", 1000, 1433),
-            createInstanceInfo("hostname2", 1000, 0)
+            createInstanceInfo("hostname1", 1000, 1433, true),
+            createInstanceInfo("hostname2", 1000, 0, false)
         );
 
         Application application = mock(Application.class);
@@ -153,7 +154,7 @@ class GatewayNotifierTest {
 
 
         // notify gateway and restTemplate failed
-        instances.add(createInstanceInfo("GATEWAY", "host", 1000, 1433));
+        instances.add(createInstanceInfo("GATEWAY", "host", 1000, 1433, true));
         gatewayNotifierSync.serviceCancelledRegistration("service");
         verify(restTemplate, times(1)).delete(anyString());
         verify(messageService).createMessage(
@@ -178,7 +179,7 @@ class GatewayNotifierTest {
         verify(restTemplate, never()).delete(anyString());
 
         // notify gateway itself
-        instances.add(createInstanceInfo("GATEWAY", "host", 1000, 1433));
+        instances.add(createInstanceInfo("GATEWAY", "host", 1000, 1433, true));
         gatewayNotifierSync.serviceUpdated("GATEWAY", "host:GATEWAY:1433");
         verify(restTemplate, never()).delete(anyString());
 
@@ -194,10 +195,10 @@ class GatewayNotifierTest {
 
     @Test
     void testDistributeInvalidatedCredentials() {
-        InstanceInfo targetInstanceInfo = createInstanceInfo("host", 1000, 1433);
+        InstanceInfo targetInstanceInfo = createInstanceInfo("host", 1000, 1433, true);
         String targetInstanceId = targetInstanceInfo.getInstanceId();
 
-        InstanceInfo gatewayInstance = createInstanceInfo("gateway", 111, 123);
+        InstanceInfo gatewayInstance = createInstanceInfo("gateway", 111, 123, true);
         String gatewayUrl = "https://gateway:123/gateway/auth/distribute/" + targetInstanceId;
 
         Application application = mock(Application.class);

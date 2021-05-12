@@ -162,3 +162,16 @@ logging:
         com.netflix: INFO
 
 logbackServiceName: ZWEADC1
+
+---
+spring:
+    profiles: attls
+
+apiml:
+    service:
+        discoveryServiceUrls: http://localhost:10011/eureka/
+        scheme: http
+
+server:
+    ssl:
+        enabled: false

@@ -72,12 +72,14 @@ public class FullApiMediationLayer {
     private void prepareMockZosmf() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
+        before.put("-Dspring.profiles.active","attls");
         mockZosmfService = new RunningService("zosmf", "mock-zosmf/build/libs/mock-zosmf.jar", before, after);
     }
 
     private void prepareDiscoverableClient() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
+        before.put("-Dspring.profiles.active","attls");
         after.put("--spring.config.additional-location", "file:./config/local/discoverable-client.yml");
 
         discoverableClientService = new RunningService("discoverableclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);

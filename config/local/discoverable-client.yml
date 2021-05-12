@@ -28,15 +28,4 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
 
----
-spring:
-    profiles: attls
 
-apiml:
-    service:
-        discoveryServiceUrls: http://localhost:10011/eureka/
-        scheme: http
-
-server:
-    ssl:
-        enabled: false

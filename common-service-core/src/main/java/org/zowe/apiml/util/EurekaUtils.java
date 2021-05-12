@@ -42,7 +42,7 @@ public final class EurekaUtils {
      * @return URL to the instance
      */
     public static final String getUrl(InstanceInfo instanceInfo) {
-        if (instanceInfo.getSecurePort() == 0) {
+        if (instanceInfo.getSecurePort() == 0 || !instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE)) {
             return "http://" + instanceInfo.getHostName() + ":" + instanceInfo.getPort();
         } else {
             return "https://" + instanceInfo.getHostName() + ":" + instanceInfo.getSecurePort();

@@ -17,6 +17,7 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.awaitility.Duration;
 import org.awaitility.core.ConditionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,7 +145,7 @@ public class JwtSecurityInitializer {
      * when the secret is required.
      */
     private void validateJwtSecret() {
-        if (jwtSecret == null || jwtPublicKey == null) {
+        if (StringUtils.isNotEmpty(keyStore) && (jwtSecret == null || jwtPublicKey == null)) {
             apimlLog.log("org.zowe.apiml.gateway.jwtKeyMissing", keyAlias, keyStore);
 
             String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
