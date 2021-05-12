@@ -7,14 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.integration.authentication;
+package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.SAFAuthTest;
+
+import java.net.URI;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -30,17 +32,14 @@ import static org.hamcrest.core.IsNot.not;
 class SafLoginTest extends LoginTest {
     @BeforeAll
     static void switchToTestedProvider() {
-        RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
-    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced(String loginUrl) {
-        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
-
-        String jwtToken1 = authenticateAndVerify(loginRequest, loginUrl);
-        String jwtToken2 = authenticateAndVerify(loginRequest, loginUrl);
+    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced(URI loginUrl) {
+        String jwtToken1 = SecurityUtils.gatewayToken(loginUrl, getUsername(), getPassword());
+        String jwtToken2 = SecurityUtils.gatewayToken(loginUrl, getUsername(), getPassword());
 
         assertThat(jwtToken1, is(not(jwtToken2)));
     }

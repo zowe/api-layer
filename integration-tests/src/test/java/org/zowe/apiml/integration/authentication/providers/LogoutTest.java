@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.integration.authentication;
+package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
@@ -17,6 +17,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
@@ -27,7 +28,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  */
 abstract class LogoutTest implements TestWithStartedInstances {
 
-    protected final static String QUERY_ENDPOINT = "/auth/query";
+    protected final static String QUERY_ENDPOINT = "/gateway/api/v1/auth/query";
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     protected static String[] logoutUrlsSource() {
@@ -38,21 +39,6 @@ abstract class LogoutTest implements TestWithStartedInstances {
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-    }
-
-    protected void assertIfLogged(String jwt, boolean logged) {
-        final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
-
-        given()
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-        .when()
-            .get(SecurityUtils.getGatewayUrl(QUERY_ENDPOINT))
-        .then()
-            .statusCode(status.value());
-    }
-
-    protected String generateToken() {
-        return SecurityUtils.gatewayToken();
     }
 
     @ParameterizedTest
@@ -66,8 +52,23 @@ abstract class LogoutTest implements TestWithStartedInstances {
 
         logout(logoutUrl, jwt);
 
-        // check if it is logged in
+        // check if it is logged out
         assertIfLogged(jwt, false);
+    }
+
+    protected void assertIfLogged(String jwt, boolean logged) {
+        final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+
+        given()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .when()
+            .get(HttpRequestUtils.getUriFromGateway(QUERY_ENDPOINT))
+        .then()
+            .statusCode(status.value());
+    }
+
+    protected String generateToken() {
+        return SecurityUtils.gatewayToken();
     }
 
     protected void logout(String url, String jwtToken) {

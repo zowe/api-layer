@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.integration.authentication;
+package org.zowe.apiml.integration.authentication.services;
 
 import io.restassured.RestAssured;
 import org.apache.http.NameValuePair;
@@ -57,83 +57,89 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
 
     //@formatter:off
     @Nested
-    class GivenValidToken {
-        @Test
-        void authenticateViaBearerHeader() {
-            String dsname1 = "SYS1.PARMLIB";
-            String dsname2 = "SYS1.PROCLIB";
+    class AcceptAuthentication {
+        @Nested
+        class WhenCallingTheServiceWithValidToken {
+            @Test
+            void viaBearerHeader() {
+                String dsname1 = "SYS1.PARMLIB";
+                String dsname2 = "SYS1.PROCLIB";
 
-            given()
-                .header("Authorization", "Bearer " + token)
-                .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-            .then()
-                .statusCode(is(SC_OK))
-                .body(
-                    "items.dsname", hasItems(dsname1, dsname2));
-        }
+                given()
+                    .header("Authorization", "Bearer " + token)
+                    .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .then()
+                    .statusCode(is(SC_OK))
+                    .body(
+                        "items.dsname", hasItems(dsname1, dsname2));
+            }
 
-        @Test
-        void authenticateViaCookie() {
-            String dsname1 = "SYS1.PARMLIB";
-            String dsname2 = "SYS1.PROCLIB";
+            @Test
+            void viaCookie() {
+                String dsname1 = "SYS1.PARMLIB";
+                String dsname2 = "SYS1.PROCLIB";
 
-            given()
-                .cookie("apimlAuthenticationToken", token)
-                .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-            .then()
-                .statusCode(is(SC_OK))
-                .body(
-                    "items.dsname", hasItems(dsname1, dsname2));
-        }
+                given()
+                    .cookie("apimlAuthenticationToken", token)
+                    .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .then()
+                    .statusCode(is(SC_OK))
+                    .body(
+                        "items.dsname", hasItems(dsname1, dsname2));
+            }
 
-        @Test
-        void authenticateViaBasicAuthHeader() {
-            String dsname1 = "SYS1.PARMLIB";
-            String dsname2 = "SYS1.PROCLIB";
+            @Test
+            void viaBasicAuthHeader() {
+                String dsname1 = "SYS1.PARMLIB";
+                String dsname2 = "SYS1.PROCLIB";
 
-            given()
-                .auth().preemptive().basic(USERNAME, PASSWORD)
-                .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-            .then()
-                .statusCode(is(SC_OK))
-                .body(
-                    "items.dsname", hasItems(dsname1, dsname2));
+                given()
+                    .auth().preemptive().basic(USERNAME, PASSWORD)
+                    .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .then()
+                    .statusCode(is(SC_OK))
+                    .body(
+                        "items.dsname", hasItems(dsname1, dsname2));
+            }
         }
     }
 
     @Nested
-    class GivenInvalidToken_RejectAuthentication {
+    class RejectAuthentication {
+        @Nested
+        class WhenProvidingInvalidAuthentication {
 
-        @Test
-        void viaBearerHeader() {
-            String invalidToken = "token";
+            @Test
+            void viaBearerHeader() {
+                String invalidToken = "token";
 
-            given()
-                .header("Authorization", "Bearer " + invalidToken)
-                .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED));
-        }
+                given()
+                    .header("Authorization", "Bearer " + invalidToken)
+                    .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED));
+            }
 
-        @Test
-        void viaApimlCookie() {
-            String invalidToken = "token";
+            @Test
+            void viaApimlCookie() {
+                String invalidToken = "token";
 
-            given()
-                .cookie("apimlAuthenticationToken", invalidToken)
-                .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED));
+                given()
+                    .cookie("apimlAuthenticationToken", invalidToken)
+                    .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED));
+            }
         }
     }
 

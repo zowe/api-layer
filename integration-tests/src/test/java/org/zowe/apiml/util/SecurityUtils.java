@@ -20,12 +20,13 @@ import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.TlsConfiguration;
-import org.zowe.apiml.util.config.ZosmfServiceConfiguration;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -35,39 +36,27 @@ import java.security.cert.CertificateException;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 public class SecurityUtils {
-    final static String ZOSMF_TOKEN = "LtpaToken2";
-
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
     public final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
     public final static String GATEWAY_LOGOUT_ENDPOINT = "/auth/logout";
     public final static String GATEWAY_BASE_PATH = "/gateway/api/v1";
     public final static String GATEWAY_BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
-    private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
 
-    private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-    private final static ZosmfServiceConfiguration zosmfServiceConfiguration = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration();
+    private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();;
 
     private final static String gatewayScheme = serviceConfiguration.getScheme();
     private final static String gatewayHost = serviceConfiguration.getHost();
     private final static int gatewayPort = serviceConfiguration.getPort();
 
-    private final static String zosmfScheme = zosmfServiceConfiguration.getScheme();
-    private final static String zosmfHost = zosmfServiceConfiguration.getHost();
-    private final static int zosmfPort = zosmfServiceConfiguration.getPort();
-
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
 
     //@formatter:off
-    public static String gatewayToken() {
-        return gatewayToken(USERNAME, PASSWORD);
-    }
 
     public static String getGatewayUrl(String path) {
         return getGatewayUrl(path, gatewayPort);
@@ -89,7 +78,15 @@ public class SecurityUtils {
         return getGatewayUrlOldFormat(GATEWAY_LOGOUT_ENDPOINT);
     }
 
+    public static String gatewayToken() {
+        return gatewayToken(USERNAME, PASSWORD);
+    }
+
     public static String gatewayToken(String username, String password) {
+        return gatewayToken(HttpRequestUtils.getUriFromGateway(GATEWAY_BASE_PATH + GATEWAY_LOGIN_ENDPOINT), username, password);
+    }
+
+    public static String gatewayToken(URI gatewayLoginEndpoint, String username, String password) {
         LoginRequest loginRequest = new LoginRequest(username, password);
 
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
@@ -98,35 +95,15 @@ public class SecurityUtils {
         String cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
-            .post(getGatewayUrl(GATEWAY_LOGIN_ENDPOINT))
-            .then()
+        .when()
+            .post(gatewayLoginEndpoint)
+        .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
 
         RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         return cookie;
-    }
-
-    public static String zosmfToken(String username, String password) {
-        return given()
-            .auth().preemptive().basic(username, password)
-            .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .when()
-            .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_LOGIN_ENDPOINT))
-            .then()
-            .statusCode(is(SC_OK))
-            .cookie(ZOSMF_TOKEN, not(isEmptyString()))
-            .extract().cookie(ZOSMF_TOKEN);
-    }
-
-    public static void logoutOnGateway(String jwtToken) {
-        logoutOnGateway(getGatewayUrl(GATEWAY_LOGOUT_ENDPOINT), jwtToken);
-    }
-
-    public static void logoutOnGatewayOldPath(String jwtToken) {
-        logoutOnGateway(getGatewayUrlOldFormat(GATEWAY_LOGOUT_ENDPOINT), jwtToken);
     }
 
     public static void logoutOnGateway(String url, String jwtToken) {

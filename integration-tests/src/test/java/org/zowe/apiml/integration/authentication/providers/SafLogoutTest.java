@@ -7,26 +7,43 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.integration.authentication;
+package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.zowe.apiml.util.categories.zOSMFAuthTest;
+import org.zowe.apiml.util.categories.SAFAuthTest;
 
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
-@zOSMFAuthTest
-@SuppressWarnings({"squid:S2187"})
-class ZosmfLogoutTest extends LogoutTest {
+@SAFAuthTest
+class SafLogoutTest extends LogoutTest {
 
+    // Change to saf and run the same test as for the zOSMF
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+    }
+
+    @ParameterizedTest
+    @MethodSource("logoutUrlsSource")
+    void givenTwoValidTokens_whenLogoutCalledOnFirstOne_thenSecondStillValid(String logoutUrl) {
+        String jwt1 = generateToken();
+        String jwt2 = generateToken();
+
+        assertIfLogged(jwt1, true);
+        assertIfLogged(jwt2, true);
+
+        assertLogout(logoutUrl, jwt1, SC_NO_CONTENT);
+
+        assertIfLogged(jwt1, false);
+        assertIfLogged(jwt2, true);
+
+        logout(logoutUrl, jwt2);
     }
 
     @ParameterizedTest

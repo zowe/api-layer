@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.integration.authentication;
+package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
