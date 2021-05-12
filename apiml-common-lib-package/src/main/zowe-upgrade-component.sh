@@ -109,13 +109,18 @@ while [ $# -gt 0 ]; do #Checks for parameters
               artifact_name=$(basename $1)
               temporary_components_directory=$(get_full_path "$1")
               print_and_log_message $1
-              temporary_components_directory=$(cd "$temporary_components_directory" && cd .. && pwd)
-              print_and_log_message "${temporary_components_directory}"
+              temporary_components_directory=$(cd $(dirname "$temporary_components_directory") && pwd)
+              print_and_log_message "temporary_components_directory value ${temporary_components_directory}"
               shift
           ;;
           -l|--logs-dir) # Represents the path to the installation logs
               shift
               LOG_DIRECTORY=$1
+              shift
+          ;;
+          -f|--log-file) # write logs to target file if specified
+              shift
+              LOG_FILE=$1
               shift
           ;;
           *)
