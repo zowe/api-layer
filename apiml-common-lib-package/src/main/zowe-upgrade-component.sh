@@ -18,9 +18,29 @@
 ################################################################################
 
 #Downloading the Zowe component artifact from Zowe artifactory and saving it into the temporary components directory.
-artifact_name=$(basename $2)
+
+# Prepare shell environment
+if [ -z "${ZOWE_ROOT_DIR}" ]; then
+  export ZOWE_ROOT_DIR=$(cd $(dirname $0)/../../../;pwd)
+fi
+
 repository_path="libs-snapshot-local"
-temporary_components_directory=$PWD/$(cd ..)
+
+prepare_log_file() {
+    if [ -z "${LOG_FILE}" ]; then
+        set_install_log_directory "${LOG_DIRECTORY}"
+        validate_log_file_not_in_root_dir "${LOG_DIRECTORY}" "${ZOWE_ROOT_DIR}"
+        set_install_log_file "zowe-upgrade-component"
+    else
+        set_install_log_file_from_full_path "${LOG_FILE}"
+        validate_log_file_not_in_root_dir "${LOG_FILE}" "${ZOWE_ROOT_DIR}"
+    fi
+}
+
+error_handler(){
+    print_error_message "$1"
+    exit 1
+}
 
 download_apiml_artifacts() {
   artifact_group="apiml/sdk"
@@ -28,59 +48,81 @@ download_apiml_artifacts() {
   version=$(curl -s $path/maven-metadata.xml | grep latest | sed "s/.*<latest>\([^<]*\)<\/latest>.*/\1/")
   build=$(curl -s $path/"$version"/maven-metadata.xml | grep '<value>' | head -1 | sed "s/.*<value>\([^<]*\)<\/value>.*/\1/")
   full_name=$artifact_name-$build.zip
-  echo $path/"$version"/"$full_name"
-  echo "Downloading the ${artifact_name} artifact..."
+  print_and_log_message $path/"$version"/"$full_name"
+  print_and_log_message "Downloading the ${artifact_name} artifact..."
   curl -s --output "${temporary_components_directory}" \
   $path/"$version"/"$full_name"
   rc=$?;
 
   if [ $rc != 0 ]; then
-    echo "The ${artifact_name} artifact download failed."
-    exit 1
+    error_handler "The ${artifact_name} artifact download failed."
   else
-    echo "The ${artifact_name} artifact has been downloaded."
+    print_and_log_message "The ${artifact_name} artifact has been downloaded."
   fi
 }
 
 download_other_artifacts() {
   repository_path=$1
   artifact_group=$2
-  echo $repository_path
+  print_and_log_message $repository_path
   full_name=$3
   path=https://zowe.jfrog.io/artifactory/$repository_path/org/zowe/$artifact_group/[RELEASE]/$full_name
-  echo $path
-  echo "Downloading the ${artifact_name} artifact..."
+  print_and_log_message $path
+  print_and_log_message "Downloading the ${artifact_name} artifact..."
   curl -s --output "${temporary_components_directory}" \
   $path
   rc=$?;
 
   if [ $rc != 0 ]; then
-    echo "The ${artifact_name} artifact download failed."
-    exit 1
+    error_handler "The ${artifact_name} artifact download failed."
   else
-    echo "The ${artifact_name} artifact has been downloaded into the directory ${temporary_components_directory}"
+    print_and_log_message "The ${artifact_name} artifact has been downloaded into the directory ${temporary_components_directory}"
   fi
 }
 
 download_jobs_and_files_artifacts() {
   artifact_group=$1
   path=https://zowe.jfrog.io/artifactory/api/storage/libs-release-local/org/zowe/$artifact_group/?lastModified
-  echo $path
+  print_and_log_message $path
   url=$(curl -s "$path" | jq -r '.uri')
   url=$(curl -s "$url" | jq -r '.downloadUri')
-  echo $url
-  echo "Downloading the ${artifact_name} artifact..."
+  print_and_log_message $url
+  print_and_log_message "Downloading the ${artifact_name} artifact..."
   curl -s --output "${temporary_components_directory}" \
   "$url"
   rc=$?;
 
   if [ $rc != 0 ]; then
-    echo "The ${artifact_name} artifact download failed."
-    exit 1
+    error_handler "The ${artifact_name} artifact download failed."
   else
-    echo "The ${artifact_name} artifact has been downloaded into the directory ${temporary_components_directory}"
+    print_and_log_message "The ${artifact_name} artifact has been downloaded into the directory ${temporary_components_directory}"
   fi
 }
+
+#######################################################################
+# Parse command line options
+while [ $# -gt 0 ]; do #Checks for parameters
+  arg="$1"
+      case $arg in
+          -o|--component-package)
+              shift
+              artifact_name=$(basename $1)
+              temporary_components_directory=$(get_full_path "$1")
+              print_and_log_message $1
+              temporary_components_directory=$(cd "$temporary_components_directory" && cd .. && pwd)
+              print_and_log_message "${temporary_components_directory}"
+              shift
+          ;;
+          -l|--logs-dir) # Represents the path to the installation logs
+              shift
+              LOG_DIRECTORY=$1
+              shift
+          ;;
+          *)
+              error_handler "$1 is an invalid option\ntry: zowe-upgrade-component.sh -o <PATH_TO_COMPONENT>"
+              shift
+      esac
+done
 
 case $artifact_name in
   launcher)
@@ -115,5 +157,7 @@ case $artifact_name in
     download_other_artifacts "libs-release-local" "explorer-uss" "$full_name"
     ;;
 esac
+
+prepare_log_file
 
 exit 0
