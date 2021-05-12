@@ -130,34 +130,34 @@ while [ $# -gt 0 ]; do #Checks for parameters
 done
 
 case $artifact_name in
-  launcher)
+  launcher-*)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "$repository_path" "launcher" "$full_name"
     ;;
-  jobs-api-package)
+  jobs-api-package-*)
     full_name=$artifact_name-[RELEASE].zip
     download_jobs_and_files_artifacts "explorer/jobs"
     ;;
-  files-api-package)
+  files-api-package-*)
     full_name=$artifact_name-[RELEASE].zip
     download_jobs_and_files_artifacts "explorer/files"
     ;;
-  api-catalog-package | discovery-package | gateway-package | caching-service-package | apiml-common-lib-package)
+  api-catalog-package-* | discovery-package-* | gateway-package-* | caching-service-package-* | apiml-common-lib-package-*)
     download_apiml_artifacts
     ;;
-  explorer-ui-server)
+  explorer-ui-server-*)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-ui-server" "$full_name"
     ;;
-  explorer-jes)
+  explorer-jes-*)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-jes" "$full_name"
     ;;
-  explorer-mvs)
+  explorer-mvs-*)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-mvs" "$full_name"
     ;;
-  explorer-uss)
+  explorer-uss-*)
     full_name=$artifact_name-[RELEASE].pax
     download_other_artifacts "libs-release-local" "explorer-uss" "$full_name"
     ;;
