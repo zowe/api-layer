@@ -19,7 +19,6 @@ import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.util.ArrayList;

@@ -12,7 +12,6 @@ package org.zowe.apiml.integration.proxy;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;

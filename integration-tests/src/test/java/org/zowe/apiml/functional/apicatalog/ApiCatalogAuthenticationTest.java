@@ -19,7 +19,6 @@ import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
-import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.net.URI;
 import java.util.stream.Stream;
@@ -29,7 +28,6 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 /**
  * Have a combination of valid and invalid methods to verify. The integration should span the major components and verify

@@ -11,13 +11,10 @@ package org.zowe.apiml.integration.discovery;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.categories.SlowTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -53,7 +50,6 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
 
     @ParameterizedTest
     @MethodSource("discoverableClientSource")
-    @SlowTests
     void shouldBeRegisteredAfterRegistration(URI url) {
         requestToRegister(url);
         requestIsRegistered(true, url);
@@ -63,7 +59,6 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
 
     @ParameterizedTest
     @MethodSource("discoverableClientSource")
-    @SlowTests
     void shouldNotBeRegisteredAfterUnregistration(URI url) {
         requestToRegister(url);
         requestToUnregister(url);

@@ -23,7 +23,6 @@ import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 

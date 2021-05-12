@@ -16,7 +16,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.SlowTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpClientUtils;
 
@@ -36,7 +35,6 @@ class GatewayTimeoutTest implements TestWithStartedInstances {
     private static final int DEFAULT_TIMEOUT = 30000;
 
     @Test
-    @SlowTests
     @SuppressWarnings("squid:S1160")
     void shouldCallLongButBelowTimeoutRequest() throws IOException {
         // Given
@@ -50,7 +48,6 @@ class GatewayTimeoutTest implements TestWithStartedInstances {
     }
 
     @Test
-    @SlowTests
     @SuppressWarnings("squid:S1160")
     void shouldTimeoutRequestWithGatewayTimeoutHttpResponseCode() throws IOException {
         // Given

@@ -15,7 +15,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.SlowTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpClientUtils;
 
@@ -34,7 +33,6 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 class GatewayConcurrentRequestsTest implements TestWithStartedInstances {
 
     @Test
-    @SlowTests
     void givenGatewayWithConcurrentConnections_whenMakeThreeConnections_thenThreeConcurrentConnections() throws Exception {
         URI uri = new URIBuilder(getUriFromGateway("/api/v1/discoverableclient/greeting"))
             .setParameter("delayMs", "10000").build();

@@ -20,7 +20,6 @@ import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
