@@ -47,4 +47,16 @@ server:
         trustStorePassword: password
         trustStoreType: PKCS12
 
+---
+spring:
+    profiles: attls
 
+apiml:
+    service:
+        discoveryServiceUrls: http://localhost:10001/eureka/
+
+server:
+    internal:
+        enabled: true
+        ssl:
+            enabled: false

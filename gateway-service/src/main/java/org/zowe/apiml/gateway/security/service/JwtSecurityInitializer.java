@@ -53,8 +53,8 @@ public class JwtSecurityInitializer {
     @Value("${apiml.security.auth.jwtKeyAlias:}")
     private String keyAlias;
 
-    @Value("${spring.profiles.active}")
-    private String activeApplicationProfile;
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     private SignatureAlgorithm signatureAlgorithm;
     private Key jwtSecret;
@@ -128,7 +128,7 @@ public class JwtSecurityInitializer {
      */
     private void loadJwtSecret() {
         signatureAlgorithm = SignatureAlgorithm.RS256;
-        if ("attls".equals(activeApplicationProfile)) {
+        if (isAttlsEnabled) {
             log.debug("Loading JWTSecret from environment (AT-TLS)");
             loadJwtSecretFromEnv();
         } else {

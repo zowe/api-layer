@@ -44,7 +44,7 @@ class ApimlX509FilterTest {
 
     @Test
     void givenNoCertificates_thenDontUpdate_whenCallFilter() throws IOException, ServletException {
-        ApimlX509Filter filter = new ApimlX509Filter(Collections.emptySet(), true);
+        ApimlX509Filter filter = new ApimlX509Filter(Collections.emptySet(), false);
 
         filter.doFilter(request, response, chain);
 
@@ -57,7 +57,7 @@ class ApimlX509FilterTest {
         ApimlX509Filter filter = new ApimlX509Filter(new HashSet<>(Arrays.asList(
             X509Utils.correctBase64("apimlCert1"),
             X509Utils.correctBase64("apimlCert2")
-        )), true);
+        )), false);
         filter.setAuthenticationDetailsSource(mock(AuthenticationDetailsSource.class));
         filter.setAuthenticationManager(mock(AuthenticationManager.class));
 

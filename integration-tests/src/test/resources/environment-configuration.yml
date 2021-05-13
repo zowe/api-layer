@@ -3,18 +3,18 @@ credentials:
     user: USER
     password: validPassword
 gatewayServiceConfiguration:
-    scheme: http
+    scheme: https
     host: localhost
-    port: 10010
-    internalPorts: 10017
-    externalPort: 10010
+    port: 10030
+    internalPorts: 10030
+    externalPort: 10030
     instances: 1
 discoveryServiceConfiguration:
     scheme: http
     user: user
     password: user
     host: localhost
-    port: 10011
+    port: 10001
     instances: 1
 discoverableClientConfiguration:
     applId: ZOWEAPPL
@@ -29,7 +29,7 @@ tlsConfiguration:
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
 zosmfServiceConfiguration:
-    scheme: https
+    scheme: http
     host: localhost
     port: 10013
     serviceId: mockzosmf
