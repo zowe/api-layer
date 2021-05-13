@@ -11,6 +11,7 @@ package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.SecurityUtils;
@@ -35,12 +36,18 @@ class SafLoginTest {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    @ParameterizedTest
-    @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced(URI loginUrl) {
-        String jwtToken1 = SecurityUtils.gatewayToken(loginUrl);
-        String jwtToken2 = SecurityUtils.gatewayToken(loginUrl);
+    @Nested
+    class WhenUserAuthenticatesTwice {
+        @Nested
+        class ReturnTwoDifferentValidTokens {
+            @ParameterizedTest(name = "givenValidCredentialsInBody {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenValidCredentialsInBody(URI loginUrl) {
+                String jwtToken1 = SecurityUtils.gatewayToken(loginUrl);
+                String jwtToken2 = SecurityUtils.gatewayToken(loginUrl);
 
-        assertThat(jwtToken1, is(not(jwtToken2)));
+                assertThat(jwtToken1, is(not(jwtToken2)));
+            }
+        }
     }
 }

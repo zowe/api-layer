@@ -9,19 +9,16 @@
  */
 package org.zowe.apiml.integration.proxy;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
+import static io.restassured.RestAssured.given;
 
 @DiscoverableClientDependentTest
 class UiIntegrationTest implements TestWithStartedInstances {
@@ -32,31 +29,34 @@ class UiIntegrationTest implements TestWithStartedInstances {
         };
     }
 
-    @ParameterizedTest
-    @MethodSource("discoverableClientSource")
-    @TestsNotMeantForZowe
-    void shouldCallDiscoverableUiWithSlashAtPathEnd(String url) throws Exception {
-        // Given
-        HttpGet request = HttpRequestUtils.getRequest(url + "/");
+    @Nested
+    class WhenCallingUiRoute {
+        @Nested
+        class GivenUiUrl {
+            @ParameterizedTest(name = "returnUi {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.proxy.UiIntegrationTest#discoverableClientSource")
+            @TestsNotMeantForZowe
+            void returnUi(String url) {
+                given()
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(url + "/"))
+                .then()
+                    .statusCode(HttpStatus.SC_OK);
+            }
+        }
 
-        // When
-        final HttpResponse response = HttpClientUtils.client().execute(request);
-
-        // Then
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
-    }
-
-    @ParameterizedTest
-    @MethodSource("discoverableClientSource")
-    @TestsNotMeantForZowe
-    void shouldRedirectToDiscoverableUiWithoutSlashAtPathEnd(String url) throws Exception {
-        // Given
-        HttpGet request = HttpRequestUtils.getRequest(url);
-
-        // When
-        final HttpResponse response = HttpClientUtils.client(true).execute(request);
-
-        // Then
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
+        @Nested
+        class GivenRedirectUrl {
+            @ParameterizedTest(name = "returnRedirect {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.proxy.UiIntegrationTest#discoverableClientSource")
+            @TestsNotMeantForZowe
+            void returnRedirect(String url) {
+                given()
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(url))
+                .then()
+                    .statusCode(HttpStatus.SC_OK);
+            }
+        }
     }
 }

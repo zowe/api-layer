@@ -10,7 +10,6 @@
 package org.zowe.apiml.integration.authentication.providers;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
 import org.apache.commons.lang3.StringUtils;
@@ -28,17 +27,14 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
-import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.IsNull.notNullValue;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 /**
@@ -84,7 +80,7 @@ class LoginTest implements TestWithStartedInstances {
     class WhenUserAuthenticates {
         @Nested
         class ReturnsValidToken {
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenValidCredentialsInBody {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenValidCredentialsInBody(URI loginUrl) {
                 LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
@@ -102,7 +98,7 @@ class LoginTest implements TestWithStartedInstances {
                 assertValidAuthToken(cookie);
             }
 
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenValidCredentialsInHeader {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenValidCredentialsInHeader(URI loginUrl) {
                 String token = given()
@@ -124,7 +120,7 @@ class LoginTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnsUnauthorized {
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenInvalidCredentialsInBody {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenInvalidCredentialsInBody(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
@@ -143,7 +139,7 @@ class LoginTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenInvalidCredentialsInHeader {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenInvalidCredentialsInHeader(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
@@ -165,7 +161,7 @@ class LoginTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnsBadRequest {
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenCredentialsInTheWrongJsonFormat {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenCredentialsInTheWrongJsonFormat(URI loginUrl) {
                 String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + getPath(loginUrl) + "'";
@@ -186,7 +182,7 @@ class LoginTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenApimlsCert {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenApimlsCert(URI loginUrl) {
                 given()
@@ -199,23 +195,30 @@ class LoginTest implements TestWithStartedInstances {
         }
     }
 
-    @ParameterizedTest
-    @MethodSource("loginUrlsSource")
-    void givenValidCredentialsInJsonBody_whenUserAuthenticatesViaGetMethod_then405IsReturned(URI loginUrl) {
-        String expectedMessage = "Authentication method 'GET' is not supported for URL '" + getPath(loginUrl) + "'";
+    @Nested
+    class WhenUserAuthenticatesViaGetMethod {
+        @Nested
+        class ReturnMethodNotAllowed {
 
-        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
+            @ParameterizedTest(name = "givenValidCredentialsInJsonBody {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenValidCredentialsInJsonBody(URI loginUrl) {
+                String expectedMessage = "Authentication method 'GET' is not supported for URL '" + getPath(loginUrl) + "'";
 
-        given()
-            .contentType(JSON)
-            .body(loginRequest)
-        .when()
-            .get(loginUrl)
-        .then()
-            .statusCode(is(SC_METHOD_NOT_ALLOWED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
-            );
+                LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
+
+                given()
+                    .contentType(JSON)
+                    .body(loginRequest)
+                .when()
+                    .get(loginUrl)
+                .then()
+                    .statusCode(is(SC_METHOD_NOT_ALLOWED))
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
+        }
     }
     //@formatter:on
 

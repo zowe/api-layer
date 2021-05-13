@@ -65,7 +65,7 @@ class QueryTest implements TestWithStartedInstances {
         @Nested
         class ReturnInfo {
             //@formatter:off
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenValidTokenInHeader {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidTokenInHeader(String queryUrl) {
                 given()
@@ -77,7 +77,7 @@ class QueryTest implements TestWithStartedInstances {
                     .body("userId", equalTo(USERNAME));
             }
 
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenValidTokenInCookie {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidTokenInCookie(String queryUrl) {
                 given()
@@ -92,7 +92,7 @@ class QueryTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnUnauthorized {
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenInvalidTokenInBearerHeader {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenInvalidTokenInBearerHeader(String queryUrl) {
                 String invalidToken = "1234";
@@ -111,7 +111,7 @@ class QueryTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenInvalidTokenInCookie {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenInvalidTokenInCookie(String queryUrl) {
                 String invalidToken = "1234";
@@ -129,7 +129,7 @@ class QueryTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenNoToken {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenNoToken(String queryUrl) {
                 String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
@@ -145,7 +145,7 @@ class QueryTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenValidTokenInWrongCookie {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidTokenInWrongCookie(String queryUrl) {
                 String invalidCookie = "badCookie";
@@ -165,20 +165,26 @@ class QueryTest implements TestWithStartedInstances {
         }
     }
 
-    @ParameterizedTest
-    @MethodSource("queryUrlsSource")
-    void givenValidToken_whenWrongHttpMethodUsed_WarningIsReturned(String queryUrl) {
-        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
-        String expectedMessage = "Authentication method 'POST' is not supported for URL '" + queryPath + "'";
+    @Nested
+    class WhenUserAuthenticatesViaGetMethod {
+        @Nested
+        class ReturnMethodNotAllowed {
+            @ParameterizedTest(name = "givenValidCredentials {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
+            void givenValidToken(String queryUrl) {
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String expectedMessage = "Authentication method 'POST' is not supported for URL '" + queryPath + "'";
 
-        given()
-            .header("Authorization", "Bearer " + token)
-        .when()
-            .post(queryUrl)
-        .then()
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
-            );
+                given()
+                    .header("Authorization", "Bearer " + token)
+                .when()
+                    .post(queryUrl)
+                .then()
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
+        }
     }
     //@formatter:on
 }

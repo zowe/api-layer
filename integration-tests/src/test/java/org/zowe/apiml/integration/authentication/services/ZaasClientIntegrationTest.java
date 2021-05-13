@@ -171,7 +171,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
 
         @Nested
         class ProperExceptionIsRaised {
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenInvalidCredentials {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidUsernamePassword")
             void givenInvalidCredentials(String username, String password, ZaasClientErrorCodes expectedCode) {
                 ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
@@ -180,7 +180,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
             }
 
             @NotForMainframeTest
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenInvalidPassword {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidPassword")
             void givenInvalidPassword(String username, String password, ZaasClientErrorCodes expectedCode) {
                 ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
@@ -188,7 +188,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
                 assertThatExceptionContainValidCode(exception, expectedCode);
             }
 
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenInvalidHeader {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidAuthHeaders")
             void givenInvalidHeader(String authHeader, ZaasClientErrorCodes expectedCode) {
                 ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));
@@ -197,7 +197,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
             }
 
             @NotForMainframeTest
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenInvalidPasswordInHeader {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidPasswordAuthHeaders")
             void givenInvalidPasswordInHeader(String authHeader, ZaasClientErrorCodes expectedCode) {
                 ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));

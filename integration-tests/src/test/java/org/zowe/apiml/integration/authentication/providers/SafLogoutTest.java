@@ -11,6 +11,7 @@ package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.categories.SAFAuthTest;
@@ -29,31 +30,43 @@ class SafLogoutTest {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 
-    @ParameterizedTest
-    @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
-    void givenTwoValidTokens_whenLogoutCalledOnFirstOne_thenSecondStillValid(String logoutUrl) {
-        String jwt1 = gatewayToken();
-        String jwt2 = gatewayToken();
+    @Nested
+    class WhenUserLogsOutTwice {
+        @Nested
+        class SecondCallReturnUnauthorized {
+            @ParameterizedTest(name = "givenValidToken {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
+            void givenValidToken(String logoutUrl) {
+                String jwt = gatewayToken();
 
-        assertIfLogged(jwt1, true);
-        assertIfLogged(jwt2, true);
+                assertIfLogged(jwt, true);
 
-        assertLogout(logoutUrl, jwt1, SC_NO_CONTENT);
-
-        assertIfLogged(jwt1, false);
-        assertIfLogged(jwt2, true);
-
-        logoutOnGateway(logoutUrl, jwt2);
+                assertLogout(logoutUrl, jwt, SC_NO_CONTENT);
+                assertLogout(logoutUrl, jwt, SC_UNAUTHORIZED);
+            }
+        }
     }
 
-    @ParameterizedTest
-    @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
-    void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized(String logoutUrl) {
-        String jwt = gatewayToken();
+    @Nested
+    class WhenUserLogsOutOnceWithMultipleTokens {
+        @Nested
+        class VerifySecondTokenIsValid {
+            @ParameterizedTest(name = "givenTwoValidTokens {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
+            void givenTwoValidTokens(String logoutUrl) {
+                String jwt1 = gatewayToken();
+                String jwt2 = gatewayToken();
 
-        assertIfLogged(jwt, true);
+                assertIfLogged(jwt1, true);
+                assertIfLogged(jwt2, true);
 
-        assertLogout(logoutUrl, jwt, SC_NO_CONTENT);
-        assertLogout(logoutUrl, jwt, SC_UNAUTHORIZED);
+                assertLogout(logoutUrl, jwt1, SC_NO_CONTENT);
+
+                assertIfLogged(jwt1, false);
+                assertIfLogged(jwt2, true);
+
+                logoutOnGateway(logoutUrl, jwt2);
+            }
+        }
     }
 }

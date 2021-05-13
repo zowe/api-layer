@@ -12,21 +12,21 @@ package org.zowe.apiml.integration.ha;
 import io.restassured.RestAssured;
 import io.restassured.path.xml.XmlPath;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 /**
@@ -34,67 +34,60 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  */
 class EurekaReplicationTest {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
-    private String scheme;
     private String username;
     private String password;
-    private String host;
-    private int port;
-
 
     @BeforeEach
     void setUp() {
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
-        scheme = discoveryServiceConfiguration.getScheme();
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-        host = discoveryServiceConfiguration.getHost();
-        port = discoveryServiceConfiguration.getPort();
     }
 
-    @Test
-    @TestsNotMeantForZowe
-    void shouldSeeEurekaReplicasIfRegistered() throws Exception {
-        final int instances = discoveryServiceConfiguration.getInstances();
-        //@formatter:off
-        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-        String xml =
-            given()
-                .auth().basic(username, password)
-                .when()
-                .get(getDiscoveryUriWithPath("/eureka/status"))
-                .then()
-                .statusCode(is(HttpStatus.SC_OK))
-                .extract().body().asString();
-        //@formatter:on
+    /**
+     * Based on configuration it tests either for one or for more instances.
+     */
+    @Nested
+    class GivenMultipleEurekaInstances {
+        @Nested
+        class WhenLookingForEurekas {
+            @Test
+            void eurekaReplicasAreVisible() throws Exception {
+                final int instances = discoveryServiceConfiguration.getInstances();
+                //@formatter:off
+                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+                String xml =
+                    given()
+                        .auth().basic(username, password)
+                    .when()
+                        .get(HttpRequestUtils.getUriFromDiscovery("/eureka/status"))
+                    .then()
+                        .statusCode(is(HttpStatus.SC_OK))
+                        .extract().body().asString();
+                //@formatter:on
 
-        xml = xml.replaceAll("com.netflix.eureka.util.StatusInfo", "StatusInfo");
+                xml = xml.replaceAll("com.netflix.eureka.util.StatusInfo", "StatusInfo");
 
-        String availableReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.available-replicas");
-        String registeredReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.registered-replicas");
-        String unavailableReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.unavailable-replicas");
-        List<String> servicesList = Arrays.asList(registeredReplicas.split(","));
-        if (instances == 1) {
-            assertEquals("", registeredReplicas);
-            assertEquals("", availableReplicas);
-            assertEquals("", unavailableReplicas);
-        } else {
-            if (availableReplicas.charAt(availableReplicas.length() - 1) == ',') {
-                availableReplicas = availableReplicas.substring(0, availableReplicas.length() - 1);
+                String availableReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.available-replicas");
+                String registeredReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.registered-replicas");
+                String unavailableReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.unavailable-replicas");
+                List<String> servicesList = Arrays.asList(registeredReplicas.split(","));
+                if (instances == 1) {
+                    assertThat(registeredReplicas, is(""));
+                    assertThat(availableReplicas, is(""));
+                    assertThat(unavailableReplicas, is(""));
+                } else {
+                    if (availableReplicas.charAt(availableReplicas.length() - 1) == ',') {
+                        availableReplicas = availableReplicas.substring(0, availableReplicas.length() - 1);
+                    }
+                    assertThat(registeredReplicas, is(not("")));
+                    assertThat(availableReplicas, is(not("")));
+                    assertThat(unavailableReplicas, is(""));
+
+                    assertThat(registeredReplicas, is(availableReplicas));
+                    assertThat(servicesList, hasSize(instances - 1));
+                }
             }
-            assertNotEquals("", registeredReplicas);
-            assertNotEquals("", availableReplicas);
-            assertEquals("", unavailableReplicas);
-            assertEquals(registeredReplicas, availableReplicas);
-            assertEquals(servicesList.size(), instances - 1);
         }
-    }
-
-    private URI getDiscoveryUriWithPath(String path) throws Exception {
-        return new URIBuilder()
-            .setScheme(scheme)
-            .setHost(host)
-            .setPort(port)
-            .setPath(path)
-            .build();
     }
 }

@@ -72,62 +72,73 @@ public class ApiCatalogAuthenticationTest {
     //@formatter:off
     @Nested
     class GivenValidAuthentication {
-        @ParameterizedTest
-        @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
-        void viaBasic_returnOk(String endpoint) {
-            given()
-                .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
-            .when()
-                .get(getUrl(endpoint))
-            .then()
-                .statusCode(is(SC_OK));
+        @Nested
+        class ReturnOk {
+            @ParameterizedTest(name="givenValidBasicAuthentication {index} {0} ")
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
+            void givenValidBasicAuthentication(String endpoint) {
+                given()
+                    .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                .when()
+                    .get(getUrl(endpoint))
+                .then()
+                    .statusCode(is(SC_OK));
+            }
         }
     }
 
     @Nested
     class GivenInvalidAuthentication {
-        @ParameterizedTest
-        @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
-        void whenSendNothing_returnUnauthorized(String endpoint) {
-            String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
+        @Nested
+        class ReturnUnauthorized {
+            @ParameterizedTest(name = "givenNoAuthentication {index} {0}")
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
+            void givenNoAuthentication(String endpoint) {
+                String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
 
-            given()
-            .when()
-                .get(getUrl(endpoint))
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED))
-                .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX)
-                .body("messages.find { it.messageNumber == 'ZWEAS105E' }.messageContent", equalTo(expectedMessage)
-                );
-        }
+                given()
+                .when()
+                    .get(getUrl(endpoint))
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX)
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAS105E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
 
-        @ParameterizedTest
-        @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
-        void whenSendInvalidViaBasic_returnUnauthorized(String endpoint) {
-            String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
+            @ParameterizedTest(name = "givenInvalidBasicAuthentication {index} {0}")
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
+            void givenInvalidBasicAuthentication(String endpoint) {
+                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
 
-            given()
-                .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
-            .when()
-                .get(getUrl(endpoint))
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED))
-                .body("messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage));
-        }
+                given()
+                    .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
+                .when()
+                    .get(getUrl(endpoint))
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
 
-        @ParameterizedTest
-        @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
-        void whenSendInvalidToken_returnUnauthorized(String endpoint) {
-            String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
-            String invalidToken = "nonsense";
+            @ParameterizedTest(name = "givenInvalidTokenInCookie {index} {0}")
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
+            void givenInvalidTokenInCookie(String endpoint) {
+                String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
+                String invalidToken = "nonsense";
 
-            given()
-                .cookie(COOKIE, invalidToken)
-            .when()
-                .get(getUrl(endpoint))
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED))
-                .body("messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage));
+                given()
+                    .cookie(COOKIE, invalidToken)
+                .when()
+                    .get(getUrl(endpoint))
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
         }
     }
 }

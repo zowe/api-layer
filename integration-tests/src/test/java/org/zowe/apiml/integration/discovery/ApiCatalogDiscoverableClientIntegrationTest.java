@@ -15,14 +15,12 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CatalogTest;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
@@ -32,15 +30,23 @@ import org.zowe.apiml.util.http.HttpSecurityUtils;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Verify integration of the API Catalog with Discoverable client to make sure that the discovery service and gateways
+ * work properly together.
+ */
 @CatalogTest
+@DiscoverableClientDependentTest
 class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInstances  {
     private static final String GET_DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containers/cademoapps";
     private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/v1";
     private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2 = "/apicatalog/api/v1/apidoc/discoverableclient/v2";
+
     private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/v1/v2";
     private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION = "/apicatalog/api/v1/apidoc/discoverableclient/v1/v3";
     private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE = "/apicatalog/api/v1/apidoc/invalidService/v1/v2";
@@ -55,101 +61,102 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
         baseHost = host + ":" + port;
     }
 
+
     @Nested
-    class Containers {
-        @Test
-        @TestsNotMeantForZowe
-        @DiscoverableClientDependentTest
-        void givenDiscoveryClient_whenGetContainerById_thenGetDefaultApiVersionSwagger() throws IOException {
-            HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT, HttpStatus.SC_OK);
-            String containerJsonResponse = EntityUtils.toString(response.getEntity());
-            DocumentContext containerJsonContext = JsonPath.parse(containerJsonResponse);
+    class WhenGettingApiDoc {
+        @Nested
+        class ReturnRelevantApiDoc {
+            @Test
+            void givenV1ApiDocPath() throws Exception {
+                final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT, HttpStatus.SC_OK);
+                String jsonResponse = EntityUtils.toString(response.getEntity());
+                DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
-            // Validate container
-            assertEquals("cademoapps", containerJsonContext.read("$[0].id"));
-            assertEquals("Sample API Mediation Layer Applications", containerJsonContext.read("$[0].title"));
-            assertEquals("UP", containerJsonContext.read("$[0].status"));
+                validateDiscoverableClientApiV1(jsonResponse, jsonContext);
+            }
 
-            // Get Discoverable Client swagger
-            String dcJsonResponse = containerJsonContext.read("$[0].services[0]").toString();
-            DocumentContext dcJsonContext = JsonPath.parse(dcJsonResponse);
+            @Test
+            void givenV2ApiDocPath() throws IOException {
+                final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2, HttpStatus.SC_OK);
+                final String jsonResponse = EntityUtils.toString(response.getEntity());
 
-            validateDiscoverableClientApiV1(dcJsonResponse, dcJsonContext);
+                String apiCatalogSwagger = "\n**************************\n" +
+                    "Integration Test: Discoverable Client Swagger" +
+                    "\n**************************\n" +
+                    jsonResponse +
+                    "\n**************************\n";
+                DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+
+                LinkedHashMap swaggerInfo = jsonContext.read("$.info");
+                String swaggerHost = jsonContext.read("$.host");
+                String swaggerBasePath = jsonContext.read("$.basePath");
+                LinkedHashMap paths = jsonContext.read("$.paths");
+                LinkedHashMap definitions = jsonContext.read("$.definitions");
+                LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
+
+                assertTrue(swaggerInfo.get("description").toString().contains("API"), apiCatalogSwagger);
+                assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
+                assertEquals("/discoverableclient/api/v2", swaggerBasePath, apiCatalogSwagger);
+                assertEquals("External documentation", externalDoc.get("description"), apiCatalogSwagger);
+
+                assertFalse(paths.isEmpty(), apiCatalogSwagger);
+                assertNotNull(paths.get("/greeting"), apiCatalogSwagger);
+
+                assertFalse(definitions.isEmpty(), apiCatalogSwagger);
+                assertNotNull(definitions.get("Greeting"), apiCatalogSwagger);
+            }
+
+            // Verify that by default v1 swagger is returned.
+            @Test
+            void givenUrlForContainer() throws IOException {
+                HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT, HttpStatus.SC_OK);
+                String containerJsonResponse = EntityUtils.toString(response.getEntity());
+                DocumentContext containerJsonContext = JsonPath.parse(containerJsonResponse);
+
+                // Validate container
+                assertEquals("cademoapps", containerJsonContext.read("$[0].id"));
+                assertEquals("Sample API Mediation Layer Applications", containerJsonContext.read("$[0].title"));
+                assertEquals("UP", containerJsonContext.read("$[0].status"));
+
+                // Get Discoverable Client swagger
+                String dcJsonResponse = containerJsonContext.read("$[0].services[0]").toString();
+                DocumentContext dcJsonContext = JsonPath.parse(dcJsonResponse);
+
+                validateDiscoverableClientApiV1(dcJsonResponse, dcJsonContext);
+            }
         }
     }
 
     @Nested
-    class ApiDoc {
-        @Test
-        @TestsNotMeantForZowe
-        @DiscoverableClientDependentTest
-        void whenDiscoveryClientApiDoc_thenResponseOK() throws Exception {
-            final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT, HttpStatus.SC_OK);
-            String jsonResponse = EntityUtils.toString(response.getEntity());
-            DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+    class WhenGettingDifferenceBetweenVersions {
+        @Nested
+        class ReturnDifference {
+            @Test
+            void givenValidServiceAndVersions() throws Exception {
+                final HttpResponse response = getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT, HttpStatus.SC_OK);
 
-            validateDiscoverableClientApiV1(jsonResponse, jsonContext);
+                //When
+                final String textResponse = EntityUtils.toString(response.getEntity());
+                assertThat(textResponse, startsWith("<!DOCTYPE html><html lang=\"en\">"));
+                assertThat(textResponse, containsString("<header><h1>Api Change Log</h1></header>"));
+                assertThat(textResponse, containsString(
+                    "<div><h2>What&#x27;s New</h2><hr><ol><li><span class=\"GET\">GET</span>/greeting/{yourName} <span>Get a greeting</span></li></ol></div>"));
+                assertThat(textResponse, containsString(
+                    "<div><h2>What&#x27;s Deleted</h2><hr><ol><li><span class=\"GET\">GET</span><del>/{yourName}/greeting</del><span> Get a greeting</span></li>"));
+            }
         }
 
-        @Test
-        @TestsNotMeantForZowe
-        @DiscoverableClientDependentTest
-        void givenDiscoveryClient_whenGetApiDocV2_thenResponseOk() throws IOException {
-            final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2, HttpStatus.SC_OK);
-            final String jsonResponse = EntityUtils.toString(response.getEntity());
+        @Nested
+        class ReturnNotFound {
+            @Test
+            void givenWrongVersion() throws Exception {
+                getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION, HttpStatus.SC_NOT_FOUND);
+            }
 
-            String apiCatalogSwagger = "\n**************************\n" +
-                "Integration Test: Discoverable Client Swagger" +
-                "\n**************************\n" +
-                jsonResponse +
-                "\n**************************\n";
-            DocumentContext jsonContext = JsonPath.parse(jsonResponse);
-
-            LinkedHashMap swaggerInfo = jsonContext.read("$.info");
-            String swaggerHost = jsonContext.read("$.host");
-            String swaggerBasePath = jsonContext.read("$.basePath");
-            LinkedHashMap paths = jsonContext.read("$.paths");
-            LinkedHashMap definitions = jsonContext.read("$.definitions");
-            LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
-
-            assertTrue(swaggerInfo.get("description").toString().contains("API"), apiCatalogSwagger);
-            assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
-            assertEquals("/discoverableclient/api/v2", swaggerBasePath, apiCatalogSwagger);
-            assertEquals("External documentation", externalDoc.get("description"), apiCatalogSwagger);
-
-            assertFalse(paths.isEmpty(), apiCatalogSwagger);
-            assertNotNull(paths.get("/greeting"), apiCatalogSwagger);
-
-            assertFalse(definitions.isEmpty(), apiCatalogSwagger);
-            assertNotNull(definitions.get("Greeting"), apiCatalogSwagger);
-        }
-    }
-
-    @Nested
-    class Versions {
-
-        @Test
-        void whenCallGetApiDiff_thenReturnDiff() throws Exception {
-            final HttpResponse response = getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT, HttpStatus.SC_OK);
-
-            //When
-            final String textResponse = EntityUtils.toString(response.getEntity());
-            assertThat(textResponse, CoreMatchers.startsWith("<!DOCTYPE html><html lang=\"en\">"));
-            assertThat(textResponse, CoreMatchers.containsString("<header><h1>Api Change Log</h1></header>"));
-            assertThat(textResponse, CoreMatchers.containsString(
-                "<div><h2>What&#x27;s New</h2><hr><ol><li><span class=\"GET\">GET</span>/greeting/{yourName} <span>Get a greeting</span></li></ol></div>"));
-            assertThat(textResponse, CoreMatchers.containsString(
-                "<div><h2>What&#x27;s Deleted</h2><hr><ol><li><span class=\"GET\">GET</span><del>/{yourName}/greeting</del><span> Get a greeting</span></li>"));
-        }
-
-        @Test
-        void whenCallGetApiDiffWithWrongVersion_thenReturnNotFound() throws Exception {
-            getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION, HttpStatus.SC_NOT_FOUND);
-        }
-
-        @Test
-        void whenCallGetApiDiffWithWrongService_thenReturnNotFound() throws Exception {
-            getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE, HttpStatus.SC_NOT_FOUND);
+            @Test
+            void givenWrongService() throws Exception {
+                getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE, HttpStatus.SC_NOT_FOUND);
+            }
         }
     }
 

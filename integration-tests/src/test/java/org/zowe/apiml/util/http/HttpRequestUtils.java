@@ -15,6 +15,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import java.io.IOException;
@@ -91,5 +92,16 @@ public class HttpRequestUtils {
 
     public static URI getUriFromGateway(String endpoint) {
         return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), Collections.emptyList());
+    }
+
+    public static URI getUriFromDiscovery(String endpoint) throws URISyntaxException {
+        DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
+
+        return new URIBuilder()
+            .setScheme(discoveryServiceConfiguration.getScheme())
+            .setHost(discoveryServiceConfiguration.getHost())
+            .setPort(discoveryServiceConfiguration.getPort())
+            .setPath(endpoint)
+            .build();
     }
 }

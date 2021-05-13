@@ -13,11 +13,11 @@ package org.zowe.apiml.integration.proxy;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.File;
@@ -38,44 +38,48 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    protected static String[] discoverableClientSource() {
+    protected static String[] discoverableClientUrls() {
         return new String[]{
             MULTIPART_PATH,
             MULTIPART_PATH_OLD_FORMAT
         };
     }
 
-    @ParameterizedTest
-    @MethodSource("discoverableClientSource")
-    @TestsNotMeantForZowe
-    void shouldDoPutRequestAndMatchReturnBody() {
-        RestAssured.registerParser("text/plain", Parser.JSON);
-        URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
-        given().
-            contentType("multipart/form-data").
-            multiPart(new File(classLoader.getResource(configFileName).getFile())).
-        expect().
-            statusCode(200).
-            body("fileName", equalTo("example.txt")).
-            body("fileType", equalTo("application/octet-stream")).
-        when().
-            put(uri);
-    }
+    @Nested
+    class WhenSendingMultipartData {
+        @Nested
+        class VerifyBodyMatches {
+            @ParameterizedTest(name = "givenPutRequest {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.proxy.MultipartPutIntegrationTest#discoverableClientUrls")
+            void givenPutRequest() {
+                RestAssured.registerParser("text/plain", Parser.JSON);
+                URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
+                given().
+                    contentType("multipart/form-data").
+                    multiPart(new File(classLoader.getResource(configFileName).getFile())).
+                expect().
+                    statusCode(200).
+                    body("fileName", equalTo("example.txt")).
+                    body("fileType", equalTo("application/octet-stream")).
+                when().
+                    put(uri);
+            }
 
-    @ParameterizedTest
-    @MethodSource("discoverableClientSource")
-    @TestsNotMeantForZowe
-    void shouldDoPostRequestAndMatchReturnBody() {
-        RestAssured.registerParser("text/plain", Parser.JSON);
-        URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
-        given().
-            contentType("multipart/form-data").
-            multiPart(new File(classLoader.getResource(configFileName).getFile())).
-        expect().
-            statusCode(200).
-            body("fileName", equalTo("example.txt")).
-            body("fileType", equalTo("application/octet-stream")).
-        when().
-            post(uri);
+            @ParameterizedTest(name = "givenPostRequest {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.proxy.MultipartPutIntegrationTest#discoverableClientUrls")
+            void givenPostRequest() {
+                RestAssured.registerParser("text/plain", Parser.JSON);
+                URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
+                given().
+                    contentType("multipart/form-data").
+                    multiPart(new File(classLoader.getResource(configFileName).getFile())).
+                expect().
+                    statusCode(200).
+                    body("fileName", equalTo("example.txt")).
+                    body("fileType", equalTo("application/octet-stream")).
+                when().
+                    post(uri);
+            }
+        }
     }
 }

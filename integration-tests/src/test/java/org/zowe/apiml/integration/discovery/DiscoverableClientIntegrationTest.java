@@ -11,11 +11,11 @@ package org.zowe.apiml.integration.discovery;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -27,7 +27,9 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 
-@TestsNotMeantForZowe
+/**
+ * Integration of
+ */
 @DiscoverableClientDependentTest
 class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
     private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/apiMediationClient");
@@ -38,35 +40,34 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    protected static URI[] discoverableClientSource() {
+    protected static URI[] discoverableClientUrls() {
         return new URI[]{MEDIATION_CLIENT_URI, MEDIATION_CLIENT_URI_OLD_FORMAT};
     }
 
-    @ParameterizedTest
-    @MethodSource("discoverableClientSource")
-    void shouldBeUnregisteredBeforeRegistration(URI url) {
-        requestIsRegistered(false, url);
+    @Nested
+    class WhenIntegratingWithDiscoveryService {
+        @Nested
+        class GivenValidService {
+            @ParameterizedTest(name = "verifyRegistrationAndUnregistration {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.discovery.DiscoverableClientIntegrationTest#discoverableClientUrls")
+            void verifyRegistrationAndUnregistration(URI url) {
+                isRegistered(false, url);
+
+                register(url);
+                isRegistered(true, url);
+
+                unregister(url);
+                isRegistered(false, url);
+            }
+        }
     }
 
-    @ParameterizedTest
-    @MethodSource("discoverableClientSource")
-    void shouldBeRegisteredAfterRegistration(URI url) {
-        requestToRegister(url);
-        requestIsRegistered(true, url);
-
-        requestToUnregister(url);
-    }
-
-    @ParameterizedTest
-    @MethodSource("discoverableClientSource")
-    void shouldNotBeRegisteredAfterUnregistration(URI url) {
-        requestToRegister(url);
-        requestToUnregister(url);
-    }
-
-    private void requestIsRegistered(boolean expectedRegistrationState, URI uri) {
+    private void isRegistered(boolean expectedRegistrationState, URI uri) {
         // It can take some time for (un)registration to complete
-        await().atMost(5, MINUTES).pollDelay(0, SECONDS).pollInterval(1, SECONDS)
+        await()
+            .atMost(5, MINUTES)
+            .pollDelay(0, SECONDS)
+            .pollInterval(1, SECONDS)
             .until(() -> registeredStateAsExpected(expectedRegistrationState, uri));
     }
 
@@ -84,7 +85,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
         }
     }
 
-    private void requestToRegister(URI uri) {
+    private void register(URI uri) {
         given()
             .when()
             .post(uri)
@@ -92,7 +93,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
             .statusCode(is(SC_OK));
     }
 
-    private void requestToUnregister(URI uri) {
+    private void unregister(URI uri) {
         given()
             .when()
             .delete(uri)

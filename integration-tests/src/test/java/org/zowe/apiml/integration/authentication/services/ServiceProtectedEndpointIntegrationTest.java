@@ -144,41 +144,44 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
     }
 
     @Nested
-    class GivenNoAuthentication_RejectAuthentication {
-        @Test
-        void withoutAnyAuthenticationMethod() {
-            given()
-                .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED));
-        }
+    class GivenNoAuthentication {
+        @Nested
+        class RejectAuthentication {
+            @Test
+            void withoutAnyAuthenticationMethod() {
+                given()
+                    .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED));
+            }
 
-        @Test
-        void withEmptyHeader() {
-            String emptyToken = " ";
+            @Test
+            void withEmptyHeader() {
+                String emptyToken = " ";
 
-            given()
-                .header("Authorization", "Bearer " + emptyToken)
-                .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED));
-        }
+                given()
+                    .header("Authorization", "Bearer " + emptyToken)
+                    .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED));
+            }
 
-        @Test
-        void withEmptyCookie() {
-            String emptyToken = "";
+            @Test
+            void withEmptyCookie() {
+                String emptyToken = "";
 
-            given()
-                .cookie("apimlAuthenticationToken", emptyToken)
-                .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED));
+                given()
+                    .cookie("apimlAuthenticationToken", emptyToken)
+                    .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED));
+            }
         }
     }
     //@formatter:on

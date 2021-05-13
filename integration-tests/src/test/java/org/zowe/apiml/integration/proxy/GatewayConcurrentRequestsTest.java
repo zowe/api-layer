@@ -29,6 +29,9 @@ import java.util.concurrent.CompletableFuture;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
+/**
+ * The goal of this test is to verify that we actually properly handle the concurrent connections on the Gateway.
+ */
 @TestsNotMeantForZowe
 class GatewayConcurrentRequestsTest implements TestWithStartedInstances {
 

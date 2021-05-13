@@ -64,8 +64,8 @@ public class SecurityUtils {
     private final static String gatewayHost = serviceConfiguration.getHost();
     private final static int gatewayPort = serviceConfiguration.getPort();
 
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    public final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    public final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
 
     public final static String COOKIE_NAME = "apimlAuthenticationToken";
 

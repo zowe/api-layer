@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.proxy;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
@@ -38,21 +39,27 @@ class DownloadApiIntegrationTest implements TestWithStartedInstances {
         };
     }
 
-    @ParameterizedTest
-    @MethodSource("discoverableClientSource")
-    @TestsNotMeantForZowe
-    void shouldSendGetRequestAndDownloadCompressedImage(String url) {
-        RestAssured.registerParser("image/png", Parser.JSON);
-        URI uri = HttpRequestUtils.getUriFromGateway(url);
-        given().
-            contentType("application/octet-stream").
-            accept("image/png").
-        when().
-            get(uri).
-        then().
-            statusCode(200).
-            header("Content-Disposition", "attachment;filename=api-catalog.png").
-            header("Content-Encoding", "gzip").
-            contentType("image/png");
+    @Nested
+    class WhenDownloadingCompressedImage {
+        @Nested
+        class VerifyGzippedAttachment {
+            @ParameterizedTest(name = "givenValidPathAndHeaders {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.proxy.DownloadApiIntegrationTest#discoverableClientSource")
+            @TestsNotMeantForZowe
+            void givenValidPathAndHeaders(String url) {
+                RestAssured.registerParser("image/png", Parser.JSON);
+                URI uri = HttpRequestUtils.getUriFromGateway(url);
+                given().
+                    contentType("application/octet-stream").
+                    accept("image/png").
+                when().
+                    get(uri).
+                then().
+                    statusCode(200).
+                    header("Content-Disposition", "attachment;filename=api-catalog.png").
+                    header("Content-Encoding", "gzip").
+                    contentType("image/png");
+            }
+        }
     }
 }

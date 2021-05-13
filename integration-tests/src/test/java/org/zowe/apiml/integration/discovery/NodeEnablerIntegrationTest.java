@@ -41,13 +41,13 @@ class NodeEnablerIntegrationTest {
     }
 
     @Test
-    void shouldGetHealth() {
+    void givenEnablerIsOnboarded_whenRequestingPublicEndpoint_returnStatus() {
         URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
 
         given()
-            .when()
+        .when()
             .get(uri)
-            .then()
+        .then()
             .statusCode(is(SC_OK))
             .contentType(is(JSON_CONTENT_TYPE))
             .body("status", is("UP"));

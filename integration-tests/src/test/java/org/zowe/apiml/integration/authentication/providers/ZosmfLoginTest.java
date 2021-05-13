@@ -47,45 +47,51 @@ class ZosmfLoginTest {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    @ParameterizedTest
-    @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-    void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds(URI loginUrl) {
-        Cookie cookie =
-        given()
-            .config(SslContext.clientCertValid)
-        .when()
-            .post(loginUrl)
-        .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().detailedCookie(COOKIE_NAME);
+    @Nested
+    class WhenCallingZosmfAfterAuthentication {
+        @Nested
+        class ReturnExistingDatasets {
+            @ParameterizedTest(name = "givenValidCertificate {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenValidCertificate(URI loginUrl) {
+                Cookie cookie =
+                    given()
+                        .config(SslContext.clientCertValid)
+                    .when()
+                        .post(loginUrl)
+                    .then()
+                        .statusCode(is(SC_NO_CONTENT))
+                        .cookie(COOKIE_NAME, not(isEmptyString()))
+                        .extract().detailedCookie(COOKIE_NAME);
 
-        assertValidAuthToken(cookie, Optional.of("APIMTST"));
+                assertValidAuthToken(cookie, Optional.of("APIMTST"));
 
-        String dsname1 = "SYS1.PARMLIB";
-        String dsname2 = "SYS1.PROCLIB";
+                String dsname1 = "SYS1.PARMLIB";
+                String dsname2 = "SYS1.PROCLIB";
 
-        List<NameValuePair> arguments = new ArrayList<>();
-        arguments.add(new BasicNameValuePair("dslevel", "sys1.p*"));
+                List<NameValuePair> arguments = new ArrayList<>();
+                arguments.add(new BasicNameValuePair("dslevel", "sys1.p*"));
 
-        given()
-            .config(SslContext.tlsWithoutCert)
-            .cookie(cookie)
-            .header("X-CSRF-ZOSMF-HEADER", "")
-        .when()
-            .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-        .then()
-            .statusCode(is(SC_OK))
-            .body(
-                "items.dsname", hasItems(dsname1, dsname2)
-            );
+                given()
+                    .config(SslContext.tlsWithoutCert)
+                    .cookie(cookie)
+                    .header("X-CSRF-ZOSMF-HEADER", "")
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .then()
+                    .statusCode(is(SC_OK))
+                    .body(
+                        "items.dsname", hasItems(dsname1, dsname2)
+                    );
+            }
+        }
     }
 
     @Nested
     class WhenUserAuthenticates {
         @Nested
         class ReturnValidToken {
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenClientX509Cert {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenClientX509Cert(URI loginUrl) {
                 Cookie cookie =
@@ -102,7 +108,7 @@ class ZosmfLoginTest {
                 assertValidAuthToken(cookie, Optional.of("APIMTST"));
             }
 
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenValidClientCertAndInvalidBasic {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenValidClientCertAndInvalidBasic(URI loginUrl) {
                 Cookie cookie =
