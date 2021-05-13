@@ -107,7 +107,7 @@ server:
 
 zuul:
     sslHostnameValidationEnabled: false
-    addProxyHeaders: true
+    addProxyHeaders: false
     traceRequestBody: true
     ignoreSecurityHeaders: false
     includeDebugHeader: false
@@ -275,3 +275,5 @@ server:
 apiml:
     service:
         scheme: http
+
+zuul.debug.request: false

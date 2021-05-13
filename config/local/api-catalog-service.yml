@@ -22,7 +22,7 @@ apiml:
         hostname: localhost
         ipAddress: 127.0.0.1
         port: 10014
-        discoveryServiceUrls: http://localhost:10011/eureka/
+        discoveryServiceUrls: https://localhost:10011/eureka/
         dsIpAddress: 0.0.0.0
         eurekaPassword: password
         eurekaUserId: eureka

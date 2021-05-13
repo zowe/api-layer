@@ -164,7 +164,7 @@ spring:
 
 apiml:
     discovery:
-        allPeersUrls: http://${apiml.service.hostname}:${apiml.service.port}/eureka/
+        allPeersUrls: http://${apiml.service.hostname}:10001/eureka/
 
 server:
     attls:
@@ -176,9 +176,9 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
-        securePort: ${server.port}
-        homePageUrl: http://${apiml.service.hostname}:${apiml.service.port}/
-        statusPageUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/info
-        healthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
-        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
+        port: 10001
+        homePageUrl: http://${apiml.service.hostname}:10001/
+        statusPageUrl: http://${apiml.service.hostname}:10001/application/info
+        healthCheckUrl: http://${apiml.service.hostname}:10001/application/health
+        secureHealthCheckUrl: http://${apiml.service.hostname}:10001/application/health
 

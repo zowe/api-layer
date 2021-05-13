@@ -19,6 +19,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -30,32 +34,25 @@ import java.util.Base64;
  */
 public class AttlsFilter extends OncePerRequestFilter {
 
-    private static X509Certificate certificate;
-
-    static {
-        try {
-            KeyStore store = KeyStore.getInstance("PKCS12");
-            store.load(new FileInputStream("./keystore/localhost/localhost.keystore.p12"), "password".toCharArray());
-            certificate = (X509Certificate) store.getCertificate("localhost");
-
-        } catch (Exception e) {
-
-        }
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         X509Certificate[] certificates = new X509Certificate[1];
         String clientCert = request.getHeader("X-SSL-CERT");
-        try {
-            CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            clientCert = clientCert.replaceAll(X509Factory.BEGIN_CERT, "").replaceAll(X509Factory.END_CERT, "");
-            byte [] decoded = Base64.getUrlDecoder().decode(clientCert);
-            certificates[0] = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(decoded));
-        } catch (Exception e) {
-            certificates[0] = certificate;
+        if (clientCert != null){
+            try {
+                clientCert = URLDecoder.decode(clientCert, StandardCharsets.UTF_8.name());
+                InputStream targetStream = new ByteArrayInputStream(clientCert.getBytes());
+                certificates[0] = (X509Certificate) CertificateFactory
+                    .getInstance("X509")
+                    .generateCertificate(targetStream);
+            } catch (Exception e){
+                e.printStackTrace();
+                filterChain.doFilter(request,response);
+            }
+            request.setAttribute("javax.servlet.request.X509Certificate", certificates);
         }
-        request.setAttribute("javax.servlet.request.X509Certificate", certificates);
+
+
         filterChain.doFilter(request, response);
     }
 

@@ -7,7 +7,10 @@ services:
         image: nginx
         ports:
             - 80:80
-            - 10009:10009
+            - 10000:10000
+            - 10001:10001
+            - 10030:10030
+            - 10016:10016
         volumes:
             - ./conf:/etc/nginx
             - ../../keystore:/etc/ssl/private
