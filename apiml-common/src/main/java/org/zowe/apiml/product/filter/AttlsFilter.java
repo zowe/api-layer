@@ -49,10 +49,10 @@ public class AttlsFilter extends OncePerRequestFilter {
         String clientCert = request.getHeader("X-SSL-CERT");
         try {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            byte [] decoded = Base64.getDecoder().decode(clientCert.replaceAll(X509Factory.BEGIN_CERT, "").replaceAll(X509Factory.END_CERT, ""));
+            clientCert = clientCert.replaceAll(X509Factory.BEGIN_CERT, "").replaceAll(X509Factory.END_CERT, "");
+            byte [] decoded = Base64.getUrlDecoder().decode(clientCert);
             certificates[0] = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(decoded));
-        } catch (CertificateException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
             certificates[0] = certificate;
         }
         request.setAttribute("javax.servlet.request.X509Certificate", certificates);
