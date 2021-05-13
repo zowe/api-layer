@@ -128,7 +128,7 @@ public class JwtSecurityInitializer {
      */
     private void loadJwtSecret() {
         signatureAlgorithm = SignatureAlgorithm.RS256;
-        if (activeApplicationProfile.equals("attls")) {
+        if ("attls".equals(activeApplicationProfile)) {
             log.debug("Loading JWTSecret from environment (AT-TLS)");
             loadJwtSecretFromEnv();
         } else {
