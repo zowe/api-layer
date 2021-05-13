@@ -267,13 +267,18 @@ spring:
     profiles: attls
 
 server:
+    internal:
+        enabled: false
+        ssl:
+            enabled: false
     attls:
         enabled: true
     ssl:
         enabled: false
 
-apiml:
     service:
         scheme: http
+        discoveryServiceUrls: http://localhost:10001/eureka/
 
 zuul.debug.request: false
+

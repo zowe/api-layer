@@ -27,12 +27,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -88,16 +86,16 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
             X509Certificate[] certificates = new X509Certificate[1];
             String clientCert = request.getHeader("X-SSL-CERT");
-            if (clientCert != null){
+            if (clientCert != null) {
                 try {
                     clientCert = URLDecoder.decode(clientCert, StandardCharsets.UTF_8.name());
                     InputStream targetStream = new ByteArrayInputStream(clientCert.getBytes());
                     certificates[0] = (X509Certificate) CertificateFactory
                         .getInstance("X509")
                         .generateCertificate(targetStream);
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                    filterChain.doFilter(request,response);
+                    filterChain.doFilter(request, response);
                 }
                 request.setAttribute("javax.servlet.request.X509Certificate", certificates);
             }
