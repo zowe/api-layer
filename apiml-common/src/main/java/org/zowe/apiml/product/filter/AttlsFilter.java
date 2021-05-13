@@ -10,15 +10,20 @@
 package org.zowe.apiml.product.filter;
 
 import org.springframework.web.filter.OncePerRequestFilter;
+import sun.security.provider.X509Factory;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 
 /**
  * This filter will add X509 certificate from InboundAttls
@@ -41,7 +46,15 @@ public class AttlsFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         X509Certificate[] certificates = new X509Certificate[1];
-        certificates[0] = certificate;
+        String clientCert = request.getHeader("X-SSL-CERT");
+        try {
+            CertificateFactory factory = CertificateFactory.getInstance("X.509");
+            byte [] decoded = Base64.getDecoder().decode(clientCert.replaceAll(X509Factory.BEGIN_CERT, "").replaceAll(X509Factory.END_CERT, ""));
+            certificates[0] = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(decoded));
+        } catch (CertificateException e) {
+            e.printStackTrace();
+            certificates[0] = certificate;
+        }
         request.setAttribute("javax.servlet.request.X509Certificate", certificates);
         filterChain.doFilter(request, response);
     }
