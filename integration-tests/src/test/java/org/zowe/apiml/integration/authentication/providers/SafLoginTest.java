@@ -29,17 +29,17 @@ import static org.hamcrest.core.IsNot.not;
  * Also verify that the invalid credentials will be properly rejected.
  */
 @SAFAuthTest
-class SafLoginTest extends LoginTest {
+class SafLoginTest {
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     @ParameterizedTest
-    @MethodSource("loginUrlsSource")
+    @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
     void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced(URI loginUrl) {
-        String jwtToken1 = SecurityUtils.gatewayToken(loginUrl, getUsername(), getPassword());
-        String jwtToken2 = SecurityUtils.gatewayToken(loginUrl, getUsername(), getPassword());
+        String jwtToken1 = SecurityUtils.gatewayToken(loginUrl);
+        String jwtToken2 = SecurityUtils.gatewayToken(loginUrl);
 
         assertThat(jwtToken1, is(not(jwtToken2)));
     }

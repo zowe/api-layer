@@ -17,11 +17,11 @@ import org.zowe.apiml.util.categories.zOSMFAuthTest;
 
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 @zOSMFAuthTest
 @SuppressWarnings({"squid:S2187"})
-class ZosmfLogoutTest extends LogoutTest {
+class ZosmfLogoutTest {
 
     @BeforeAll
     static void switchToTestedProvider() {
@@ -30,9 +30,9 @@ class ZosmfLogoutTest extends LogoutTest {
     }
 
     @ParameterizedTest
-    @MethodSource("logoutUrlsSource")
+    @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
     void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized(String logoutUrl) {
-        String jwt = generateToken();
+        String jwt = gatewayToken();
 
         assertIfLogged(jwt, true);
 

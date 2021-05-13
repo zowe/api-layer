@@ -33,9 +33,11 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
+import static org.zowe.apiml.util.SecurityUtils.assertValidAuthToken;
 
 @zOSMFAuthTest
-class ZosmfLoginTest extends LoginTest {
+class ZosmfLoginTest {
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
     private final static String ZOSMF_ENDPOINT = "/api/" + ZOSMF_SERVICE_ID + "/zosmf/restfiles/ds";
 
@@ -45,7 +47,7 @@ class ZosmfLoginTest extends LoginTest {
     }
 
     @ParameterizedTest
-    @MethodSource("loginUrlsSource")
+    @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds(URI loginUrl) {
         Cookie cookie =
         given()
@@ -79,7 +81,7 @@ class ZosmfLoginTest extends LoginTest {
     }
 
     @ParameterizedTest
-    @MethodSource("loginUrlsSource")
+    @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced(URI loginUrl) {
         Cookie cookie =
         given()
@@ -96,7 +98,7 @@ class ZosmfLoginTest extends LoginTest {
     }
 
     @ParameterizedTest
-    @MethodSource("loginUrlsSource")
+    @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
     void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced(URI loginUrl) throws Exception {
         Cookie cookie =
         given()

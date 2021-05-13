@@ -17,10 +17,10 @@ import org.zowe.apiml.util.categories.SAFAuthTest;
 
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 @SAFAuthTest
-class SafLogoutTest extends LogoutTest {
+class SafLogoutTest {
 
     // Change to saf and run the same test as for the zOSMF
     @BeforeAll
@@ -30,10 +30,10 @@ class SafLogoutTest extends LogoutTest {
     }
 
     @ParameterizedTest
-    @MethodSource("logoutUrlsSource")
+    @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
     void givenTwoValidTokens_whenLogoutCalledOnFirstOne_thenSecondStillValid(String logoutUrl) {
-        String jwt1 = generateToken();
-        String jwt2 = generateToken();
+        String jwt1 = gatewayToken();
+        String jwt2 = gatewayToken();
 
         assertIfLogged(jwt1, true);
         assertIfLogged(jwt2, true);
@@ -43,13 +43,13 @@ class SafLogoutTest extends LogoutTest {
         assertIfLogged(jwt1, false);
         assertIfLogged(jwt2, true);
 
-        logout(logoutUrl, jwt2);
+        logoutOnGateway(logoutUrl, jwt2);
     }
 
     @ParameterizedTest
-    @MethodSource("logoutUrlsSource")
+    @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
     void givenValidToken_whenLogoutCalledTwice_thenSecondCallUnauthorized(String logoutUrl) {
-        String jwt = generateToken();
+        String jwt = gatewayToken();
 
         assertIfLogged(jwt, true);
 

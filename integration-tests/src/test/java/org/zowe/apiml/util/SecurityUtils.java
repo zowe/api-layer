@@ -11,11 +11,16 @@ package org.zowe.apiml.util;
 
 
 import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
+import io.restassured.http.Cookie;
+import org.apache.http.HttpHeaders;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
+import org.springframework.http.HttpStatus;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -32,18 +37,24 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsNull.notNullValue;
 
 public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
+
     public final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
     public final static String GATEWAY_LOGOUT_ENDPOINT = "/auth/logout";
+    public final static String GATEWAY_QUERY_ENDPOINT = "/auth/query";
+
     public final static String GATEWAY_BASE_PATH = "/gateway/api/v1";
     public final static String GATEWAY_BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
 
@@ -55,6 +66,13 @@ public class SecurityUtils {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+
+    public final static String COOKIE_NAME = "apimlAuthenticationToken";
+
+    protected static String getUsername() {
+        return USERNAME;
+    }
+
 
     //@formatter:off
 
@@ -80,6 +98,10 @@ public class SecurityUtils {
 
     public static String gatewayToken() {
         return gatewayToken(USERNAME, PASSWORD);
+    }
+
+    public static String gatewayToken(URI gatewayLoginEndpoint) {
+        return gatewayToken(gatewayLoginEndpoint, USERNAME, PASSWORD);
     }
 
     public static String gatewayToken(String username, String password) {
@@ -135,6 +157,56 @@ public class SecurityUtils {
             | CertificateException | IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public static void assertIfLogged(String jwt, boolean logged) {
+        final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+
+        given()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .when()
+            .get(HttpRequestUtils.getUriFromGateway(GATEWAY_BASE_PATH + GATEWAY_QUERY_ENDPOINT))
+        .then()
+            .statusCode(status.value());
+    }
+
+    public static void assertLogout(String url, String jwtToken, int expectedStatusCode) {
+        given()
+            .cookie(COOKIE_NAME, jwtToken)
+        .when()
+            .post(url)
+        .then()
+            .statusCode(is(expectedStatusCode));
+    }
+
+    public static void assertValidAuthToken(Cookie cookie) {
+        assertValidAuthToken(cookie, Optional.empty());
+    }
+
+    public static void assertValidAuthToken(Cookie cookie, Optional<String> username) {
+        assertThat(cookie.isHttpOnly(), is(true));
+        assertThat(cookie.getValue(), is(notNullValue()));
+        assertThat(cookie.getMaxAge(), is(-1));
+
+        int i = cookie.getValue().lastIndexOf('.');
+        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
+        Claims claims = parseJwtString(untrustedJwtString);
+        assertThatTokenIsValid(claims, username);
+    }
+
+    public static void assertThatTokenIsValid(Claims claims) {
+        assertThatTokenIsValid(claims, Optional.empty());
+    }
+
+    public static void assertThatTokenIsValid(Claims claims, Optional<String> username) {
+        assertThat(claims.getId(), not(isEmptyString()));
+        assertThat(claims.getSubject(), is(username.orElseGet(SecurityUtils::getUsername)));
+    }
+
+    public static Claims parseJwtString(String untrustedJwtString) {
+        return Jwts.parserBuilder().build()
+            .parseClaimsJwt(untrustedJwtString)
+            .getBody();
     }
 
     //@formatter:on

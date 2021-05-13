@@ -21,6 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -37,11 +38,13 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 /**
  * Basic set of login related tests that needs to pass against every valid authentication provider.
  */
-abstract class LoginTest implements TestWithStartedInstances {
+@GeneralAuthenticationTest
+class LoginTest implements TestWithStartedInstances {
     protected final static String BASE_PATH = "/gateway/api/v1";
     protected final static String BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
     protected final static String LOGIN_ENDPOINT = "/auth/login";
@@ -52,8 +55,6 @@ abstract class LoginTest implements TestWithStartedInstances {
     protected static URI[] loginUrlsSource() {
         return new URI[]{LOGIN_ENDPOINT_URL, LOGIN_ENDPOINT_URL_OLD_FORMAT};
     }
-
-    protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -97,21 +98,6 @@ abstract class LoginTest implements TestWithStartedInstances {
         assertValidAuthToken(cookie);
     }
 
-    protected void assertValidAuthToken(Cookie cookie) {
-        assertValidAuthToken(cookie, Optional.empty());
-    }
-
-    protected void assertValidAuthToken(Cookie cookie, Optional<String> username) {
-        assertThat(cookie.isHttpOnly(), is(true));
-        assertThat(cookie.getValue(), is(notNullValue()));
-        assertThat(cookie.getMaxAge(), is(-1));
-
-        int i = cookie.getValue().lastIndexOf('.');
-        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
-        Claims claims = parseJwtString(untrustedJwtString);
-        assertThatTokenIsValid(claims, username);
-    }
-
     @ParameterizedTest
     @MethodSource("loginUrlsSource")
     void givenValidCredentialsInHeader_whenUserAuthenticates_thenTheValidTokenIsProduced(URI loginUrl) {
@@ -129,21 +115,6 @@ abstract class LoginTest implements TestWithStartedInstances {
         String untrustedJwtString = token.substring(0, i + 1);
         Claims claims = parseJwtString(untrustedJwtString);
         assertThatTokenIsValid(claims);
-    }
-
-    protected void assertThatTokenIsValid(Claims claims) {
-        assertThatTokenIsValid(claims, Optional.empty());
-    }
-
-    protected void assertThatTokenIsValid(Claims claims, Optional<String> username) {
-        assertThat(claims.getId(), not(isEmptyString()));
-        assertThat(claims.getSubject(), is(username.orElseGet(this::getUsername)));
-    }
-
-    protected Claims parseJwtString(String untrustedJwtString) {
-        return Jwts.parserBuilder().build()
-            .parseClaimsJwt(untrustedJwtString)
-            .getBody();
     }
 
     @ParameterizedTest
