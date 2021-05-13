@@ -10,4 +10,4 @@ services:
             - 10009:10009
         volumes:
             - ./conf:/etc/nginx
-            - ../../keystore/localhost:/etc/ssl/private
+            - ../../keystore:/etc/ssl/private
