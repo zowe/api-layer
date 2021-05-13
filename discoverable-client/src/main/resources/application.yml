@@ -169,7 +169,7 @@ spring:
 
 apiml:
     service:
-        discoveryServiceUrls: http://localhost:10011/eureka/
+        discoveryServiceUrls: http://localhost:10001/eureka/
         scheme: http
 
 server:
