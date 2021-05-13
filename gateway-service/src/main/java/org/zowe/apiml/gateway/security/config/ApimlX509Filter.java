@@ -66,9 +66,9 @@ public class ApimlX509Filter extends X509AuthenticationFilter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
-        if (!attlsEnabled) {
+//        if (!attlsEnabled) {
             categorizeCerts(request);
-        }
+//        }
         super.doFilter(request, response, chain);
     }
 
