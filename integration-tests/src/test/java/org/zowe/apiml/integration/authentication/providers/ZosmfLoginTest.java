@@ -14,6 +14,7 @@ import io.restassured.http.Cookie;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
@@ -80,37 +81,43 @@ class ZosmfLoginTest {
             );
     }
 
-    @ParameterizedTest
-    @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-    void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced(URI loginUrl) {
-        Cookie cookie =
-        given()
-            .config(SslContext.clientCertValid)
-        .when()
-            .post(loginUrl)
-        .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract()
-            .detailedCookie(COOKIE_NAME);
+    @Nested
+    class WhenUserAuthenticates {
+        @Nested
+        class ReturnValidToken {
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenClientX509Cert(URI loginUrl) {
+                Cookie cookie =
+                    given()
+                        .config(SslContext.clientCertValid)
+                    .when()
+                        .post(loginUrl)
+                    .then()
+                        .statusCode(is(SC_NO_CONTENT))
+                        .cookie(COOKIE_NAME, not(isEmptyString()))
+                        .extract()
+                        .detailedCookie(COOKIE_NAME);
 
-        assertValidAuthToken(cookie, Optional.of("APIMTST"));
-    }
+                assertValidAuthToken(cookie, Optional.of("APIMTST"));
+            }
 
-    @ParameterizedTest
-    @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-    void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced(URI loginUrl) throws Exception {
-        Cookie cookie =
-        given()
-            .config(SslContext.clientCertValid)
-            .auth().basic("Bob", "The Builder")
-        .when()
-            .post(loginUrl)
-        .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().detailedCookie(COOKIE_NAME);
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenValidClientCertAndInvalidBasic(URI loginUrl) {
+                Cookie cookie =
+                    given()
+                        .config(SslContext.clientCertValid)
+                        .auth().basic("Bob", "The Builder")
+                    .when()
+                        .post(loginUrl)
+                    .then()
+                        .statusCode(is(SC_NO_CONTENT))
+                        .cookie(COOKIE_NAME, not(isEmptyString()))
+                        .extract().detailedCookie(COOKIE_NAME);
 
-        assertValidAuthToken(cookie, Optional.of("APIMTST"));
+                assertValidAuthToken(cookie, Optional.of("APIMTST"));
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.authentication.providers;
 import io.restassured.RestAssured;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.SecurityUtils;
@@ -59,100 +60,109 @@ class QueryTest implements TestWithStartedInstances {
         token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
     }
 
-    //@formatter:off
-    @ParameterizedTest
-    @MethodSource("queryUrlsSource")
-    void givenValidToken_WhenInHeader_ReturnInfo(String queryUrl) {
-        given()
-            .header("Authorization", "Bearer " + token)
-        .when()
-            .get(queryUrl)
-        .then()
-            .statusCode(is(SC_OK))
-            .body("userId", equalTo(USERNAME));
-    }
+    @Nested
+    class WhenQueryingToken {
+        @Nested
+        class ReturnInfo {
+            //@formatter:off
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
+            void givenValidTokenInHeader(String queryUrl) {
+                given()
+                    .header("Authorization", "Bearer " + token)
+                .when()
+                    .get(queryUrl)
+                .then()
+                    .statusCode(is(SC_OK))
+                    .body("userId", equalTo(USERNAME));
+            }
 
-    @ParameterizedTest
-    @MethodSource("queryUrlsSource")
-    void givenValidToken_WhenInCookie_ReturnInfo(String queryUrl) {
-        given()
-            .cookie(COOKIE, token)
-        .when()
-            .get(queryUrl)
-        .then()
-            .statusCode(is(SC_OK))
-            .body("userId", equalTo(USERNAME));
-    }
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
+            void givenValidTokenInCookie(String queryUrl) {
+                given()
+                    .cookie(COOKIE, token)
+                .when()
+                    .get(queryUrl)
+                .then()
+                    .statusCode(is(SC_OK))
+                    .body("userId", equalTo(USERNAME));
+            }
+        }
 
-    @ParameterizedTest
-    @MethodSource("queryUrlsSource")
-    void givenInvalidToken_WhenInHeader_UnauthorizedIsReturned(String queryUrl) {
-        String invalidToken = "1234";
-        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
-        String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
+        @Nested
+        class ReturnUnauthorized {
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
+            void givenInvalidTokenInBearerHeader(String queryUrl) {
+                String invalidToken = "1234";
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
 
-        given()
-            .header("Authorization", "Bearer " + invalidToken)
-            .contentType(JSON)
-        .when()
-            .get(queryUrl)
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
-            );
-    }
+                given()
+                    .header("Authorization", "Bearer " + invalidToken)
+                    .contentType(JSON)
+                .when()
+                    .get(queryUrl)
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
 
-    @ParameterizedTest
-    @MethodSource("queryUrlsSource")
-    void givenInvalidToken_WhenInCookie_UnauthorizedIsReturned(String queryUrl) {
-        String invalidToken = "1234";
-        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
-        String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
+            void givenInvalidTokenInCookie(String queryUrl) {
+                String invalidToken = "1234";
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
 
-        given()
-            .cookie(COOKIE, invalidToken)
-        .when()
-            .get(queryUrl)
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
-            );
-    }
+                given()
+                    .cookie(COOKIE, invalidToken)
+                .when()
+                    .get(queryUrl)
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
 
-    @ParameterizedTest
-    @MethodSource("queryUrlsSource")
-    void givenNoToken_UnauthorizedIsReturned(String queryUrl) {
-        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
-        String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
+            void givenNoToken(String queryUrl) {
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
-        given()
-        .when()
-            .get(queryUrl)
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
-            );
-    }
+                given()
+                .when()
+                    .get(queryUrl)
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
 
-    @ParameterizedTest
-    @MethodSource("queryUrlsSource")
-    void givenValidToken_whenStoredInWrongCookie_thenUnauthorizedIsReturned(String queryUrl) {
-        String invalidCookie = "badCookie";
-        String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
-        String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
+            void givenValidTokenInWrongCookie(String queryUrl) {
+                String invalidCookie = "badCookie";
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
-        given()
-            .cookie(invalidCookie, token)
-        .when()
-            .get(queryUrl)
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
-            );
+                given()
+                    .cookie(invalidCookie, token)
+                .when()
+                    .get(queryUrl)
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
+        }
     }
 
     @ParameterizedTest

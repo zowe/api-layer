@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.security.common.login.LoginRequest;
@@ -79,101 +80,123 @@ class LoginTest implements TestWithStartedInstances {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    //@formatter:off
-    @ParameterizedTest
-    @MethodSource("loginUrlsSource")
-    void givenValidCredentialsInBody_whenUserAuthenticates_thenTheValidTokenIsProduced(URI loginUrl) {
-        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
+    @Nested
+    class WhenUserAuthenticates {
+        @Nested
+        class ReturnsValidToken {
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenValidCredentialsInBody(URI loginUrl) {
+                LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
-        Cookie cookie = given()
-            .contentType(JSON)
-            .body(loginRequest)
-        .when()
-            .post(loginUrl)
-        .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().detailedCookie(COOKIE_NAME);
+                Cookie cookie = given()
+                    .contentType(JSON)
+                    .body(loginRequest)
+                .when()
+                    .post(loginUrl)
+                .then()
+                    .statusCode(is(SC_NO_CONTENT))
+                    .cookie(COOKIE_NAME, not(isEmptyString()))
+                    .extract().detailedCookie(COOKIE_NAME);
 
-        assertValidAuthToken(cookie);
-    }
+                assertValidAuthToken(cookie);
+            }
 
-    @ParameterizedTest
-    @MethodSource("loginUrlsSource")
-    void givenValidCredentialsInHeader_whenUserAuthenticates_thenTheValidTokenIsProduced(URI loginUrl) {
-        String token = given()
-            .auth().preemptive().basic(getUsername(), getPassword())
-            .contentType(JSON)
-        .when()
-            .post(loginUrl)
-        .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().cookie(COOKIE_NAME);
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenValidCredentialsInHeader(URI loginUrl) {
+                String token = given()
+                    .auth().preemptive().basic(getUsername(), getPassword())
+                    .contentType(JSON)
+                .when()
+                    .post(loginUrl)
+                .then()
+                    .statusCode(is(SC_NO_CONTENT))
+                    .cookie(COOKIE_NAME, not(isEmptyString()))
+                    .extract().cookie(COOKIE_NAME);
 
-        int i = token.lastIndexOf('.');
-        String untrustedJwtString = token.substring(0, i + 1);
-        Claims claims = parseJwtString(untrustedJwtString);
-        assertThatTokenIsValid(claims);
-    }
+                int i = token.lastIndexOf('.');
+                String untrustedJwtString = token.substring(0, i + 1);
+                Claims claims = parseJwtString(untrustedJwtString);
+                assertThatTokenIsValid(claims);
+            }
+        }
 
-    @ParameterizedTest
-    @MethodSource("loginUrlsSource")
-    void givenInvalidCredentialsInBody_whenUserAuthenticates_thenUnauthorizedIsReturned(URI loginUrl) {
-        String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
+        @Nested
+        class ReturnsUnauthorized {
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenInvalidCredentialsInBody(URI loginUrl) {
+                String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
 
-        LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
+                LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
-        given()
-            .contentType(JSON)
-            .body(loginRequest)
-        .when()
-            .post(loginUrl)
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
-            );
-    }
+                given()
+                    .contentType(JSON)
+                    .body(loginRequest)
+                .when()
+                    .post(loginUrl)
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
 
-    @ParameterizedTest
-    @MethodSource("loginUrlsSource")
-    void givenInvalidCredentialsInHeader_whenUserAuthenticates_thenUnauthorizedIsReturned(URI loginUrl) {
-        String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenInvalidCredentialsInHeader(URI loginUrl) {
+                String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
 
-        LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
+                LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
-        given()
-            .contentType(JSON)
-            .body(loginRequest)
-        .when()
-            .post(loginUrl)
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
-            );
-    }
+                given()
+                    .contentType(JSON)
+                    .body(loginRequest)
+                .when()
+                    .post(loginUrl)
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
+        }
 
-    @ParameterizedTest
-    @MethodSource("loginUrlsSource")
-    void givenCredentialsInTheWrongJsonFormat_whenUserAuthenticates_then400IsReturned(URI loginUrl) {
-        String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + getPath(loginUrl) + "'";
+        @Nested
+        class ReturnsBadRequest {
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenCredentialsInTheWrongJsonFormat(URI loginUrl) {
+                String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + getPath(loginUrl) + "'";
 
-        JSONObject loginRequest = new JSONObject()
-            .put("user", getUsername())
-            .put("pass", getPassword());
+                JSONObject loginRequest = new JSONObject()
+                    .put("user", getUsername())
+                    .put("pass", getPassword());
 
-        given()
-            .contentType(JSON)
-            .body(loginRequest.toString())
-        .when()
-            .post(loginUrl)
-        .then()
-            .statusCode(is(SC_BAD_REQUEST))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
-            );
+                given()
+                    .contentType(JSON)
+                    .body(loginRequest.toString())
+                .when()
+                    .post(loginUrl)
+                .then()
+                    .statusCode(is(SC_BAD_REQUEST))
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
+                    );
+            }
+
+            @ParameterizedTest
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenApimlsCert(URI loginUrl) {
+                given()
+                    .config(SslContext.clientCertApiml)
+                .when()
+                    .post(loginUrl)
+                .then()
+                    .statusCode(is(SC_BAD_REQUEST));
+            }
+        }
     }
 
     @ParameterizedTest
@@ -193,17 +216,6 @@ class LoginTest implements TestWithStartedInstances {
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
             );
-    }
-
-    @ParameterizedTest
-    @MethodSource("loginUrlsSource")
-    void givenApimlsCert_whenAuth_thenUnauthorized(URI loginUrl) {
-        given()
-            .config(SslContext.clientCertApiml)
-        .when()
-            .post(loginUrl)
-        .then()
-            .statusCode(is(SC_BAD_REQUEST));
     }
     //@formatter:on
 

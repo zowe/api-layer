@@ -44,7 +44,7 @@ class LogoutTest implements TestWithStartedInstances {
 
     @ParameterizedTest
     @MethodSource("logoutUrlsSource")
-    void testLogout(String logoutUrl) {
+    void givenValidCredentials_whenUserLogsOut_thenUsedTokenIsLoggedOut(String logoutUrl) {
         // make login
         String jwt = SecurityUtils.gatewayToken();
 
