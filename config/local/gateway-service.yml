@@ -53,10 +53,11 @@ spring:
 
 apiml:
     service:
+        scheme: http
         discoveryServiceUrls: http://localhost:10001/eureka/
 
 server:
     internal:
-        enabled: true
+        enabled: false
         ssl:
             enabled: false

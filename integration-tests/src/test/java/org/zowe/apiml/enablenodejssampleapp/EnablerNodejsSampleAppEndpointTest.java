@@ -14,6 +14,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.GatewayTest;
+import org.zowe.apiml.util.categories.NotAttlsTest;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -27,6 +28,7 @@ import static org.hamcrest.Matchers.is;
 @TestsNotMeantForZowe
 @NotForMainframeTest
 @GatewayTest
+@NotAttlsTest
 class EnablerNodejsSampleAppEndpointTest {
 
     private static final String APP_INFO_PATH = "/hwexpress/api/v1/info/";

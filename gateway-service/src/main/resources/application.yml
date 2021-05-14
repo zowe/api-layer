@@ -268,7 +268,6 @@ spring:
 
 server:
     internal:
-        enabled: false
         ssl:
             enabled: false
     attls:

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
+import org.zowe.apiml.util.categories.NotAttlsTest;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -75,6 +76,7 @@ class WebSecurityTest implements TestWithStartedInstances {
         }
 
         @Test
+        @NotAttlsTest
         void cachingApiEndpointsAccessible() {
 
             given().config(SslContext.clientCertApiml)
@@ -100,6 +102,7 @@ class WebSecurityTest implements TestWithStartedInstances {
                 .when().get(caching_url + CACHING_PATH)
                 .then().statusCode(HttpStatus.FORBIDDEN.value());
         }
+
     }
 
     private void clearSsl() {

@@ -16,9 +16,11 @@ import lombok.*;
 @NoArgsConstructor
 public class GatewayServiceConfiguration {
     private String scheme;
+    private String realScheme;
     private String host;
     private int port;
     private int externalPort;
+    private int realPort;
     private int instances;
     private String internalPorts;
 }

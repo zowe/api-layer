@@ -113,10 +113,10 @@ public class DiscoveryUtils {
         private String app;
         private String ipAddr;
         private String status;
-        private Integer port, securePort;
+        private int port, securePort;
 
         public String getUrl() {
-            if (securePort != null) {
+            if (securePort != 0) {
                 return "https://" + hostName + ":" + securePort;
             } else {
                 return "http://" + hostName + ":" + port;
