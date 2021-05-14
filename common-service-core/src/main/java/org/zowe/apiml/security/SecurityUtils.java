@@ -139,6 +139,32 @@ public class SecurityUtils {
     }
 
     /**
+     * Temp method for getting chain of Apiml's certchain public keys for cert filtering
+     * //TODO loading from embedded string to be replaced from another source
+     * @throws Exception
+     */
+    public static Set<String> readApimlCertChainPemPublicKeys() {
+        String key = "-----BEGIN PUBLIC KEY-----\n" +
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjo7rxDzO51tfSmqahMbY\n" +
+            "6lsXLO+/tXYk1ZcIufsh5L+UMs5StHlfSglbiRgWhfdJDTZb9R760klXL7QRYwBc\n" +
+            "Yn3yhdYTsTB0+RJddPlTQzxAx45xV7b+fCtsQqBFZk5aes/TduyHCHXQRl+iLos1\n" +
+            "3isrl5LSB66ohKxMtflPBeqTM/ptNBbq72XqFCQIZClClvMMYnxrW2FNfftxpLQb\n" +
+            "eFu3KN/8V4gcQoSUvE8YU8PYbVUnuhURActywrxHpke5q/tYQR8iDb6D1ZwLU8+/\n" +
+            "rTrnPbZq+O2DP7vRyBP9pHS/WNSxY1sTnz7gQ2OlUL+BEQLgRXRPc5ev1kwn0kVd\n" +
+            "8QIDAQAB\n" +
+            "-----END PUBLIC KEY-----";
+
+        String publicKeyPEM = key
+            .replace("-----BEGIN PUBLIC KEY-----", "")
+            .replaceAll("\n", "")
+            .replace("-----END PUBLIC KEY-----", "");
+
+        HashSet<String> setOfKeys = new HashSet<>();
+        setOfKeys.add(publicKeyPEM);
+        return setOfKeys;
+    }
+
+    /**
      * Return certificate chain of certificate using to sing of HTTPS communication (certificate stored in keystore,
      * under keyAlias, both values are determinated via config)
      * @param config defines path to KeyStore and key alias
