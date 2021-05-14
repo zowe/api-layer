@@ -59,5 +59,6 @@ apiml:
 server:
     internal:
         enabled: false
+        port: 10010
         ssl:
             enabled: false

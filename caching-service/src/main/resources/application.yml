@@ -158,6 +158,5 @@ apiml:
 
 eureka:
     instance:
-        securePort: 0
         nonSecurePortEnabled: true
         securePortEnabled: false
