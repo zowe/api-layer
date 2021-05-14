@@ -26,7 +26,7 @@ apiml:
         dsIpAddress: 0.0.0.0
         eurekaPassword: password
         eurekaUserId: eureka
-        gatewayHostname: http://localhost:10010
+        gatewayHostname: https://localhost:10010
         preferIpAddress: false
         truststore: keystore/localhost/localhost.truststore.p12
         truststorePassword: password
@@ -42,3 +42,10 @@ spring:
     output:
         ansi:
             enabled: always
+
+---
+spring:
+    profiles: attls
+apiml:
+    service:
+        gatewayHostname: http://localhost:10010

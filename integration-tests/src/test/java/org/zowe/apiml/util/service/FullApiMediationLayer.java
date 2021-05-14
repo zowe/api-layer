@@ -40,7 +40,7 @@ public class FullApiMediationLayer {
         prepareGateway();
         prepareMockZosmf();
         prepareDiscovery();
-        prepareNodeJsSampleApp();
+//        prepareNodeJsSampleApp();
     }
 
     private void prepareNodeJsSampleApp() {
@@ -50,7 +50,7 @@ public class FullApiMediationLayer {
 
         ProcessBuilder builder1 = new ProcessBuilder(parameters);
         builder1.directory(new File("../onboarding-enabler-nodejs-sample-app/"));
-        nodeJsBuilder = builder1.inheritIO();
+//        nodeJsBuilder = builder1.inheritIO();
     }
 
     private void prepareDiscovery() {
@@ -128,10 +128,10 @@ public class FullApiMediationLayer {
             new ApiMediationLayerStartupChecker().waitUntilReady();
 
             try {
-                nodeJsSampleApp = nodeJsBuilder.start();
+//                nodeJsSampleApp = nodeJsBuilder.start();
                 cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh");
                 cachingService.waitUntilReady();
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
 
