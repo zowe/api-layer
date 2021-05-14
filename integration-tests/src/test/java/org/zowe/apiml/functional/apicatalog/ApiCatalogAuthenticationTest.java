@@ -74,7 +74,7 @@ public class ApiCatalogAuthenticationTest {
     class GivenValidAuthentication {
         @Nested
         class ReturnOk {
-            @ParameterizedTest(name="givenValidBasicAuthentication {index} {0} ")
+            @ParameterizedTest(name = "givenValidBasicAuthentication {index} {0} ")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
             void givenValidBasicAuthentication(String endpoint) {
                 given()
