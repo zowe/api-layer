@@ -15,7 +15,7 @@ import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLServerSocket;
 import java.io.IOException;
 import java.net.URL;
-
+@SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class LocalHandshake implements Verifier {
 
     private VerifierSSLContext verifierSslContext;
@@ -28,14 +28,14 @@ public class LocalHandshake implements Verifier {
 
     @Override
     public void verify() {
-        try {
+        try { //NOSONAR
             SSLServerSocket listener = (SSLServerSocket) verifierSslContext.getSslContext().getServerSocketFactory().createServerSocket(0);
 //            start listening on socket to do a SSL handshake
             new SocketServer(listener);
             String address = "https://localhost:" + listener.getLocalPort();
             String keyAlias = verifierSslContext.getStores().getConf().getKeyAlias();
             String trustStore = verifierSslContext.getStores().getConf().getTrustStore();
-            try {
+            try { //NOSONAR
                 System.out.println("Start of the local SSL handshake.");
                 client.executeCall(new URL(address));
                 System.out.println("Handshake was successful. Certificate stored under alias \"" + keyAlias + "\" is trusted by truststore \"" + trustStore

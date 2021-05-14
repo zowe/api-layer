@@ -13,7 +13,7 @@ import javax.net.ssl.SSLServerSocket;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-
+@SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class SocketServer implements Runnable {
 
     private SSLServerSocket serverSocket;
@@ -28,14 +28,19 @@ public class SocketServer implements Runnable {
     @Override
     public void run() {
         try (Socket socket = serverSocket.accept()) {
+            newListener();
             OutputStream outStream = socket.getOutputStream();
             PrintWriter out = new PrintWriter(outStream);
             out.print("HTTP/1.0 200 OK\r\n");
             out.flush();
             outStream.flush();
-        } catch (Exception e) {
+            Thread.sleep(10); //primitive server closes too fast, client fails to read response, so it has to wait.
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch ( Exception e) {
             System.err.println(e.getMessage());
         }
+
     }
 
     private void newListener() {

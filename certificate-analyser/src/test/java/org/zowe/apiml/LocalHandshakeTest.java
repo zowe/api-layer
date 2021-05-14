@@ -9,19 +9,15 @@
  */
 package org.zowe.apiml;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import picocli.CommandLine;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 class LocalHandshakeTest {
 
@@ -53,7 +49,7 @@ class LocalHandshakeTest {
         HttpClient client = new HttpClient(sslContext.getSslContext());
         Verifier localHandshake = new LocalHandshake(sslContext, client);
         localHandshake.verify();
-        assertTrue(outputStream.toString().contains("Handshake was successful. Certificate stored under alias \"" + conf.getKeyAlias() + "\" is trusted by truststore \"" + conf.getTrustStore()
+        assertThat(outputStream.toString(), containsString("Handshake was successful. Certificate stored under alias \"" + conf.getKeyAlias() + "\" is trusted by truststore \"" + conf.getTrustStore()
             + "\"."));
     }
 
@@ -72,6 +68,6 @@ class LocalHandshakeTest {
         HttpClient client = new HttpClient(sslContext.getSslContext());
         Verifier localHandshake = new LocalHandshake(sslContext, client);
         localHandshake.verify();
-        assertTrue(outputStream.toString().contains("Handshake failed. Certificate stored under alias \"" + conf.getKeyAlias() + "\" is not trusted by truststore"));
+        assertThat(outputStream.toString(), containsString("Handshake failed. Certificate stored under alias \"" + conf.getKeyAlias() + "\" is not trusted by truststore"));
     }
 }

@@ -25,7 +25,7 @@ messages:
       number: ZWEAM102
       type: ERROR
       text: "Internal error: Invalid message key '%s' is provided. Please create an issue with this message."
-      reason: "Message service is requested to create message with an invalid key."
+      reason: "Message service is requested to create a message with an invalid key."
       action: "Create an issue with this message."
 
     - key: org.zowe.apiml.common.invalidMessageTextFormat

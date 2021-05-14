@@ -12,7 +12,7 @@ package org.zowe.apiml;
 import javax.net.ssl.SSLHandshakeException;
 import java.net.MalformedURLException;
 import java.net.URL;
-
+@SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class RemoteHandshake implements Verifier {
 
     private VerifierSSLContext verifierSslContext;
