@@ -38,10 +38,10 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    protected static String[] discoverableClientUrls() {
-        return new String[]{
-            MULTIPART_PATH,
-            MULTIPART_PATH_OLD_FORMAT
+    protected static URI[] discoverableClientUrls() {
+        return new URI[]{
+            HttpRequestUtils.getUriFromGateway(MULTIPART_PATH),
+            HttpRequestUtils.getUriFromGateway(MULTIPART_PATH_OLD_FORMAT)
         };
     }
 
@@ -51,9 +51,9 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
         class VerifyBodyMatches {
             @ParameterizedTest(name = "givenPutRequest {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.proxy.MultipartPutIntegrationTest#discoverableClientUrls")
-            void givenPutRequest() {
+            void givenPutRequest(URI url) {
                 RestAssured.registerParser("text/plain", Parser.JSON);
-                URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
+
                 given().
                     contentType("multipart/form-data").
                     multiPart(new File(classLoader.getResource(configFileName).getFile())).
@@ -62,14 +62,14 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
                     body("fileName", equalTo("example.txt")).
                     body("fileType", equalTo("application/octet-stream")).
                 when().
-                    put(uri);
+                    put(url);
             }
 
             @ParameterizedTest(name = "givenPostRequest {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.proxy.MultipartPutIntegrationTest#discoverableClientUrls")
-            void givenPostRequest() {
+            void givenPostRequest(URI url) {
                 RestAssured.registerParser("text/plain", Parser.JSON);
-                URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
+
                 given().
                     contentType("multipart/form-data").
                     multiPart(new File(classLoader.getResource(configFileName).getFile())).
@@ -78,7 +78,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
                     body("fileName", equalTo("example.txt")).
                     body("fileType", equalTo("application/octet-stream")).
                 when().
-                    post(uri);
+                    post(url);
             }
         }
     }

@@ -49,14 +49,14 @@ class LoginTest implements TestWithStartedInstances {
     public static final URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(BASE_PATH + LOGIN_ENDPOINT);
     public static final URI LOGIN_ENDPOINT_URL_OLD_FORMAT = HttpRequestUtils.getUriFromGateway(BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT);
 
-    protected static URI[] loginUrlsSource() {
-        return new URI[]{LOGIN_ENDPOINT_URL, LOGIN_ENDPOINT_URL_OLD_FORMAT};
-    }
-
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
+
+    protected static URI[] loginUrlsSource() {
+        return new URI[]{LOGIN_ENDPOINT_URL, LOGIN_ENDPOINT_URL_OLD_FORMAT};
+    }
 
     protected String getUsername() {
         return USERNAME;

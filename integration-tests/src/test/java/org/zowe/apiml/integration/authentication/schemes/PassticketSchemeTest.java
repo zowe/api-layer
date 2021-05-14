@@ -13,6 +13,7 @@ import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import io.restassured.response.ValidatableResponseOptions;
 import org.apache.http.HttpHeaders;
+import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
@@ -21,18 +22,24 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 import java.util.Base64;
+import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @DiscoverableClientDependentTest
 @GeneralAuthenticationTest
 public class PassticketSchemeTest {
     private final static String REQUEST_INFO_ENDPOINT = "/api/v1/dcpassticket/request";
+    private final static String PASSTICKET_TEST_ENDPOINT = "/api/v1/dcpassticket/passticketTest";
+
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
+    private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
+
 
     @Nested
     class WhenUsingPassticketAuthenticationScheme {
@@ -85,9 +92,9 @@ public class PassticketSchemeTest {
                     given()
                         .cookie(COOKIE_NAME, jwt)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                        .when()
+                    .when()
                         .get(requestUrl)
-                        .then()
+                    .then()
                 );
 
             }
@@ -100,11 +107,65 @@ public class PassticketSchemeTest {
                     given()
                         .auth().preemptive().basic(USERNAME, PASSWORD)
                         .cookie(COOKIE_NAME, jwt)
-                        .when()
+                    .when()
                         .get(requestUrl)
-                        .then()
+                    .then()
                 );
 
+            }
+        }
+
+        @Nested
+        class VerifyPassTicketIsOk {
+            @Test
+            void givenCorrectToken() {
+                String jwt = gatewayToken();
+                given()
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                .when()
+                    .get(
+                        discoverablePassticketUrl
+                    )
+                .then()
+                    .statusCode(is(SC_OK));
+            }
+        }
+
+        @Nested
+        class VerifyPassTicketIsInvalid {
+            @Test
+            void givenIssuedForIncorrectApplId() {
+                String jwt = gatewayToken();
+                String expectedMessage = "Error on evaluation of PassTicket";
+
+                URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(
+                    PASSTICKET_TEST_ENDPOINT,
+                    Collections.singletonList(new BasicNameValuePair("applid", "XBADAPPL"))
+                );
+
+                given()
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                .when()
+                    .get(discoverablePassticketUrl)
+                .then()
+                    .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+                    .body("message", containsString(expectedMessage));
+
+            }
+
+            //@formatter:off
+            @Test
+            void givenInvalidJwtToken() {
+                String jwt = "nonsense";
+                String expectedMessage = "Token is not valid";
+
+                given()
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                .when()
+                    .get(discoverablePassticketUrl)
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .body("message", containsString(expectedMessage));
             }
         }
     }
