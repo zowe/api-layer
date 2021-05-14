@@ -34,6 +34,9 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
+/**
+ * Verify we can retrieve keys for JWT signature from Gateway, zOSMF and potentially other services.
+ */
 @TestsNotMeantForZowe
 @GatewayTest
 class PublicKeyIntegrationTest implements TestWithStartedInstances {
