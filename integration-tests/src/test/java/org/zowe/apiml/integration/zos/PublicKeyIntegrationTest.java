@@ -16,6 +16,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GatewayTest;
@@ -23,6 +24,7 @@ import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.text.ParseException;
 
@@ -39,16 +41,52 @@ class PublicKeyIntegrationTest implements TestWithStartedInstances {
     private final static String ALL_PUBLIC_KEY_ENDPOINT = "/api/v1/gateway/auth/keys/public/all";
     private final static String CURRENT_PUBLIC_KEY_ENDPOINT = "/api/v1/gateway/auth/keys/public/current";
 
-    private final static GatewayServiceConfiguration SERVICE_CONFIGURATION = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-    private final static String GATEWAY_SCHEME = SERVICE_CONFIGURATION.getScheme();
-    private final static String GATEWAY_HOST = SERVICE_CONFIGURATION.getHost();
-    private final static int GATEWAY_PORT = SERVICE_CONFIGURATION.getPort();
-    private final static String GATEWAY_URL = String.format("%s://%s:%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT);
-
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+    }
+
+    @Nested
+    class WhenRequestingAllTokenRelatedKeys {
+        @Nested
+        class ReturnZosmfAndInternalOnes {
+            @Test
+            @MainframeDependentTests
+            void givenNoAuthentication() throws ParseException {
+                String response = given()
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(ALL_PUBLIC_KEY_ENDPOINT))
+                .then()
+                    .statusCode(is(SC_OK))
+                    .extract().body().asString();
+
+                JWKSet jwkSet = JWKSet.parse(response);
+
+                verifyKeys(jwkSet, 2);
+            }
+        }
+    }
+
+    @Nested
+    class WhenRequestingCurrentlyUsedKey {
+        @Nested
+        class ReturnActuallyUsedKey {
+            @Test
+            @MainframeDependentTests
+            void givenNoAuthentication() throws ParseException {
+                String response = given()
+                    .accept(ContentType.JSON)
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(CURRENT_PUBLIC_KEY_ENDPOINT))
+                .then()
+                    .statusCode(is(SC_OK))
+                    .extract().body().asString();
+                JWKSet jwkSet = JWKSet.parse(response);
+
+                verifyKeys(jwkSet, 1);
+            }
+        }
     }
 
     private void verifyKeys(JWKSet jwkSet, int count) {
@@ -63,35 +101,6 @@ class PublicKeyIntegrationTest implements TestWithStartedInstances {
             assertNotNull(rsaKey.getPublicExponent());
             assertFalse(StringUtils.isEmpty(rsaKey.getPublicExponent().toString()));
         }
-    }
-
-    @Test
-    @MainframeDependentTests
-    void testAllPublicKeys() throws ParseException {
-        String response = given()
-        .when()
-            .get(GATEWAY_URL + ALL_PUBLIC_KEY_ENDPOINT)
-        .then()
-            .statusCode(is(SC_OK))
-            .extract().body().asString();
-        JWKSet jwkSet = JWKSet.parse(response);
-
-        verifyKeys(jwkSet, 2);
-    }
-
-    @Test
-    @MainframeDependentTests
-    void testCurrentPublicKeys() throws ParseException {
-        String response = given()
-            .accept(ContentType.JSON)
-        .when()
-            .get(GATEWAY_URL + CURRENT_PUBLIC_KEY_ENDPOINT)
-        .then()
-            .statusCode(is(SC_OK))
-            .extract().body().asString();
-        JWKSet jwkSet = JWKSet.parse(response);
-
-        verifyKeys(jwkSet, 1);
     }
 
 }
