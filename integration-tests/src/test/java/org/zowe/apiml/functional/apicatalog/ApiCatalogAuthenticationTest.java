@@ -18,9 +18,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.http.HttpRequestUtils;
 
-import java.net.URI;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
