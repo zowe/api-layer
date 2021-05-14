@@ -9,15 +9,19 @@
  */
 package org.zowe.apiml.integration.authentication.schemes;
 
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import io.restassured.response.ValidatableResponseOptions;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicNameValuePair;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -40,6 +44,11 @@ public class PassticketSchemeTest {
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
 
+    @BeforeEach
+    void setUp() {
+        RestAssured.useRelaxedHTTPSValidation();
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+    }
 
     @Nested
     class WhenUsingPassticketAuthenticationScheme {
@@ -134,6 +143,7 @@ public class PassticketSchemeTest {
         @Nested
         class VerifyPassTicketIsInvalid {
             @Test
+            @MainframeDependentTests // The appl id needs to be verified against actual ESM
             void givenIssuedForIncorrectApplId() {
                 String jwt = gatewayToken();
                 String expectedMessage = "Error on evaluation of PassTicket";
@@ -151,21 +161,6 @@ public class PassticketSchemeTest {
                     .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                     .body("message", containsString(expectedMessage));
 
-            }
-
-            //@formatter:off
-            @Test
-            void givenInvalidJwtToken() {
-                String jwt = "nonsense";
-                String expectedMessage = "Token is not valid";
-
-                given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-                .when()
-                    .get(discoverablePassticketUrl)
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body("message", containsString(expectedMessage));
             }
         }
     }
