@@ -40,8 +40,6 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  * 2 services are registered and after that, one is killed. Service is called through Gateway
  * and responses are inspected. Implementation returns a debug header that describes the retries.
  * The test repeats calls until it sees that request has been retried from mentioned header.
- *
- * TODO: Rebuild into functional test of the Gateway
  */
 @TestsNotMeantForZowe
 @GatewayTest

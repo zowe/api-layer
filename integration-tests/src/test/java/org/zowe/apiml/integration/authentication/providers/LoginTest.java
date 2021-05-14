@@ -22,6 +22,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.SAFAuthTest;
+import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -41,6 +43,8 @@ import static org.zowe.apiml.util.SecurityUtils.*;
  * Basic set of login related tests that needs to pass against every valid authentication provider.
  */
 @GeneralAuthenticationTest
+@SAFAuthTest
+@zOSMFAuthTest
 class LoginTest implements TestWithStartedInstances {
     protected final static String BASE_PATH = "/gateway/api/v1";
     protected final static String BASE_PATH_OLD_FORMAT = "/api/v1/gateway";

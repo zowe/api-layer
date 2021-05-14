@@ -28,15 +28,8 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
-/**
- * Have a combination of valid and invalid methods to verify. The integration should span the major components and verify
- * that
- *
- * Discovery
- * API Catalog
- * Caching service
- */
 @GeneralAuthenticationTest
 public class ApiCatalogAuthenticationTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -60,18 +53,14 @@ public class ApiCatalogAuthenticationTest {
         );
     }
 
-    URI getUrl(String endpoint) {
-        return HttpRequestUtils.getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + endpoint);
-    }
-
     @BeforeEach
     void setUp() {
-        RestAssured.useRelaxedHTTPSValidation(); // Why do we use the relaxed validation.
+        RestAssured.useRelaxedHTTPSValidation();
     }
 
     //@formatter:off
     @Nested
-    class GivenValidAuthentication {
+    class WhenAccessingCatalog {
         @Nested
         class ReturnOk {
             @ParameterizedTest(name = "givenValidBasicAuthentication {index} {0} ")
@@ -80,15 +69,12 @@ public class ApiCatalogAuthenticationTest {
                 given()
                     .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
                 .when()
-                    .get(getUrl(endpoint))
+                    .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + endpoint))
                 .then()
                     .statusCode(is(SC_OK));
             }
         }
-    }
 
-    @Nested
-    class GivenInvalidAuthentication {
         @Nested
         class ReturnUnauthorized {
             @ParameterizedTest(name = "givenNoAuthentication {index} {0}")
@@ -98,7 +84,7 @@ public class ApiCatalogAuthenticationTest {
 
                 given()
                 .when()
-                    .get(getUrl(endpoint))
+                    .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + endpoint))
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX)
@@ -115,7 +101,7 @@ public class ApiCatalogAuthenticationTest {
                 given()
                     .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
                 .when()
-                    .get(getUrl(endpoint))
+                    .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + endpoint))
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
@@ -132,7 +118,7 @@ public class ApiCatalogAuthenticationTest {
                 given()
                     .cookie(COOKIE, invalidToken)
                 .when()
-                    .get(getUrl(endpoint))
+                    .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + endpoint))
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(

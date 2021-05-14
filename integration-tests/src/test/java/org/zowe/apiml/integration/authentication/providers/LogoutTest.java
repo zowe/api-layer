@@ -17,6 +17,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.SAFAuthTest;
+import org.zowe.apiml.util.categories.zOSMFAuthTest;
 
 import static org.zowe.apiml.util.SecurityUtils.assertIfLogged;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
@@ -25,6 +27,8 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  * Basic set of logout related tests that needs to pass against every valid authentication provider.
  */
 @GeneralAuthenticationTest
+@SAFAuthTest
+@zOSMFAuthTest
 class LogoutTest implements TestWithStartedInstances {
 
     protected static String[] logoutUrlsSource() {

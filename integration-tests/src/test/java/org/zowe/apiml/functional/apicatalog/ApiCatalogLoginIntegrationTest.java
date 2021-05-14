@@ -9,34 +9,27 @@
  */
 package org.zowe.apiml.functional.apicatalog;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
-import io.restassured.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.http.HttpRequestUtils;
+
+import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-//TODO: Showing original endpoints ... is it correct?
 @GeneralAuthenticationTest
 class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
-    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
-    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
-    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     private final static String CATALOG_PREFIX = "/api/v1";
     private final static String CATALOG_SERVICE_ID = "/apicatalog";
     private final static String LOGIN_ENDPOINT = "/auth/login";
@@ -45,6 +38,8 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
+
+    private final static URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + LOGIN_ENDPOINT);
 
     @BeforeEach
     void setUp() {
@@ -56,28 +51,15 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
     void doLoginWithValidBodyLoginRequest() {
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
-        Cookie cookie = given()
+        given()
             .contentType(JSON)
             .body(loginRequest)
         .when()
-            .post(String.format("%s://%s:%d%s%s%s", SCHEME, HOST, PORT, CATALOG_PREFIX, CATALOG_SERVICE_ID,LOGIN_ENDPOINT))
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
-
-        assertTrue(cookie.isHttpOnly());
-        assertThat(cookie.getValue(), is(notNullValue()));
-        assertThat(cookie.getMaxAge(), is(-1));
-
-        int i = cookie.getValue().lastIndexOf('.');
-        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
-        Claims claims = Jwts.parser()
-            .parseClaimsJwt(untrustedJwtString)
-            .getBody();
-
-        assertThat(claims.getId(), not(isEmptyString()));
-        assertThat(claims.getSubject(), is(USERNAME));
     }
 
     @Test
@@ -90,7 +72,7 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
             .contentType(JSON)
             .body(loginRequest)
         .when()
-            .post(String.format("%s://%s:%d%s%s%s", SCHEME, HOST, PORT, CATALOG_PREFIX, CATALOG_SERVICE_ID, LOGIN_ENDPOINT))
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -105,7 +87,7 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
 
         given()
         .when()
-            .post(String.format("%s://%s:%d%s%s%s", SCHEME, HOST, PORT, CATALOG_PREFIX, CATALOG_SERVICE_ID, LOGIN_ENDPOINT))
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(

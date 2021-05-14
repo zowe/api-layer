@@ -13,6 +13,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -33,6 +34,7 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
  * The goal of this test is to verify that we actually properly handle the concurrent connections on the Gateway.
  */
 @TestsNotMeantForZowe
+@Disabled("Failing on external environment")
 class GatewayConcurrentRequestsTest implements TestWithStartedInstances {
 
     @Test

@@ -96,20 +96,6 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
             final HttpResponse response = getResponse(GET_CONTAINER_BY_INVALID_ID_ENDPOINT, HttpStatus.SC_OK);
             assertEquals("[]", EntityUtils.toString(response.getEntity()));
         }
-
-        @Test
-        void whenMisSpeltContainersEndpoint_thenNotFoundResponseWithAPIMessage() throws Exception {
-            HttpResponse response = getResponse(INVALID_CONTAINER_ENDPOINT, HttpStatus.SC_NOT_FOUND);
-            final String htmlResponse = EntityUtils.toString(response.getEntity());
-            Document doc = Jsoup.parse(htmlResponse);
-            String title = doc.title();
-            Elements h1 = doc.select("h1:first-child");
-            Elements a = doc.select("a");
-            assertNotNull(title);
-            assertEquals("404 Not Found", title);
-            assertEquals("404 Page Not Found", h1.text());
-            assertEquals("Go to Dashboard", a.text());
-        }
     }
 
     @Nested

@@ -43,8 +43,9 @@ class ZosmfLoginTest {
     private final static String ZOSMF_ENDPOINT = "/api/" + ZOSMF_SERVICE_ID + "/zosmf/restfiles/ds";
 
     @BeforeAll
-    static void setupClients() {
+    static void setupClients() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
+        SslContext.prepareSslAuthentication();
     }
 
     @Nested
