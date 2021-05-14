@@ -44,7 +44,9 @@ class ZosmfLoginTest {
 
     @BeforeAll
     static void setupClients() throws Exception {
+        RestAssured.port = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
         RestAssured.useRelaxedHTTPSValidation();
+
         SslContext.prepareSslAuthentication();
     }
 
