@@ -14,3 +14,5 @@ services:
         volumes:
             - ./conf:/etc/nginx
             - ../../keystore:/etc/ssl/private
+        extra_hosts:
+            host.docker.internal: host-gateway
