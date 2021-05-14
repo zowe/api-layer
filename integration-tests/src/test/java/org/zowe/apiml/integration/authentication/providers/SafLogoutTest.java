@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.SAFAuthTest;
 
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -21,7 +22,7 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @SAFAuthTest
-class SafLogoutTest {
+class SafLogoutTest implements TestWithStartedInstances {
 
     // Change to saf and run the same test as for the zOSMF
     @BeforeAll

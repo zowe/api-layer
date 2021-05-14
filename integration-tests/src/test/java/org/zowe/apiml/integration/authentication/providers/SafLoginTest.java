@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.SecurityUtils;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.SAFAuthTest;
 
 import java.net.URI;
@@ -30,7 +31,7 @@ import static org.hamcrest.core.IsNot.not;
  * Also verify that the invalid credentials will be properly rejected.
  */
 @SAFAuthTest
-class SafLoginTest {
+class SafLoginTest implements TestWithStartedInstances {
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.useRelaxedHTTPSValidation();

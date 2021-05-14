@@ -15,6 +15,7 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -32,7 +33,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 /**
  * Verify that eureka is aware of other replicas if they are online.
  */
-class EurekaReplicationTest {
+class EurekaReplicationTest implements TestWithStartedInstances {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private String username;
     private String password;

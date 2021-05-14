@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -22,7 +23,7 @@ import static org.zowe.apiml.util.SecurityUtils.*;
 
 @zOSMFAuthTest
 @SuppressWarnings({"squid:S2187"})
-class ZosmfLogoutTest {
+class ZosmfLogoutTest implements TestWithStartedInstances {
 
     @BeforeAll
     static void switchToTestedProvider() {

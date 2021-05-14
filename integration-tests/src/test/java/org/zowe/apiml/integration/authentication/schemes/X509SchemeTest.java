@@ -13,6 +13,7 @@ import io.restassured.http.Header;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.X509Test;
 import org.zowe.apiml.util.config.SslContext;
@@ -30,7 +31,7 @@ import static org.hamcrest.core.Is.is;
  */
 @X509Test
 @DiscoverableClientDependentTest
-class X509SchemeTest {
+class X509SchemeTest implements TestWithStartedInstances {
     private static final String X509_ENDPOINT = "/api/v1/discoverableclient/x509";
     private static URI URL;
 

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
@@ -38,13 +39,12 @@ import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.assertValidAuthToken;
 
 @zOSMFAuthTest
-class ZosmfLoginTest {
+class ZosmfLoginTest implements TestWithStartedInstances {
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
     private final static String ZOSMF_ENDPOINT = "/api/" + ZOSMF_SERVICE_ID + "/zosmf/restfiles/ds";
 
     @BeforeAll
     static void setupClients() throws Exception {
-        RestAssured.port = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
         RestAssured.useRelaxedHTTPSValidation();
 
         SslContext.prepareSslAuthentication();

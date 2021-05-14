@@ -18,6 +18,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
@@ -37,7 +38,7 @@ import static org.zowe.apiml.util.SecurityUtils.*;
 
 @DiscoverableClientDependentTest
 @GeneralAuthenticationTest
-public class PassticketSchemeTest {
+public class PassticketSchemeTest implements TestWithStartedInstances {
     private final static String REQUEST_INFO_ENDPOINT = "/api/v1/dcpassticket/request";
     private final static String PASSTICKET_TEST_ENDPOINT = "/api/v1/dcpassticket/passticketTest";
 
