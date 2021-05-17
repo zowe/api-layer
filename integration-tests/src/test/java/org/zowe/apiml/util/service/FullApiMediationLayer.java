@@ -143,7 +143,7 @@ public class FullApiMediationLayer {
                 nodeJsSampleApp = nodeJsBuilder.start();
                 cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
                 cachingService.waitUntilReady();
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
 

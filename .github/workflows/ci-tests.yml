@@ -10,123 +10,7 @@ on:
         branches: [ master ]
 
 jobs:
-    UnitAndCITests:
-
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
-
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-            - name: Set up JDK 1.8
-              uses: actions/setup-java@v1
-              with:
-                  java-version: 1.8
-            - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
-            - name: Build with Gradle
-              run: >
-                  ./gradlew build runCITests --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
-                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
-                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
-                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
-                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-              env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-            - name: Store results
-              uses: actions/upload-artifact@v2
-              if: always()
-              with:
-                  name: UnitAndCITests
-                  path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
-
-
-    CITestsInternalPort:
-
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
-
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-            - name: Set up JDK 1.8
-              uses: actions/setup-java@v1
-              with:
-                  java-version: 1.8
-            - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
-            - name: Build with Gradle
-              run: >
-                  ./gradlew build runBaseTestsInternalPort -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
-                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
-                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
-                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
-                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-              env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-            - name: Store results
-              uses: actions/upload-artifact@v2
-              if: always()
-              with:
-                  name: CITestsInternalPort
-                  path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
-
-#    CITestsATTLS:
+#    UnitAndCITests:
 #
 #        runs-on: ubuntu-latest
 #        timeout-minutes: 20
@@ -141,10 +25,64 @@ jobs:
 #                  java-version: 1.8
 #            - name: Grant execute permission for gradlew
 #              run: chmod +x gradlew
-#            - name: Start nginx proxy
+#            - name: Cache Gradle packages
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.gradle/caches
+#                      ~/.gradle/wrapper
+#                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#                  restore-keys: |
+#                      ${{ runner.os }}-gradle001-
+#            - name: Cache Node.js modules
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.npm
+#                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+#                  restore-keys: |
+#                      ${{ runner.OS }}-node001-
+#            - name: Build with Gradle
+#              run: >
+#                  ./gradlew build runCITests --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+#                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+#                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
+#                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+#                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#              env:
+#                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#            - name: Store results
+#              uses: actions/upload-artifact@v2
+#              if: always()
+#              with:
+#                  name: UnitAndCITests
+#                  path: |
+#                      **/reports/**
+#                      **/test-results/**
+#                      **/*.log
+#            - name: Cleanup Gradle Cache
 #              run: |
-#                  cd docker/nginx
-#                  docker-compose up --detach
+#                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
+#                  rm -f ~/.gradle/caches/modules-2/gc.properties
+#                  rm -rf ~/.gradle/caches/build-cache-1
+#
+#
+#    CITestsInternalPort:
+#
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 20
+#
+#        steps:
+#            - uses: actions/checkout@v2
+#              with:
+#                  ref: ${{ github.head_ref }}
+#            - name: Set up JDK 1.8
+#              uses: actions/setup-java@v1
+#              with:
+#                  java-version: 1.8
+#            - name: Grant execute permission for gradlew
+#              run: chmod +x gradlew
 #            - name: Cache Gradle packages
 #              uses: actions/cache@v2
 #              with:
@@ -165,7 +103,7 @@ jobs:
 #                      ${{ runner.OS }}-node001-
 #            - name: Build with Gradle
 #              run: >
-#                  ./gradlew build runCITestsAttls --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+#                  ./gradlew build runBaseTestsInternalPort -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
 #                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
 #                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
 #                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -177,7 +115,7 @@ jobs:
 #              uses: actions/upload-artifact@v2
 #              if: always()
 #              with:
-#                  name: CITestsATTLS
+#                  name: CITestsInternalPort
 #                  path: |
 #                      **/reports/**
 #                      **/test-results/**
@@ -188,7 +126,7 @@ jobs:
 #                  rm -f ~/.gradle/caches/modules-2/gc.properties
 #                  rm -rf ~/.gradle/caches/build-cache-1
 
-    CITestsZosmfRsu2012:
+    CITestsATTLS:
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -203,6 +141,10 @@ jobs:
                   java-version: 1.8
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
+            - name: Start nginx proxy
+              run: |
+                  cd docker/nginx
+                  docker-compose up --detach
             - name: Cache Gradle packages
               uses: actions/cache@v2
               with:
@@ -217,16 +159,16 @@ jobs:
               with:
                   path: |
                       ~/.npm
+
                   key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                   restore-keys: |
                       ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew build runCITestsAttls --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
-                  -Dzosmf.appliedApars=PH12143,RSU2012
                   -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -235,7 +177,7 @@ jobs:
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: CITestsZosmfRsu2012
+                  name: CITestsATTLS
                   path: |
                       **/reports/**
                       **/test-results/**
@@ -245,314 +187,372 @@ jobs:
                   rm -f ~/.gradle/caches/modules-2/modules-2.lock
                   rm -f ~/.gradle/caches/modules-2/gc.properties
                   rm -rf ~/.gradle/caches/build-cache-1
-
-
-    CITestsZosmfWithoutJwt:
-
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
-
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-            - name: Set up JDK 1.8
-              uses: actions/setup-java@v1
-              with:
-                  java-version: 1.8
-            - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
-            - name: Build with Gradle
-              run: >
-                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
-                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
-                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
-                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
-                  -Dzosmf.appliedApars=
-                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-              env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-            - name: Store results
-              uses: actions/upload-artifact@v2
-              if: always()
-              with:
-                  name: CITestsZosmfWithoutJwt
-                  path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
-
-
-    CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
-
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
-
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-            - name: Set up JDK 1.8
-              uses: actions/setup-java@v1
-              with:
-                  java-version: 1.8
-            - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
-            - name: Build with Gradle
-              run: >
-                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
-                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
-                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
-                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
-                  -Dzosmf.appliedApars=AuthenticateApar
-                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-              env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-            - name: Store results
-              uses: actions/upload-artifact@v2
-              if: always()
-              with:
-                  name: CITestsZosmfWithoutJwtWithAuthenticateEndpoint
-                  path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
-
-    CITestsWithRedis:
-
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
-
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-            - name: Set up JDK 1.8
-              uses: actions/setup-java@v1
-              with:
-                  java-version: 1.8
-            - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
-            - name: Start Redis
-              run: |
-                  docker-compose -f redis/docker-compose-replica-tls.yml up --detach
-
-            - name: Build with Gradle
-              run: >
-                  ./gradlew build runCachingServiceTests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
-                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
-                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
-                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
-                  -Dzosmf.appliedApars=AuthenticateApar
-                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-              env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
-                  CACHING_STORAGE_REDIS_HOST: 'localhost'
-                  CACHING_STORAGE_REDIS_PORT: 6379
-                  CACHING_STORAGE_REDIS_USERNAME: 'default'
-                  CACHING_STORAGE_REDIS_PASSWORD: 'heslo'
-                  CACHING_STORAGE_REDIS_SSL_ENABLED: true
-                  CACHING_STORAGE_REDIS_SSL_KEYSTORE: keystore/localhost/localhost.keystore.p12
-                  CACHING_STORAGE_REDIS_SSL_KEYSTOREPASSWORD: password
-                  CACHING_STORAGE_REDIS_SSL_TRUSTSTORE: keystore/localhost/localhost.truststore.p12
-                  CACHING_STORAGE_REDIS_SSL_TRUSTSTOREPASSWORD: password
-            - name: Store results
-              uses: actions/upload-artifact@v2
-              if: always()
-              with:
-                  name: CITestsWithRedis
-                  path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
-
-    CITestsWithRedisWithoutSslVerification:
-
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
-
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-            - name: Set up JDK 1.8
-              uses: actions/setup-java@v1
-              with:
-                  java-version: 1.8
-            - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
-            - name: Start Redis
-              run: |
-                  docker-compose -f redis/docker-compose-replica.yml up --detach
-
-            - name: Build with Gradle
-              run: >
-                  ./gradlew build runCachingServiceTests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
-                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
-                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
-                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
-                  -Dzosmf.appliedApars=AuthenticateApar
-                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-              env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
-                  CACHING_STORAGE_REDIS_HOST: 'localhost'
-                  CACHING_STORAGE_REDIS_PORT: 6379
-                  CACHING_STORAGE_REDIS_USERNAME: 'default'
-                  CACHING_STORAGE_REDIS_PASSWORD: 'heslo'
-                  VERIFY_CERTIFICATES: false
-            - name: Store results
-              uses: actions/upload-artifact@v2
-              if: always()
-              with:
-                  name: CITestsWithRedisWithoutSslVerification
-                  path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
-
-    sonarQubeScan:
-
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
-
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-            - name: Set up JDK 1.11
-              uses: actions/setup-java@v1
-              with:
-                  java-version: 1.11
-            - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
-            - name: Build with Gradle
-              run: >
-                  ./gradlew --info --scan coverage sonarqube
-                  -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
-                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-              env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
+#
+#    CITestsZosmfRsu2012:
+#
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 20
+#
+#        steps:
+#            - uses: actions/checkout@v2
+#              with:
+#                  ref: ${{ github.head_ref }}
+#            - name: Set up JDK 1.8
+#              uses: actions/setup-java@v1
+#              with:
+#                  java-version: 1.8
+#            - name: Grant execute permission for gradlew
+#              run: chmod +x gradlew
+#            - name: Cache Gradle packages
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.gradle/caches
+#                      ~/.gradle/wrapper
+#                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#                  restore-keys: |
+#                      ${{ runner.os }}-gradle001-
+#            - name: Cache Node.js modules
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.npm
+#                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+#                  restore-keys: |
+#                      ${{ runner.OS }}-node001-
+#            - name: Build with Gradle
+#              run: >
+#                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+#                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+#                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
+#                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+#                  -Dzosmf.appliedApars=PH12143,RSU2012
+#                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#              env:
+#                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#            - name: Store results
+#              uses: actions/upload-artifact@v2
+#              if: always()
+#              with:
+#                  name: CITestsZosmfRsu2012
+#                  path: |
+#                      **/reports/**
+#                      **/test-results/**
+#                      **/*.log
+#            - name: Cleanup Gradle Cache
+#              run: |
+#                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
+#                  rm -f ~/.gradle/caches/modules-2/gc.properties
+#                  rm -rf ~/.gradle/caches/build-cache-1
+#
+#
+#    CITestsZosmfWithoutJwt:
+#
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 20
+#
+#        steps:
+#            - uses: actions/checkout@v2
+#              with:
+#                  ref: ${{ github.head_ref }}
+#            - name: Set up JDK 1.8
+#              uses: actions/setup-java@v1
+#              with:
+#                  java-version: 1.8
+#            - name: Grant execute permission for gradlew
+#              run: chmod +x gradlew
+#            - name: Cache Gradle packages
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.gradle/caches
+#                      ~/.gradle/wrapper
+#                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#                  restore-keys: |
+#                      ${{ runner.os }}-gradle001-
+#            - name: Cache Node.js modules
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.npm
+#                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+#                  restore-keys: |
+#                      ${{ runner.OS }}-node001-
+#            - name: Build with Gradle
+#              run: >
+#                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+#                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+#                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
+#                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+#                  -Dzosmf.appliedApars=
+#                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#              env:
+#                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#            - name: Store results
+#              uses: actions/upload-artifact@v2
+#              if: always()
+#              with:
+#                  name: CITestsZosmfWithoutJwt
+#                  path: |
+#                      **/reports/**
+#                      **/test-results/**
+#                      **/*.log
+#            - name: Cleanup Gradle Cache
+#              run: |
+#                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
+#                  rm -f ~/.gradle/caches/modules-2/gc.properties
+#                  rm -rf ~/.gradle/caches/build-cache-1
+#
+#
+#    CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
+#
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 20
+#
+#        steps:
+#            - uses: actions/checkout@v2
+#              with:
+#                  ref: ${{ github.head_ref }}
+#            - name: Set up JDK 1.8
+#              uses: actions/setup-java@v1
+#              with:
+#                  java-version: 1.8
+#            - name: Grant execute permission for gradlew
+#              run: chmod +x gradlew
+#            - name: Cache Gradle packages
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.gradle/caches
+#                      ~/.gradle/wrapper
+#                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#                  restore-keys: |
+#                      ${{ runner.os }}-gradle001-
+#            - name: Cache Node.js modules
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.npm
+#                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+#                  restore-keys: |
+#                      ${{ runner.OS }}-node001-
+#            - name: Build with Gradle
+#              run: >
+#                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+#                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+#                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
+#                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+#                  -Dzosmf.appliedApars=AuthenticateApar
+#                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#              env:
+#                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#            - name: Store results
+#              uses: actions/upload-artifact@v2
+#              if: always()
+#              with:
+#                  name: CITestsZosmfWithoutJwtWithAuthenticateEndpoint
+#                  path: |
+#                      **/reports/**
+#                      **/test-results/**
+#                      **/*.log
+#            - name: Cleanup Gradle Cache
+#              run: |
+#                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
+#                  rm -f ~/.gradle/caches/modules-2/gc.properties
+#                  rm -rf ~/.gradle/caches/build-cache-1
+#
+#    CITestsWithRedis:
+#
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 20
+#
+#        steps:
+#            - uses: actions/checkout@v2
+#              with:
+#                  ref: ${{ github.head_ref }}
+#            - name: Set up JDK 1.8
+#              uses: actions/setup-java@v1
+#              with:
+#                  java-version: 1.8
+#            - name: Grant execute permission for gradlew
+#              run: chmod +x gradlew
+#            - name: Cache Gradle packages
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.gradle/caches
+#                      ~/.gradle/wrapper
+#                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#                  restore-keys: |
+#                      ${{ runner.os }}-gradle001-
+#            - name: Cache Node.js modules
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.npm
+#                      **/node_modules
+#                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+#                  restore-keys: |
+#                      ${{ runner.OS }}-node-
+#                      ${{ runner.OS }}-
+#            - name: Start Redis
+#              run: |
+#                  docker-compose -f redis/docker-compose-replica-tls.yml up --detach
+#
+#            - name: Build with Gradle
+#              run: >
+#                  ./gradlew build runCachingServiceTests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+#                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+#                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
+#                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+#                  -Dzosmf.appliedApars=AuthenticateApar
+#                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#              env:
+#                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#                  ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
+#                  CACHING_STORAGE_REDIS_HOST: 'localhost'
+#                  CACHING_STORAGE_REDIS_PORT: 6379
+#                  CACHING_STORAGE_REDIS_USERNAME: 'default'
+#                  CACHING_STORAGE_REDIS_PASSWORD: 'heslo'
+#                  CACHING_STORAGE_REDIS_SSL_ENABLED: true
+#                  CACHING_STORAGE_REDIS_SSL_KEYSTORE: keystore/localhost/localhost.keystore.p12
+#                  CACHING_STORAGE_REDIS_SSL_KEYSTOREPASSWORD: password
+#                  CACHING_STORAGE_REDIS_SSL_TRUSTSTORE: keystore/localhost/localhost.truststore.p12
+#                  CACHING_STORAGE_REDIS_SSL_TRUSTSTOREPASSWORD: password
+#            - name: Store results
+#              uses: actions/upload-artifact@v2
+#              if: always()
+#              with:
+#                  name: CITestsWithRedis
+#                  path: |
+#                      **/reports/**
+#                      **/test-results/**
+#                      **/*.log
+#            - name: Cleanup Gradle Cache
+#              run: |
+#                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
+#                  rm -f ~/.gradle/caches/modules-2/gc.properties
+#                  rm -rf ~/.gradle/caches/build-cache-1
+#
+#    CITestsWithRedisWithoutSslVerification:
+#
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 20
+#
+#        steps:
+#            - uses: actions/checkout@v2
+#              with:
+#                  ref: ${{ github.head_ref }}
+#            - name: Set up JDK 1.8
+#              uses: actions/setup-java@v1
+#              with:
+#                  java-version: 1.8
+#            - name: Grant execute permission for gradlew
+#              run: chmod +x gradlew
+#            - name: Cache Gradle packages
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.gradle/caches
+#                      ~/.gradle/wrapper
+#                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#                  restore-keys: |
+#                      ${{ runner.os }}-gradle001-
+#            - name: Cache Node.js modules
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.npm
+#                      **/node_modules
+#                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+#                  restore-keys: |
+#                      ${{ runner.OS }}-node-
+#                      ${{ runner.OS }}-
+#            - name: Start Redis
+#              run: |
+#                  docker-compose -f redis/docker-compose-replica.yml up --detach
+#
+#            - name: Build with Gradle
+#              run: >
+#                  ./gradlew build runCachingServiceTests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+#                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+#                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
+#                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+#                  -Dzosmf.appliedApars=AuthenticateApar
+#                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#              env:
+#                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#                  ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
+#                  CACHING_STORAGE_REDIS_HOST: 'localhost'
+#                  CACHING_STORAGE_REDIS_PORT: 6379
+#                  CACHING_STORAGE_REDIS_USERNAME: 'default'
+#                  CACHING_STORAGE_REDIS_PASSWORD: 'heslo'
+#                  VERIFY_CERTIFICATES: false
+#            - name: Store results
+#              uses: actions/upload-artifact@v2
+#              if: always()
+#              with:
+#                  name: CITestsWithRedisWithoutSslVerification
+#                  path: |
+#                      **/reports/**
+#                      **/test-results/**
+#                      **/*.log
+#            - name: Cleanup Gradle Cache
+#              run: |
+#                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
+#                  rm -f ~/.gradle/caches/modules-2/gc.properties
+#                  rm -rf ~/.gradle/caches/build-cache-1
+#
+#    sonarQubeScan:
+#
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 20
+#
+#        steps:
+#            - uses: actions/checkout@v2
+#              with:
+#                  ref: ${{ github.head_ref }}
+#            - name: Set up JDK 1.11
+#              uses: actions/setup-java@v1
+#              with:
+#                  java-version: 1.11
+#            - name: Grant execute permission for gradlew
+#              run: chmod +x gradlew
+#            - name: Cache Gradle packages
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.gradle/caches
+#                      ~/.gradle/wrapper
+#                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#                  restore-keys: |
+#                      ${{ runner.os }}-gradle001-
+#            - name: Cache Node.js modules
+#              uses: actions/cache@v2
+#              with:
+#                  path: |
+#                      ~/.npm
+#                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+#                  restore-keys: |
+#                      ${{ runner.OS }}-node001-
+#            - name: Build with Gradle
+#              run: >
+#                  ./gradlew --info --scan coverage sonarqube
+#                  -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+#                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#              env:
+#                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#                  SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#            - name: Cleanup Gradle Cache
+#              run: |
+#                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
+#                  rm -f ~/.gradle/caches/modules-2/gc.properties
+#                  rm -rf ~/.gradle/caches/build-cache-1
