@@ -74,5 +74,5 @@ task jacocoFullReport(type: JacocoReport) {
 }
 
 task coverage() {
-    dependsOn jacocoFullReport, ":api-catalog-ui:test"
+    dependsOn jacocoFullReport, ":api-catalog-ui:test", "metrics-service-ui:test"
 }

@@ -61,7 +61,7 @@ apiml:
                 version: 1.0.0
         ssl:
             enabled: true
-            verifySslCertificatesOfServices: true
+            verifySslCertificatesOfServices: false
             protocol: ${server.ssl.protocol}
             keyStoreType: ${server.ssl.keyStoreType}
             trustStoreType: ${server.ssl.trustStoreType}

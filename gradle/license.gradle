@@ -16,6 +16,7 @@ ext.projectsNeedLicense = [
     'integration-tests',
     'metrics-service',
     'metrics-service-package',
+    'metrics-service-ui',
     'security-module',
     'security-service-client-spring',
     'onboarding-enabler-java-sample-app',

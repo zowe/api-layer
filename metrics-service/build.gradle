@@ -14,6 +14,7 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
 
 springBoot {
@@ -54,6 +55,35 @@ dependencies {
 
 
 bootJar.archiveName = "${bootJar.baseName}.jar"
+
+jar {
+    enabled true
+}
+
+def uiModule = "${project(':metrics-service-ui').projectDir}"
+
+processResources {
+    dependsOn "copyUi"
+}
+
+task copyUi(type: Copy) {
+    group = "ui"
+
+    dependsOn ":metrics-service-ui:build"
+
+    inputs.dir(uiModule + '/frontend/build')
+    outputs.dir('src/main/resources/static')
+
+    from uiModule + '/frontend/build'
+    into 'src/main/resources/static'
+}
+
+bootRun {
+    if (project.hasProperty('args')) {
+        args project.args.split(',')
+    }
+    systemProperties = System.properties
+}
 
 publishing {
     publications {

@@ -55,6 +55,17 @@ project(":api-catalog-ui") {
     }
 }
 
+project(":metrics-service-ui") {
+    sonarqube {
+        properties {
+            property "sonar.sources", "frontend/src"
+            property "sonar.tests", "frontend/test"
+            property "sonar.javascript.lcov.reportPaths", "frontend/coverage/lcov.info"
+            property "sonar.exclusions", "**/*.test.*, **/*.css"
+        }
+    }
+}
+
 project(":onboarding-enabler-nodejs") {
     sonarqube {
         skipProject = true
