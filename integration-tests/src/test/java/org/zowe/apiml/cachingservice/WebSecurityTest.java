@@ -123,7 +123,7 @@ class WebSecurityTest implements TestWithStartedInstances {
 
             given()
                 .when().get(caching_url + CACHING_PATH)
-                .then().statusCode(HttpStatus.FORBIDDEN.value());
+                .then().statusCode(HttpStatus.UNAUTHORIZED.value());
         }
 
     }

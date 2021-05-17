@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
+import org.zowe.apiml.util.categories.NotAttlsTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -50,16 +51,25 @@ class RequestInfoIntegrationTest implements TestWithStartedInstances {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         return Stream.of(
-            Arguments.of("call DiscoverableClient with sign", getUrl(), Boolean.TRUE),
+
             Arguments.of("call DiscoverableClient without sign", getUrl(), Boolean.FALSE),
-            Arguments.of("call DiscoverableClient through Gateway with sign", getGatewayUrl(), Boolean.TRUE),
             Arguments.of("call DiscoverableClient through Gateway without sign", getGatewayUrl(), Boolean.FALSE)
+        );
+    }
+
+    public static Stream<Arguments> getInputsWithSing() {
+        RestAssured.useRelaxedHTTPSValidation();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+
+        return Stream.of(
+            Arguments.of("call DiscoverableClient with sign", getUrl(), Boolean.TRUE),
+            Arguments.of("call DiscoverableClient through Gateway with sign", getGatewayUrl(), Boolean.TRUE)
         );
     }
 
     @ParameterizedTest(name = "call endpoint {1} to receive json with signed = {2} : {0}")
     @MethodSource("getInputs")
-    void testRequestInfo(String description, String url, Boolean signed) {
+    void whenClientCertificateIsMissing_thenBodyIsNotSigned(String description, String url, Boolean signed) {
         if (signed) {
             RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         }
@@ -72,4 +82,19 @@ class RequestInfoIntegrationTest implements TestWithStartedInstances {
             .body("signed", equalTo(signed));
     }
 
+    @ParameterizedTest(name = "call endpoint {1} to receive json with signed = {2} : {0}")
+    @MethodSource("getInputsWithSing")
+    @NotAttlsTest
+    void whenClientCertificateIsProvided_thenBodyIsSigned(String description, String url, Boolean signed) {
+        if (signed) {
+            RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        }
+
+        given()
+            .when()
+            .get(url)
+            .then()
+            .statusCode(SC_OK)
+            .body("signed", equalTo(signed));
+    }
 }
