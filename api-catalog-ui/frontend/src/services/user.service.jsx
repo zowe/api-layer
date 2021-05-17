@@ -36,6 +36,7 @@ function logout() {
         headers: {
             'Access-Control-Allow-Origin': allowOrigin,
             'Access-Control-Allow-Credentials': 'true',
+            'X-Requested-With': 'XMLHttpRequest',
         },
     };
 
@@ -59,6 +60,7 @@ function login(credentials) {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': allowOrigin,
             'Access-Control-Allow-Credentials': 'true',
+            'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify(credentials),
     };

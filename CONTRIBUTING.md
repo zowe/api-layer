@@ -170,7 +170,9 @@ A commit body is free-form and MAY consist of any number of newline separated pa
 - Add integration tests where needed. The integration tests are executed on the [Zowe build pipeline](https://wash.zowe.org:8443/job/API_Mediation/), and on our inhouse system as part of the build pipeline. Contact the API Layer squad if you need triage. The Mock zOSMF is used for verifying the integration with zOSMF. 
 - Add UI end to end tests where needed. The end to end tests are executed on [Zowe build pipeline](https://wash.zowe.org:8443/job/API_Mediation/) and on our inhouse system as part of the build pipeline. Contact API Layer squad if you need triage.
 - Use meaningful test method names. We use the `given_when_then` pattern.
-- Most of our java unit tests are still written in JUnit4, since we didn’t fully migrate them to JUnit5 and we have a backward compatibility package. However, use JUnit5 for new tests.
+- Leverage `@Nested` annotation for test method grouping where possible. It makes the tests more organized and readable. The test method names are generally shorter.
+- Example of well written test: [CachingControllerTest.java](https://github.com/zowe/api-layer/blob/master/caching-service/src/test/java/org/zowe/apiml/caching/api/CachingControllerTest.java). It uses `@Nested` annotation to separate the test scenarios into groups, which are individually setup. The tests are short and clear and the method names clearly convey what is tested.
+- Some of our java unit tests are still written in JUnit4, since we didn’t fully migrate them to JUnit5 and we have a backward compatibility package. However, use JUnit5 for new tests.
 
 ## Build Process Guidelines
 

@@ -10,9 +10,7 @@
 
 package org.zowe.apiml;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import picocli.CommandLine;
 
 import java.io.ByteArrayOutputStream;
@@ -58,7 +56,7 @@ class RemoteHandshakeTest {
         remoteHandshake.verify();
         String expectedMsg = "Start of the remote SSL handshake.\n" +
             "Handshake was successful. Service \"https://localhost:10010\" is trusted by truststore \"../keystore/localhost/localhost.truststore.p12\".\n";
-        assertEquals(expectedMsg, outputStream.toString());
+        assertEquals(expectedMsg, TerminalUtils.normalizeLineEnds(outputStream.toString()));
     }
     @Test
     void providedMalformedUrl_thenUserIsInformed() throws Exception {
@@ -77,6 +75,6 @@ class RemoteHandshakeTest {
         when(client.executeCall(any())).thenReturn(200);
         remoteHandshake.verify();
         String expectedMsg = "Incorrect url \"malformedurl\". Error message: no protocol: malformedurl\n";
-        assertEquals(expectedMsg, outputStream.toString());
+        assertEquals(expectedMsg, TerminalUtils.normalizeLineEnds(outputStream.toString()));
     }
 }

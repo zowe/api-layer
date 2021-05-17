@@ -13,7 +13,7 @@ import picocli.CommandLine;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class Analyser {
 
     public static void main(String[] args) {

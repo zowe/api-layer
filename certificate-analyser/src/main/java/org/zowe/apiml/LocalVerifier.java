@@ -10,13 +10,9 @@
 package org.zowe.apiml;
 
 import java.security.KeyStoreException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.security.cert.*;
+import java.util.*;
+@SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class LocalVerifier implements Verifier {
 
     private Stores stores;
@@ -45,7 +41,7 @@ public class LocalVerifier implements Verifier {
             }
             X509Certificate x509Certificate = (X509Certificate) certificate[0];
             for (Map.Entry<String, Certificate> cert : caList.entrySet()) {
-                try {
+                try { //NOSONAR
                     x509Certificate.verify(cert.getValue().getPublicKey());
                     if (cert.getValue() instanceof X509Certificate) {
                         X509Certificate trustedCA = (X509Certificate) cert.getValue();

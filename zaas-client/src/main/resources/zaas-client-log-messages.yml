@@ -31,7 +31,7 @@ messages:
       type: ERROR
       text: "Empty or null authorization header provided"
       reason: "The authorization header was empty or null"
-      action: "Try again with valid authorization header"
+      action: "Try again with a valid authorization header"
 
     - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.GENERIC_EXCEPTION
       number: ZWEAS170
@@ -66,8 +66,8 @@ messages:
     - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND
       number: ZWEAS417
       type: ERROR
-      text: "The application name wasn't found"
-      reason: "The application id provided for the generation of the PassTicket wasn't recognized by security provider"
+      text: "The application name was not found"
+      reason: "The application id provided for the generation of the PassTicket was not recognized by the security provider"
       action: "Ensure that the security provider recognized the application id."
 
     - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.INVALID_JWT_TOKEN

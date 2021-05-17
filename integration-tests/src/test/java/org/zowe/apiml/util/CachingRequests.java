@@ -10,7 +10,6 @@
 package org.zowe.apiml.util;
 
 import io.restassured.config.RestAssuredConfig;
-import org.zowe.apiml.cachingservice.KeyValue;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
