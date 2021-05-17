@@ -229,12 +229,13 @@ task runCITests(type: Test) {
 }
 
 task runCITestsAttls(type: Test) {
-    group "Integration tests for AT-TLS"
+    group "Integration tests"
     description ""
 
     outputs.cacheIf { false }
 
     systemProperties System.properties
+    systemProperty "environment.attls", true
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',

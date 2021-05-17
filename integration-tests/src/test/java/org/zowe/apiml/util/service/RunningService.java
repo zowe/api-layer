@@ -12,7 +12,6 @@ package org.zowe.apiml.util.service;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Duration;
 import org.zowe.apiml.util.DiscoveryRequests;
-import org.zowe.apiml.util.config.ConfigReader;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -31,8 +30,6 @@ public class RunningService {
     private final String jarFile;
     private final String id;
     private String subprocessPid;
-    private Map<String,String> instanceEnv = ConfigReader.environmentConfiguration().getInstanceEnv();
-    private Map<String,String> instanceEnvAttls = ConfigReader.environmentConfiguration().getInstanceEnvAttls();
 
     private final Map<String, String> parametersBefore;
     private final Map<String, String> parametersAfter;
@@ -64,12 +61,12 @@ public class RunningService {
         newCachingProcess = builder1.inheritIO().start();
     }
 
-    public void startWithScript(String bashScript) {
+    public void startWithScript(String bashScript, Map<String, String> env) {
         log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
 
         ProcessBuilder builder1 = new ProcessBuilder(bashScript);
         Map<String, String> envVariables = builder1.environment();
-        envVariables.putAll(instanceEnvAttls);
+        envVariables.putAll(env);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
 
         builder1.directory(new File("../"));
