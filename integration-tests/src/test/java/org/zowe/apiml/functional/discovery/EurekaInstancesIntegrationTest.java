@@ -15,6 +15,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -91,6 +92,7 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
      */
     @Test
     @AttlsTest
+    @Disabled
     void givenATTLS_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
@@ -113,6 +115,7 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
     }
 
     @Test
+    @Disabled
     @AttlsTest
     void givenATTLS_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
