@@ -21,6 +21,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.AttlsTest;
 import org.zowe.apiml.util.categories.CachingServiceTest;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
@@ -136,6 +137,32 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
             .then()
                 .statusCode(HttpStatus.OK.value());
         }
+    }
+
+
+
+    @Nested
+    @AttlsTest
+    class calledWithHeader {
+
+        @BeforeEach
+        void setUp() {
+            clearSsl();
+        }
+
+        @Test
+        void cachingApiEndpointsAccessible() {
+
+            given()
+                .header(CERT_HEADER_NAME, "value")
+                .when().get(caching_url + CACHING_PATH)
+                .then().statusCode(HttpStatus.OK.value());
+
+            given()
+                .when().get(caching_url + CACHING_PATH)
+                .then().statusCode(HttpStatus.UNAUTHORIZED.value());
+        }
+
     }
 
     private void clearSsl() {
