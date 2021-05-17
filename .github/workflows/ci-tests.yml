@@ -165,7 +165,7 @@ jobs:
                       ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runCITests --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew build runCITestsAttls --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017

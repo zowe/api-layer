@@ -15,8 +15,7 @@ import io.restassured.config.SSLConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.CachingServiceTest;
-import org.zowe.apiml.util.categories.NotAttlsTest;
+import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -68,6 +67,7 @@ class WebSecurityTest implements TestWithStartedInstances {
     }
 
     @Nested
+    @NotAttlsTest
     class calledWithHeaderAndCertificate {
 
         @BeforeEach
@@ -76,7 +76,6 @@ class WebSecurityTest implements TestWithStartedInstances {
         }
 
         @Test
-        @NotAttlsTest
         void cachingApiEndpointsAccessible() {
 
             given().config(SslContext.clientCertApiml)
@@ -97,6 +96,30 @@ class WebSecurityTest implements TestWithStartedInstances {
             given().config(SslContext.clientCertApiml)
                 .when().get(caching_url + CACHING_PATH)
                 .then().statusCode(HttpStatus.UNAUTHORIZED.value());
+
+            given()
+                .when().get(caching_url + CACHING_PATH)
+                .then().statusCode(HttpStatus.FORBIDDEN.value());
+        }
+
+    }
+
+    @Nested
+    @AttlsTest
+    class calledWithHeader {
+
+        @BeforeEach
+        void setUp() {
+            clearSsl();
+        }
+
+        @Test
+        void cachingApiEndpointsAccessible() {
+
+            given()
+                .header(CERT_HEADER_NAME, "value")
+                .when().get(caching_url + CACHING_PATH)
+                .then().statusCode(HttpStatus.OK.value());
 
             given()
                 .when().get(caching_url + CACHING_PATH)
