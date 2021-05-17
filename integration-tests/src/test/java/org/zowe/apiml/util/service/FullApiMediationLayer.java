@@ -38,9 +38,9 @@ public class FullApiMediationLayer {
     private FullApiMediationLayer() {
 
         if ("true".equals(System.getProperty("environment.attls"))) {
-            env = ConfigReader.environmentConfiguration().getInstanceEnv();
-        } else {
             env = ConfigReader.environmentConfiguration().getInstanceEnvAttls();
+        } else {
+            env = ConfigReader.environmentConfiguration().getInstanceEnv();
         }
 
         prepareCaching();
