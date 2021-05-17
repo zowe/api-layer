@@ -21,8 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.DiscoveryServiceTest;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 
@@ -30,10 +29,8 @@ import java.net.URI;
 import java.util.*;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
@@ -80,7 +77,8 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
     }
 
     @Test
-    void testEurekaEndpoints_whenProvidedNothing() throws Exception {
+    @NotAttlsTest
+    void givenTLS_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
         .when()
@@ -90,8 +88,24 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
             .header(HttpHeaders.WWW_AUTHENTICATE, nullValue());
     }
 
+
+    /**
+     * Secured by ATTLS layer, no credentials required
+     */
     @Test
-    void testEurekaEndpoints_whenProvidedBasicAuthentication() throws Exception {
+    @AttlsTest
+    void givenATTLS_whenProvidedNothing() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath("/eureka/apps"))
+            .then()
+            .statusCode(is(HttpStatus.SC_OK));
+    }
+
+    @Test
+    @NotAttlsTest
+    void givenTLS_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .auth().basic(username, password)
@@ -99,6 +113,18 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
             .get(getDiscoveryUriWithPath("/eureka/apps"))
         .then()
             .statusCode(is(HttpStatus.SC_FORBIDDEN));
+    }
+
+    @Test
+    @AttlsTest
+    void givenATTLS_whenProvidedBasicAuthentication() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        given()
+            .auth().basic(username, password)
+            .when()
+            .get(getDiscoveryUriWithPath("/eureka/apps"))
+            .then()
+            .statusCode(is(HttpStatus.SC_OK));
     }
 
     // Gateway is discovered
