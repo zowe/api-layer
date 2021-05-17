@@ -14,7 +14,10 @@ import org.zowe.apiml.util.config.ConfigReader;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 //TODO this class doesn't lend itself well to switching of configurations.
 //attls is integrated in a kludgy way, and deserves a rewrite
@@ -31,17 +34,12 @@ public class FullApiMediationLayer {
     private Process nodeJsSampleApp;
 
     private boolean firstCheck = true;
-    private Map<String,String> env;
+    private Map<String, String> env;
 
     private static FullApiMediationLayer instance = new FullApiMediationLayer();
 
     private FullApiMediationLayer() {
-
-        if ("true".equals(System.getProperty("environment.attls"))) {
-            env = ConfigReader.environmentConfiguration().getInstanceEnvAttls();
-        } else {
-            env = ConfigReader.environmentConfiguration().getInstanceEnv();
-        }
+        env = ConfigReader.environmentConfiguration().getInstanceEnv();
 
         prepareCaching();
         prepareCatalog();
@@ -82,7 +80,7 @@ public class FullApiMediationLayer {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
         if ("true".equals(System.getProperty("environment.attls"))) {
-            before.put("-Dspring.profiles.active","attls");
+            before.put("-Dspring.profiles.active", "attls");
         }
         mockZosmfService = new RunningService("zosmf", "mock-zosmf/build/libs/mock-zosmf.jar", before, after);
     }
@@ -91,7 +89,7 @@ public class FullApiMediationLayer {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
         if ("true".equals(System.getProperty("environment.attls"))) {
-            before.put("-Dspring.profiles.active","attls");
+            before.put("-Dspring.profiles.active", "attls");
         }
 
         after.put("--spring.config.additional-location", "file:./config/local/discoverable-client.yml");
