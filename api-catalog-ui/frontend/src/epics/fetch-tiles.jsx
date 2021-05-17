@@ -102,6 +102,7 @@ export const fetchTilesPollingEpic = (action$, store, { ajax, scheduler }) =>
                         headers: {
                             'Content-Type': 'application/json',
                             'Access-Control-Allow-Origin': checkOrigin(),
+                            'X-Requested-With': 'XMLHttpRequest',
                         },
                     }).pipe(
                         map(ajaxResponse => {
