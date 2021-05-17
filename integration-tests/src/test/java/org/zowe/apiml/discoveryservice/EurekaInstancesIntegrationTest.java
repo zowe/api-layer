@@ -162,13 +162,27 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
 
     // /application endpoints
     @ParameterizedTest
+    @NotAttlsTest
     @ValueSource(strings = {"/application/beans", "/discovery/api/v1/staticApi", "/"})
-    void testApplicationBeansEndpoints_Get(String path) throws Exception {
+    void givenTLS_testApplicationBeansEndpoints_Get(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
         .when()
             .get(getDiscoveryUriWithPath(path))
         .then()
+            .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
+            .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
+    }
+
+    @ParameterizedTest
+    @AttlsTest
+    @ValueSource(strings = {"/application/beans", "/"})
+    void givenATTLS_testApplicationBeansEndpoints_Get(String path) throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath(path))
+            .then()
             .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
             .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
     }
