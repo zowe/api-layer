@@ -1,0 +1,164 @@
+import React from 'react';
+import { Button, TextField } from '@material-ui/core';
+import ErrorIcon from '@material-ui/icons/Error';
+
+import './Login.css';
+import './LoginWebflow.css';
+import Spinner from '../Spinner/Spinner';
+
+export default class Login extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            username: '',
+            password: '',
+            errorMessage: '',
+        };
+
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    isDisabled = () => {
+        const { isFetching } = this.props;
+        return isFetching;
+    };
+
+    handleError = (error) => {
+        let messageText;
+        const { authentication } = this.props;
+        // eslint-disable-next-line global-require
+        const errorMessages = require('../../error-messages.json');
+        if (
+            error.messageNumber !== undefined &&
+            error.messageNumber !== null &&
+            error.messageType !== undefined &&
+            error.messageType !== null
+        ) {
+            messageText = `Unexpected error, please try again later (${error.messageNumber})`;
+            const filter = errorMessages.messages.filter(
+                (x) => x.messageKey != null && x.messageKey === error.messageNumber
+            );
+            if (filter.length !== 0) messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
+        } else if (error.status === 401 && authentication.sessionOn) {
+            messageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
+            authentication.onCompleteHandling();
+        } else if (error.status === 500) {
+            messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
+        }
+        return messageText;
+    };
+
+    handleChange(e) {
+        const { name, value } = e.target;
+        this.setState({ [name]: value });
+    }
+
+    handleSubmit(e) {
+        e.preventDefault();
+
+        const { username, password } = this.state;
+        const { login } = this.props;
+
+        if (username && password) {
+            login({ username, password });
+        }
+    }
+
+    render() {
+        const { username, password, errorMessage } = this.state;
+        const { authentication, isFetching } = this.props;
+        let messageText;
+        if (
+            authentication !== undefined &&
+            authentication !== null &&
+            authentication.error !== undefined &&
+            authentication.error !== null
+        ) {
+            messageText = this.handleError(authentication.error);
+        } else if (errorMessage) {
+            messageText = errorMessage;
+        }
+        return (
+            <div className="login-object">
+                <div className="login-form">
+                    {' '}
+                    <div className="title-container">
+                        <div className="product-title">
+                            <div className="text-block-2">Metrics Service</div>
+                        </div>
+                    </div>
+                    <div className="login-inputs-container">
+                        <div className="username-container">
+                            <div className="username-input">
+                                <div className="w-form">
+                                    <form
+                                        id="login-form"
+                                        name="login-form"
+                                        data-testid="login-form"
+                                        data-name="Login Form"
+                                        className="form"
+                                        onSubmit={this.handleSubmit}
+                                    >
+                                        <TextField
+                                            label="Username"
+                                            className="formfield"
+                                            id="username"
+                                            data-testid="username"
+                                            name="username"
+                                            type="text"
+                                            size="medium"
+                                            value={username}
+                                            onChange={this.handleChange}
+                                            autoComplete="username"
+                                        />
+                                        <TextField
+                                            label="Password"
+                                            className="formfield"
+                                            id="password"
+                                            data-testid="password"
+                                            name="password"
+                                            type="password"
+                                            size="medium"
+                                            value={password}
+                                            onChange={this.handleChange}
+                                            caption="Default: password"
+                                        />
+                                        <Button
+                                            className="formfield"
+                                            type="submit"
+                                            data-testid="submit"
+                                            fullWidth
+                                            disabled={this.isDisabled()}
+                                            size="medium"
+                                        >
+                                            Sign in
+                                        </Button>
+                                        <Spinner
+                                            className="formfield form-spinner"
+                                            isLoading={isFetching}
+                                            css={{
+                                                position: 'relative',
+                                                top: '70px',
+                                            }}
+                                        />
+                                        {messageText !== undefined && messageText !== null && (
+                                            <TextField className="error-message" label="">
+                                                <div id="error-message">
+                                                    <p className="error-message-content">
+                                                        <ErrorIcon color="#de1b1b" size="2rem" /> {messageText}
+                                                    </p>
+                                                </div>
+                                            </TextField>
+                                        )}
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+}
