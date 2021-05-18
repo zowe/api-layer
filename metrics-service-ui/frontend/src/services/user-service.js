@@ -40,7 +40,7 @@ function logout() {
     };
 
     return fetch(
-        `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/auth/logout`,
+        `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_METRICS_HOME}/auth/logout`,
         requestOptions
     )
         .then((data) => data)
@@ -62,7 +62,7 @@ function login(credentials) {
         },
         body: JSON.stringify(credentials),
     };
-    return fetch(`${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/auth/login`, requestOptions)
+    return fetch(`${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_METRICS_HOME}/auth/login`, requestOptions)
         .then(handleResponse)
         .then((user) => user);
 }
