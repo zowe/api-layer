@@ -35,8 +35,12 @@ public class FullApiMediationLayer {
 
     private boolean firstCheck = true;
     private Map<String, String> env;
+    private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
 
     private static FullApiMediationLayer instance = new FullApiMediationLayer();
+
+
+
 
     private FullApiMediationLayer() {
         env = ConfigReader.environmentConfiguration().getInstanceEnv();
@@ -47,7 +51,9 @@ public class FullApiMediationLayer {
         prepareGateway();
         prepareMockZosmf();
         prepareDiscovery();
-        prepareNodeJsSampleApp();
+        if(attlsEnabled){
+            prepareNodeJsSampleApp();
+        }
     }
 
     private void prepareNodeJsSampleApp() {
@@ -79,7 +85,7 @@ public class FullApiMediationLayer {
     private void prepareMockZosmf() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
-        if ("true".equals(System.getProperty("environment.attls"))) {
+        if (attlsEnabled) {
             before.put("-Dspring.profiles.active", "attls");
         }
         mockZosmfService = new RunningService("zosmf", "mock-zosmf/build/libs/mock-zosmf.jar", before, after);
@@ -88,7 +94,7 @@ public class FullApiMediationLayer {
     private void prepareDiscoverableClient() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
-        if ("true".equals(System.getProperty("environment.attls"))) {
+        if (attlsEnabled) {
             before.put("-Dspring.profiles.active", "attls");
         }
 
@@ -124,7 +130,9 @@ public class FullApiMediationLayer {
             discoverableClientService.stop();
 
             cachingService.stop();
-            nodeJsSampleApp.destroy();
+            if (attlsEnabled){
+                nodeJsSampleApp.destroy();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -140,7 +148,9 @@ public class FullApiMediationLayer {
             new ApiMediationLayerStartupChecker().waitUntilReady();
 
             try {
-                nodeJsSampleApp = nodeJsBuilder.start();
+                if (attlsEnabled){
+                    nodeJsSampleApp = nodeJsBuilder.start();
+                }
                 cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
                 cachingService.waitUntilReady();
             } catch (IOException ex) {
