@@ -142,31 +142,6 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
     }
 
 
-
-    @Nested
-    @AttlsTest
-    class calledWithHeader {
-
-        @BeforeEach
-        void setUp() {
-            clearSsl();
-        }
-
-        @Test
-        void cachingApiEndpointsAccessible() {
-
-            given()
-                .header(CERT_HEADER_NAME, "value")
-                .when().get(caching_url + CACHING_PATH)
-                .then().statusCode(HttpStatus.OK.value());
-
-            given()
-                .when().get(caching_url + CACHING_PATH)
-                .then().statusCode(HttpStatus.UNAUTHORIZED.value());
-        }
-
-    }
-
     private void clearSsl() {
         RestAssured.config = RestAssured.config().sslConfig(SSLConfig.sslConfig());
         RestAssured.useRelaxedHTTPSValidation();

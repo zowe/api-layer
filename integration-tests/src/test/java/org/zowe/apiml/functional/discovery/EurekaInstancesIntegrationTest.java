@@ -86,22 +86,6 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
             .header(HttpHeaders.WWW_AUTHENTICATE, nullValue());
     }
 
-
-    /**
-     * Secured by ATTLS layer, no credentials required
-     */
-    @Test
-    @AttlsTest
-    @Disabled
-    void givenATTLS_whenProvidedNothing() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/eureka/apps"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-
     @Test
     @NotAttlsTest
     void givenTLS_whenProvidedBasicAuthentication() throws Exception {
@@ -112,19 +96,6 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
             .get(getDiscoveryUriWithPath("/eureka/apps"))
         .then()
             .statusCode(is(HttpStatus.SC_FORBIDDEN));
-    }
-
-    @Test
-    @Disabled
-    @AttlsTest
-    void givenATTLS_whenProvidedBasicAuthentication() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .auth().basic(username, password)
-            .when()
-            .get(getDiscoveryUriWithPath("/eureka/apps"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
     }
 
     // Gateway is discovered
