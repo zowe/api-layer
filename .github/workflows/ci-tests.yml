@@ -128,7 +128,7 @@ jobs:
 
     CITestsATTLS:
 
-        runs-on: macos-latest
+        runs-on: ubuntu-18.04
         timeout-minutes: 20
 
         steps:
