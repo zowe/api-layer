@@ -24,7 +24,8 @@
     },
     "scripts": {
         "build": "react-scripts build",
-        "test": "react-scripts test --silent --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage --passWithNoTests"
+        "test": "react-scripts test --silent --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage --passWithNoTests",
+        "start": "react-scripts start"
     },
     "jest-html-reporter": {
         "pageTitle": "Metrics Service UI Unit Tests",
