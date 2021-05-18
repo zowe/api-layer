@@ -195,7 +195,9 @@ public class GatewayHomepageController {
     }
 
     private String getMetricsLink(ServiceInstance metricsInstance) {
-        return metricsInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_SERVICE_URL));
+        String gatewayUrl = metricsInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_GATEWAY_URL));
+        String serviceUrl = metricsInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_SERVICE_URL));
+        return serviceUrl + "/" + gatewayUrl;
     }
 
     private boolean authorizationServiceUp() {

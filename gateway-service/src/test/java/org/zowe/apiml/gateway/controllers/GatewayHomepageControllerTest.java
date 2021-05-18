@@ -325,8 +325,8 @@ class GatewayHomepageControllerTest {
 
         private void discoveryReturnValidMetricsService() {
             Map<String, String> metadataMap = new HashMap<>();
-            metadataMap.put("apiml.routes.ui-v1.gatewayUrl", "/ui/v1");
-            metadataMap.put("apiml.routes.ui-v1.serviceUrl", "/metrics-service/ui/v1");
+            metadataMap.put("apiml.routes.ui-v1.gatewayUrl", "ui/v1");
+            metadataMap.put("apiml.routes.ui-v1.serviceUrl", "/metrics-service");
             ServiceInstance apiCatalogServiceInstance = new DefaultServiceInstance("instanceId", "serviceId",
                 "host", 10000, true, metadataMap);
 
