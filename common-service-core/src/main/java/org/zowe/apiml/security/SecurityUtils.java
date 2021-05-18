@@ -100,7 +100,7 @@ public class SecurityUtils {
 
         String privateKeyPEM = key
             .replace("-----BEGIN PRIVATE KEY-----", "")
-            .replace("\n", "")
+            .replaceAll("\n", "")
             .replace("-----END PRIVATE KEY-----", "");
 
         byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
@@ -128,7 +128,7 @@ public class SecurityUtils {
 
         String publicKeyPEM = key
             .replace("-----BEGIN PUBLIC KEY-----", "")
-            .replace("\n", "")
+            .replaceAll("\n", "")
             .replace("-----END PUBLIC KEY-----", "");
 
         byte[] encoded = Base64.getDecoder().decode(publicKeyPEM);
@@ -156,7 +156,7 @@ public class SecurityUtils {
 
         String publicKeyPEM = key
             .replace("-----BEGIN PUBLIC KEY-----", "")
-            .replace("\n", "")
+            .replaceAll("\n", "")
             .replace("-----END PUBLIC KEY-----", "");
 
         HashSet<String> setOfKeys = new HashSet<>();

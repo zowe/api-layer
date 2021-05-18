@@ -32,6 +32,7 @@ public class ApimlX509Filter extends X509AuthenticationFilter {
     private static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
 
     private final Set<String> publicKeyCertificatesBase64;
+    private final boolean attlsEnabled;
 
     private Set<String> getPublicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
@@ -65,7 +66,9 @@ public class ApimlX509Filter extends X509AuthenticationFilter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
+//        if (!attlsEnabled) {
             categorizeCerts(request);
+//        }
         super.doFilter(request, response, chain);
     }
 
