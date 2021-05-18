@@ -12,6 +12,7 @@ package org.zowe.apiml.metrics.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -45,6 +46,7 @@ import org.zowe.apiml.security.common.login.LoginFilter;
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableApimlAuth
+@ComponentScan("org.zowe.apiml.product.web")
 public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final ObjectMapper securityObjectMapper;
