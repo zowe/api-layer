@@ -40,7 +40,6 @@ public class AttlsFilter extends OncePerRequestFilter {
                     .getInstance("X509")
                     .generateCertificate(targetStream);
             } catch (Exception e) {
-                e.printStackTrace();
                 filterChain.doFilter(request, response);
             }
             request.setAttribute("javax.servlet.request.X509Certificate", certificates);

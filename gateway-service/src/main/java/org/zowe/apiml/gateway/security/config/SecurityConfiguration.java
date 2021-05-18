@@ -319,7 +319,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * into the HttpClientChooser - This didn't work as the HttpClientChooser isn't used in these specific calls.
      */
     private ApimlX509Filter apimlX509Filter() throws Exception {
-        ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64,isAttlsEnabled);
+        ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
         out.setAuthenticationManager(authenticationManager());
         return out;
     }
