@@ -40,8 +40,6 @@ public class FullApiMediationLayer {
     private static FullApiMediationLayer instance = new FullApiMediationLayer();
 
 
-
-
     private FullApiMediationLayer() {
         env = ConfigReader.environmentConfiguration().getInstanceEnv();
 
@@ -51,7 +49,7 @@ public class FullApiMediationLayer {
         prepareGateway();
         prepareMockZosmf();
         prepareDiscovery();
-        if(attlsEnabled){
+        if (attlsEnabled) {
             prepareNodeJsSampleApp();
         }
     }
@@ -130,7 +128,7 @@ public class FullApiMediationLayer {
             discoverableClientService.stop();
 
             cachingService.stop();
-            if (attlsEnabled){
+            if (attlsEnabled) {
                 nodeJsSampleApp.destroy();
             }
         } catch (Exception e) {
@@ -148,7 +146,7 @@ public class FullApiMediationLayer {
             new ApiMediationLayerStartupChecker().waitUntilReady();
 
             try {
-                if (attlsEnabled){
+                if (attlsEnabled) {
                     nodeJsSampleApp = nodeJsBuilder.start();
                 }
                 cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
