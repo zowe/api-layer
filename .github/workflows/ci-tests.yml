@@ -141,10 +141,6 @@ jobs:
                   java-version: 1.8
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
-            - name: Start nginx proxy
-              run: |
-                  cd docker/nginx
-                  docker-compose up --detach
             - name: Cache Gradle packages
               uses: actions/cache@v2
               with:
@@ -165,7 +161,18 @@ jobs:
                       ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runCITestsAttls --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew build --scan --info -Pgradle.cache.push=true -Penabler=v1
+                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+              env:
+                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            - name: Start nginx proxy
+              run: |
+                  cd docker/nginx
+                  docker-compose up --detach
+            - name: CI Test with Gradle
+              run: >
+                  ./gradlew runCITestsAttls --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
