@@ -11,6 +11,7 @@ package org.zowe.apiml.util.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Duration;
+import org.junit.platform.commons.util.StringUtils;
 import org.zowe.apiml.util.DiscoveryRequests;
 
 import java.io.*;
@@ -82,11 +83,11 @@ public class RunningService {
             BufferedReader br = new BufferedReader(
                 new InputStreamReader(inputStream));
             String line;
-            while ((line = br.readLine()) != null) {
+            while (StringUtils.isBlank(this.subprocessPid) && (line = br.readLine()) != null) {
                 log.info(line);
                 if (line.startsWith("pid")) {
                     this.subprocessPid = line.substring(line.indexOf("=") + 1);
-                    log.info("found " + this.subprocessPid);
+                    log.info("found PID:" + this.subprocessPid + " for service: {}", id);
                 }
             }
         } catch (IOException e) {

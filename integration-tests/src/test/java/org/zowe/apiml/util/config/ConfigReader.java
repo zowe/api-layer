@@ -36,6 +36,7 @@ public class ConfigReader {
 
     public static EnvironmentConfiguration environmentConfiguration() {
         if (instance == null) {
+            log.info("Actual configuration file: {}", configurationFile);
             synchronized (ConfigReader.class) {
                 if (instance == null) {
                     final String configFileName = configurationFile;
@@ -104,6 +105,7 @@ public class ConfigReader {
                     instance = configuration;
                 }
             }
+            log.info("Actual configuration: {}", instance);
         }
 
         return instance;
