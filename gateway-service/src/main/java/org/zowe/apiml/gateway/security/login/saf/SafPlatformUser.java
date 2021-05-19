@@ -45,7 +45,7 @@ public class SafPlatformUser implements PlatformUser {
     }
 
     @Override
-    public Object changePassword(String userid, String password, String newPassword) {
+    public PlatformReturned changePassword(String userid, String password, String newPassword) {
         try {
             Object safReturned = authenticateMethodHandle.invokeWithArguments(platformClassFactory.getPlatformUser(),
                 userid, password, newPassword);

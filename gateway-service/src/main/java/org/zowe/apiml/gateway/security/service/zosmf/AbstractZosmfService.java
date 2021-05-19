@@ -69,9 +69,13 @@ public abstract class AbstractZosmfService {
      */
     protected String getAuthenticationValue(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
-        LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
-        final String password = loginRequest.getPassword();
-
+        final String password;
+        if(authentication.getCredentials() instanceof  LoginRequest){
+            LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
+            password = loginRequest.getPassword();
+        } else {
+            password = (String) authentication.getCredentials();
+        }
         final String credentials = user + ":" + password;
         return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
     }

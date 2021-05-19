@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.security.login.saf;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -42,7 +43,7 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
         String userid = authentication.getName();
         LoginRequest credentials = (LoginRequest) authentication.getCredentials();
         PlatformReturned returned;
-        if(credentials.getNewPassword() != null) {
+        if(StringUtils.isNotEmpty(credentials.getNewPassword())) {
            returned = (PlatformReturned) getPlatformUser().changePassword(userid, credentials.getPassword(), credentials.getNewPassword());
         } else {
             returned = (PlatformReturned) getPlatformUser().authenticate(userid, credentials.getPassword());
