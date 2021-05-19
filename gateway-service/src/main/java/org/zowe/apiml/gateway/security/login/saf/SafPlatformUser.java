@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.login.saf;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturnedHelper;
-import org.zowe.apiml.util.StringUtils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -26,8 +25,7 @@ public class SafPlatformUser implements PlatformUser {
     private final MethodHandle changePasswordHandle;
 
     public SafPlatformUser(PlatformClassFactory platformClassFactory)
-        throws IllegalAccessException, ClassNotFoundException, NoSuchFieldException, NoSuchMethodException
-    {
+        throws IllegalAccessException, ClassNotFoundException, NoSuchFieldException, NoSuchMethodException {
         this.platformClassFactory = platformClassFactory;
         this.platformReturnedHelper = new PlatformReturnedHelper<>((Class<Object>) platformClassFactory.getPlatformReturnedClass());
 

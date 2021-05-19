@@ -43,8 +43,8 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
         String userid = authentication.getName();
         LoginRequest credentials = (LoginRequest) authentication.getCredentials();
         PlatformReturned returned;
-        if(StringUtils.isNotEmpty(credentials.getNewPassword())) {
-           returned = (PlatformReturned) getPlatformUser().changePassword(userid, credentials.getPassword(), credentials.getNewPassword());
+        if (StringUtils.isNotEmpty(credentials.getNewPassword())) {
+            returned = (PlatformReturned) getPlatformUser().changePassword(userid, credentials.getPassword(), credentials.getNewPassword());
         } else {
             returned = (PlatformReturned) getPlatformUser().authenticate(userid, credentials.getPassword());
         }

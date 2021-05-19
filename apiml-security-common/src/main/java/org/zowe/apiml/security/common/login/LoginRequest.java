@@ -9,10 +9,8 @@
  */
 package org.zowe.apiml.security.common.login;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Represents the login JSON with credentials
