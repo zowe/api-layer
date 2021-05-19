@@ -39,7 +39,6 @@ gitProperties {
 
 dependencies {
     implementation project(':common-service-core')
-    implementation project(':zaas-client')
 
     implementation project(':onboarding-enabler-spring')
 
@@ -51,8 +50,11 @@ dependencies {
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
+    implementation libraries.spring_boot_starter_security
+    implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_retry
     implementation libraries.spring_boot_starter_aop
+    implementation libraries.lettuce
 
     implementation libraries.gson
     compileOnly libraries.lombok

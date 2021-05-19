@@ -9,16 +9,17 @@
  */
 package org.zowe.apiml.apicatalog.swagger.api;
 
-import org.zowe.apiml.product.gateway.GatewayClient;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.zowe.apiml.product.gateway.GatewayClient;
 
 import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
@@ -27,20 +28,20 @@ import java.util.function.Function;
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
+@SuppressWarnings("squid:S1452")
 public class ApiTransformationConfig {
 
     private final GatewayClient gatewayClient;
 
     @Bean
-    public Function<String, AbstractApiDocService> beanApiDocFactory() {
+    public Function<String, AbstractApiDocService<?, ?>> beanApiDocFactory() {
         return this::abstractApiDocService;
     }
 
-
     @Bean
     @Scope(value = "prototype")
-    public AbstractApiDocService abstractApiDocService(String content) {
-        ObjectMapper mapper = new ObjectMapper();
+    public AbstractApiDocService<?, ?> abstractApiDocService(String content) {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         try {
             ObjectNode objectNode = mapper.readValue(content, ObjectNode.class);

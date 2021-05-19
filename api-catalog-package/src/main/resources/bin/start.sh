@@ -27,8 +27,12 @@
 
 JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
 # script assumes it's in the catalog component directory and common_lib needs to be relative path
-COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
-
+if [[ -z ${CMMN_LB} ]]
+then
+    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
+else
+    COMMON_LIB=${CMMN_LB}
+fi
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
@@ -37,6 +41,14 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [[ ! -z "${APIML_DIAG_MODE_ENABLED}" ]]
+then
+    LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
+fi
+
+if [ `uname` = "OS/390" ]; then
+    QUICK_START=-Xquickstart
+fi
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -47,30 +59,24 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 export LIBPATH="$LIBPATH":
 
-stop_jobs()
-{
-  kill -15 $pid
-}
-
-trap 'stop_jobs' INT
-
 CATALOG_CODE=AC
 _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Xms16m -Xmx512m \
-    -Xquickstart \
+    ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
-    -Denvironment.hostname=${ZOWE_EXPLORER_HOST} \
-    -Denvironment.port=${CATALOG_PORT} \
-    -Denvironment.discoveryLocations=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
-    -Denvironment.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
-    -Denvironment.gatewayHostname=${ZOWE_EXPLORER_HOST} \
-    -Denvironment.eurekaUserId=eureka \
-    -Denvironment.eurekaPassword=password \
+    -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
+    -Dapiml.service.port=${CATALOG_PORT} \
+    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
+    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
+    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
+    -Dapiml.service.gatewayHostname=${ZOWE_EXPLORER_HOST} \
+    -Dapiml.service.eurekaUserId=eureka \
+    -Dapiml.service.eurekaPassword=password \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
@@ -85,6 +91,5 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -jar "${JAR_FILE}" &
-pid=$?
-
-wait
+pid=$!
+echo "pid=${pid}"

@@ -12,9 +12,7 @@ package org.zowe.apiml.gateway.controllers;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import net.minidev.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
@@ -25,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
 
@@ -36,10 +35,6 @@ import static org.apache.http.HttpStatus.*;
 @RestController
 @RequestMapping(AuthController.CONTROLLER_PATH)
 public class AuthController {
-
-    @Setter
-    @Value("${apiml.security.zosmf.useJwtToken:true}")
-    protected boolean useZosmfJwtToken;
 
     private final AuthenticationService authenticationService;
 
@@ -82,24 +77,34 @@ public class AuthController {
         response.setStatus(distributed ? SC_OK : SC_NO_CONTENT);
     }
 
+    /**
+     * Return all public keys involved at the moment in the Gateway as well as in zOSMF. Keys used for verification of
+     * tokens
+     * @return List of keys composed of zOSMF and Gateway ones
+     */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
     @ResponseBody
     public JSONObject getAllPublicKeys() {
         final List<JWK> keys = new LinkedList<>();
         keys.addAll(zosmfService.getPublicKeys().getKeys());
-        keys.add(jwtSecurityInitializer.getJwkPublicKey());
+        Optional<JWK> key = jwtSecurityInitializer.getJwkPublicKey();
+        key.ifPresent(keys::add);
         return new JWKSet(keys).toJSONObject(true);
     }
 
+    /**
+     * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
+     * configured one is used.
+     * @return The key actually used to verify the JWT tokens.
+     */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
     @ResponseBody
     public JSONObject getCurrentPublicKeys() {
-        final List<JWK> keys = new LinkedList<>();
-        if (useZosmfJwtToken) {
-            keys.addAll(zosmfService.getPublicKeys().getKeys());
-        }
+        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+
         if (keys.isEmpty()) {
-            keys.add(jwtSecurityInitializer.getJwkPublicKey());
+            Optional<JWK> key = jwtSecurityInitializer.getJwkPublicKey();
+            key.ifPresent(keys::add);
         }
         return new JWKSet(keys).toJSONObject(true);
     }

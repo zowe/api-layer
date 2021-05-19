@@ -14,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.*;
@@ -34,31 +31,6 @@ public class SecurityUtils {
     public static final String SAFKEYRING = "safkeyring";
 
     /**
-     * Reads secret key from keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}, and encode to Base64
-     * @param config - {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
-     *                                 and optional filled: keyAlias and trustStore
-     * @return Base64 encoded secret key in {@link String}
-     */
-    public static String readSecret(HttpsConfig config) {
-        if (config.getKeyStore() != null) {
-            try {
-                Key key = loadKey(config);
-                if (key == null) {
-                    throw new UnrecoverableKeyException(String.format(
-                        "No key with private key entry could be used in the keystore. Provided key alias: %s",
-                        config.getKeyAlias() == null ? "<not provided>" : config.getKeyAlias()));
-                }
-                return Base64.getEncoder().encodeToString(key.getEncoded());
-            } catch (UnrecoverableKeyException e) {
-                apimlLog.log("org.zowe.apiml.common.errorReadingSecretKey", e.getMessage());
-                throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
-                    HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
-            }
-        }
-        return null;
-    }
-
-    /**
      * Loads secret key from keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}
      * @param config - {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
      *                                  and optional filled: keyAlias and trustStore
@@ -73,7 +45,7 @@ public class SecurityUtils {
                 if (config.getKeyAlias() != null) {
                     key = ks.getKey(config.getKeyAlias(), keyPasswordInChars);
                 } else {
-                    key = findFirstSecretKey(ks, keyPasswordInChars);
+                    throw new KeyStoreException("No key alias provided.");
                 }
                 return key;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
@@ -122,22 +94,6 @@ public class SecurityUtils {
             out.add(base64);
         }
         return out;
-    }
-
-    private static Key findFirstSecretKey(KeyStore keyStore, char[] keyPasswordInChars) throws KeyStoreException, NoSuchAlgorithmException {
-        Key key = null;
-        for (Enumeration<String> e = keyStore.aliases(); e.hasMoreElements(); ) {
-            String alias = e.nextElement();
-            try {
-                key = keyStore.getKey(alias, keyPasswordInChars);
-                if (key != null) {
-                    break;
-                }
-            } catch (UnrecoverableKeyException uke) {
-                log.debug("Key with alias {} could not be used: {}", alias, uke.getMessage());
-            }
-        }
-        return key;
     }
 
     /**

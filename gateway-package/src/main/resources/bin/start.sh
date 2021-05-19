@@ -27,7 +27,12 @@
 
 JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
-COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
+if [[ -z ${CMMN_LB} ]]
+then
+    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
+else
+    COMMON_LIB=${CMMN_LB}
+fi
 
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
@@ -35,6 +40,17 @@ export LOG_LEVEL=
 if [[ ! -z ${APIML_DEBUG_MODE_ENABLED} && ${APIML_DEBUG_MODE_ENABLED} == true ]]
 then
   export LOG_LEVEL="debug"
+fi
+
+DIAG_MODE=${APIML_DIAG_MODE_ENABLED}
+if [ ! -z "$DIAG_MODE" ]
+then
+    LOG_LEVEL=$DIAG_MODE
+fi
+
+if [[ -z ${PKCS11_TOKEN_LABEL} && ! -z ${APIML_SECURITY_AUTH_JWTKEYALIAS} ]]
+then
+    PKCS11_TOKEN_LABEL=${APIML_SECURITY_AUTH_JWTKEYALIAS}
 fi
 
 if [[ -z ${APIML_GATEWAY_CATALOG_ID} ]]
@@ -48,6 +64,7 @@ then
 fi
 
 if [ `uname` = "OS/390" ]; then
+    QUICK_START=-Xquickstart
     GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
 else
     GATEWAY_LOADER_PATH=${COMMON_LIB}
@@ -65,17 +82,10 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 export LIBPATH="$LIBPATH":
 
-stop_jobs()
-{
-  kill -15 $pid
-}
-
-trap 'stop_jobs' INT
-
 GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Xms32m -Xmx256m \
-    -Xquickstart \
+    ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
@@ -89,15 +99,17 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID} \
     -Dapiml.cache.storage.location=${WORKSPACE_DIR}/api-mediation/ \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
-    -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
+    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
     -Dapiml.gateway.timeoutMillis=${APIML_GATEWAY_TIMEOUT_MILLIS} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
-    -Dapiml.security.auth.zosmfServiceId=zosmf \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
+    -Dapiml.security.auth.zosmf.serviceId=${APIML_ZOSMF_ID:-zosmf} \
     -Dapiml.security.auth.provider=${APIML_SECURITY_AUTH_PROVIDER} \
+    -Dapiml.security.auth.jwtKeyAlias=${PKCS11_TOKEN_LABEL:-jwtsecret} \
     -Dapiml.zoweManifest=${ZOWE_MANIFEST} \
     -Dserver.address=0.0.0.0 \
-    -Dserver.maxConnectionsPerRoute=${APIML_MAX_CONNECTIONS_PER_ROUTE} \
-    -Dserver.maxTotalConnections=${APIML_MAX_TOTAL_CONNECTIONS} \
+    -Dserver.maxConnectionsPerRoute=${APIML_MAX_CONNECTIONS_PER_ROUTE:-10} \
+    -Dserver.maxTotalConnections=${APIML_MAX_TOTAL_CONNECTIONS:-100} \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
     -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
@@ -107,18 +119,22 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
+    -Dserver.internal.enabled=${APIML_GATEWAY_INTERNAL_ENABLED:-false} \
+    -Dserver.internal.port=${APIML_GATEWAY_INTERNAL_PORT:-10017} \
+    -Dserver.internal.ssl.keyAlias=${APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS:-localhost-multi} \
+    -Dserver.internal.ssl.keyStore=${APIML_GATEWAY_INTERNAL_SSL_KEYSTORE:-keystore/localhost/localhost-multi.keystore.p12} \
+    -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE:-auto} \
     -Dapiml.security.x509.enabled=${APIML_SECURITY_X509_ENABLED:-false} \
-    -Dapiml.security.x509.externalMapperUrl=http://localhost:${ZOWE_ZSS_SERVER_PORT}/certificate/x509/map \
-    -Dapiml.security.x509.externalMapperUser=ZWESVUSR \
+    -Dapiml.security.x509.externalMapperUrl=${APIML_GATEWAY_EXTERNAL_MAPPER} \
+    -Dapiml.security.x509.externalMapperUser=${APIML_GATEWAY_MAPPER_USER:-ZWESVUSR} \
     -Dapiml.security.authorization.provider=${APIML_SECURITY_AUTHORIZATION_PROVIDER:-} \
     -Dapiml.security.authorization.endpoint.enabled=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_ENABLED:-false} \
-    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL:-http://localhost:${ZOWE_ZSS_SERVER_PORT}/saf-auth} \
+    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL} \
     -Dapiml.security.authorization.resourceClass=${RESOURCE_CLASS:-ZOWE} \
     -Dapiml.security.authorization.resourceNamePrefix=${RESOURCE_NAME_PREFIX:-APIML.} \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -jar ${JAR_FILE} &
-pid=$?
-
-wait
+pid=$!
+echo "pid=${pid}"

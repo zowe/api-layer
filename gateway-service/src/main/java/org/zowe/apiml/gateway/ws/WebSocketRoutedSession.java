@@ -83,6 +83,9 @@ public class WebSocketRoutedSession {
             return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (IllegalStateException e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, true);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
         } catch (Exception e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
         }

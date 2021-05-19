@@ -14,6 +14,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.zfile.ZFile;
 import org.zowe.apiml.zfile.ZFileConstants;
 import org.zowe.apiml.zfile.ZFileException;
@@ -29,8 +30,8 @@ import org.zowe.apiml.zfile.ZFileException;
 public class VsamInitializer {
 
     @Retryable(value = UnsupportedOperationException.class, maxAttempts = 10)
-    public void storageWarmup(VsamConfig config) {
-        try (VsamFile file = new VsamFile(config, VsamConfig.VsamOptions.WRITE, true)) {
+    public void storageWarmup(VsamConfig config, ApimlLogger apimlLogger) {
+        try (VsamFile file = new VsamFile(config, VsamConfig.VsamOptions.WRITE, true, apimlLogger)) {
             log.info("Vsam file open successful");
         }
     }
@@ -46,17 +47,15 @@ public class VsamInitializer {
      * @throws VsamRecordException
      */
     public void warmUpVsamFile(ZFile zFile, VsamConfig vsamConfig) throws ZFileException, VsamRecordException {
-
         log.info("Warming up the vsam file by writing and deleting a record");
-
         log.info("VSAM file being used: {}", zFile.getActualFilename());
 
-        VsamRecord record = new VsamRecord(vsamConfig, "delete", new KeyValue("me", "novalue"));
+        VsamRecord vsamRec = new VsamRecord(vsamConfig, "delete", new KeyValue("me", "novalue"));
 
-        log.info("Writing Record: {}", record);
-        zFile.write(record.getBytes());
+        log.info("Writing Record: {}", vsamRec);
+        zFile.write(vsamRec.getBytes());
 
-        boolean found = zFile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
+        boolean found = zFile.locate(vsamRec.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
 
         log.info("Test record for deletion found: {}", found);
         if (found) {
@@ -65,6 +64,5 @@ public class VsamInitializer {
             zFile.delrec();
             log.info("Test record deleted.");
         }
-
     }
 }

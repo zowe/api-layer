@@ -221,6 +221,7 @@ public class EurekaMetadataParser {
         return Authentication.builder()
                 .applid(eurekaMetadata.get(AUTHENTICATION_APPLID))
                 .scheme(schemes.map(eurekaMetadata.get(AUTHENTICATION_SCHEME)))
+                .headers(eurekaMetadata.get(AUTHENTICATION_HEADERS))
                 .supportsSso(BooleanUtils.toBooleanObject(eurekaMetadata.get(AUTHENTICATION_SSO)))
                 .build();
     }

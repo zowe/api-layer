@@ -71,7 +71,7 @@ class TomcatFilterTest {
         filter.doFilter(request, response, filterChain);
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, response.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, response.getContentType());
 
         Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedSlash", request.getRequestURI());
         verify(objectMapper).writeValue(response.getWriter(), message.mapToView());
@@ -120,7 +120,7 @@ class TomcatFilterTest {
 
         when(mockedRequest.getRequestURI()).thenReturn(ENCODED_REQUEST_URI);
         when(mockedResponse.getWriter()).thenThrow(new IOException());
-        
+
         assertThrows(ServletException.class, () -> filter.doFilter(mockedRequest, mockedResponse, filterChain));
     }
 }

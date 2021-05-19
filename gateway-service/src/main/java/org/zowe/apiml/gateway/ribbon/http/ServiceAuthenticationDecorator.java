@@ -63,10 +63,9 @@ public class ServiceAuthenticationDecorator {
                     return;
                 }
 
-                if (cmd.isRequiredValidJwt()) {
-                    if (jwtToken == null || !authenticationService.validateJwtToken(jwtToken).isAuthenticated()) {
-                        throw new RequestAbortException(new TokenNotValidException("JWT Token is not authenticated"));
-                    }
+                if (cmd.isRequiredValidJwt()
+                    && (jwtToken == null || !authenticationService.validateJwtToken(jwtToken).isAuthenticated())) {
+                    throw new RequestAbortException(new TokenNotValidException("JWT Token is not authenticated"));
                 }
             }
             catch (AuthenticationException ae) {

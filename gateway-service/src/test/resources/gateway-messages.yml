@@ -10,6 +10,12 @@ messages:
 
     # TLS,Certificate messages
     # 500-599
+    - key: org.zowe.apiml.gateway.security.x509.missingCertificate
+      number: ZWEAG500
+      type: ERROR
+      text: "Client certificate is missing in request."
+      reason: "No client certificate presents in HTTPS request."
+      action: "Properly configure client to send client certificate."
 
     # Various messages
     # 600-699
@@ -41,7 +47,7 @@ messages:
     - key: org.zowe.apiml.gateway.jwtKeyMissing
       number: ZWEAG705
       type: ERROR
-      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'."
+      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'. Gateway is shutting down."
       reason: "Failed to load a public or private key from the keystore during JWT Token initialization."
       action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
 
@@ -106,9 +112,9 @@ messages:
     - key: org.zowe.apiml.security.zosmfInstanceNotFound
       number: ZWEAG108
       type: ERROR
-      text: "z/OSMF instance '%s' not found or incorrectly configured."
-      reason: "The Gateway could not find the z/OSMF instance from the Discovery Service."
-      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service."
+      text: "z/OSMF instance '%s' not found or is incorrectly configured. Gateway is shutting down."
+      reason: "The Gateway could not find the z/OSMF instance from the Discovery Service or it could not communicate with the provided z/OSMF instance."
+      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that API Mediation Layer can communicate with the provided z/OSMF instance."
 
     - key: org.zowe.apiml.security.zosmfDomainIsEmpty
       number: ZWEAG109

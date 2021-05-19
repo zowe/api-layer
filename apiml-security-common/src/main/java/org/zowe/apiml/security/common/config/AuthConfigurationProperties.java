@@ -13,10 +13,10 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.auth.AuthenticationScheme;
 
 
 /**
@@ -47,12 +47,18 @@ public class AuthConfigurationProperties {
     private AuthConfigurationProperties.TokenProperties tokenProperties;
     private AuthConfigurationProperties.CookieProperties cookieProperties;
 
-    private String zosmfServiceId;
     private String provider = "zosmf";
 
     private AuthConfigurationProperties.PassTicket passTicket;
 
+    private AuthConfigurationProperties.Zosmf zosmf = new AuthConfigurationProperties.Zosmf();
     private String jwtKeyAlias;
+
+    public enum JWT_AUTOCONFIGURATION_MODE {
+        AUTO,
+        LTPA,
+        JWT
+    }
 
     //Token properties
     @Data
@@ -78,6 +84,13 @@ public class AuthConfigurationProperties {
         private Integer timeout = 540;
     }
 
+    @Data
+    public static class Zosmf {
+        private String serviceId;
+        private String jwtEndpoint = "/jwt/ibm/api/zOSMFBuilder/jwk";
+        private JWT_AUTOCONFIGURATION_MODE jwtAutoconfiguration = JWT_AUTOCONFIGURATION_MODE.AUTO;
+    }
+
     public AuthConfigurationProperties() {
         this.cookieProperties = new AuthConfigurationProperties.CookieProperties();
         this.tokenProperties = new AuthConfigurationProperties.TokenProperties();
@@ -91,13 +104,11 @@ public class AuthConfigurationProperties {
      * @throws AuthenticationServiceException if the z/OSMF service id is not configured
      */
     public String validatedZosmfServiceId() {
-
-        if (provider.equalsIgnoreCase(AuthenticationScheme.ZOSMF.getScheme())) {
-            if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
-                apimlLog.log("org.zowe.apiml.security.zosmfNotFound");
-                throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
-            }
+        if (provider.equalsIgnoreCase(AuthenticationScheme.ZOSMF.getScheme())
+            && ((zosmf.getServiceId() == null) || zosmf.getServiceId().isEmpty())) {
+            apimlLog.log("org.zowe.apiml.security.zosmfNotFound");
+            throw new AuthenticationServiceException("The parameter 'apiml.security.auth.zosmf.serviceId' is not configured.");
         }
-        return zosmfServiceId;
+        return zosmf.getServiceId();
     }
 }

@@ -19,6 +19,18 @@ This is the onboarding Node.js enabler for [Zowe API Mediation Layer](https://gi
     });
     
     ```
+   To make sure that your application will automatically unregister from Eureka once shut down, you can use the `unregisterFromEureka()` function, like shown in the example below.
+   **Example:**
+   
+    ```js
+    process.on('SIGINT', signal => {
+        apiLayerService.unregisterFromEureka();
+        httpsServer.close(() => {
+            process.exit(0);
+        });
+    });   
+        
+    ```
 
 3. Create a yaml file named `service-configuration.yml`, add the configuration properties and place the yaml file inside a `/config` directory at the same level of your `index.js`. 
 Below is an example of the configuration.

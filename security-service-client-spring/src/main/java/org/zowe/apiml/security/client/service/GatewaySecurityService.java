@@ -57,7 +57,7 @@ public class GatewaySecurityService {
         loginRequest.put("password", password);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(

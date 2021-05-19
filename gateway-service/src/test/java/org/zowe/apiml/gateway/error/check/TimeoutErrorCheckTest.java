@@ -27,7 +27,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.net.SocketTimeoutException;
 
-public class TimeoutErrorCheckTest {
+class TimeoutErrorCheckTest {
     private static final String TEST_MESSAGE = "Hello";
     private static InternalServerErrorController errorController;
 

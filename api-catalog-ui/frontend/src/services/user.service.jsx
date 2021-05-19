@@ -1,8 +1,8 @@
 import * as log from 'loglevel';
 
 function handleResponse(response) {
-    return response.text().then(function(text) {
-        const data = text ? JSON.parse(text) : {}
+    return response.text().then(text => {
+        const data = text ? JSON.parse(text) : {};
         if (!response.ok) {
             const [message] = data.messages;
             return Promise.reject(message);
@@ -36,6 +36,7 @@ function logout() {
         headers: {
             'Access-Control-Allow-Origin': allowOrigin,
             'Access-Control-Allow-Credentials': 'true',
+            'X-Requested-With': 'XMLHttpRequest',
         },
     };
 
@@ -59,6 +60,7 @@ function login(credentials) {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': allowOrigin,
             'Access-Control-Allow-Credentials': 'true',
+            'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify(credentials),
     };

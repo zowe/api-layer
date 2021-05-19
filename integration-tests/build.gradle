@@ -63,6 +63,7 @@ task startUpCheck(type: Test) {
     description "Check that the API Mediation Layer is up and runnig"
 
     systemProperties System.properties
+    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags 'StartupCheck'
     }
@@ -74,6 +75,7 @@ task environmentCheck(type: Test) {
     description "Check that the Integration environment is healthy"
 
     systemProperties System.properties
+    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags 'EnvironmentCheck'
     }
@@ -147,6 +149,7 @@ task runAllIntegrationTestsNormal(type: Test) {
     group "Integration tests"
     description "Run all integration tests normal"
     systemProperties System.properties
+    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
@@ -169,6 +172,7 @@ task runAllIntegrationTests(type: Test) {
     String itags = System.getProperty("includeTags") ?
         System.getProperty("includeTags") : 'zOSMFAuthTest'
     systemProperties System.properties
+    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags(
             itags
@@ -208,7 +212,8 @@ task runCITests(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
 
-    dependsOn startUpCheck
+    outputs.cacheIf { false }
+
     systemProperties System.properties
     useJUnitPlatform {
         excludeTags(
@@ -226,7 +231,8 @@ task runCITestsInternalPort(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
 
-    dependsOn startUpCheck
+    outputs.cacheIf { false }
+
     systemProperties System.properties
     systemProperty "gateway.port", System.getProperty("internal.gateway.port")
     useJUnitPlatform {
@@ -253,4 +259,94 @@ task runMainFrameTests(type: Test) {
         )
     }
     outputs.upToDateWhen { false }
+}
+
+
+task runBaseTests(type: Test) {
+    group "integration tests"
+    description "Run base tests"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CatalogTest',
+            'GatewayTest',
+            'DiscoveryServiceTest',
+            'WebsocketTest',
+            'GeneralAuthenticationTest',
+            'DiscoverableClientDependentTest',
+            'CachingServiceTest',
+            'WebsocketTest'
+        )
+        excludeTags('MainframeDependentTests')
+    }
+}
+
+task runSafAuthTest(type: Test) {
+    group "integration tests"
+    description "Run SAF dependant authentication tests only"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'SAFAuthTest'
+        )
+    }
+}
+task runZosmfAuthTest(type: Test) {
+    group "integration tests"
+    description "Run zOSMF dependant authentication tests only"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'zOSMFAuthTest'
+        )
+    }
+}
+
+task runX509AuthTest(type: Test) {
+    group "integration tests"
+    description "Run x509 dependant authentication tests only"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'X509Test'
+        )
+    }
+}
+
+task runCachingServiceTests(type: Test) {
+    group "integration tests"
+    description "Run Caching service tests only"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CachingServiceTest'
+        )
+    }
+}
+
+task runBaseTestsInternalPort(type: Test) {
+    group "Integration tests"
+    description "Run only tests without long tests"
+
+    outputs.cacheIf { false }
+
+    dependsOn runBaseTests
+    systemProperties System.properties
+    systemProperty "gateway.port", System.getProperty("internal.gateway.port")
+
 }

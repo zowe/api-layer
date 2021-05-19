@@ -326,23 +326,22 @@ public class CachedProductFamilyService {
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
         String apiBasePath = getApiBasePath(instanceInfo);
-        Map<String, String> apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().collect(
+        Map<String, String> apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
             Collectors.toMap(
                 apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : "v" + apiInfo.getMajorVersion(),
                 ApiInfo::getApiId
             )
         );
-        return new APIService(
-            instanceInfo.getAppName().toLowerCase(),
-            instanceInfo.getMetadata().get(SERVICE_TITLE),
-            instanceInfo.getMetadata().get(SERVICE_DESCRIPTION),
-            secureEnabled,
-            instanceInfo.getHomePageUrl(),
-            instanceHomePage,
-            apiBasePath,
-            isSso(instanceInfo),
-            apiId
-        );
+        return new APIService.Builder(instanceInfo.getAppName().toLowerCase())
+            .title(instanceInfo.getMetadata().get(SERVICE_TITLE))
+            .description(instanceInfo.getMetadata().get(SERVICE_DESCRIPTION))
+            .secured(secureEnabled)
+            .baseUrl(instanceInfo.getHomePageUrl())
+            .homePageUrl(instanceHomePage)
+            .basePath(apiBasePath)
+            .sso(isSso(instanceInfo))
+            .apiId(apiId)
+            .build();
     }
 
     /**

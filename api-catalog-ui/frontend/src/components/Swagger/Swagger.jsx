@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
-import InstanceInfo from '../ServiceTab/InstanceInfo'
+import InstanceInfo from '../ServiceTab/InstanceInfo';
 
 export default class SwaggerUI extends Component {
     componentDidMount() {
@@ -12,7 +12,7 @@ export default class SwaggerUI extends Component {
         const { selectedService, selectedVersion } = this.props;
         if (
             selectedService.serviceId !== prevProps.selectedService.serviceId ||
-            selectedService.tileId !== prevProps.selectedService.tileId  ||
+            selectedService.tileId !== prevProps.selectedService.tileId ||
             selectedVersion !== prevProps.selectedVersion
         ) {
             this.retrieveSwagger();
@@ -28,7 +28,9 @@ export default class SwaggerUI extends Component {
                 wrapActions: {
                     updateLoadingStatus: ori => (...args) => {
                         const [loadingStatus] = args;
+                        // eslint-disable-next-line react/no-unused-state
                         this.setState({ isLoading: loadingStatus === 'loading' });
+                        // eslint-disable-next-line react/no-unused-state
                         this.setState({ loadingStatus });
                         return ori(...args);
                     },
@@ -36,22 +38,24 @@ export default class SwaggerUI extends Component {
             },
         },
         wrapComponents: {
-            operations : (Original, { React }) => (props) => {
-                const {selectedService, selectedVersion} = this.props;
+            // prettier-ignore
+            // eslint-disable-next-line no-shadow
+            operations: (Original, { React }) => props => { // NOSONAR
+                const { selectedService, selectedVersion } = this.props;
                 return (
                     <div>
-                        <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion}></InstanceInfo>
-                        <Original {...props}></Original>
+                        <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} />
+                        <Original {...props} />
                     </div>
-                )
+                );
             }
-        }
+        },
     });
 
     retrieveSwagger = () => {
         const { selectedService, selectedVersion } = this.props;
         try {
-            //If no version selected use the default apiDoc
+            // If no version selected use the default apiDoc
             if (
                 selectedVersion === null &&
                 selectedService.apiDoc !== null &&
@@ -59,18 +63,18 @@ export default class SwaggerUI extends Component {
                 selectedService.apiDoc.length !== 0
             ) {
                 const swagger = JSON.parse(selectedService.apiDoc);
-                SwaggerUi({ 
+                SwaggerUi({
                     dom_id: '#swaggerContainer',
                     spec: swagger,
                     presets: [presets.apis],
                     plugins: [this.customPlugins],
                 });
-            } 
+            }
             if (selectedVersion !== null) {
-                const url = `${process.env.REACT_APP_GATEWAY_URL + 
-                    process.env.REACT_APP_CATALOG_HOME + 
+                const url = `${process.env.REACT_APP_GATEWAY_URL +
+                    process.env.REACT_APP_CATALOG_HOME +
                     process.env.REACT_APP_APIDOC_UPDATE}/${selectedService.serviceId}/${selectedVersion}`;
-                SwaggerUi({ 
+                SwaggerUi({
                     dom_id: '#swaggerContainer',
                     url,
                     presets: [presets.apis],
@@ -96,7 +100,10 @@ export default class SwaggerUI extends Component {
             <div style={{ width: '100%', background: '#ffffff' }}>
                 {error && (
                     <div style={{ width: '100%', background: '#ffffff', paddingLeft: 55 }}>
-                        <h4 style={{ color: '#de1b1b' }}>API documentation could not be retrieved. There may be something wrong in your Swagger definition. Please review the values of 'schemes', 'host' and 'basePath'.</h4>
+                        <h4 style={{ color: '#de1b1b' }}>
+                            API documentation could not be retrieved. There may be something wrong in your Swagger
+                            definition. Please review the values of 'schemes', 'host' and 'basePath'.
+                        </h4>
                     </div>
                 )}
                 {!error && <div id="swaggerContainer" data-testid="swagger" />}

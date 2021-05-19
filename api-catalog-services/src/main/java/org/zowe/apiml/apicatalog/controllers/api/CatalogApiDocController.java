@@ -47,7 +47,7 @@ public class CatalogApiDocController {
      * @param apiVersion the version of the api
      * @return api-doc info (as JSON)
      */
-    @GetMapping(value = "/{serviceId}/{apiVersion}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{serviceId}/{apiVersion}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Retrieves the API documentation for a specific service version",
         notes = "Returns the API documentation for a specific service {serviceId} and version {apiVersion}. When " +
             " the API documentation for the specified version is not found, the first discovered version will be used.",

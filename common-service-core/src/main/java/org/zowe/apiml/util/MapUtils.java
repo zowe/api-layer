@@ -33,7 +33,7 @@ public class MapUtils {
 
     private static final Consumer<Argument> MAP_CONSUMER = argument -> argument.getResult().putAll(flattenMap(mergeKey(argument.getRootKey(), argument.getEntry().getKey()), (Map<String, Object>) argument.getEntry().getValue()));
     private static final Consumer<Argument> PRIMITIVE_CONSUMER = argument -> argument.getResult().put(mergeKey(argument.getRootKey(), argument.getEntry().getKey()), argument.getEntry().getValue().toString());
-    private static final Map<Class, Consumer<Argument>> ACTION_MAP = new LinkedHashMap<>();
+    private static final Map<Class<?>, Consumer<Argument>> ACTION_MAP = new LinkedHashMap<>();
 
     static {
         ACTION_MAP.put(Map.class, MAP_CONSUMER);
@@ -66,7 +66,7 @@ public class MapUtils {
 
     private static void executeAction(Argument argument) {
 
-        for (Map.Entry<Class, Consumer<Argument>> action : ACTION_MAP.entrySet()) {
+        for (Map.Entry<Class<?>, Consumer<Argument>> action : ACTION_MAP.entrySet()) {
             if (action.getKey().isInstance(argument.getEntry().getValue())) {
                 action.getValue().accept(argument);
                 break;

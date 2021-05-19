@@ -43,7 +43,7 @@ public class RequestInfoController {
 
     @GetMapping(
         value = "",
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+        produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiOperation(
         value = "Returns all base information about request",

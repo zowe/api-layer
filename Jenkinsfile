@@ -80,42 +80,19 @@ pipeline {
         timestamps ()
     }
 
-    parameters {
-        booleanParam(name: 'PUBLISH_PR_ARTIFACTS', defaultValue: 'false', description: 'If true it will publish the pull requests artifacts', )
-    }
-
     stages {
-        stage ('Install') {
-            steps {
-                sh 'npm install'
-                sh 'cd api-catalog-ui/frontend && npm install'
-                sh 'cd onboarding-enabler-nodejs-sample-app && npm install'
-            }
-        }
-
         stage('Build and Test') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
                         withSonarQubeEnv('sonarcloud-server') {
-                            sh './gradlew --info --scan build coverage runCITests runCITestsInternalPort -Pgradle.cache.push=true \
+                            sh './gradlew --info --scan build coverage -Pgradle.cache.push=true \
                                 -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD} \
                                 -DexternalJenkinsToggle="true" -Dcredentials.user=USER -Dcredentials.password=validPassword \
                                 -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017 \
-                                -DauxiliaryUserList.value="caching,USER1,validPassword;caching,USER2,validPassword;unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"'
+                                -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"'
                         }
                     }
-                }
-            }
-        }
-        stage('Sonar') {
-            steps {
-                timeout(time: 10, unit: 'MINUTES') {
-                        withSonarQubeEnv('sonarcloud-server') {
-                            sh 'JAVA_HOME=/usr/java/openjdk-11 && \
-                               ./gradlew --info --scan sonarqube -x test -x compileJava -x compileTestJava \
-                                 -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true'
-                     }
                 }
             }
         }
@@ -136,7 +113,7 @@ pipeline {
                         keepAll              : true,
                         reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
                         reportFiles          : 'index.html',
-                        reportName           : "UI JavaScript Test Coverage"
+                        reportName           : "JavaScript Unit Test Coverage"
                     ])
             }
         }
@@ -144,37 +121,6 @@ pipeline {
         stage('Package api-layer source code') {
             steps {
                 sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
-            }
-        }
-
-        stage('Publish snapshot version to Artifactory for master') {
-            when {
-                expression {
-                    return BRANCH_NAME.equals(MASTER_BRANCH);
-                }
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                 sh '''
-                 ./gradlew publishAllVersions -x test -x checkstyleTest -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
-                 '''
-                }
-            }
-        }
-
-        stage('Publish snapshot version to Artifactory for Pull Request') {
-            when {
-                expression {
-                    return BRANCH_NAME.contains("PR-") && params.PUBLISH_PR_ARTIFACTS;
-                }
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh '''
-                    sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
-                    ./gradlew publishAllVersions -x test -x checkstyleTest -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD  -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD -PpullRequest=$BRANCH_NAME
-                    '''
-                }
             }
         }
 

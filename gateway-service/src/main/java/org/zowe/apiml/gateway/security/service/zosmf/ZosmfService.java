@@ -35,6 +35,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
@@ -104,7 +105,6 @@ public class ZosmfService extends AbstractZosmfService {
 
     }
 
-    private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
     private final ApplicationContext applicationContext;
     private final List<TokenValidationStrategy> tokenValidationStrategy;
 
@@ -199,6 +199,34 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     /**
+     * Verify whether the service is actually accessible.
+     *
+     * @return true when it's possible to access the Info endpoint via GET.
+     */
+    public boolean isAccessible() {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(ZOSMF_CSRF_HEADER, "");
+
+        String infoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
+        log.debug("Verifying zOSMF accessibility on info endpoint: {}", infoURIEndpoint);
+
+        try {
+            final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
+                infoURIEndpoint,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                ZosmfInfo.class
+            );
+
+            return info.getStatusCode() == HttpStatus.OK;
+        } catch (RestClientException ex) {
+            log.debug("zOSMF isn't accessible on URI: {}", infoURIEndpoint);
+
+            return false;
+        }
+    }
+
+    /**
      * POST to provided url and return authentication response
      *
      * @param authentication
@@ -253,6 +281,34 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     /**
+     * Check if call to ZOSMF_JWT_END_POINT resolves
+     *
+     * @return true if endpoint resolves, otherwise false
+     */
+    @Cacheable(value = "zosmfJwtEndpoint")
+    public boolean jwtEndpointExists(HttpHeaders headers) {
+        String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
+
+        try {
+            restTemplateWithoutKeystore.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), String.class);
+        } catch (HttpClientErrorException hce) {
+            if (HttpStatus.UNAUTHORIZED.equals(hce.getStatusCode())) {
+                return true;
+            } else if (HttpStatus.NOT_FOUND.equals(hce.getStatusCode())) {
+                log.warn("The check of z/OSMF JWT builder endpoint has failed");
+                return false;
+            } else {
+                log.warn("z/OSMF JWT builder endpoint with HTTP method GET has failed with status code: "
+                    + hce.getStatusCode(), hce);
+                return false;
+            }
+        } catch (HttpServerErrorException serverError) {
+            log.warn("z/OSMF internal error", serverError);
+        }
+        return false;
+    }
+
+    /**
      * Tries to call ZOSMF authentication endpoint with HTTP Post method
      *
      * @return true, if zosmf login endpoint is presented
@@ -269,9 +325,20 @@ public class ZosmfService extends AbstractZosmfService {
      *
      * @return true, if zosmf logout endpoint is presented
      */
-
     public boolean logoutEndpointExists() {
         return meAsProxy.authenticationEndpointExists(HttpMethod.DELETE, null);
+    }
+
+    /**
+     * Tries to call ZOSMF JWT Builder endpoint
+     *
+     * @return true if endpoint exists, otherwise false
+     */
+    public boolean jwtBuilderEndpointExists() {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(ZOSMF_CSRF_HEADER, "");
+        headers.add("Authorization", "Basic Og==");
+        return meAsProxy.jwtEndpointExists(headers);
     }
 
     public boolean validate(String token) {
@@ -353,7 +420,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public JWKSet getPublicKeys() {
-        final String url = getURI(getZosmfServiceId()) + PUBLIC_JWK_ENDPOINT;
+        final String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
 
         try {
             final String json = restTemplateWithoutKeystore.getForObject(url, String.class);

@@ -64,6 +64,14 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
         private final Long expireAt;
 
+        private void createCookie(Cookies cookies, String name, String token) {
+            HttpCookie jwtCookie = new HttpCookie(name, token);
+            jwtCookie.setSecure(true);
+            jwtCookie.setHttpOnly(true);
+            jwtCookie.setVersion(0);
+            cookies.set(jwtCookie);
+        }
+
         private void setCookie(RequestContext context, String name, String value) {
             context.addZuulRequestHeader(COOKIE_HEADER,
                 CookieUtil.setCookie(
@@ -149,14 +157,6 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
             return true;
         }
 
-    }
-
-    private void createCookie(Cookies cookies, String name, String token) {
-        HttpCookie jwtCookie = new HttpCookie(name, token);
-        jwtCookie.setSecure(true);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setVersion(0);
-        cookies.set(jwtCookie);
     }
 
 }

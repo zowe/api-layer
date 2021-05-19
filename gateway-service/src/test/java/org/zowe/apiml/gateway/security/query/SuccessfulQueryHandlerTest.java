@@ -106,7 +106,7 @@ class SuccessfulQueryHandlerTest {
 
         successfulQueryHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
 
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
         assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
         assertTrue(httpServletResponse.isCommitted());
     }

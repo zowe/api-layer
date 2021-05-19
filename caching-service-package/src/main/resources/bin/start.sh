@@ -35,6 +35,15 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [ ! -z ${ZWE_CACHING_SERVICE_VSAM_DATASET} ]
+then
+    VSAM_FILE_NAME=//\'${ZWE_CACHING_SERVICE_VSAM_DATASET}\'
+fi
+
+if [ `uname` = "OS/390" ]
+then
+    QUICK_START=-Xquickstart
+fi
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -45,15 +54,9 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 export LIBPATH="$LIBPATH":
 
-stop_jobs()
-{
-  kill -15 $pid
-}
-
-trap 'stop_jobs' INT
-
 CACHING_CODE=CS
-_BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m -Xquickstart \
+_BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
+   ${QUICK_START} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=/tmp \
@@ -63,10 +66,13 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m -Xquickstart \
   -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
   -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${GATEWAY_PORT} \
-  -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
+  -Dapiml.service.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
+  -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
   -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY} \
   -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE} \
-  -Denvironment.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
+  -Dcaching.storage.mode=${ZWE_CACHING_SERVICE_PERSISTENT:-inMemory} \
+  -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
+  -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=true \
   -Dserver.ssl.keyStore=${KEYSTORE} \
@@ -79,6 +85,5 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m -Xquickstart \
   -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -jar ${JAR_FILE} &
-pid=$?
-
-wait
+pid=$!
+echo "pid=${pid}"

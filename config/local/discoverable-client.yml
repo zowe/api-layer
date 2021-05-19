@@ -15,6 +15,10 @@ apiml:
           # IP address that is advertised in Eureka. Default is valid only for localhost
         discoveryServiceUrls: https://localhost:10011/eureka/
 
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
 server:
     ssl:
         keyAlias: localhost

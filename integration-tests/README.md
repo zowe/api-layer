@@ -2,63 +2,71 @@
 
 ## Introduction
 
-Integration tests are meant to test a functionality that requires multiple running services.
-We recommend you test most test cases using unit tests in the module. Use integration tests
-only when necessary.
+Integration tests are meant to test a functionality that requires multiple running services. We recommend you test most test cases using unit tests in the module. Use integration tests only when necessary.
 
-Integration tests require running instances of all services.
-These services must be started by the user.
+The Integration tests can be run against specific setup and instance or they can start the services itself. Either way the test suite detects when services are started up and are ready to begin testing.
 
-The integration test suite detects when services are started up and are ready to begin testing.
+## The tests take care of the services. 
 
-## General Quick start
-
-Perform a general quick start to execute tests within the pipeline.
+In this setup the integration test suite starts and stops the service. It is aimed at all runs for testing the integrations off-platform. 
 
 **Follow these steps:**
 
-1. Deploy and run all services.
+Perform a Localhost Quick start when you need to run the tests on your local machine. The setup won't work on the Windows machines as we use production shell scripts in this setup. In case of Window consult [Local run of services and then integration tests
+](#Local run of services and then integration tests) 
 
-2. Run the following shell script:
+1. Run the following shell script:
 
-    ```sh
-    ./gradlew runIntegrationTests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD>
+    ```shell
+    ./gradlew runCITests
     ```
 
-3. (Optional) Change the host/port/scheme for the Gateway and Discovery Service with the following shell script:
+2. (Optional) Change the host/port/scheme for the Gateway and Discovery Service with the following shell script:
 
     ```sh
-    ./gradlew runIntegrationTests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD> -Ddiscovery.host=<DS_HOST> -Ddiscovery.port=<DS_PORT>  -Dgateway.host=<GW_HOST> -Dgateway.port=<GW_PORT> -Dgateway.scheme=https
+    ./gradlew runCITests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD> -Ddiscovery.host=<DS_HOST> -Ddiscovery.port=<DS_PORT>  -Dgateway.host=<GW_HOST> -Dgateway.port=<GW_PORT> -Dgateway.scheme=https
     ```
 
-## Localhost Quick start
+## Local run of services and then integration tests
 
-Perform a Localhost Quick start when you need to run the tests on your local machine.
+In this case you are using either Windows machine or want to start services yourselves for any reason. 
 
 **Follow these steps:**
 
-1. Start all services locally. You can do it using:
+1. Install `concurrently` globally:
 
-    ```shell
-    npm run api-layer-ci
-    ```
+  ```sh
+   npm install -g concurrently
+   ```
 
-2. Run the following shell script:
+2. Build all modules:
 
-    ```shell
-    ./gradlew runLocalIntegrationTests
-    ```
+  ```sh
+   ./gradlew build
+   ```
 
-    or you can use:
+3. Run all service on your local machine:
 
-    ```shell
-    npm run test:local
-    ```
+  ```sh
+   npm run api-layer-ci
+   ```
 
-3. (Optional) Run all local tests including all sample services with the following shell script:
+4. Run integration tests
 
-    ```shell
-    ./gradlew runAllLocalIntegrationTests
+   ```sh
+   ./gradlew runCITests -Denvironment.offPlatform=true
+   ```
+
+## The services run elsewhere. 
+
+In this case the services are running somewhere, and the integration tests verify that the services work well. 
+
+**Follow these steps:**
+
+1. Run the following shell script:
+
+    ```sh
+   ./gradlew runAllIntegrationTests -Dcredentials.user=${MF_USERID} -Dcredentials.password=${MF_PASSWORD} -Denvironment.offPlatform=true
     ```
 
 ## Manual testing of Discovery Service in HTTP mode
@@ -85,11 +93,11 @@ Run special integration tests for tests that need to be performed slowly such as
 **Note:** Executing these slow steps with other tests causes
 the entire test suite to take longer to execute.
 
-Slow tests are annotated using @Category(SlowTests.class) as in the following example:
+Slow tests are annotated using @SlowTests as in the following example:
 
 ```java
 @Test
-@Category(SlowTests.class)
+@SlowTests
 @SuppressWarnings("squid:S1160")
 public void shouldCallLongButBelowTimeoutRequest() throws IOException {
 ```
@@ -114,4 +122,4 @@ Run special integration tests to test a Zowe instance as part of the RC testing 
 ./gradlew :integration-tests:runAllIntegrationTestsForZoweTesting
 ```
 
-Tests annotated with `@Category(TestsNotMeantForZowe.class)` are excluded from this test suite (e.g Discoverable Client tests, PassTicket tests, etc...).
+Tests annotated with `@TestsNotMeantForZowe` are excluded from this test suite (e.g Discoverable Client tests, PassTicket tests, etc...).

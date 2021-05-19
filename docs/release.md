@@ -12,7 +12,9 @@
     - [zowe-install-packaging/manifest.json.template](https://github.com/zowe/zowe-install-packaging/blob/master/manifest.json.template) needs to be updated to select a new minor or major version.
   - The major version number increases when a backward incompatible change is introduced.
   - The API ML is a part of the Zowe PAX file that is packaged by builds of the [zowe-install-packaging](https://github.com/zowe/zowe-install-packaging/) repository.
+    - When a new release is available for a release candidate, the [zowe-install-packaging/manifest.json.template file on the RC branch](https://github.com/zowe/zowe-install-packaging/blob/rc/manifest.json.template) needs to be updated so the `org.zowe.apiml.sdk.*` components have the proper version.
   - [Zowe Release Process](https://github.com/zowe/zlc/blob/master/process/release.md)
+  - Currently, there are issues with Gateway acceptance tests on the release pipeline. They can be disabled via `@Disabled` to allow a release.
 
 ## Jenkins release job
 
@@ -55,3 +57,17 @@ You can set properties in two ways:
 **Warning!** Do not commit property changes to the Git repository. This is confidential information.
 
 Properties are stored in Jenkins Credentials: https://wash.zowe.org:8443/credentials/store/system/domain/_/credential/zowe/
+
+## Update changelog
+
+You can get commit messages with the tool:
+
+`npm install -g conventional-changelog-cli`
+
+Command to display commit messages for specified number of releases:
+
+`conventional-changelog -r <number_of_releases>`
+
+More information about the tool:
+
+`https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-cli`

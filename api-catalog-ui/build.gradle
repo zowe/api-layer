@@ -1,59 +1,70 @@
+import java.util.stream.Collectors
+
 plugins {
-    id "com.moowork.node" version "1.3.1"
+    id "com.github.node-gradle.node" version "3.0.1"
 }
 
 node {
-    // Version of node to use.
+    download = true
     version = rootProject.nodejsVersion
-
-    // Base URL for fetching node distributions (change if you have a mirror).
-    distBaseUrl = 'https://nodejs.org/dist'
-
-    // If true, it will download node using above parameters.
-    // If false, it will try to use globally installed node.
-    download = false
-
-    // Set the work directory for unpacking node
+    distBaseUrl = "https://nodejs.org/dist"
+    npmInstallCommand = "ci"
     workDir = file("${project.projectDir}/tools/nodejs")
-
-    // Set the work directory for NPM
     npmWorkDir = file("${project.projectDir}/tools/npm")
-
-    // Set the work directory where node_modules should be located
-    nodeModulesDir = file("${project.projectDir}/frontend")
+    yarnWorkDir = file("${project.projectDir}/tools/yarn")
+    nodeProjectDir = file("${project.projectDir}/frontend")
 }
 
-task cleanBundle(type: Delete) {
-    delete 'bin', 'build', 'frontend/build', 'tools/nodejs'
-}
+// =================================================
+//
+//  Please manage all task dependencies in here and
+//  not in package.json. This is to leverage
+//  Gradle's incremental task feature
+//
+// =================================================
 
-task startMockedBackend(type: NpmTask) {
-    group = 'testing'
-    description = "UI Mocked Backend"
-    args = ['run', 'start:mock']
-}
+task javascriptClean(type: Delete) {
+    group = 'npm'
+    delete 'bin', 'build', 'frontend/test-results', 'frontend/coverage', 'frontend/build'
 
-task javaScriptCoverage(type: NpmTask) {
-    group = 'testing'
-    description = "UI JavaScript Test Coverage"
-    args = ['run', 'coverage']
+    if (rootProject.cleanNodeModules == 'true') {
+        delete 'frontend/node_modules'
+    }
 }
+clean.dependsOn javascriptClean
 
-task runTests(type: NpmTask) {
-    group = 'testing'
-    description = "UI JavaScript Test Coverage"
+// test always runs for build, this side effect of task hierarchy being defined in package.json rather than here
+task npmTest(type: NpmTask) {
+    group = 'npm'
+    description = "Javascript unit tests"
+
+    inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+
+    outputs.file('frontend/test-results/test-report-unit.html')
+    outputs.dir('frontend/coverage')
+
+    outputs.cacheIf { true }
+
     args = ['run', 'test']
 }
+npmTest.dependsOn npmInstall
+test.dependsOn npmTest
 
-task runE2ETests(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
-    group = 'integration tests'
-    description = "End to End Tests depending on the catalog ui"
-
-    args = ['run', 'cy:e2e:zowe-ci']
+task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
+    group = 'npm'
+    description = "Javascript End to End Tests"
+    environment = ['cypress_catalogHomePage': String.format("%s://%s:%s/apicatalog/ui/v1", System.getProperty("gateway.scheme"),
+                        System.getProperty("gateway.host"), System.getProperty("gateway.port")),
+                   'cypress_username': System.getProperty("credentials.user"),
+                   'cypress_password': System.getProperty("credentials.password")]
+    args = ['run', 'cy:e2e:ci']
 }
+npmE2ECI.dependsOn npmInstall
 
-
-task bundle(type: NpmTask) {
+task npmBuild(type: NpmTask) {
+    group = 'npm'
+    description = "Executes npm build"
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
@@ -66,9 +77,10 @@ task bundle(type: NpmTask) {
     args = ['run', 'build']
 
 }
+npmBuild.dependsOn npmInstall
+build.dependsOn npmBuild
 
-clean.dependsOn cleanBundle
-build.dependsOn bundle
-javaScriptCoverage.dependsOn bundle
-runTests.dependsOn bundle
 
+jar {
+    enabled false
+}

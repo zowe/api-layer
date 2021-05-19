@@ -8,9 +8,8 @@ import {
 } from '../../actions/catalog-tile-actions';
 import { clearService } from '../../actions/selected-service-actions';
 import { filterText, clear } from '../../actions/filter-actions';
-import { refreshedStaticApi } from "../../actions/refresh-static-apis-actions";
 import { createLoadingSelector, getVisibleTiles } from '../../selectors/selectors';
-import {clearError} from "../../actions/refresh-static-apis-actions";
+import { clearError, refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 
 const loadingSelector = createLoadingSelector(['FETCH_TILES']);
 

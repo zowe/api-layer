@@ -55,7 +55,7 @@ class ZaasClientTestControllerTest {
         this.mockMvc.perform(
             post("/api/v1/zaasClient/login")
                 .content(mapper.writeValueAsString(loginRequest))
-                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(content().string("token"));
     }
 
@@ -68,7 +68,7 @@ class ZaasClientTestControllerTest {
         this.mockMvc.perform(
             post("/api/v1/zaasClient/login")
                 .content(mapper.writeValueAsString(loginRequest))
-                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().is(401))
             .andExpect(content().string("Invalid username or password"));
     }
@@ -79,7 +79,7 @@ class ZaasClientTestControllerTest {
         this.mockMvc.perform(
             post("/api/v1/zaasClient/logout")
                 .cookie(new Cookie(TOKEN_PREFIX, token))
-                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().is(204));
     }
 
@@ -87,7 +87,7 @@ class ZaasClientTestControllerTest {
     void givenNoToken_whenPerformingLogout_thenFailLogout() throws Exception {
         this.mockMvc.perform(
             post("/api/v1/zaasClient/logout")
-                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().is(500))
             .andExpect(content().string("Missing cookie or authorization header in the request"));
     }

@@ -14,7 +14,13 @@ export default class PageNotFound extends Component {
             <div>
                 <Text element="h1">Page Not Found</Text>
                 <div>
-                    <Button primary onClick={this.handleGoToHome} size="medium" iconStart={iconBack}>
+                    <Button
+                        primary
+                        data-testid="go-home-button"
+                        onClick={this.handleGoToHome}
+                        size="medium"
+                        iconStart={iconBack}
+                    >
                         Go to Dashboard
                     </Button>
                 </div>

@@ -48,6 +48,7 @@ apiml:
                                              # properly.
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
+        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         auth:
             provider: zosmf
             jwtKeyAlias: jwtsecret

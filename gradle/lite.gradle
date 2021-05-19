@@ -52,6 +52,14 @@ task liteLibJarAll(type: Jar) {
     from { rootProject.subprojects.collectMany {getLiteLibJarOutput(it.buildDir)}.collect() }
 }
 
+tasks.getByPath(":integration-tests:test").dependsOn([liteLibJarAll, ":caching-service:build"])
+tasks.getByPath(":integration-tests:runCITests").dependsOn([liteLibJarAll, ":caching-service:build"])
+tasks.getByPath(":integration-tests:runCITestsInternalPort").dependsOn([liteLibJarAll, ":caching-service:build"])
+tasks.getByPath(":integration-tests:runBaseTestsInternalPort").dependsOn([liteLibJarAll, ":caching-service:build"])
+tasks.getByPath(":integration-tests:runBaseTests").dependsOn([liteLibJarAll, ":caching-service:build"])
+tasks.getByPath(":integration-tests:runZosmfAuthTest").dependsOn([liteLibJarAll, ":caching-service:build"])
+tasks.getByPath(":integration-tests:runCachingServiceTests").dependsOn([liteLibJarAll, ":caching-service:build"])
+
 build.dependsOn(liteLibJarAll)
 liteLibJarAll.dependsOn(":gateway-service:build")
 liteLibJarAll.dependsOn(":discovery-service:build")

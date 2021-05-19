@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.util.service;
 
+import io.restassured.RestAssured;
+import io.restassured.config.SSLConfig;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.ResponseBody;
 import lombok.AllArgsConstructor;
@@ -25,6 +27,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 /**
  * This utils serve to test base queries on discovery service to get information about registred services. This is way
@@ -37,16 +40,16 @@ public class DiscoveryUtils {
         return discoveryServiceConfiguration.getScheme() + "://" + discoveryServiceConfiguration.getHost() + ":" + discoveryServiceConfiguration.getPort();
     }
 
-    public static final List<String> getDiscoveryUrls() {
-        return getInstances("discovery").stream().filter(InstanceInfo.ONLY_UP).map(InstanceInfo::getUrl).collect(Collectors.toList());
-    }
-
     public static final List<String> getGatewayUrls() {
         return getInstances("gateway").stream().filter(InstanceInfo.ONLY_UP).map(InstanceInfo::getUrl).collect(Collectors.toList());
     }
 
     public static final List<InstanceInfo> getInstances(String serviceId) {
-        return getInstances(serviceId, null);
+        SSLConfig originalConfig = RestAssured.config.getSSLConfig();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        List<InstanceInfo> instances = getInstances(serviceId, null);
+        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        return instances;
     }
 
     public static final List<InstanceInfo> getInstances(String serviceId, String instanceId) {

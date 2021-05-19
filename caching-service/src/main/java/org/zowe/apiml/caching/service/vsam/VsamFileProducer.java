@@ -10,9 +10,10 @@
 package org.zowe.apiml.caching.service.vsam;
 
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 public class VsamFileProducer {
-    public VsamFile newVsamFile(VsamConfig config, VsamConfig.VsamOptions options) {
-        return new VsamFile(config, options);
+    public VsamFile newVsamFile(VsamConfig config, VsamConfig.VsamOptions options, ApimlLogger apimlLogger) {
+        return new VsamFile(config, options, apimlLogger);
     }
 }

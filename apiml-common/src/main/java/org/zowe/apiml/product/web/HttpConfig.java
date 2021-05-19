@@ -69,6 +69,9 @@ public class HttpConfig {
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
+    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+    private boolean nonStrictVerifySslCertificatesOfServices;
+
     @Value("${spring.application.name}")
     private String serviceId;
 
@@ -117,6 +120,7 @@ public class HttpConfig {
                     .trustStore(trustStore).trustStoreType(trustStoreType)
                     .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
                     .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
+                    .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
                     .maxConnectionsPerRoute(maxConnectionsPerRoute).maxTotalConnections(maxTotalConnections)
                     .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
                     .timeToLive(timeToLive);

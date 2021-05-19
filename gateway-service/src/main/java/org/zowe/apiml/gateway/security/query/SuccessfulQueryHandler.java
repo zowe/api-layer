@@ -50,7 +50,7 @@ public class SuccessfulQueryHandler implements AuthenticationSuccessHandler {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         String token = tokenAuthentication.getCredentials();
 
-        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.OK.value());
 
         mapper.writeValue(response.getWriter(), authenticationService.parseJwtToken(token));

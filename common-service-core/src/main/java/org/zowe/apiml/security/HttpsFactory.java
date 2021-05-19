@@ -54,6 +54,7 @@ public class HttpsFactory {
         this.apimlLog = ApimlLogger.of(HttpsFactory.class, YamlMessageServiceInstance.getInstance());
     }
 
+
     public CloseableHttpClient createSecureHttpClient() {
         Registry<ConnectionSocketFactory> socketFactoryRegistry;
         RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
@@ -70,7 +71,7 @@ public class HttpsFactory {
         connectionManager.closeIdleConnections(config.getIdleConnTimeoutSeconds(), TimeUnit.SECONDS);
         connectionManager.setMaxTotal(config.getMaxTotalConnections());
 
-        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig)
+        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setSSLHostnameVerifier(createHostnameVerifier())
             .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .disableAuthCaching().build();
@@ -78,7 +79,7 @@ public class HttpsFactory {
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {
-        if (config.isVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
             return createSecureSslSocketFactory();
         } else {
             apimlLog.log("org.zowe.apiml.common.ignoringSsl");
@@ -224,12 +225,15 @@ public class HttpsFactory {
     }
 
     private ConnectionSocketFactory createSecureSslSocketFactory() {
-        return new SSLConnectionSocketFactory(createSecureSslContext(),
-            SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+
+        return new SSLConnectionSocketFactory(
+            createSecureSslContext(),
+            createHostnameVerifier()
+        );
     }
 
     public SSLContext createSslContext() {
-        if (config.isVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
             return createSecureSslContext();
         } else {
             return createIgnoringSslContext();
@@ -257,7 +261,7 @@ public class HttpsFactory {
     }
 
     public HostnameVerifier createHostnameVerifier() {
-        if (config.isVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices()) {
             return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
         } else {
             return new NoopHostnameVerifier();
@@ -278,8 +282,12 @@ public class HttpsFactory {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
         } else {
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-            setSystemSslProperties();
-            builder.withCustomSSL(createSecureSslContext());
+
+            if (config.isVerifySslCertificatesOfServices() || config.isNonStrictVerifySslCertificatesOfServices()) {
+                setSystemSslProperties();
+            }
+            builder.withCustomSSL(createSslContext());
+
             builder.withHostnameVerifier(createHostnameVerifier());
         }
         return builder;

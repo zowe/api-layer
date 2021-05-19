@@ -12,13 +12,18 @@ describe('>>> Header component tests', () => {
 
     it('should have link href to itself', () => {
         const sample = enzyme.shallow(<Header />);
-        expect(sample.find('Link').first().props().href).toEqual('/ui/v1/apicatalog/#/dashboard');
+        expect(
+            sample
+                .find('Link')
+                .first()
+                .props().href
+        ).toEqual('/ui/v1/apicatalog/#/dashboard');
     });
 
     it('should handle a Logout button click', () => {
         const logout = jest.fn();
         const wrapper = enzyme.shallow(<Header logout={logout} />);
-        wrapper.find('Button').simulate('click');
+        wrapper.find('[data-testid="logout"]').simulate('click');
         expect(logout).toHaveBeenCalled();
     });
 

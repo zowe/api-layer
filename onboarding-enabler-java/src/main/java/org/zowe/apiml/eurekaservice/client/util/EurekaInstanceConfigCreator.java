@@ -97,6 +97,7 @@ public class EurekaInstanceConfigCreator {
         if (authentication != null) {
             metadata.put(AUTHENTICATION_SCHEME, authentication.getScheme());
             metadata.put(AUTHENTICATION_APPLID, authentication.getApplid());
+            metadata.put(AUTHENTICATION_HEADERS, authentication.getHeaders());
         }
 
         // fill routing metadata

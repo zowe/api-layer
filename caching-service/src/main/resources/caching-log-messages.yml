@@ -53,17 +53,31 @@ messages:
     -   key: org.zowe.apiml.cache.insufficientStorage
         number: ZWECS134
         type: ERROR
-        text: "Insufficient storage space limit. Key '%s' cannot be added in the cache."
+        text: "Insufficient storage space limit."
         reason: "The storage space is full."
-        action: "Disable the 'rejected' eviction strategy."
+        action: "Change the definition of the VSAM and the configuration for the maximum records stored or replace Reject strategy with Remove Oldest."
 
-    -   key: org.zowe.apiml.cache.payloadTooLarge
-        number: ZWECS135
+    # Storage messages (151 - 160)
+    -   key: org.zowe.apiml.cache.errorInitializingStorage
+        number: ZWECS151
         type: ERROR
-        text: "The record size is over the limit. Key '%s' cannot be added in the cache."
-        reason: "The size of the record is bigger than the limit."
-        action: "Reinstall Zowe with different per record configuration or store smaller record"
+        text: "Problem initializing storage of type '%s': '%s'. Exception: '%s'"
+        reason: "Caching storage was not initialized."
+        action: "Please submit an issue with this message."
 
+    -   key: org.zowe.apiml.cache.errorQueryingStorage
+        number: ZWECS152
+        type: ERROR
+        text: "Could not query the cache for '%s' storage: '%s'"
+        reason: "There was an error querying the persistent storage."
+        action: "Check that your configured caching storage solution is functioning properly."
+
+    -   key: org.zowe.apiml.cache.noJzosImplementation
+        number: ZWECS154
+        type: ERROR
+        text: "The JZOS toolkit implementation isn't available. "
+        reason: "JZOS toolkit used to communicate with JZOS is unavailable. Either you are running outside of zOS with VSAM as the storage or your zOS Java is misconfigured."
+        action: "Check that you run on zOS and that the JZOS toolkit Java classes are on classpath."
 
     # Service specific messages (700 - 799)
     -   key: org.zowe.apiml.cache.gatewayUnavailable
@@ -72,3 +86,17 @@ messages:
         text: "Gateway service is not available at URL '%s'. Error returned: '%s'"
         reason: "The gateway service is not available."
         action: "Make sure that the gateway service is running and is accessible by the URL provided in the message."
+
+    -   key: org.zowe.apiml.cache.usingInMemory
+        number: ZWECS701
+        type: WARNING
+        text: "The InMemory configuration is used despite not being supported for production usage."
+        reason: "Development configuration in the production."
+        action: "Change the caching.storage.mode to other supported option than inMemory."
+
+    -   key: org.zowe.apiml.cache.missingCertificate
+        number: ZWECS702
+        type: WARNING
+        text: "Missing header with certificate."
+        reason: "Call executed without valid client certificate."
+        action: "Verify ssl context in client application."

@@ -14,6 +14,8 @@ import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockServletContext;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.MetadataValidationException;
@@ -48,13 +50,18 @@ class EurekaInstanceConfigValidatorTest {
         assertDoesNotThrow(() -> validator.validate(testConfig));
     }
 
-    @Test
-    void givenConfigurationWithInvalidSsl_whenValidate_thenThrowException() throws ServiceDefinitionException {
-        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("bad-ssl-configuration.yml");
+    @ParameterizedTest
+    @CsvSource(value = {
+        "bad-ssl-configuration.yml|SSL configuration was not provided. Try add apiml.service.ssl section.",
+        "wrong-routes-service-configuration.yml|Routes parameters  ** gatewayUrl, serviceUrl ** are missing or were not replaced by the system properties.",
+        "missing-ssl-configuration.yml|SSL parameters ** protocol, trustStore, keyStore, keyAlias, keyStoreType, trustStoreType, keyPassword, enabled, trustStorePassword, keyStorePassword ** are missing or were not replaced by the system properties."
+    }, delimiter = '|')
+    void givenConfigurationWithInvalidSsl_whenValidate_thenThrowException(String cfgFile, String expectedMsg) throws ServiceDefinitionException {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration(cfgFile);
         Exception exception = assertThrows(MetadataValidationException.class,
             () -> validator.validate(testConfig),
             "Expected exception is not MetadataValidationException");
-        assertEquals("SSL configuration was not provided. Try add apiml.service.ssl section.", exception.getMessage());
+        assertEquals(expectedMsg, exception.getMessage());
     }
 
     @Test
@@ -115,15 +122,6 @@ class EurekaInstanceConfigValidatorTest {
     }
 
     @Test
-    void givenConfigurationWrongRoutes_whenValidate_thenThrowException() throws Exception {
-        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("wrong-routes-service-configuration.yml");
-        Exception exception = assertThrows(MetadataValidationException.class,
-            () -> validator.validate(testConfig),
-            "Expected exception is not MetadataValidationException");
-        assertEquals("Routes parameters  ** gatewayUrl, serviceUrl ** are missing or were not replaced by the system properties.", exception.getMessage());
-    }
-
-    @Test
     void givenConfigurationEmptyCatalog_whenValidate_thenLog() throws Exception {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("empty-catalog-service-configuration.yml");
         validator.validate(testConfig);
@@ -139,15 +137,6 @@ class EurekaInstanceConfigValidatorTest {
 
         assertNull(testConfig.getApiInfo());
         assertTrue(logTracker.contains("The API info configuration is not provided. Try to add apiml.service.apiInfo section.", Level.WARN));
-    }
-
-    @Test
-    void givenConfigurationWithMissingSslParams_whenValidate_thenThrowException() throws Exception {
-        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("missing-ssl-configuration.yml");
-        Exception exception = assertThrows(MetadataValidationException.class,
-            () -> validator.validate(testConfig),
-            "Expected exception is not MetadataValidationException");
-        assertEquals("SSL parameters ** protocol, trustStore, keyStore, keyAlias, keyStoreType, trustStoreType, trustStorePassword, keyStorePassword, keyPassword, enabled ** are missing or were not replaced by the system properties.", exception.getMessage());
     }
 
     @Test

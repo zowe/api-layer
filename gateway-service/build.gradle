@@ -65,11 +65,17 @@ dependencies {
     implementation libraries.spring_cloud_starter_ribbon
     implementation libraries.jetty_websocket_common
     implementation libraries.jetty_websocket_client
+    implementation libraries.jetty_client
+    implementation libraries.jetty_http
+    implementation libraries.jetty_io
     implementation libraries.jetty_util
+    implementation libraries.jetty_websocket_api
     implementation libraries.jjwt
     implementation libraries.nimbusJoseJwt
     implementation libraries.eh_cache
     implementation libraries.spring_retry
+    implementation libraries.awaitility
+
     compileOnly libraries.javax_inject
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
@@ -94,6 +100,11 @@ bootJar {
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
+    archiveClassifier = "application"
+}
+
+jar {
+    enabled true
 }
 
 bootRun {
@@ -105,7 +116,14 @@ bootRun {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenJavaLib(MavenPublication) {
+            artifact jar
+        }
+
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml.sdk'
+            artifactId = 'gateway-fat-jar'
+
             artifact bootJar
         }
     }

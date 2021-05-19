@@ -101,7 +101,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
             .cors().and()
-            .csrf().disable()
+            .csrf().disable()   // NOSONAR
             .headers()
             .httpStrictTransportSecurity().disable()
             .frameOptions().disable()
@@ -141,7 +141,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // endpoint protection
             .and()
             .authorizeRequests()
-            .antMatchers("/application/health", "/application/info").permitAll()
+            .antMatchers("/application/health", "/application/info", "/application/version").permitAll()
             .antMatchers("/application/**").authenticated()
             .antMatchers("/gateway/services/**").authenticated()
 

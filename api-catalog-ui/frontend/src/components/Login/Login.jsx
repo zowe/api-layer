@@ -29,7 +29,8 @@ export default class Login extends React.Component {
     handleError = error => {
         let messageText;
         const { authentication } = this.props;
-        const errorMessages = require("../../error-messages.json");
+        // eslint-disable-next-line global-require
+        const errorMessages = require('../../error-messages.json');
         if (
             error.messageNumber !== undefined &&
             error.messageNumber !== null &&
@@ -37,15 +38,14 @@ export default class Login extends React.Component {
             error.messageType !== null
         ) {
             messageText = `Unexpected error, please try again later (${error.messageNumber})`;
-            const filter = errorMessages.messages.filter(x => x.messageKey != null && x.messageKey === error.messageNumber);
-            if (filter.length !== 0)
-                messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
-        }
-        else if (error.status === 401 && authentication.sessionOn) {
-            messageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`
+            const filter = errorMessages.messages.filter(
+                x => x.messageKey != null && x.messageKey === error.messageNumber
+            );
+            if (filter.length !== 0) messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
+        } else if (error.status === 401 && authentication.sessionOn) {
+            messageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
             authentication.onCompleteHandling();
-        }
-        else if (error.status === 500) {
+        } else if (error.status === 500) {
             messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
         }
         return messageText;

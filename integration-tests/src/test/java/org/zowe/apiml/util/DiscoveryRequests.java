@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 public class DiscoveryRequests {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
@@ -37,28 +37,33 @@ public class DiscoveryRequests {
     public boolean isApplicationRegistered(String appName) throws URISyntaxException {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        JsonPath result = given()
-            .accept(ContentType.JSON)
-        .when()
-            .get(getDiscoveryUriWithPath("/eureka/apps"))
-        .then()
-            .statusCode(is(HttpStatus.SC_OK))
-            .extract()
-            .body()
-            .jsonPath();
+        try {
+            JsonPath result = given()
+                .accept(ContentType.JSON)
+            .when()
+                .get(getDiscoveryUriWithPath("/eureka/apps"))
+            .then()
+                .statusCode(is(HttpStatus.SC_OK))
+                .extract()
+                .body()
+                .jsonPath();
 
-        List<ArrayList> appNames = result.get("applications.application.instance.app");
+            List<ArrayList> appNames = result.get("applications.application.instance.app");
 
-        AtomicBoolean isRegistered = new AtomicBoolean(false);
-        appNames.stream()
-            .flatMap(Collection::stream)
-            .forEach(application -> {
-                if (application.equals(appName.toUpperCase())) {
-                    isRegistered.set(true);
-                }
-            });
+            AtomicBoolean isRegistered = new AtomicBoolean(false);
+            appNames.stream()
+                .flatMap(Collection::stream)
+                .forEach(application -> {
+                    if (application.equals(appName.toUpperCase())) {
+                        isRegistered.set(true);
+                    }
+                });
 
-        return isRegistered.get();
+            return isRegistered.get();
+
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private URI getDiscoveryUriWithPath(String path) throws URISyntaxException {

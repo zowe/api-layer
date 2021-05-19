@@ -4,7 +4,7 @@ const sessionDefaultState = {
     sessionOn: false,
 };
 
-function authenticationReducer(state=sessionDefaultState, action) {
+function authenticationReducer(state = sessionDefaultState, action = {}) {
     switch (action.type) {
         case userConstants.USERS_LOGIN_REQUEST:
             return {
@@ -25,19 +25,22 @@ function authenticationReducer(state=sessionDefaultState, action) {
             return {
                 error: action.error,
                 sessionOn: sessionDefaultState.sessionOn,
-                onCompleteHandling: function () {
-                    sessionDefaultState.sessionOn = false
-                }
+                onCompleteHandling: () => {
+                    sessionDefaultState.sessionOn = false;
+                },
             };
         case userConstants.USERS_LOGOUT_REQUEST:
         case userConstants.USERS_LOGOUT_SUCCESS:
             return {
                 error: null,
                 showHeader: false,
+                onCompleteHandling: () => {
+                    sessionDefaultState.sessionOn = false;
+                },
             };
         case userConstants.USERS_LOGOUT_FAILURE:
             return {
-                error: state.error,
+                error: action.error,
                 showHeader: false,
             };
         default:

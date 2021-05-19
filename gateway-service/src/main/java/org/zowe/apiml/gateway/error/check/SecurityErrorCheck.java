@@ -52,7 +52,7 @@ public class SecurityErrorCheck implements ErrorCheck {
                     ErrorUtils.getGatewayUri(request)
                 ).mapToView();
             }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(messageView);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON).body(messageView);
         }
 
         return null;

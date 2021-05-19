@@ -8,6 +8,7 @@ This document is a living summary of conventions and best practices for developm
   - [Code Guidelines](#code-guidelines)
   - [File Naming Guidelines](#file-naming-guidelines)
   - [Branch Naming Guidelines](#branch-naming-guidelines)
+  - [Commit Message Structure Guideline](#commit-message-structure-guideline)
   - [Testing Guidelines](#testing-guidelines)
   - [Build Process Guidelines](#build-process-guidelines)
   - [Documentation Guidelines](#documentation-guidelines)
@@ -49,7 +50,6 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | security-service-client-spring           | Library - Security Client          |
 | zaas-client                              | APIML SDK - ZAAS Client            |
 | zlux-api-catalog                         | Library - Zlux Api Catalog plugin  |
-| zowe-install                             | Tool - Zowe run scripts            |
 
 ## Pull Requests
 
@@ -123,6 +123,46 @@ Represents a unique identifier for specific person. The good candidate is the Gi
  
 Please keep the name short and relevant.
 
+## Commit Message Structure Guideline
+
+Commits going to a master branch should stick to the Conventional Commits specification. This is a lightweight convention on the top of the commit messages. 
+Template:
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[footer(s)]
+```
+Basic example:
+```
+feat(authentication): Introducing x509 as a form of authentication
+
+This is a body, which is purely optional. One can use this section if description is not enough to provide insight. 
+Can also contains notes and hints. Should not be too long.
+
+Signed-off-by: John Doe <john.doe@zowe.org>
+```
+###Type
+ - fix: patches a bug in your codebase (this correlates with PATCH in semantic versioning)
+ - feat: introduces a new feature to the codebase (this correlates with MINOR in semantic versioning)
+ - docs: affecting the documentation 
+ - refactor: refactoring the code
+ - chore: cleaning in general, update dependencies
+
+Type or scope appended with `!` has the same meaning as BREAKING CHANGE(explained in footer section). It introduces a breaking API change (correlating with MAJOR in semantic versioning). MUST be used with caution!
+###Scope
+ Optional part of the message. Identifies a part of the codebase altered byt this commit. Examples could be: authentication, Discovery service, ...
+###Description
+A description MUST immediately follow the colon and space after the type/scope prefix. The description is a short summary of the code changes, e.g., fix: array parsing issue when multiple spaces were contained in string.
+###Body
+A commit body is free-form and MAY consist of any number of newline separated paragraphs.
+###Footer
+ - Signed-off-by: every commit needs to be signed by at least one author 
+ - Reviewed-by: (OPTIONAL) is a plus, but not necessary
+ - Co-authored-by: (OPTIONAL) in case of more contributors engaged 
+ - BREAKING CHANGE: (OPTIONAL) introduces a breaking API change (correlating with MAJOR in semantic versioning). A BREAKING CHANGE can be part of commits of any type. MUST be used with caution!
+ 
 ## Testing Guidelines
 
 - Core team uses TDD practices.
@@ -130,7 +170,9 @@ Please keep the name short and relevant.
 - Add integration tests where needed. The integration tests are executed on the [Zowe build pipeline](https://wash.zowe.org:8443/job/API_Mediation/), and on our inhouse system as part of the build pipeline. Contact the API Layer squad if you need triage. The Mock zOSMF is used for verifying the integration with zOSMF. 
 - Add UI end to end tests where needed. The end to end tests are executed on [Zowe build pipeline](https://wash.zowe.org:8443/job/API_Mediation/) and on our inhouse system as part of the build pipeline. Contact API Layer squad if you need triage.
 - Use meaningful test method names. We use the `given_when_then` pattern.
-- Most of our java unit tests are still written in JUnit4, since we didn’t fully migrate them to JUnit5 and we have a backward compatibility package. However, use JUnit5 for new tests.
+- Leverage `@Nested` annotation for test method grouping where possible. It makes the tests more organized and readable. The test method names are generally shorter.
+- Example of well written test: [CachingControllerTest.java](https://github.com/zowe/api-layer/blob/master/caching-service/src/test/java/org/zowe/apiml/caching/api/CachingControllerTest.java). It uses `@Nested` annotation to separate the test scenarios into groups, which are individually setup. The tests are short and clear and the method names clearly convey what is tested.
+- Some of our java unit tests are still written in JUnit4, since we didn’t fully migrate them to JUnit5 and we have a backward compatibility package. However, use JUnit5 for new tests.
 
 ## Build Process Guidelines
 
@@ -169,7 +211,8 @@ around how to implement the solution.
 
 ### Examples of given size
 
--   1 The smallest meaningful issue that delivers value on its own. Usually no collaboration within the squad is necessary and fix can be delivered mainly by one team member. An example: [Streamline Single Sign On Documentation](https://github.com/zowe/api-layer/issues/677) 
+-   0.5 The smallest meaningful issue that delivers value on its own. An example: [Explore CodeQL for for Github Actions](https://github.com/zowe/api-layer/issues/1263)
+-   1 Usually no collaboration within the squad is necessary and fix can be delivered mainly by one team member. An example: [Streamline Single Sign On Documentation](https://github.com/zowe/api-layer/issues/677) 
 -   2 Ideal size of the story. It allows meaningful collaboration (i.e. to split the issue into separate tasks among multiple members). The issue is delivered within a Sprint. An example: [Add logout functionality to the ZAAS client](https://github.com/zowe/api-layer/issues/808) 
 -   3 Good size of the story. It is posible to collaborate among multiple members. The fix to the issue is usually delivered within a Sprint. An example: [Alpha of client certificate using SAF API](https://github.com/zowe/api-layer/issues/758)
 -   5 The problems start at this size. If possible split the issue into multiple smaller ones and focus namely on the value delivered (i.e. do the smaller issues still bring value if delivered separately?). Unless it is possible to collaborate on the issue among more members of the squad, it is possible that the issue won't fit into one sprint. An example: [Support the x509 client certificate authentication via x509](https://github.com/zowe/api-layer/issues/827)

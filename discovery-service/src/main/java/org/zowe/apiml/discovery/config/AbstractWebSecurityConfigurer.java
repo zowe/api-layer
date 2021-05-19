@@ -16,7 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 public abstract class AbstractWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
-        return http.csrf().disable()
+        return http.csrf().disable()    // NOSONAR
             .headers().httpStrictTransportSecurity().disable()
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and();

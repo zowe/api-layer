@@ -40,8 +40,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
             Optional<byte[]> readRecord;
             int overflowProtection = 10000;
-            file.getZfile().locate(ignoreKey,
-                ZFileConstants.LOCATE_KEY_FIRST);
+            file.getZfile().locate(ignoreKey, ZFileConstants.LOCATE_KEY_FIRST);
             while ((readRecord = file.readBytes(recBuf)).isPresent()) {
                 VsamRecord current = new VsamRecord(vsamConfig, readRecord.get());
                 if (oldest == null) {
@@ -55,12 +54,12 @@ public class RemoveOldestStrategy implements EvictionStrategy {
                 }
                 overflowProtection--;
                 if (overflowProtection <= 0) {
-                    log.error("Maximum number of records retrieved, stopping the retrieval");
+                    log.info("Maximum number of records retrieved, stopping the retrieval");
                     break;
                 }
             }
         } catch (ZFileException | VsamRecordException | UnsupportedEncodingException e) {
-            log.error(e.toString());
+            log.info(e.toString());
         }
         checkAndRemoveRecord(oldest);
     }

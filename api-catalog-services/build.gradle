@@ -62,12 +62,15 @@ dependencies {
     implementation libraries.swagger3_core
     implementation libraries.swagger3_parser
     implementation libraries.jackson_core
-    implementation libraries.json_path
     implementation libraries.apache_commons_lang3
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.apache_velocity
     implementation libraries.openapidiff
+    implementation libraries.jetty_client
+    implementation libraries.jetty_http
+    implementation libraries.jetty_io
     implementation libraries.jetty_util
+    implementation libraries.jetty_websocket_api
     implementation libraries.jetty_websocket_client
     implementation libraries.jetty_websocket_common
 
@@ -87,6 +90,11 @@ bootJar {
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
+    archiveClassifier = "application"
+}
+
+jar {
+    enabled true
 }
 
 def uiModule = "${project(':api-catalog-ui').projectDir}"
@@ -116,7 +124,14 @@ bootRun {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenJavaLib(MavenPublication) {
+            artifact jar
+        }
+
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml.sdk'
+            artifactId = 'api-catalog-fat-jar'
+
             artifact bootJar
         }
     }

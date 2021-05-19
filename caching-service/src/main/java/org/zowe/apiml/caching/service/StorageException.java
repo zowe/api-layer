@@ -25,4 +25,12 @@ public class StorageException extends RuntimeException {
         this.status = status;
         this.parameters = messageParameters;
     }
+
+    public StorageException(String key, HttpStatus status, Exception cause, String... messageParameters) {
+        super(key, cause);
+
+        this.key = key;
+        this.status = status;
+        this.parameters = messageParameters;
+    }
 }

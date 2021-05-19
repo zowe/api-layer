@@ -9,59 +9,176 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
-import org.zowe.apiml.config.service.security.MockedSecurityInitializer;
-import org.zowe.apiml.security.HttpsConfigError;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.netflix.discovery.CacheRefreshedEvent;
+import com.netflix.discovery.EurekaEventListener;
+import com.netflix.discovery.StatusChangeEvent;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
+import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
+import org.zowe.apiml.gateway.security.login.Providers;
+import org.zowe.apiml.security.HttpsConfigError;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(locations = "/application.yml")
-@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
-@Import(MockedSecurityInitializer.class)
 class JwtSecurityInitializerTest {
+    private JwtSecurityInitializer underTest;
+    private Providers providers;
 
-    @Autowired
-    private JwtSecurityInitializer jwtSecurityInitializer;
+    @Mock
+    private ApimlDiscoveryClient discoveryClient;
 
-    @Test
-    void shouldExtractSecretAndPublicKey() {
-        jwtSecurityInitializer.init();
-        assertEquals("RSA", jwtSecurityInitializer.getJwtSecret().getAlgorithm());
-        assertEquals("RSA", jwtSecurityInitializer.getJwtPublicKey().getAlgorithm());
-        assertEquals("PKCS#8", jwtSecurityInitializer.getJwtSecret().getFormat());
-        assertEquals("X.509", jwtSecurityInitializer.getJwtPublicKey().getFormat());
+    @BeforeEach
+    void setUp() {
+        providers = mock(Providers.class);
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(false);
+        when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
     }
 
-    @Test
-    void shouldThrowExceptionIfTheKeysAreNull() {
-        jwtSecurityInitializer = new JwtSecurityInitializer();
-        Exception exception = assertThrows(HttpsConfigError.class,
-            () -> jwtSecurityInitializer.init(),
-            "Expected exception is not HttpsConfigError");
+    @Nested
+    class WhenInitializedWithValidJWT {
+        @BeforeEach
+        void setUp() {
+            underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+        }
 
-        assertEquals("Not found 'null' key alias in the keystore 'null'.", exception.getMessage());
+        @Test
+        void givenSafIsUsed_thenProperKeysAreInitialized() {
+            when(providers.isZosfmUsed()).thenReturn(false);
+
+            underTest.init();
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
+
+        @Test
+        void givenZosmfIsUsedWithoutJwt_thenProperKeysAreInitialized() {
+            when(providers.zosmfSupportsJwt()).thenReturn(false);
+
+            underTest.init();
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
+
+        @Test
+        void givenZosmfConfiguredWithLtpa_thenProperKeysAreInitialized() {
+            when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(true);
+
+            underTest.init();
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
     }
 
-    @Test
-    void shouldReturnSignatureAlgorithm() {
-        jwtSecurityInitializer.init();
-        assertEquals(SignatureAlgorithm.RS256, jwtSecurityInitializer.getSignatureAlgorithm());
+    @Nested
+    class WhenInitializedWithoutValidJWT {
+        @BeforeEach
+        void setUp() {
+            underTest = new JwtSecurityInitializer(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+        }
+
+        @Test
+        void givenZosmfIsUsedWithValidJwt_thenMissingJwtIsIgnored() {
+            when(providers.zosmfSupportsJwt()).thenReturn(true);
+
+            underTest.init();
+            assertThat(underTest.getJwtSecret(), is(nullValue()));
+        }
+
+        @Test
+        void givenSafIsUsed_exceptionIsThrown() {
+            when(providers.isZosfmUsed()).thenReturn(false);
+
+            assertThrows(HttpsConfigError.class, () -> underTest.init());
+        }
+
+        @Test
+        void givenZosmfIsUsedWithoutJwt_exceptionIsThrown() {
+            when(providers.zosmfSupportsJwt()).thenReturn(false);
+
+            assertThrows(HttpsConfigError.class, () -> underTest.init());
+        }
+
+        @Test
+        void givenZosmfConfiguredWithLtpa_thenExceptionIsThrown() {
+            when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(true);
+
+            assertThrows(HttpsConfigError.class, () -> underTest.init());
+        }
     }
 
-    @Test
-    void testGetJwkPublicKey() {
-        assertEquals("RSA", jwtSecurityInitializer.getJwkPublicKey().getKeyType().getValue());
+    @Nested
+    class WhenZosmfNotOnlineAndAvailableAtStart {
+
+        @BeforeEach
+        void setUp() {
+            underTest = new JwtSecurityInitializer(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+        }
+
+        @Test
+        void givenZosmfIsntRegisteredAtTheStartupButRegistersLater_thenProperKeysAreInitialized() {
+            when(providers.isZosmfAvailableAndOnline())
+                .thenReturn(false)
+                .thenReturn(true);
+
+            underTest.init();
+            verify(discoveryClient, times(1)).registerEventListener(any());
+            assertFalse(underTest.getZosmfListener().isZosmfReady());
+
+            EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
+            zosmfEventListener.onEvent(new CacheRefreshedEvent());
+
+            assertTrue(underTest.getZosmfListener().isZosmfReady());
+            verify(providers, times(2)).isZosmfAvailableAndOnline();
+            verify(discoveryClient, times(1)).unregisterEventListener(any());
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
+
+        @Test
+        void givenMultipleEurekaEvents_thenCheckZosmfWhenCacheRefreshedEvent() {
+            when(providers.isZosmfAvailableAndOnline())
+                .thenReturn(false)
+                .thenReturn(true);
+
+            underTest.init();
+            verify(discoveryClient, times(1)).registerEventListener(any());
+            assertFalse(underTest.getZosmfListener().isZosmfReady());
+
+            EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
+            zosmfEventListener.onEvent(new CacheRefreshedEvent());
+            zosmfEventListener.onEvent(new StatusChangeEvent(null, null));
+
+            assertTrue(underTest.getZosmfListener().isZosmfReady());
+            verify(discoveryClient, times(1)).unregisterEventListener(any());
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
+
+        @Test
+        void givenCacheRefreshedEvents_thenCheckZosmfForEach() {
+            when(providers.isZosmfAvailableAndOnline())
+                .thenReturn(false)
+                .thenReturn(false)
+                .thenReturn(true);
+
+            underTest.init();
+            verify(discoveryClient, times(1)).registerEventListener(any());
+            assertFalse(underTest.getZosmfListener().isZosmfReady());
+
+            EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
+            zosmfEventListener.onEvent(new CacheRefreshedEvent());
+            zosmfEventListener.onEvent(new CacheRefreshedEvent());
+
+            assertTrue(underTest.getZosmfListener().isZosmfReady());
+            verify(providers, times(3)).isZosmfAvailableAndOnline();
+            verify(discoveryClient, times(1)).unregisterEventListener(any());
+            assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
     }
 }
 

@@ -34,12 +34,11 @@ apiml:
             externalMapperUser: validUserForMap
         auth:
             provider: dummy
-            zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id
+            zosmf:
+                serviceId: zosmf  # Replace me with the correct z/OSMF service id
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
             jwtKeyAlias: jwtSecret
-        zosmf:
-            useJwtToken: true # if true and z/OSMF returns JWT token use it, otherwise create Zowe JWT token with LTPA token from z/OSMF, default is true
 
 spring:
     application:

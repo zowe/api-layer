@@ -6,11 +6,18 @@ To start each server individually with default settings for running on your loca
 
 The default settings for running on local machine are stored in directory [/config/local/](/config/local/).
 
+NPM is used to launch services. For java commandline, check `package.json` in root folder.
+
+### Build first!
+
+```shell
+./gradlew build
+```
 
 ### Gateway Service
 
 ```shell
-java -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local/gateway-service.yml
+npm run gateway-service-thin
 ```
 
 
@@ -18,7 +25,7 @@ java -jar gateway-service/build/libs/gateway-service.jar --spring.config.additio
 
 By default, the gateway runs in encrypted mode (HTTPS) for northbound traffic using signed certificates in Java keystore.
 
-To override this and run the gateway without TLS encryption, add the following two arguments:
+To override this and run the gateway without TLS encryption, add the following two arguments to java command:
     
     -Denvironment.scheme=http -Denvironment.sslEnabled=false
 
@@ -31,39 +38,39 @@ Do not use these certificates in other environments. More details can be found a
 **Note:** If you want to run the discovery service using IntelliJ Run Dashboard, you need to add `https` in the `Active profiles` field in `Edit Configuration`. 
 
 ```shell
-java -jar discovery-service/build/libs/discovery-service.jar --spring.config.additional-location=file:./config/local/discovery-service.yml
+npm run discovery-service-thin
 ```
 
 
 ### API Catalog
 
 ```shell
-java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local/api-catalog-service.yml
+npm run api-catalog-service-thin
 ```
 
 ### Caching API
 
 ```shell
-java -jar caching-service/build/libs/caching-service.jar
+npm run caching-service
 ```
 
 ### Sample Application - Discoverable Client
 
 ```shell
-java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml
+npm run discoverable-client
 ```
 
 ### Sample Application - onboarding-enabler-spring-v1-sample-app
 
 ```shell
-java -jar onboarding-enabler-spring-v1-sample-app/build/libs/enabler-springboot-1.5.9.RELEASE-sample.jar --spring.config.location=file:./config/local/onboarding-enabler-spring-v1-sample-app.yml
+npm run onboarding-enabler-spring-v1-sample-app
 ```
 
 ### Sample Application - onboarding-enabler-nodejs-sample-app
 
 To run onboarding-enabler-nodejs-sample-app, follow the steps below:
 
-1. Run `npm run onboarding-enabler-spring-v1-sample-app` from the root project directory.
+1. Run `npm run onboarding-enabler-nodejs-sample-app` from the root project directory.
 
 2. 2. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service `HWEXPRESS` is registered to the discovery service. You should be able to reach the following endpoints using HTTPS:
    
@@ -80,8 +87,8 @@ To run onboarding-enabler-nodejs-sample-app, follow the steps below:
 
 To run onboarding-enabler-java-sample-app, follow the steps below:
 
-1. Run `../gradlew tomcatRun` from the `onboarding-enabler-java-sample-app` project directory
-  **Optional** : You can override the keystore and truststore location with these additional parameters: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. 
+1. Run `npm run onboarding-enabler-nodejs-sample-app`
+  **Optional** : You can override the keystore and truststore location with these additional parameters on the java commandline: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. 
 If you need debug information about SSL configuration while deploying, use this parameter `-Djavax.net.debug=SSL`.
 
 2. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service `ENABLERJAVASAMPLEAPP` is registered to the discovery service. You should be able to reach the following endpoints using HTTPS:

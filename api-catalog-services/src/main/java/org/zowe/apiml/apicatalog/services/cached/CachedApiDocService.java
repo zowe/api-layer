@@ -23,6 +23,7 @@ import org.zowe.apiml.product.instance.InstanceInitializationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 /**
  * Caching service for API Doc Info
@@ -38,6 +39,8 @@ public class CachedApiDocService {
 
     private final APIDocRetrievalService apiDocRetrievalService;
     private final TransformApiDocService transformApiDocService;
+
+    private static final UnaryOperator<String> exceptionMessage = serviceId -> "No API Documentation was retrieved for the service " + serviceId + ".";
 
     @Autowired
     public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService, TransformApiDocService transformApiDocService) {
@@ -61,17 +64,17 @@ public class CachedApiDocService {
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
             }
             if (apiDoc == null) {
-                throw new ApiDocNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+                throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
             }
         } catch (InstanceInitializationException e) {
             //If unable to get service info
             if (apiDoc == null) {
-                throw new ServiceNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+                throw new ServiceNotFoundException(exceptionMessage.apply(serviceId));
             }
         } catch (Exception e) {
             //if there's not apiDoc in cache
             if (apiDoc == null) {
-                throw new ApiDocNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+                throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
             }
         }
         return apiDoc;
@@ -104,17 +107,17 @@ public class CachedApiDocService {
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, DEFAULT_API_KEY), apiDoc);
             }
             if (apiDoc == null) {
-                throw new ApiDocNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+                throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
             }
         } catch (InstanceInitializationException e) {
             //If unable to get service info
             if (apiDoc == null) {
-                throw new ServiceNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+                throw new ServiceNotFoundException(exceptionMessage.apply(serviceId));
             }
         } catch (Exception e) {
             //if there's not apiDoc in cache
             if (apiDoc == null) {
-                throw new ApiDocNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+                throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
             }
         }
         return apiDoc;

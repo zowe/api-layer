@@ -6,6 +6,7 @@ import { IconClear } from 'mineral-ui-icons';
 import './search.css';
 
 export default class SearchCriteria extends Component {
+    // eslint-disable-next-line react/sort-comp
     raiseDoSearchWhenUserStoppedTyping = debounce(() => {
         const { criteria } = this.state;
         const { doSearch } = this.props;

@@ -21,6 +21,10 @@ spring:
         ansi:
             enabled: detect
 
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
 apiml:
     enabled: true
     service:
@@ -38,7 +42,9 @@ apiml:
         port: 10012
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
         contextPath: /${apiml.service.serviceId}
-
+        authentication:
+            scheme: x509
+            headers: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         homePageRelativeUrl: ${apiml.service.contextPath}
         statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
@@ -91,6 +97,9 @@ apiml:
                 corsEnabled: false
 
 server:
+    error:
+        include-message: always
+
     port: ${apiml.service.port}
 
     servlet:

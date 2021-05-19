@@ -19,4 +19,5 @@ import lombok.NoArgsConstructor;
 public class Authentication {
     private String scheme;
     private String applid;
+    private String headers;
 }

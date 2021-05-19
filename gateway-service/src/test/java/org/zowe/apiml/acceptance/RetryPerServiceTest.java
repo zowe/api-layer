@@ -10,6 +10,7 @@
 package org.zowe.apiml.acceptance;
 
 import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
@@ -22,8 +23,9 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@Disabled
 @AcceptanceTest
-public class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
+class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
     @Test
     void givenRetryOnAllOperationsIsDisabled_whenGetReturnsUnavailable_thenRetry() throws Exception {

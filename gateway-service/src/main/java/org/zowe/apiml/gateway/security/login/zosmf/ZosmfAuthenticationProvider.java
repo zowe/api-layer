@@ -10,17 +10,16 @@
 package org.zowe.apiml.gateway.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
-import static  org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
-import static  org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
 /**
  * Authentication provider that verifies credentials against z/OSMF service
@@ -29,11 +28,9 @@ import static  org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenT
 @RequiredArgsConstructor
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
-    @Value("${apiml.security.zosmf.useJwtToken:true}")
-    private boolean useJwtToken;
-
     private final AuthenticationService authenticationService;
     private final ZosmfService zosmfService;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
 
     /**
@@ -48,21 +45,41 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
         final ZosmfService.AuthenticationResponse ar = zosmfService.authenticate(authentication);
 
-        // if z/OSMF support JWT, use it as Zowe JWT token
-        if (ar.getTokens().containsKey(JWT) && useJwtToken) {
-            return authenticationService.createTokenAuthentication(user, ar.getTokens().get(JWT));
-        }
+        switch (authConfigurationProperties.getZosmf().getJwtAutoconfiguration()) {
+            case LTPA:
+                if (ar.getTokens().containsKey(LTPA)) {
+                    return getApimlJwtToken(user, ar);
+                }
+                break;
+            case JWT:
+                if (ar.getTokens().containsKey(JWT)) {
+                    return getZosmfJwtToken(user, ar);
+                }
+                break;
+            default: //AUTO
+                if (ar.getTokens().containsKey(JWT)) {
+                    return getZosmfJwtToken(user, ar);
+                }
 
-        if (ar.getTokens().containsKey(LTPA)) {
-            // construct own JWT token, including LTPA from z/OSMF
-            final String domain = ar.getDomain();
-            final String jwtToken = authenticationService.createJwtToken(user, domain, ar.getTokens().get(LTPA));
-
-            return authenticationService.createTokenAuthentication(user, jwtToken);
+                if (ar.getTokens().containsKey(LTPA)) {
+                    return getApimlJwtToken(user, ar);
+                }
+                break;
         }
 
         // JWT and LTPA tokens are missing, authentication was wrong
         throw new BadCredentialsException("Username or password are invalid.");
+    }
+
+    public TokenAuthentication getZosmfJwtToken(String user, ZosmfService.AuthenticationResponse ar) {
+        return authenticationService.createTokenAuthentication(user, ar.getTokens().get(JWT));
+    }
+
+    private TokenAuthentication getApimlJwtToken(String user, ZosmfService.AuthenticationResponse ar) {
+        final String domain = ar.getDomain();
+        final String jwtToken = authenticationService.createJwtToken(user, domain, ar.getTokens().get(LTPA));
+
+        return authenticationService.createTokenAuthentication(user, jwtToken);
     }
 
     @Override

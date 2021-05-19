@@ -72,7 +72,7 @@ public class EurekaInstanceConfigValidator {
         });
     }
 
-    private void validateSsl(Ssl ssl) {
+    private void validateSslParameters(Ssl ssl, List<String> missingSslParameters) {
         if (ssl == null) {
             throw new MetadataValidationException("SSL configuration was not provided. Try add apiml.service.ssl section.");
         }
@@ -94,6 +94,16 @@ public class EurekaInstanceConfigValidator {
         if (isInvalid(ssl.getTrustStoreType())) {
             addParameterToProblemsList("trustStoreType", missingSslParameters);
         }
+        if (isInvalid(ssl.getKeyPassword())) {
+            addParameterToProblemsList("keyPassword", missingSslParameters);
+        }
+        if (ssl.getEnabled() == null) {
+            addParameterToProblemsList("enabled", missingSslParameters);
+        }
+    }
+
+    private void validateSsl(Ssl ssl) {
+        validateSslParameters(ssl, missingSslParameters);
         if (isInvalid(ssl.getTrustStorePassword()) && (isInvalid(ssl.getTrustStoreType()) ||
                 (!isInvalid(ssl.getTrustStoreType()) && !ssl.getTrustStoreType().equals("JCERACFKS")))) {
             addParameterToProblemsList("trustStorePassword", missingSslParameters);
@@ -101,12 +111,6 @@ public class EurekaInstanceConfigValidator {
         if (isInvalid(ssl.getKeyStorePassword()) && (isInvalid(ssl.getKeyStoreType()) ||
                 (!isInvalid(ssl.getKeyStoreType()) && !ssl.getKeyStoreType().equals("JCERACFKS")))) {
             addParameterToProblemsList("keyStorePassword", missingSslParameters);
-        }
-        if (isInvalid(ssl.getKeyPassword())) {
-            addParameterToProblemsList("keyPassword", missingSslParameters);
-        }
-        if (ssl.getEnabled() == null) {
-            addParameterToProblemsList("enabled", missingSslParameters);
         }
         if (!missingSslParameters.isEmpty()) {
             throw new MetadataValidationException(String.format("SSL parameters ** %s ** are missing or were not replaced by the system properties.", String.join(", ", missingSslParameters)));

@@ -1,0 +1,97 @@
+# This workflow will release project with Gradle
+name: Relase new version (automated)
+
+on:
+    schedule:
+        # * is a special character in YAML so you have to quote this string
+        - cron:  '0 0 * * 5'
+    workflow_dispatch:
+        inputs:
+            scope:
+                description: 'Specify scope that is to be used. The options are patch, minor, major'
+                required: true
+                default: 'patch'
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: ${{ github.head_ref }}
+                  token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+            - name: Set up JDK 1.8
+              uses: actions/setup-java@v1
+              with:
+                  java-version: 1.8
+            - name: Set up Node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '14'
+            - name: Grant execute permission for gradlew
+              run: chmod +x gradlew
+            - name: Cache Gradle packages
+              uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.gradle/caches
+                      ~/.gradle/wrapper
+                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                  restore-keys: |
+                      ${{ runner.os }}-gradle-
+            - name: Cache Node.js modules
+              uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      **/node_modules
+                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                  restore-keys: |
+                      ${{ runner.OS }}-node-
+                      ${{ runner.OS }}-
+            - name: Build with Gradle
+              run: ./gradlew build
+
+            - name: Clean git
+              run: git reset --hard HEAD
+
+            - name: Set email
+              run: git config user.email "zowe-robot@users.noreply.github.com"
+
+            - name: Set name
+              run: git config user.name "Zowe Robot"
+
+            - name: Release to NPM automatic
+              run: |
+                  cd onboarding-enabler-nodejs
+                  echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+                  echo "registry=$DIST_REGISTRY" >> ~/.npmrc
+                  npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
+                  npm publish --access public
+                  git add package.json
+                  git commit -m "Update version"
+                  git push
+                  cd ..
+              env:
+                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                  DEFAULT_SCOPE: 'patch'
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  DIST_REGISTRY: https://registry.npmjs.org/
+
+            - name: Release with Gradle automatic
+              run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.scope=${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
+              env:
+                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                  DEFAULT_SCOPE: 'patch'
+
+            - name: Cleanup Gradle Cache
+                # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
+                # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+              run: |
+                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                  rm -f ~/.gradle/caches/modules-2/gc.properties

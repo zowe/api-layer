@@ -28,7 +28,7 @@ buildscript {
     repositories mavenRepositories
 
     dependencies {
-        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7'
+        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.1.1'
         classpath 'net.researchgate:gradle-release:2.7.0'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
         classpath 'org.owasp:dependency-check-gradle:3.3.4'
@@ -125,23 +125,7 @@ task environmentCheck(dependsOn: ":integration-tests:environmentCheck") {
     group "Integration tests"
 }
 
-task runIntegrationTestInstances(dependsOn: buildCore) {
-    doFirst {
-        if (System.properties['os.name'].toLowerCase().contains('windows')) {
-            ext.process = new ProcessBuilder()
-                .directory(projectDir)
-                .command("npm.cmd", "run", "api-layer-ci")
-                .start()
-        } else {
-            ext.process = new ProcessBuilder()
-                .directory(projectDir)
-                .command("npm", "run", "api-layer-ci", ">", "integration-instances.log")
-                .start()
-        }
-    }
-}
-
-task runCITests(dependsOn: [":integration-tests:runCITests", "runIntegrationTestInstances"]) {
+task runCITests(dependsOn: [":integration-tests:runCITests"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
 }
@@ -164,6 +148,44 @@ task publishAllVersions {
     }
 }
 
+task nodejsClean(type: Delete) {
+    group = 'npm'
+    if (cleanNode == 'true') {
+        delete 'api-catalog-ui/tools/nodejs', 'api-catalog-ui/tools/npm', 'api-catalog-ui/tools/yarn'
+        delete 'onboarding-enabler-nodejs-sample-app/tools/nodejs', 'onboarding-enabler-nodejs-sample-app/tools/npm', 'onboarding-enabler-nodejs-sample-app/tools/yarn'
+    }
+}
+
+
+task runBaseTests(dependsOn: ":integration-tests:runBaseTests") {
+    description "Run base tests"
+    group "Integration tests"
+}
+task runSafAuthTest(dependsOn: ":integration-tests:runSafAuthTest") {
+    description "Run SAF dependant authentication tests only"
+    group "Integration tests"
+}
+task runZosmfAuthTest(dependsOn: ":integration-tests:runZosmfAuthTest") {
+    description "Run zOSMF dependant authentication tests only"
+    group "Integration tests"
+}
+task runX509AuthTest(dependsOn: ":integration-tests:runX509AuthTest") {
+    description "Run x509 dependant authentication tests only"
+    group "Integration tests"
+}
+task runBaseTestsInternalPort(dependsOn: ":integration-tests:runBaseTestsInternalPort") {
+    description "Run base tests on internal port"
+    group "Integration tests"
+}
+task runCachingServiceTests(dependsOn: ":integration-tests:runCachingServiceTests") {
+    description "Run base tests on internal port"
+    group "Integration tests"
+}
+
+
+
+clean.dependsOn nodejsClean
+
 publishAllVersions.dependsOn publishSdkArtifacts
 
 //-----------Release part start
@@ -175,7 +197,7 @@ release {
     failOnCommitNeeded = true
     failOnPublishNeeded = true
     failOnSnapshotDependencies = true
-    failOnUnversionedFiles = true
+    failOnUnversionedFiles = false
     failOnUpdateNeeded = true
     revertOnFail = true
     preCommitText = '[Gradle Release plugin]'
@@ -184,7 +206,6 @@ release {
     tagTemplate = 'v${version}'
     newVersionCommitMessage = 'Create new version:'
     versionPropertyFile = 'gradle.properties'
-    buildTasks = ['build']
 
     if (releaseScope == 'minor') {
         versionPatterns = [
@@ -208,7 +229,7 @@ release {
         requireBranch = 'master'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
-        commitVersionFileOnly = false
+        commitVersionFileOnly = true
         signTag = false
     }
 }
