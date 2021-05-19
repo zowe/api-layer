@@ -53,6 +53,8 @@ class PageRedirectionTest implements TestWithStartedInstances {
     private String gatewayScheme;
     private String gatewayHost;
     private int gatewayPort;
+    private int gatewayRealPort;
+    private String gatewayRealScheme;
     private String dcScheme;
     private String dcHost;
     private int dcPort;
@@ -71,7 +73,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
     void apiRouteOfDiscoverableClient() {
         String apiRelativeUrl = "/api/v1";
         String location = String.format("%s://%s:%d%s%s%s", dcScheme, dcHost, dcPort, BASE_URL, apiRelativeUrl, "/greeting");
-        String transformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, "/" + SERVICE_ID, API_POSTFIX, "/greeting");
+        String transformedLocation = String.format("%s://%s:%d%s%s%s", gatewayRealScheme, gatewayHost, gatewayRealPort, "/" + SERVICE_ID, API_POSTFIX, "/greeting");
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -94,7 +96,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
         String wsRelativeUrl = "/ws";
         String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
         String wsPostfix = "/ws/v1";
-        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, "/" + SERVICE_ID, wsPostfix);
+        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayRealScheme, gatewayHost, gatewayRealPort, "/" + SERVICE_ID, wsPostfix);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -116,7 +118,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
     void uiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL);
         String uiPostfix = "/ui/v1";
-        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, "/" + SERVICE_ID, uiPostfix);
+        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayRealScheme, gatewayHost, gatewayRealPort, "/" + SERVICE_ID, uiPostfix);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -138,7 +140,8 @@ class PageRedirectionTest implements TestWithStartedInstances {
         gatewayScheme = gatewayServiceConfiguration.getScheme();
         gatewayHost = gatewayServiceConfiguration.getHost();
         gatewayPort = gatewayServiceConfiguration.getExternalPort();
-
+        gatewayRealPort = gatewayServiceConfiguration.getRealPort();
+        gatewayRealScheme = gatewayServiceConfiguration.getRealScheme();
         RestAssured.port = gatewayPort;
         RestAssured.useRelaxedHTTPSValidation();
 

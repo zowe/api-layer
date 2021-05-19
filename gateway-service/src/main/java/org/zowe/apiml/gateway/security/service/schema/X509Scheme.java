@@ -35,6 +35,7 @@ public class X509Scheme implements AbstractAuthenticationScheme {
 
     public static final String ALL_HEADERS = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
 
+
     @Override
     public AuthenticationScheme getScheme() {
         return AuthenticationScheme.X509;
@@ -68,6 +69,7 @@ public class X509Scheme implements AbstractAuthenticationScheme {
             final RequestContext context = RequestContext.getCurrentContext();
             HttpServletRequest request = context.getRequest();
             X509Certificate clientCertificate = getCertificateFromRequest(request);
+
             if (clientCertificate != null) {
                 try {
                     setHeader(context, clientCertificate);

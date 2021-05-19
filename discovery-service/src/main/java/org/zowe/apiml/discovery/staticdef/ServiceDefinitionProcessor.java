@@ -309,7 +309,7 @@ public class ServiceDefinitionProcessor {
         switch (url.getProtocol()) {
             case "http":
                 builder.enablePort(InstanceInfo.PortType.SECURE, false).enablePort(InstanceInfo.PortType.UNSECURE, true)
-                    .setPort(url.getPort()).setSecurePort(url.getPort());
+                    .setPort(url.getPort()).setSecurePort(0);
                 if (service.getHealthCheckRelativeUrl() != null) {
                     builder.setHealthCheckUrls(null, instanceBaseUrl + service.getHealthCheckRelativeUrl(), null);
                 }

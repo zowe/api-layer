@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
+import org.zowe.apiml.util.categories.NotAttlsTest;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -69,6 +70,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
     }
 
     @Nested
+    @NotAttlsTest
     class WhenCalledWithInvalidAuthentication {
 
         // Candidates for parametrized test.
@@ -76,9 +78,9 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
         @MethodSource("org.zowe.apiml.functional.caching.CachingAuthenticationTest#publicUrls")
         void publicEndpointIsAccessible(String endpoint) {
             given()
-            .when()
+                .when()
                 .get(caching_url + endpoint)
-            .then()
+                .then()
                 .statusCode(HttpStatus.OK.value());
         }
 
@@ -87,9 +89,9 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
             given()
                 .config(SslContext.selfSignedUntrusted)
                 .header(CERT_HEADER_NAME, "value")
-            .when()
+                .when()
                 .get(caching_url + CACHING_PATH)
-            .then()
+                .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
         }
 
@@ -97,9 +99,9 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
         void givenNoCertificateAndHeader_cachingApiEndpointsAreInaccessible() {
             given()
                 .header(CERT_HEADER_NAME, "value")
-            .when()
+                .when()
                 .get(caching_url + CACHING_PATH)
-            .then()
+                .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
         }
 
@@ -108,18 +110,18 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
 
             given()
                 .config(SslContext.clientCertApiml)
-            .when()
+                .when()
                 .get(caching_url + CACHING_PATH)
-            .then()
+                .then()
                 .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
 
         @Test
         void givenNoCertificateAndNoHeader_cachingApiEndpointsAreInaccessible() {
             given()
-            .when()
+                .when()
                 .get(caching_url + CACHING_PATH)
-            .then()
+                .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
         }
     }
@@ -131,12 +133,13 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
             given()
                 .config(SslContext.clientCertApiml)
                 .header(CERT_HEADER_NAME, "value")
-            .when()
+                .when()
                 .get(caching_url + CACHING_PATH)
-            .then()
+                .then()
                 .statusCode(HttpStatus.OK.value());
         }
     }
+
 
     private void clearSsl() {
         RestAssured.config = RestAssured.config().sslConfig(SSLConfig.sslConfig());

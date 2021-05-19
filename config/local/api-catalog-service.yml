@@ -1,4 +1,4 @@
-spring.profiles.include: diag 
+spring.profiles.include: diag
 
 eureka:
     client:
@@ -42,3 +42,10 @@ spring:
     output:
         ansi:
             enabled: always
+
+---
+spring:
+    profiles: attls
+apiml:
+    service:
+        gatewayHostname: http://localhost:10010

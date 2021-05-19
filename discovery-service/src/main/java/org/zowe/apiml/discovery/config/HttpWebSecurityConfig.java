@@ -35,7 +35,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 })
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Profile("!https")
+@Profile({"!https","!attls"})
 public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 

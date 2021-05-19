@@ -15,14 +15,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CatalogTest;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.http.HttpSecurityUtils;
@@ -42,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @CatalogTest
 @DiscoverableClientDependentTest
-class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInstances  {
+class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInstances {
     private static final String GET_DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containers/cademoapps";
     private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/v1";
     private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2 = "/apicatalog/api/v1/apidoc/discoverableclient/v2";
@@ -50,16 +47,6 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
     private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/v1/v2";
     private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION = "/apicatalog/api/v1/apidoc/discoverableclient/v1/v3";
     private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE = "/apicatalog/api/v1/apidoc/invalidService/v1/v2";
-
-    private String baseHost;
-
-    @BeforeEach
-    void setUp() {
-        GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        String host = gatewayServiceConfiguration.getHost();
-        int port = gatewayServiceConfiguration.getExternalPort();
-        baseHost = host + ":" + port;
-    }
 
 
     @Nested
@@ -88,14 +75,12 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
                 DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
                 LinkedHashMap swaggerInfo = jsonContext.read("$.info");
-                String swaggerHost = jsonContext.read("$.host");
                 String swaggerBasePath = jsonContext.read("$.basePath");
                 LinkedHashMap paths = jsonContext.read("$.paths");
                 LinkedHashMap definitions = jsonContext.read("$.definitions");
                 LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
 
                 assertTrue(swaggerInfo.get("description").toString().contains("API"), apiCatalogSwagger);
-                assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
                 assertEquals("/discoverableclient/api/v2", swaggerBasePath, apiCatalogSwagger);
                 assertEquals("External documentation", externalDoc.get("description"), apiCatalogSwagger);
 
@@ -184,7 +169,6 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
 
         // When
         LinkedHashMap swaggerInfo = jsonContext.read("$.info");
-        String swaggerHost = jsonContext.read("$.host");
         String swaggerBasePath = jsonContext.read("$.basePath");
         LinkedHashMap paths = jsonContext.read("$.paths");
         LinkedHashMap definitions = jsonContext.read("$.definitions");
@@ -192,7 +176,6 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
 
         // Then
         assertTrue(swaggerInfo.get("description").toString().contains("API"), apiCatalogSwagger);
-        assertEquals(baseHost, swaggerHost, apiCatalogSwagger);
         assertEquals("/discoverableclient/api/v1", swaggerBasePath, apiCatalogSwagger);
         assertEquals("External documentation", externalDoc.get("description"), apiCatalogSwagger);
 

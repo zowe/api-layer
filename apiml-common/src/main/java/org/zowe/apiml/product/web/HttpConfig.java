@@ -13,21 +13,17 @@ import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -96,6 +92,9 @@ public class HttpConfig {
     @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
     private int timeToLive;
 
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
+
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
@@ -145,7 +144,11 @@ public class HttpConfig {
 
             factory.setSystemSslProperties();
 
-            publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
+            if (isAttlsEnabled) {
+                publicKeyCertificatesBase64 = SecurityUtils.readApimlCertChainPemPublicKeys();
+            } else {
+                publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
+            }
         } catch (HttpsConfigError e) {
             System.exit(1); // NOSONAR
         } catch (Exception e) {
@@ -163,7 +166,7 @@ public class HttpConfig {
     @Bean
     public SslContextFactory.Server jettySslContextFactory() {
         SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-        if (keyStore != null) {
+        if (StringUtils.isNotEmpty(keyStore)) {
             sslContextFactory.setKeyStorePath(SecurityUtils.replaceFourSlashes(keyStore));
         }
         sslContextFactory.setProtocol(protocol);
@@ -172,7 +175,7 @@ public class HttpConfig {
         sslContextFactory.setCertAlias(keyAlias);
         sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$");
 
-        if (trustStore != null) {
+        if (StringUtils.isNotEmpty(trustStore)) {
             sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
             sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));

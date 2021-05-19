@@ -222,7 +222,29 @@ task runCITests(type: Test) {
             'SlowTests',
             'AdditionalLocalTest',
             'MainframeDependentTests',
-            'SAFAuthTest'
+            'SAFAuthTest',
+            'AttlsTest'
+        )
+    }
+}
+
+task runCITestsAttls(type: Test) {
+    group "Integration tests"
+    description ""
+
+    outputs.cacheIf { false }
+
+    systemProperties System.properties
+    systemProperty "environment.attls", true
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'SlowTests',
+            'AdditionalLocalTest',
+            'MainframeDependentTests',
+            'SAFAuthTest',
+            'NotAttlsTest'
         )
     }
 }
@@ -242,7 +264,8 @@ task runCITestsInternalPort(type: Test) {
             'SlowTests',
             'AdditionalLocalTest',
             'MainframeDependentTests',
-            'SAFAuthTest'
+            'SAFAuthTest',
+            'AttlsTest'
         )
     }
 }
