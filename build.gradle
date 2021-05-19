@@ -231,7 +231,7 @@ release {
     ]
 
     git {
-        requireBranch = 'master'
+        requireBranch = 'apiml/GH1468/dont_close_client'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = true
