@@ -128,7 +128,7 @@ jobs:
 
     CITestsATTLS:
 
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-latest
         timeout-minutes: 20
 
         steps:
@@ -161,7 +161,7 @@ jobs:
                       ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
-                  ./gradlew build --scan --info -Pgradle.cache.push=true -Penabler=v1
+                  ./gradlew build --scan --info -Pgradle.cache.push=true
                   -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -172,7 +172,7 @@ jobs:
                   docker-compose up --detach
             - name: CI Test with Gradle
               run: >
-                  ./gradlew runCITestsAttls --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew runCITestsAttls --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true"
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017

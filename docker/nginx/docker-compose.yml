@@ -6,8 +6,6 @@ services:
         hostname: reverse
         image: nginx
         ports:
-            - 80:80
-            - 9001:9001
             - 10000:10000
             - 10001:10001
             - 10030:10030
