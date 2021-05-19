@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { HashRouter } from 'react-router-dom';
 import { PersistGate } from 'redux-persist/integration/react';
-import { ThemeProvider } from '@material-ui/core';
 import { applyMiddleware, compose, createStore } from 'redux';
 import { createEpicMiddleware } from 'redux-observable';
 import { ajax } from 'rxjs/ajax';
@@ -18,12 +17,13 @@ import thunk from 'redux-thunk';
 import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
 import { rootReducer } from './reducers/index';
+import { sendError } from './actions/error-actions';
 
 function errorHandler(error, getState, lastAction, dispatch) {
     log.error(error);
     log.debug('current state', getState());
     log.debug('last action was', lastAction);
-    // TODO dispatch(sendError(`Action: ${lastAction.type} => ${error.message}`));
+    dispatch(sendError(`Action: ${lastAction.type} => ${error.message}`));
 }
 
 // do not save authentication errors
