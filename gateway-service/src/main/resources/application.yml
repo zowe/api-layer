@@ -261,3 +261,25 @@ spring:
         - diag
 
 logbackServiceName: ZWEAGW1
+
+---
+spring:
+    profiles: attls
+
+server:
+    internal:
+        ssl:
+            enabled: false
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+        discoveryServiceUrls: http://localhost:10001/eureka/
+apiml:
+    service:
+        scheme: http
+zuul.debug.request: false
+

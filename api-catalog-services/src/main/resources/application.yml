@@ -194,3 +194,32 @@ spring:
 
 
 logbackServiceName: ZWEAAC1
+
+---
+spring:
+    profiles: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+eureka:
+    instance:
+        securePort: 0
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
+        metadata-map:
+            apiml:
+                apiInfo:
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+apiml:
+    service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+        discoveryServiceUrls: http://localhost:10001/eureka/

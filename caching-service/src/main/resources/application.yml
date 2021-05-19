@@ -139,3 +139,24 @@ spring:
         - diag
 
 logbackServiceName: ZWEACS1
+
+---
+spring:
+    profiles: attls
+
+server:
+    port: 10006
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+apiml:
+    service:
+        scheme: http
+        discoveryServiceUrls: http://localhost:10001/eureka/
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false

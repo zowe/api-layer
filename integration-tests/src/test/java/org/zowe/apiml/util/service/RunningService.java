@@ -11,8 +11,8 @@ package org.zowe.apiml.util.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Duration;
+import org.junit.platform.commons.util.StringUtils;
 import org.zowe.apiml.util.DiscoveryRequests;
-import org.zowe.apiml.util.config.ConfigReader;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -31,7 +31,6 @@ public class RunningService {
     private final String jarFile;
     private final String id;
     private String subprocessPid;
-    private Map<String,String> instanceEnv = ConfigReader.environmentConfiguration().getInstanceEnv();
 
     private final Map<String, String> parametersBefore;
     private final Map<String, String> parametersAfter;
@@ -63,12 +62,12 @@ public class RunningService {
         newCachingProcess = builder1.inheritIO().start();
     }
 
-    public void startWithScript(String bashScript) {
+    public void startWithScript(String bashScript, Map<String, String> env) {
         log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
 
         ProcessBuilder builder1 = new ProcessBuilder(bashScript);
         Map<String, String> envVariables = builder1.environment();
-        envVariables.putAll(instanceEnv);
+        envVariables.putAll(env);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
 
         builder1.directory(new File("../"));
@@ -84,11 +83,11 @@ public class RunningService {
             BufferedReader br = new BufferedReader(
                 new InputStreamReader(inputStream));
             String line;
-            while ((line = br.readLine()) != null) {
+            while (StringUtils.isBlank(this.subprocessPid) && (line = br.readLine()) != null) {
                 log.info(line);
                 if (line.startsWith("pid")) {
                     this.subprocessPid = line.substring(line.indexOf("=") + 1);
-                    log.info("found " + this.subprocessPid);
+                    log.info("found PID:" + this.subprocessPid + " for service: {}", id);
                 }
             }
         } catch (IOException e) {

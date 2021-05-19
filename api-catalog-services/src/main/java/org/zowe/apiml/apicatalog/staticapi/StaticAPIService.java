@@ -37,6 +37,9 @@ public class StaticAPIService {
     @Qualifier("restTemplateWithKeystore")
     private final RestTemplate restTemplate;
 
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
+
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
     public StaticAPIResponse refresh() {
@@ -51,7 +54,7 @@ public class StaticAPIService {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Accept", "application/json");
-        if (isHttp) {
+        if (isHttp && !isAttlsEnabled) {
             String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
             httpHeaders.add("Authorization", basicToken);
         }
