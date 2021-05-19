@@ -23,7 +23,7 @@ function errorHandler(error, getState, lastAction, dispatch) {
     log.error(error);
     log.debug('current state', getState());
     log.debug('last action was', lastAction);
-    dispatch(sendError(`Action: ${lastAction.type} => ${error.message}`));
+    // dispatch(sendError(`Action: ${lastAction.type} => ${error.message}`));
 }
 
 // do not save authentication errors
@@ -42,9 +42,9 @@ const epicMiddleware = createEpicMiddleware({
 const composeEnhancers = compose;
 const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler)];
 
-if (process.env.NODE_ENV !== 'production') {
-    middlewares.push(logger);
-}
+// if (process.env.NODE_ENV !== 'production') {
+middlewares.push(logger);
+// }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 const store = createStore(persistedReducer, composeEnhancers(applyMiddleware(...middlewares)));

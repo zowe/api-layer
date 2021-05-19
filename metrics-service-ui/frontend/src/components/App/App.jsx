@@ -1,7 +1,10 @@
 import React, { Component, Suspense } from 'react';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
+
+import AuthRoute from '../AuthRoute/AuthRoute';
 import { AsyncLoginContainer } from './AsyncModules';
 import Spinner from '../Spinner/Spinner';
+import Dashboard from '../Dashboard/Dashboard';
 
 class App extends Component {
     render() {
@@ -14,12 +17,13 @@ class App extends Component {
                         <>
                             <div className="content">
                                 <Switch>
-                                    <Route path="/" exact render={() => <Redirect replace to="/dashboard" />} />
+                                    <AuthRoute path="/" exact render={() => <Redirect replace to="/dashboard" />} />
                                     <Route
                                         path="/login"
                                         exact
                                         render={(props, state) => <AsyncLoginContainer {...props} {...state} />}
                                     />
+                                    <AuthRoute path="/dashboard" render={() => <Dashboard />} />
                                 </Switch>
                             </div>
                         </>
