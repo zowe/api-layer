@@ -23,7 +23,7 @@ function errorHandler(error, getState, lastAction, dispatch) {
     log.error(error);
     log.debug('current state', getState());
     log.debug('last action was', lastAction);
-    // dispatch(sendError(`Action: ${lastAction.type} => ${error.message}`));
+    dispatch(sendError(`Action: ${lastAction.type} => ${error.message}`));
 }
 
 // do not save authentication errors

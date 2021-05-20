@@ -10,7 +10,7 @@ const AuthRoute = (props) => {
 };
 
 const mapStateToProps = (state) => {
-    const authenticated = !!state.authenticationReducer.user;
+    const authenticated = !!state.authenticationReducer.sessionOn;
     return { authenticated };
 };
 
