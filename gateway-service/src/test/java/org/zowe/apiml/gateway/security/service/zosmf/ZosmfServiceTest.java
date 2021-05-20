@@ -30,6 +30,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.ArrayList;
@@ -158,33 +159,70 @@ class ZosmfServiceTest {
         verify(zosmfService, times(1)).invalidate(eq(LTPA), any());
     }
 
-    @Test
-    void testAuthenticateShouldUseInfoEndpointWhenAuthEndpointDoesNotExist() {
-        ZosmfService zosmfService = getZosmfServiceSpy();
+    @Nested
+    class TokenInResponse {
+        @Nested
+        class WhenAuthEndpointNotExists {
+            @Test
+            void providedUsernamePassword() {
+                ZosmfService zosmfService = getZosmfServiceSpy();
 
-        doReturn(false).when(zosmfService).loginEndpointExists();
-        doReturn("realm").when(zosmfService).getZosmfRealm("http://zosmf:1433/zosmf/info");
-        HttpHeaders requestHeaders = getBasicRequestHeaders();
+                doReturn(false).when(zosmfService).loginEndpointExists();
+                doReturn("realm").when(zosmfService).getZosmfRealm("http://zosmf:1433/zosmf/info");
+                HttpHeaders requestHeaders = getBasicRequestHeaders();
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.SET_COOKIE, "LtpaToken2=lt");
-        ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", responseHeaders, HttpStatus.OK);
+                HttpHeaders responseHeaders = new HttpHeaders();
+                responseHeaders.add(HttpHeaders.SET_COOKIE, "LtpaToken2=lt");
+                ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", responseHeaders, HttpStatus.OK);
 
-        doReturn(responseEntity).when(restTemplate).exchange(
-            "http://zosmf:1433/zosmf/info",
-            HttpMethod.GET,
-            new HttpEntity<>(null, requestHeaders),
-            String.class
-        );
+                doReturn(responseEntity).when(restTemplate).exchange(
+                    "http://zosmf:1433/zosmf/info",
+                    HttpMethod.GET,
+                    new HttpEntity<>(null, requestHeaders),
+                    String.class
+                );
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken("user", "pass");
-        ZosmfService.AuthenticationResponse response = zosmfService.authenticate(authentication);
+                Authentication authentication = new UsernamePasswordAuthenticationToken("user", "pass");
+                ZosmfService.AuthenticationResponse response = zosmfService.authenticate(authentication);
 
-        assertNotNull(response);
-        assertNotNull(response.getTokens());
-        assertEquals(1, response.getTokens().size());
-        assertEquals("lt", response.getTokens().get(ZosmfService.TokenType.LTPA));
+                assertNotNull(response);
+                assertNotNull(response.getTokens());
+                assertEquals(1, response.getTokens().size());
+                assertEquals("lt", response.getTokens().get(ZosmfService.TokenType.LTPA));
+            }
+
+            @Test
+            void providedLoginRquest() {
+                ZosmfService zosmfService = getZosmfServiceSpy();
+
+                doReturn(false).when(zosmfService).loginEndpointExists();
+                doReturn("realm").when(zosmfService).getZosmfRealm("http://zosmf:1433/zosmf/info");
+                HttpHeaders requestHeaders = getBasicRequestHeaders();
+
+                HttpHeaders responseHeaders = new HttpHeaders();
+                responseHeaders.add(HttpHeaders.SET_COOKIE, "LtpaToken2=lt");
+                ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", responseHeaders, HttpStatus.OK);
+
+                doReturn(responseEntity).when(restTemplate).exchange(
+                    "http://zosmf:1433/zosmf/info",
+                    HttpMethod.GET,
+                    new HttpEntity<>(null, requestHeaders),
+                    String.class
+                );
+
+                Authentication authentication = new UsernamePasswordAuthenticationToken("user", new LoginRequest("user","pass"));
+                ZosmfService.AuthenticationResponse response = zosmfService.authenticate(authentication);
+
+                assertNotNull(response);
+                assertNotNull(response.getTokens());
+                assertEquals(1, response.getTokens().size());
+                assertEquals("lt", response.getTokens().get(ZosmfService.TokenType.LTPA));
+            }
+        }
     }
+
+
+
 
     @Test
     void testAuthenticateShouldThrowException() {
