@@ -49,6 +49,8 @@ class LoginFilterTest {
     private static final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";
     private static final String VALID_AUTH_HEADER = "Basic dXNlcjpwd2Q=";
     private static final String INVALID_AUTH_HEADER = "Basic dXNlcj11c2Vy";
+    private static final String USER = "user";
+    private static final String PASSWORD = "pwd";
 
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
@@ -87,7 +89,7 @@ class LoginFilterTest {
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken("user", "pwd");
+            = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
         verify(authenticationManager).authenticate(authentication);
     }
 
@@ -101,7 +103,7 @@ class LoginFilterTest {
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken("user", "pwd");
+            = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
         verify(authenticationManager).authenticate(authentication);
     }
 
@@ -173,7 +175,7 @@ class LoginFilterTest {
             authenticationFailureHandler, objectMapper, authenticationManager,
             resourceAccessExceptionHandler);
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("user", "pwd");
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
         when(authenticationManager.authenticate(authentication)).thenThrow(exception);
 
         httpServletRequest = new MockHttpServletRequest();

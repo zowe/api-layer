@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.client.login;
 
 import org.zowe.apiml.security.client.service.GatewaySecurityService;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,7 +41,7 @@ class GatewayLoginProviderTest {
     void shouldAuthenticateValidUsernamePassword() {
         when(gatewaySecurityService.login(USER, VALID_PASSWORD)).thenReturn(Optional.of(VALID_TOKEN));
 
-        Authentication auth = new UsernamePasswordAuthenticationToken(USER, VALID_PASSWORD);
+        Authentication auth = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,VALID_PASSWORD));
         Authentication processedAuthentication = gatewayLoginProvider.authenticate(auth);
 
         assertTrue(processedAuthentication instanceof TokenAuthentication);
@@ -53,7 +54,7 @@ class GatewayLoginProviderTest {
     void shouldThrowWithInvalidUsernamePassword() {
         when(gatewaySecurityService.login(USER, INVALID_PASSWORD)).thenReturn(Optional.empty());
 
-        Authentication auth = new UsernamePasswordAuthenticationToken(USER, INVALID_PASSWORD);
+        Authentication auth = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,INVALID_PASSWORD));
         assertThrows(BadCredentialsException.class, () -> gatewayLoginProvider.authenticate(auth));
     }
 
