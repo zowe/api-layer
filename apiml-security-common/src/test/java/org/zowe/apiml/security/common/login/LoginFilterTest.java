@@ -46,9 +46,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class LoginFilterTest {
     private static final String VALID_JSON = "{\"username\": \"user\", \"password\": \"pwd\"}";
+    private static final String JSON_WITH_NEW_PW = "{\"username\": \"user\", \"password\": \"pwd\", \"newPassword\": \"newPwd\"}";
     private static final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";
     private static final String VALID_AUTH_HEADER = "Basic dXNlcjpwd2Q=";
     private static final String INVALID_AUTH_HEADER = "Basic dXNlcj11c2Vy";
+    private static final String USER = "user";
+    private static final String PASSWORD = "pwd";
+    private static final String NEW_PASSWORD = "newPwd";
 
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
@@ -87,7 +91,7 @@ class LoginFilterTest {
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken("user", "pwd");
+            = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
         verify(authenticationManager).authenticate(authentication);
     }
 
@@ -101,7 +105,21 @@ class LoginFilterTest {
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken("user", "pwd");
+            = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
+        verify(authenticationManager).authenticate(authentication);
+    }
+
+    @Test
+    void shouldCallAuthenticationManagerAuthenticateWithNewPasswordInJson() throws ServletException {
+        httpServletRequest = new MockHttpServletRequest();
+        httpServletRequest.setMethod(HttpMethod.POST.name());
+        httpServletRequest.setContent(JSON_WITH_NEW_PW.getBytes());
+        httpServletResponse = new MockHttpServletResponse();
+
+        loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+
+        UsernamePasswordAuthenticationToken authentication
+            = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD, NEW_PASSWORD));
         verify(authenticationManager).authenticate(authentication);
     }
 
@@ -173,7 +191,7 @@ class LoginFilterTest {
             authenticationFailureHandler, objectMapper, authenticationManager,
             resourceAccessExceptionHandler);
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("user", "pwd");
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
         when(authenticationManager.authenticate(authentication)).thenThrow(exception);
 
         httpServletRequest = new MockHttpServletRequest();

@@ -27,4 +27,12 @@ public class MockPlatformUser implements PlatformUser {
         }
     }
 
+    @Override
+    public Object changePassword(String userid, String password, String newPassword) {
+        if (userid.equalsIgnoreCase(VALID_USERID) && password.equalsIgnoreCase(VALID_PASSWORD) && !newPassword.equalsIgnoreCase(password)) {
+            return null;
+        } else {
+            return PlatformReturned.builder().success(false).build();
+        }
+    }
 }

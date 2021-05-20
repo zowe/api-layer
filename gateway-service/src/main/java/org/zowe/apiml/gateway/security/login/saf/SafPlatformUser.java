@@ -22,16 +22,20 @@ public class SafPlatformUser implements PlatformUser {
     private final PlatformClassFactory platformClassFactory;
     private final PlatformReturnedHelper<Object> platformReturnedHelper;
     private final MethodHandle authenticateMethodHandle;
+    private final MethodHandle changePasswordHandle;
 
     public SafPlatformUser(PlatformClassFactory platformClassFactory)
-        throws IllegalAccessException, ClassNotFoundException, NoSuchFieldException, NoSuchMethodException
-    {
+        throws IllegalAccessException, ClassNotFoundException, NoSuchFieldException, NoSuchMethodException {
         this.platformClassFactory = platformClassFactory;
         this.platformReturnedHelper = new PlatformReturnedHelper<>((Class<Object>) platformClassFactory.getPlatformReturnedClass());
 
         Method method = platformClassFactory.getPlatformUserClass()
             .getMethod("authenticate", String.class, String.class);
         authenticateMethodHandle = MethodHandles.lookup().unreflect(method);
+
+        Method changeMethod = platformClassFactory.getPlatformUserClass()
+            .getMethod("changePassword", String.class, String.class, String.class);
+        changePasswordHandle = MethodHandles.lookup().unreflect(changeMethod);
     }
 
     @Override
@@ -44,4 +48,14 @@ public class SafPlatformUser implements PlatformUser {
         }
     }
 
+    @Override
+    public PlatformReturned changePassword(String userid, String password, String newPassword) {
+        try {
+            Object safReturned = changePasswordHandle.invokeWithArguments(platformClassFactory.getPlatformUser(),
+                userid, password, newPassword);
+            return platformReturnedHelper.convert(safReturned);
+        } catch (Throwable throwable) {
+            throw new AuthenticationServiceException("Error occurred while changing password.", throwable);
+        }
+    }
 }
