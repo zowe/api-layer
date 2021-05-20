@@ -32,7 +32,6 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     private final ZosmfService zosmfService;
     private final AuthConfigurationProperties authConfigurationProperties;
 
-
     /**
      * Authenticate the credentials with the z/OSMF service
      *

@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.security.login.saf;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 
@@ -24,32 +25,57 @@ class MockPlatformUserTest {
         mockPlatformUser = new MockPlatformUser();
     }
 
-    @Test
-    void givenValidCredentials_whenAuthenticate_thenReturnNull() {
-        assertEquals(null, mockPlatformUser.authenticate("USER", "validPassword"));
+    @Nested
+    class WhenAuthenticate {
+        @Nested
+        class Success {
+            @Test
+            void givenValidCredentials_whenAuthenticate_thenReturnNull() {
+                assertEquals(null, mockPlatformUser.authenticate("USER", "validPassword"));
+            }
+        }
+
+        @Nested
+        class Fails {
+            @Test
+            void givenInValidCredentials_whenAuthenticate_thenReturnPlatformReturnedSuccessFalse() {
+                PlatformReturned platformReturned = PlatformReturned.builder().success(false).build();
+                assertEquals(platformReturned, mockPlatformUser.authenticate("USER", "invalidPassword"));
+            }
+        }
+
     }
 
-    @Test
-    void givenInValidCredentials_whenAuthenticate_thenReturnPlatformReturnedSuccessFalse() {
-        PlatformReturned platformReturned = PlatformReturned.builder().success(false).build();
-        assertEquals(platformReturned, mockPlatformUser.authenticate("USER", "invalidPassword"));
+    @Nested
+    class WhenChangingPassword {
+        @Nested
+        class Success {
+            @Test
+            void givenValidCredentialsAndNewValidPassword_whenChangePassword_thenReturnNull() {
+                assertNull( mockPlatformUser.changePassword("USER", "validPassword", "newPassword"));
+            }
+        }
+
+        @Nested
+        class Fails {
+            @Test
+            void givenInvalidCredentialsAndNewValidPassword_whenChangePassword_thenReturnPlatformReturnedSuccessFalse() {
+                PlatformReturned platformReturned = PlatformReturned.builder().success(false).build();
+                assertEquals(platformReturned, mockPlatformUser.changePassword("InvalidUser", "validPassword", "newPassword"));
+            }
+
+            @Test
+            void givenValidCredentialsAndInvalidNewPassword_whenChangePassword_thenReturnPlatformReturnedSuccessFalse() {
+                PlatformReturned platformReturned = PlatformReturned.builder().success(false).build();
+                assertEquals(platformReturned, mockPlatformUser.changePassword("USER", "validPassword", "validPassword"));
+            }
+        }
     }
 
-    @Test
-    void givenValidCredentialsAndNewValidPassword_whenChangePassword_thenReturnNull() {
-        assertEquals(null, mockPlatformUser.changePassword("USER", "validPassword", "newPassword"));
-    }
 
-    @Test
-    void givenInvalidCredentialsAndNewValidPassword_whenChangePassword_thenReturnPlatformReturnedSuccessFalse() {
-        PlatformReturned platformReturned = PlatformReturned.builder().success(false).build();
-        assertEquals(platformReturned, mockPlatformUser.changePassword("InvalidUser", "validPassword", "newPassword"));
-    }
 
-    @Test
-    void givenValidCredentialsAndInvalidNewPassword_whenChangePassword_thenReturnPlatformReturnedSuccessFalse() {
-        PlatformReturned platformReturned = PlatformReturned.builder().success(false).build();
-        assertEquals(platformReturned, mockPlatformUser.changePassword("USER", "validPassword", "validPassword"));
-    }
+
+
+
 
 }

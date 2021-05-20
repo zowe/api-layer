@@ -228,7 +228,7 @@ class ZosmfServiceTest {
             }
 
             @Test
-            void providedLoginRquest() {
+            void providedLoginRequest() {
                 ZosmfService zosmfService = getZosmfServiceSpy();
 
                 doReturn(false).when(zosmfService).loginEndpointExists();
