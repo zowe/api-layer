@@ -231,7 +231,6 @@ release {
     ]
 
     git {
-        requireBranch = 'master'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = true
