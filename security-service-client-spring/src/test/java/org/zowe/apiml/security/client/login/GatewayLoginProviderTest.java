@@ -79,9 +79,9 @@ class GatewayLoginProviderTest {
     }
 
     @Nested
-    class WhenVerifyingSupport{
+    class WhenVerifyingSupport {
         @Nested
-        class Support{
+        class Support {
             @Test
             void givenUsernamePasswordAuthenticationToken() {
                 assertTrue(gatewayLoginProvider.supports(UsernamePasswordAuthenticationToken.class));
@@ -99,10 +99,6 @@ class GatewayLoginProviderTest {
 
 
     }
-
-
-
-
 
 
 }
