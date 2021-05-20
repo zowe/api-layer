@@ -14,19 +14,17 @@ class App extends Component {
             <div className="App">
                 <Suspense fallback={<Spinner isLoading={isLoading} />}>
                     <Router history={history}>
-                        <>
-                            <div className="content">
-                                <Switch>
-                                    <AuthRoute path="/" exact render={() => <Redirect replace to="/dashboard" />} />
-                                    <Route
-                                        path="/login"
-                                        exact
-                                        render={(props, state) => <AsyncLoginContainer {...props} {...state} />}
-                                    />
-                                    <AuthRoute path="/dashboard" render={() => <Dashboard />} />
-                                </Switch>
-                            </div>
-                        </>
+                        <div className="content">
+                            <Switch>
+                                <AuthRoute path="/" exact render={() => <Redirect replace to="/dashboard" />} />
+                                <Route
+                                    path="/login"
+                                    exact
+                                    render={(props, state) => <AsyncLoginContainer {...props} {...state} />}
+                                />
+                                <AuthRoute path="/dashboard" render={() => <Dashboard />} />
+                            </Switch>
+                        </div>
                     </Router>
                 </Suspense>
             </div>
