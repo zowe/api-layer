@@ -115,7 +115,6 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
-            .antMatchers("/**").authenticated()
             .antMatchers("/application/health", "/application/info").permitAll();
     }
 
