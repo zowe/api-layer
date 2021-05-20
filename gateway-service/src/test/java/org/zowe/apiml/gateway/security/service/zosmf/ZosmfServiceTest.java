@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -144,6 +145,42 @@ class ZosmfServiceTest {
 
         doReturn(false).when(zosmfService).isInvalidated(any());
         assertDoesNotThrow(() -> zosmfService.authenticate(authentication));
+    }
+
+    @Test
+    void givenLoginRequestCredentials_whenAuthenticate_thenAuthenticateWithSuccess() {
+        Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
+        LoginRequest loginRequest = mock(LoginRequest.class);
+        ZosmfService zosmfService = getZosmfServiceSpy();
+        doReturn(true).when(zosmfService).loginEndpointExists();
+        ZosmfService.AuthenticationResponse responseMock = mock(ZosmfService.AuthenticationResponse.class);
+        when(authentication.getCredentials()).thenReturn(loginRequest);
+        doReturn(true).when(zosmfService).loginEndpointExists();
+
+        HttpHeaders requestHeaders = getBasicRequestHeaders();
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.SET_COOKIE, "jwtToken=jt");
+        ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", responseHeaders, HttpStatus.OK);
+        doReturn(new ZosmfService.AuthenticationResponse(
+            "domain1",
+            Collections.singletonMap(ZosmfService.TokenType.JWT, "jwtToken1"))).when(zosmfService).getAuthenticationResponse(any());
+        doReturn(responseEntity).when(restTemplate).exchange(
+            "http://zosmf:1433/zosmf/services/authenticate",
+            HttpMethod.POST,
+            new HttpEntity<>(null, requestHeaders),
+            String.class
+        );
+        when(loginRequest.getPassword()).thenReturn("password");
+        when(authentication.getPrincipal()).thenReturn("principal");
+        doReturn(responseMock).when(zosmfService).issueAuthenticationRequest(authentication, eq(any()), any());
+
+        ZosmfService.AuthenticationResponse response = zosmfService.authenticate(authentication);
+
+        assertNotNull(response);
+        assertNotNull(response.getTokens());
+        assertEquals(1, response.getTokens().size());
+        assertEquals("jwtToken1", response.getTokens().get(ZosmfService.TokenType.JWT));
     }
 
     @Test
