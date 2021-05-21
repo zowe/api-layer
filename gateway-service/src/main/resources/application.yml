@@ -175,10 +175,7 @@ eureka:
     instance:
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
-        port: ${server.internal.port}
-        securePort: ${server.internal.port}
-        nonSecurePortEnabled: false # must be set to false if you are using SSL
-        securePortEnabled: ${server.ssl.enabled}
+        #ports are computed in code
         preferIpAddress: ${apiml.service.preferIpAddress}
         homePageUrl: ${apiml.service.scheme}://${apiml.gateway.hostname}:${apiml.service.port}/
         statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
@@ -206,6 +203,7 @@ eureka:
                     description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
                 authentication:
                     sso: true
+
     client:
         fetchRegistry: true
         registerWithEureka: true
