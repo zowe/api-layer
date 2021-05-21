@@ -39,7 +39,7 @@ class VersionTest {
         class WhenRequestingVersion {
             @ParameterizedTest(name = "ReturnValidVersion {index} {0} ")
             @MethodSource("org.zowe.apiml.functional.gateway.VersionTest#versionUrls")
-            void ReturnValidVersion(String endpoint) {
+            void returnValidVersion(String endpoint) {
                 // Gateway request to url
                 given()
                 .when()
