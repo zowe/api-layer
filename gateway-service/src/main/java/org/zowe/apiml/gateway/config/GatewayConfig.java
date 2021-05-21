@@ -144,7 +144,7 @@ public class GatewayConfig {
     }
 
     public static String getEnabledPort(PropertyResolver resolver) {
-        if ("true".equalsIgnoreCase(resolver.getProperty("server.internal.enabled"))) {
+        if (Boolean.parseBoolean(resolver.getProperty("server.internal.enabled"))) {
             return resolver.getProperty("server.internal.port");
         } else {
             return resolver.getProperty("apiml.service.port");
