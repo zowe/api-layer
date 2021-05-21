@@ -56,9 +56,3 @@ apiml:
         scheme: http
         discoveryServiceUrls: http://localhost:10001/eureka/
 
-server:
-    internal:
-        enabled: false
-        port: 10010
-        ssl:
-            enabled: false
