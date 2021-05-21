@@ -13,7 +13,7 @@ export ZOWE_IP_ADDRESS=0.0.0.0
 export DISCOVERY_PORT=$((basePort+1))
 export CATALOG_PORT=$((basePort+2))
 export DISCOVERABLECLIENT_PORT=$((basePort+3))
-export CACHING_SERVICE_PORT=$((basePort+4))
+export ZWE_CACHING_SERVICE_PORT=$((basePort+4))
 export GATEWAY_PORT=$basePort
 export STATIC_DEF_CONFIG_DIR=$dir/apidef
 export VERIFY_CERTIFICATES=true
@@ -25,7 +25,15 @@ export TRUSTSTORE=$dir/keystore/truststore.p12
 export ROOT_DIR=$dir
 export WORKSPACE_DIR=$dir
 export ZOWE_MANIFEST=$dir/zowe-manifest.json
-
+export ZWE_DISCOVERY_SERVICES_LIST=https://$ZOWE_EXPLORER_HOST:$DISCOVERY_PORT/eureka/
+export APIML_PREFER_IP_ADDRESS=false
+export APIML_ALLOW_ENCODED_SLASHES=true
+export APIML_CORS_ENABLED=true
+export APIML_GATEWAY_CATALOG_ID=apicatalog
+export APIML_GATEWAY_TIMEOUT_MILLIS=3000
+export APIML_SECURITY_AUTH_PROVIDER=saf
+export ZWE_CACHING_EVICTION_STRATEGY=reject
+export ZWE_CACHING_SERVICE_PERSISTENT=inMemory
 echo "*******************  ENVIRONMENT  *******************"
 echo "Working directory "$dir
 echo "JAVA_HOME "$JAVA_HOME
