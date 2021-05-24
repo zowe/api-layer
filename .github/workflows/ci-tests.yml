@@ -64,14 +64,6 @@ jobs:
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: UnitTestReports
-                    path: |
-                        **/reports/**
-                        **/*.log
             -   name: Cleanup Gradle Cache
                 run: |
                     rm -f ~/.gradle/caches/modules-2/modules-2.lock
