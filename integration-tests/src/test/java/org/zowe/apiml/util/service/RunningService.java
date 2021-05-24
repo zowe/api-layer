@@ -85,7 +85,7 @@ public class RunningService {
                 }
             }
 
-            while((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null) {
                 log.info(line);
             }
         } catch (IOException e) {
