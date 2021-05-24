@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.discovery;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GatewayTest;
@@ -33,6 +34,7 @@ import static org.hamcrest.Matchers.is;
 @NotForMainframeTest
 @GatewayTest
 @NotAttlsTest
+@Disabled
 class NodeEnablerIntegrationTest implements TestWithStartedInstances {
 
     private static final String APP_INFO_HEALTH = "/hwexpress/api/v1/status/";
