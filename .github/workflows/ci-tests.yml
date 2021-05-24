@@ -51,6 +51,7 @@ jobs:
                       discoverable-client/build/libs
                       discovery-service/build/libs
                       gateway-service/build/libs
+                      integration-tests/build
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
@@ -101,6 +102,7 @@ jobs:
                       discoverable-client/build/libs
                       discovery-service/build/libs
                       gateway-service/build/libs
+                      integration-tests/build
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
@@ -150,6 +152,7 @@ jobs:
                       discoverable-client/build/libs
                       discovery-service/build/libs
                       gateway-service/build/libs
+                      integration-tests/build
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
@@ -199,6 +202,7 @@ jobs:
                       discoverable-client/build/libs
                       discovery-service/build/libs
                       gateway-service/build/libs
+                      integration-tests/build
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
@@ -252,12 +256,13 @@ jobs:
                       discoverable-client/build/libs
                       discovery-service/build/libs
                       gateway-service/build/libs
+                      integration-tests/build
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
             - name: Build with Gradle
               run: >
-                  ./gradlew runZosmfAuthTest -x test --scan --info
+                  ./gradlew runZosmfAuthTest --scan --info
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -303,12 +308,13 @@ jobs:
                       discoverable-client/build/libs
                       discovery-service/build/libs
                       gateway-service/build/libs
+                      integration-tests/build
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
             - name: Build with Gradle
               run: >
-                  ./gradlew runZosmfAuthTest -x test --scan --info
+                  ./gradlew runZosmfAuthTest --scan --info
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -354,15 +360,13 @@ jobs:
                       discoverable-client/build/libs
                       discovery-service/build/libs
                       gateway-service/build/libs
+                      integration-tests/build
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
-            - uses: actions/download-artifact@v2
-              with:
-                  name: BuiltJars
             - name: Build with Gradle
               run: >
-                  ./gradlew runZosmfAuthTest -x test --scan --info
+                  ./gradlew runZosmfAuthTest --scan --info
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -407,6 +411,7 @@ jobs:
                       discoverable-client/build/libs
                       discovery-service/build/libs
                       gateway-service/build/libs
+                      integration-tests/build
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
@@ -416,7 +421,7 @@ jobs:
 
             - name: Build with Gradle
               run: >
-                  ./gradlew runCachingServiceTests -x test --scan --info
+                  ./gradlew runCachingServiceTests --scan --info
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -471,6 +476,7 @@ jobs:
                       discoverable-client/build/libs
                       discovery-service/build/libs
                       gateway-service/build/libs
+                      integration-tests/build
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
