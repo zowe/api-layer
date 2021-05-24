@@ -34,10 +34,10 @@ public class FullApiMediationLayer {
     private Process nodeJsSampleApp;
 
     private boolean firstCheck = true;
-    private Map<String, String> env;
+    private final Map<String, String> env;
     private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
 
-    private static FullApiMediationLayer instance = new FullApiMediationLayer();
+    private static final FullApiMediationLayer instance = new FullApiMediationLayer();
 
 
     private FullApiMediationLayer() {
@@ -128,7 +128,7 @@ public class FullApiMediationLayer {
             discoverableClientService.stop();
 
             cachingService.stop();
-            if (!attlsEnabled) {
+            if (!attlsEnabled && !runsOffPlatform()) {
                 nodeJsSampleApp.destroy();
             }
         } catch (Exception e) {
@@ -146,11 +146,13 @@ public class FullApiMediationLayer {
             new ApiMediationLayerStartupChecker().waitUntilReady();
 
             try {
-                if (!attlsEnabled) {
-                    nodeJsSampleApp = nodeJsBuilder.start();
+                if (!runsOffPlatform()) {
+                    if (!attlsEnabled) {
+                        nodeJsSampleApp = nodeJsBuilder.start();
+                    }
+                    cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
+                    cachingService.waitUntilReady();
                 }
-                cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
-                cachingService.waitUntilReady();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
