@@ -53,12 +53,13 @@ jobs:
                       gateway-service/build/libs
                       integration-tests/build
                       mock-zosmf/build/libs
+                      onboarding-enabler-nodejs/node_modules
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
             - name: Build with Gradle
               run: >
-                  ./gradlew build --scan --info -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                  ./gradlew build --info -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -104,6 +105,7 @@ jobs:
                       gateway-service/build/libs
                       integration-tests/build
                       mock-zosmf/build/libs
+                      onboarding-enabler-nodejs/node_modules
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
@@ -126,7 +128,7 @@ jobs:
                       ${{ runner.OS }}-node001-
             - name: Run CI Tests
               run: >
-                  ./gradlew runCITests --scan --info -DexternalJenkinsToggle="true"
+                  ./gradlew runCITests --info -DexternalJenkinsToggle="true"
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -140,7 +142,7 @@ jobs:
               with:
                   name: CITests
                   path: |
-                      **/reports/**
+                      integration-tests/build/reports/**
                       **/*.log
             - name: Cleanup Gradle Cache
               run: |
@@ -182,7 +184,7 @@ jobs:
                       ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
-                  ./gradlew --info --scan coverage sonarqube
+                  ./gradlew --info coverage sonarqube
                   -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                   -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
               env:
