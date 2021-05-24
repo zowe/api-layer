@@ -53,6 +53,7 @@ jobs:
                         gateway-service/build/libs
                         integration-tests/build
                         mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001
                     restore-keys: |
@@ -105,6 +106,7 @@ jobs:
                         gateway-service/build/libs
                         integration-tests/build
                         mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001
                     restore-keys: |
