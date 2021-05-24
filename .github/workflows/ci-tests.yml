@@ -52,6 +52,7 @@ jobs:
                       discovery-service/build/libs
                       gateway-service/build/libs
                       integration-tests/build
+                      mock-zosmf/build/libs
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
@@ -102,6 +103,7 @@ jobs:
                       discovery-service/build/libs
                       gateway-service/build/libs
                       integration-tests/build
+                      mock-zosmf/build/libs
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
