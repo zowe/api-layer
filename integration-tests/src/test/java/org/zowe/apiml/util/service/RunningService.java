@@ -84,6 +84,10 @@ public class RunningService {
                     log.info("found PID:" + this.subprocessPid + " for service: {}", id);
                 }
             }
+
+            while((line = br.readLine()) != null) {
+                log.info(line);
+            }
         } catch (IOException e) {
             log.error(e.getMessage());
         }
