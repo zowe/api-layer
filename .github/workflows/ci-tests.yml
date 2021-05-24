@@ -126,6 +126,11 @@ jobs:
                   key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                   restore-keys: |
                       ${{ runner.OS }}-node001-
+            - name: Install NPM modules
+              run: |
+                  cd onboarding-enabler-nodejs
+                  npm install
+                  cd ..
             - name: Run CI Tests
               run: >
                   ./gradlew runCITests
