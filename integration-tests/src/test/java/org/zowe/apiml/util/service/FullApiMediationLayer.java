@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.util.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -23,7 +22,6 @@ import java.util.Map;
 //TODO this class doesn't lend itself well to switching of configurations.
 //attls is integrated in a kludgy way, and deserves a rewrite
 
-@Slf4j
 public class FullApiMediationLayer {
     private RunningService discoveryService;
     private RunningService gatewayService;
@@ -109,28 +107,16 @@ public class FullApiMediationLayer {
 
     public void start() {
         try {
-            log.info("Start Discovery Service");
-
             discoveryService.startWithScript("discovery-package/src/main/resources/bin/start.sh", env);
-
-            log.info("Start Gateway Service");
             gatewayService.startWithScript("gateway-package/src/main/resources/bin/start.sh", env);
-
-            log.info("Start Mock Zosmf Service");
             mockZosmfService.start();
 
-            log.info("Start API Catalog Service");
             apiCatalogService.startWithScript("api-catalog-package/src/main/resources/bin/start.sh", env);
-
-            log.info("Start Discoverable client");
             discoverableClientService.start();
 
             if (!attlsEnabled) {
-                log.info("Node Js Sample App");
                 nodeJsSampleApp = nodeJsBuilder.start();
             }
-
-            log.info("Caching service starting");
             cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
         } catch (IOException ex) {
             ex.printStackTrace();

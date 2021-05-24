@@ -130,7 +130,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Run CI Tests
                 run: >
-                    ./gradlew runCITests
+                    ./gradlew runCITests --info
                     -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                     -Dcredentials.user=USER -Dcredentials.password=validPassword
                     -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017

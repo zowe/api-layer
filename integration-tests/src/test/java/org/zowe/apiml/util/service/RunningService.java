@@ -10,23 +10,17 @@
 package org.zowe.apiml.util.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.awaitility.Duration;
 import org.junit.platform.commons.util.StringUtils;
-import org.zowe.apiml.util.DiscoveryRequests;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.awaitility.Awaitility.await;
-
 @Slf4j
 public class RunningService {
-    private final DiscoveryRequests discovery = new DiscoveryRequests();
-    private Process newCachingProcess;
+    private Process process;
 
     private final String jarFile;
     private final String id;
@@ -59,7 +53,7 @@ public class RunningService {
 
         ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
         builder1.directory(new File("../"));
-        newCachingProcess = builder1.inheritIO().start();
+        process = builder1.inheritIO().start();
     }
 
     public void startWithScript(String bashScript, Map<String, String> env) {
@@ -95,27 +89,6 @@ public class RunningService {
         }
     }
 
-    public void waitUntilReady() {
-        await()
-            .atMost(Duration.TWO_MINUTES)
-            .with()
-            .pollInterval(Duration.TEN_SECONDS)
-            .until(this::isServiceProperlyRegistered);
-    }
-
-    public boolean isServiceProperlyRegistered() {
-        try {
-            if (discovery.isApplicationRegistered(id)) {
-                return true;
-            }
-        } catch (URISyntaxException e) {
-            // Ignorable exception.
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
     public void stop() {
         if (subprocessPid != null) {
             ProcessBuilder pb = new ProcessBuilder("kill", "-9", subprocessPid);
@@ -126,9 +99,9 @@ public class RunningService {
                 log.error(e.getMessage());
             }
         }
-        if (newCachingProcess != null) {
+        if (process != null) {
             log.info("Stopping new Service with ID {}", id);
-            newCachingProcess.destroy();
+            process.destroy();
         }
     }
 }
