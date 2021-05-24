@@ -53,7 +53,7 @@ jobs:
                         gateway-service/build/libs
                         integration-tests/build
                         mock-zosmf/build/libs
-                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001
@@ -105,7 +105,7 @@ jobs:
                         gateway-service/build/libs
                         integration-tests/build
                         mock-zosmf/build/libs
-                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001
@@ -126,11 +126,6 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-            -   name: Install NPM modules
-                run: |
-                    cd onboarding-enabler-nodejs
-                    npm install
-                    cd ..
             -   name: Run CI Tests
                 run: >
                     ./gradlew runCITests
