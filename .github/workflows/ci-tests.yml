@@ -68,7 +68,6 @@ jobs:
                   name: UnitTestReports
                   path: |
                       **/reports/**
-                      **/test-results/**
                       **/*.log
             - name: Cleanup Gradle Cache
               run: |
@@ -106,6 +105,23 @@ jobs:
                   key: ${{ runner.OS }}-artifacts001
                   restore-keys: |
                       ${{ runner.OS }}-artifacts001
+            - name: Cache Gradle packages
+              uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.gradle/caches
+                      ~/.gradle/wrapper
+                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                  restore-keys: |
+                      ${{ runner.os }}-gradle001-
+            - name: Cache Node.js modules
+              uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                  restore-keys: |
+                      ${{ runner.OS }}-node001-
             - name: Run CI Tests
               run: >
                   ./gradlew runCITests --scan --info -DexternalJenkinsToggle="true"
@@ -123,8 +139,12 @@ jobs:
                   name: CITests
                   path: |
                       **/reports/**
-                      **/test-results/**
                       **/*.log
+            - name: Cleanup Gradle Cache
+              run: |
+                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                  rm -f ~/.gradle/caches/modules-2/gc.properties
+                  rm -rf ~/.gradle/caches/build-cache-1
 
     sonarQubeScan:
 
