@@ -15,10 +15,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @EnableApiDiscovery
-public class EnablerV1SampleApplication {
+public class SpringEnablerSampleApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(EnablerV1SampleApplication.class, args);
+        SpringApplication.run(SpringEnablerSampleApplication.class, args);
     }
 
 }
