@@ -1,33 +1,81 @@
-import React from 'react';
-import { Button, TextField } from '@material-ui/core';
-import ErrorIcon from '@material-ui/icons/Error';
+import React, { useState } from 'react';
+import { Button, TextField, Typography } from '@material-ui/core';
+import { withStyles, makeStyles } from '@material-ui/core/styles';
 
-import './Login.css';
 import './LoginWebflow.css';
+import LoginBackground from '../../assets/images/login_background.jpg';
 import Spinner from '../Spinner/Spinner';
+import MetricsIconButton from '../Icons/MetricsIconButton';
+import Error from '../Error';
 
-export default class Login extends React.Component {
-    constructor(props) {
-        super(props);
+const useStyles = makeStyles((theme) => ({
+    root: {
+        overflow: 'hidden',
+        'background-image': `url(${LoginBackground})`,
+        'background-size': 'cover',
+        'background-repeat': 'no-repeat',
+        display: 'flex',
+        flex: 'auto',
+        height: '100%',
+        'padding-bottom': 0,
+        '@media only screen and (max-width: 1315px)': {
+            picture: {
+                display: 'none',
+            },
+        },
+    },
+    formContainer: {
+        height: '100vh',
+        width: '440px',
+        'background-color': theme.palette.background.main,
+    },
+    form: {
+        display: 'flex',
+        'flex-direction': 'column',
+    },
+}));
 
-        this.state = {
-            username: '',
-            password: '',
-            errorMessage: '',
-        };
+const MetricsServiceTitle = withStyles((theme) => ({
+    h5: {
+        color: theme.palette.primary.main,
+        fontWeight: 'bold',
+        marginTop: 90,
+        marginBottom: 90,
+        marginLeft: 20,
+    },
+}))(Typography);
 
-        this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
-    }
+const FormField = withStyles(() => ({
+    root: {
+        margin: 40,
+        marginTop: 0,
+    },
+}))(TextField);
 
-    isDisabled = () => {
-        const { isFetching } = this.props;
-        return isFetching;
-    };
+const SubmitButton = withStyles((theme) => ({
+    root: {
+        margin: 40,
+        padding: 15,
+        '&:hover': {
+            backgroundColor: theme.palette.primary.light,
+        },
+    },
+}))(Button);
 
-    handleError = (error) => {
-        let messageText;
-        const { authentication } = this.props;
+const LoginError = withStyles(() => ({
+    root: {
+        marginLeft: 20,
+    },
+}))(Error);
+
+const Login = (props) => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const { authentication, isFetching } = props;
+
+    const handleError = (error) => {
+        let errorText;
+
         // eslint-disable-next-line global-require
         const errorMessages = require('../../error-messages.json');
         if (
@@ -36,129 +84,87 @@ export default class Login extends React.Component {
             error.messageType !== undefined &&
             error.messageType !== null
         ) {
-            messageText = `Unexpected error, please try again later (${error.messageNumber})`;
+            errorText = `Unexpected error, please try again later (${error.messageNumber})`;
             const filter = errorMessages.messages.filter(
                 (x) => x.messageKey != null && x.messageKey === error.messageNumber
             );
-            if (filter.length !== 0) messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
+            if (filter.length !== 0) errorText = `(${error.messageNumber}) ${filter[0].messageText}`;
         } else if (error.status === 401 && authentication.sessionOn) {
-            messageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
+            errorText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
             authentication.onCompleteHandling();
         } else if (error.status === 500) {
-            messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
+            errorText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
         }
-        return messageText;
+        return errorText;
     };
 
-    handleChange(e) {
-        const { name, value } = e.target;
-        this.setState({ [name]: value });
-    }
-
-    handleSubmit(e) {
+    const handleSubmit = (e) => {
         e.preventDefault();
 
-        const { username, password } = this.state;
-        const { login } = this.props;
+        const { login } = props;
 
         if (username && password) {
             login({ username, password });
         }
-    }
+    };
 
-    render() {
-        const { username, password, errorMessage } = this.state;
-        const { authentication, isFetching } = this.props;
-        let messageText;
-        if (
-            authentication !== undefined &&
-            authentication !== null &&
-            authentication.error !== undefined &&
-            authentication.error !== null
-        ) {
-            messageText = this.handleError(authentication.error);
-        } else if (errorMessage) {
-            messageText = errorMessage;
-        }
-        return (
-            <div className="login-object">
-                <div className="login-form">
-                    {' '}
-                    <div className="title-container">
-                        <div className="product-title">
-                            <div className="text-block-2">Metrics Service</div>
-                        </div>
-                    </div>
-                    <div className="login-inputs-container">
-                        <div className="username-container">
-                            <div className="username-input">
-                                <div className="w-form">
-                                    <form
-                                        id="login-form"
-                                        name="login-form"
-                                        data-testid="login-form"
-                                        data-name="Login Form"
-                                        className="form"
-                                        onSubmit={this.handleSubmit}
-                                    >
-                                        <TextField
-                                            label="Username"
-                                            className="formfield"
-                                            id="username"
-                                            data-testid="username"
-                                            name="username"
-                                            type="text"
-                                            size="medium"
-                                            value={username}
-                                            onChange={this.handleChange}
-                                            autoComplete="username"
-                                        />
-                                        <TextField
-                                            label="Password"
-                                            className="formfield"
-                                            id="password"
-                                            data-testid="password"
-                                            name="password"
-                                            type="password"
-                                            size="medium"
-                                            value={password}
-                                            onChange={this.handleChange}
-                                            caption="Default: password"
-                                        />
-                                        <Button
-                                            className="formfield"
-                                            type="submit"
-                                            data-testid="submit"
-                                            fullWidth
-                                            disabled={this.isDisabled()}
-                                            size="medium"
-                                        >
-                                            Sign in
-                                        </Button>
-                                        <Spinner
-                                            className="formfield form-spinner"
-                                            isLoading={isFetching}
-                                            css={{
-                                                position: 'relative',
-                                                top: '70px',
-                                            }}
-                                        />
-                                        {messageText !== undefined && messageText !== null && (
-                                            <TextField className="error-message" label="">
-                                                <div id="error-message">
-                                                    <p className="error-message-content">
-                                                        <ErrorIcon color="#de1b1b" size="2rem" /> {messageText}
-                                                    </p>
-                                                </div>
-                                            </TextField>
-                                        )}
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    const messageText =
+        authentication !== undefined &&
+        authentication !== null &&
+        authentication.error !== undefined &&
+        authentication.error !== null
+            ? handleError(authentication.error)
+            : null;
+
+    const classes = useStyles();
+
+    return (
+        <div className={classes.root}>
+            <div className={classes.formContainer}>
+                <MetricsServiceTitle variant="h5" align="left">
+                    <MetricsIconButton />
+                    Metrics Service
+                </MetricsServiceTitle>
+                <form className={classes.form}>
+                    <FormField
+                        label="Username"
+                        name="username"
+                        value={username}
+                        id="username"
+                        type="text"
+                        onChange={(t) => setUsername(t.target.value)}
+                    />
+                    <FormField
+                        label="Password"
+                        name="password"
+                        value={password}
+                        id="password"
+                        type="password"
+                        onChange={(t) => setPassword(t.target.value)}
+                    />
+                    <SubmitButton
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        size="medium"
+                        disabled={isFetching}
+                        onClick={handleSubmit}
+                    >
+                        Sign in
+                    </SubmitButton>
+                    <Spinner
+                        className="formfield form-spinner"
+                        isLoading={isFetching}
+                        css={{
+                            position: 'relative',
+                            top: '70px',
+                        }}
+                    />
+                    {messageText !== undefined && messageText !== null && <LoginError text={messageText} />}
+                </form>
             </div>
-        );
-    }
-}
+        </div>
+    );
+};
+
+export default Login;

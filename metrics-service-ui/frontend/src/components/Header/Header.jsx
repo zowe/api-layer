@@ -3,7 +3,7 @@ import { IconButton, Tooltip, Link } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
 
-import MetricsLogo from '../../assets/images/login_background.jpg'; // TODO real logo
+import MetricsIconButton from '../Icons/MetricsIconButton';
 
 const LogoutIconButton = withStyles((theme) => ({
     root: {
@@ -24,19 +24,6 @@ const LogoutIcon = withStyles(() => ({
     },
 }))(PowerSettingsNewIcon);
 
-const MetricsIconButton = withStyles(() => ({
-    root: {
-        height: 48,
-        width: 48,
-        margin: 10,
-        marginLeft: 20,
-        padding: 0,
-        '&:hover': {
-            backgroundColor: 'transparent',
-        },
-    },
-}))(IconButton);
-
 const ServiceNameHeader = withStyles((theme) => ({
     root: {
         color: theme.palette.header.main,
@@ -56,9 +43,7 @@ const Header = (props) => {
 
     return (
         <div className="header">
-            <MetricsIconButton href={dashboard}>
-                <img src={MetricsLogo} alt="Metrics Service icon" />
-            </MetricsIconButton>
+            <MetricsIconButton />
             <ServiceNameHeader variant="h6" align="left" underline="none" href={dashboard}>
                 Metrics Service
             </ServiceNameHeader>
