@@ -37,7 +37,7 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | docs                                     | Documentation                      |
 | gateway-service                          | Core Service - Gateway Service     |
 | mock-zosmf                               | Test - More zOSMF versions mock    |
-| onboarding-enabler-spring-v1-sample-app  | Sample Service - Spring Enabler    |
+| onboarding-enabler-spring-sample-app  | Sample Service - Spring Enabler    |
 | onboarding-enabler-nodejs-sample-app     | Sample Service - Node.js Enabler   |
 | integration-tests                        | Test - Integration test            |
 | keystore                                 | Config - Local TLS config          |

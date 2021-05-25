@@ -60,10 +60,10 @@ npm run caching-service
 npm run discoverable-client
 ```
 
-### Sample Application - onboarding-enabler-spring-v1-sample-app
+### Sample Application - onboarding-enabler-spring-sample-app
 
 ```shell
-npm run onboarding-enabler-spring-v1-sample-app
+npm run onboarding-enabler-spring-sample-app
 ```
 
 ### Sample Application - onboarding-enabler-nodejs-sample-app
