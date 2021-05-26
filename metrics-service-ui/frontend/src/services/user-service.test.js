@@ -6,7 +6,7 @@ function mockFetch(data) {
     return jest.fn().mockImplementation(() =>
         Promise.resolve({
             ok: true,
-            json: () => data,
+            text: () => Promise.resolve(JSON.stringify(data)),
         })
     );
 }
@@ -14,7 +14,7 @@ function mockFetch(data) {
 describe('>>> User service tests', () => {
     it('should return user on login', async () => {
         const result = {};
-        const fetch = mockFetch(result);
+        global.fetch = mockFetch(result);
         const user = await userService.login({ username: 'user', password: 'password' });
         expect(user).toEqual(result);
         expect(fetch).toHaveBeenCalledTimes(1);
