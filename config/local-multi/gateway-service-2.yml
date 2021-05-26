@@ -18,6 +18,10 @@ apiml:
             enabled: true
     banner: console
 
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
 spring:
     output:
         ansi:
@@ -30,6 +34,9 @@ server:
     internal:
         enabled: true
         port: 10027
+        ssl:
+            keyAlias: localhost-multi
+            keyStore: keystore/localhost/localhost-multi.keystore.p12
     ssl:
         keyAlias: localhost-multi
         keyPassword: password
