@@ -6,7 +6,7 @@ import './LoginWebflow.css';
 import LoginBackground from '../../assets/images/login_background.jpg';
 import Spinner from '../Spinner/Spinner';
 import MetricsIconButton from '../Icons/MetricsIconButton';
-import Error from '../Error';
+import Error from '../Error/Error';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -144,6 +144,7 @@ const Login = (props) => {
                     />
                     <SubmitButton
                         type="submit"
+                        id="submit"
                         variant="contained"
                         color="primary"
                         size="medium"

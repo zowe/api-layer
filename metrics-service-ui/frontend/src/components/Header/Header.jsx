@@ -44,11 +44,11 @@ const Header = (props) => {
     return (
         <div className="header">
             <MetricsIconButton />
-            <ServiceNameHeader variant="h6" align="left" underline="none" href={dashboard}>
+            <ServiceNameHeader id="name" variant="h6" align="left" underline="none" href={dashboard}>
                 Metrics Service
             </ServiceNameHeader>
             <Tooltip title="Logout">
-                <LogoutIconButton onClick={handleLogout}>
+                <LogoutIconButton onClick={handleLogout} id="logout">
                     <LogoutIcon />
                 </LogoutIconButton>
             </Tooltip>

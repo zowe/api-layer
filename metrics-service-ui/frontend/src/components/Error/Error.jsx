@@ -18,7 +18,7 @@ const ErrorTypography = withStyles(() => ({
 
 const Error = (props) => (
     <ErrorTypography {...props}>
-        <CustomErrorIcon {...props} /> {props.text}
+        <CustomErrorIcon id="erroricon" {...props} /> {props.text}
     </ErrorTypography>
 );
 

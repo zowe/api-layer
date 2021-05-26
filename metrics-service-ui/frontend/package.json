@@ -29,7 +29,7 @@
         "uuid": "8.3.2"
     },
     "devDependencies": {
-        "@wojtekmaj/enzyme-adapter-react-17": "^0.6.1",
+        "@wojtekmaj/enzyme-adapter-react-17": "0.6.1",
         "cypress": "7.4.0",
         "enzyme": "3.11.0",
         "eslint-config-airbnb": "16.1.0",
@@ -39,6 +39,7 @@
         "eslint-plugin-jsx-a11y": "6.1.2",
         "eslint-plugin-prettier": "3.4.0",
         "eslint-plugin-react": "7.23.2",
+        "jest": "26.6.0",
         "jest-enzyme": "7.1.2",
         "jest-html-reporter": "3.4.0",
         "jest-mock": "26.6.2",
@@ -46,7 +47,7 @@
     },
     "scripts": {
         "build": "react-scripts build",
-        "test": "react-scripts test --watchAll=false --silent --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage",
+        "test": "react-scripts test --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage",
         "start": "react-scripts start",
         "cy:open": "cypress open",
         "cy:e2e": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless"
