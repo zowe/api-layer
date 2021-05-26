@@ -29,7 +29,7 @@ public class LocalHandshake implements Verifier {
     @Override
     public void verify() {
         try { //NOSONAR
-            SSLServerSocket listener = (SSLServerSocket) verifierSslContext.getSslContext().getServerSocketFactory().createServerSocket(0);
+            SSLServerSocket listener = (SSLServerSocket) verifierSslContext.getSslContextWithKeystore().getServerSocketFactory().createServerSocket(0);
 //            start listening on socket to do a SSL handshake
             new SocketServer(listener);
             String address = "https://localhost:" + listener.getLocalPort();

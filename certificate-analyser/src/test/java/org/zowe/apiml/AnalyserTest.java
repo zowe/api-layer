@@ -32,6 +32,7 @@ class AnalyserTest {
         System.setOut(originalOut);
     }
 
+
     @Test
     void providedCorrectInputs_certificateIsVerified() {
         String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",

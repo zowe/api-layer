@@ -13,8 +13,10 @@ import org.junit.jupiter.api.*;
 import picocli.CommandLine;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.security.*;
+import java.security.cert.CertificateException;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,7 +37,7 @@ class LocalHandshakeTest {
     }
 
     @Test
-    void providedCorrectInputs_thenSuccessMessageIsDisplayed() throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    void providedCorrectInputs_thenSuccessMessageIsDisplayed() throws IOException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
             "--truststore", "../keystore/localhost/localhost.truststore.p12",
             "--keypasswd", "password",
@@ -45,8 +47,8 @@ class LocalHandshakeTest {
         CommandLine cmdLine = new CommandLine(conf);
         cmdLine.parseArgs(args);
         Stores stores = new Stores(conf);
-        VerifierSSLContext sslContext = VerifierSSLContext.initSSLContext(stores);
-        HttpClient client = new HttpClient(sslContext.getSslContext());
+        VerifierSSLContext sslContext = VerifierSSLContext.initSSLContextWithKeystore(stores);
+        HttpClient client = new HttpClient(sslContext.getSslContextWithKeystore());
         Verifier localHandshake = new LocalHandshake(sslContext, client);
         localHandshake.verify();
         assertThat(outputStream.toString(), containsString("Handshake was successful. Certificate stored under alias \"" + conf.getKeyAlias() + "\" is trusted by truststore \"" + conf.getTrustStore()
@@ -54,7 +56,7 @@ class LocalHandshakeTest {
     }
 
     @Test
-    void providedNotTrustedKey_thenHandshakeExceptionIsDisplayed() throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    void providedNotTrustedKey_thenHandshakeExceptionIsDisplayed() throws IOException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String[] args = {"--keystore", "../keystore/selfsigned/localhost.keystore.p12",
             "--truststore", "../keystore/localhost/localhost.truststore.p12",
             "--keypasswd", "password",
@@ -64,8 +66,8 @@ class LocalHandshakeTest {
         CommandLine cmdLine = new CommandLine(conf);
         cmdLine.parseArgs(args);
         Stores stores = new Stores(conf);
-        VerifierSSLContext sslContext = VerifierSSLContext.initSSLContext(stores);
-        HttpClient client = new HttpClient(sslContext.getSslContext());
+        VerifierSSLContext sslContext = VerifierSSLContext.initSSLContextWithKeystore(stores);
+        HttpClient client = new HttpClient(sslContext.getSslContextWithKeystore());
         Verifier localHandshake = new LocalHandshake(sslContext, client);
         localHandshake.verify();
         assertThat(outputStream.toString(), containsString("Handshake failed. Certificate stored under alias \"" + conf.getKeyAlias() + "\" is not trusted by truststore"));

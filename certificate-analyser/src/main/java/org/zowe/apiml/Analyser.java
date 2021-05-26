@@ -28,7 +28,7 @@ public class Analyser {
             }
 
             Stores stores = new Stores(conf);
-            VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContext(stores);
+            VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContextWithoutKeystore(stores);
             List<Verifier> verifiers = new ArrayList<>();
             HttpClient client = new HttpClient(verifierSslContext.getSslContext());
             if (conf.getRemoteUrl() != null) {
@@ -38,7 +38,10 @@ public class Analyser {
             }
 
             if (conf.isDoLocalHandshake()) {
-                verifiers.add(new LocalHandshake(verifierSslContext, client));
+                verifierSslContext = VerifierSSLContext.initSSLContextWithKeystore(stores);
+                HttpClient clientWithKeystore = new HttpClient(verifierSslContext.getSslContextWithKeystore());
+
+                verifiers.add(new LocalHandshake(verifierSslContext, clientWithKeystore));
             }
             verifiers.add(new LocalVerifier(stores));
             verifiers.forEach(Verifier::verify);

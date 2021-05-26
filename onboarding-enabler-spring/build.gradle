@@ -2,13 +2,7 @@ buildscript {
     repositories mavenRepositories
 
     ext {
-        if (project.hasProperty('enabler')) {
-            if(enabler.contains('v1')) {
-                springBootVersion = rootProject.ext.springBootVersionV1
-            } else {
-                springBootVersion = rootProject.ext.springBootVersion
-            }
-        }
+        springBootVersion = rootProject.ext.springBootVersion
     }
 
     dependencies {
