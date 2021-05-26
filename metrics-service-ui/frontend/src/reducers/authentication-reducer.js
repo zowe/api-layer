@@ -8,25 +8,21 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
     switch (action.type) {
         case userConstants.USERS_LOGIN_REQUEST:
             return {
-                ...state,
                 user: action.user,
             };
         case userConstants.USERS_LOGIN_SUCCESS:
+            sessionDefaultState.sessionOn = true;
             return {
-                ...state,
-                sessionOn: true,
+                sessionOn: sessionDefaultState.sessionOn,
                 error: null,
                 user: action.user,
-                showHeader: true,
             };
         case userConstants.USERS_LOGIN_FAILURE:
             return {
-                ...state,
                 error: action.error,
             };
         case userConstants.AUTHENTICATION_FAILURE:
             return {
-                ...state,
                 error: action.error,
                 sessionOn: sessionDefaultState.sessionOn,
                 onCompleteHandling: () => {
@@ -36,18 +32,14 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
         case userConstants.USERS_LOGOUT_REQUEST:
         case userConstants.USERS_LOGOUT_SUCCESS:
             return {
-                ...state,
                 error: null,
-                showHeader: false,
                 onCompleteHandling: () => {
                     sessionDefaultState.sessionOn = false;
                 },
             };
         case userConstants.USERS_LOGOUT_FAILURE:
             return {
-                ...state,
                 error: action.error,
-                showHeader: false,
             };
         default:
             return state;
