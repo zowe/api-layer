@@ -17,7 +17,7 @@ ext {
     restAssuredVersion = '3.0.7'
     commonsValidatorVersion = "1.7"
     powerMockVersion = "2.0.4"
-    jacksonCoreVersion = "2.10.1"
+    jacksonCoreVersion = "2.11.4"
     javaxValidationApiVersion = "2.0.1.Final"
     gsonVersion = '2.8.2'
     mockitoCoreVersion = '2.23.4'
