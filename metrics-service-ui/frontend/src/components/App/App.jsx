@@ -7,7 +7,7 @@ import { AsyncLoginContainer } from './AsyncModules';
 import Spinner from '../Spinner/Spinner';
 import HeaderContainer from '../Header/HeaderContainer';
 import DashboardContainter from '../Dashboard/DashboardContainer';
-import theme from '../../theme';
+import theme from '../../helpers/theme';
 
 class App extends Component {
     render() {
