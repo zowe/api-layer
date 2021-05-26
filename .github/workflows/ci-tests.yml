@@ -130,6 +130,13 @@ jobs:
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            - name: Store results
+              uses: actions/upload-artifact@v2
+              if: always()
+              with:
+                  name: CITests
+                  path: |
+                      integration-tests/build/reports/**
             -   name: Cleanup Gradle Cache
                 run: |
                     rm -f ~/.gradle/caches/modules-2/modules-2.lock
@@ -203,6 +210,11 @@ jobs:
                   name: CITestsInternalPort
                   path: |
                       integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsATTLS:
         needs: BuildAndPackage
@@ -274,9 +286,12 @@ jobs:
               with:
                   name: CITestsATTLS
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsZosmfRsu2012:
         needs: BuildAndPackage
@@ -345,9 +360,12 @@ jobs:
               with:
                   name: CITestsZosmfRsu2012
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
 
     CITestsZosmfWithoutJwt:
@@ -417,9 +435,12 @@ jobs:
               with:
                   name: CITestsZosmfWithoutJwt
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
 
     CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
@@ -489,9 +510,12 @@ jobs:
               with:
                   name: CITestsZosmfWithoutJwtWithAuthenticateEndpoint
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWithRedis:
         needs: BuildAndPackage
@@ -574,9 +598,12 @@ jobs:
               with:
                   name: CITestsWithRedis
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWithRedisWithoutSslVerification:
         needs: BuildAndPackage
@@ -655,9 +682,12 @@ jobs:
               with:
                   name: CITestsWithRedisWithoutSslVerification
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
     sonarQubeScan:
 
