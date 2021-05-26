@@ -29,6 +29,7 @@
         "uuid": "8.3.2"
     },
     "devDependencies": {
+        "cypress": "7.4.0",
         "eslint-config-airbnb": "16.1.0",
         "eslint-config-prettier": "8.3.0",
         "eslint-plugin-flowtype": "5.7.2",
@@ -42,7 +43,9 @@
     "scripts": {
         "build": "react-scripts build",
         "test": "react-scripts test --silent --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage --passWithNoTests",
-        "start": "react-scripts start"
+        "start": "react-scripts start",
+        "cy:open": "cypress open",
+        "cy:e2e": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless"
     },
     "jest-html-reporter": {
         "pageTitle": "Metrics Service UI Unit Tests",
