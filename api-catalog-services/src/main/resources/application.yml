@@ -1,7 +1,7 @@
 
 spring:
     application:
-        name: apicatalog
+        name: ${apiml.service.id}
     cloud:
         client:
             hostname: ${apiml.service.hostname}
@@ -38,6 +38,7 @@ logging:
 ##############################################################################################
 apiml:
     service:
+        id: apicatalog
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
         port: ${apiml.service.port}

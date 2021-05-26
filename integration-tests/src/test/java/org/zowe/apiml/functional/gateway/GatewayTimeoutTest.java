@@ -10,66 +10,48 @@
 package org.zowe.apiml.functional.gateway;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.http.HttpClientUtils;
+import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.time.Duration;
+import java.util.Collections;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.fail;
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @Slf4j
-@TestsNotMeantForZowe
+@DiscoverableClientDependentTest
+@Disabled("Test fails as timeout happens after far more time")
 class GatewayTimeoutTest implements TestWithStartedInstances {
     private static final String API_V1_GREETING_URI = "/api/v1/discoverableclient/greeting";
-    private static final int DEFAULT_TIMEOUT = 30000;
 
-    @Test
-    @SuppressWarnings("squid:S1160")
-    @Disabled("Failing in external environment.")
-    void shouldCallLongButBelowTimeoutRequest() throws IOException {
-        // Given
-        HttpGet request = createGreetingRequestWithDelay(DEFAULT_TIMEOUT - 5000);
+    private static final int SECOND = 1000;
+    private static final int DEFAULT_TIMEOUT = 30 * SECOND;
 
-        // When
-        final HttpResponse response = HttpClientUtils.client().execute(request);
-
-        // Then
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
-    }
-
-    @Test
-    @SuppressWarnings("squid:S1160")
-    void shouldTimeoutRequestWithGatewayTimeoutHttpResponseCode() throws IOException {
-        // Given
-        HttpGet request = createGreetingRequestWithDelay(DEFAULT_TIMEOUT + 1000);
-
-        // When
-        final HttpResponse response = HttpClientUtils.client().execute(request);
-
-        // Then
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_GATEWAY_TIMEOUT));
-    }
-
-    private HttpGet createGreetingRequestWithDelay(int delay) {
-        try {
-            URI uri = new URIBuilder(getUriFromGateway(API_V1_GREETING_URI)).setParameter("delayMs", Integer.toString(delay)).build();
-            return new HttpGet(uri);
-        } catch (URISyntaxException e) {
-            log.error("Test failed", e);
-            fail(e.getMessage());
-            return null;
+    @Nested
+    class GivenRequestTakesTooLong {
+        @Nested
+        class WhenCallingThroughGateway {
+            @Test
+            void returnGatewayTimeout() {
+                assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT + (5 * SECOND)), () -> {
+                    given()
+                    .when()
+                        .get(getUriFromGateway(API_V1_GREETING_URI,
+                            Collections.singletonList(
+                                new BasicNameValuePair("delayMs", String.valueOf(DEFAULT_TIMEOUT + SECOND)))
+                            )
+                        )
+                    .then()
+                        .statusCode(HttpStatus.SC_GATEWAY_TIMEOUT);
+                });
+            }
         }
     }
 }
