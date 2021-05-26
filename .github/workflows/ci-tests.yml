@@ -38,7 +38,7 @@ jobs:
                 with:
                     path: |
                         apiml-common-lib-package/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/apiml-common-lib-package/*.gradle*') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
@@ -89,7 +89,7 @@ jobs:
                 with:
                     path: |
                         api-catalog-services/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/api-catalog-services/*.gradle*') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
@@ -132,7 +132,7 @@ jobs:
                 with:
                     path: |
                         gateway-service/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/gateway-service/*.gradle*') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
@@ -175,7 +175,7 @@ jobs:
                 with:
                     path: |
                         discovery-service/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/discovery-service/*.gradle*') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
@@ -218,7 +218,7 @@ jobs:
                 with:
                     path: |
                         caching-service/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/caching-service/*.gradle*') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
@@ -261,7 +261,7 @@ jobs:
                 with:
                     path: |
                         discoverable-client/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/discoverable-client/*.gradle*') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
@@ -304,7 +304,7 @@ jobs:
                 with:
                     path: |
                         mock-zosmf/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/mock-zosmf/*.gradle*') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
