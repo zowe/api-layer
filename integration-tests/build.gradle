@@ -216,8 +216,14 @@ task runCITests(type: Test) {
 
     systemProperties System.properties
     useJUnitPlatform {
-        includeTags(
-            'StartupCheck'
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'SlowTests',
+            'AdditionalLocalTest',
+            'MainframeDependentTests',
+            'SAFAuthTest',
+            'AttlsTest'
         )
     }
 }
