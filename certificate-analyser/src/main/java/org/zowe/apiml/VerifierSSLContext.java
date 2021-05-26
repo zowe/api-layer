@@ -10,14 +10,17 @@
 package org.zowe.apiml;
 
 import javax.net.ssl.*;
+import java.io.IOException;
 import java.net.Socket;
 import java.security.*;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 public class VerifierSSLContext {
 
     private final Stores stores;
     private SSLContext sslContext;
+    private SSLContext sslContextWithKeystore;
 
     private VerifierSSLContext(Stores stores) {
         this.stores = stores;
@@ -31,14 +34,18 @@ public class VerifierSSLContext {
         return sslContext;
     }
 
-    static VerifierSSLContext initSSLContext(Stores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+    public SSLContext getSslContextWithKeystore() {
+        return sslContextWithKeystore;
+    }
+
+    static VerifierSSLContext initSSLContextWithKeystore(Stores stores) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
 
         VerifierSSLContext conf = new VerifierSSLContext(stores);
         TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustFactory.init(stores.getTrustStore());
         KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         keyFactory.init(stores.getKeyStore(), stores.getConf().getKeyPasswd().toCharArray());
-        conf.sslContext = SSLContext.getInstance("TLSv1.2");
+        conf.sslContextWithKeystore = SSLContext.getInstance("TLSv1.2");
         X509KeyManager originalKm = (X509KeyManager) keyFactory.getKeyManagers()[0];
         X509KeyManager km = new X509KeyManager() {
             public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
@@ -56,7 +63,7 @@ public class VerifierSSLContext {
 
             @Override
             public String[] getServerAliases(String s, Principal[] principals) {
-                return originalKm.getServerAliases(s,principals);
+                return originalKm.getServerAliases(s, principals);
             }
 
             @Override
@@ -69,7 +76,23 @@ public class VerifierSSLContext {
                 return originalKm.getPrivateKey(s);
             }
         };
-        conf.sslContext.init(new KeyManager[]{km}, trustFactory.getTrustManagers(), new SecureRandom());
+        conf.sslContextWithKeystore.init(new KeyManager[]{km}, trustFactory.getTrustManagers(), new SecureRandom());
+        return conf;
+
+    }
+
+    static VerifierSSLContext initSSLContextWithoutKeystore(Stores stores) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+
+        VerifierSSLContext conf = new VerifierSSLContext(stores);
+        TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustFactory.init(stores.getTrustStore());
+        KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+
+        KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        emptyKeystore.load(null, null);
+        keyFactory.init(emptyKeystore, null);
+        conf.sslContext = SSLContext.getInstance("TLSv1.2");
+        conf.sslContext.init(keyFactory.getKeyManagers(), trustFactory.getTrustManagers(), new SecureRandom());
         return conf;
 
     }
