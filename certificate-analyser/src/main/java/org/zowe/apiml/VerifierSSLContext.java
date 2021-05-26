@@ -38,7 +38,7 @@ public class VerifierSSLContext {
         return sslContextWithKeystore;
     }
 
-    static VerifierSSLContext initSSLContextWithKeystore(Stores stores) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+    static VerifierSSLContext initSSLContextWithKeystore(Stores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
 
         VerifierSSLContext conf = new VerifierSSLContext(stores);
         TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
