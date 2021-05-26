@@ -29,8 +29,8 @@ jobs:
               run: hostname
             - name: Run edit-etc-hosts script
               run: |
-                  ./scripts/edit-etc-hosts add ::1 fv-az177-438
-                  ./scripts/edit-etc-hosts add 127.0.0.1 fv-az177-438
+                  ./scripts/edit-etc-hosts.sh add ::1 fv-az177-438
+                  ./scripts/edit-etc-hosts.sh add 127.0.0.1 fv-az177-438
             - name: Cat the /etc/hosts
               run: cat /etc/hosts
             - name: Cache Gradle packages
