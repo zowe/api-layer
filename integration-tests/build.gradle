@@ -245,7 +245,8 @@ task runCITestsAttls(type: Test) {
             'AdditionalLocalTest',
             'MainframeDependentTests',
             'SAFAuthTest',
-            'NotAttlsTest'
+            'NotAttlsTest',
+            'RegistrationTest'
         )
     }
 }
