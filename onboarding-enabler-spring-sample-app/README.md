@@ -1,6 +1,6 @@
-# Sample Spring Boot v1 service
+# Sample Spring Boot Service
 
-This is a sample Hello World application using the 'onboarding-enabler-spring-v1'enabler.
+This is a sample Hello World application using the 'onboarding-enabler-spring'enabler.
 
 ## Prerequisite
 
@@ -11,7 +11,7 @@ This is a sample Hello World application using the 'onboarding-enabler-spring-v1
 You can start the service using the following shell script:
 
 ```shell
-java -jar onboarding-enabler-spring-v1-sample-app/build/libs/enabler-springboot-1.5.9.RELEASE-sample.jar --spring.config.location=classpath:/,file:./config/local/onboarding-enabler-spring-v1-sample-app.yml
+java -jar onboarding-enabler-spring-sample-app/build/libs/enabler-springboot-2.3.9.RELEASE-sample.jar --spring.config.location=classpath:/,file:./config/local/onboarding-enabler-spring-v1-sample-app.yml
 ```
 
 ## How to use

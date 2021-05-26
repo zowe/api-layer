@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.sample.enable.v1;
+package org.zowe.apiml.sample.enable;
 
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.springframework.boot.SpringApplication;
@@ -15,10 +15,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @EnableApiDiscovery
-public class EnablerV1SampleApplication {
+public class SpringEnablerSampleApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(EnablerV1SampleApplication.class, args);
+        SpringApplication.run(SpringEnablerSampleApplication.class, args);
     }
 
 }

@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.sample.enable.v1.controller;
+package org.zowe.apiml.sample.enable.controller;
 
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;

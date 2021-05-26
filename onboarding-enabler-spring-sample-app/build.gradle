@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = "1.5.9.RELEASE"
+        springBootVersion = "2.3.9.RELEASE"
     }
     repositories {
         mavenCentral()
@@ -20,8 +20,9 @@ apply plugin: 'idea'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
 
-springBoot {
-    executable = true
+bootJar {
+    baseName = "enabler-springboot-${springBootVersion}-sample"
+    launchScript()
 }
 
 jar {
