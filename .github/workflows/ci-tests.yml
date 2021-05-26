@@ -29,6 +29,7 @@ jobs:
               run: hostname
             - name: Run edit-etc-hosts script
               run: |
+                  chmod 777 /etc/hosts
                   ./scripts/edit-etc-hosts.sh add ::1 fv-az177-438
                   ./scripts/edit-etc-hosts.sh add 127.0.0.1 fv-az177-438
             - name: Cat the /etc/hosts
