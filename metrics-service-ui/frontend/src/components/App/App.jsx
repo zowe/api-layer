@@ -2,7 +2,7 @@ import React, { Component, Suspense } from 'react';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 import { ThemeProvider } from '@material-ui/core/styles';
 
-import AuthRoute from '../AuthRoute/AuthRoute';
+import AuthRoute from '../AuthRoute/AuthRouteContainer';
 import { AsyncLoginContainer } from './AsyncModules';
 import Spinner from '../Spinner/Spinner';
 import HeaderContainer from '../Header/HeaderContainer';

@@ -47,7 +47,7 @@
     },
     "scripts": {
         "build": "react-scripts build",
-        "test": "react-scripts test --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage",
+        "test": "react-scripts test --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage --silent",
         "start": "react-scripts start",
         "cy:open": "cypress open",
         "cy:e2e": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless"

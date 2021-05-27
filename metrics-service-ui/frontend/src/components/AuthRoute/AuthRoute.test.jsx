@@ -1,18 +1,38 @@
 /* eslint-disable no-undef */
-import { Redirect, Route } from 'react-router-dom';
-import { shallow } from 'enzyme';
-// import configureMockStore from 'redux-mock-store';
+import { Router } from 'react-router-dom';
+import { mount } from 'enzyme';
+import { createStore } from 'redux';
 
+import history from '../../helpers/history';
+import { rootReducer } from '../../reducers';
 import AuthRoute from './AuthRoute';
 
 describe('>>> AuthRoute component tests', () => {
-    // it('not authenticated returns Redirect component', () => {
-    //     const wrapper = shallow(<AuthRoute />);
-    //     expect(wrapper.find(Redirect)).to.have.lengthOf(1);
-    // });
-    // it('authenticated returns Route component', () => {
-    //     const wrapper = shallow(<AuthRoute />);
-    //     wrapper.setState({ authenticationReducer: { sessionOn: true } });
-    //     expect(wrapper.find(Route)).to.have.lengthOf(1);
-    // });
+    let store;
+
+    beforeEach(() => {
+        store = createStore(rootReducer);
+    });
+
+    it('should contain a Redirect component when not authenticated', () => {
+        const wrapper = mount(
+            <Router history={history}>
+                <AuthRoute store={store} />
+            </Router>
+        );
+        expect(wrapper.find('AuthRoute').prop('authenticated')).toBeFalsy();
+        expect(wrapper.find('Redirect')).toExist();
+    });
+
+    it('should contain a Route component when authenticated', () => {
+        const wrapper = mount(
+            <Router history={history}>
+                <AuthRoute store={store} authenticated />
+            </Router>
+        );
+        // eslint-disable-next-line no-console
+        console.log(wrapper.debug());
+        expect(wrapper.find('AuthRoute').prop('authenticated')).toBeTruthy();
+        expect(wrapper.find('Route')).toExist();
+    });
 });

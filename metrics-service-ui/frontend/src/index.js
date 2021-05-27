@@ -16,7 +16,7 @@ import thunk from 'redux-thunk';
 
 import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
-import { rootReducer } from './reducers/index';
+import { rootReducer } from './reducers';
 import { sendError } from './actions/error-actions';
 
 function errorHandler(error, getState, lastAction, dispatch) {
