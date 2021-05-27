@@ -37,7 +37,7 @@ jobs:
                 uses: actions/cache@v2
                 with:
                     path: |
-                        apiml-common-lib-package/build/libs
+                        apiml-common-lib-package/build/distributions/apiml-common-lib-package-null/bin
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/apiml-common-lib-package/*.gradle*') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
