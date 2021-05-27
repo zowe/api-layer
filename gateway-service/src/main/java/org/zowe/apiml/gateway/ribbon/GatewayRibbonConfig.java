@@ -19,7 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 import org.zowe.apiml.gateway.ribbon.loadBalancer.LoadBalancerRuleAdapter;
 import org.zowe.apiml.gateway.ribbon.loadBalancer.PredicateFactory;
@@ -62,7 +64,7 @@ public class GatewayRibbonConfig {
     @Autowired
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
-                                             IPing ping, ServerListUpdater serverListUpdater,
+                                            IPing ping, ServerListUpdater serverListUpdater,
                                             LoadBalancerRegistry loadBalancerRegistry, PredicateFactory predicateFactory) {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
@@ -73,9 +75,9 @@ public class GatewayRibbonConfig {
         //TODO build balancing rule with context here
         Server server = serverList.getInitialListOfServers().get(0);
         IRule rule;
-        if(server instanceof DiscoveryEnabledServer){
-            InstanceInfo instanceInfo = ((DiscoveryEnabledServer)server).getInstanceInfo();
-            rule = new LoadBalancerRuleAdapter(instanceInfo,predicateFactory);
+        if (server instanceof DiscoveryEnabledServer) {
+            InstanceInfo instanceInfo = ((DiscoveryEnabledServer) server).getInstanceInfo();
+            rule = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory);
         } else {
             throw new IllegalStateException("Server is not an instance of DiscoveryEnabledServer and is not possible to provide Load Balancing");
         }
@@ -84,7 +86,7 @@ public class GatewayRibbonConfig {
     }
 
     @Bean
-    public PredicateFactory predicateFactory(){
+    public PredicateFactory predicateFactory() {
         return new PredicateFactory(RibbonClientConfiguration.class, "ribbon", "ribbon.client.name");
     }
 
