@@ -503,7 +503,7 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
                         ${{ runner.OS }}-gateway001-
                         ${{ runner.OS }}-discovery001-
