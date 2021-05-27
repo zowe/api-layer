@@ -319,7 +319,7 @@ jobs:
                     rm -f ~/.gradle/caches/modules-2/gc.properties
                     rm -rf ~/.gradle/caches/build-cache-1
 
-    BuildAndPackageOthers:
+    BuildAndPackageIntegrationTests:
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
@@ -350,19 +350,120 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-            -   name: Cache built artifacts
+            -   name: Cache built artifact
                 uses: actions/cache@v2
                 with:
                     path: |
                         integration-tests/build
-                        onboarding-enabler-nodejs/node_modules
-                        onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/integration-tests/*.gradle*') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :integration-tests:build :onboarding-enabler-nodejs:build :onboarding-enabler-nodejs-sample-app:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    ./gradlew :integration-tests:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
+
+    BuildAndPackageOnboardingNodejs:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Cache built artifact
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        onboarding-enabler-nodejs/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/onboarding-enabler-nodejs/*.gradle*') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew :onboarding-enabler-nodejs:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
+
+
+    BuildAndPackageOnboardingNodejsApp:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Cache built artifact
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/nboarding-enabler-nodejs-sample-app/*.gradle*') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew :onboarding-enabler-nodejs-sample-app:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -374,7 +475,7 @@ jobs:
 
 
     CITests:
-        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageOthers]
+        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageIntegrationTests, BuildAndPackageOnboardingNodejs, BuildAndPackageOnboardingNodejsApp]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -446,7 +547,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsRegistration:
-        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageOthers]
+        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageIntegrationTests, BuildAndPackageOnboardingNodejs, BuildAndPackageOnboardingNodejsApp]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -518,7 +619,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsInternalPort:
-        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageOthers]
+        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageIntegrationTests, BuildAndPackageOnboardingNodejs, BuildAndPackageOnboardingNodejsApp]
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -591,7 +692,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsATTLS:
-        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageOthers]
+        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageIntegrationTests, BuildAndPackageOnboardingNodejs, BuildAndPackageOnboardingNodejsApp]
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -668,7 +769,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsZosmfRsu2012:
-        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageOthers]
+        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageIntegrationTests, BuildAndPackageOnboardingNodejs, BuildAndPackageOnboardingNodejsApp]
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -743,7 +844,7 @@ jobs:
 
 
     CITestsZosmfWithoutJwt:
-        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageOthers]
+        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageIntegrationTests, BuildAndPackageOnboardingNodejs, BuildAndPackageOnboardingNodejsApp]
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -818,7 +919,7 @@ jobs:
 
 
     CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
-        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageOthers]
+        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageIntegrationTests, BuildAndPackageOnboardingNodejs, BuildAndPackageOnboardingNodejsApp]
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -892,7 +993,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWithRedis:
-        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageOthers]
+        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageIntegrationTests, BuildAndPackageOnboardingNodejs, BuildAndPackageOnboardingNodejsApp]
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -980,7 +1081,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWithRedisWithoutSslVerification:
-        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageOthers]
+        needs: [BuildAndPackageApimlComonLib, BuildAndPackageApiCatalog, BuildAndPackageGateway, BuildAndPackageDiscoveryService, BuildAndPackageCachingService, BuildAndPackageDiscoverableClient, BuildAndPackageMockZosmf, BuildAndPackageIntegrationTests, BuildAndPackageOnboardingNodejs, BuildAndPackageOnboardingNodejsApp]
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
