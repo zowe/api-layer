@@ -29,7 +29,7 @@ describe('>>> Login page tests', () => {
         });
 
         it('should logout and delete session cookie', () => {
-            cy.get('button[data-testid="logout"]').click();
+            cy.get('button[id="logout"]').click();
             cy.contains('Metrics Service');
 
             cy.getCookie('apimlAuthenticationToken').should('not.exist');
@@ -55,9 +55,7 @@ describe('>>> Login page tests', () => {
 
             cy.url().should('contain', '/login');
 
-            cy.get('.error-message-content')
-                .should('exist')
-                .should('contain', '(ZWEAS120E) Invalid username or password');
+            cy.get('[id="errormessage"]').should('exist').should('contain', '(ZWEAS120E) Invalid username or password');
         });
     });
 });
