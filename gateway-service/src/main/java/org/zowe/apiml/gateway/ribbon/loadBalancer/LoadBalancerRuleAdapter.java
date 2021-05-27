@@ -10,25 +10,60 @@
 
 package org.zowe.apiml.gateway.ribbon.loadBalancer;
 
+import com.google.common.base.Optional;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.loadbalancer.AbstractServerPredicate;
-import com.netflix.loadbalancer.PredicateBasedRule;
-import lombok.RequiredArgsConstructor;
+import com.netflix.loadbalancer.*;
 
-@RequiredArgsConstructor
-public class LoadBalancerRuleAdapter extends PredicateBasedRule {
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
 
     private final InstanceInfo info;
+    private final PredicateFactory predicateFactory;
+    private final Map<String, RequestAwarePredicate> instances;
+    private static AbstractServerPredicate predicate;
 
+
+    public LoadBalancerRuleAdapter(InstanceInfo info, PredicateFactory predicateFactory) {
+        this.instances = predicateFactory.getInstances(info.getAppName(), RequestAwarePredicate.class);
+        this.info = info;
+        this.predicateFactory = predicateFactory;
+    }
 
     // default
     //TODO named context
 
     // custom
 
-    @Override
     public AbstractServerPredicate getPredicate() {
-        return null;
+        if (predicate != null) {
+            return predicate;
+        }
+        predicate = new AbstractServerPredicate() {
+            @Override
+            public boolean apply(@Nullable PredicateKey input) {
+                return true;
+            }
+        };
+        return predicate;
     }
 
+    @Override
+    public Server choose(Object key) {
+        ILoadBalancer lb = getLoadBalancer();
+        LoadBalancingContext ctx = new LoadBalancingContext(info.getId(), info);
+        List<Server> allServers = lb.getAllServers();
+        for (RequestAwarePredicate predicate : instances.values()) {
+            allServers = allServers.stream().filter(server -> predicate.apply(ctx, server)).collect(Collectors.toList());
+        }
+        Optional<Server> server = getPredicate().chooseRoundRobinAfterFiltering(allServers, key);
+        if (server.isPresent()) {
+            return server.get();
+        } else {
+            return null;
+        }
+    }
 }

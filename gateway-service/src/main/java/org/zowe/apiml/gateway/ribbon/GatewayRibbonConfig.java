@@ -19,6 +19,7 @@ import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.*;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
+import org.zowe.apiml.gateway.ribbon.loadBalancer.PredicateFactory;
 
 /**
  * Configuration of client side load balancing with Ribbon
@@ -70,6 +71,11 @@ public class GatewayRibbonConfig {
 
         return new ApimlLoadBalancer<>(config, rule, ping, serverList,
             serverListFilter, serverListUpdater, loadBalancerRegistry);
+    }
+
+    @Bean
+    public PredicateFactory predicateFactory(){
+        return new PredicateFactory(RibbonClientConfiguration.class, "ribbon", "ribbon.client.name");
     }
 
 

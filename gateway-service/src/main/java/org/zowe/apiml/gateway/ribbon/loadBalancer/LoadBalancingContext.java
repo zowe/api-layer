@@ -22,8 +22,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class LoadBalancingContext {
     private final String key;
     private final InstanceInfo instanceInfo;
-    private final RequestContext requestContext;
-    private final SecurityContext securityContext;
+    private RequestContext requestContext;
+    private SecurityContext securityContext;
+
+
 
     {
         requestContext = RequestContext.getCurrentContext();

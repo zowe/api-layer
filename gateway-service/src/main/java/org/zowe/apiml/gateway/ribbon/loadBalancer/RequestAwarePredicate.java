@@ -10,7 +10,16 @@
 
 package org.zowe.apiml.gateway.ribbon.loadBalancer;
 
-public interface RequestAwarePredicate {
+import com.netflix.loadbalancer.AbstractServerPredicate;
+import com.netflix.loadbalancer.PredicateKey;
+import com.netflix.loadbalancer.Server;
 
-    boolean apply(LoadBalancingContext context);
+public abstract class RequestAwarePredicate extends AbstractServerPredicate {
+
+    abstract boolean apply(LoadBalancingContext context, Server server);
+
+    @Override
+    public boolean apply(PredicateKey input) {
+        return false;
+    }
 }
