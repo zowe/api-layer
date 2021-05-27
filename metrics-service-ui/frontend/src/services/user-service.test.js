@@ -34,7 +34,6 @@ describe('>>> User service tests', () => {
         const data = { messages: [errorMessage] };
         global.fetch = mockFetch(data, false);
 
-        const result = userService.login({ username: 'user', password: 'password' });
-        expect(result).rejects.toThrow(errorMessage);
+        await expect(userService.login({ username: 'user', password: 'password' })).rejects.toEqual(errorMessage);
     });
 });
