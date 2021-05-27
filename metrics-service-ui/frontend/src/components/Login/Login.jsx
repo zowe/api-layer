@@ -71,10 +71,10 @@ const LoginError = withStyles(() => ({
 const Login = (props) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const { authentication, isFetching } = props;
+    const { authentication, isFetching, errorText } = props;
 
     const handleError = (error) => {
-        let errorText;
+        let errorMessageText;
 
         // eslint-disable-next-line global-require
         const errorMessages = require('../../error-messages.json');
@@ -84,25 +84,25 @@ const Login = (props) => {
             error.messageType !== undefined &&
             error.messageType !== null
         ) {
-            errorText = `Unexpected error, please try again later (${error.messageNumber})`;
+            errorMessageText = `Unexpected error, please try again later (${error.messageNumber})`;
             const filter = errorMessages.messages.filter(
                 (x) => x.messageKey != null && x.messageKey === error.messageNumber
             );
-            if (filter.length !== 0) errorText = `(${error.messageNumber}) ${filter[0].messageText}`;
+            if (filter.length !== 0) errorMessageText = `(${error.messageNumber}) ${filter[0].messageText}`;
         } else if (error.status === 401 && authentication.sessionOn) {
-            errorText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
+            errorMessageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
             authentication.onCompleteHandling();
         } else if (error.status === 500) {
-            errorText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
+            errorMessageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
         }
-        return errorText;
+
+        return errorMessageText;
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
         const { login } = props;
-
         if (username && password) {
             login({ username, password });
         }
@@ -114,7 +114,7 @@ const Login = (props) => {
         authentication.error !== undefined &&
         authentication.error !== null
             ? handleError(authentication.error)
-            : null;
+            : errorText;
 
     const classes = useStyles();
 
@@ -125,7 +125,7 @@ const Login = (props) => {
                     <MetricsIconButton />
                     Metrics Service
                 </MetricsServiceTitle>
-                <form className={classes.form}>
+                <form className={classes.form} onSubmit={handleSubmit}>
                     <FormField
                         label="Username"
                         name="username"
@@ -161,7 +161,9 @@ const Login = (props) => {
                             top: '70px',
                         }}
                     />
-                    {messageText !== undefined && messageText !== null && <LoginError text={messageText} />}
+                    {messageText !== undefined && messageText !== null && (
+                        <LoginError id="errormessage" text={messageText} />
+                    )}
                 </form>
             </div>
         </div>
