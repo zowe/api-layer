@@ -17,9 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 
 /**
@@ -65,8 +63,21 @@ public class GatewayRibbonConfig {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
+
+        //TODO registry has instanceInfo
+
+        //TODO build balancing rule with context here
+
         return new ApimlLoadBalancer<>(config, rule, ping, serverList,
             serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
+
+
+    // adapter will know about rules, from where? Default or Instance config
+
+
+    // Predicate has to know about:
+    // InstanceInfo, Request, SecurityContextHolder
+
 
 }
