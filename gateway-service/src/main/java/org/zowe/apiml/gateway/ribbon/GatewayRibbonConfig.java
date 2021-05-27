@@ -9,8 +9,10 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
+import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.*;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
+import org.zowe.apiml.gateway.ribbon.loadBalancer.LoadBalancerRuleAdapter;
 import org.zowe.apiml.gateway.ribbon.loadBalancer.PredicateFactory;
 
 /**
@@ -59,8 +62,8 @@ public class GatewayRibbonConfig {
     @Autowired
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
-                                            IRule rule, IPing ping, ServerListUpdater serverListUpdater,
-                                            LoadBalancerRegistry loadBalancerRegistry) {
+                                             IPing ping, ServerListUpdater serverListUpdater,
+                                            LoadBalancerRegistry loadBalancerRegistry, PredicateFactory predicateFactory) {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
@@ -68,7 +71,14 @@ public class GatewayRibbonConfig {
         //TODO registry has instanceInfo
 
         //TODO build balancing rule with context here
-
+        Server server = serverList.getInitialListOfServers().get(0);
+        IRule rule;
+        if(server instanceof DiscoveryEnabledServer){
+            InstanceInfo instanceInfo = ((DiscoveryEnabledServer)server).getInstanceInfo();
+            rule = new LoadBalancerRuleAdapter(instanceInfo,predicateFactory);
+        } else {
+            throw new IllegalStateException("Server is not an instance of DiscoveryEnabledServer and is not possible to provide Load Balancing");
+        }
         return new ApimlLoadBalancer<>(config, rule, ping, serverList,
             serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
