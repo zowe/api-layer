@@ -13,14 +13,9 @@ package org.zowe.apiml.gateway.ribbon.loadBalancer;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -81,14 +76,16 @@ class LoadBalancerRuleAdapterTest {
 
         @Test
         void useAllPredicates() {
-            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory);
-
             when(requestAwarePredicate.apply(any(), any())).thenReturn(true);
             when(requestAwarePredicate1.apply(any(), any())).thenReturn(true);
             when(predicateFactory.getInstances(any(), any())).thenReturn(predicateMap);
             when(lb.getAllServers()).thenReturn(Arrays.asList(server, server1));
+
+            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory);
             underTest.setLoadBalancer(lb);
+
             underTest.choose("key");
+
             verify(requestAwarePredicate, times(1)).apply(any(), eq(server));
             verify(requestAwarePredicate, times(1)).apply(any(), eq(server1));
             verify(requestAwarePredicate1, times(1)).apply(any(), eq(server));
@@ -97,8 +94,11 @@ class LoadBalancerRuleAdapterTest {
 
         @Test
         void noServerFitsThePredicate() {
-            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory);
+            when(predicateFactory.getInstances(any(), any())).thenReturn(predicateMap);
             when(requestAwarePredicate.apply(any(), any())).thenReturn(false);
+
+            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory);
+
             underTest.setLoadBalancer(lb);
             assertNull(underTest.choose("key"));
         }

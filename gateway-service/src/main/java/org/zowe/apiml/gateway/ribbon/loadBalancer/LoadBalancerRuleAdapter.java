@@ -24,31 +24,19 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
     private final InstanceInfo info;
     private final PredicateFactory predicateFactory;
     private final Map<String, RequestAwarePredicate> instances;
-    private static AbstractServerPredicate predicate;
 
+    // used zuul's implementation of round robin server selection
+    private static AbstractServerPredicate zuulNonFilteringPredicate = new AbstractServerPredicate() {
+        @Override
+        public boolean apply(@Nullable PredicateKey input) {
+            return true;
+        }
+    };
 
     public LoadBalancerRuleAdapter(InstanceInfo info, PredicateFactory predicateFactory) {
         this.instances = predicateFactory.getInstances(info.getAppName(), RequestAwarePredicate.class);
         this.info = info;
         this.predicateFactory = predicateFactory;
-    }
-
-    // default
-    //TODO named context
-
-    // custom
-
-    public AbstractServerPredicate getPredicate() {
-        if (predicate != null) {
-            return predicate;
-        }
-        predicate = new AbstractServerPredicate() {
-            @Override
-            public boolean apply(@Nullable PredicateKey input) {
-                return true;
-            }
-        };
-        return predicate;
     }
 
     @Override
@@ -59,7 +47,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
         for (RequestAwarePredicate predicate : instances.values()) {
             allServers = allServers.stream().filter(server -> predicate.apply(ctx, server)).collect(Collectors.toList());
         }
-        Optional<Server> server = getPredicate().chooseRoundRobinAfterFiltering(allServers, key);
+        Optional<Server> server = zuulNonFilteringPredicate.chooseRoundRobinAfterFiltering(allServers, key);
         if (server.isPresent()) {
             return server.get();
         } else {
