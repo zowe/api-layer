@@ -30,8 +30,6 @@ describe('>>> AuthRoute component tests', () => {
                 <AuthRoute store={store} authenticated />
             </Router>
         );
-        // eslint-disable-next-line no-console
-        console.log(wrapper.debug());
         expect(wrapper.find('AuthRoute').prop('authenticated')).toBeTruthy();
         expect(wrapper.find('Route')).toExist();
     });
