@@ -38,7 +38,7 @@ jobs:
                 with:
                     path: |
                         apiml-common-lib-package/build/distributions/apiml-common-lib-package-null/bin
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/apiml-common-lib-package/*.gradle*') }}
+                    key: ${{ runner.OS }}-apimlcommonlib001-${{ hashFiles('**/apiml-common-lib-package/*.gradle*') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
@@ -89,9 +89,9 @@ jobs:
                 with:
                     path: |
                         api-catalog-services/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/api-catalog-services/*.gradle*') }}
+                    key: ${{ runner.OS }}-apicatalog001-${{ hashFiles('**/api-catalog-services/*.gradle*') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-apicatalog001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew :api-catalog-services:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -132,9 +132,9 @@ jobs:
                 with:
                     path: |
                         gateway-service/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/gateway-service/*.gradle*') }}
+                    key: ${{ runner.OS }}-gateway001-${{ hashFiles('**/gateway-service/*.gradle*') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-gateway001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew :gateway-service:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -175,9 +175,9 @@ jobs:
                 with:
                     path: |
                         discovery-service/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/discovery-service/*.gradle*') }}
+                    key: ${{ runner.OS }}-discovery001-${{ hashFiles('**/discovery-service/*.gradle*') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-discovery001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew :discovery-service:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -218,9 +218,9 @@ jobs:
                 with:
                     path: |
                         caching-service/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/caching-service/*.gradle*') }}
+                    key: ${{ runner.OS }}-caching001-${{ hashFiles('**/caching-service/*.gradle*') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-caching001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew :caching-service:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -261,9 +261,9 @@ jobs:
                 with:
                     path: |
                         discoverable-client/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/discoverable-client/*.gradle*') }}
+                    key: ${{ runner.OS }}-discoverable001-${{ hashFiles('**/discoverable-client/*.gradle*') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-discoverable001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew :discoverable-client:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -304,9 +304,9 @@ jobs:
                 with:
                     path: |
                         mock-zosmf/build/libs
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/mock-zosmf/*.gradle*') }}
+                    key: ${{ runner.OS }}-mockzosmf001-${{ hashFiles('**/mock-zosmf/*.gradle*') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-mockzosmf001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew :mock-zosmf:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -355,9 +355,9 @@ jobs:
                 with:
                     path: |
                         integration-tests/build
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/integration-tests/*.gradle*') }}
+                    key: ${{ runner.OS }}-integrationtests001-${{ hashFiles('**/integration-tests/*.gradle*') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-integrationtests001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -406,9 +406,9 @@ jobs:
                 with:
                     path: |
                         onboarding-enabler-nodejs/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/onboarding-enabler-nodejs/*.gradle*') }}
+                    key: ${{ runner.OS }}-onboardingnodejs001-${{ hashFiles('**/onboarding-enabler-nodejs/*.gradle*') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-onboardingnodejs001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew :onboarding-enabler-nodejs:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -458,9 +458,9 @@ jobs:
                 with:
                     path: |
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/nboarding-enabler-nodejs-sample-app/*.gradle*') }}
+                    key: ${{ runner.OS }}-onboardingnodejsapp001-${{ hashFiles('**/nboarding-enabler-nodejs-sample-app/*.gradle*') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-onboardingnodejsapp001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew :onboarding-enabler-nodejs-sample-app:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -505,7 +505,16 @@ jobs:
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-gateway001-
+                        ${{ runner.OS }}-discovery001-
+                        ${{ runner.OS }}-discoverable001-
+                        ${{ runner.OS }}-mockzosmf001-
+                        ${{ runner.OS }}-integrationtests001-
+                        ${{ runner.OS }}-apicatalog001-
+                        ${{ runner.OS }}-onboardingnodejsapp001-
+                        ${{ runner.OS }}-onboardingnodejs001-
+                        ${{ runner.OS }}-apimlcommonlib001-
+                        ${{ runner.OS }}-caching001-
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -577,7 +586,16 @@ jobs:
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-gateway001-
+                        ${{ runner.OS }}-discovery001-
+                        ${{ runner.OS }}-discoverable001-
+                        ${{ runner.OS }}-mockzosmf001-
+                        ${{ runner.OS }}-integrationtests001-
+                        ${{ runner.OS }}-apicatalog001-
+                        ${{ runner.OS }}-onboardingnodejsapp001-
+                        ${{ runner.OS }}-onboardingnodejs001-
+                        ${{ runner.OS }}-apimlcommonlib001-
+                        ${{ runner.OS }}-caching001-
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -650,7 +668,16 @@ jobs:
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-gateway001-
+                        ${{ runner.OS }}-discovery001-
+                        ${{ runner.OS }}-discoverable001-
+                        ${{ runner.OS }}-mockzosmf001-
+                        ${{ runner.OS }}-integrationtests001-
+                        ${{ runner.OS }}-apicatalog001-
+                        ${{ runner.OS }}-onboardingnodejsapp001-
+                        ${{ runner.OS }}-onboardingnodejs001-
+                        ${{ runner.OS }}-apimlcommonlib001-
+                        ${{ runner.OS }}-caching001-
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -723,7 +750,16 @@ jobs:
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-gateway001-
+                        ${{ runner.OS }}-discovery001-
+                        ${{ runner.OS }}-discoverable001-
+                        ${{ runner.OS }}-mockzosmf001-
+                        ${{ runner.OS }}-integrationtests001-
+                        ${{ runner.OS }}-apicatalog001-
+                        ${{ runner.OS }}-onboardingnodejsapp001-
+                        ${{ runner.OS }}-onboardingnodejs001-
+                        ${{ runner.OS }}-apimlcommonlib001-
+                        ${{ runner.OS }}-caching001-
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -800,7 +836,16 @@ jobs:
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-gateway001-
+                        ${{ runner.OS }}-discovery001-
+                        ${{ runner.OS }}-discoverable001-
+                        ${{ runner.OS }}-mockzosmf001-
+                        ${{ runner.OS }}-integrationtests001-
+                        ${{ runner.OS }}-apicatalog001-
+                        ${{ runner.OS }}-onboardingnodejsapp001-
+                        ${{ runner.OS }}-onboardingnodejs001-
+                        ${{ runner.OS }}-apimlcommonlib001-
+                        ${{ runner.OS }}-caching001-
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -875,7 +920,16 @@ jobs:
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-gateway001-
+                        ${{ runner.OS }}-discovery001-
+                        ${{ runner.OS }}-discoverable001-
+                        ${{ runner.OS }}-mockzosmf001-
+                        ${{ runner.OS }}-integrationtests001-
+                        ${{ runner.OS }}-apicatalog001-
+                        ${{ runner.OS }}-onboardingnodejsapp001-
+                        ${{ runner.OS }}-onboardingnodejs001-
+                        ${{ runner.OS }}-apimlcommonlib001-
+                        ${{ runner.OS }}-caching001-
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -950,7 +1004,16 @@ jobs:
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-gateway001-
+                        ${{ runner.OS }}-discovery001-
+                        ${{ runner.OS }}-discoverable001-
+                        ${{ runner.OS }}-mockzosmf001-
+                        ${{ runner.OS }}-integrationtests001-
+                        ${{ runner.OS }}-apicatalog001-
+                        ${{ runner.OS }}-onboardingnodejsapp001-
+                        ${{ runner.OS }}-onboardingnodejs001-
+                        ${{ runner.OS }}-apimlcommonlib001-
+                        ${{ runner.OS }}-caching001-
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -1024,7 +1087,16 @@ jobs:
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-gateway001-
+                        ${{ runner.OS }}-discovery001-
+                        ${{ runner.OS }}-discoverable001-
+                        ${{ runner.OS }}-mockzosmf001-
+                        ${{ runner.OS }}-integrationtests001-
+                        ${{ runner.OS }}-apicatalog001-
+                        ${{ runner.OS }}-onboardingnodejsapp001-
+                        ${{ runner.OS }}-onboardingnodejs001-
+                        ${{ runner.OS }}-apimlcommonlib001-
+                        ${{ runner.OS }}-caching001-
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -1112,7 +1184,16 @@ jobs:
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-gateway001-
+                        ${{ runner.OS }}-discovery001-
+                        ${{ runner.OS }}-discoverable001-
+                        ${{ runner.OS }}-mockzosmf001-
+                        ${{ runner.OS }}-integrationtests001-
+                        ${{ runner.OS }}-apicatalog001-
+                        ${{ runner.OS }}-onboardingnodejsapp001-
+                        ${{ runner.OS }}-onboardingnodejs001-
+                        ${{ runner.OS }}-apimlcommonlib001-
+                        ${{ runner.OS }}-caching001-
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
