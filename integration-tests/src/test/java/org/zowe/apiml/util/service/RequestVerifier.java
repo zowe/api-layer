@@ -51,12 +51,6 @@ public class RequestVerifier {
         }
     }
 
-    public void clear(VirtualService virtualService) {
-        synchronized (requests) {
-            requests.remove(virtualService);
-        }
-    }
-
     public void add(VirtualService virtualService, HttpServletRequest httpServletRequest) {
         synchronized (requests) {
             HttpRequestCopy copy = new HttpRequestCopy(httpServletRequest);

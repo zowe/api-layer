@@ -50,30 +50,12 @@ public class ApiMediationLayerStartupChecker {
     }
 
     public void waitUntilReady() {
-        long poolInterval = 10;
-        if (gatewayConfiguration.getInstances() == 2) {
-            poolInterval = 5;
-        }
-        await().atMost(10, MINUTES).pollDelay(0, SECONDS).pollInterval(poolInterval, SECONDS).until(this::isReady);
-    }
-
-    private boolean isReady() {
-        log.info("Checking if the API Mediation Layer is ready to be used...");
-        int times = 3;
-        if (gatewayConfiguration.getInstances() == 2) {
-            times = 2;
-        }
-        return severalSuccessfulResponses(times);
-    }
-
-    private boolean severalSuccessfulResponses(int times) {
-        for (int i = 0; i < times; i++) {
-            if (!areAllServicesUp()) {
-                return false;
-            }
-        }
-
-        return true;
+        long poolInterval = 5;
+        await()
+            .atMost(10, MINUTES)
+            .pollDelay(0, SECONDS)
+            .pollInterval(poolInterval, SECONDS)
+        .until(this::areAllServicesUp);
     }
 
     private DocumentContext getDocumentAsContext() {

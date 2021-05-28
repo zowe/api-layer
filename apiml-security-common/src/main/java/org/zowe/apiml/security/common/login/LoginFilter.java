@@ -81,7 +81,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         }
 
         UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
+            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
 
         Authentication auth = null;
 

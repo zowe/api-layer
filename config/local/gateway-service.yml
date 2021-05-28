@@ -46,3 +46,13 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+
+---
+spring:
+    profiles: attls
+
+apiml:
+    service:
+        scheme: http
+        discoveryServiceUrls: http://localhost:10001/eureka/
+

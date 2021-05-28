@@ -77,6 +77,11 @@ public class AuthController {
         response.setStatus(distributed ? SC_OK : SC_NO_CONTENT);
     }
 
+    /**
+     * Return all public keys involved at the moment in the Gateway as well as in zOSMF. Keys used for verification of
+     * tokens
+     * @return List of keys composed of zOSMF and Gateway ones
+     */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
     @ResponseBody
     public JSONObject getAllPublicKeys() {
@@ -87,6 +92,11 @@ public class AuthController {
         return new JWKSet(keys).toJSONObject(true);
     }
 
+    /**
+     * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
+     * configured one is used.
+     * @return The key actually used to verify the JWT tokens.
+     */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
     @ResponseBody
     public JSONObject getCurrentPublicKeys() {

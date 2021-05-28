@@ -40,7 +40,8 @@ class PassTicketServiceImpl implements PassTicketService {
 
     @Override
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException {
-        try (CloseableHttpClient closeableHttpsClient = httpClientProvider.getHttpClient()) {
+        try {
+            CloseableHttpClient closeableHttpsClient = httpClientProvider.getHttpClient();
             ZaasClientTicketRequest zaasClientTicketRequest = new ZaasClientTicketRequest();
             ObjectMapper mapper = new ObjectMapper();
             zaasClientTicketRequest.setApplicationName(applicationId);

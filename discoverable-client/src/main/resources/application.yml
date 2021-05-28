@@ -163,3 +163,20 @@ logging:
 
 logbackServiceName: ZWEADC1
 
+---
+spring:
+    profiles: attls
+
+apiml:
+    service:
+        discoveryServiceUrls: http://localhost:10001/eureka/
+        scheme: http
+        customMetadata:
+            apiml:
+                enableUrlEncodedCharacters: true
+                gatewayPort: 10030
+                gatewayAuthEndpoint: /api/v1/gateway/auth
+
+server:
+    ssl:
+        enabled: false

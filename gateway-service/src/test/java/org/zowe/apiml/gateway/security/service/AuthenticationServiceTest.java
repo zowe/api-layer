@@ -40,12 +40,17 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
 import javax.servlet.http.Cookie;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -271,12 +276,13 @@ public class AuthenticationServiceTest {
             .compact();
     }
 
-    private InstanceInfo createInstanceInfo(String instanceId, String hostName, int port, int securePort) {
+    private InstanceInfo createInstanceInfo(String instanceId, String hostName, int port, int securePort, boolean isSecureEnabled) {
         InstanceInfo out = mock(InstanceInfo.class);
         when(out.getInstanceId()).thenReturn(instanceId);
         when(out.getHostName()).thenReturn(hostName);
         when(out.getPort()).thenReturn(port);
         when(out.getSecurePort()).thenReturn(securePort);
+        when(out.isPortEnabled(InstanceInfo.PortType.SECURE)).thenReturn(isSecureEnabled);
         return out;
     }
 
@@ -373,9 +379,9 @@ public class AuthenticationServiceTest {
 
         Application application = mock(Application.class);
         List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("instance02", "hostname1", 10000, 10433),
-            createInstanceInfo("myInstance01", "localhost", 10000, 10433),
-            createInstanceInfo("instance03", "hostname2", 10001, 0)
+            createInstanceInfo("instance02", "hostname1", 10000, 10433, true),
+            createInstanceInfo("myInstance01", "localhost", 10000, 10433, true),
+            createInstanceInfo("instance03", "hostname2", 10001, 0, false)
         );
         when(application.getInstances()).thenReturn(instances);
         when(discoveryClient.getApplication("gateway")).thenReturn(application);
@@ -615,7 +621,7 @@ public class AuthenticationServiceTest {
     void testDistributeInvalidateSuccess() {
         reset(restTemplate);
 
-        InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433);
+        InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433, true);
 
         Application application = mock(Application.class);
         when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);

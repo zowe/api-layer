@@ -10,28 +10,21 @@
 package org.zowe.apiml.util.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.awaitility.Duration;
-import org.zowe.apiml.util.DiscoveryRequests;
-import org.zowe.apiml.util.config.ConfigReader;
+import org.junit.platform.commons.util.StringUtils;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.awaitility.Awaitility.await;
-
 @Slf4j
 public class RunningService {
-    private final DiscoveryRequests discovery = new DiscoveryRequests();
-    private Process newCachingProcess;
+    private Process process;
 
     private final String jarFile;
     private final String id;
     private String subprocessPid;
-    private Map<String,String> instanceEnv = ConfigReader.environmentConfiguration().getInstanceEnv();
 
     private final Map<String, String> parametersBefore;
     private final Map<String, String> parametersAfter;
@@ -60,15 +53,15 @@ public class RunningService {
 
         ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
         builder1.directory(new File("../"));
-        newCachingProcess = builder1.inheritIO().start();
+        process = builder1.inheritIO().start();
     }
 
-    public void startWithScript(String bashScript) {
+    public void startWithScript(String bashScript, Map<String, String> env) {
         log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
 
         ProcessBuilder builder1 = new ProcessBuilder(bashScript);
         Map<String, String> envVariables = builder1.environment();
-        envVariables.putAll(instanceEnv);
+        envVariables.putAll(env);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
 
         builder1.directory(new File("../"));
@@ -84,37 +77,20 @@ public class RunningService {
             BufferedReader br = new BufferedReader(
                 new InputStreamReader(inputStream));
             String line;
-            while ((line = br.readLine()) != null) {
+            while (StringUtils.isBlank(this.subprocessPid) && (line = br.readLine()) != null) {
                 log.info(line);
                 if (line.startsWith("pid")) {
                     this.subprocessPid = line.substring(line.indexOf("=") + 1);
-                    log.info("found " + this.subprocessPid);
+                    log.info("found PID:" + this.subprocessPid + " for service: {}", id);
                 }
+            }
+
+            while ((line = br.readLine()) != null) {
+                log.info(line);
             }
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-    }
-
-    public void waitUntilReady() {
-        await()
-            .atMost(Duration.TWO_MINUTES)
-            .with()
-            .pollInterval(Duration.TEN_SECONDS)
-            .until(this::isServiceProperlyRegistered);
-    }
-
-    public boolean isServiceProperlyRegistered() {
-        try {
-            if (discovery.isApplicationRegistered(id)) {
-                return true;
-            }
-        } catch (URISyntaxException e) {
-            // Ignorable exception.
-            e.printStackTrace();
-        }
-
-        return false;
     }
 
     public void stop() {
@@ -127,9 +103,9 @@ public class RunningService {
                 log.error(e.getMessage());
             }
         }
-        if (newCachingProcess != null) {
+        if (process != null) {
             log.info("Stopping new Service with ID {}", id);
-            newCachingProcess.destroy();
+            process.destroy();
         }
     }
 }

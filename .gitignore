@@ -76,6 +76,7 @@ scripts/test-results/xunit.xml
 
 # logs
 logs/
+*.log
 
 # pid files
 *.pid
@@ -97,7 +98,6 @@ metrics-service-ui/frontend/debug.log
 
 debug.log
 api-layer.tar.gz
-/*.log
 
 # EHCache
 gateway-service/**/*.data

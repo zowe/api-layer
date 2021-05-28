@@ -1,8 +1,7 @@
 ext {
-    springBootVersion = '2.3.9.RELEASE'
-    springBootVersionV1 = '1.5.9.RELEASE'
+    springBootVersion = '2.3.11.RELEASE'
     springCloudVersion = '2.2.8.RELEASE'
-    springSecurityVersion = '5.1.2.RELEASE'
+    springSecurityVersion = '5.3.9.RELEASE'
 
     lombokVersion = '1.18.16'
     slf4jVersion = '1.7.25'
@@ -18,7 +17,7 @@ ext {
     restAssuredVersion = '3.0.7'
     commonsValidatorVersion = "1.7"
     powerMockVersion = "2.0.4"
-    jacksonCoreVersion = "2.10.1"
+    jacksonCoreVersion = "2.11.4"
     javaxValidationApiVersion = "2.0.1.Final"
     gsonVersion = '2.8.2'
     mockitoCoreVersion = '2.23.4'
@@ -29,7 +28,7 @@ ext {
     gradleGitPropertiesVersion = '2.2.4'
     jettyWebSocketClientVersion = '9.4.39.v20210325'
     junitJupiterVersion = '5.5.2'
-    eurekaClientVersion = '1.10.13'
+    eurekaClientVersion = '1.10.14'
     netflixServoVersion = '0.12.28'
     logbackVersion = '1.2.3'
     spring4Version = '4.3.7.RELEASE'

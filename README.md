@@ -116,7 +116,7 @@ After the script being successfully executed, the user just needs to restart Zow
 | APIML SDK - Node.js Enabler           | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-nodejs-enabler.html)                                                                                                       |
 | APIML SDK - ZAAS Client               | [README](zaas-client/README.md)                                                                                                                                                         |
 | Sample Service - Java Enabler         | [README](onboarding-enabler-java-sample-app/README.md)                                                                                                                                  |
-|       Sample Service - Spring Enabler | [README](onboarding-enabler-spring-v1-sample-app/README.md)                                                                                                                            |
+|       Sample Service - Spring Enabler | [README](onboarding-enabler-spring-sample-app/README.md)                                                                                                                            |
 |       Sample Service - Micronaut Enabler | [README](onboarding-enabler-micronaut-sample-app/README.md)                                                                                                                            |
 |       Sample Service - NodeJS Enabler | [README](onboarding-enabler-nodejs-sample-app/README.md)                                                                                                                            |
 

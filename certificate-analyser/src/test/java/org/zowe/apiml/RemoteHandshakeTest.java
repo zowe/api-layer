@@ -49,7 +49,7 @@ class RemoteHandshakeTest {
         ApimlConf conf = new ApimlConf();
         CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
         Stores stores = new Stores(conf);
-        VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContext(stores);
+        VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContextWithoutKeystore(stores);
         HttpClient client = mock(HttpClient.class);
         RemoteHandshake remoteHandshake = new RemoteHandshake(verifierSslContext, client);
         when(client.executeCall(any())).thenReturn(200);
@@ -69,7 +69,7 @@ class RemoteHandshakeTest {
         ApimlConf conf = new ApimlConf();
         CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
         Stores stores = new Stores(conf);
-        VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContext(stores);
+        VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContextWithoutKeystore(stores);
         HttpClient client = mock(HttpClient.class);
         RemoteHandshake remoteHandshake = new RemoteHandshake(verifierSslContext, client);
         when(client.executeCall(any())).thenReturn(200);

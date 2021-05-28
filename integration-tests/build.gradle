@@ -222,19 +222,21 @@ task runCITests(type: Test) {
             'SlowTests',
             'AdditionalLocalTest',
             'MainframeDependentTests',
-            'SAFAuthTest'
+            'SAFAuthTest',
+            'AttlsTest',
+            'RegistrationTest'
         )
     }
 }
 
-task runCITestsInternalPort(type: Test) {
+task runCITestsAttls(type: Test) {
     group "Integration tests"
-    description "Run only tests without long tests"
+    description ""
 
     outputs.cacheIf { false }
 
     systemProperties System.properties
-    systemProperty "gateway.port", System.getProperty("internal.gateway.port")
+    systemProperty "environment.attls", true
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
@@ -242,7 +244,9 @@ task runCITestsInternalPort(type: Test) {
             'SlowTests',
             'AdditionalLocalTest',
             'MainframeDependentTests',
-            'SAFAuthTest'
+            'SAFAuthTest',
+            'NotAttlsTest',
+            'RegistrationTest'
         )
     }
 }
@@ -280,7 +284,24 @@ task runBaseTests(type: Test) {
             'CachingServiceTest',
             'WebsocketTest'
         )
-        excludeTags('MainframeDependentTests')
+        excludeTags(
+            'MainframeDependentTests',
+            'RegistrationTest'
+        )
+    }
+}
+
+task runRegistrationTests(type: Test) {
+    group "integration tests"
+    description "Run tests verifying registration and deregistration"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'RegistrationTest'
+        )
     }
 }
 

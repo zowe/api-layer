@@ -28,13 +28,13 @@ public class X509AuthenticationFilter extends AbstractAuthenticationProcessingFi
     private final AuthenticationProvider authenticationProvider;
     private final AuthenticationSuccessHandler successHandler;
 
-
     public X509AuthenticationFilter(String endpoint,
                                     AuthenticationSuccessHandler successHandler,
                                     AuthenticationProvider authenticationProvider) {
         super(endpoint);
         this.authenticationProvider = authenticationProvider;
         this.successHandler = successHandler;
+
 
     }
 

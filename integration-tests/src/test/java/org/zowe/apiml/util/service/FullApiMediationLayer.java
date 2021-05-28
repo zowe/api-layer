@@ -10,6 +10,7 @@
 package org.zowe.apiml.util.service;
 
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
+import org.zowe.apiml.util.config.ConfigReader;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +18,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+//TODO this class doesn't lend itself well to switching of configurations.
+//attls is integrated in a kludgy way, and deserves a rewrite
 
 public class FullApiMediationLayer {
     private RunningService discoveryService;
@@ -30,17 +34,24 @@ public class FullApiMediationLayer {
     private Process nodeJsSampleApp;
 
     private boolean firstCheck = true;
+    private final Map<String, String> env;
+    private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
 
-    private static FullApiMediationLayer instance = new FullApiMediationLayer();
+    private static final FullApiMediationLayer instance = new FullApiMediationLayer();
+
 
     private FullApiMediationLayer() {
+        env = ConfigReader.environmentConfiguration().getInstanceEnv();
+
         prepareCaching();
         prepareCatalog();
         prepareDiscoverableClient();
         prepareGateway();
         prepareMockZosmf();
         prepareDiscovery();
-        prepareNodeJsSampleApp();
+        if (!attlsEnabled) {
+            prepareNodeJsSampleApp();
+        }
     }
 
     private void prepareNodeJsSampleApp() {
@@ -72,12 +83,19 @@ public class FullApiMediationLayer {
     private void prepareMockZosmf() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
+        if (attlsEnabled) {
+            before.put("-Dspring.profiles.active", "attls");
+        }
         mockZosmfService = new RunningService("zosmf", "mock-zosmf/build/libs/mock-zosmf.jar", before, after);
     }
 
     private void prepareDiscoverableClient() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
+        if (attlsEnabled) {
+            before.put("-Dspring.profiles.active", "attls");
+        }
+
         after.put("--spring.config.additional-location", "file:./config/local/discoverable-client.yml");
 
         discoverableClientService = new RunningService("discoverableclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);
@@ -89,12 +107,17 @@ public class FullApiMediationLayer {
 
     public void start() {
         try {
-            discoveryService.startWithScript("discovery-package/src/main/resources/bin/start.sh");
-            gatewayService.startWithScript("gateway-package/src/main/resources/bin/start.sh");
+            discoveryService.startWithScript("discovery-package/src/main/resources/bin/start.sh", env);
+            gatewayService.startWithScript("gateway-package/src/main/resources/bin/start.sh", env);
             mockZosmfService.start();
 
-            apiCatalogService.startWithScript("api-catalog-package/src/main/resources/bin/start.sh");
+            apiCatalogService.startWithScript("api-catalog-package/src/main/resources/bin/start.sh", env);
             discoverableClientService.start();
+
+            if (!attlsEnabled) {
+                nodeJsSampleApp = nodeJsBuilder.start();
+            }
+            cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -110,7 +133,9 @@ public class FullApiMediationLayer {
             discoverableClientService.stop();
 
             cachingService.stop();
-            nodeJsSampleApp.destroy();
+            if (!attlsEnabled && !runsOffPlatform()) {
+                nodeJsSampleApp.destroy();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -124,14 +149,6 @@ public class FullApiMediationLayer {
     public void waitUntilReady() {
         if (firstCheck) {
             new ApiMediationLayerStartupChecker().waitUntilReady();
-
-            try {
-                nodeJsSampleApp = nodeJsBuilder.start();
-                cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh");
-                cachingService.waitUntilReady();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
 
             firstCheck = false;
         }
