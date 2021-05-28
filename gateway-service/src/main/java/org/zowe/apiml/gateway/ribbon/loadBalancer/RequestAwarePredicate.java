@@ -11,10 +11,11 @@
 package org.zowe.apiml.gateway.ribbon.loadBalancer;
 
 import com.netflix.loadbalancer.*;
+import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 
 public abstract class RequestAwarePredicate extends AbstractServerPredicate {
 
-    abstract boolean apply(LoadBalancingContext context, Server server);
+    abstract public boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server);
 
     @Override
     public boolean apply(PredicateKey input) {

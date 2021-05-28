@@ -17,9 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
-import org.zowe.apiml.gateway.ribbon.loadBalancer.*;
+import org.zowe.apiml.gateway.ribbon.loadBalancer.InstanceInfoExtractor;
+import org.zowe.apiml.gateway.ribbon.loadBalancer.LoadBalancerRuleAdapter;
+import org.zowe.apiml.gateway.ribbon.loadBalancer.PredicateFactory;
+import org.zowe.apiml.gateway.ribbon.loadBalancer.RequestAwarePredicate;
+import org.zowe.apiml.gateway.ribbon.loadBalancer.predicate.StickyPredicate;
 
 /**
  * Configuration of client side load balancing with Ribbon
@@ -78,6 +84,11 @@ public class GatewayRibbonConfig {
     @Bean
     public PredicateFactory predicateFactory() {
         return new PredicateFactory(RibbonClientConfiguration.class, "ribbon", "ribbon.client.name");
+    }
+
+    @Bean
+    public RequestAwarePredicate stickyPredicate() {
+        return new StickyPredicate();
     }
 
 }

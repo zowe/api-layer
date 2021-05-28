@@ -13,9 +13,15 @@ package org.zowe.apiml.gateway.ribbon.loadBalancer;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
-import org.junit.jupiter.api.*;
+import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,17 +29,17 @@ import static org.mockito.Mockito.*;
 
 class LoadBalancerRuleAdapterTest {
 
-    private static Server server;
-    private static Server server1;
-    private static Server server2;
+    private static DiscoveryEnabledServer server;
+    private static DiscoveryEnabledServer server1;
+    private static DiscoveryEnabledServer server2;
     private static ILoadBalancer lb;
 
     @BeforeAll
     static void setup() {
         lb = mock(ILoadBalancer.class);
-        server = mock(Server.class);
-        server1 = mock(Server.class);
-        server2 = mock(Server.class);
+        server = mock(DiscoveryEnabledServer.class);
+        server1 = mock(DiscoveryEnabledServer.class);
+        server2 = mock(DiscoveryEnabledServer.class);
     }
 
     @Nested
