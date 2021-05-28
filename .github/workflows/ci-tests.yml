@@ -83,7 +83,7 @@ jobs:
                         ~/.npm
                     key: ${{ runner.OS }}-nodeCatalog001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        ${{ runner.OS }}-nodeCatalog001-
             -   name: Cache built artifact
                 uses: actions/cache@v2
                 with:
@@ -393,7 +393,7 @@ jobs:
                         ~/.npm
                     key: ${{ runner.OS }}-nodeEnabler001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        ${{ runner.OS }}-nodeEnabler001-
             -   name: Cache built artifact
                 uses: actions/cache@v2
                 with:
@@ -443,9 +443,9 @@ jobs:
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    key: ${{ runner.OS }}-nodejsApp001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        ${{ runner.OS }}-nodejsApp001-
             -   name: Cache built artifact
                 uses: actions/cache@v2
                 with:
@@ -590,6 +590,7 @@ jobs:
                     restore-keys: |
                         ${{ runner.OS }}-nodeCatalog001-
                         ${{ runner.OS }}-nodeEnabler001-
+                        ${{ runner.OS }}-nodejsApp001-
             -   name: Run CI Tests
                 run: >
                     ./gradlew runCITests --info
