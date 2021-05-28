@@ -9,22 +9,17 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
-import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
-import org.zowe.apiml.gateway.ribbon.loadBalancer.LoadBalancerRuleAdapter;
-import org.zowe.apiml.gateway.ribbon.loadBalancer.PredicateFactory;
+import org.zowe.apiml.gateway.ribbon.loadBalancer.*;
 
 /**
  * Configuration of client side load balancing with Ribbon
@@ -70,17 +65,12 @@ public class GatewayRibbonConfig {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
 
-        //TODO registry has instanceInfo
+        InstanceInfoExtractor infoExtractor = new InstanceInfoExtractor(serverList.getInitialListOfServers());
 
-        //TODO build balancing rule with context here
-        Server server = serverList.getInitialListOfServers().get(0);
-        IRule rule;
-        if (server instanceof DiscoveryEnabledServer) {
-            InstanceInfo instanceInfo = ((DiscoveryEnabledServer) server).getInstanceInfo();
-            rule = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory);
-        } else {
-            throw new IllegalStateException("Server is not an instance of DiscoveryEnabledServer and is not possible to provide Load Balancing");
-        }
+        IRule rule = new LoadBalancerRuleAdapter(
+            infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available")),
+            predicateFactory);
+
         return new ApimlLoadBalancer<>(config, rule, ping, serverList,
             serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
@@ -89,13 +79,5 @@ public class GatewayRibbonConfig {
     public PredicateFactory predicateFactory() {
         return new PredicateFactory(RibbonClientConfiguration.class, "ribbon", "ribbon.client.name");
     }
-
-
-    // adapter will know about rules, from where? Default or Instance config
-
-
-    // Predicate has to know about:
-    // InstanceInfo, Request, SecurityContextHolder
-
 
 }

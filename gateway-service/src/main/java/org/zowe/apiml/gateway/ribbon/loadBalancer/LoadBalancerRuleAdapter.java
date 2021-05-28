@@ -33,6 +33,10 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
         }
     };
 
+
+    /**
+     * no-argument constructor has to be present for zuul
+     */
     public LoadBalancerRuleAdapter() {
     }
 
