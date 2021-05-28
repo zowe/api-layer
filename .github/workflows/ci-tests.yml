@@ -489,32 +489,96 @@ jobs:
                     java-version: 1.8
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
-            -   name: Restore produced jars
+            -   name: Restore produced Apiml Common Lib jar
                 uses: actions/cache@v2
                 with:
                     path: |
                         apiml-common-lib-package/build/libs
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-apimlcommonlib001-
+
+            -   name: Restore produced API Catalog jar
+                uses: actions/cache@v2
+                with:
+                    path: |
                         api-catalog-services/build/libs
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-apicatalog001-
+
+            -   name: Restore produced Caching jar
+                uses: actions/cache@v2
+                with:
+                    path: |
                         caching-service/build/libs
-                        discoverable-client/build/libs
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-caching001-
+
+            -   name: Restore produced Discovery jar
+                uses: actions/cache@v2
+                with:
+                    path: |
                         discovery-service/build/libs
-                        gateway-service/build/libs
-                        integration-tests/build
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-discovery001-
+
+            -   name: Restore produced Discoverable Client jar
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        discoverable-client/build/libs
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-discoverable001-
+
+            -   name: Restore produced MockZosmf jar
+                uses: actions/cache@v2
+                with:
+                    path: |
                         mock-zosmf/build/libs
-                        onboarding-enabler-nodejs/node_modules
-                        onboarding-enabler-nodejs-sample-app/node_modules
-#                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-mockzosmf001-
+
+            -   name: Restore produced Integration Tests jar
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        integration-tests/build
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-integrationtests001-
+
+            -   name: Restore produced Gateway jar
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        gateway-service/build/libs
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
                         ${{ runner.OS }}-gateway001-
-                        ${{ runner.OS }}-discovery001-
-                        ${{ runner.OS }}-discoverable001-
-                        ${{ runner.OS }}-mockzosmf001-
-                        ${{ runner.OS }}-integrationtests001-
-                        ${{ runner.OS }}-apicatalog001-
-                        ${{ runner.OS }}-onboardingnodejsapp001-
+
+            -   name: Restore produced Onboarding Nodejs enabler
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        onboarding-enabler-nodejs/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
                         ${{ runner.OS }}-onboardingnodejs001-
-                        ${{ runner.OS }}-apimlcommonlib001-
-                        ${{ runner.OS }}-caching001-
+
+            -   name: Restore produced Onboarding Nodejs Sample
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-onboardingnodejsapp001-
+
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
