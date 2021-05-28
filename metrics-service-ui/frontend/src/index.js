@@ -15,6 +15,7 @@ import { HashRouter } from 'react-router-dom';
 import { PersistGate } from 'redux-persist/integration/react';
 import { applyMiddleware, compose, createStore } from 'redux';
 import { createEpicMiddleware } from 'redux-observable';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { ajax } from 'rxjs/ajax';
 import logger from 'redux-logger';
 import log from 'loglevel';
