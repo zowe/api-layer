@@ -20,6 +20,7 @@ import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.redis.exceptions.RedisEntryException;
@@ -42,6 +43,7 @@ import java.util.concurrent.ExecutionException;
 @NoArgsConstructor
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "caching.storage.mode", havingValue = "redis")
 public class RedisOperator {
     private RedisClient redisClient;
     private StatefulRedisMasterReplicaConnection<String, String> redisConnection;
@@ -60,8 +62,13 @@ public class RedisOperator {
 
     @PreDestroy
     public void closeConnection() {
-        redisConnection.close();
-        redisClient.shutdown();
+        if (redisConnection != null) {
+            redisConnection.close();
+        }
+
+        if (redisClient != null) {
+            redisClient.shutdown();
+        }
     }
 
     /**
