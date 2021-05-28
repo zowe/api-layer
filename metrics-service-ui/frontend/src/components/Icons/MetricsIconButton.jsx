@@ -11,7 +11,7 @@
 import { IconButton } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
-import MetricsLogo from '../../assets/images/login_background.jpg'; // TODO real logo
+import MetricsLogo from '../../assets/images/login_background.jpg';
 
 const CustomIconButton = withStyles(() => ({
     root: {
@@ -28,10 +28,10 @@ const CustomIconButton = withStyles(() => ({
 
 const dashboard = '/metrics-service/ui/v1/#/dashboard';
 
-const MetricsServiceIconButton = (props) => (
+const MetricsIconButton = (props) => (
     <CustomIconButton href={dashboard} {...props}>
         <img src={MetricsLogo} alt="Metrics Service icon" />
     </CustomIconButton>
 );
 
-export default MetricsServiceIconButton;
+export default MetricsIconButton;

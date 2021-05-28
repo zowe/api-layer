@@ -27,10 +27,6 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
                 error: null,
                 user: action.user,
             };
-        case userConstants.USERS_LOGIN_FAILURE:
-            return {
-                error: action.error,
-            };
         case userConstants.AUTHENTICATION_FAILURE:
             return {
                 error: action.error,
@@ -47,6 +43,7 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
                     sessionDefaultState.sessionOn = false;
                 },
             };
+        case userConstants.USERS_LOGIN_FAILURE:
         case userConstants.USERS_LOGOUT_FAILURE:
             return {
                 error: action.error,

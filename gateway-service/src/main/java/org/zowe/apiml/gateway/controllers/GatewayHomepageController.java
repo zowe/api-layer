@@ -31,6 +31,8 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 public class GatewayHomepageController {
 
     private static final String SUCCESS_ICON_NAME = "success";
+    private static final String WARNING_ICON_NAME = "warning";
+    private static final String UI_V1_ROUTE = "%s.ui-v1.%s";
 
     private final DiscoveryClient discoveryClient;
     private final Providers providers;
@@ -122,7 +124,7 @@ public class GatewayHomepageController {
 
     private void initializeAuthenticationAttributes(Model model) {
         String authStatusText = "The Authentication service is not running";
-        String authIconName = "warning";
+        String authIconName = WARNING_ICON_NAME;
         boolean authUp = authorizationServiceUp();
 
         if (authUp) {
@@ -143,7 +145,7 @@ public class GatewayHomepageController {
 
         String catalogLink = null;
         String catalogStatusText = "The API Catalog is not running";
-        String catalogIconName = "warning";
+        String catalogIconName = WARNING_ICON_NAME;
         boolean linkEnabled = false;
         boolean authServiceEnabled = authorizationServiceUp();
 
@@ -165,8 +167,8 @@ public class GatewayHomepageController {
     }
 
     private String getCatalogLink(ServiceInstance catalogInstance) {
-        String gatewayUrl = catalogInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_GATEWAY_URL));
-        String serviceUrl = catalogInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_SERVICE_URL));
+        String gatewayUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_GATEWAY_URL));
+        String serviceUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_SERVICE_URL));
         return serviceUrl + gatewayUrl;
     }
 
@@ -175,7 +177,7 @@ public class GatewayHomepageController {
 
         String metricsLink = null;
         String metricsStatusText = "The Metrics Service is not running";
-        String metricsIconName = "warning";
+        String metricsIconName = WARNING_ICON_NAME;
 
         if (metricsServiceEnabled) {
             List<ServiceInstance> metricsServiceInstances = discoveryClient.getInstances(metricsServiceId);
@@ -195,8 +197,8 @@ public class GatewayHomepageController {
     }
 
     private String getMetricsLink(ServiceInstance metricsInstance) {
-        String gatewayUrl = metricsInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_GATEWAY_URL));
-        String serviceUrl = metricsInstance.getMetadata().get(String.format("%s.ui-v1.%s", ROUTES, ROUTES_SERVICE_URL));
+        String gatewayUrl = metricsInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_GATEWAY_URL));
+        String serviceUrl = metricsInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_SERVICE_URL));
         return serviceUrl + "/" + gatewayUrl;
     }
 

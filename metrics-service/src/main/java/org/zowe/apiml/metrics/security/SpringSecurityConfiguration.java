@@ -33,8 +33,6 @@ import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 
-// TODO DRY with api catalog
-
 /**
  * Main configuration class of Spring web security for Api Catalog
  * binds authentication managers

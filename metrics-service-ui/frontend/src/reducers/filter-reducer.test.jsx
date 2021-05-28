@@ -11,7 +11,7 @@
 /* eslint-disable no-undef */
 
 import { CLEAR_FILTER, FILTER_TEXT } from '../constants/filter-constants';
-import filtersReducer from './filter-reducer';
+import filtersReducer from './filtersReducer';
 
 describe('>>> Filter reducer tests', () => {
     it('should handle CLEAR_FILTER', () => {

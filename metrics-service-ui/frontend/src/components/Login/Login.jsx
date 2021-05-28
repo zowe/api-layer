@@ -78,6 +78,15 @@ const LoginError = withStyles(() => ({
     },
 }))(Error);
 
+function unexpectedError(error) {
+    return (
+        error.messageNumber !== undefined &&
+        error.messageNumber !== null &&
+        error.messageType !== undefined &&
+        error.messageType !== null
+    );
+}
+
 const Login = (props) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -88,12 +97,7 @@ const Login = (props) => {
 
         // eslint-disable-next-line global-require
         const errorMessages = require('../../error-messages.json');
-        if (
-            error.messageNumber !== undefined &&
-            error.messageNumber !== null &&
-            error.messageType !== undefined &&
-            error.messageType !== null
-        ) {
+        if (unexpectedError(error)) {
             errorMessageText = `Unexpected error, please try again later (${error.messageNumber})`;
             const filter = errorMessages.messages.filter(
                 (x) => x.messageKey != null && x.messageKey === error.messageNumber

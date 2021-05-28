@@ -53,9 +53,9 @@ const epicMiddleware = createEpicMiddleware({
 const composeEnhancers = compose;
 const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler)];
 
-// if (process.env.NODE_ENV !== 'production') {
-middlewares.push(logger);
-// }
+if (process.env.NODE_ENV !== 'production') {
+    middlewares.push(logger);
+}
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 const store = createStore(persistedReducer, composeEnhancers(applyMiddleware(...middlewares)));

@@ -21,8 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-// TODO DRY with catalog
-
 /**
  * Handles logout success by removing cookie and clearing security context
  */

@@ -9,7 +9,7 @@
  */
 
 import { combineReducers } from 'redux';
-import filtersReducer from './filter-reducer';
+import filtersReducer from './filtersReducer';
 import loadingReducer from './loading-reducer';
 import authenticationReducer from './authentication-reducer';
 import errorReducer from './error-reducer';
