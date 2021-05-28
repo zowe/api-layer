@@ -19,6 +19,10 @@ apply plugin: 'com.gorylenko.gradle-git-properties'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "$projectDir/gradle/lite.gradle"
 
+jib.to.image = "ghcr.io/balhar-jakub/api-catalog-services"
+jib.to.auth.password = "providePassword"
+jib.to.auth.username = "balhar-jakub"
+
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display

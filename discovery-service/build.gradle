@@ -36,6 +36,10 @@ springBoot {
     }
 }
 
+jib.to.image = "ghcr.io/balhar-jakub/discovery-service"
+jib.to.auth.password = "providePassword"
+jib.to.auth.username = "balhar-jakub"
+
 gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }

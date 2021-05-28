@@ -19,6 +19,9 @@ apply plugin: 'com.gorylenko.gradle-git-properties'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "$projectDir/gradle/lite.gradle"
 
+jib.to.image = "ghcr.io/balhar-jakub/gateway-service"
+jib.to.auth.password = "providePassword"
+jib.to.auth.username = "balhar-jakub"
 jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
 
 springBoot {
