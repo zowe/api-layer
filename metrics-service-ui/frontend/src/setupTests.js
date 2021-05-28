@@ -15,6 +15,3 @@ import 'jest-enzyme';
 import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
 
 enzyme.configure({ adapter: new Adapter() });
-
-// eslint-disable-next-line no-console
-console.log('IN SETUP TESTS');
