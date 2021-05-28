@@ -411,10 +411,41 @@ class RedisOperatorTest {
         assertThrows(RetryableRedisException.class, () -> underTest.create(REDIS_ENTRY));
     }
 
-    @Test
-    void givenConnection_whenDestroying_thenCloseConnection() {
-        underTest.closeConnection();
-        verify(redisConnection, times(1)).close();
-        verify(redisClient, times(1)).shutdown();
+    @Nested
+    class WhenDestroying {
+
+        @Test
+        void givenConnectionAndClient_thenCloseConnectionAndClient() {
+            underTest = new RedisOperator(redisClient, redisConnection, redisCommands);
+            underTest.closeConnection();
+
+            verify(redisConnection, times(1)).close();
+            verify(redisClient, times(1)).shutdown();
+        }
+
+        @Test
+        void givenConnection_thenCloseConnectionAndNotClient() {
+            underTest = new RedisOperator(null, redisConnection, redisCommands);
+            underTest.closeConnection();
+
+            verify(redisConnection, times(1)).close();
+            verify(redisClient, times(0)).shutdown();
+        }
+        @Test
+        void givenClient_thenCloseClientAndNotConnection() {
+            underTest = new RedisOperator(redisClient, null, redisCommands);
+            underTest.closeConnection();
+
+            verify(redisConnection, times(0)).close();
+            verify(redisClient, times(1)).shutdown();
+        }
+        @Test
+        void givenNoConnectionOrClient_thenCloseNothing() {
+            underTest = new RedisOperator(null, null, redisCommands);
+            underTest.closeConnection();
+
+            verify(redisConnection, times(0)).close();
+            verify(redisClient, times(0)).shutdown();
+        }
     }
 }
