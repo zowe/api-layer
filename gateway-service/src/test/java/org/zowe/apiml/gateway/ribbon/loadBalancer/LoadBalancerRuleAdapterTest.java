@@ -40,7 +40,7 @@ class LoadBalancerRuleAdapterTest {
     class GivenOnlyDefaultPredicate {
         @Test
         void choosesRoundRobin() {
-            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(mock(InstanceInfo.class), mock(PredicateFactory.class));
+            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(mock(InstanceInfo.class), mock(PredicateFactory.class), null);
             underTest.setLoadBalancer(lb);
             when(lb.getAllServers()).thenReturn(Arrays.asList(server, server1));
             Server theChosenOne = underTest.choose("key");
@@ -81,7 +81,7 @@ class LoadBalancerRuleAdapterTest {
             when(predicateFactory.getInstances(any(), any())).thenReturn(predicateMap);
             when(lb.getAllServers()).thenReturn(Arrays.asList(server, server1));
 
-            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory);
+            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory, null);
             underTest.setLoadBalancer(lb);
 
             underTest.choose("key");
@@ -97,7 +97,7 @@ class LoadBalancerRuleAdapterTest {
             when(predicateFactory.getInstances(any(), any())).thenReturn(predicateMap);
             when(requestAwarePredicate.apply(any(), any())).thenReturn(false);
 
-            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory);
+            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory, null);
 
             underTest.setLoadBalancer(lb);
             assertNull(underTest.choose("key"));

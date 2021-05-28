@@ -12,9 +12,9 @@ package org.zowe.apiml.gateway.ribbon.loadBalancer;
 
 import com.google.common.base.Optional;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,12 +26,12 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
     private Map<String, RequestAwarePredicate> instances;
 
     // used zuul's implementation of round robin server selection
-    private static AbstractServerPredicate zuulNonFilteringPredicate = new AbstractServerPredicate() {
-        @Override
-        public boolean apply(@Nullable PredicateKey input) {
-            return true;
-        }
-    };
+
+    private AvailabilityPredicate availabilityPredicate;
+    private AbstractServerPredicate zuulNonFilteringPredicate;
+
+
+
 
 
     /**
@@ -40,10 +40,16 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
     public LoadBalancerRuleAdapter() {
     }
 
-    public LoadBalancerRuleAdapter(InstanceInfo info, PredicateFactory predicateFactory) {
+    public LoadBalancerRuleAdapter(InstanceInfo info, PredicateFactory predicateFactory, IClientConfig config) {
         this.instances = predicateFactory.getInstances(info.getAppName(), RequestAwarePredicate.class);
         this.info = info;
         this.predicateFactory = predicateFactory;
+
+        //mirror previous setup
+        availabilityPredicate = new AvailabilityPredicate(this, config);
+        zuulNonFilteringPredicate = CompositePredicate.withPredicates(availabilityPredicate)
+            .addFallbackPredicate(AbstractServerPredicate.alwaysTrue())
+            .build();
     }
 
     @Override
