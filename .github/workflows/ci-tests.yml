@@ -81,7 +81,7 @@ jobs:
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    key: ${{ runner.OS }}-nodeCatalog001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
             -   name: Cache built artifact
@@ -342,14 +342,7 @@ jobs:
                     key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
                         ${{ runner.os }}-gradle001-
-            -   name: Cache Node.js modules
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+
             -   name: Cache built artifact
                 uses: actions/cache@v2
                 with:
@@ -398,7 +391,7 @@ jobs:
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    key: ${{ runner.OS }}-nodeEnabler001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
             -   name: Cache built artifact
@@ -595,7 +588,8 @@ jobs:
                         ~/.npm
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        ${{ runner.OS }}-nodeCatalog001-
+                        ${{ runner.OS }}-nodeEnabler001-
             -   name: Run CI Tests
                 run: >
                     ./gradlew runCITests --info
