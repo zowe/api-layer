@@ -139,7 +139,7 @@ describe('>>> Login page component tests', () => {
             );
         });
 
-        it('authetication service not available message', () => {
+        it('authentication service not available message', () => {
             const error = {
                 messageType: 'ERROR',
                 messageNumber: 'ZWEAS104E',
