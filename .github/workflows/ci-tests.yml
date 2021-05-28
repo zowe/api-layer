@@ -40,7 +40,7 @@ jobs:
                         apiml-common-lib-package/build/distributions/apiml-common-lib-package-null/bin
                     key: ${{ runner.OS }}-apimlcommonlib001-${{ hashFiles('**/apiml-common-lib-package/*.gradle*') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-apimlcommonlib001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew :apiml-common-lib-package:build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
