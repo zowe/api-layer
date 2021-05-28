@@ -51,6 +51,10 @@ dependencies {
     implementation libraries.gson
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
+
+    testCompile libraries.lombok
+    testAnnotationProcessor libraries.lombok
+    testCompile libraries.spring_boot_starter_test
 }
 
 
