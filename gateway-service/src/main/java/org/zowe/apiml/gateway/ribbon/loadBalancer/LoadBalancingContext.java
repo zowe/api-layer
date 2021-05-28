@@ -25,10 +25,12 @@ public class LoadBalancingContext {
     private RequestContext requestContext;
     private SecurityContext securityContext;
 
-
-
     {
         requestContext = RequestContext.getCurrentContext();
         securityContext = SecurityContextHolder.getContext();
+    }
+
+    public String getPath() {
+        return requestContext.getRequest() == null ? "" : requestContext.getRequest().getServletPath();
     }
 }

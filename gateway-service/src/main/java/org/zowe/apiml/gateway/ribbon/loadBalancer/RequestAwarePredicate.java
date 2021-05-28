@@ -10,9 +10,7 @@
 
 package org.zowe.apiml.gateway.ribbon.loadBalancer;
 
-import com.netflix.loadbalancer.AbstractServerPredicate;
-import com.netflix.loadbalancer.PredicateKey;
-import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.*;
 
 public abstract class RequestAwarePredicate extends AbstractServerPredicate {
 
@@ -22,4 +20,6 @@ public abstract class RequestAwarePredicate extends AbstractServerPredicate {
     public boolean apply(PredicateKey input) {
         return false;
     }
+
+    public abstract String toString();
 }
