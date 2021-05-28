@@ -391,7 +391,7 @@ jobs:
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-nodeEnabler001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    key: ${{ runner.OS }}-nodeEnabler001-${{ hashFiles('**/onboarding-enabler-nodejs/package-lock.json, **/onboarding-enabler-nodejs/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-nodeEnabler001-
             -   name: Cache built artifact
@@ -443,7 +443,7 @@ jobs:
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-nodejsApp001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    key: ${{ runner.OS }}-nodejsApp001-${{ hashFiles('**/onboarding-enabler-nodejs-sample-app/package-lock.json, **/onboarding-enabler-nodejs-sample-app/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-nodejsApp001-
             -   name: Cache built artifact
