@@ -15,7 +15,7 @@ import { shallow } from 'enzyme';
 
 import MetricsIconButton from './MetricsIconButton';
 
-describe('>>> ErrorIcon component tests', () => {
+describe('>>> MetricsIconButton component tests', () => {
     const styledIconButton = 'WithStyles(WithStyles(ForwardRef(IconButton)))';
 
     it('should display a styled IconButton', () => {
