@@ -52,11 +52,11 @@ jobs:
                 run: |
                     sleep 60
                     docker ps -a -q | xargs -L 1 docker logs
+                    wget https://gateway-service:10010
                     wget http://localhost:10010
                     wget https://localhost:10010
                     wget https://localhost:10011
                     wget https://localhost:10012
                     wget https://localhost:10013
                     wget https://localhost:10014
-                    wget https://localhost:10015
                     wget https://localhost:10016
