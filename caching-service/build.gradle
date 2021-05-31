@@ -21,6 +21,17 @@ jib.to.image = "ghcr.io/balhar-jakub/caching-service"
 jib.to.auth.password = "providePassword"
 jib.to.auth.username = "balhar-jakub"
 
+jib {
+    extraDirectories {
+        paths {
+            path {
+                from = "../keystore"
+                into = "/keystore"
+            }
+        }
+    }
+}
+
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display

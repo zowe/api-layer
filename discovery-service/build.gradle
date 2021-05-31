@@ -39,6 +39,21 @@ springBoot {
 jib.to.image = "ghcr.io/balhar-jakub/discovery-service"
 jib.to.auth.password = "providePassword"
 jib.to.auth.username = "balhar-jakub"
+jib.container.args= ['--spring.config.additional-location=file:/local/discovery-service.yml']
+
+jib {
+    extraDirectories {
+        paths {
+            path {
+                from = "../config"
+            }
+            path {
+                from = "../keystore"
+                into = "/keystore"
+            }
+        }
+    }
+}
 
 gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")

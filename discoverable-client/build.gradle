@@ -20,6 +20,21 @@ apply plugin: 'com.google.cloud.tools.jib'
 jib.to.image = "ghcr.io/balhar-jakub/discoverable-client"
 jib.to.auth.password = "providePassword"
 jib.to.auth.username = "balhar-jakub"
+jib.container.args= ['--spring.config.additional-location=file:/local/discoverable-client.yml']
+
+jib {
+    extraDirectories {
+        paths {
+            path {
+                from = "../config"
+            }
+            path {
+                from = "../keystore"
+                into = "/keystore"
+            }
+        }
+    }
+}
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file

@@ -23,6 +23,21 @@ jib.to.image = "ghcr.io/balhar-jakub/gateway-service"
 jib.to.auth.password = "providePassword"
 jib.to.auth.username = "balhar-jakub"
 jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
+jib.container.args= ['--spring.config.additional-location=file:/local/gateway-service.yml']
+
+jib {
+    extraDirectories {
+        paths {
+            path {
+                from = "../config"
+            }
+            path {
+                from = "../keystore"
+                into = "/keystore"
+            }
+        }
+    }
+}
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file

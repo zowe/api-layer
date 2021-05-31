@@ -22,6 +22,21 @@ apply from: "$projectDir/gradle/lite.gradle"
 jib.to.image = "ghcr.io/balhar-jakub/api-catalog-services"
 jib.to.auth.password = "providePassword"
 jib.to.auth.username = "balhar-jakub"
+jib.container.args= ['--spring.config.additional-location=file:/local/api-catalog-service.yml']
+
+jib {
+    extraDirectories {
+        paths {
+            path {
+                from = "../config"
+            }
+            path {
+                from = "../keystore"
+                into = "/keystore"
+            }
+        }
+    }
+}
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
