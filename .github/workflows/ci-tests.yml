@@ -14,6 +14,8 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
+        container: ubuntu
+
         services:
             api-catalog-services:
                 image: 'ghcr.io/balhar-jakub/api-catalog-services'
@@ -51,10 +53,7 @@ jobs:
             -   name: Get logs of the created docker services
                 run: |
                     sleep 60
-                    docker ps -a -q | xargs -L 1 docker logs
-                    wget https://gateway-service:10010
-                    wget http://localhost:10010
-                    wget https://localhost:10010
+                    wget https://gateway-service:10010 || wget https://localhost:10010
                     wget https://localhost:10011
                     wget https://localhost:10012
                     wget https://localhost:10013
