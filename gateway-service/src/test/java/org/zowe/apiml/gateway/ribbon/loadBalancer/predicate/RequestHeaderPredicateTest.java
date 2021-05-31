@@ -12,9 +12,9 @@ package org.zowe.apiml.gateway.ribbon.loadBalancer.predicate;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.gateway.ribbon.loadBalancer.LoadBalancingContext;
 
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class StickyPredicateTest {
+class RequestHeaderPredicateTest {
 
     private RequestContext rctx;
 
@@ -33,45 +33,50 @@ class StickyPredicateTest {
         rctx.clear();
     }
 
-    @Test
-    void noHeader() {
-        rctx.setRequest(new MockHttpServletRequest());
-        InstanceInfo info = mock(InstanceInfo.class);
-        DiscoveryEnabledServer server = mock(DiscoveryEnabledServer.class);
-        LoadBalancingContext lbctx = new LoadBalancingContext("key", info);
-        StickyPredicate predicate = new StickyPredicate();
-        assertTrue(predicate.apply(lbctx, server));
+    @Nested
+    class WithoutHeader {
+
+        @Test
+        void doesNotFilter() {
+            rctx.setRequest(new MockHttpServletRequest());
+            InstanceInfo info = mock(InstanceInfo.class);
+            DiscoveryEnabledServer server = mock(DiscoveryEnabledServer.class);
+            LoadBalancingContext lbctx = new LoadBalancingContext("key", info);
+            RequestHeaderPredicate predicate = new RequestHeaderPredicate();
+            assertTrue(predicate.apply(lbctx, server));
+        }
     }
+
+
 
     @Nested
     class WhitHeader {
-        @Test
-        void serverMatchesHeader() {
-            MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-            httpServletRequest.addHeader("X-host", "server1");
+
+        MockHttpServletRequest httpServletRequest;
+        InstanceInfo info;
+        DiscoveryEnabledServer server = mock(DiscoveryEnabledServer.class);
+        LoadBalancingContext lbctx;
+
+        @BeforeEach
+        void setUp() {
+            httpServletRequest = new MockHttpServletRequest();
             rctx.setRequest(httpServletRequest);
-            InstanceInfo info = mock(InstanceInfo.class);
-            DiscoveryEnabledServer server = mock(DiscoveryEnabledServer.class);
+            info = mock(InstanceInfo.class);
             when(server.getInstanceInfo()).thenReturn(info);
-            when(info.getInstanceId()).thenReturn("server1");
-            LoadBalancingContext lbctx = new LoadBalancingContext("key", info);
-            StickyPredicate predicate = new StickyPredicate();
-            assertTrue(predicate.apply(lbctx, server));
+            lbctx = new LoadBalancingContext("key", info);
         }
 
-        @Test
-        void serverDoesntMatchHeader() {
-            MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-            httpServletRequest.addHeader("X-host", "server1");
-            rctx.setRequest(httpServletRequest);
-            InstanceInfo info = mock(InstanceInfo.class);
-            DiscoveryEnabledServer server = mock(DiscoveryEnabledServer.class);
-            when(server.getInstanceInfo()).thenReturn(info);
+        @ParameterizedTest(name = "{index} - testedHeader: {0} ")
+        @CsvSource(value = {"x-host", "X-HOST", "x-HosT"})
+        void filtersOnInstanceId(String headerName) {
+            httpServletRequest.addHeader(headerName, "server1");
+            RequestHeaderPredicate predicate = new RequestHeaderPredicate();
+            when(info.getInstanceId()).thenReturn("server1");
+            assertTrue(predicate.apply(lbctx, server));
             when(info.getInstanceId()).thenReturn("server2");
-            LoadBalancingContext lbctx = new LoadBalancingContext("key", info);
-            StickyPredicate predicate = new StickyPredicate();
             assertFalse(predicate.apply(lbctx, server));
         }
+
     }
 
 }

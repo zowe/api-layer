@@ -14,11 +14,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.gateway.ribbon.loadBalancer.LoadBalancingContext;
 import org.zowe.apiml.gateway.ribbon.loadBalancer.RequestAwarePredicate;
 
-public class StickyPredicate extends RequestAwarePredicate {
+public class RequestHeaderPredicate extends RequestAwarePredicate {
+
+    public static final String REQUEST_HEADER_NAME = "X-Host";
 
     @Override
     public boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server) {
-        String targetServer = context.getRequestContext().getRequest().getHeader("X-host");
+        String targetServer = context.getRequestContext().getRequest().getHeader(REQUEST_HEADER_NAME);
         if (StringUtils.isEmpty(targetServer)) {
             return true;
         }
@@ -27,7 +29,7 @@ public class StickyPredicate extends RequestAwarePredicate {
 
     @Override
     public String toString() {
-        return null;
+        return "RequestHeaderPredicate (" + REQUEST_HEADER_NAME + ")";
     }
 
 }
