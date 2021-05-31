@@ -14,14 +14,9 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -107,6 +102,24 @@ class LoadBalancerRuleAdapterTest {
 
             underTest.setLoadBalancer(lb);
             assertNull(underTest.choose("key"));
+        }
+    }
+
+    @Nested
+    class givenHeterogenousListOfServers {
+
+        private Map predicateMap = new HashMap<>();
+        private PredicateFactory predicateFactory = mock(PredicateFactory.class);
+
+        @Test
+        void shouldFailFast() {
+            predicateMap.put("predicate", mock(RequestAwarePredicate.class));
+            when(predicateFactory.getInstances(any(), any())).thenReturn(predicateMap);
+            when(lb.getAllServers()).thenReturn(Arrays.asList(server, new Server("host", 80)));
+
+            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(mock(InstanceInfo.class), predicateFactory, null);
+            underTest.setLoadBalancer(lb);
+            assertThrows(IllegalStateException.class, () -> underTest.choose("key"));
         }
     }
 

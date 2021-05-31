@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
 
-    private InstanceInfo info;
+    private InstanceInfo instanceInfo;
     private PredicateFactory predicateFactory;
-    private Map<String, RequestAwarePredicate> instances;
+    private Map<String, RequestAwarePredicate> predicateMap;
 
     // used zuul's implementation of round robin server selection
     private AvailabilityPredicate availabilityPredicate;
-    private AbstractServerPredicate zuulNonFilteringPredicate;
+    private AbstractServerPredicate zuulPredicate;
 
 
     /**
@@ -38,15 +38,15 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
     public LoadBalancerRuleAdapter() {
     }
 
-    public LoadBalancerRuleAdapter(InstanceInfo info, PredicateFactory predicateFactory, IClientConfig config) {
-        this.instances = predicateFactory.getInstances(info.getAppName(), RequestAwarePredicate.class);
+    public LoadBalancerRuleAdapter(InstanceInfo instanceInfo, PredicateFactory predicateFactory, IClientConfig config) {
+        this.predicateMap = predicateFactory.getInstances(instanceInfo.getAppName(), RequestAwarePredicate.class);
 
-        this.info = info;
+        this.instanceInfo = instanceInfo;
         this.predicateFactory = predicateFactory;
 
-        //mirror previous setup
+        //mirror original zuul setup
         availabilityPredicate = new AvailabilityPredicate(this, config);
-        zuulNonFilteringPredicate = CompositePredicate.withPredicates(availabilityPredicate)
+        zuulPredicate = CompositePredicate.withPredicates(availabilityPredicate)
             .addFallbackPredicate(AbstractServerPredicate.alwaysTrue())
             .build();
     }
@@ -55,20 +55,25 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
     public Server choose(Object key) {
         log.debug("Choosing server: {}", key);
         ILoadBalancer lb = getLoadBalancer();
-        LoadBalancingContext ctx = new LoadBalancingContext(info.getAppName(), info);
+        LoadBalancingContext ctx = new LoadBalancingContext(instanceInfo.getAppName(), instanceInfo);
         List<Server> allServers = lb.getAllServers();
         log.debug("Path: {}, List of servers from LoadBalancer: {}", ctx.getPath() ,allServers);
-        for (RequestAwarePredicate predicate : instances.values()) {
+        for (RequestAwarePredicate predicate : predicateMap.values()) {
             log.debug("Running predicate: {}, list of servers: {}", allServers, predicate);
             allServers = allServers.stream()
-                .filter(DiscoveryEnabledServer.class::isInstance)
-                .map(DiscoveryEnabledServer.class::cast)
+                .map(server -> {
+                    if (server instanceof DiscoveryEnabledServer) {
+                        return (DiscoveryEnabledServer) server;
+                    } else {
+                        throw new IllegalStateException("Supplied Server is not instance of DiscoveryEnabledServer class");
+                    }
+                })
                 .filter(server -> predicate.apply(ctx, server))
                 .collect(Collectors.toList());
             log.debug("List of servers after predicate: {}", allServers);
         }
         log.debug("Running Zuul predicates");
-        Optional<Server> server = zuulNonFilteringPredicate.chooseRoundRobinAfterFiltering(allServers, key);
+        Optional<Server> server = zuulPredicate.chooseRoundRobinAfterFiltering(allServers, key);
         if (server.isPresent()) {
             log.debug("Selected server: {}", server.get());
             return server.get();
@@ -81,9 +86,9 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
     @Override
     public String toString() {
         return "LoadBalancerRuleAdapter{" +
-            "info=" + info +
+            "info=" + instanceInfo +
             ", predicateFactory=" + predicateFactory +
-            ", instances=" + instances +
+            ", instances=" + predicateMap +
             '}';
     }
 }
