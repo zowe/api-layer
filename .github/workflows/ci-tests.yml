@@ -52,6 +52,7 @@ jobs:
                 run: |
                     sleep 60
                     docker ps -a -q | xargs -L 1 docker logs
+                    wget http://localhost:10010
                     wget https://localhost:10010
                     wget https://localhost:10011
                     wget https://localhost:10012
