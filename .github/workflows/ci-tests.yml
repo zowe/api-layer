@@ -148,7 +148,7 @@ jobs:
         timeout-minutes: 20
 
         container:
-            image: ubuntu-latest
+            image: ubuntu:latest
 
         services:
             api-catalog-services:
