@@ -51,4 +51,4 @@ jobs:
             -   name: Get logs of the created docker services
                 run: |
                     docker ps -all
-                    docker logs --tail=0 --follow
+                    docker ps -q | xargs -L 1 docker logs
