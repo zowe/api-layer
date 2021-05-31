@@ -19,7 +19,7 @@ import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.*;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
-import org.zowe.apiml.gateway.ribbon.loadBalancer.*;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.*;
 
 /**
  * Configuration of client side load balancing with Ribbon

@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.ribbon.loadBalancer.predicate;
+package org.zowe.apiml.gateway.ribbon.loadbalancer.predicate;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.zowe.apiml.gateway.ribbon.loadBalancer.LoadBalancingContext;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

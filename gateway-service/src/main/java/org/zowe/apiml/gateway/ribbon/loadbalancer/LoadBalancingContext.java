@@ -8,26 +8,26 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.ribbon.loadBalancer;
+package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Getter
-@RequiredArgsConstructor
 public class LoadBalancingContext {
     private final String key;
     private final InstanceInfo instanceInfo;
     private RequestContext requestContext;
     private SecurityContext securityContext;
 
-    {
-        requestContext = RequestContext.getCurrentContext();
-        securityContext = SecurityContextHolder.getContext();
+    public LoadBalancingContext(String key, InstanceInfo instanceInfo) {
+        this.key = key;
+        this.instanceInfo = instanceInfo;
+        this.requestContext = RequestContext.getCurrentContext();
+        this.securityContext = SecurityContextHolder.getContext();
     }
 
     public String getPath() {

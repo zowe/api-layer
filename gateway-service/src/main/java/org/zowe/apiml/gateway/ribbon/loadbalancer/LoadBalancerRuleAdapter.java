@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.ribbon.loadBalancer;
+package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
 import com.google.common.base.Optional;
 import com.netflix.appinfo.InstanceInfo;
@@ -73,7 +73,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
             log.debug("List of servers after predicate: {}", allServers);
         }
         log.debug("Running Zuul predicates");
-        Optional<Server> server = zuulPredicate.chooseRoundRobinAfterFiltering(allServers, key);
+        Optional<Server> server = zuulPredicate.chooseRoundRobinAfterFiltering(allServers, key); //NOSONAR following zuul's api
         if (server.isPresent()) {
             log.debug("Selected server: {}", server.get());
             return server.get();

@@ -8,11 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.ribbon.loadBalancer;
+package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.gateway.ribbon.loadBalancer.predicate.RequestHeaderPredicate;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredicate;
 
 @Configuration
 public class LoadBalancingPredicatesConfig {

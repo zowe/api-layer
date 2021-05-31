@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.ribbon.loadBalancer;
+package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.loadbalancer.Server;
@@ -27,7 +27,7 @@ public class InstanceInfoExtractor {
             throw new IllegalArgumentException("The serverList argument cannot be null");
         }
         if (!serverList.isEmpty()) {
-            Server server = serverList.get(new Random().nextInt(serverList.size()));
+            Server server = serverList.get(new Random().nextInt(serverList.size())); //NOSONAR Random not used in cryptographic context
             if (server instanceof DiscoveryEnabledServer) {
                 info = Optional.of(((DiscoveryEnabledServer)server).getInstanceInfo());
             } else {

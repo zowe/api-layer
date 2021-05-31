@@ -7,12 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.ribbon.loadBalancer.predicate;
+package org.zowe.apiml.gateway.ribbon.loadbalancer.predicate;
 
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import org.apache.commons.lang3.StringUtils;
-import org.zowe.apiml.gateway.ribbon.loadBalancer.LoadBalancingContext;
-import org.zowe.apiml.gateway.ribbon.loadBalancer.RequestAwarePredicate;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.RequestAwarePredicate;
 
 public class RequestHeaderPredicate extends RequestAwarePredicate {
 

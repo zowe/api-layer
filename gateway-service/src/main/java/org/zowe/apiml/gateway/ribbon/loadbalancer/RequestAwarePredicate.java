@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.ribbon.loadBalancer;
+package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
 import com.netflix.loadbalancer.AbstractServerPredicate;
 import com.netflix.loadbalancer.PredicateKey;
@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 
 public abstract class RequestAwarePredicate extends AbstractServerPredicate {
 
-    abstract public boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server);
+    public abstract boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server);
 
     @Override
     public boolean apply(@Nullable PredicateKey input) {
