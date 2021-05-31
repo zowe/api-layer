@@ -50,5 +50,6 @@ jobs:
                     node-version: '14'
             -   name: Get logs of the created docker services
                 run: |
-                    docker ps -all
-                    docker ps -q | xargs -L 1 docker logs
+                    docker ps -a -q | xargs -L 1 docker logs
+                    sleep 60
+                    docker ps -a -q | xargs -L 1 docker logs
