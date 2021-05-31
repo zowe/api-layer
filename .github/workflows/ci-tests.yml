@@ -50,4 +50,5 @@ jobs:
                     node-version: '14'
             -   name: Get logs of the created docker services
                 run: |
-                    docker ps
+                    docker ps -all
+                    docker logs --tail=0 --follow
