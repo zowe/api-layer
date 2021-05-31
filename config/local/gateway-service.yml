@@ -1,10 +1,10 @@
 spring.profiles.include: diag
 apiml:
     service:
-        hostname: localhost
+        hostname: gateway-service
         ipAddress: 127.0.0.1
         port: 10010
-        discoveryServiceUrls: https://localhost:10011/eureka/
+        discoveryServiceUrls: https://discovery-service:10011/eureka/
     security:
         auth:
             provider: zosmf

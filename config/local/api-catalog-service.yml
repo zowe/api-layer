@@ -19,14 +19,14 @@ server:
 
 apiml:
     service:
-        hostname: localhost
+        hostname: api-catalog-service
         ipAddress: 127.0.0.1
         port: 10014
-        discoveryServiceUrls: https://localhost:10011/eureka/
+        discoveryServiceUrls: https://discovery-service:10011/eureka/
         dsIpAddress: 0.0.0.0
         eurekaPassword: password
         eurekaUserId: eureka
-        gatewayHostname: https://localhost:10010
+        gatewayHostname: https://gateway-service:10010
         preferIpAddress: false
         truststore: keystore/localhost/localhost.truststore.p12
         truststorePassword: password
