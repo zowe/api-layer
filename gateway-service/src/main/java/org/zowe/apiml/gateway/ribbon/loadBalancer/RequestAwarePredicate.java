@@ -10,16 +10,19 @@
 
 package org.zowe.apiml.gateway.ribbon.loadBalancer;
 
-import com.netflix.loadbalancer.*;
+import com.netflix.loadbalancer.AbstractServerPredicate;
+import com.netflix.loadbalancer.PredicateKey;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+
+import javax.annotation.Nullable;
 
 public abstract class RequestAwarePredicate extends AbstractServerPredicate {
 
     abstract public boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server);
 
     @Override
-    public boolean apply(PredicateKey input) {
-        return false;
+    public boolean apply(@Nullable PredicateKey input) {
+        throw new UnsupportedOperationException("This method is not supported");
     }
 
     public abstract String toString();
