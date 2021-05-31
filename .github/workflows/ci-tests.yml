@@ -53,7 +53,8 @@ jobs:
             -   name: Get logs of the created docker services
                 run: |
                     sleep 60
-                    wget https://gateway-service:10010 || wget https://localhost:10010
+                    curl https://gateway-service:10010
+                    curl https://localhost:10010
                     wget https://localhost:10011
                     wget https://localhost:10012
                     wget https://localhost:10013
