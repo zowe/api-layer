@@ -51,4 +51,7 @@ jobs:
             -   name: Get logs of the created docker services
                 run: |
                     sleep 60
-                    curl -k -v -trace --tlsv1.2 https://localhost:10010
+                    docker ps -a -q | xargs -L 1 docker logs
+                    sleep 60
+                    docker ps -a -q | xargs -L 1 docker logs
+                    curl -k -v -trace https://localhost:10017
