@@ -51,4 +51,5 @@ jobs:
             -   name: Get logs of the created docker services
                 run: |
                     sleep 60
+                    curl -k https://localhost:10010
                     curl -k https://localhost:10013
