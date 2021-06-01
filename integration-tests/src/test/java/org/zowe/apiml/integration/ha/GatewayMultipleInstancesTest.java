@@ -52,7 +52,7 @@ public class GatewayMultipleInstancesTest {
         @Nested
         class WhenSendingRequest {
             @Test
-            void GatewayInstancesAreUp() throws IOException {
+            void gatewayInstancesAreUp() throws IOException {
                 final int instances = gatewayServiceConfiguration.getInstances();
                 assumeTrue(instances == 2);
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
