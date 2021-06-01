@@ -135,8 +135,8 @@ task runCITestsAttls(dependsOn: [":integration-tests:runCITestsAttls"]) {
     group "Integration tests"
 }
 
-task runCITestsInternalPort(dependsOn: [":integration-tests:runCITestsInternalPort"]) {
-    description "Run Integration Test Without MF Dependencies, this is meant to be run after runCITests so the apiml is not automatically started here"
+task runRegistrationTests(dependsOn: [":integration-tests:runRegistrationTests"]) {
+    description "Run Integration Test verifying registration and deregistration"
     group "Integration tests"
 }
 
@@ -157,6 +157,7 @@ task nodejsClean(type: Delete) {
     group = 'npm'
     if (cleanNode == 'true') {
         delete 'api-catalog-ui/tools/nodejs', 'api-catalog-ui/tools/npm', 'api-catalog-ui/tools/yarn'
+        delete 'metrics-service-ui/tools/nodejs', 'metrics-service-ui/tools/npm'
         delete 'onboarding-enabler-nodejs-sample-app/tools/nodejs', 'onboarding-enabler-nodejs-sample-app/tools/npm', 'onboarding-enabler-nodejs-sample-app/tools/yarn'
     }
 }

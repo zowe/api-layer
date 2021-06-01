@@ -28,7 +28,6 @@ task packageCommonLib(type: Zip) {
 
     into('bin/') {
         from "${project.rootDir}/build/libs/api-layer-lite-lib-all" + ".jar"
-        from "src/main/update_apiml.sh"
     }
 }
 

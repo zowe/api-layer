@@ -43,7 +43,10 @@ public class ApimlRetryableClient extends RetryableRibbonLoadBalancingHttpClient
      */
     @Override
     public ServiceInstance choose(String serviceId) {
-        super.choose(serviceId);
+        ServiceInstance theChosenOne = super.choose(serviceId);
+        if (theChosenOne == null) {
+            return null;
+        }
         return new EurekaDiscoveryClient.EurekaServiceInstance(
             RequestContextUtils.getInstanceInfo().orElseThrow(() -> new RequestContextNotPreparedException("request context not prepared")));
     }

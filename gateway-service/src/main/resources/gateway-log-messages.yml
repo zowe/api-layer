@@ -86,6 +86,13 @@ messages:
       reason: "The service is not available."
       action: "Make sure that the service is running and is accessible by the URL provided in the message."
 
+    - key: org.zowe.apiml.gateway.loadBalancerDoesNotHaveAvailableServer
+      number: ZWEAG710
+      type: ERROR
+      text: "Load balancer does not have available server for client: %s"
+      reason: "The service is not available. It might be removed by the Circuit Breaker or by requesting specific instance that is not available"
+      action: "Try the request later or remove the request for specific instance."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic
