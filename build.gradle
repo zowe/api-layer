@@ -188,7 +188,10 @@ task runCachingServiceTests(dependsOn: ":integration-tests:runCachingServiceTest
     description "Run base tests on internal port"
     group "Integration tests"
 }
-
+task runHATests(dependsOn: ":integration-tests:runHATests") {
+    description "Run HA tests tests only"
+    group "Integration tests"
+}
 
 
 clean.dependsOn nodejsClean
