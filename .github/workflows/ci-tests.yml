@@ -51,4 +51,4 @@ jobs:
             -   name: Get logs of the created docker services
                 run: |
                     sleep 60
-                    wget localhost:10013
+                    curl -k https://localhost:10013
