@@ -88,7 +88,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
         return "LoadBalancerRuleAdapter{" +
             "info=" + instanceInfo +
             ", predicateFactory=" + predicateFactory +
-            ", instances=" + predicateMap +
+            ", predicates=" + predicateMap +
             '}';
     }
 }
