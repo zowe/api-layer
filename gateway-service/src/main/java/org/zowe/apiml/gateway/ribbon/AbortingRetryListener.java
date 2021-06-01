@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.gateway.ribbon;
 
-import org.springframework.retry.RetryCallback;
-import org.springframework.retry.RetryContext;
-import org.springframework.retry.RetryListener;
+import com.netflix.client.ClientException;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.retry.*;
 import org.zowe.apiml.gateway.ribbon.http.RequestAbortException;
 
 /**
@@ -31,7 +31,12 @@ public class AbortingRetryListener implements RetryListener {
 
     @Override
     public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
+        // Exception from retry logic
         if (throwable instanceof RequestAbortException) {
+            context.setExhaustedOnly();
+        }
+        // Exception from load balancer having no servers
+        if (throwable instanceof ClientException && StringUtils.startsWith(throwable.getMessage(), "Load balancer does not have available server for client")) {
             context.setExhaustedOnly();
         }
     }

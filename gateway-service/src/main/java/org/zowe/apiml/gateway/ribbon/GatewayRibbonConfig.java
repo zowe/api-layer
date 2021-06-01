@@ -17,10 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.*;
 
 /**
  * Configuration of client side load balancing with Ribbon
@@ -60,13 +59,25 @@ public class GatewayRibbonConfig {
     @Autowired
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
-                                            IRule rule, IPing ping, ServerListUpdater serverListUpdater,
-                                            LoadBalancerRegistry loadBalancerRegistry) {
+                                            IPing ping, ServerListUpdater serverListUpdater,
+                                            LoadBalancerRegistry loadBalancerRegistry, PredicateFactory predicateFactory) {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
+
+        InstanceInfoExtractor infoExtractor = new InstanceInfoExtractor(serverList.getInitialListOfServers());
+
+        IRule rule = new LoadBalancerRuleAdapter(
+            infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available")),
+            predicateFactory, config);
+
         return new ApimlLoadBalancer<>(config, rule, ping, serverList,
             serverListFilter, serverListUpdater, loadBalancerRegistry);
+    }
+
+    @Bean
+    public PredicateFactory predicateFactory() {
+        return new PredicateFactory(RibbonClientConfiguration.class, "ribbon", "ribbon.client.name");
     }
 
 }
