@@ -44,4 +44,7 @@ include 'zaas-client'
 include 'mock-zosmf'
 include 'onboarding-enabler-micronaut-sample-app'
 include 'certificate-analyser'
+include 'metrics-service'
+include 'metrics-service-ui'
+include 'metrics-service-package'
 

@@ -50,6 +50,7 @@ public class InternalServerErrorController implements ErrorController {
         errorChecks.add(new SecurityErrorCheck(messageService));
         errorChecks.add(new ServiceErrorCheck(messageService));
         errorChecks.add(new RibbonRetryErrorCheck(messageService));
+        errorChecks.add(new LoadBalancerErrorCheck(messageService));
     }
 
     @Override

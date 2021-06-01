@@ -1,0 +1,91 @@
+import java.util.stream.Collectors
+
+buildscript {
+    repositories mavenRepositories
+    dependencies {
+        classpath("com.github.node-gradle:gradle-node-plugin:${gradleNodeVersion}")
+    }
+}
+
+apply plugin: 'com.github.node-gradle.node'
+
+node {
+    download = true
+    version = rootProject.nodejsVersion
+    distBaseUrl = "https://nodejs.org/dist"
+    npmInstallCommand = "ci"
+    workDir = file("${project.projectDir}/tools/nodejs")
+    npmWorkDir = file("${project.projectDir}/tools/npm")
+    yarnWorkDir = file("${project.projectDir}/tools/yarn")
+    nodeProjectDir = file("${project.projectDir}/frontend")
+}
+
+// =================================================
+//
+//  Please manage all task dependencies in here and
+//  not in package.json. This is to leverage
+//  Gradle's incremental task feature
+//
+// =================================================
+
+task javascriptClean(type: Delete) {
+    group = 'npm'
+    delete 'bin', 'build', 'frontend/test-results', 'frontend/coverage', 'frontend/build'
+
+    if (rootProject.cleanNodeModules == 'true') {
+        delete 'frontend/node_modules'
+    }
+}
+clean.dependsOn javascriptClean
+
+// test always runs for build, this side effect of task hierarchy being defined in package.json rather than here
+task npmTest(type: NpmTask) {
+    group = 'npm'
+    description = "Javascript unit tests"
+
+    inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+
+    outputs.file('frontend/test-results/test-report-unit.html')
+    outputs.dir('frontend/coverage')
+
+    outputs.cacheIf { true }
+
+    args = ['run', 'test']
+}
+npmTest.dependsOn npmInstall
+test.dependsOn npmTest
+
+task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
+    group = 'npm'
+    description = "Javascript End to End Tests"
+    environment = ['cypress_metricsHomePage': String.format("%s://%s:%s/metrics-service/ui/v1", System.getProperty("gateway.scheme"),
+        System.getProperty("gateway.host"), System.getProperty("gateway.port")),
+                   'cypress_username': System.getProperty("credentials.user"),
+                   'cypress_password': System.getProperty("credentials.password")]
+    args = ['run', 'cy:e2e:ci']
+}
+npmE2ECI.dependsOn npmInstall
+
+task npmBuild(type: NpmTask) {
+    group = 'npm'
+    description = "Executes npm build"
+    inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/.eslintrc').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
+
+    outputs.dir('frontend/build')
+    outputs.cacheIf { true }
+
+    args = ['run', 'build']
+
+}
+npmBuild.dependsOn npmInstall
+build.dependsOn npmBuild
+
+
+jar {
+    enabled false
+}
