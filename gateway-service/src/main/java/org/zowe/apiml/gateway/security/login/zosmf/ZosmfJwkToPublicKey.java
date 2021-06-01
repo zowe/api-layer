@@ -37,13 +37,16 @@ public class ZosmfJwkToPublicKey {
         try {
             String jwkJson = restTemplateWithoutKeystore.getForObject(zosmfUrl + zosmfJwtBuilderPath,
                 String.class);
+            System.out.println("JWK from zOSMF " + jwkJson);
             JwkToPublicKeyConverter converter = new JwkToPublicKeyConverter();
             String pem = converter.convertFirstPublicKeyJwkToPem(jwkJson, caAlias, caKeyStore, caKeyStoreType, caKeyStorePassword, caKeyPassword);
+            System.out.println("jwtsecret.pem " + pem);
             try (PrintWriter out = new PrintWriter(filename)) {
                 out.println(pem);
             }
             return true;
         } catch (HttpClientErrorException.NotFound e) {
+            System.out.println(e);
             log.warn("Unable to read z/OSMF JWT public key. JWT support might be not configured in z/OSMF: {}", e.getMessage());
             return false;
         }

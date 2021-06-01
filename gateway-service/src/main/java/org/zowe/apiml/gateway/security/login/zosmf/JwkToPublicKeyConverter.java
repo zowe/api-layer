@@ -101,6 +101,7 @@ public class JwkToPublicKeyConverter {
             return certificateHolderToPem(x509CertificateHolder);
         } catch (ParseException | JOSEException | CertificateException | IOException | OperatorCreationException
                 | KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException e) {
+            System.out.println(e);
             throw new JwkConversionError(e);
         }
     }
