@@ -14,8 +14,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
-        container: jbalhar/api-layer-development:1.14.1
-
         services:
             api-catalog-services:
                 image: 'ghcr.io/balhar-jakub/api-catalog-services'
@@ -53,6 +51,4 @@ jobs:
             -   name: Get logs of the created docker services
                 run: |
                     sleep 60
-                    wget mock-zosmf:10013
-                    wget gateway-service:10010
-                    wget discover-service:10011
+                    wget localhost:10013
