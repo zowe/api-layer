@@ -57,13 +57,6 @@ dependencies {
     testCompile libraries.spring_boot_starter_test
 }
 
-
-bootJar.archiveName = "${bootJar.baseName}.jar"
-
-jar {
-    enabled true
-}
-
 def uiModule = "${project(':metrics-service-ui').projectDir}"
 
 processResources {
@@ -89,9 +82,20 @@ bootRun {
     systemProperties = System.properties
 }
 
+bootJar.archiveName = "${bootJar.baseName}.jar"
+
+jar {
+    enabled true
+}
+
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenJavaLib(MavenPublication) {
+            artifact jar
+        }
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml.sdk'
+            artifactId = 'metrics-service-fat-jar'
             artifact bootJar
         }
     }
