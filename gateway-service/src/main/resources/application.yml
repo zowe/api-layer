@@ -84,6 +84,7 @@ server:
     internal:
         enabled: false
         port: ${server.port}
+        address: ${apiml.service.ipAddress}
         ssl:
             keyAlias: ${server.ssl.keyAlias:localhost}
             keyPassword: ${server.ssl.keyPassword:password}
@@ -95,7 +96,6 @@ server:
             trustStorePassword: ${server.ssl.trustStorePassword:password}
             clientAuth: ${server.ssl.clientAuth}
     max-http-header-size: 48000
-    address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
     ssl:
         enabled: true

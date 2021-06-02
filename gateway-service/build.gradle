@@ -23,13 +23,15 @@ jib.to.image = "ghcr.io/balhar-jakub/gateway-service"
 jib.to.auth.password = "providePassword"
 jib.to.auth.username = "balhar-jakub"
 jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
-jib.container.args= ['--spring.config.additional-location=file:/local/gateway-service.yml']
+jib.container.args= ['--spring.config.additional-location=file:/config/local/gateway-service.yml', '--spring.profiles.include=dev,debug,diag']
+jib.container.jvmFlags = ['-Djavax.net.debug=all']
 
 jib {
     extraDirectories {
         paths {
             path {
                 from = "../config"
+                into = "/config"
             }
             path {
                 from = "../keystore"

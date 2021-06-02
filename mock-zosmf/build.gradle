@@ -20,6 +20,7 @@ apply plugin: 'com.google.cloud.tools.jib'
 jib.to.image = "ghcr.io/balhar-jakub/mock-zosmf"
 jib.to.auth.password = "providePassword"
 jib.to.auth.username = "balhar-jakub"
+jib.container.jvmFlags = ['-Djavax.net.debug=ssl:handshake:verbose']
 
 jib {
     extraDirectories {

@@ -22,7 +22,8 @@ apply from: "$projectDir/gradle/lite.gradle"
 jib.to.image = "ghcr.io/balhar-jakub/api-catalog-services"
 jib.to.auth.password = "providePassword"
 jib.to.auth.username = "balhar-jakub"
-jib.container.args= ['--spring.config.additional-location=file:/local/api-catalog-service.yml']
+jib.container.args= ['--spring.config.additional-location=file:/local/api-catalog-service.yml', '--spring.profiles.include=dev,debug']
+jib.container.jvmFlags = ['-Djavax.net.debug=all']
 
 jib {
     extraDirectories {

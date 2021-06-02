@@ -39,13 +39,15 @@ springBoot {
 jib.to.image = "ghcr.io/balhar-jakub/discovery-service"
 jib.to.auth.password = "providePassword"
 jib.to.auth.username = "balhar-jakub"
-jib.container.args= ['--spring.config.additional-location=file:/local/discovery-service.yml']
+jib.container.args= ['--spring.config.additional-location=file:/config/local/discovery-service.yml', '--spring.profiles.active=https', '--spring.profiles.include=diag,debug']
+jib.container.jvmFlags = ['-Djavax.net.debug=all']
 
 jib {
     extraDirectories {
         paths {
             path {
                 from = "../config"
+                into = "/config"
             }
             path {
                 from = "../keystore"
@@ -59,14 +61,13 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
-configurations.all {
-    resolutionStrategy {
-        force (libraries.jetty_websocket_client)
-    }
-}
-
 dependencies {
     implementation(project(':security-service-client-spring'))
+    implementation('javax.servlet:javax.servlet-api') {
+        version {
+            strictly '3.1.0'
+        }
+    }
 
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket

@@ -6,7 +6,7 @@ apiml:
         ipAddress: 127.0.0.1
         port: 10011
     discovery:
-        staticApiDefinitionsDirectories: config/local/api-defs
+        staticApiDefinitionsDirectories: /config/local/api-defs
     security:
         ssl:
             verifySslCertificatesOfServices: true
@@ -29,10 +29,10 @@ server:
         keyAlias: localhost
         keyPassword: password
         keyStoreType: PKCS12
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: /keystore/localhost/localhost.keystore.p12
         keyStorePassword: password
         trustStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: /keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
 ---
 spring:
