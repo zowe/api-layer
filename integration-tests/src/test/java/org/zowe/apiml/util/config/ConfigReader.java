@@ -27,7 +27,10 @@ public class ConfigReader {
     static {
         if ("true".equals(System.getProperty("environment.attls"))) {
             configurationFile = "environment-configuration-attls.yml";
-        } else {
+        } else if ("true".equals(System.getProperty("environment.ha"))) {
+            configurationFile = "environment-configuration-ha.yml";
+        }
+        else {
             configurationFile = "environment-configuration.yml";
         }
     }

@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.ha;
 
 import io.restassured.RestAssured;
 import io.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.element.Node;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -33,7 +34,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 /**
- * Verify that multiple southbound services can route through multiples Gateway instances
+ * Verify that a southbound service can route through multiples Gateway instances
  */
 @HATest
 public class SouthboundServicesRoutingTest {
@@ -43,12 +44,15 @@ public class SouthboundServicesRoutingTest {
     private final String EUREKA_APPS = "/eureka/apps";
     private String username;
     private String password;
+    private String discoverableClientPort;
+    private String discoverableClientHost;
 
     @BeforeEach
     void setUp() {
         gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 
     @Nested
@@ -66,14 +70,16 @@ public class SouthboundServicesRoutingTest {
             }
 
             @Test
-            void routeToSpecificGatewayInstance() throws URISyntaxException {
+            void routeToSpecificInstance() throws URISyntaxException {
                 final int instances = gatewayServiceConfiguration.getInstances();
                 assumeTrue(instances == 2);
                 //@formatter:off
+                extractHostAndPortMetadata();
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+                String discoverableClientInstanceId = discoverableClientHost + ":" + "discoverableclient" + ":" + discoverableClientPort;
                 given()
                     .when()
-                    .header("X-Host", getGatewayInstanceId())
+                    .header("X-Host", discoverableClientInstanceId)
                     .get(HttpRequestUtils.getUriFromGateway(DISCOVERABLE_GREET))
                     .then()
                     .statusCode(is(HttpStatus.SC_OK))
@@ -89,7 +95,7 @@ public class SouthboundServicesRoutingTest {
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
                 given()
                     .when()
-                    .header("X-Host", "")
+                    .header("X-Host", "wrongService")
                     .get(HttpRequestUtils.getUriFromGateway(DISCOVERABLE_GREET))
                     .then()
                     .statusCode(is(HttpStatus.SC_SERVICE_UNAVAILABLE))
@@ -97,7 +103,7 @@ public class SouthboundServicesRoutingTest {
                 //@formatter:on
             }
 
-            String getGatewayInstanceId() throws URISyntaxException {
+            void extractHostAndPortMetadata() throws URISyntaxException {
                 //@formatter:off
                 String xml =
                     given()
@@ -110,7 +116,10 @@ public class SouthboundServicesRoutingTest {
                 //@formatter:on
                 String instanceId = XmlPath.from(xml).getString("applications.application.instance.instanceId");
                 assertThat(instanceId, is(not("")));
-                return instanceId;
+                Node discoverableClientNode = XmlPath.from(xml).get("applications.application.find {it.name == 'DISCOVERABLECLIENT'}");
+                Node instanceNode = discoverableClientNode.children().get("instance");
+                discoverableClientHost = instanceNode.children().get("hostName").toString();
+                discoverableClientPort = instanceNode.children().get("securePort").toString();
             }
         }
     }

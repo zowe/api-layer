@@ -13,6 +13,7 @@ package org.zowe.apiml.integration.ha;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.restassured.RestAssured;
+import io.restassured.path.xml.XmlPath;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 
@@ -26,7 +27,9 @@ import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
+import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -41,10 +44,15 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 public class GatewayMultipleInstancesTest {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
     private final String HEALTH_ENDPOINT = "/application/health";
+    private final String EUREKA_APPS = "/eureka/apps";
+    private String username;
+    private String password;
 
     @BeforeEach
     void setUp() {
         gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        username = ConfigReader.environmentConfiguration().getCredentials().getUser();
+        password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     }
 
     @Nested
@@ -61,6 +69,26 @@ public class GatewayMultipleInstancesTest {
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
                 for (String port : internalPorts) {
                     checkInstancesAreUp(port);
+                }
+            }
+
+            @Test
+            void gatewayInstancesAreRegistered() throws URISyntaxException {
+                //@formatter:off
+                String xml =
+                    given()
+                        .auth().basic(username, password)
+                        .when()
+                        .get(HttpRequestUtils.getUriFromDiscovery(EUREKA_APPS))
+                        .then()
+                        .statusCode(is(HttpStatus.SC_OK))
+                        .extract().body().asString();
+                //@formatter:on
+                String instanceId = XmlPath.from(xml).getString("applications.application.instance.instanceId");
+                assertThat(instanceId, is(not("")));
+                String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
+                for (String port : internalPorts) {
+                    assertThat(instanceId.contains(gatewayServiceConfiguration.getHost() + ":" + "gateway" + ":" + port), is(true));
                 }
             }
 
