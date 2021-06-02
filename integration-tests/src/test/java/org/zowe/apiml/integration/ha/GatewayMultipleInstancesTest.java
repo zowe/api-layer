@@ -47,12 +47,14 @@ public class GatewayMultipleInstancesTest {
     private final String EUREKA_APPS = "/eureka/apps";
     private String username;
     private String password;
+    private int instances;
 
     @BeforeEach
     void setUp() {
         gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+        instances = gatewayServiceConfiguration.getInstances();
     }
 
     @Nested
@@ -61,7 +63,6 @@ public class GatewayMultipleInstancesTest {
         class WhenSendingRequest {
             @Test
             void gatewayInstancesAreUp() throws IOException {
-                final int instances = gatewayServiceConfiguration.getInstances();
                 assumeTrue(instances == 2);
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
                 assertThat(gatewayServiceConfiguration.getInternalPorts(), is(not(nullValue())), is(not("")));
@@ -74,6 +75,7 @@ public class GatewayMultipleInstancesTest {
 
             @Test
             void gatewayInstancesAreRegistered() throws URISyntaxException {
+                assumeTrue(instances == 2);
                 //@formatter:off
                 String xml =
                     given()
