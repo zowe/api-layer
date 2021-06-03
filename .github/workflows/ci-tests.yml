@@ -819,6 +819,10 @@ jobs:
               run: |
                   npm install
                   npm run api-layer-multi
+            - name: Start nginx proxy
+              run: |
+                  cd docker/nginx
+                  docker-compose up --detach
             - name: Build with Gradle
               run: >
                   ./gradlew runHATests --info --scan
