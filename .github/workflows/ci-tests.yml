@@ -815,12 +815,15 @@ jobs:
               run: |
                   docker-compose -f redis/docker-compose-replica.yml up --detach
 
+            - name: Run API Mediation Layer in multi instance mode
+              run: |
+                  npm run api-layer-multi
             - name: Build with Gradle
               run: >
                   ./gradlew runHATests --info --scan
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword
-                  -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+                  -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017 -Denvironment.offPlatform=true
                   -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
