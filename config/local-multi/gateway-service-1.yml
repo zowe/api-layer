@@ -35,7 +35,7 @@ server:
     internal:
         enabled: true
 #        port: 10017
-        port: 10030
+        port: 10010
         ssl:
             keyAlias: localhost-multi
             keyStore: keystore/localhost/localhost-multi.keystore.p12
