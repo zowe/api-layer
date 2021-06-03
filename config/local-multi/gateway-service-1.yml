@@ -34,8 +34,7 @@ spring:
 server:
     internal:
         enabled: true
-#        port: 10017
-        port: 10010
+        port: 10017
         ssl:
             keyAlias: localhost-multi
             keyStore: keystore/localhost/localhost-multi.keystore.p12
