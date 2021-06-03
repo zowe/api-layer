@@ -811,18 +811,14 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-            - name: Start Redis
-              run: |
-                  docker-compose -f redis/docker-compose-replica.yml up --detach
-
-            - name: Run API Mediation Layer in multi instance mode
-              run: |
-                  npm install
-                  npm run api-layer-multi
             - name: Start nginx proxy
               run: |
                   cd docker/nginx
                   docker-compose up --detach
+            - name: Run API Mediation Layer in multi instance mode
+              run: |
+                  npm install
+                  npm run api-layer-multi
             - name: Build with Gradle
               run: >
                   ./gradlew runHATests --info --scan
