@@ -839,7 +839,7 @@ jobs:
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: CITestsWithRedisWithoutSslVerification
+                  name: CITestsHA
                   path: |
                       integration-tests/build/reports/**
             -   name: Cleanup Gradle Cache
