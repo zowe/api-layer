@@ -15,6 +15,30 @@ normalization {
 
 apply plugin: 'org.springframework.boot'
 apply plugin: 'com.gorylenko.gradle-git-properties'
+apply plugin: 'com.google.cloud.tools.jib'
+
+jib {
+    to {
+        image = project.hasProperty("zowe.docker.container") ? project.getProperty("zowe.docker.container") : "ghcr.io/zowe/mock-zosmf"
+        auth {
+            username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
+            password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
+        }
+    }
+
+    container {
+        args = ['--spring.profiles.include=dev,debug', '--apiml.security.ssl.nonStrictVerifySslCertificatesOfServices=true', '--apiml.security.ssl.verifySslCertificatesOfServices=false']
+    }
+
+    extraDirectories {
+        paths {
+            path {
+                from = "../keystore"
+                into = "/keystore"
+            }
+        }
+    }
+}
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file

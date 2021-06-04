@@ -83,6 +83,7 @@ spring:
 server:
     internal:
         enabled: false
+        address: ${apiml.service.hostname}
         port: ${server.port}
         ssl:
             keyAlias: ${server.ssl.keyAlias:localhost}
@@ -95,7 +96,6 @@ server:
             trustStorePassword: ${server.ssl.trustStorePassword:password}
             clientAuth: ${server.ssl.clientAuth}
     max-http-header-size: 48000
-    address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
     ssl:
         enabled: true

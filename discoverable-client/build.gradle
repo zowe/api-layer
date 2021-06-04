@@ -15,6 +15,34 @@ normalization {
 
 apply plugin: 'org.springframework.boot'
 apply plugin: 'com.gorylenko.gradle-git-properties'
+apply plugin: 'com.google.cloud.tools.jib'
+
+jib {
+    to {
+        image = project.hasProperty("zowe.docker.container") ? project.getProperty("zowe.docker.container") : "ghcr.io/zowe/discoverable-client"
+        auth {
+            username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
+            password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
+        }
+    }
+
+    container {
+        args = ['--spring.config.additional-location=file:/config/docker/discoverable-client.yml', '--spring.profiles.include=dev,debug', '--apiml.service.ssl.nonStrictVerifySslCertificatesOfServices=true', '--apiml.security.ssl.verifySslCertificatesOfServices=false']
+    }
+
+    extraDirectories {
+        paths {
+            path {
+                from = "../config"
+                into = "/config"
+            }
+            path {
+                from = "../keystore"
+                into = "/keystore"
+            }
+        }
+    }
+}
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -40,6 +68,11 @@ gitProperties {
 dependencies {
     implementation project(':onboarding-enabler-spring')
     implementation project(':zaas-client')
+    implementation('javax.servlet:javax.servlet-api') {
+        version {
+            strictly '3.1.0'
+        }
+    }
     implementation libraries.springFox
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator

@@ -1,0 +1,49 @@
+
+apiml:
+    service:
+        hostname: gateway-service
+        port: 10010
+        discoveryServiceUrls: https://discovery-service:10011/eureka/
+    security:
+        auth:
+            provider: zosmf
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+            passTicket:
+                timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
+        ssl:
+            verifySslCertificatesOfServices: true
+        x509:
+            enabled: true
+    banner: console
+
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
+spring:
+    output:
+        ansi:
+            enabled: always
+    cache:
+        ehcache:
+            config: classpath:ehcache.xml
+    profiles:
+        include: diag
+
+server:
+    internal:
+        enabled: true
+        port: 10017
+        ssl:
+            keyAlias: localhost-multi
+            keyStore: keystore/localhost/localhost-multi.keystore.p12
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
