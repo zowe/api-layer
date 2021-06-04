@@ -55,7 +55,7 @@ public class TomcatConfiguration {
     private String trustStoreType;
     @Value("${server.ssl.ciphers}")
     private String ciphers;
-    @Value("${server.address}")
+    @Value("${server.internal.address}")
     private String address;
 
     @Bean

@@ -17,6 +17,35 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
 apply from: "$projectDir/gradle/lite.gradle"
+apply plugin: 'com.google.cloud.tools.jib'
+
+jib {
+    to {
+        image = project.hasProperty("zowe.docker.container") ? project.getProperty("zowe.docker.container") : "ghcr.io/zowe/gateway-service"
+        auth {
+            username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
+            password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
+        }
+    }
+
+    container {
+        args = ['--spring.config.additional-location=file:/config/docker/gateway-service.yml', '--spring.profiles.include=dev,debug', '--apiml.security.ssl.nonStrictVerifySslCertificatesOfServices=true', '--apiml.security.ssl.verifySslCertificatesOfServices=false']
+        mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
+    }
+
+    extraDirectories {
+        paths {
+            path {
+                from = "../config"
+                into = "/config"
+            }
+            path {
+                from = "../keystore"
+                into = "/keystore"
+            }
+        }
+    }
+}
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
