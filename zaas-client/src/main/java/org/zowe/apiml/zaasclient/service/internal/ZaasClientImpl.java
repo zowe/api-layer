@@ -27,7 +27,7 @@ public class ZaasClientImpl implements ZaasClient {
     private final PassTicketService passTickets;
 
     public ZaasClientImpl(ConfigProperties configProperties) throws ZaasConfigurationException {
-        if (configProperties.getKeyStorePath() == null) {
+        if (!configProperties.isHttpOnly() && (configProperties.getKeyStorePath() == null)) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.KEY_STORE_NOT_PROVIDED);
         }
 
