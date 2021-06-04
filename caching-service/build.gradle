@@ -15,6 +15,31 @@ normalization {
 
 apply plugin: 'org.springframework.boot'
 apply plugin: 'com.gorylenko.gradle-git-properties'
+apply plugin: 'com.google.cloud.tools.jib'
+
+
+jib {
+    to {
+        image = project.hasProperty("zowe.docker.container") ? project.getProperty("zowe.docker.container") : "ghcr.io/zowe/caching-service"
+        auth {
+            username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
+            password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
+        }
+    }
+
+    container {
+        args = ['--spring.profiles.include=dev,debug', '--apiml.service.ssl.verifySslCertificatesOfServices=false', '--apiml.service.hostname=caching-service', '--apiml.service.discoveryServiceUrls=https://discovery-service:10011/eureka/']
+    }
+
+    extraDirectories {
+        paths {
+            path {
+                from = "../keystore"
+                into = "/keystore"
+            }
+        }
+    }
+}
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -41,6 +66,11 @@ dependencies {
     implementation project(':common-service-core')
 
     implementation project(':onboarding-enabler-spring')
+    implementation('javax.servlet:javax.servlet-api') {
+        version {
+            strictly '3.1.0'
+        }
+    }
 
     implementation libraries.jjwt
     implementation libraries.jjwt_impl
