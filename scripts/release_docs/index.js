@@ -5,11 +5,10 @@ import {readFile, writeFile} from "fs/promises";
 const githubToken = process.argv[2];
 const version = process.argv[3];
 const releaseDate = process.argv[4];
+const amountOfVersions = process.argv[5];
 
 (async function () {
-
-
-    const changes = execSync('conventional-changelog -r 12').toString();
+    const changes = execSync(`conventional-changelog -r ${amountOfVersions}`).toString();
 
     const lines = changes.split(/\r?\n/);
     const addedFeatures = lines.filter(line => {

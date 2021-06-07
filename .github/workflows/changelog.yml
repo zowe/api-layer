@@ -9,6 +9,9 @@ on:
             release_date:
                 description: 'The date of the release (YYYY-MM-DD). E.g. 2021-06-14'
                 required: true
+            amount_of_versions:
+                description: 'THe amount of versions to generate changelog for. E.g. 12'
+                required: true
 
 jobs:
     analyze:
@@ -31,4 +34,4 @@ jobs:
                   git config --global user.name "Zowe Robot"
                   cd ../scripts/release_docs
                   npm install
-                  node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.version }} ${{ github.event.inputs.release_date }}
+                  node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.version }} ${{ github.event.inputs.release_date }} ${{ github.event.inputs.amount_of_versions }}
