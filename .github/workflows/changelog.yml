@@ -27,12 +27,14 @@ jobs:
 
             - name: Checkout repository
               uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0
+                  ref: master
 
             - name: Generate Changelog and open PR
               run: |
                   git config --global user.email "zowe-robot@users.noreply.github.com"
                   git config --global user.name "Zowe Robot"
-                  git pull --tags --ff-only
                   cd scripts/release_docs
                   npm install
                   npm install -g conventional-changelog-cli
