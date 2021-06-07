@@ -2,6 +2,13 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `0.0.47 (2021-06-14)`
+
+
+
+
+
+
 ## `1.21.1 (2021-04-26)`
 
 * Feature: Configuration of the API ML run is now permitted where the hostname in the certificate is not verified in a strict manner. The certificate Common Name or Subject Alternate Name (SAN) are NOT checked. This facilitates deployment to Marist when certificates are valid but do not contain a valid hostname. This is for development purposes only and should not be used for production. (#1334) ([2da761a](https://github.com/zowe/api-layer/commit/2da761a)), closes [#1334](https://github.com/zowe/api-layer/issues/1355) 
