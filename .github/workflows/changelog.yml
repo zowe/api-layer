@@ -29,7 +29,6 @@ jobs:
               uses: actions/checkout@v2
               with:
                   fetch-depth: 0
-                  ref: master
 
             - name: Generate Changelog and open PR
               run: |
