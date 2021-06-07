@@ -12,18 +12,19 @@ package org.zowe.apiml.gateway.security.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.zowe.apiml.security.common.login.NonCompulsoryAuthenticationProcessingFilter;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
-import javax.servlet.*;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
 @Slf4j
-public class X509AuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+public class X509AuthenticationFilter extends NonCompulsoryAuthenticationProcessingFilter {
 
     private final AuthenticationProvider authenticationProvider;
     private final AuthenticationSuccessHandler successHandler;
@@ -36,22 +37,6 @@ public class X509AuthenticationFilter extends AbstractAuthenticationProcessingFi
         this.successHandler = successHandler;
 
 
-    }
-
-    @Override
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) req;
-        HttpServletResponse response = (HttpServletResponse) res;
-        if (!requiresAuthentication(request, response)) {
-            chain.doFilter(request, response);
-            return;
-        }
-        Authentication authResult = attemptAuthentication(request, response);
-        if (authResult == null) {
-            chain.doFilter(request, response);
-            return;
-        }
-        successfulAuthentication(request, response, chain, authResult);
     }
 
     @Override

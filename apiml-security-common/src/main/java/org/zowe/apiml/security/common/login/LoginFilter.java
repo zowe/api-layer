@@ -13,13 +13,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -38,7 +35,7 @@ import java.util.Optional;
 /**
  * Filter to process authentication requests with the username and password in JSON format.
  */
-public class LoginFilter extends AbstractAuthenticationProcessingFilter {
+public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
@@ -75,22 +72,31 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         }
         Optional<LoginRequest> optionalLoginRequest = getCredentialFromAuthorizationHeader(request);
 
-        LoginRequest loginRequest = optionalLoginRequest.orElseGet(() -> getCredentialsFromBody(request));
-        if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
-            throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
-        }
-
-        UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
-
-        Authentication auth = null;
-
         try {
-            auth = this.getAuthenticationManager().authenticate(authentication);
-        } catch (RuntimeException ex) {
-            resourceAccessExceptionHandler.handleException(request, response, ex);
+
+            LoginRequest loginRequest = optionalLoginRequest.orElseGet(() -> getCredentialsFromBody(request));
+            if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
+                throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
+            }
+
+            UsernamePasswordAuthenticationToken authentication
+                = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
+
+            Authentication auth = null;
+
+            try {
+                auth = this.getAuthenticationManager().authenticate(authentication);
+            } catch (RuntimeException ex) {
+                resourceAccessExceptionHandler.handleException(request, response, ex);
+            }
+            return auth;
+
+        } catch (AuthenticationCredentialsNotFoundException e) {
+
+            return null;
         }
-        return auth;
+
+
     }
 
 
