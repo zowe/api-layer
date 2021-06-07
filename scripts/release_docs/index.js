@@ -2,15 +2,13 @@ import {Octokit} from "octokit";
 import {execSync} from "child_process";
 import {readFile, writeFile} from "fs/promises";
 
-// Get the directory with files
-const owner = process.argv[2];
-const repository = process.argv[3];  //${{ github.repository }} // Would it contain owner or is it separated? But I know these values could be set
-const githubToken = process.argv[4];
-const version = '1.22.0 (2021-06-14)';
-
-// Use the version to create a branch name.
+const githubToken = process.argv[2];
+const version = process.argv[3];
+const releaseDate = process.argv[4];
 
 (async function () {
+
+
     const changes = execSync('conventional-changelog -r 12').toString();
 
     const lines = changes.split(/\r?\n/);
@@ -38,7 +36,7 @@ const version = '1.22.0 (2021-06-14)';
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## \`${version}\`
+## \`${version} (${releaseDate})\`
 
 ${addedFeatures}
 
@@ -49,9 +47,21 @@ ${restOfChangelog}`;
 
     await writeFile('../../CHANGELOG.md', changelogToStore);
 
-    // Create new branch
-    // Commit the changes
-    // Push the changes
-    // Prepare the PR
+    const octokit = new Octokit({auth: githubToken});
+    const branch = `apiml/release/${version.replace(/\./g, "_")}`;
+
+    let gitCommitPush = `git branch ${branch} && git checkout ${branch} && git add CHANGELOG.md && git commit --signoff -m "Update changelog" && git push origin ${branch}`;
+    execSync(gitCommitPush, {
+        cwd: '../../'
+    });
+
+    await octokit.rest.pulls.create({
+        owner: 'zowe',
+        repo: 'api-layer',
+        title: 'Automatic update for the Changelog for release',
+        head: branch,
+        base: 'master',
+        body: 'Update changelog for new release'
+    });
 })()
 
