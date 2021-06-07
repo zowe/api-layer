@@ -65,10 +65,10 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             SocketChannel socketChannel = secureChannel.getIOChannel();
             try {
                 Class<?> socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
-                Field fdField = socketChannelImpl.getDeclaredField("fdVal");
-                fdField.setAccessible(true);
-                int fileDescriptor = fdField.getInt(socketChannel);
-                System.out.println(fileDescriptor);
+                Method getFDVal = socketChannelImpl.getDeclaredMethod("getFDVal");
+                getFDVal.setAccessible(true);
+                int fileDescriptor = (int) getFDVal.invoke(socketChannel);
+                System.out.println("method: " + fileDescriptor);
                 InboundAttls.init(fileDescriptor);
             } catch (Exception e) {
                 e.printStackTrace();
