@@ -10,7 +10,7 @@ on:
                 description: 'The date of the release (YYYY-MM-DD). E.g. 2021-06-14'
                 required: true
             amount_of_versions:
-                description: 'THe amount of versions to generate changelog for. E.g. 12'
+                description: 'The amount of versions to generate changelog for. For example if the current release version is 1.23.0, last version released within Zowe is 1.22.3 and the highest 1.22.x version is 1.22.9 this number would be 6'
                 required: true
 
 jobs:
