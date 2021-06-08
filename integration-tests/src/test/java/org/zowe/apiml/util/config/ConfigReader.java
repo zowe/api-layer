@@ -89,6 +89,8 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setExternalPort(Integer.parseInt(System.getProperty("gateway.externalPort", String.valueOf(configuration.getGatewayServiceConfiguration().getExternalPort()))));
                     configuration.getGatewayServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
                     configuration.getGatewayServiceConfiguration().setInternalPorts(System.getProperty("gateway.internalPorts", String.valueOf(configuration.getGatewayServiceConfiguration().getInternalPorts())));
+                    configuration.getGatewayServiceConfiguration().setRealPort(Integer.parseInt(System.getProperty("gateway.realPort", String.valueOf(configuration.getGatewayServiceConfiguration().getRealPort()))));
+                    configuration.getGatewayServiceConfiguration().setRealScheme(System.getProperty("gateway.realScheme", String.valueOf(configuration.getGatewayServiceConfiguration().getRealScheme())));
 
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
                     configuration.getDiscoveryServiceConfiguration().setUser(System.getProperty("discovery.user", configuration.getDiscoveryServiceConfiguration().getUser()));
