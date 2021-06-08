@@ -14,7 +14,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class LoginRequestTest {
 
@@ -24,14 +25,15 @@ class LoginRequestTest {
 
     @Nested
     class WhenPasswordInCredentials {
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(USERNAME,PASS);
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(USERNAME, PASS);
+
         @Test
-        void returnPassword(){
-            assertEquals(PASS,LoginRequest.getPassword(auth));
+        void returnPassword() {
+            assertEquals(PASS, LoginRequest.getPassword(auth));
         }
 
         @Test
-        void returnNull(){
+        void returnNull() {
             assertNull(LoginRequest.getNewPassword(auth));
         }
 
@@ -40,17 +42,18 @@ class LoginRequestTest {
     @Nested
     class WhenLoginRequestInCredentials {
 
-        LoginRequest loginRequest = new LoginRequest(USERNAME,PASS,NEW_PASS);
+        LoginRequest loginRequest = new LoginRequest(USERNAME, PASS, NEW_PASS);
+
         @Test
-        void returnNewPassword(){
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),loginRequest);
-            assertEquals(NEW_PASS,LoginRequest.getNewPassword(auth));
+        void returnNewPassword() {
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
+            assertEquals(NEW_PASS, LoginRequest.getNewPassword(auth));
         }
 
         @Test
-        void returnPassword(){
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),loginRequest);
-            assertEquals(PASS,LoginRequest.getPassword(auth));
+        void returnPassword() {
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
+            assertEquals(PASS, LoginRequest.getPassword(auth));
         }
     }
 
