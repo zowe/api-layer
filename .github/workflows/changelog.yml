@@ -1,0 +1,37 @@
+name: "Generate Changelog and create PR"
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: 'The version that is going to be released. E.g. 1.22.0'
+                required: true
+            release_date:
+                description: 'The date of the release (YYYY-MM-DD). E.g. 2021-06-14'
+                required: true
+            amount_of_versions:
+                description: 'The amount of versions to generate changelog for. For example if the current release version is 1.23.0, last version released within Zowe is 1.22.3 and the highest 1.22.x version is 1.22.9 this number would be 6'
+                required: true
+
+jobs:
+    analyze:
+        name: Identify and generate changes in the Error messages
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - name: Set up Node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '14'
+
+            - name: Checkout repository
+              uses: actions/checkout@v2
+
+            - name: Generate Changelog and open PR
+              run: |
+                  git config --global user.email "zowe-robot@users.noreply.github.com"
+                  git config --global user.name "Zowe Robot"
+                  cd ../scripts/release_docs
+                  npm install
+                  node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.version }} ${{ github.event.inputs.release_date }} ${{ github.event.inputs.amount_of_versions }}
