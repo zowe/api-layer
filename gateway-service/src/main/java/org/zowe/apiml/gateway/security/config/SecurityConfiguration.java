@@ -47,6 +47,7 @@ import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
+import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
 import java.util.*;
 
@@ -173,16 +174,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // add filters - login, query, ticket
             .and()
 
-//            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
-//            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), X509AuthenticationFilter.class)
-//
-//            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
-//            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), X509AuthenticationFilter.class)
-
-            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getGatewayLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpoint()), ShouldBeAlreadyAuthenticatedFilter.class)
             .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), X509AuthenticationFilter.class)
 
-            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), ShouldBeAlreadyAuthenticatedFilter.class)
             .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), X509AuthenticationFilter.class)
 
 
