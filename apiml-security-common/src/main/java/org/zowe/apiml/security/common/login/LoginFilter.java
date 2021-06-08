@@ -70,32 +70,31 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
         if (!request.getMethod().equals(HttpMethod.POST.name())) {
             throw new AuthMethodNotSupportedException(request.getMethod());
         }
-        Optional<LoginRequest> optionalLoginRequest = getCredentialFromAuthorizationHeader(request);
 
-        try {
+        Optional<LoginRequest> credentialFromHeader = getCredentialFromAuthorizationHeader(request);
+        Optional<LoginRequest> credentialsFromBody = getCredentialsFromBody(request);
 
-            LoginRequest loginRequest = optionalLoginRequest.orElseGet(() -> getCredentialsFromBody(request));
-            if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
-                throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
-            }
+        LoginRequest loginRequest = credentialFromHeader.orElse(credentialsFromBody.orElse(null));
 
-            UsernamePasswordAuthenticationToken authentication
-                = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
-
-            Authentication auth = null;
-
-            try {
-                auth = this.getAuthenticationManager().authenticate(authentication);
-            } catch (RuntimeException ex) {
-                resourceAccessExceptionHandler.handleException(request, response, ex);
-            }
-            return auth;
-
-        } catch (AuthenticationCredentialsNotFoundException e) {
-
+        if (loginRequest == null) {
             return null;
         }
 
+        if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
+            throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
+        }
+
+        UsernamePasswordAuthenticationToken authentication
+            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
+
+        Authentication auth = null;
+
+        try {
+            auth = this.getAuthenticationManager().authenticate(authentication);
+        } catch (RuntimeException ex) {
+            resourceAccessExceptionHandler.handleException(request, response, ex);
+        }
+        return auth;
 
     }
 
@@ -152,8 +151,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
         if (i > 0) {
             return new LoginRequest(credentials.substring(0, i), credentials.substring(i + 1));
         }
-
-        return null;
+        throw new BadCredentialsException("Invalid basic authentication header");
     }
 
     /**
@@ -163,9 +161,12 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @return the credentials in {@link LoginRequest}
      * @throws AuthenticationCredentialsNotFoundException if the login object has wrong format
      */
-    private LoginRequest getCredentialsFromBody(HttpServletRequest request) {
+    private Optional<LoginRequest> getCredentialsFromBody(HttpServletRequest request) {
         try {
-            return mapper.readValue(request.getInputStream(), LoginRequest.class);
+            if (request.getInputStream().available() == 0) {
+                return Optional.empty();
+            }
+            return Optional.of(mapper.readValue(request.getInputStream(), LoginRequest.class));
         } catch (IOException e) {
             logger.debug("Authentication problem: login object has wrong format");
             throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
