@@ -71,11 +71,8 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     @Override
     public synchronized CloseableHttpClient getHttpClient() throws ZaasConfigurationException {
-        if (keyStorePath == null) {
-            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.KEY_STORE_NOT_PROVIDED);
-        }
         if (httpsClientWithKeyStoreAndTrustStore == null) {
-            if (kmf == null) {
+            if ((kmf == null) && (keyStorePath != null)) {
                 initializeKeyStoreManagerFactory();
             }
             httpsClientWithKeyStoreAndTrustStore = sharedHttpClientConfiguration(getSSLContext())

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
@@ -144,6 +145,17 @@ class ZaasClientTest {
     @Test
     void givenValidToken_whenLogoutIsCalled_thenSuccessLogout() {
         assertDoesNotThrow(() -> underTest.logout("apimlAuthenticationToken=" + VALID_TOKEN));
+    }
+
+    @Test
+    void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() {
+        ConfigProperties config = new ConfigProperties();
+        config.setTrustStorePassword(VALID_PASSWORD.toCharArray());
+        config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
+        config.setTrustStoreType("PKCS12");
+        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> new ZaasClientImpl(config));
+
+        assertThat(zaasException.getErrorCode().getId(), is("ZWEAS501E"));
     }
 
 }
