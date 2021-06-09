@@ -62,16 +62,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
     private static String token;
 
-    @BeforeEach
-    void setUp() {
-        RestAssured.useRelaxedHTTPSValidation();
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-
-        token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
-    }
-
     @Nested
     class WhenGettingInformationAboutServices {
+
         @Nested
         class ReturnUnauthorized {
             @ParameterizedTest(name = "givenNoAuthentication {index} {0} ")
@@ -93,6 +86,13 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnAllServices {
+            @BeforeEach
+            void setUp() {
+                RestAssured.useRelaxedHTTPSValidation();
+                RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+
+                token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+            }
             @Test
             @SuppressWarnings({"squid:S2699", "Assets are after then()"})
             void givenValidToken() {
@@ -138,6 +138,13 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
     @Nested
     class WhenGettingDetailsAboutSpecificService {
+        @BeforeEach
+        void setUp() {
+            RestAssured.useRelaxedHTTPSValidation();
+            RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+
+            token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+        }
         @Nested
         class ReturnDetailedInformationInObject {
             @ParameterizedTest(name = "givenValidTokenWithAuthorizedUserAndValidServiceId {index} {0} {1} {2} {3}")

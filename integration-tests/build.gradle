@@ -202,7 +202,8 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'StartupCheck',
             'EnvironmentCheck',
             'AdditionalLocalTest',
-            'TestsNotMeantForZowe'
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest'
         )
     }
     outputs.upToDateWhen { false }
