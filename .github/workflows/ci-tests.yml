@@ -55,9 +55,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Build with Gradle
                 run: >
                     ./gradlew build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -100,9 +100,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -172,9 +172,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -245,9 +245,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -318,9 +318,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -395,9 +395,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -470,9 +470,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -545,9 +545,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -619,9 +619,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -707,9 +707,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
