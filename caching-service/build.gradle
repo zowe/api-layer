@@ -28,11 +28,15 @@ jib {
     }
 
     container {
-        args = ['--spring.profiles.include=dev,debug', '--apiml.service.ssl.verifySslCertificatesOfServices=false', '--apiml.service.hostname=caching-service', '--apiml.service.discoveryServiceUrls=https://discovery-service:10011/eureka/']
+        args = ['--spring.profiles.include=dev,diag', '--spring.config.additional-location=file:/config/docker/caching-service.yml']
     }
 
     extraDirectories {
         paths {
+            path {
+                from = "../config"
+                into = "/config"
+            }
             path {
                 from = "../keystore"
                 into = "/keystore"
