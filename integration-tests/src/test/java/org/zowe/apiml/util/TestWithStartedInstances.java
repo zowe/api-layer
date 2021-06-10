@@ -16,6 +16,8 @@ public interface TestWithStartedInstances {
     @BeforeEach
     default void beforeAllTests() {
         FullApiMediationLayer apiml = FullApiMediationLayer.getInstance();
-        apiml.waitUntilReady();
+        if (!apiml.runsOffPlatform()) {
+            FullApiMediationLayer.getInstance().waitUntilReady();
+        }
     }
 }
