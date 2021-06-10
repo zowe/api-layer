@@ -57,12 +57,12 @@ jobs:
                         onboarding-enabler-nodejs-sample-app/node_modules
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Build with Gradle
                 run: >
-                    ./gradlew jibDockerBuild
-#                    ./gradlew build jib -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-#                        -Pzowe.docker.password=${{ secrets.ZOWE_ROBOT_TOKEN }} -Pzowe.docker.username=zowe-robot
+#                    ./gradlew jibDockerBuild
+                    ./gradlew build jib -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                        -Pzowe.docker.password=${{ secrets.ZOWE_ROBOT_TOKEN }} -Pzowe.docker.username=zowe-robot
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -71,6 +71,74 @@ jobs:
                     rm -f ~/.gradle/caches/modules-2/modules-2.lock
                     rm -f ~/.gradle/caches/modules-2/gc.properties
                     rm -rf ~/.gradle/caches/build-cache-1
+
+    CITestsDocker:
+        needs: BuildAndPackage
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        services:
+            api-catalog-services:
+                image: 'ghcr.io/zowe/api-catalog-services'
+                credentials:
+                    username: zowe-robot
+                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    - 10014:10014
+            caching-service:
+                image: 'ghcr.io/zowe/caching-service'
+                credentials:
+                    username: zowe-robot
+                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    - 10016:10016
+            discoverable-client:
+                image: 'ghcr.io/zowe/discoverable-client'
+                credentials:
+                    username: zowe-robot
+                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    - 10012:10012
+            discovery-service:
+                image: 'ghcr.io/zowe/discovery-service'
+                credentials:
+                    username: zowe-robot
+                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    - 10011:10011
+            gateway-service:
+                image: 'ghcr.io/zowe/gateway-service'
+                credentials:
+                    username: zowe-robot
+                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    - 10010:10010
+            mock-zosmf:
+                image: 'ghcr.io/zowe/mock-zosmf'
+                credentials:
+                    username: zowe-robot
+                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    - 10013:10013
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up Node
+                uses: actions/setup-node@v2
+                with:
+                    node-version: '14'
+            -   name: Get logs of the created docker services
+                run: |
+                    sleep 60
+                    echo "First logs"
+                    docker ps -a -q | xargs -L 1 docker logs
+                    sleep 60
+                    echo "Next logs"
+                    docker ps -a -q | xargs -L 1 docker logs
+                    docker ps
+                    curl -k -v -trace https://localhost:10010
 
 #
 #    CITests:
@@ -764,7 +832,7 @@ jobs:
 #                    rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsHA:
-        needs: BuildAndPackage
+        needs: CITestsDocker
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -821,17 +889,17 @@ jobs:
 #              run: |
 #                  ./gradlew jibDockerBuild
 
-            - name: Create a new bridge network
-              run: |
-                  docker network create api-layer-full
+#            - name: Create a new bridge network
+#              run: |
+#                  docker network create api-layer-full
 
-            - name: Create Docker containers for the services
-              run: |
-                  docker create --name discovery-service --network api-layer-full --network-alias discovery-service -p 10011:10011 ghcr.io/zowe/discovery-service
-                  docker create --name discoverable-client --network api-layer-full --network-alias discoverable-client -p 10012:10012 ghcr.io/zowe/discoverable-client
-                  docker create --name gateway-service --network api-layer-full --network-alias gateway-service -p 10010:10010 ghcr.io/zowe/gateway-service
-                  docker create --name discovery-service --network api-layer-full --network-alias discovery-service -p 10011:10011 ghcr.io/zowe/discovery-service
-                  docker create --name api-catalog-service --network api-layer-full --network-alias api-catalog-service -p 10014:10014 ghcr.io/zowe/api-catalog-services
+#            - name: Create Docker containers for the services
+#              run: |
+#                  docker create --name discovery-service --network api-layer-full --network-alias discovery-service -p 10011:10011 ghcr.io/zowe/discovery-service
+#                  docker create --name discoverable-client --network api-layer-full --network-alias discoverable-client -p 10012:10012 ghcr.io/zowe/discoverable-client
+#                  docker create --name gateway-service --network api-layer-full --network-alias gateway-service -p 10010:10010 ghcr.io/zowe/gateway-service
+#                  docker create --name discovery-service --network api-layer-full --network-alias discovery-service -p 10011:10011 ghcr.io/zowe/discovery-service
+#                  docker create --name api-catalog-service --network api-layer-full --network-alias api-catalog-service -p 10014:10014 ghcr.io/zowe/api-catalog-services
             - name: Run API Mediation Layer in on Docker containers
               run: |
                   npm install
