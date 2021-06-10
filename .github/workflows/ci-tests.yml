@@ -60,8 +60,9 @@ jobs:
                         ${{ runner.OS }}-artifacts001-${{ github.sha }}
             -   name: Build with Gradle
                 run: >
-                    ./gradlew build jib -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                        -Pzowe.docker.password=${{ secrets.ZOWE_ROBOT_TOKEN }} -Pzowe.docker.username=zowe-robot
+                    ./gradlew jibDockerBuild
+#                    ./gradlew build jib -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#                        -Pzowe.docker.password=${{ secrets.ZOWE_ROBOT_TOKEN }} -Pzowe.docker.username=zowe-robot
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -816,9 +817,9 @@ jobs:
               run: |
                   cd docker/nginx
                   docker-compose up --detach
-            - name: Build docker containers
-              run: |
-                  ./gradlew jibDockerBuild
+#            - name: Build docker containers
+#              run: |
+#                  ./gradlew jibDockerBuild
 
             - name: Create a new bridge network
               run: |
