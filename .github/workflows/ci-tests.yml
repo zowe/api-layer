@@ -825,9 +825,6 @@ jobs:
               run: |
                   docker network create api-layer-full
 
-            - name: Build with Gradle
-              run: >
-                  ./gradlew jibDockerBuild
             - name: Create Docker containers for the services
               run: |
                   docker create --name discovery-service --network api-layer-full --network-alias discovery-service -p 10011:10011 ghcr.io/zowe/discovery-service
