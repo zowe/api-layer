@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,31 +19,26 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.MapPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredicate;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
-
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class ConfigurableNamedContextFactoryTest {
 
-    @RequiredArgsConstructor
-    private static class DummySpec implements NamedContextFactory.Specification {
-
-        private final String name;
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public Class<?>[] getConfiguration() {
-            return new Class[0];
+    //This is here to load context fast by creating just this bean
+    @Configuration
+    public static class MainContextConfiguration {
+        @Bean
+        public Date dateBean() {
+            return new Date();
         }
     }
 
@@ -68,12 +64,11 @@ class ConfigurableNamedContextFactoryTest {
     }
 
     @Nested
-    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
     class GivenProperties {
         @Test
         void beansConditionalConstructWorks(ApplicationContext context) {
 
-            ConfigurableNamedContextFactory<DummySpec> factory = new ConfigurableNamedContextFactory( TestConfig.class,"aa", "aa");
+            ConfigurableNamedContextFactory<NamedContextFactory.Specification> factory = new ConfigurableNamedContextFactory( TestConfig.class,"aa", "aa");
 
             factory.addInitializer("InstanceData", ctx -> {
                 ctx.getEnvironment().getPropertySources().addFirst(
@@ -83,8 +78,50 @@ class ConfigurableNamedContextFactoryTest {
 
             factory.setApplicationContext(context);
 
-            Map<String, RequestAwarePredicate> ctx = factory.getInstances("ctx", RequestAwarePredicate.class);
-            assertThat(ctx.size(), is(1));
+            Map<String, RequestAwarePredicate> beans = factory.getInstances("ctx", RequestAwarePredicate.class);
+            assertThat(beans.size(), is(1));
+            assertThat(beans.keySet(), contains("headerPredicate2"));
+        }
+    }
+
+    private static class WiringConfig {
+
+        @Bean
+        public RequestAwarePredicate headerPredicate1() {
+            return new RequestHeaderPredicate();
+        }
+
+        @Bean
+        public BeanToWireTo getBeanToWireTo(RequestAwarePredicate p, Date s) {
+            return new BeanToWireTo(p, s);
+        }
+
+        @RequiredArgsConstructor
+        @Getter
+        class BeanToWireTo{
+            private final RequestAwarePredicate predicate;
+            private final Date date;
+        }
+    }
+
+    @Nested
+    //This has to be here so the nested class sees the parent context's configuration
+    @ContextConfiguration(classes = ConfigurableNamedContextFactoryTest.MainContextConfiguration.class)
+    class givenDependingBeans {
+
+        @Test
+        void wiringWorksInContextAndFromParentContext(ApplicationContext context) {
+
+            ConfigurableNamedContextFactory<NamedContextFactory.Specification> factory = new ConfigurableNamedContextFactory( WiringConfig.class,"aa", "aa");
+
+            factory.setApplicationContext(context);
+
+            Map<String, WiringConfig.BeanToWireTo> ctx = factory.getInstances("ctx", WiringConfig.BeanToWireTo.class);
+            WiringConfig.BeanToWireTo bean = factory.getInstance("ctx", WiringConfig.BeanToWireTo.class);
+            assertThat(bean, is(not(nullValue())));
+            assertThat(bean.getDate(), is(not(nullValue())));
+            assertThat(bean.getPredicate(), is(not(nullValue())));
+
         }
     }
 
