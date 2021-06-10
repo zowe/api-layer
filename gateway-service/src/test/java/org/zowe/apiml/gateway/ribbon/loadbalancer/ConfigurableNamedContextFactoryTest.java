@@ -18,20 +18,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.MapPropertySource;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredicate;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 
-class PredicateFactoryTest {
-
+class ConfigurableNamedContextFactoryTest {
 
     @RequiredArgsConstructor
-    private static class TestSpec implements NamedContextFactory.Specification {
+    private static class DummySpec implements NamedContextFactory.Specification {
 
         private final String name;
 
@@ -42,40 +42,46 @@ class PredicateFactoryTest {
 
         @Override
         public Class<?>[] getConfiguration() {
-            return new Class[] {TestConfig.class};
+            return new Class[0];
         }
     }
 
     private static class TestConfig {
 
         @Bean
-        @ConditionalOnProperty(name = "huahua", havingValue = "true")
-        public RequestAwarePredicate headerPredicate() {
+        @ConditionalOnProperty(name = "variable", havingValue = "true")
+        public RequestAwarePredicate headerPredicate1() {
             return new RequestHeaderPredicate();
         }
 
         @Bean
-        @ConditionalOnProperty(name = "huahua", havingValue = "false")
+        @ConditionalOnProperty(name = "variable", havingValue = "false")
         public RequestAwarePredicate headerPredicate2() {
+            return new RequestHeaderPredicate();
+        }
+
+        @Bean
+        @ConditionalOnProperty(name = "missing.variable", havingValue = "false")
+        public RequestAwarePredicate headerPredicate3() {
             return new RequestHeaderPredicate();
         }
     }
 
     @Nested
-    @SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {"huahua=true"}
-        )
-
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
     class GivenProperties {
         @Test
-        void name(ApplicationContext context) {
+        void beansConditionalConstructWorks(ApplicationContext context) {
 
-            PredicateFactory<TestSpec> factory = new PredicateFactory( "aa", "aa");
+            ConfigurableNamedContextFactory<DummySpec> factory = new ConfigurableNamedContextFactory( TestConfig.class,"aa", "aa");
+
+            factory.addInitializer("InstanceData", ctx -> {
+                ctx.getEnvironment().getPropertySources().addFirst(
+                    new MapPropertySource("InstanceData", Collections.singletonMap("variable", "false"))
+                );
+            });
 
             factory.setApplicationContext(context);
-            factory.setConfigurations(Arrays.asList(new TestSpec("default.")));
-
 
             Map<String, RequestAwarePredicate> ctx = factory.getInstances("ctx", RequestAwarePredicate.class);
             assertThat(ctx.size(), is(1));

@@ -60,7 +60,7 @@ public class GatewayRibbonConfig {
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
                                             IPing ping, ServerListUpdater serverListUpdater,
-                                            LoadBalancerRegistry loadBalancerRegistry, PredicateFactory predicateFactory) {
+                                            LoadBalancerRegistry loadBalancerRegistry, ConfigurableNamedContextFactory configurableNamedContextFactory) {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
@@ -69,7 +69,7 @@ public class GatewayRibbonConfig {
 
         IRule rule = new LoadBalancerRuleAdapter(
             infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available")),
-            predicateFactory, config);
+            configurableNamedContextFactory, config);
 
         return new ApimlLoadBalancer<>(config, rule, ping, serverList,
             serverListFilter, serverListUpdater, loadBalancerRegistry);

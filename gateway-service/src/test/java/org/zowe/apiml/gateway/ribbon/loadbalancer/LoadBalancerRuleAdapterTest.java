@@ -41,7 +41,7 @@ class LoadBalancerRuleAdapterTest {
     class GivenOnlyDefaultPredicate {
         @Test
         void choosesRoundRobin() {
-            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(mock(InstanceInfo.class), mock(PredicateFactory.class), null);
+            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(mock(InstanceInfo.class), mock(ConfigurableNamedContextFactory.class), null);
             underTest.setLoadBalancer(lb);
             when(lb.getAllServers()).thenReturn(Arrays.asList(server, server1));
             Server theChosenOne = underTest.choose("key");
@@ -58,7 +58,7 @@ class LoadBalancerRuleAdapterTest {
     @Nested
     class GivenAdditionalPredicate {
 
-        private PredicateFactory predicateFactory;
+        private ConfigurableNamedContextFactory configurableNamedContextFactory;
         private RequestAwarePredicate requestAwarePredicate;
         private RequestAwarePredicate requestAwarePredicate1;
         private InstanceInfo instanceInfo;
@@ -66,7 +66,7 @@ class LoadBalancerRuleAdapterTest {
 
         @BeforeEach
         void setup() {
-            predicateFactory = mock(PredicateFactory.class);
+            configurableNamedContextFactory = mock(ConfigurableNamedContextFactory.class);
             requestAwarePredicate = mock(RequestAwarePredicate.class);
             requestAwarePredicate1 = mock(RequestAwarePredicate.class);
             instanceInfo = InstanceInfo.Builder.newBuilder().setAppName("app_one").build();
@@ -79,10 +79,10 @@ class LoadBalancerRuleAdapterTest {
         void useAllPredicates() {
             when(requestAwarePredicate.apply(any(), any())).thenReturn(true);
             when(requestAwarePredicate1.apply(any(), any())).thenReturn(true);
-            when(predicateFactory.getInstances(any(), any())).thenReturn(predicateMap);
+            when(configurableNamedContextFactory.getInstances(any(), any())).thenReturn(predicateMap);
             when(lb.getAllServers()).thenReturn(Arrays.asList(server, server1));
 
-            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory, null);
+            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, configurableNamedContextFactory, null);
             underTest.setLoadBalancer(lb);
 
             underTest.choose("key");
@@ -95,10 +95,10 @@ class LoadBalancerRuleAdapterTest {
 
         @Test
         void noServerFitsThePredicate() {
-            when(predicateFactory.getInstances(any(), any())).thenReturn(predicateMap);
+            when(configurableNamedContextFactory.getInstances(any(), any())).thenReturn(predicateMap);
             when(requestAwarePredicate.apply(any(), any())).thenReturn(false);
 
-            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, predicateFactory, null);
+            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(instanceInfo, configurableNamedContextFactory, null);
 
             underTest.setLoadBalancer(lb);
             assertNull(underTest.choose("key"));
@@ -109,15 +109,15 @@ class LoadBalancerRuleAdapterTest {
     class givenHeterogenousListOfServers {
 
         private Map predicateMap = new HashMap<>();
-        private PredicateFactory predicateFactory = mock(PredicateFactory.class);
+        private ConfigurableNamedContextFactory configurableNamedContextFactory = mock(ConfigurableNamedContextFactory.class);
 
         @Test
         void shouldFailFast() {
             predicateMap.put("predicate", mock(RequestAwarePredicate.class));
-            when(predicateFactory.getInstances(any(), any())).thenReturn(predicateMap);
+            when(configurableNamedContextFactory.getInstances(any(), any())).thenReturn(predicateMap);
             when(lb.getAllServers()).thenReturn(Arrays.asList(server, new Server("host", 80)));
 
-            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(mock(InstanceInfo.class), predicateFactory, null);
+            LoadBalancerRuleAdapter underTest = new LoadBalancerRuleAdapter(mock(InstanceInfo.class), configurableNamedContextFactory, null);
             underTest.setLoadBalancer(lb);
             assertThrows(IllegalStateException.class, () -> underTest.choose("key"));
         }

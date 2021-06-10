@@ -10,19 +10,26 @@
 package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
 import org.springframework.beans.BeansException;
+import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.core.env.MapPropertySource;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
-public class PredicateFactory<T extends NamedContextFactory.Specification> extends NamedContextFactory<T> {
+public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Specification> extends NamedContextFactory<T> {
 
     protected ApplicationContext parent;
 
     protected Map<String, T> configurations = new ConcurrentHashMap<>();
+    protected Map<String, Consumer<ConfigurableApplicationContext>> initializers = new ConcurrentHashMap<>();
+
+    protected Class<?> defaultConfigType;
 
     @Override
     public void setConfigurations(List<T> configurations) {
@@ -31,10 +38,15 @@ public class PredicateFactory<T extends NamedContextFactory.Specification> exten
         }
     }
 
+    public void addInitializer(String name, Consumer<ConfigurableApplicationContext> initializingConsumer) {
+        this.initializers.put(name, initializingConsumer);
+    }
+
     //Argument 1
     //Argument 2 and 3 => to set the config name to Environment
-    public PredicateFactory(String propertySourceName, String propertyName) {
-        super(null, propertySourceName, propertyName);
+    public ConfigurableNamedContextFactory(Class<?> defaultConfigType, String propertySourceName, String propertyName) {
+        super(defaultConfigType, propertySourceName, propertyName);
+        this.defaultConfigType = defaultConfigType;
     }
 
     @Override
@@ -53,7 +65,7 @@ public class PredicateFactory<T extends NamedContextFactory.Specification> exten
                 context.register(configuration);
             }
         }
-        for (Map.Entry<String, T> entry : this.configurations.entrySet()) {
+        for (Entry<String, T> entry : this.configurations.entrySet()) {
             if (entry.getKey().startsWith("default.")) {
                 for (Class<?> configuration : entry.getValue().getConfiguration()) {
                     context.register(configuration);
@@ -61,18 +73,23 @@ public class PredicateFactory<T extends NamedContextFactory.Specification> exten
             }
         }
 
+        context.register(PropertyPlaceholderAutoConfiguration.class);
+
+        if (this.defaultConfigType != null) {
+            context.register(defaultConfigType);
+        }
+
         if (this.parent != null) {
             context.setParent(this.parent);
             context.setClassLoader(this.parent.getClassLoader());
         }
 
-        context.getEnvironment().getPropertySources().addFirst(
-            new MapPropertySource(
-            "customProps", Collections.singletonMap("brekeke", "false")
-            )
-        );
+        for (Entry<String, Consumer<ConfigurableApplicationContext>>  e : initializers.entrySet()) {
+            e.getValue().accept(context);
+        }
 
-        context.refresh(); // this has to be after adding props, where da beenz at?
+
+        context.refresh();
         context.setDisplayName(generateDisplayName(name));
         return context;
     }
