@@ -80,9 +80,10 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
             context.setClassLoader(this.parent.getClassLoader());
         }
 
-        initializers.entrySet().stream()
-            .filter(entry -> entry.getKey().equals(name))
-            .forEach(entry -> entry.getValue().accept(context));
+        Consumer<ConfigurableApplicationContext> specificInitializer = initializers.get(name);
+        if ( specificInitializer != null) {
+            specificInitializer.accept(context);
+        }
 
         context.refresh();
         context.setDisplayName(generateDisplayName(name));
@@ -90,12 +91,7 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
     }
 
     private void registerConfigurationsFromSpecifications(String name, AnnotationConfigApplicationContext context) {
-        if (this.configurations.containsKey(name)) {
-            for (Class<?> configuration : this.configurations.get(name)
-                .getConfiguration()) {
-                context.register(configuration);
-            }
-        }
+
         for (Entry<String, T> entry : this.configurations.entrySet()) {
             if (entry.getKey().startsWith("default.")) {
                 for (Class<?> configuration : entry.getValue().getConfiguration()) {
@@ -103,5 +99,13 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
                 }
             }
         }
+
+        if (this.configurations.containsKey(name)) {
+            for (Class<?> configuration : this.configurations.get(name)
+                .getConfiguration()) {
+                context.register(configuration);
+            }
+        }
+
     }
 }

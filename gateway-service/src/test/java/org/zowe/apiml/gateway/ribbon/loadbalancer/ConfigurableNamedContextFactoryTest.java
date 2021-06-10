@@ -12,8 +12,7 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -26,6 +25,7 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.util.*;
 
@@ -49,7 +49,8 @@ class ConfigurableNamedContextFactoryTest {
 
     private static class ConditionalBeanConfig {
 
-        public class BeanClass{}
+        public class BeanClass {
+        }
 
         @Bean
         @ConditionalOnProperty(name = "variable", havingValue = "true")
@@ -75,7 +76,7 @@ class ConfigurableNamedContextFactoryTest {
         @Test
         void beansConditionalConstructWorks() {
 
-            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory( ConditionalBeanConfig.class,"aa", "aa");
+            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory(ConditionalBeanConfig.class, "aa", "aa");
 
             underTest.addInitializer("ctx", context -> {
                 context.getEnvironment().getPropertySources().addFirst(
@@ -100,49 +101,87 @@ class ConfigurableNamedContextFactoryTest {
 
     private static class SpecConfigDefault {
         @Bean
-        public Duration getDay(){
+        public Duration getDay() {
             return Duration.ofDays(1);
+        }
+
+        @Bean
+        public DayOfWeek getTuesday() {
+            return DayOfWeek.TUESDAY;
         }
     }
 
     private static class SpecConfigSpecific {
         @Bean
-        public Duration get2Days(){
+        public Duration getDay() {
             return Duration.ofDays(2);
+        }
+
+        @Bean
+        public DayOfWeek getMonday() {
+            return DayOfWeek.MONDAY;
         }
     }
 
     @Nested
-    class givenSpecifications{
+    class givenSpecifications {
+
         @Test
         void defaultConfigBehaviorPlusSpecificTakesPrecedence() {
             NamedContextFactory.Specification spec1 = mock(NamedContextFactory.Specification.class);
             doReturn("default.").when(spec1).getName();
-            doReturn(new Class[] {SpecConfigDefault.class}).when(spec1).getConfiguration();
+            doReturn(new Class[]{SpecConfigDefault.class}).when(spec1).getConfiguration();
 
             NamedContextFactory.Specification spec2 = mock(NamedContextFactory.Specification.class);
             doReturn("specificContext").when(spec2).getName();
-            doReturn(new Class[] {SpecConfigSpecific.class}).when(spec2).getConfiguration();
+            doReturn(new Class[]{SpecConfigSpecific.class}).when(spec2).getConfiguration();
 
-            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory( null,"aa", "aa");
+            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory(null, "aa", "aa");
             underTest.setConfigurations(Arrays.asList(spec1, spec2));
 
             Duration someRandomContextDuration = underTest.getInstance("someRandomContext", Duration.class);
-            assertThat(someRandomContextDuration.toDays(),is(1L));
+            assertThat(someRandomContextDuration.toDays(), is(1L));
 
-            //TODO this needs some resolution
             assertThat(underTest.getInstance("specificContext", ResolvableType.forType(Duration.class)), is(not(nullValue())));
-            //assertThat(underTest.getInstance("specificContext", Duration.class), is(not(nullValue())));
 
-            Map<String, Duration> beans = underTest.getInstances("specificContext", Duration.class);
-            assertThat(beans.size(), is(2));
-            assertThat(beans.keySet(), contains("getDay", "get2Days"));
+            Duration specificContextDuration = underTest.getInstance("specificContext", Duration.class);
+            assertThat(specificContextDuration.toDays(), is(2L));
+        }
+
+        @Test
+        @Disabled
+            //TODO this doesnt work well
+        void name() {
+            NamedContextFactory.Specification spec1 = mock(NamedContextFactory.Specification.class);
+            doReturn("default.").when(spec1).getName();
+            doReturn(new Class[]{SpecConfigDefault.class}).when(spec1).getConfiguration();
+
+            NamedContextFactory.Specification spec2 = mock(NamedContextFactory.Specification.class);
+            doReturn("specificContext").when(spec2).getName();
+            doReturn(new Class[]{SpecConfigSpecific.class}).when(spec2).getConfiguration();
+
+            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory(null, "aa", "aa");
+            underTest.setConfigurations(Arrays.asList(spec1, spec2));
+
+
+            //assertThat(underTest.getInstance("someRandomContext", DayOfWeek.class), is(DayOfWeek.TUESDAY));
+
+            //TODO if more beans exist, null
+            //assertThat(underTest.getInstance("specificContext", DayOfWeek.class), is(DayOfWeek.MONDAY));
+
+            //TODO this is TUESDAY
+            //assertThat(underTest.getInstance("specificContext", ResolvableType.forType(DayOfWeek.class)), is(DayOfWeek.MONDAY));
+
+            //assertThat(underTest.getInstances("specificContext", DayOfWeek.class).keySet(), contains("getMonday", "getTuesday"));
+
         }
     }
 
+    //TODO destroy tests
+
     private static class ContextProbe {
 
-        public class BeanClass{
+        public class BeanClass {
             @Getter
             @Value("${context.name}")
             private String name;
@@ -164,7 +203,7 @@ class ConfigurableNamedContextFactoryTest {
 
         @Test
         void contextHasAllRequiredElements() {
-            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory( ContextProbe.class,"contextConfig", "context.name");
+            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory(ContextProbe.class, "contextConfig", "context.name");
             ContextProbe.BeanClass bean = underTest.getInstance("ctx", ContextProbe.BeanClass.class);
             assertThat(bean.getName(), is("ctx"));
         }
@@ -172,7 +211,8 @@ class ConfigurableNamedContextFactoryTest {
 
     private static class WiringConfig {
 
-        public class BeanClass{}
+        public class BeanClass {
+        }
 
         @Bean
         public BeanClass getBeanClass() {
@@ -186,7 +226,7 @@ class ConfigurableNamedContextFactoryTest {
 
         @RequiredArgsConstructor
         @Getter
-        class BeanToWireTo{
+        class BeanToWireTo {
             private final BeanClass bean;
             private final Date date;
         }
@@ -200,7 +240,7 @@ class ConfigurableNamedContextFactoryTest {
         @Test
         void wiringWorksInContextAndFromParentContext(ApplicationContext context) {
 
-            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory( WiringConfig.class,"aa", "aa");
+            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory(WiringConfig.class, "aa", "aa");
             underTest.setApplicationContext(context);
 
             WiringConfig.BeanToWireTo bean = underTest.getInstance("ctx", WiringConfig.BeanToWireTo.class);
