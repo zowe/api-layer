@@ -38,8 +38,8 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
         }
     }
 
-    public void addInitializer(String name, Consumer<ConfigurableApplicationContext> initializingConsumer) {
-        this.initializers.put(name, initializingConsumer);
+    public void addInitializer(String contextName, Consumer<ConfigurableApplicationContext> initializingConsumer) {
+        this.initializers.put(contextName, initializingConsumer);
     }
 
     //Argument 1
@@ -59,6 +59,35 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
     protected AnnotationConfigApplicationContext createContext(String name) {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
+        if (this.defaultConfigType != null) {
+            context.register(defaultConfigType);
+        }
+
+        registerConfigurationsFromSpecifications(name, context);
+
+        context.register(PropertyPlaceholderAutoConfiguration.class);
+
+
+        if (this.parent != null) {
+            context.setParent(this.parent);
+            context.setClassLoader(this.parent.getClassLoader());
+        }
+
+        initializers.entrySet().stream()
+            .filter(entry -> entry.getKey().equals(name))
+            .forEach(entry -> entry.getValue().accept(context));
+
+//        for (Entry<String, Consumer<ConfigurableApplicationContext>>  e : initializers.entrySet()) {
+//            e.getValue().accept(context);
+//        }
+
+
+        context.refresh();
+        context.setDisplayName(generateDisplayName(name));
+        return context;
+    }
+
+    private void registerConfigurationsFromSpecifications(String name, AnnotationConfigApplicationContext context) {
         if (this.configurations.containsKey(name)) {
             for (Class<?> configuration : this.configurations.get(name)
                 .getConfiguration()) {
@@ -72,25 +101,5 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
                 }
             }
         }
-
-        context.register(PropertyPlaceholderAutoConfiguration.class);
-
-        if (this.defaultConfigType != null) {
-            context.register(defaultConfigType);
-        }
-
-        if (this.parent != null) {
-            context.setParent(this.parent);
-            context.setClassLoader(this.parent.getClassLoader());
-        }
-
-        for (Entry<String, Consumer<ConfigurableApplicationContext>>  e : initializers.entrySet()) {
-            e.getValue().accept(context);
-        }
-
-
-        context.refresh();
-        context.setDisplayName(generateDisplayName(name));
-        return context;
     }
 }

@@ -22,7 +22,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.test.context.ContextConfiguration;
-import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredicate;
 
 import java.util.*;
 
@@ -42,64 +41,75 @@ class ConfigurableNamedContextFactoryTest {
         }
     }
 
-    private static class TestConfig {
+    private static class ConditionalBeanConfig {
+
+        public class BeanClass{}
 
         @Bean
         @ConditionalOnProperty(name = "variable", havingValue = "true")
-        public RequestAwarePredicate headerPredicate1() {
-            return new RequestHeaderPredicate();
+        public BeanClass beanClass1() {
+            return new BeanClass();
         }
 
         @Bean
         @ConditionalOnProperty(name = "variable", havingValue = "false")
-        public RequestAwarePredicate headerPredicate2() {
-            return new RequestHeaderPredicate();
+        public BeanClass beanClass2() {
+            return new BeanClass();
         }
 
         @Bean
         @ConditionalOnProperty(name = "missing.variable", havingValue = "false")
-        public RequestAwarePredicate headerPredicate3() {
-            return new RequestHeaderPredicate();
+        public BeanClass beanClass3() {
+            return new BeanClass();
         }
     }
 
     @Nested
     class GivenProperties {
         @Test
-        void beansConditionalConstructWorks(ApplicationContext context) {
+        void beansConditionalConstructWorks() {
 
-            ConfigurableNamedContextFactory<NamedContextFactory.Specification> factory = new ConfigurableNamedContextFactory( TestConfig.class,"aa", "aa");
+            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory( ConditionalBeanConfig.class,"aa", "aa");
 
-            factory.addInitializer("InstanceData", ctx -> {
-                ctx.getEnvironment().getPropertySources().addFirst(
-                    new MapPropertySource("InstanceData", Collections.singletonMap("variable", "false"))
+            underTest.addInitializer("ctx", context -> {
+                context.getEnvironment().getPropertySources().addFirst(
+                    new MapPropertySource("PropertySouceName", Collections.singletonMap("variable", "false"))
                 );
             });
 
-            factory.setApplicationContext(context);
-
-            Map<String, RequestAwarePredicate> beans = factory.getInstances("ctx", RequestAwarePredicate.class);
+            Map<String, ConditionalBeanConfig.BeanClass> beans = underTest.getInstances("ctx", ConditionalBeanConfig.BeanClass.class);
             assertThat(beans.size(), is(1));
-            assertThat(beans.keySet(), contains("headerPredicate2"));
+            assertThat(beans.keySet(), contains("beanClass2"));
+
+            underTest.addInitializer("ctx2", context -> {
+                context.getEnvironment().getPropertySources().addFirst(
+                    new MapPropertySource("PropertySouceName", Collections.singletonMap("missing.variable", "false"))
+                );
+            });
+            Map<String, ConditionalBeanConfig.BeanClass> beans2 = underTest.getInstances("ctx2", ConditionalBeanConfig.BeanClass.class);
+            assertThat(beans2.size(), is(1));
+            assertThat(beans2.keySet(), contains("beanClass3"));
         }
     }
 
     private static class WiringConfig {
 
+        public class BeanClass{}
+
         @Bean
-        public RequestAwarePredicate headerPredicate1() {
-            return new RequestHeaderPredicate();
+        public BeanClass getBeanClass() {
+            return new BeanClass();
         }
 
         @Bean
-        public BeanToWireTo getBeanToWireTo(RequestAwarePredicate p, Date s) {
-            return new BeanToWireTo(p, s);
+        public BeanToWireTo getBeanToWireTo(BeanClass b, Date d) {
+            return new BeanToWireTo(b, d);
         }
 
         @RequiredArgsConstructor
         @Getter
         class BeanToWireTo{
-            private final RequestAwarePredicate predicate;
+            private final BeanClass bean;
             private final Date date;
         }
     }
@@ -112,16 +122,13 @@ class ConfigurableNamedContextFactoryTest {
         @Test
         void wiringWorksInContextAndFromParentContext(ApplicationContext context) {
 
-            ConfigurableNamedContextFactory<NamedContextFactory.Specification> factory = new ConfigurableNamedContextFactory( WiringConfig.class,"aa", "aa");
+            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory( WiringConfig.class,"aa", "aa");
+            underTest.setApplicationContext(context);
 
-            factory.setApplicationContext(context);
-
-            Map<String, WiringConfig.BeanToWireTo> ctx = factory.getInstances("ctx", WiringConfig.BeanToWireTo.class);
-            WiringConfig.BeanToWireTo bean = factory.getInstance("ctx", WiringConfig.BeanToWireTo.class);
+            WiringConfig.BeanToWireTo bean = underTest.getInstance("ctx", WiringConfig.BeanToWireTo.class);
             assertThat(bean, is(not(nullValue())));
             assertThat(bean.getDate(), is(not(nullValue())));
-            assertThat(bean.getPredicate(), is(not(nullValue())));
-
+            assertThat(bean.getBean(), is(not(nullValue())));
         }
     }
 
