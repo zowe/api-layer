@@ -75,9 +75,9 @@ public class GatewayRibbonConfig {
             serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
 
-//    @Bean
-//    public PredicateFactory predicateFactory() {
-//        return new PredicateFactory(RibbonClientConfiguration.class, "ribbon", "ribbon.client.name");
-//    }
+    @Bean
+    public ConfigurableNamedContextFactory predicateFactory() {
+        return new ConfigurableNamedContextFactory(RibbonClientConfiguration.class, "ribbon", "ribbon.client.name");
+    }
 
 }

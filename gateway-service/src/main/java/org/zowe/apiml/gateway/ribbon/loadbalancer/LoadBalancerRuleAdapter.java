@@ -15,6 +15,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -58,6 +59,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
         LoadBalancingContext ctx = new LoadBalancingContext(instanceInfo.getAppName(), instanceInfo);
         List<Server> allServers = lb.getAllServers();
         log.debug("Path: {}, List of servers from LoadBalancer: {}", ctx.getPath() ,allServers);
+        RequestContext.getCurrentContext().addZuulResponseHeader("X-Response-Host", ctx.getInstanceInfo().getInstanceId());
         for (RequestAwarePredicate predicate : predicateMap.values()) {
             log.debug("Running predicate: {}, list of servers: {}", allServers, predicate);
             allServers = allServers.stream()
