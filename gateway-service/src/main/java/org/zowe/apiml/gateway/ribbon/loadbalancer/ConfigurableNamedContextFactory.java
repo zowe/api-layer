@@ -15,21 +15,23 @@ import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.env.MapPropertySource;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Specification> extends NamedContextFactory<T> {
 
-    protected ApplicationContext parent;
+    private final String propertySourceName;
+    private final String propertyName;
+    protected final Class<?> defaultConfigType;
 
+    protected ApplicationContext parent;
     protected Map<String, T> configurations = new ConcurrentHashMap<>();
     protected Map<String, Consumer<ConfigurableApplicationContext>> initializers = new ConcurrentHashMap<>();
 
-    protected Class<?> defaultConfigType;
 
     @Override
     public void setConfigurations(List<T> configurations) {
@@ -47,6 +49,8 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
     public ConfigurableNamedContextFactory(Class<?> defaultConfigType, String propertySourceName, String propertyName) {
         super(defaultConfigType, propertySourceName, propertyName);
         this.defaultConfigType = defaultConfigType;
+        this.propertySourceName = propertySourceName;
+        this.propertyName = propertyName;
     }
 
     @Override
@@ -67,6 +71,9 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
 
         context.register(PropertyPlaceholderAutoConfiguration.class);
 
+        context.getEnvironment().getPropertySources().addFirst(new MapPropertySource(
+            propertySourceName,
+            Collections.<String, Object>singletonMap(this.propertyName, name)));
 
         if (this.parent != null) {
             context.setParent(this.parent);
@@ -76,11 +83,6 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
         initializers.entrySet().stream()
             .filter(entry -> entry.getKey().equals(name))
             .forEach(entry -> entry.getValue().accept(context));
-
-//        for (Entry<String, Consumer<ConfigurableApplicationContext>>  e : initializers.entrySet()) {
-//            e.getValue().accept(context);
-//        }
-
 
         context.refresh();
         context.setDisplayName(generateDisplayName(name));
