@@ -55,9 +55,9 @@ jobs:
                         mock-zosmf/build/libs
                         onboarding-enabler-nodejs/node_modules
                         onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                        ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew jibDockerBuild
