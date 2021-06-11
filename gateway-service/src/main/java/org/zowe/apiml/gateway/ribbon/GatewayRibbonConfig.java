@@ -73,20 +73,20 @@ public class GatewayRibbonConfig {
 
         InstanceInfoExtractor infoExtractor = new InstanceInfoExtractor(serverList.getInitialListOfServers());
 
-        InstanceInfo instanceInfo = infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available"));
+        InstanceInfo randomInstanceInfo = infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available"));
 
         Map<String, Object> metadataMap = new HashMap<>();
-        instanceInfo.getMetadata().forEach(
-            (key, value) -> metadataMap.put(key, value)
+        randomInstanceInfo.getMetadata().forEach(
+            (key, value) -> metadataMap.put("service.metadata." + key, value)
         );
 
-        predicateFactory.addInitializer(instanceInfo.getAppName(), context ->
+        predicateFactory.addInitializer(ribbonClientName, context ->
             context.getEnvironment().getPropertySources()
                 .addFirst( new MapPropertySource("InstanceInfoMetadata", metadataMap))
         );
 
         IRule rule = new LoadBalancerRuleAdapter(
-            instanceInfo,
+            randomInstanceInfo,
             predicateFactory, config);
 
         return new ApimlLoadBalancer<>(config, rule, ping, serverList,
@@ -95,7 +95,7 @@ public class GatewayRibbonConfig {
 
     @Bean
     public ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory() {
-        return new ConfigurableNamedContextFactory<>(null, "contextConfiguration", "service.serviceId");
+        return new ConfigurableNamedContextFactory<>(LoadBalancingPredicatesRibbonConfig.class, "contextConfiguration", "service.serviceId");
     }
 
 }

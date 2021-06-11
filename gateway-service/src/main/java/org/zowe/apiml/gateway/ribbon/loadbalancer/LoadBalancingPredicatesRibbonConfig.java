@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredicate;
@@ -18,10 +17,7 @@ import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredica
 @Configuration
 public class LoadBalancingPredicatesRibbonConfig {
 
-
-
     @Bean
-    @ConditionalOnProperty(name = "brekeke", havingValue = "false")
     public RequestAwarePredicate headerPredicate() {
         return new RequestHeaderPredicate();
     }
