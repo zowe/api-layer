@@ -131,10 +131,10 @@ jobs:
                     - 10016:10016
                     - 10010:10010
                 volumes:
-#                    - ./conf:/etc/nginx
-                    - ./docker/nginx/conf/load-balancer.conf:/etc/nginx/conf.d/load-balancer.conf
-#                    - ../../keystore:/etc/ssl/private
-                    - ./keystore:/etc/ssl/private
+                    - ./conf/load-balancer.conf:/etc/nginx
+#                    - ./docker/nginx/conf/load-balancer.conf:/etc/nginx/conf.d/load-balancer.conf
+                    - ../../keystore:/etc/ssl/private
+#                    - ./keystore:/etc/ssl/private
 #                extra_hosts:
 #                    host.docker.internal: host-gateway
 
