@@ -119,7 +119,7 @@ jobs:
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
                     - 10010:10010
-                environment:
+                env:
                     - apiml.service.hostname=gateway-service2
                     - server.internal.port=10027
             mock-zosmf:
