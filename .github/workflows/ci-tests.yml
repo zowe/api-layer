@@ -901,10 +901,10 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-            - name: Start nginx proxy
-              run: |
-                  cd docker/nginx
-                  docker-compose up --detach
+#            - name: Start nginx proxy
+#              run: |
+#                  cd docker/nginx
+#                  docker-compose up --detach
 #            - name: Build docker containers
 #              run: |
 #                  ./gradlew jibDockerBuild
