@@ -209,7 +209,30 @@ class ConfigurableNamedContextFactoryTest {
             ContextProbe.BeanClass bean = underTest.getInstance("ctx", ContextProbe.BeanClass.class);
             assertThat(bean.getName(), is("ctx"));
         }
+
+        @Test
+        void contextCanBeRebuilt() {
+            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory(ContextProbe.class, "aa", "aa");
+            underTest.addInitializer("ctx", context ->
+                    context.getEnvironment().getPropertySources().addFirst(
+                        new MapPropertySource("PropertySouceName", Collections.singletonMap("context.name", "JessicaAlba"))
+                    )
+                );
+
+            ContextProbe.BeanClass bean = underTest.getInstance("ctx", ContextProbe.BeanClass.class);
+            assertThat(bean.getName(), is("JessicaAlba"));
+
+            underTest.addInitializer("ctx", context ->
+                context.getEnvironment().getPropertySources().addFirst(
+                    new MapPropertySource("PropertySouceName", Collections.singletonMap("context.name", "DojaCat"))
+                )
+            );
+            underTest.destroy();
+            ContextProbe.BeanClass bean2 = underTest.getInstance("ctx", ContextProbe.BeanClass.class);
+            assertThat(bean2.getName(), is("DojaCat"));
+        }
     }
+
 
     private static class WiringConfig {
 
