@@ -20,7 +20,7 @@ apply plugin: 'com.google.cloud.tools.jib'
 
 jib {
     to {
-        image = project.hasProperty("zowe.docker.container") ? project.getProperty("zowe.docker.container") : "ghcr.io/zowe/caching-service"
+        image = project.hasProperty("zowe.docker.container") ? project.getProperty("zowe.docker.container") : "ghcr.io/taban03/caching-service"
         auth {
             username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
             password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
