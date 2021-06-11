@@ -119,6 +119,23 @@ jobs:
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
                     - 10013:10013
+            nginx:
+                image: nginx
+#                credentials:
+#                    username: zowe-robot
+#                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    - 10000:10000
+                    - 10001:10001
+                    - 10030:10030
+                    - 10016:10016
+                    - 10010:10010
+                volumes:
+                    - ./conf:/etc/nginx
+                    - ../../keystore:/etc/ssl/private
+                extra_hosts:
+                    host.docker.internal: host-gateway
+
 
         steps:
             -   uses: actions/checkout@v2
