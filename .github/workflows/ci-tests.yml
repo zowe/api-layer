@@ -130,7 +130,7 @@ jobs:
 #                    - 10030:10030
 #                    - 10016:10016
 #                    - 10010:10010
-                    - 80:80
+                    - 443:443
                 volumes:
                     - /$(pwd)/docker/nginx/nginx.conf:/etc/nginx/nginx.conf
 #                    - ./docker/nginx/conf/nginx.conf:/etc/nginx/conf.d/nginx.conf
