@@ -79,42 +79,42 @@ jobs:
         services:
             api-catalog-services:
                 image: 'ghcr.io/balhar-jakub/api-catalog-services'
-                credentials:
+#                credentials:
 #                    username: zowe-robot
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
                     - 10014:10014
             caching-service:
                 image: 'ghcr.io/balhar-jakub/caching-service'
-                credentials:
+#                credentials:
 #                    username: zowe-robot
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
                     - 10016:10016
             discoverable-client:
                 image: 'ghcr.io/balhar-jakub/discoverable-client'
-                credentials:
+#                credentials:
 #                    username: zowe-robot
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
                     - 10012:10012
             discovery-service:
                 image: 'ghcr.io/balhar-jakub/discovery-service'
-                credentials:
+#                credentials:
 #                    username: zowe-robot
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
                     - 10011:10011
             gateway-service:
                 image: 'ghcr.io/balhar-jakub/gateway-service'
-                credentials:
+#                credentials:
 #                    username: zowe-robot
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
                     - 10010:10010
             mock-zosmf:
                 image: 'ghcr.io/balhar-jakub/mock-zosmf'
-                credentials:
+#                credentials:
 #                    username: zowe-robot
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
