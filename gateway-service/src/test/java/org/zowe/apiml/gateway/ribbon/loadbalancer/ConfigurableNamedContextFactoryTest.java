@@ -141,7 +141,7 @@ class ConfigurableNamedContextFactoryTest {
         }
 
         @Test
-        void WhenSameBeanNameThenDefaultConfigBehaviorPlusSpecificTakesPrecedence() {
+        void whenSameBeanNameThenDefaultConfigBehaviorPlusSpecificTakesPrecedence() {
 
             Duration someRandomContextDuration = underTest.getInstance("someRandomContext", Duration.class);
             assertThat(someRandomContextDuration.toDays(), is(1L));
@@ -153,7 +153,7 @@ class ConfigurableNamedContextFactoryTest {
         }
 
         @Test
-        void WhenDifferentBeanNamesThenDefaultConfigBehaviorPlusSpecificCreatesMultipleBeans() {
+        void whenDifferentBeanNamesThenDefaultConfigBehaviorPlusSpecificCreatesMultipleBeans() {
 
 
             assertThat(underTest.getInstance("someRandomContext", DayOfWeek.class), is(DayOfWeek.TUESDAY));
@@ -178,8 +178,6 @@ class ConfigurableNamedContextFactoryTest {
 
         }
     }
-
-    //TODO destroy tests
 
     private static class ContextProbe {
 
@@ -222,6 +220,7 @@ class ConfigurableNamedContextFactoryTest {
             ContextProbe.BeanClass bean = underTest.getInstance("ctx", ContextProbe.BeanClass.class);
             assertThat(bean.getName(), is("JessicaAlba"));
 
+            //initializers of same name are overwritten
             underTest.addInitializer("ctx", context ->
                 context.getEnvironment().getPropertySources().addFirst(
                     new MapPropertySource("PropertySouceName", Collections.singletonMap("context.name", "DojaCat"))

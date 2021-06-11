@@ -9,17 +9,23 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.*;
+import org.springframework.core.env.MapPropertySource;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Configuration of client side load balancing with Ribbon
@@ -60,24 +66,36 @@ public class GatewayRibbonConfig {
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
                                             IPing ping, ServerListUpdater serverListUpdater,
-                                            LoadBalancerRegistry loadBalancerRegistry, ConfigurableNamedContextFactory configurableNamedContextFactory) {
+                                            LoadBalancerRegistry loadBalancerRegistry, ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory) {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
 
         InstanceInfoExtractor infoExtractor = new InstanceInfoExtractor(serverList.getInitialListOfServers());
 
+        InstanceInfo instanceInfo = infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available"));
+
+        Map<String, Object> metadataMap = new HashMap<>();
+        instanceInfo.getMetadata().forEach(
+            (key, value) -> metadataMap.put(key, value)
+        );
+
+        predicateFactory.addInitializer(instanceInfo.getAppName(), context ->
+            context.getEnvironment().getPropertySources()
+                .addFirst( new MapPropertySource("InstanceInfoMetadata", metadataMap))
+        );
+
         IRule rule = new LoadBalancerRuleAdapter(
-            infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available")),
-            configurableNamedContextFactory, config);
+            instanceInfo,
+            predicateFactory, config);
 
         return new ApimlLoadBalancer<>(config, rule, ping, serverList,
             serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
 
     @Bean
-    public ConfigurableNamedContextFactory predicateFactory() {
-        return new ConfigurableNamedContextFactory(RibbonClientConfiguration.class, "ribbon", "ribbon.client.name");
+    public ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory() {
+        return new ConfigurableNamedContextFactory<>(null, "contextConfiguration", "service.serviceId");
     }
 
 }
