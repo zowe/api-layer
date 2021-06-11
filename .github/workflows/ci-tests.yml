@@ -112,6 +112,16 @@ jobs:
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
                     - 10010:10010
+            gateway-service-2:
+                image: 'ghcr.io/balhar-jakub/gateway-service'
+#                credentials:
+#                    username: zowe-robot
+#                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    - 10010:10010
+                environment:
+                    - apiml.service.hostname=gateway-service2
+                    - server.internal.port=10027
             mock-zosmf:
                 image: 'ghcr.io/balhar-jakub/mock-zosmf'
 #                credentials:
