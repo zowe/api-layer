@@ -58,10 +58,10 @@ jobs:
                     key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
                         ${{ runner.OS }}-artifacts001-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew build jib -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                    -Pzowe.docker.password=${{ secrets.ZOWE_ROBOT_TOKEN }} -Pzowe.docker.username=zowe-robot
+#            -   name: Build with Gradle
+#                run: >
+#                    ./gradlew build jib -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#                    -Pzowe.docker.password=${{ secrets.ZOWE_ROBOT_TOKEN }} -Pzowe.docker.username=zowe-robot
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
