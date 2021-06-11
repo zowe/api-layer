@@ -138,7 +138,7 @@ jobs:
 #                    username: zowe-robot
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
-                    - 10010:10010
+                    - 10018:10010
                 env:
                     apiml.service.hostname: gateway-service2
                     server.internal.port: 10027
