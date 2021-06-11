@@ -21,7 +21,7 @@ apply from: "$projectDir/gradle/lite.gradle"
 
 jib {
     to {
-        image = project.hasProperty("zowe.docker.container") ? project.getProperty("zowe.docker.container") : "ghcr.io/zowe/api-catalog-services"
+        image = project.hasProperty("zowe.docker.container") ? "${project.getProperty("zowe.docker.container")}api-catalog-services" : "ghcr.io/zowe/api-catalog-services"
         auth {
             username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
             password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
