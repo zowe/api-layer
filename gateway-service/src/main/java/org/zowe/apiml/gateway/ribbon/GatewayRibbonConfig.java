@@ -77,10 +77,10 @@ public class GatewayRibbonConfig {
 
         Map<String, Object> metadataMap = new HashMap<>();
         randomInstanceInfo.getMetadata().forEach(
-            (key, value) -> metadataMap.put("service.metadata." + key, value)
+            (key, value) -> metadataMap.put(LoadBalancerConstants.getMetadataPrefix() + key, value)
         );
 
-        predicateFactory.addInitializer(ribbonClientName, context ->
+        predicateFactory.addInitializer(randomInstanceInfo.getAppName(), context ->
             context.getEnvironment().getPropertySources()
                 .addFirst( new MapPropertySource("InstanceInfoMetadata", metadataMap))
         );
@@ -95,7 +95,8 @@ public class GatewayRibbonConfig {
 
     @Bean
     public ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory() {
-        return new ConfigurableNamedContextFactory<>(LoadBalancingPredicatesRibbonConfig.class, "contextConfiguration", "service.serviceId");
+        return new ConfigurableNamedContextFactory<>(LoadBalancingPredicatesRibbonConfig.class, "contextConfiguration",
+            LoadBalancerConstants.INSTANCE_KEY + LoadBalancerConstants.SERVICEID_KEY);
     }
 
 }
