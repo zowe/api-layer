@@ -86,7 +86,7 @@ class ConfigurableNamedContextFactoryTest {
 
             Map<String, ConditionalBeanConfig.BeanClass> beans = underTest.getInstances("ctx", ConditionalBeanConfig.BeanClass.class);
             assertThat(beans.size(), is(1));
-            assertThat(beans.keySet(), contains("beanClass2"));
+            assertThat(beans.keySet(), containsInAnyOrder("beanClass2"));
 
             underTest.addInitializer("ctx2", context -> {
                 context.getEnvironment().getPropertySources().addFirst(
@@ -95,11 +95,11 @@ class ConfigurableNamedContextFactoryTest {
             });
             Map<String, ConditionalBeanConfig.BeanClass> beans2 = underTest.getInstances("ctx2", ConditionalBeanConfig.BeanClass.class);
             assertThat(beans2.size(), is(1));
-            assertThat(beans2.keySet(), contains("beanClass3"));
+            assertThat(beans2.keySet(), containsInAnyOrder("beanClass3"));
         }
     }
 
-    private static class SpecConfigDefault {
+    public static class SpecConfigDefault {
         @Bean
         public Duration getDay() {
             return Duration.ofDays(1);
@@ -110,8 +110,8 @@ class ConfigurableNamedContextFactoryTest {
             return DayOfWeek.TUESDAY;
         }
     }
+    public static class SpecConfigSpecific {
 
-    private static class SpecConfigSpecific {
         @Bean
         public Duration getDay() {
             return Duration.ofDays(2);
@@ -124,20 +124,24 @@ class ConfigurableNamedContextFactoryTest {
     }
 
     @Nested
-    class givenSpecifications {
+    class givenMultipleSpecifications {
 
-        @Test
-        void defaultConfigBehaviorPlusSpecificTakesPrecedence() {
-            NamedContextFactory.Specification spec1 = mock(NamedContextFactory.Specification.class);
+        private NamedContextFactory.Specification spec1 = mock(NamedContextFactory.Specification.class);
+        private NamedContextFactory.Specification spec2 = mock(NamedContextFactory.Specification.class);
+        private ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest;
+
+        @BeforeEach
+        void mockSpecs() {
             doReturn("default.").when(spec1).getName();
             doReturn(new Class[]{SpecConfigDefault.class}).when(spec1).getConfiguration();
-
-            NamedContextFactory.Specification spec2 = mock(NamedContextFactory.Specification.class);
             doReturn("specificContext").when(spec2).getName();
             doReturn(new Class[]{SpecConfigSpecific.class}).when(spec2).getConfiguration();
-
-            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory(null, "aa", "aa");
+            underTest  = new ConfigurableNamedContextFactory(null, "aa", "aa");
             underTest.setConfigurations(Arrays.asList(spec1, spec2));
+        }
+
+        @Test
+        void WhenSameBeanNameThenDefaultConfigBehaviorPlusSpecificTakesPrecedence() {
 
             Duration someRandomContextDuration = underTest.getInstance("someRandomContext", Duration.class);
             assertThat(someRandomContextDuration.toDays(), is(1L));
@@ -149,30 +153,28 @@ class ConfigurableNamedContextFactoryTest {
         }
 
         @Test
-        @Disabled
-            //TODO this doesnt work well
-        void name() {
-            NamedContextFactory.Specification spec1 = mock(NamedContextFactory.Specification.class);
-            doReturn("default.").when(spec1).getName();
-            doReturn(new Class[]{SpecConfigDefault.class}).when(spec1).getConfiguration();
-
-            NamedContextFactory.Specification spec2 = mock(NamedContextFactory.Specification.class);
-            doReturn("specificContext").when(spec2).getName();
-            doReturn(new Class[]{SpecConfigSpecific.class}).when(spec2).getConfiguration();
-
-            ConfigurableNamedContextFactory<NamedContextFactory.Specification> underTest = new ConfigurableNamedContextFactory(null, "aa", "aa");
-            underTest.setConfigurations(Arrays.asList(spec1, spec2));
+        void WhenDifferentBeanNamesThenDefaultConfigBehaviorPlusSpecificCreatesMultipleBeans() {
 
 
-            //assertThat(underTest.getInstance("someRandomContext", DayOfWeek.class), is(DayOfWeek.TUESDAY));
+            assertThat(underTest.getInstance("someRandomContext", DayOfWeek.class), is(DayOfWeek.TUESDAY));
 
-            //TODO if more beans exist, null
+            assertThat(underTest.getInstances("specificContext", DayOfWeek.class).keySet(), containsInAnyOrder("getMonday", "getTuesday"));
+
+
+            //TODO incorporate these findings into the class
+            //returns null when there are more than one bean without throwing. Can be confusing
+            //Method threw 'org.springframework.beans.factory.NoUniqueBeanDefinitionException' exception. throws internally
+            //which is ignored in NamedContextFactory it seems and returns null when there are multiple beans
             //assertThat(underTest.getInstance("specificContext", DayOfWeek.class), is(DayOfWeek.MONDAY));
 
-            //TODO this is TUESDAY
+            //getInstance and getInstance(resolvableType) returns always the first bean it finds if there are more. Can be confusing
+            //BeanFactoryUtils.beanNamesForTypeIncludingAncestors(context, DayOfWeek.class) is used internally which returns both
+            //this returns both names well, used in getInstance
             //assertThat(underTest.getInstance("specificContext", ResolvableType.forType(DayOfWeek.class)), is(DayOfWeek.MONDAY));
 
-            //assertThat(underTest.getInstances("specificContext", DayOfWeek.class).keySet(), contains("getMonday", "getTuesday"));
+            //BeanFactoryUtils.beansOfTypeIncludingAncestors(context, DayOfWeek.class)
+            //also returning both beans after context refresh
+            //Map<String, DayOfWeek> specificContext = underTest.getInstances("specificContext", DayOfWeek.class);
 
         }
     }
