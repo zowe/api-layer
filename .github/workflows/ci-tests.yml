@@ -121,7 +121,6 @@ jobs:
                     - 10013:10013
             nginx:
                 image: nginx:latest
-                container_name: reverse
 #                credentials:
 #                    username: zowe-robot
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
