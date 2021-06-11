@@ -1,8 +1,9 @@
 name: "Flag the error message changes and label the PR"
 
 on:
-    pull_request:
-        branches: [ master ]
+    schedule:
+        # * is a special character in YAML so you have to quote this string
+        - cron:  '0 0 * * 5'
 
 jobs:
     analyze:
