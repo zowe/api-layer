@@ -77,6 +77,26 @@ jobs:
         timeout-minutes: 20
 
         services:
+            nginx:
+                image: nginx:latest
+                #                credentials:
+                #                    username: zowe-robot
+                #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    #                    - 10000:10000
+                    #                    - 10001:10001
+                    #                    - 10030:10030
+                    #                    - 10016:10016
+                    #                    - 10010:10010
+                    - 443:443
+                volumes:
+                    - /$(pwd)/docker/nginx/nginx.conf:/etc/nginx
+                    #                    - ./docker/nginx/conf/nginx.conf:/etc/nginx/conf.d/nginx.conf
+                    - /$(pwd)/keystore:/etc/ssl/private
+            #                    - ./keystore:/etc/ssl/private
+            #                extra_hosts:
+            #                    host.docker.internal: host-gateway
+
             api-catalog-services:
                 image: 'ghcr.io/balhar-jakub/api-catalog-services'
 #                credentials:
@@ -129,26 +149,6 @@ jobs:
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
                     - 10013:10013
-            nginx:
-                image: nginx:latest
-#                credentials:
-#                    username: zowe-robot
-#                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
-                ports:
-#                    - 10000:10000
-#                    - 10001:10001
-#                    - 10030:10030
-#                    - 10016:10016
-#                    - 10010:10010
-                    - 443:443
-                volumes:
-                    - /$(pwd)/docker/nginx/nginx.conf:/etc/nginx
-#                    - ./docker/nginx/conf/nginx.conf:/etc/nginx/conf.d/nginx.conf
-                    - /$(pwd)/keystore:/etc/ssl/private
-#                    - ./keystore:/etc/ssl/private
-#                extra_hosts:
-#                    host.docker.internal: host-gateway
-
 
         steps:
             -   uses: actions/checkout@v2
