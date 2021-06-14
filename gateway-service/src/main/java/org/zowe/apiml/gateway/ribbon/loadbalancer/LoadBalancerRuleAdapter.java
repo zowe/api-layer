@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
 
     private InstanceInfo instanceInfo;
-    private ConfigurableNamedContextFactory configurableNamedContextFactory;
+    private ConfigurableNamedContextFactory<?> configurableNamedContextFactory;
     private Map<String, RequestAwarePredicate> predicateMap;
 
     // used zuul's implementation of round robin server selection
@@ -45,7 +45,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
     public LoadBalancerRuleAdapter() {
     }
 
-    public LoadBalancerRuleAdapter(InstanceInfo instanceInfo, ConfigurableNamedContextFactory configurableNamedContextFactory, IClientConfig config) {
+    public LoadBalancerRuleAdapter(InstanceInfo instanceInfo, ConfigurableNamedContextFactory<?> configurableNamedContextFactory, IClientConfig config) {
         this.predicateMap = configurableNamedContextFactory.getInstances(instanceInfo.getAppName(), RequestAwarePredicate.class);
 
         this.instanceInfo = instanceInfo;
