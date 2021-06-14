@@ -11,23 +11,23 @@ eureka:
 server:
     ssl:
         enabled: true
-        keyAlias: api-catalog-services
+        keyAlias: localhost
         keyPassword: password
-        keyStore: keystore/docker/api-catalog-services.keystore.p12
+        keyStore: keystore/docker/all-services.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
+        clientAuth:
 
 apiml:
     service:
-        hostname: api-catalog-service
+        hostname: api-catalog-services
         port: 10014
         discoveryServiceUrls: https://discovery-service:10011/eureka/
-        dsIpAddress: 0.0.0.0
         eurekaPassword: password
         eurekaUserId: eureka
         gatewayHostname: https://gateway-service:10010
         preferIpAddress: false
-        truststore: keystore/docker/api-catalog-services.truststore.p12
+        truststore: keystore/docker/all-services.truststore.p12
         truststorePassword: password
         truststoreType: PKCS12
     service-registry:

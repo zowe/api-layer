@@ -5,6 +5,6 @@ apiml:
 
 server:
     ssl:
-        keyAlias: caching-service
-        keyStore: keystore/docker/caching-service.keystore.p12
-        trustStore: keystore/docker/caching-service.truststore.p12
+        keyAlias: localhost
+        keyStore: keystore/docker/all-services.keystore.p12
+        trustStore: keystore/docker/all-services.truststore.p12

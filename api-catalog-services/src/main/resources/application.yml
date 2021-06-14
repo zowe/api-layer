@@ -5,7 +5,6 @@ spring:
     cloud:
         client:
             hostname: ${apiml.service.hostname}
-            ipAddress: ${apiml.service.ipAddress}
     mvc:
         throw-exception-if-no-handler-found: true
     output:
@@ -40,7 +39,6 @@ apiml:
     service:
         id: apicatalog
         hostname: ${apiml.service.hostname}
-        ipAddress: ${apiml.service.ipAddress}
         port: ${apiml.service.port}
         contextPath: /apicatalog
         scheme: https

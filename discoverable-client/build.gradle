@@ -28,6 +28,7 @@ jib {
 
     container {
         args = ['--spring.config.additional-location=file:/config/docker/discoverable-client.yml', '--spring.profiles.include=dev,debug']
+        jvmFlags = project.hasProperty("zowe.docker.debug") ? ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5122']: []
     }
 
     extraDirectories {

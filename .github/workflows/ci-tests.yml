@@ -187,7 +187,7 @@ jobs:
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: CITests
+                  name: ContainerTests
                   path: |
                       integration-tests/build/reports/**
             -   name: Cleanup Gradle Cache

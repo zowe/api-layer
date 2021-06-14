@@ -23,12 +23,12 @@ eureka:
 
 server:
     ssl:
-        keyAlias: discovery-service
+        keyAlias: localhost
         keyPassword: password
         keyStoreType: PKCS12
-        keyStore: keystore/docker/discovery-service.keystore.p12
+        keyStore: keystore/docker/all-services.keystore.p12
         keyStorePassword: password
         trustStoreType: PKCS12
-        trustStore: keystore/docker/discovery-service.truststore.p12
+        trustStore: keystore/docker/all-services.truststore.p12
         trustStorePassword: password
 
