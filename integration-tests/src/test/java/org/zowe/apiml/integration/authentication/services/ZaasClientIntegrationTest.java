@@ -13,9 +13,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.codec.binary.Base64;
 import org.hamcrest.core.Is;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -25,17 +23,12 @@ import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ConfigReaderZaasClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
-import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
-import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
+import org.zowe.apiml.zaasclient.exception.*;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -104,9 +97,9 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
 
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {
         ZaasClientErrorCodes producedErrorCode = zce.getErrorCode();
-        assertThat(code.getId(), Is.is(producedErrorCode.getId()));
-        assertThat(code.getMessage(), Is.is(producedErrorCode.getMessage()));
-        assertThat(code.getReturnCode(), Is.is(producedErrorCode.getReturnCode()));
+        assertThat(producedErrorCode.getId(), Is.is(code.getId()));
+        assertThat(producedErrorCode.getMessage(), Is.is(code.getMessage()));
+        assertThat(producedErrorCode.getReturnCode(), Is.is(code.getReturnCode()));
     }
 
     @BeforeEach
@@ -135,7 +128,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         return Stream.of(
             Arguments.of(getAuthHeader(INVALID_USER, PASSWORD), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(getAuthHeader(NULL_USER, PASSWORD), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
-            Arguments.of(getAuthHeader(EMPTY_USER, PASSWORD), ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD),
+            Arguments.of(getAuthHeader(EMPTY_USER, PASSWORD), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(NULL_AUTH_HEADER, ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER),
             Arguments.of(EMPTY_AUTH_HEADER, ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER)
         );
