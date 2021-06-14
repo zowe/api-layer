@@ -18,6 +18,7 @@ public class LoadBalancerConstants {
     public static String INSTANCE_KEY = "instance";
     public static char CONFIG_SEPARATOR = '.';
     public static String SERVICEID_KEY = "serviceId";
+    public static String INSTANCE_HEADER_KEY = "X-InstanceId";
 
     public static String getMetadataPrefix() {
         return INSTANCE_KEY + CONFIG_SEPARATOR + METADATA_KEY + CONFIG_SEPARATOR;

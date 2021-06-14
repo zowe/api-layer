@@ -11,8 +11,7 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer.predicate;
 
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import org.apache.commons.lang3.StringUtils;
-import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
-import org.zowe.apiml.gateway.ribbon.loadbalancer.RequestAwarePredicate;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.*;
 
 /**
  * Predicate that looks for a presence of header containing serviceId value
@@ -21,7 +20,7 @@ import org.zowe.apiml.gateway.ribbon.loadbalancer.RequestAwarePredicate;
 
 public class RequestHeaderPredicate extends RequestAwarePredicate {
 
-    public static final String REQUEST_HEADER_NAME = "X-Host";
+    public static final String REQUEST_HEADER_NAME = LoadBalancerConstants.INSTANCE_HEADER_KEY;
 
     @Override
     public boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server) {
