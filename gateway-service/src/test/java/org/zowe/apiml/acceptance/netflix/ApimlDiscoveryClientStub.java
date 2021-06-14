@@ -45,4 +45,9 @@ public class ApimlDiscoveryClientStub extends ApimlDiscoveryClient {
     public List<InstanceInfo> getInstancesByVipAddress(String vipAddress, boolean secure) {
         return applicationRegistry.getInstances();
     }
+
+    @Override
+    public List<InstanceInfo> getInstancesByVipAddress(String vipAddress, boolean secure, String region){
+        return applicationRegistry.getInstances();
+    }
 }

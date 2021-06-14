@@ -81,6 +81,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
         }
         log.debug("Running Zuul predicates");
         Optional<Server> server = zuulPredicate.chooseRoundRobinAfterFiltering(allServers, key); //NOSONAR following zuul's api
+//        RequestContext.getCurrentContext().addZuulResponseHeader("X-Response-Host", ctx.getInstanceInfo().getInstanceId());
         if (server.isPresent()) {
             log.debug("Selected server: {}", server.get());
             return server.get();
