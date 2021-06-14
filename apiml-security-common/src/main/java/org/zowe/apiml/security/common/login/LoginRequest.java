@@ -11,6 +11,7 @@ package org.zowe.apiml.security.common.login;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.Authentication;
 
 /**
  * Represents the login JSON with credentials
@@ -31,5 +32,27 @@ public class LoginRequest {
         this.username = username;
         this.password = password;
         this.newPassword = newPassword;
+    }
+
+    public static String getPassword(Authentication authentication) {
+        String password;
+        if (authentication.getCredentials() instanceof LoginRequest) {
+            LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
+            password = loginRequest.getPassword();
+        } else {
+            password = (String) authentication.getCredentials();
+        }
+        return password;
+    }
+
+    public static String getNewPassword(Authentication authentication) {
+        String password;
+        if (authentication.getCredentials() instanceof LoginRequest) {
+            LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
+            password = loginRequest.getNewPassword();
+        } else {
+            password = null;
+        }
+        return password;
     }
 }

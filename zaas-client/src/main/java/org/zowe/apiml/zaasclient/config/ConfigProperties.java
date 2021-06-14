@@ -9,10 +9,14 @@
  */
 package org.zowe.apiml.zaasclient.config;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 @Data
+@Builder
 public class ConfigProperties {
+
     private String apimlHost;
     private String apimlPort;
     private String apimlBaseUrl;
@@ -24,4 +28,23 @@ public class ConfigProperties {
     private char[] trustStorePassword;
     private boolean httpOnly;
     private boolean nonStrictVerifySslCertificatesOfServices;
+
+    @Tolerate
+    public ConfigProperties() {
+        // no args constructor
+    }
+
+    public ConfigProperties withoutKeyStore() {
+        return ConfigProperties.builder()
+            .apimlHost(apimlHost)
+            .apimlPort(apimlPort)
+            .apimlBaseUrl(apimlBaseUrl)
+            .trustStoreType(trustStoreType)
+            .trustStorePath(trustStorePath)
+            .trustStorePassword(trustStorePassword)
+            .httpOnly(httpOnly)
+            .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
+            .build();
+    }
+
 }
