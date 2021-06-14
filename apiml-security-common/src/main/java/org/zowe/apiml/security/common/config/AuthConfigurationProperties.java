@@ -77,6 +77,18 @@ public class AuthConfigurationProperties {
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
         private Integer cookieMaxAge = -1;
+        private CookieSameSiteAttribute cookieSameSite = CookieSameSiteAttribute.LAX;
+    }
+
+    public enum CookieSameSiteAttribute {
+        NONE,
+        LAX,
+        STRICT;
+
+        @Override
+        public String toString() {
+            return this.name().toLowerCase();
+        }
     }
 
     @Data
