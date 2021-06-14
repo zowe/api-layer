@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.acceptance;
+package org.zowe.apiml.acceptance.corsTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -27,7 +27,6 @@ import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.core.Is.is;
 
 @AcceptanceTest
-@Disabled
 public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
     @BeforeEach
