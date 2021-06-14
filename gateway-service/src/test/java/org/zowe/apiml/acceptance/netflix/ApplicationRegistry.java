@@ -142,7 +142,7 @@ public class ApplicationRegistry {
             metadata.put("apiml.connectionManagerTimeout", "5000");
             metadata.put("apiml.okToRetryOnAllOperations", "true");
         }
-        metadata.put("apiml.lb.header","enabled");
+        metadata.put("apiml.lb.instanceIdHeader","enabled");
         metadata.put("apiml.corsEnabled", String.valueOf(corsEnabled));
         metadata.put("apiml.routes.gateway-url", "/");
         return metadata;

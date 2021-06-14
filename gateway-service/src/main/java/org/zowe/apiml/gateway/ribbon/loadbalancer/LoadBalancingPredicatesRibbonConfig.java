@@ -29,7 +29,7 @@ import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredica
 public class LoadBalancingPredicatesRibbonConfig {
 
     @Bean
-    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.header", havingValue = "enabled")
+    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.instanceIdHeader", havingValue = "enabled")
     public RequestAwarePredicate headerPredicate() {
         return new RequestHeaderPredicate();
     }
