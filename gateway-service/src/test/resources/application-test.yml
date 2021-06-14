@@ -1,6 +1,3 @@
-spring.profiles.include: diag
-environment.older: false
-
 logging:
     level:
         ROOT: TRACE
@@ -61,11 +58,13 @@ spring:
     main:
         allow-bean-definition-overriding: true
         banner-mode: ${apiml.banner:"off"}
+    profiles:
+        include: diag
 
 server:
-    address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
     internal:
+        address: ${apiml.service.ipAddress}
         port: 10017
         enabled: true
         ssl:
