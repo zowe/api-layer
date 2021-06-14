@@ -36,14 +36,14 @@ server:
         enabled: true
         port: 10017
         ssl:
-            keyAlias: localhost-multi
-            keyStore: keystore/localhost/localhost-multi.keystore.p12
+            keyAlias: gateway-service
+            keyStore: keystore/docker/gateway-service.keystore.p12
     ssl:
-        keyAlias: localhost
+        keyAlias: gateway-service
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/docker/gateway-service.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/docker/gateway-service.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12

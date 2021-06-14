@@ -1,0 +1,8 @@
+server:
+    ssl:
+        keyAlias: mock-zosmf
+        keyPassword: password
+        keyStore: keystore/docker/mock-zosmf.keystore.p12
+        keyStorePassword: password
+        trustStore: keystore/docker/mock-zosmf.truststore.p12
+        trustStorePassword: password

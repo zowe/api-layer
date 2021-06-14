@@ -27,7 +27,7 @@ jib {
     }
 
     container {
-        args = ['--spring.config.additional-location=file:/config/docker/discoverable-client.yml', '--spring.profiles.include=dev,debug', '--apiml.service.ssl.nonStrictVerifySslCertificatesOfServices=true', '--apiml.security.ssl.verifySslCertificatesOfServices=false']
+        args = ['--spring.config.additional-location=file:/config/docker/discoverable-client.yml', '--spring.profiles.include=dev,debug']
     }
 
     extraDirectories {

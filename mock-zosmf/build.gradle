@@ -27,11 +27,15 @@ jib {
     }
 
     container {
-        args = ['--spring.profiles.include=dev,debug', '--apiml.security.ssl.nonStrictVerifySslCertificatesOfServices=true', '--apiml.security.ssl.verifySslCertificatesOfServices=false']
+        args = ['--spring.config.additional-location=file:/config/docker/mock-zosmf.yml', '--spring.profiles.include=dev,debug', ]
     }
 
     extraDirectories {
         paths {
+            path {
+                from = "../config"
+                into = "/config"
+            }
             path {
                 from = "../keystore"
                 into = "/keystore"

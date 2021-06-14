@@ -11,9 +11,9 @@ eureka:
 server:
     ssl:
         enabled: true
-        keyAlias: localhost
+        keyAlias: api-catalog-services
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/docker/api-catalog-services.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
 
@@ -27,7 +27,7 @@ apiml:
         eurekaUserId: eureka
         gatewayHostname: https://gateway-service:10010
         preferIpAddress: false
-        truststore: keystore/localhost/localhost.truststore.p12
+        truststore: keystore/docker/api-catalog-services.truststore.p12
         truststorePassword: password
         truststoreType: PKCS12
     service-registry:

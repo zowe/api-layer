@@ -29,7 +29,7 @@ jib {
     }
 
     container {
-        args = ['--spring.config.additional-location=file:/config/docker/discovery-service.yml', '--spring.profiles.include=dev,debug', '--spring.profiles.active=https', '--apiml.security.ssl.nonStrictVerifySslCertificatesOfServices=true', '--apiml.security.ssl.verifySslCertificatesOfServices=false']
+        args = ['--spring.config.additional-location=file:/config/docker/discovery-service.yml', '--spring.profiles.include=dev,debug', '--spring.profiles.active=https']
     }
 
     extraDirectories {

@@ -21,9 +21,9 @@ eureka:
         registryFetchIntervalSeconds: 1
 server:
     ssl:
-        keyAlias: localhost
+        keyAlias: discoverable-client
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/docker/discoverable-client.keystore.p12
         keyStorePassword: password
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/docker/discoverable-client.truststore.p12
         trustStorePassword: password
