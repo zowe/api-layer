@@ -45,7 +45,7 @@ public class ApplicationRegistry {
      * @param service    Details of the service to be registered in the Gateway
      * @param addTimeout Whether the custom metadata should be provided for given service.
      */
-    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, String instanceId) {
+    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances) {
         String id = service.getId();
         String locationPattern = service.getLocationPattern();
         String serviceRoute = service.getServiceRoute();
@@ -55,15 +55,15 @@ public class ApplicationRegistry {
 
         Map<String, String> metadata = createMetadata(addTimeout, corsEnabled);
 
-        withMetadata.addInstance(getStandardInstance(metadata, id, instanceId));
-        if (instanceId.equals("serviceid1")) {
-            withMetadata.addInstance(getStandardInstance(metadata, id, instanceId + "-copy"));
+        withMetadata.addInstance(getStandardInstance(metadata, id, id));
+        if (multipleInstances) {
+            withMetadata.addInstance(getStandardInstance(metadata, id, id + "-copy"));
         }
         applications.addApplication(withMetadata);
         ZuulProperties.ZuulRoute route = new ZuulProperties.ZuulRoute(locationPattern, service.getId());
         zuulRouteLinkedHashMap.put(locationPattern, route);
 
-        applicationsToReturn.put(instanceId, applications);
+        applicationsToReturn.put(id, applications);
 
         RoutedServices routedServices = new RoutedServices();
         routedServices.addRoutedService(new RoutedService("test", serviceRoute, ""));

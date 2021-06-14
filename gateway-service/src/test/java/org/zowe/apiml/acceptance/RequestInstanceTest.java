@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.acceptance;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +27,13 @@ import static org.hamcrest.core.Is.is;
 
 @AcceptanceTest
 public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
+
+    @BeforeEach
+    public void prepareApplications() {
+        applicationRegistry.clearApplications();
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true);
+    }
 
     @Nested
     class WhenValidInstanceId {
