@@ -62,9 +62,9 @@ spring:
         banner-mode: ${apiml.banner:"off"}
 
 server:
-    address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
     internal:
+        address: ${apiml.service.ipAddress}
         port: 10017
         enabled: true
         ssl:
