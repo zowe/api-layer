@@ -89,6 +89,8 @@ these files get used by NGINX proxy to simulate AT_TLS on CI server.
 ## Generating own certificates for localhost
 **!!! Note that apiml_cm.sh script has been moved to [zowe/zowe-install-packaging repo](https://github.com/zowe/zowe-install-packaging) !!!** 
 
+If you run on Ubuntu change the first line of the script to `#!/bin/bash` as sh doesn't support full syntax needed in the Ubuntu version. 
+
 Use following script:
 
     scripts/apiml_cm.sh --action setup
@@ -130,6 +132,8 @@ The `service-password` is the keystore password. The purpose of the password is 
 The `local-ca-filename` is the path to the keystore that is used to sign your new certificate with the local CA private key. If you an in the `$ZOWE_RUNTIME/components/api-mediation-directory`, you can omit this parameter. It should point to the `$ZOWE_ROOT_DIR/components/api-mediation/keystore/local_ca/localca`.
 
 The `local-ca-password` is the local CA keystore password. You can omit it unless you has used a different password during `setup` action.
+
+*Example:* `scripts/apiml_cm.sh --action new-service --service-alias gateway-service --service-ext SAN=dns:gateway-service,dns:localhost --service-keystore keystore/docker/gateway-service.keystore --service-truststore keystore/docker/gateway-service.truststore --service-dname "CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ" --service-password password --service-validity 365`
 
 
 ### Use the service certificate in the PEM format
