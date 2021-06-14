@@ -41,27 +41,10 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-            -   name: Cache built artifacts
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        build/libs
-                        api-catalog-services/build/libs
-                        caching-service/build/libs
-                        discoverable-client/build/libs
-                        discovery-service/build/libs
-                        gateway-service/build/libs
-                        integration-tests/build
-                        mock-zosmf/build/libs
-                        onboarding-enabler-nodejs/node_modules
-                        onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
             -   name: Build with Gradle
                 run: >
                     ./gradlew build jib -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                        -Pzowe.docker.password=${{ secrets.ZOWE_ROBOT_TOKEN }} -Pzowe.docker.username=zowe-robot
+                        -Pzowe.docker.password=${{ secrets.ZOWE_ROBOT_TOKEN }} -Pzowe.docker.username=${{ secrets.ZOWE_ROBOT_USER }}
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
