@@ -10,6 +10,9 @@
 
 package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
+/**
+ * Static holder for load balancer constants
+ */
 public class LoadBalancerConstants {
     public static String METADATA_KEY = "metadata";
     public static String INSTANCE_KEY = "instance";

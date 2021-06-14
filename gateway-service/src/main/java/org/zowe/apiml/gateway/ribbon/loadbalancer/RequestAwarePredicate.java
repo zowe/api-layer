@@ -16,6 +16,10 @@ import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 
 import javax.annotation.Nullable;
 
+/**
+ * Prototype of predicate for server selection. See {@link LoadBalancerRuleAdapter} how the
+ * predicates are used.
+ */
 public abstract class RequestAwarePredicate extends AbstractServerPredicate {
 
     public abstract boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server);

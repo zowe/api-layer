@@ -16,6 +16,10 @@ import lombok.Getter;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+/**
+ * Provides information about the request to individual load balancing predicates
+ * so they can decide which server to select
+ */
 @Getter
 public class LoadBalancingContext {
     private final String key;

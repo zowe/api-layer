@@ -17,10 +17,17 @@ import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+/**
+ * This adapter holds the load balancing logic by facilitating server selection.
+ * There is plenty of debug log to increase supportability
+ *
+ */
 @Slf4j
 public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
 
@@ -59,6 +66,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
         LoadBalancingContext ctx = new LoadBalancingContext(instanceInfo.getAppName(), instanceInfo);
         List<Server> allServers = lb.getAllServers();
         log.debug("Path: {}, List of servers from LoadBalancer: {}", ctx.getPath() ,allServers);
+        //TODO move the header to better place
         RequestContext.getCurrentContext().addZuulResponseHeader("X-Response-Host", ctx.getInstanceInfo().getInstanceId());
         for (RequestAwarePredicate predicate : predicateMap.values()) {
             log.debug("Running predicate: {}, list of servers: {}", allServers, predicate);

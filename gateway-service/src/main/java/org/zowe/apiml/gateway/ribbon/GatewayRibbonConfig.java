@@ -21,6 +21,7 @@ import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.MapPropertySource;
+import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.*;
 
@@ -60,6 +61,24 @@ public class GatewayRibbonConfig {
         return client;
     }
 
+    /**
+     *
+     * Main place where load balancer is constructed. Here is where we plug in the {@link LoadBalancerRuleAdapter}
+     * to act as a rule for selecting servers.
+     *
+     * The factory for predicates is also initialized here with information fom InstanceInfo
+     *
+     * Called at first request's invocation and bean is service-scoped (1 bean per serviceId)
+     *
+     * @param config Ribbon's client config
+     * @param serverList List of available servers
+     * @param serverListFilter Not sure
+     * @param ping Server probing mechanism (initialized as server list from Discovery)
+     * @param serverListUpdater Not sure
+     * @param loadBalancerRegistry Keeps track of all load balancer beans
+     * @param predicateFactory Factory for creating predicates for server filtering
+     * @return Initialized load balancer bean
+     */
     @Bean
     @Primary
     @Autowired
@@ -93,6 +112,15 @@ public class GatewayRibbonConfig {
             serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
 
+    /**
+     * Factory for load balancer predicates
+     *
+     * Takes in {@link LoadBalancingPredicatesRibbonConfig} which specifies the composition of load
+     * balancer predicates.
+     *
+     * This is static now, but in the future can be wired in as a bean to allow broader extensibility
+     *
+     */
     @Bean
     public ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory() {
         return new ConfigurableNamedContextFactory<>(LoadBalancingPredicatesRibbonConfig.class, "contextConfiguration",

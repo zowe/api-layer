@@ -15,6 +15,7 @@ import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import org.junit.jupiter.api.*;
+import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 
 import java.util.*;
 

@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.ribbon.loadbalancer;
+package org.zowe.apiml.gateway.context;
 
 import org.springframework.beans.BeansException;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -17,10 +17,19 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.MapPropertySource;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+
+/**
+ * An extension to Spring Cloud's {@link NamedContextFactory}.
+ * Enables creation of exclusive named contexts.
+ *
+ * See the unit tests for documentation of usage.
+ *
+ */
 
 public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Specification> extends NamedContextFactory<T> {
 
@@ -33,6 +42,12 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
     protected Map<String, Consumer<ConfigurableApplicationContext>> initializers = new ConcurrentHashMap<>();
 
 
+    /**
+     * Register {@link NamedContextFactory.Specification} for newly created context
+     * Specifications are context specific by Specification's name
+     * Specifications with name `default.` are matched for every context name
+     * @param configurations
+     */
     @Override
     public void setConfigurations(List<T> configurations) {
         for (T c : configurations) {
@@ -40,19 +55,36 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
         }
     }
 
+    /**
+     * Adds initializer to allow to customize the context before bean creation. Useful for
+     * customizint the Environment abstraction.
+     * Initializers are backed by {@link ConcurrentHashMap}. One initializer per named context.
+     * Repeated adding of initializers will rewrite the previously set initializer.
+     * @param contextName For which context name to initialize
+     * @param initializingConsumer Initializing logic
+     */
     public void addInitializer(String contextName, Consumer<ConfigurableApplicationContext> initializingConsumer) {
         this.initializers.put(contextName, initializingConsumer);
     }
 
-    //Argument 1
-    //Argument 2 and 3 => to set the config name to Environment
-    public ConfigurableNamedContextFactory(Class<?> defaultConfigType, String propertySourceName, String propertyName) {
+
+    /**
+     * May register default configuration for all contexts
+     * Define the key for storing named context's name in the Environment.
+     * @param defaultConfigType Registers default configuration class for all contexts
+     * @param propertySourceName Specify the ConfigurationSource's name for NamedContext's name
+     * @param propertyName Specify property key for NamedContext's name
+     */
+    public ConfigurableNamedContextFactory(@Nullable Class<?> defaultConfigType, String propertySourceName, String propertyName) {
         super(defaultConfigType, propertySourceName, propertyName);
         this.defaultConfigType = defaultConfigType;
         this.propertySourceName = propertySourceName;
         this.propertyName = propertyName;
     }
 
+    /**
+     * Set parent context of newly created named contexts
+     */
     @Override
     public void setApplicationContext(ApplicationContext parent) throws BeansException {
         super.setApplicationContext(parent);

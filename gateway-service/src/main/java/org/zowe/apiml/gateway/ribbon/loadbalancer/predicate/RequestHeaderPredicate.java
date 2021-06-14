@@ -14,6 +14,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.RequestAwarePredicate;
 
+/**
+ * Predicate that looks for a presence of header containing serviceId value
+ * in the request and matching on that server.
+ */
+
 public class RequestHeaderPredicate extends RequestAwarePredicate {
 
     public static final String REQUEST_HEADER_NAME = "X-Host";
