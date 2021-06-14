@@ -10,6 +10,7 @@
 package org.zowe.apiml.acceptance;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +27,7 @@ import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.core.Is.is;
 
 @AcceptanceTest
+@Disabled
 public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
     @BeforeEach
