@@ -14,11 +14,14 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer;
  * Static holder for load balancer constants
  */
 public class LoadBalancerConstants {
-    public static String METADATA_KEY = "metadata";
-    public static String INSTANCE_KEY = "instance";
-    public static char CONFIG_SEPARATOR = '.';
-    public static String SERVICEID_KEY = "serviceId";
-    public static String INSTANCE_HEADER_KEY = "X-InstanceId";
+
+    public static final String METADATA_KEY = "metadata";
+    public static final String INSTANCE_KEY = "instance";
+    public static final char CONFIG_SEPARATOR = '.';
+    public static final String SERVICEID_KEY = "serviceId";
+    public static final String INSTANCE_HEADER_KEY = "X-InstanceId";
+
+    private LoadBalancerConstants() {}
 
     public static String getMetadataPrefix() {
         return INSTANCE_KEY + CONFIG_SEPARATOR + METADATA_KEY + CONFIG_SEPARATOR;
