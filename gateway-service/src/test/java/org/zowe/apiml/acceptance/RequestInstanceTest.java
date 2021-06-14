@@ -11,8 +11,11 @@ package org.zowe.apiml.acceptance;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerConstants;
 
 import java.io.IOException;
 
@@ -25,24 +28,27 @@ import static org.hamcrest.core.Is.is;
 public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
     @Nested
-    class WhenValidInstanceId{
-        @Test
-        void chooseCorrectService() throws IOException {
+    class WhenValidInstanceId {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"serviceid1", "serviceid1-copy"})
+        void chooseCorrectService(String instanceId) throws IOException {
             mockValid200HttpResponse();
             applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-            given().header("X-Host","serviceid1-copy").
+            given().header(LoadBalancerConstants.INSTANCE_HEADER_KEY, instanceId).
                 when()
                 .get(basePath + serviceWithDefaultConfiguration.getPath())
-                .then().statusCode(is(SC_OK)).header("X-Response-Host",is(serviceWithCustomConfiguration.getId()));
+                .then().statusCode(is(SC_OK)).header("X-InstanceId", is(instanceId));
         }
     }
+
     @Nested
-    class WhenNonExistingInstanceId{
+    class WhenNonExistingInstanceId {
         @Test
         void cantChooseServer() throws IOException {
             mockValid200HttpResponse();
             applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-            given().header("X-Host","non-existing").
+            given().header(LoadBalancerConstants.INSTANCE_HEADER_KEY, "non-existing").
                 when()
                 .get(basePath + serviceWithDefaultConfiguration.getPath())
                 .then()

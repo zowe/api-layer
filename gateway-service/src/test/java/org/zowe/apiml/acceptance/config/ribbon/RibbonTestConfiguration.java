@@ -23,12 +23,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.MapPropertySource;
+import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 import org.zowe.apiml.gateway.ribbon.AbortingRetryListener;
 import org.zowe.apiml.gateway.ribbon.ApimlLoadBalancer;
 import org.zowe.apiml.gateway.ribbon.ApimlRetryableClient;
 import org.zowe.apiml.gateway.ribbon.ApimlRibbonRetryFactory;
-import org.zowe.apiml.gateway.ribbon.loadbalancer.*;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.InstanceInfoExtractor;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerConstants;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerRuleAdapter;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingPredicatesRibbonConfig;
 
 import java.util.HashMap;
 import java.util.Map;
