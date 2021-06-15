@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.integration.proxy;
 
+import io.restassured.http.ContentType;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +27,13 @@ class UiIntegrationTest implements TestWithStartedInstances {
         return new String[]{
             "/discoverableclient/ui/v1",
             "/ui/v1/discoverableclient"
+        };
+    }
+
+    protected static String[] discoverableClientRedirectSource() {
+        return new String[]{
+            "/discoverableclient/api/v1/redirect",
+            "/api/v1/discoverableclient/redirect"
         };
     }
 
@@ -48,14 +56,16 @@ class UiIntegrationTest implements TestWithStartedInstances {
         @Nested
         class GivenRedirectUrl {
             @ParameterizedTest(name = "returnRedirect {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.proxy.UiIntegrationTest#discoverableClientSource")
+            @MethodSource("org.zowe.apiml.integration.proxy.UiIntegrationTest#discoverableClientRedirectSource")
             @TestsNotMeantForZowe
             void returnRedirect(String url) {
                 given()
+                    .body("{\"location\": \"https://gateway-service:10010/\"}")
+                    .contentType(ContentType.JSON)
                 .when()
-                    .get(HttpRequestUtils.getUriFromGateway(url))
+                    .post(HttpRequestUtils.getUriFromGateway(url))
                 .then()
-                    .statusCode(HttpStatus.SC_OK);
+                    .statusCode(HttpStatus.SC_TEMPORARY_REDIRECT);
             }
         }
     }
