@@ -28,7 +28,8 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v2
               with:
-                  fetch-depth: 0
+                  ref: ${{ github.head_ref }}
+                  token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
 
             - name: Generate Changelog and open PR
               run: |
