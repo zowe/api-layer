@@ -17,8 +17,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
-import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
+import org.zowe.apiml.gateway.filters.post.*;
 import org.zowe.apiml.gateway.filters.pre.*;
 import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
 import org.zowe.apiml.message.core.MessageService;
@@ -102,6 +101,12 @@ public class ApimlRoutingConfig {
     @Autowired
     public RoutedServicesNotifier routedServicesNotifier(List<RoutedServicesUser> routedServicesUserList) {
         return new RoutedServicesNotifier(routedServicesUserList);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "apiml.routing.instanceIdHeader", havingValue = "true")
+    public RoutedInstanceIdFilter routedServerFilter() {
+        return new RoutedInstanceIdFilter();
     }
 
 }

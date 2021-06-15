@@ -10,6 +10,7 @@
 package org.zowe.apiml.acceptance.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
@@ -19,6 +20,7 @@ import org.zowe.apiml.acceptance.netflix.ApimlRouteLocatorStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
+import org.zowe.apiml.gateway.filters.post.RoutedInstanceIdFilter;
 import org.zowe.apiml.gateway.filters.pre.*;
 import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
 import org.zowe.apiml.message.core.MessageService;
@@ -90,4 +92,11 @@ public class ApimlRoutingConfig {
 
         return new ApimlRouteLocatorStub("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers, applicationRegistry);
     }
+
+    @Bean
+    @ConditionalOnProperty(name = "apiml.routing.instanceIdHeader", havingValue = "true")
+    public RoutedInstanceIdFilter routedServerFilter() {
+        return new RoutedInstanceIdFilter();
+    }
+
 }
