@@ -140,8 +140,8 @@ jobs:
                 ports:
                     - 10018:10010
                 env:
-                    apiml.service.hostname: gateway-service2
-                    server.internal.port: 10027
+                    APIML_SERVICE_HOSTNAME: gateway-service2
+                    SERVER_INTERNAL_PORT: 10027
             mock-zosmf:
                 image: 'ghcr.io/balhar-jakub/mock-zosmf'
 #                credentials:
