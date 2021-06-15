@@ -23,7 +23,7 @@ discoveryServiceConfiguration:
 discoverableClientConfiguration:
     applId: ZOWEAPPL
 tlsConfiguration:
-    keyAlias: localhost-multi
+    keyAlias: localhost
     keyPassword: password
     keyStoreType: PKCS12
     keyStore: ../keystore/docker/all-services.keystore.p12
