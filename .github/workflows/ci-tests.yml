@@ -125,6 +125,15 @@ jobs:
 #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
                 ports:
                     - 10011:10011
+            discovery-service-2:
+                image: 'ghcr.io/balhar-jakub/discovery-service'
+#                credentials:
+#                    username: zowe-robot
+#                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    - 10020:10011
+                env:
+                    APIML_SERVICE_HOSTNAME: discovery-service2
             gateway-service:
                 image: 'ghcr.io/balhar-jakub/gateway-service'
 #                credentials:
