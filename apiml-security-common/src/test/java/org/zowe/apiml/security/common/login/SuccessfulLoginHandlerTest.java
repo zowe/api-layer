@@ -9,18 +9,22 @@
  */
 package org.zowe.apiml.security.common.login;
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import javax.servlet.http.Cookie;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class SuccessfulLoginHandlerTest {
+    private final TokenAuthentication dummyAuth = new TokenAuthentication("TEST_TOKEN_STRING");
+
     private AuthConfigurationProperties authConfigurationProperties;
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
@@ -35,15 +39,38 @@ class SuccessfulLoginHandlerTest {
         successfulLoginHandler = new SuccessfulLoginHandler(authConfigurationProperties);
     }
 
-    @Test
-    void testOnAuthenticationSuccess() {
-        successfulLoginHandler.onAuthenticationSuccess(
-            httpServletRequest,
-            httpServletResponse,
-            new TokenAuthentication("TEST_TOKEN_STRING")
-        );
+    @Nested
+    class WhenAuthenticationIsSuccessful {
+        @Test
+        void givenAuthentication_thenReturn204AndCookie() {
+            executeLoginHandler();
 
-        assertEquals(HttpStatus.NO_CONTENT.value(), httpServletResponse.getStatus());
-        assertNotNull(httpServletResponse.getCookie(authConfigurationProperties.getCookieProperties().getCookieName()));
+            assertEquals(HttpStatus.NO_CONTENT.value(), httpServletResponse.getStatus());
+
+            Cookie cookie = httpServletResponse.getCookie(authConfigurationProperties.getCookieProperties().getCookieName());
+            assertNotNull(cookie);
+
+            AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
+            assertEquals(cp.getCookieName(), cookie.getName());
+            assertEquals(dummyAuth.getCredentials(), cookie.getValue());
+            assertEquals(cp.getCookiePath(), cookie.getPath());
+            assertEquals(cp.getCookieMaxAge(), cookie.getMaxAge());
+            assertTrue(cookie.isHttpOnly());
+            assertTrue(cookie.getSecure());
+        }
+
+        @Test
+        void givenCookieSecureNotSet_thenReturnCookieWithoutSecure() {
+            authConfigurationProperties.getCookieProperties().setCookieSecure(false);
+            executeLoginHandler();
+
+            Cookie cookie = httpServletResponse.getCookie(authConfigurationProperties.getCookieProperties().getCookieName());
+            assertNotNull(cookie);
+            assertFalse(cookie.getSecure());
+        }
+    }
+
+    private void executeLoginHandler() {
+        successfulLoginHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth);
     }
 }
