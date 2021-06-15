@@ -10,7 +10,6 @@ services:
             - 10001:10001
             - 10030:10030
             - 10016:10016
-            - 10010:10010
         volumes:
             - ./conf:/etc/nginx
             - ../../keystore:/etc/ssl/private

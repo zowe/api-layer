@@ -4,7 +4,7 @@ credentials:
     password: validPassword
 gatewayServiceConfiguration:
     scheme: https
-    host: localhost
+    host: gateway-service
     port: 10010
     internalPorts: 10017
     externalPort: 10010
@@ -17,7 +17,7 @@ discoveryServiceConfiguration:
     scheme: https
     user: user
     password: user
-    host: localhost
+    host: discovery-service
     port: 10011
     instances: 2
 discoverableClientConfiguration:
@@ -26,15 +26,15 @@ tlsConfiguration:
     keyAlias: localhost-multi
     keyPassword: password
     keyStoreType: PKCS12
-    keyStore: ../keystore/localhost/localhost-multi.keystore.p12
+    keyStore: ../keystore/docker/all-services.keystore.p12
     clientKeystore: ../keystore/client_cert/client-certs.p12
     keyStorePassword: password
     trustStoreType: PKCS12
-    trustStore: ../keystore/localhost/localhost-multi.truststore.p12
+    trustStore: ../keystore/docker/all-services.truststore.p12
     trustStorePassword: password
 zosmfServiceConfiguration:
     scheme: https
-    host: localhost
+    host: mock-zosmf
     port: 10013
     serviceId: mockzosmf
 auxiliaryUserList:
