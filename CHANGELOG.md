@@ -2,6 +2,35 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `0.0.22 (2021-06-14)`
+
+* Feature:  determnistic routing (#1496) ([ed91f25](https://github.com/zowe/api-layer/commit/ed91f25)), closes [#1496](https://github.com/zowe/api-layer/issues/1496)
+* Feature:  websocket authentication support (#1482) ([112da99](https://github.com/zowe/api-layer/commit/112da99)), closes [#1482](https://github.com/zowe/api-layer/issues/1482)
+* Feature:  attls switch (#1462) ([cf6bedd](https://github.com/zowe/api-layer/commit/cf6bedd)), closes [#1462](https://github.com/zowe/api-layer/issues/1462)
+* Feature:  change pass via saf (#1471) ([3f3c2af](https://github.com/zowe/api-layer/commit/3f3c2af)), closes [#1471](https://github.com/zowe/api-layer/issues/1471)
+* Feature:  certificate analyser tool (#1441) ([e694c0f](https://github.com/zowe/api-layer/commit/e694c0f)), closes [#1441](https://github.com/zowe/api-layer/issues/1441)
+
+
+* Bugfix:  integration tests fails  (#1525) ([d839480](https://github.com/zowe/api-layer/commit/d839480)), closes [#1525](https://github.com/zowe/api-layer/issues/1525)
+* Bugfix:  key cache on commit hash (#1529) ([d5bd200](https://github.com/zowe/api-layer/commit/d5bd200)), closes [#1529](https://github.com/zowe/api-layer/issues/1529)
+* Bugfix:  wrong using of certificates in ZAAS client (#1514) ([964c4fa](https://github.com/zowe/api-layer/commit/964c4fa)), closes [#1514](https://github.com/zowe/api-layer/issues/1514)
+* Bugfix:  accept login request as credentials (#1507) ([32dd0cd](https://github.com/zowe/api-layer/commit/32dd0cd)), closes [#1507](https://github.com/zowe/api-layer/issues/1507)
+* Bugfix:  don't show metrics on Gateway homepage yet (#1508) ([0eed960](https://github.com/zowe/api-layer/commit/0eed960)), closes [#1508](https://github.com/zowe/api-layer/issues/1508)
+* Bugfix:  Gateway SID and Ports incorrect for TLS/ATTLS and Internal port (#1476) ([3b4d468](https://github.com/zowe/api-layer/commit/3b4d468)), closes [#1476](https://github.com/zowe/api-layer/issues/1476)
+* Bugfix:  NPM multi startup (#1487) ([94e32c5](https://github.com/zowe/api-layer/commit/94e32c5)), closes [#1487](https://github.com/zowe/api-layer/issues/1487)
+* Bugfix:  remote call without client certificate (#1486) ([cd943e8](https://github.com/zowe/api-layer/commit/cd943e8)), closes [#1486](https://github.com/zowe/api-layer/issues/1486)
+* Bugfix:  Use the apiml.service.id in API Catalog the same way as in other services. (#1475) ([7bc8f99](https://github.com/zowe/api-layer/commit/7bc8f99)), closes [#1475](https://github.com/zowe/api-layer/issues/1475)
+* Bugfix:  Change the registration to use the correct hostname in instanceId (#1473) ([1d6caa8](https://github.com/zowe/api-layer/commit/1d6caa8)), closes [#1473](https://github.com/zowe/api-layer/issues/1473)
+* Bugfix:  Don't close HTTP client when generating passticket (#1470) ([ed9f929](https://github.com/zowe/api-layer/commit/ed9f929)), closes [#1470](https://github.com/zowe/api-layer/issues/1470)
+* Bugfix:  Fix npm vulnerabilities (#1466) ([08f74b5](https://github.com/zowe/api-layer/commit/08f74b5)), closes [#1466](https://github.com/zowe/api-layer/issues/1466)
+* Bugfix:  change name of main class (#1445) ([18226d1](https://github.com/zowe/api-layer/commit/18226d1)), closes [#1445](https://github.com/zowe/api-layer/issues/1445)
+* Bugfix:  configurable jwt alias at startup (#1442) ([0e3df7a](https://github.com/zowe/api-layer/commit/0e3df7a)), closes [#1442](https://github.com/zowe/api-layer/issues/1442)
+* Bugfix:  TLS Analyser Socket accepting and related tests on Windows (#1450) ([53c02d5](https://github.com/zowe/api-layer/commit/53c02d5)), closes [#1450](https://github.com/zowe/api-layer/issues/1450)
+* Bugfix:  Use actual hostname instead of the one provided by the Spring Cloud (#1434) ([6b8c38a](https://github.com/zowe/api-layer/commit/6b8c38a)), closes [#1434](https://github.com/zowe/api-layer/issues/1434)
+* Bugfix:  Distinguish lib and fat jars (#1398) ([f771a40](https://github.com/zowe/api-layer/commit/f771a40)), closes [#1398](https://github.com/zowe/api-layer/issues/1398)
+* Bugfix:  accept list of discovery services in catalog (#1376) ([42ae70d](https://github.com/zowe/api-layer/commit/42ae70d)), closes [#1376](https://github.com/zowe/api-layer/issues/1376)
+* Bugfix:  filter api info without apiId (#1395) ([8f5dc3d](https://github.com/zowe/api-layer/commit/8f5dc3d)), closes [#1395](https://github.com/zowe/api-layer/issues/1395)
+
 ## `1.22.0 (2021-06-14)`
 
 * Feature: Deterministic routing based on the provided headers is now available. Clients can now specify which instance of a service the user should be routed to. This enables reusability of underlying resources such as LPARs associated with a specific service instance (#1496) ([ed91f25](https://github.com/zowe/api-layer/commit/ed91f25)), closes [#1496](https://github.com/zowe/api-layer/issues/1496).
