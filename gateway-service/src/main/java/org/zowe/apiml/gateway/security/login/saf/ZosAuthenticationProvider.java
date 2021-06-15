@@ -41,12 +41,13 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     @Override
     public Authentication authenticate(Authentication authentication) {
         String userid = authentication.getName();
-        LoginRequest credentials = (LoginRequest) authentication.getCredentials();
+        String password = LoginRequest.getPassword(authentication);
+        String newPassword = LoginRequest.getNewPassword(authentication);
         PlatformReturned returned;
-        if (StringUtils.isNotEmpty(credentials.getNewPassword())) {
-            returned = (PlatformReturned) getPlatformUser().changePassword(userid, credentials.getPassword(), credentials.getNewPassword());
+        if (StringUtils.isNotEmpty(newPassword)) {
+            returned = (PlatformReturned) getPlatformUser().changePassword(userid, password, newPassword);
         } else {
-            returned = (PlatformReturned) getPlatformUser().authenticate(userid, credentials.getPassword());
+            returned = (PlatformReturned) getPlatformUser().authenticate(userid, password);
         }
 
         if ((returned == null) || (returned.isSuccess())) {

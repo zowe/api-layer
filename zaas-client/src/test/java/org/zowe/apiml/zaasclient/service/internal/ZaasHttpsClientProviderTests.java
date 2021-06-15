@@ -103,18 +103,6 @@ class ZaasHttpsClientProviderTests {
     }
 
     @Test
-    void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
-        ConfigProperties config = new ConfigProperties();
-        config.setTrustStorePassword(PASSWORD);
-        config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
-        config.setTrustStoreType("PKCS12");
-        ZaasHttpsClientProvider provider = new ZaasHttpsClientProvider(config);
-        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, provider::getHttpClient);
-
-        assertThat(zaasException.getErrorCode().getId(), is("ZWEAS501E"));
-    }
-
-    @Test
     void givenInvalidKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
         ConfigProperties config = new ConfigProperties();
         config.setTrustStorePassword(PASSWORD);
