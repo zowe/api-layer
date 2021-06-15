@@ -869,8 +869,8 @@ jobs:
 
     CITestsHA:
         needs: CITestsDocker
-        container:
-            image: ubuntu:latest
+#        container:
+#            image: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
