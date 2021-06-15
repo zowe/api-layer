@@ -175,16 +175,6 @@ jobs:
                 uses: actions/setup-node@v2
                 with:
                     node-version: '14'
-            -   name: Get logs of the created docker services
-                run: |
-                    sleep 60
-                    echo "First logs"
-                    docker ps -a -q | xargs -L 1 docker logs
-                    sleep 60
-                    echo "Next logs"
-                    docker ps -a -q | xargs -L 1 docker logs
-                    docker ps
-                    curl -k -v -trace https://localhost:10010
 
 #
 #    CITests:
