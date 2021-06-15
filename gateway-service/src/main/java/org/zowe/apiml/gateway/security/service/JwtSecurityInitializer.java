@@ -10,9 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service;
 
-import com.netflix.discovery.CacheRefreshedEvent;
-import com.netflix.discovery.EurekaEvent;
-import com.netflix.discovery.EurekaEventListener;
+import com.netflix.discovery.*;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -26,14 +24,12 @@ import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
 import javax.annotation.PostConstruct;
-import java.security.Key;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Optional;
 
 import static org.awaitility.Awaitility.await;
@@ -56,6 +52,9 @@ public class JwtSecurityInitializer {
 
     @Value("${apiml.security.auth.jwtKeyAlias:}")
     private String keyAlias;
+
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     private SignatureAlgorithm signatureAlgorithm;
     private Key jwtSecret;
@@ -129,6 +128,25 @@ public class JwtSecurityInitializer {
      */
     private void loadJwtSecret() {
         signatureAlgorithm = SignatureAlgorithm.RS256;
+        if (isAttlsEnabled) {
+            log.debug("Loading JWTSecret from environment (AT-TLS)");
+            loadJwtSecretFromEnv();
+        } else {
+            log.debug("Loading JWTSecret from TLS configuration");
+            loadJwtSecretFromTlsConfig();
+        }
+    }
+
+    private void loadJwtSecretFromEnv() {
+        try {
+            jwtSecret = SecurityUtils.readPemPrivateKey();
+            jwtPublicKey = SecurityUtils.readPemPublicKey();
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            apimlLog.log("org.zowe.apiml.gateway.jwtInitConfigError", "",e.getMessage());
+        }
+    }
+
+    private void loadJwtSecretFromTlsConfig() {
         HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
             .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
         try {

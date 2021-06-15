@@ -10,65 +10,213 @@ on:
         branches: [ master ]
 
 jobs:
-    UnitAndCITests:
+    BuildAndPackage:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
 
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Cache built artifacts
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        build/libs
+                        api-catalog-services/build/libs
+                        caching-service/build/libs
+                        discoverable-client/build/libs
+                        discovery-service/build/libs
+                        gateway-service/build/libs
+                        integration-tests/build
+                        mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew build -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
+
+
+    CITests:
+        needs: BuildAndPackage
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
         steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-            - name: Set up JDK 1.8
-              uses: actions/setup-java@v1
-              with:
-                  java-version: 1.8
-            - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
-            - name: Build with Gradle
-              run: >
-                  ./gradlew build runCITests --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
-                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
-                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
-                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
-                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-              env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Restore produced jars
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        build/libs
+                        api-catalog-services/build/libs
+                        caching-service/build/libs
+                        discoverable-client/build/libs
+                        discovery-service/build/libs
+                        gateway-service/build/libs
+                        integration-tests/build
+                        mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew runCITests --info
+                    -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+                    -Dcredentials.user=USER -Dcredentials.password=validPassword
+                    -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
             - name: Store results
               uses: actions/upload-artifact@v2
               if: always()
               with:
-                  name: UnitAndCITests
+                  name: CITests
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
+    CITestsRegistration:
+        needs: BuildAndPackage
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Restore produced jars
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        build/libs
+                        api-catalog-services/build/libs
+                        caching-service/build/libs
+                        discoverable-client/build/libs
+                        discovery-service/build/libs
+                        gateway-service/build/libs
+                        integration-tests/build
+                        mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew runRegistrationTests --info
+                    -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+                    -Dcredentials.user=USER -Dcredentials.password=validPassword
+                    -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            - name: Store results
+              uses: actions/upload-artifact@v2
+              if: always()
+              with:
+                  name: CITestsRegistration
+                  path: |
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsInternalPort:
+        needs: BuildAndPackage
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -83,27 +231,43 @@ jobs:
                   java-version: 1.8
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
+            -   name: Restore produced jars
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        build/libs
+                        api-catalog-services/build/libs
+                        caching-service/build/libs
+                        discoverable-client/build/libs
+                        discovery-service/build/libs
+                        gateway-service/build/libs
+                        integration-tests/build
+                        mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runBaseTestsInternalPort -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew runBaseTestsInternalPort -x test --scan --info
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -117,17 +281,15 @@ jobs:
               with:
                   name: CITestsInternalPort
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
-
-    CITestsZosmfRsu2012:
+    CITestsATTLS:
+        needs: BuildAndPackage
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -142,26 +304,120 @@ jobs:
                   java-version: 1.8
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
+            -   name: Restore produced jars
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        build/libs
+                        api-catalog-services/build/libs
+                        caching-service/build/libs
+                        discoverable-client/build/libs
+                        discovery-service/build/libs
+                        gateway-service/build/libs
+                        integration-tests/build
+                        mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            - name: Start nginx proxy
+              run: |
+                  cd docker/nginx
+                  docker-compose up --detach
+            - name: CI Test with Gradle
+              run: >
+                  ./gradlew runCITestsAttls --scan --info
+                  -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+                  -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
+                  -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
+                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+              env:
+                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            - name: Store results
+              uses: actions/upload-artifact@v2
+              if: always()
               with:
+                  name: CITestsATTLS
                   path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
+
+    CITestsZosmfRsu2012:
+        needs: BuildAndPackage
+
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - uses: actions/checkout@v2
               with:
-                  path: |
-                      ~/.npm
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
+                  ref: ${{ github.head_ref }}
+            - name: Set up JDK 1.8
+              uses: actions/setup-java@v1
+              with:
+                  java-version: 1.8
+            - name: Grant execute permission for gradlew
+              run: chmod +x gradlew
+            -   name: Restore produced jars
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        build/libs
+                        api-catalog-services/build/libs
+                        caching-service/build/libs
+                        discoverable-client/build/libs
+                        discovery-service/build/libs
+                        gateway-service/build/libs
+                        integration-tests/build
+                        mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew runZosmfAuthTest --scan --info
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -176,17 +432,16 @@ jobs:
               with:
                   name: CITestsZosmfRsu2012
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
 
     CITestsZosmfWithoutJwt:
+        needs: BuildAndPackage
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -201,26 +456,43 @@ jobs:
                   java-version: 1.8
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
+            -   name: Restore produced jars
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        build/libs
+                        api-catalog-services/build/libs
+                        caching-service/build/libs
+                        discoverable-client/build/libs
+                        discovery-service/build/libs
+                        gateway-service/build/libs
+                        integration-tests/build
+                        mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew runZosmfAuthTest --scan --info
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -235,17 +507,16 @@ jobs:
               with:
                   name: CITestsZosmfWithoutJwt
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
 
     CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
+        needs: BuildAndPackage
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -260,26 +531,43 @@ jobs:
                   java-version: 1.8
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
+            -   name: Restore produced jars
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        build/libs
+                        api-catalog-services/build/libs
+                        caching-service/build/libs
+                        discoverable-client/build/libs
+                        discovery-service/build/libs
+                        gateway-service/build/libs
+                        integration-tests/build
+                        mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
             - name: Build with Gradle
               run: >
-                  ./gradlew build runZosmfAuthTest -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew runZosmfAuthTest --scan --info
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -294,16 +582,15 @@ jobs:
               with:
                   name: CITestsZosmfWithoutJwtWithAuthenticateEndpoint
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWithRedis:
+        needs: BuildAndPackage
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -318,32 +605,47 @@ jobs:
                   java-version: 1.8
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
+            -   name: Restore produced jars
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        build/libs
+                        api-catalog-services/build/libs
+                        caching-service/build/libs
+                        discoverable-client/build/libs
+                        discovery-service/build/libs
+                        gateway-service/build/libs
+                        integration-tests/build
+                        mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
             - name: Start Redis
               run: |
-                  docker run --name redis --publish 6379:6379 --detach redis:6.2.1-alpine
+                  docker-compose -f redis/docker-compose-replica-tls.yml up --detach
 
             - name: Build with Gradle
               run: >
-                  ./gradlew build runCachingServiceTests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew runCachingServiceTests --scan --info
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -352,23 +654,31 @@ jobs:
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  ZWE_CACHING_SERVICE_PERSISTENT: 'inMemory'
+                  ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
+                  CACHING_STORAGE_REDIS_HOST: 'localhost'
+                  CACHING_STORAGE_REDIS_PORT: 6379
+                  CACHING_STORAGE_REDIS_USERNAME: 'default'
+                  CACHING_STORAGE_REDIS_PASSWORD: 'heslo'
+                  CACHING_STORAGE_REDIS_SSL_ENABLED: true
+                  CACHING_STORAGE_REDIS_SSL_KEYSTORE: keystore/localhost/localhost.keystore.p12
+                  CACHING_STORAGE_REDIS_SSL_KEYSTOREPASSWORD: password
+                  CACHING_STORAGE_REDIS_SSL_TRUSTSTORE: keystore/localhost/localhost.truststore.p12
+                  CACHING_STORAGE_REDIS_SSL_TRUSTSTOREPASSWORD: password
             - name: Store results
               uses: actions/upload-artifact@v2
               if: always()
               with:
                   name: CITestsWithRedis
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWithRedisWithoutSslVerification:
+        needs: BuildAndPackage
 
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -383,32 +693,47 @@ jobs:
                   java-version: 1.8
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
+            -   name: Restore produced jars
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        build/libs
+                        api-catalog-services/build/libs
+                        caching-service/build/libs
+                        discoverable-client/build/libs
+                        discovery-service/build/libs
+                        gateway-service/build/libs
+                        integration-tests/build
+                        mock-zosmf/build/libs
+                        onboarding-enabler-nodejs/node_modules
+                        onboarding-enabler-nodejs-sample-app/node_modules
+                    key: ${{ runner.OS }}-artifacts001-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.OS }}-artifacts001-${{ github.sha }}
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
             - name: Start Redis
               run: |
-                  docker run --name redis --publish 6379:6379 --detach redis:6.2.1-alpine
+                  docker-compose -f redis/docker-compose-replica.yml up --detach
 
             - name: Build with Gradle
               run: >
-                  ./gradlew build runCachingServiceTests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true" -Penabler=v1
+                  ./gradlew runCachingServiceTests -x test --scan --info -Pgradle.cache.push=true -DexternalJenkinsToggle="true"
                   -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
                   -Dcredentials.user=USER -Dcredentials.password=validPassword -Dzosmf.host=localhost -Dzosmf.port=10013
                   -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
@@ -417,7 +742,11 @@ jobs:
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  ZWE_CACHING_SERVICE_PERSISTENT: 'inMemory'
+                  ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
+                  CACHING_STORAGE_REDIS_HOST: 'localhost'
+                  CACHING_STORAGE_REDIS_PORT: 6379
+                  CACHING_STORAGE_REDIS_USERNAME: 'default'
+                  CACHING_STORAGE_REDIS_PASSWORD: 'heslo'
                   VERIFY_CERTIFICATES: false
             - name: Store results
               uses: actions/upload-artifact@v2
@@ -425,14 +754,12 @@ jobs:
               with:
                   name: CITestsWithRedisWithoutSslVerification
                   path: |
-                      **/reports/**
-                      **/test-results/**
-                      **/*.log
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
+                      integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
     sonarQubeScan:
 
@@ -440,45 +767,45 @@ jobs:
         timeout-minutes: 20
 
         steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-            - name: Set up JDK 1.11
-              uses: actions/setup-java@v1
-              with:
-                  java-version: 1.11
-            - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle001-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                  key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node001-
-            - name: Build with Gradle
-              run: >
-                  ./gradlew --info --scan coverage sonarqube
-                  -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
-                  -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-              env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            - name: Cleanup Gradle Cache
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
-                  rm -rf ~/.gradle/caches/build-cache-1
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.11
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.11
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew --info coverage sonarqube
+                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1

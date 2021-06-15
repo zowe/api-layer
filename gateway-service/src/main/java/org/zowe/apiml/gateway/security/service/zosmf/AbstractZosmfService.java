@@ -16,14 +16,21 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.client.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.EurekaUtils;
 
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -63,13 +70,19 @@ public abstract class AbstractZosmfService {
 
     /**
      * Methods construct the value of authentication header by credentials
+     *
      * @param authentication credentials to generates header value
      * @return prepared header value (see header Authentication)
      */
     protected String getAuthenticationValue(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
-        final String password = authentication.getCredentials().toString();
-
+        final String password;
+        if (authentication.getCredentials() instanceof LoginRequest) {
+            LoginRequest loginRequest = (LoginRequest) authentication.getCredentials();
+            password = loginRequest.getPassword();
+        } else {
+            password = (String) authentication.getCredentials();
+        }
         final String credentials = user + ":" + password;
         return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
     }
@@ -101,7 +114,7 @@ public abstract class AbstractZosmfService {
      * custom one with better messages and types for subsequent treatment.
      *
      * @param url URL of invoked REST endpoint
-     * @param re original exception
+     * @param re  original exception
      * @return translated exception
      */
     protected RuntimeException handleExceptionOnCall(String url, RuntimeException re) {

@@ -1,8 +1,7 @@
 ext {
-    springBootVersion = '2.3.9.RELEASE'
-    springBootVersionV1 = '1.5.9.RELEASE'
-    springCloudVersion = '2.2.6.RELEASE'
-    springSecurityVersion = '5.1.2.RELEASE'
+    springBootVersion = '2.3.11.RELEASE'
+    springCloudVersion = '2.2.8.RELEASE'
+    springSecurityVersion = '5.3.9.RELEASE'
 
     lombokVersion = '1.18.16'
     slf4jVersion = '1.7.25'
@@ -18,24 +17,24 @@ ext {
     restAssuredVersion = '3.0.7'
     commonsValidatorVersion = "1.7"
     powerMockVersion = "2.0.4"
-    jacksonCoreVersion = "2.10.1"
+    jacksonCoreVersion = "2.11.4"
     javaxValidationApiVersion = "2.0.1.Final"
     gsonVersion = '2.8.2'
     mockitoCoreVersion = '2.23.4'
     zsslVersion = '1.0.0'
     tomcatVersion = '9.0.44' //8.5.33
     commonsLang3Version = '3.7'
-    commonsTextVersion = '1.8'
+    commonsTextVersion = '1.9'
     gradleGitPropertiesVersion = '2.2.4'
     jettyWebSocketClientVersion = '9.4.39.v20210325'
     junitJupiterVersion = '5.5.2'
-    eurekaClientVersion = '1.9.13'
+    eurekaClientVersion = '1.10.14'
     netflixServoVersion = '0.12.28'
     logbackVersion = '1.2.3'
     spring4Version = '4.3.7.RELEASE'
     awaitilityVersion = '3.0.0'
     jjwtVersion = '0.11.1'
-    nimbusJoseJwtVersion = '8.10'
+    nimbusJoseJwtVersion = '8.21'
     velocityVersion = '2.0'
     jsoupVersion = '1.8.3'
     httpCoreVersion = '4.4.14'
@@ -55,10 +54,12 @@ ext {
     jqueryVersion = '3.4.1'
     jsr305Version = '3.0.1'
     javaxInjectVersion = '1'
-    openApiDiffVersion = '2.0.0-beta.6'
+    openApiDiffVersion = '2.0.0-beta.9'
     javaxAnnotationVersion = '1.3.2'
     jaxbApiVersion = '2.3.1'
     attlsVersion = '1.0.0'
+    lettuceVersion = '6.0.2.RELEASE'
+    gradleNodeVersion = '3.0.1'
 
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
@@ -138,6 +139,7 @@ ext {
         jetty_util                         : "org.eclipse.jetty:jetty-util:${jettyWebSocketClientVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
         netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
+        lettuce                            : "io.lettuce:lettuce-core:${lettuceVersion}",
 
         junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
         mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",

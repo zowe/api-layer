@@ -13,17 +13,21 @@ import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.ResponseBody;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 /**
  * This utils serve to test base queries on discovery service to get information about registred services. This is way
@@ -34,10 +38,6 @@ public class DiscoveryUtils {
     public static final String getDiscoveryUrl() {
         DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         return discoveryServiceConfiguration.getScheme() + "://" + discoveryServiceConfiguration.getHost() + ":" + discoveryServiceConfiguration.getPort();
-    }
-
-    public static final List<String> getDiscoveryUrls() {
-        return getInstances("discovery").stream().filter(InstanceInfo.ONLY_UP).map(InstanceInfo::getUrl).collect(Collectors.toList());
     }
 
     public static final List<String> getGatewayUrls() {
@@ -113,10 +113,10 @@ public class DiscoveryUtils {
         private String app;
         private String ipAddr;
         private String status;
-        private Integer port, securePort;
+        private int port, securePort;
 
         public String getUrl() {
-            if (securePort != null) {
+            if (securePort != 0) {
                 return "https://" + hostName + ":" + securePort;
             } else {
                 return "http://" + hostName + ":" + port;

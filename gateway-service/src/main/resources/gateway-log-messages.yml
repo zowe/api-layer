@@ -14,7 +14,7 @@ messages:
       number: ZWEAG500
       type: ERROR
       text: "Client certificate is missing in request."
-      reason: "No client certificate presents in HTTPS request."
+      reason: "No client certificate is present in the HTTPS request."
       action: "Properly configure client to send client certificate."
 
     # Various messages
@@ -86,6 +86,13 @@ messages:
       reason: "The service is not available."
       action: "Make sure that the service is running and is accessible by the URL provided in the message."
 
+    - key: org.zowe.apiml.gateway.loadBalancerDoesNotHaveAvailableServer
+      number: ZWEAG710
+      type: ERROR
+      text: "Load balancer does not have available server for client: %s"
+      reason: "The service is not available. It might be removed by the Circuit Breaker or by requesting specific instance that is not available"
+      action: "Try the request later or remove the request for specific instance."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic
@@ -148,8 +155,8 @@ messages:
       number: ZWEAG108
       type: ERROR
       text: "z/OSMF instance '%s' not found or incorrectly configured. Gateway is shutting down."
-      reason: "The Gateway could not find the z/OSMF instance from the Discovery Service or it could not communicate with provided z/OSMF instance."
-      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that API Mediation Layer can communicate with provided z/OSMF instance."
+      reason: "The Gateway could not find the z/OSMF instance from the Discovery Service or it could not communicate with the provided z/OSMF instance."
+      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that the API Mediation Layer can communicate with provided z/OSMF instance."
 
     - key: org.zowe.apiml.security.zosmfDomainIsEmpty
       number: ZWEAG109

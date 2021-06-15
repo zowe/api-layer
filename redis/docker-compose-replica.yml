@@ -3,19 +3,19 @@ services:
     redis-master:
         container_name: redis-master
         image: redis:latest
-        command: redis-server /usr/local/etc/redis/redis.conf
+        command: redis-server /usr/local/etc/redis/master.conf
         ports:
             - "6379:6379"
         volumes:
-            - ./master:/usr/local/etc/redis/
+            - ./config:/usr/local/etc/redis/
 
     redis-replica:
         container_name: redis-replica
         image: redis:latest
-        command: redis-server /usr/local/etc/redis/redis.conf
+        command: redis-server /usr/local/etc/redis/replica.conf
         ports:
             - "6380:6380"
         volumes:
-            - ./replica:/usr/local/etc/redis/
+            - ./config:/usr/local/etc/redis/
         links:
             - redis-master

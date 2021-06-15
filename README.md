@@ -48,16 +48,16 @@ The following tools are required to build and develop the API Mediation Layer:
 
 **Follow these steps:**
 
-1. Install `concurrently` globally:
-
-  ```sh
-   npm install -g concurrently
-   ```
-
-2. Build all modules:
+1. Build all modules:
 
   ```sh
    ./gradlew build
+   ```
+
+2. Install `concurrently` globally:
+
+  ```sh
+   npm install -g concurrently
    ```
 
 3. Run all service on your local machine:
@@ -110,7 +110,7 @@ For guidelines to onboard services, see [Zowe Docs#Onboarding Overview](https://
 | APIML SDK - Node.js Enabler           | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-nodejs-enabler.html)                                                                                                       |
 | APIML SDK - ZAAS Client               | [README](zaas-client/README.md)                                                                                                                                                         |
 | Sample Service - Java Enabler         | [README](onboarding-enabler-java-sample-app/README.md)                                                                                                                                  |
-|       Sample Service - Spring Enabler | [README](onboarding-enabler-spring-v1-sample-app/README.md)                                                                                                                            |
+|       Sample Service - Spring Enabler | [README](onboarding-enabler-spring-sample-app/README.md)                                                                                                                            |
 |       Sample Service - Micronaut Enabler | [README](onboarding-enabler-micronaut-sample-app/README.md)                                                                                                                            |
 |       Sample Service - NodeJS Enabler | [README](onboarding-enabler-nodejs-sample-app/README.md)                                                                                                                            |
 

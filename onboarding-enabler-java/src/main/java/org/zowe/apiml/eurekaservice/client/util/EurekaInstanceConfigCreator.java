@@ -65,7 +65,7 @@ public class EurekaInstanceConfigCreator {
 
         String protocol = baseUrl.getProtocol();
         result.setNonSecurePort(port);
-        result.setSecurePort(port);
+
 
         switch (protocol) {
             case "http":
@@ -73,6 +73,7 @@ public class EurekaInstanceConfigCreator {
                 result.setHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             case "https":
+                result.setSecurePort(port);
                 result.setSecurePortEnabled(true);
                 result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;

@@ -34,6 +34,74 @@ won't persist.
 
 TO BE DONE
 
+### Redis
+
+Redis is another valid option for the storage to use. The main goal for redis is the running of the storage, and the caching service off platform. 
+
+For development the repository contains docker compose scripts. There are two setups provided.  
+
+1) redis/docker-compose-replica.yml - Starts two containers in master/replica setup.
+2) redis/docker-compose-replica-tls - Starts two containers in master/replica setup with TLS enabled.
+3) redis/docker-compose-sentinel.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails.
+4) redis/docker-compose-sentinel-tls.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails. TLS is enabled.
+
+The first setup works well for testing. In order to properly configure the caching service following configuration is needed either in application.yml in the caching service or passed in via command line parameters.
+
+    caching:
+        storage:
+            mode: redis
+            redis:
+                host: localhost
+                port: 6379
+                username: default
+                password: heslo
+                
+ In order to enable TLS, the following configuration is required:
+ 
+    caching:
+         storage:
+             mode: redis
+             redis:
+                 host: localhost
+                 port: 6379
+                 username: default
+                 password: heslo
+                ssl:
+                    enabled: true
+                    keyStore: ${server.ssl.keyStore}
+                    keyStorePassword: ${server.ssl.keyStorePassword}
+                    trustStore: ${server.ssl.trustStore}
+                    trustStorePassword: ${server.ssl.trustStorePassword}
+                 
+ In order to connect to sentinel, the following configuration can be used:
+ 
+     caching:
+         storage:
+             mode: redis
+             redis:
+                 host: localhost
+                 port: 6379
+                 username: default
+                 password: heslo
+                 sentinel:
+                     master: redismaster
+                     nodes:
+                         - host: localhost
+                           port: 26379
+                           password: sentinelpassword
+                         - host: localhost
+                           port: 26380
+                           password: sentinelpassword
+                         - host: localhost
+                           port: 26381
+                           password: sentinelpassword
+                           
+The library used to connect to Redis, Lettuce, uses node registration information to automatically discover instances downstream from
+the master (in master/replica topology) or the sentinels (in sentinel topology). This means the IP address used to connect from the Caching service
+is the IP address used to register, which with the above docker compose files is the container IP address. This means the Caching service tries to
+connect using the container IP address, which does not resolve properly. The ports are published, however, so if the container IP addresses are aliased
+to localhost, the Caching service can connect. Another option, if running on Linux, is to use a host network in the docker compose file.
+
 ### Additional Storage Support
 
 To add a new implementation it is necessary to provide the library with the implementation

@@ -45,7 +45,7 @@ public class RemoveOldestStrategy implements EvictionStrategy {
             }
         }
 
-        if (oldest != null && mapStoringOldest != null) {
+        if (oldest != null) {
             mapStoringOldest.remove(oldest.getKey());
         }
     }

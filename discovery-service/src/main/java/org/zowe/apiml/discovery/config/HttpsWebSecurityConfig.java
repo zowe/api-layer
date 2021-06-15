@@ -10,13 +10,6 @@
 
 package org.zowe.apiml.discovery.config;
 
-import org.zowe.apiml.security.client.EnableApimlAuth;
-import org.zowe.apiml.security.client.login.GatewayLoginProvider;
-import org.zowe.apiml.security.client.token.GatewayTokenProvider;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.config.HandlerInitializer;
-import org.zowe.apiml.security.common.content.BasicContentFilter;
-import org.zowe.apiml.security.common.content.CookieContentFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -30,19 +23,28 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.zowe.apiml.product.filter.AttlsFilter;
+import org.zowe.apiml.security.client.EnableApimlAuth;
+import org.zowe.apiml.security.client.login.GatewayLoginProvider;
+import org.zowe.apiml.security.client.token.GatewayTokenProvider;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.CookieContentFilter;
 
 import java.util.Collections;
 
 /**
  * Main class configuring Spring security for Discovery Service
- *
+ * <p>
  * This configuration is applied if "https" Spring profile is active
  */
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
 @EnableApimlAuth
-@Profile("https")
+@Profile({"https", "attls"})
 public class HttpsWebSecurityConfig {
 
     private final HandlerInitializer handlerInitializer;
@@ -66,16 +68,17 @@ public class HttpsWebSecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
+
             baseConfigure(http.requestMatchers().antMatchers(
                 "/application/**",
                 "/*"
-                )
+            )
                 .and())
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
-                    .antMatchers("/application/health", "/application/info", "/favicon.ico").permitAll()
-                    .antMatchers("/**").authenticated()
+                .antMatchers("/application/health", "/application/info", "/favicon.ico").permitAll()
+                .antMatchers("/**").authenticated()
                 .and()
                 .httpBasic().realmName(DISCOVERY_REALM);
         }
@@ -93,6 +96,9 @@ public class HttpsWebSecurityConfig {
 
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
+
+        @Value("${server.attls.enabled:false}")
+        private boolean isAttlsEnabled;
 
         @Override
         public void configure(WebSecurity web) {
@@ -112,6 +118,9 @@ public class HttpsWebSecurityConfig {
                 http.authorizeRequests()
                     .anyRequest().authenticated()
                     .and().x509().userDetailsService(x509UserDetailsService());
+                if (isAttlsEnabled) {
+                    http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                }
             } else {
                 http.authorizeRequests().anyRequest().permitAll();
             }
@@ -131,6 +140,9 @@ public class HttpsWebSecurityConfig {
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
 
+        @Value("${server.attls.enabled:false}")
+        private boolean isAttlsEnabled;
+
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
@@ -145,10 +157,14 @@ public class HttpsWebSecurityConfig {
                 .httpBasic().realmName(DISCOVERY_REALM);
             if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
                 http.authorizeRequests().anyRequest().authenticated().and()
-                .x509().userDetailsService(x509UserDetailsService());
+                    .x509().userDetailsService(x509UserDetailsService());
+                if (isAttlsEnabled) {
+                    http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                }
             }
         }
     }
+
 
     private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
         return new BasicContentFilter(

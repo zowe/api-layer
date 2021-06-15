@@ -71,7 +71,15 @@ Last section of this document shows how to import and trust the local CA certifi
   
   * `keystore/client_cert/openssl.conf`
     - openssl Configuration for certificate generation
-    
+
+### Certificates for NGINX proxy (for AT-TLS simulation):
+
+these files get used by NGINX proxy to simulate AT_TLS on CI server.
+
+    * `keystore/localhost/Zowe_Service_Zowe_Development_Instances_Certificate_Authority_.cer`
+    * `keystore/localhost/localca.cer`
+    * `keystore/localhost/trusted_CAs.cer`
+
 ##### How to generate additional client certs using OPENSSL
 
     openssl req -newkey rsa:2048 -keyout PRIVATEKEY.key -out MYCSR.csr -config openssl.conf

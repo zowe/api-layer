@@ -72,7 +72,7 @@ public class Providers {
      * @return True is the instance support JWT
      */
     public boolean zosmfSupportsJwt() {
-        switch (authConfigurationProperties.getZosmfJwtAutoconfiguration()) {
+        switch (authConfigurationProperties.getZosmf().getJwtAutoconfiguration()) {
             case JWT:
                 return true;
             case LTPA:
@@ -89,6 +89,6 @@ public class Providers {
      * @return true if configuration was set to indicate zOSMF supports LTPA.
      */
     public boolean isZosmfConfigurationSetToLtpa() {
-        return authConfigurationProperties.getZosmfJwtAutoconfiguration() == AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.LTPA;
+        return authConfigurationProperties.getZosmf().getJwtAutoconfiguration() == AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.LTPA;
     }
 }

@@ -26,7 +26,7 @@ messages:
       number: ZWEAT403
       type: ERROR
       text: "The user is not authorized to the target resource: %s"
-      reason: "The service has accepted the authentication of the user but the user does not have access right to the resource."
+      reason: "The service has accepted the authentication of the user but the user does not have access rights to the resource."
       action: "Contact your security administrator to give you access."
 
     # TLS,Certificate messages
@@ -38,14 +38,14 @@ messages:
     - key: org.zowe.apiml.security.zosmfNotFound
       number: ZWEAT601
       type: ERROR
-      text: "z/OSMF service name not found. Set parameter apiml.security.auth.zosmfServiceId to your service ID."
+      text: "z/OSMF service name not found. Set parameter apiml.security.auth.zosmf.serviceId to your service ID."
       reason: "The parameter zosmfserviceId was not configured correctly and could not be validated."
-      action: "Ensure that the parameter apiml.security.auth.zosmfServiceId is correctly entered with a valid z/OSMF service ID."
+      action: "Ensure that the parameter apiml.security.auth.zosmf.serviceId is correctly entered with a valid z/OSMF service ID."
 
     - key: org.zowe.apiml.security.common.auth.saf.endpoint.nonZoweClass
       number: ZWEAT602
       type: ERROR
-      text: "The SAF provider `endpoint` supports only resource class 'ZOWE', but current one is '%s'"
+      text: "The SAF provider `endpoint` supports only the resource class 'ZOWE', but the current one is '%s'"
       reason: "The parameter `apiml.security.authorization.provider` is set to `endpoint`"
       action: "Change the SAF provider to another one to use this endpoint"
 
@@ -53,8 +53,8 @@ messages:
       number: ZWEAT603
       type: ERROR
       text: "Endpoint `%s` is not properly configured"
-      reason: "Application cannot call the endpoint to check SAF resource of user"
-      action: "Verify state of ZSS and IZS, then check if parameters `apiml.security.authorization.endpoint.*` are matching."
+      reason: "The application cannot call the endpoint to check the SAF resource of the user"
+      action: "Verify the state of ZSS and IZS, then check if parameters `apiml.security.authorization.endpoint.*` are matching."
 
   # Service specific messages
     # 700-999

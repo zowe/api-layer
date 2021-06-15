@@ -22,14 +22,24 @@ import java.util.Objects;
 public class ConfigReader {
 
     private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
+    private static String configurationFile;
+
+    static {
+        if ("true".equals(System.getProperty("environment.attls"))) {
+            configurationFile = "environment-configuration-attls.yml";
+        } else {
+            configurationFile = "environment-configuration.yml";
+        }
+    }
 
     private static volatile EnvironmentConfiguration instance;
 
     public static EnvironmentConfiguration environmentConfiguration() {
         if (instance == null) {
+            log.info("Actual configuration file: {}", configurationFile);
             synchronized (ConfigReader.class) {
                 if (instance == null) {
-                    final String configFileName = "environment-configuration.yml";
+                    final String configFileName = configurationFile;
                     ClassLoader classLoader = ClassLoader.getSystemClassLoader();
                     File configFile = new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile());
                     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -40,7 +50,7 @@ public class ConfigReader {
                         log.warn("Can't read service configuration from resource file, using default: http://localhost:10010", e);
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
-                            = new GatewayServiceConfiguration("https", "localhost", 10010, 10017, 1, "10010");
+                            = new GatewayServiceConfiguration("https", "https", "localhost", 10010, 10017, 10010, 1, "10010");
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
                         DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("ZOWEAPPL");
 
@@ -79,6 +89,8 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setExternalPort(Integer.parseInt(System.getProperty("gateway.externalPort", String.valueOf(configuration.getGatewayServiceConfiguration().getExternalPort()))));
                     configuration.getGatewayServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
                     configuration.getGatewayServiceConfiguration().setInternalPorts(System.getProperty("gateway.internalPorts", String.valueOf(configuration.getGatewayServiceConfiguration().getInternalPorts())));
+                    configuration.getGatewayServiceConfiguration().setRealPort(Integer.parseInt(System.getProperty("gateway.realPort", String.valueOf(configuration.getGatewayServiceConfiguration().getRealPort()))));
+                    configuration.getGatewayServiceConfiguration().setRealScheme(System.getProperty("gateway.realScheme", String.valueOf(configuration.getGatewayServiceConfiguration().getRealScheme())));
 
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
                     configuration.getDiscoveryServiceConfiguration().setUser(System.getProperty("discovery.user", configuration.getDiscoveryServiceConfiguration().getUser()));
@@ -95,6 +107,7 @@ public class ConfigReader {
                     instance = configuration;
                 }
             }
+            log.info("Actual configuration: {}", instance);
         }
 
         return instance;
@@ -112,7 +125,7 @@ public class ConfigReader {
     private static char[] getSystemPropertyCharArray(String name, char[] defaultValue) {
         String value = System.getProperty(name);
         if (StringUtils.isEmpty(value)) return defaultValue;
-        return  value.toCharArray();
+        return value.toCharArray();
     }
 
     private static void setTlsConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {

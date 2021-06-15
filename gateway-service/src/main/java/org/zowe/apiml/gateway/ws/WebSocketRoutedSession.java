@@ -12,8 +12,10 @@ package org.zowe.apiml.gateway.ws;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.api.UpgradeException;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -24,6 +26,7 @@ import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -83,8 +86,30 @@ public class WebSocketRoutedSession {
             return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (IllegalStateException e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, true);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
+        } catch (ExecutionException e) {
+            throw handleExecutionException(targetUrl, e, webSocketServerSession, false);
         } catch (Exception e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
+        }
+    }
+
+    private WebSocketProxyError handleExecutionException(String targetUrl, ExecutionException cause, WebSocketSession webSocketServerSession, boolean logError) {
+        if (cause.getCause() != null && cause.getCause().getCause() instanceof UpgradeException) {
+            UpgradeException upgradeException = (UpgradeException) cause.getCause().getCause();
+            if (upgradeException.getResponseStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
+                String message = "Invalid login credentials";
+                if (logError) {
+                    log.debug(message);
+                }
+                return new WebSocketProxyError(message, cause, webSocketServerSession);
+            } else {
+                return webSocketProxyException(targetUrl, cause, webSocketServerSession, logError);
+            }
+        } else {
+            return webSocketProxyException(targetUrl, cause, webSocketServerSession, logError);
         }
     }
 

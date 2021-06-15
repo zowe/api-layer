@@ -8,7 +8,8 @@ apiml:
     security:
         auth:
             provider: zosmf
-            zosmfServiceId: mockzosmf  # Replace me with the correct z/OSMF service id
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
         ssl:
@@ -17,6 +18,10 @@ apiml:
             enabled: true
     banner: console
 
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
 spring:
     output:
         ansi:
@@ -29,6 +34,9 @@ server:
     internal:
         enabled: true
         port: 10017
+        ssl:
+            keyAlias: localhost-multi
+            keyStore: keystore/localhost/localhost-multi.keystore.p12
     ssl:
         keyAlias: localhost-multi
         keyPassword: password

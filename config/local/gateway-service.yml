@@ -8,7 +8,8 @@ apiml:
     security:
         auth:
             provider: zosmf
-            zosmfServiceId: mockzosmf  # Replace me with the correct z/OSMF service id
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
         ssl:
@@ -45,3 +46,13 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+
+---
+spring:
+    profiles: attls
+
+apiml:
+    service:
+        scheme: http
+        discoveryServiceUrls: http://localhost:10001/eureka/
+

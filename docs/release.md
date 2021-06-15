@@ -3,26 +3,26 @@
 ## Guidelines
 
 - Master build creates a new [_snapshot_](https://stackoverflow.com/questions/5901378/what-exactly-is-a-maven-snapshot-and-why-do-we-need-it) that is deployed to [libs-snapshot repository in Zowe Artifactory](https://zowe.jfrog.io/zowe/libs-snapshot/org/zowe/apiml/sdk/ ) automatically.
-- When the contents of the master are stable and contains new functionality or bugfixes, a new release is created by starting a Jenkins job [api-layer-release](https://wash.zowe.org:8443/job/api-layer-release/build?delay=0sec).
+- The patch releases are released weekly every Friday. The minor release is being release when the Zowe version goes GA
 - Artifacts are deployed to [lib-release repository](https://zowe.jfrog.io/zowe/libs-release/org/zowe/apiml/sdk/).
 - The versioning follows [semantic versioning](https://semver.org/):
-  - Patch versions are created only when fixes are made. Patch versions are not created when chages are made to external APIs and user functionality.
-    - [zowe-install-packaging/manifest.json.template](https://github.com/zowe/zowe-install-packaging/blob/master/manifest.json.template) includes the latest patch version.
-  - Minor versions versions are updated when new functionality is delivered. Typically, this occurs after each sprint when existing functionality remains the same.
-    - [zowe-install-packaging/manifest.json.template](https://github.com/zowe/zowe-install-packaging/blob/master/manifest.json.template) needs to be updated to select a new minor or major version.
-  - The major version number increases when a backward incompatible change is introduced.
-  - The API ML is a part of the Zowe PAX file that is packaged by builds of the [zowe-install-packaging](https://github.com/zowe/zowe-install-packaging/) repository.
-    - When a new release is available for a release candidate, the [zowe-install-packaging/manifest.json.template file on the RC branch](https://github.com/zowe/zowe-install-packaging/blob/rc/manifest.json.template) needs to be updated so the `org.zowe.apiml.sdk.*` components have the proper version.
-  - [Zowe Release Process](https://github.com/zowe/zlc/blob/master/process/release.md)
-  - Currently, there are issues with Gateway acceptance tests on the release pipeline. They can be disabled via `@Disabled` to allow a release.
+- The API ML is a part of the Zowe PAX file that is packaged by builds of the [zowe-install-packaging](https://github.com/zowe/zowe-install-packaging/) repository.
+- When a new release is available for a release candidate, the [zowe-install-packaging/manifest.json.template file on the RC branch](https://github.com/zowe/zowe-install-packaging/blob/rc/manifest.json.template) needs to be updated so the `org.zowe.apiml.sdk.*` components have the proper version.
+  - [Zowe Release Process](https://github.com/zowe/community/blob/master/Technical-Steering-Committee/release.md)
+- If you need to publish PR version of the API ML, use the specific release action and use the current snapshot version as new version and current released version with added PR as the current version {VERSION}-PR-{PR_NUMBER} and run from the branch for the PR you want to release. Example follows:
+  - Current Version: 1.22.1-PR-1475
+  - New Version: 1.22.2-SNAPSHOT
+  - Branch: apiml/GH1456/specific_release
+  
+## GitHub actions
 
-## Jenkins release job
-
-https://wash.zowe.org:8443/job/api-layer-release/build?delay=0sec
+- Snapshot release - https://github.com/zowe/api-layer/actions/workflows/snapshot-release.yml
+- Automated release (patch, minor, major) - https://github.com/zowe/api-layer/actions/workflows/release.yml
+- Specific release - https://github.com/zowe/api-layer/actions/workflows/specific-release.yml
 
 ## Commands
 
-The commands are listed for reference. Use the Jenkins job to execute them.
+The commands are listed for reference. Use the GitHub Actions to execute them. The following commands are relevant only for Java artifacts. 
 
 ### Release SNAPSHOT artifacts
 
@@ -56,7 +56,7 @@ You can set properties in two ways:
 
 **Warning!** Do not commit property changes to the Git repository. This is confidential information.
 
-Properties are stored in Jenkins Credentials: https://wash.zowe.org:8443/credentials/store/system/domain/_/credential/zowe/
+Properties are stored in GitHub Secrets
 
 ## Update changelog
 

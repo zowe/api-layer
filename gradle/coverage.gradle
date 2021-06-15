@@ -18,7 +18,8 @@ ext.javaProjectsWithUnitTests = [
     'onboarding-enabler-micronaut',
     'onboarding-enabler-micronaut-sample-app',
     'apiml-security-common',
-    'zaas-client'
+    'zaas-client',
+    'certificate-analyser'
 ]
 
 ext.jacocoProjects = subprojects.findAll { it.name in javaProjectsWithUnitTests }
@@ -73,5 +74,5 @@ task jacocoFullReport(type: JacocoReport) {
 }
 
 task coverage() {
-    dependsOn jacocoFullReport, ":api-catalog-ui:test"
+    dependsOn jacocoFullReport, ":api-catalog-ui:test", "metrics-service-ui:test"
 }

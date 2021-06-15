@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,9 +34,9 @@ class ZosAuthenticationProviderTests {
     private static AuthenticationService mockService;
 
     private UsernamePasswordAuthenticationToken VALID_TOKEN = new UsernamePasswordAuthenticationToken(VALID_USERID,
-        VALID_PASSWORD);
+        new LoginRequest(VALID_USERID, VALID_PASSWORD));
     private UsernamePasswordAuthenticationToken INVALID_TOKEN = new UsernamePasswordAuthenticationToken(INVALID_USERID,
-        INVALID_PASSWORD);
+        new LoginRequest(INVALID_USERID, INVALID_PASSWORD));
 
     @BeforeAll
     static void setup() {

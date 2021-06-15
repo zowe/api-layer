@@ -9,16 +9,20 @@
  */
 package org.zowe.apiml.util.config;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class GatewayServiceConfiguration {
     private String scheme;
+    private String realScheme;
     private String host;
     private int port;
     private int externalPort;
+    private int realPort;
     private int instances;
     private String internalPorts;
 }

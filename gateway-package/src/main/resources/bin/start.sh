@@ -48,6 +48,11 @@ then
     LOG_LEVEL=$DIAG_MODE
 fi
 
+if [[ -z ${PKCS11_TOKEN_LABEL} && ! -z ${APIML_SECURITY_AUTH_JWTKEYALIAS} ]]
+then
+    PKCS11_TOKEN_LABEL=${APIML_SECURITY_AUTH_JWTKEYALIAS}
+fi
+
 if [[ -z ${APIML_GATEWAY_CATALOG_ID} ]]
 then
     APIML_GATEWAY_CATALOG_ID="apicatalog"
@@ -84,6 +89,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
+    -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
     -Dapiml.service.port=${GATEWAY_PORT} \
@@ -98,13 +104,14 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.gateway.timeoutMillis=${APIML_GATEWAY_TIMEOUT_MILLIS} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
-    -Dapiml.security.auth.zosmfServiceId=${APIML_ZOSMF_ID:-zosmf} \
+    -Dapiml.security.auth.zosmf.serviceId=${APIML_ZOSMF_ID:-zosmf} \
     -Dapiml.security.auth.provider=${APIML_SECURITY_AUTH_PROVIDER} \
+    -Dapiml.security.auth.jwtKeyAlias=${PKCS11_TOKEN_LABEL:-jwtsecret} \
     -Dapiml.zoweManifest=${ZOWE_MANIFEST} \
     -Dserver.address=0.0.0.0 \
     -Dserver.maxConnectionsPerRoute=${APIML_MAX_CONNECTIONS_PER_ROUTE:-10} \
     -Dserver.maxTotalConnections=${APIML_MAX_TOTAL_CONNECTIONS:-100} \
-    -Dserver.ssl.enabled=true \
+    -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true} \
     -Dserver.ssl.keyStore=${KEYSTORE} \
     -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
@@ -114,10 +121,11 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.internal.enabled=${APIML_GATEWAY_INTERNAL_ENABLED:-false} \
+    -Dserver.internal.ssl.enabled=${APIML_SSL_ENABLED:-true} \
     -Dserver.internal.port=${APIML_GATEWAY_INTERNAL_PORT:-10017} \
     -Dserver.internal.ssl.keyAlias=${APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS:-localhost-multi} \
     -Dserver.internal.ssl.keyStore=${APIML_GATEWAY_INTERNAL_SSL_KEYSTORE:-keystore/localhost/localhost-multi.keystore.p12} \
-    -Dapiml.security.auth.zosmfJwtAutoconfiguration=${APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE:-auto} \
+    -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE:-auto} \
     -Dapiml.security.x509.enabled=${APIML_SECURITY_X509_ENABLED:-false} \
     -Dapiml.security.x509.externalMapperUrl=${APIML_GATEWAY_EXTERNAL_MAPPER} \
     -Dapiml.security.x509.externalMapperUser=${APIML_GATEWAY_MAPPER_USER:-ZWESVUSR} \

@@ -1,0 +1,77 @@
+credentials:
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: USER
+    password: validPassword
+gatewayServiceConfiguration:
+    scheme: https
+    host: localhost
+    port: 10030
+    internalPorts: 10030
+    externalPort: 10030
+    # for ATTLS external testing, there is proxy server for integration tests on external env, this is actual GW port to verify returned value
+    realPort: 10010
+    # for ATTLS external testing, there is proxy server for integration tests on external env, this is actual GW scheme to verify returned value
+    realScheme: http
+    instances: 1
+discoveryServiceConfiguration:
+    scheme: http
+    user: user
+    password: user
+    host: localhost
+    port: 10001
+    instances: 1
+discoverableClientConfiguration:
+    applId: ZOWEAPPL
+tlsConfiguration:
+    keyAlias: localhost
+    keyPassword: password
+    keyStoreType: PKCS12
+    keyStore: ../keystore/localhost/localhost.keystore.p12
+    clientKeystore: ../keystore/client_cert/client-certs.p12
+    keyStorePassword: password
+    trustStoreType: PKCS12
+    trustStore: ../keystore/localhost/localhost.truststore.p12
+    trustStorePassword: password
+zosmfServiceConfiguration:
+    scheme: http
+    host: localhost
+    port: 10013
+    serviceId: mockzosmf
+auxiliaryUserList:
+    value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
+instanceEnv:
+    CMMN_LB: build/libs/api-layer-lite-lib-all.jar
+    ZOWE_EXPLORER_HOST: localhost
+    ZOWE_PREFIX: ZWE
+    CATALOG_PORT: 10014
+    DISCOVERY_PORT: 10011
+    GATEWAY_PORT: 10010
+    APIML_ALLOW_ENCODED_SLASHES: true
+    APIML_PREFER_IP_ADDRESS: false
+    APIML_GATEWAY_TIMEOUT_MILLIS: 10000
+    APIML_SECURITY_X509_ENABLED: true
+    APIML_SECURITY_AUTH_PROVIDER: zosmf
+    ZOWE_IP_ADDRESS: 127.0.0.1
+    APIML_GATEWAY_URL: http://localhost:10010
+    APIML_SPRING_PROFILES: attls
+    ZWE_DISCOVERY_SERVICES_LIST: http://localhost:10001/eureka/
+    WORKSPACE_DIR: ./workspace
+    APIML_MAX_CONNECTIONS_PER_ROUTE: 10
+    APIML_MAX_TOTAL_CONNECTIONS: 100
+    APIML_CORS_ENABLED: true
+    APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE: JWT
+    STATIC_DEF_CONFIG_DIR: config/local/api-defs-http
+    APIML_GATEWAY_INTERNAL_ENABLED: false
+    APIML_GATEWAY_INTERNAL_PORT: 10010
+    APIML_DIAG_MODE_ENABLED: diag
+    APIML_GATEWAY_CATALOG_ID: apicatalog
+    APIML_ZOSMF_ID: mockzosmf
+    ZWE_CACHING_SERVICE_PORT: 10016
+    ZWE_CACHING_EVICTION_STRATEGY: reject
+    ZWE_CACHING_STORAGE_SIZE: 100
+    VERIFY_CERTIFICATES: true
+    APIML_SSL_ENABLED: false
+    EUREKA_CLIENT_REGISTRY-FETCH-INTERVAL-SECONDS: 5
+    EUREKA_INSTANCE_LEASE-EXPIRATION-DURATION-IN-SECONDS: 45
+    EUREKA_SERVER_LEASERENEWALINTERVALINSECONDS: 10
+    EUREKA_SERVER_RENEWAL-PERCENT-THRESHOLD: 0.85

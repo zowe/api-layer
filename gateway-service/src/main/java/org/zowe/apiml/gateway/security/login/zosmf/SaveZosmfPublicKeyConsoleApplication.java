@@ -40,7 +40,7 @@ public class SaveZosmfPublicKeyConsoleApplication {
     public static boolean saveJWTSecretWithJWKFromZosmf(RestTemplate restTemplate, String[] args) {
         String jwkUrl = args[0];
         String filename = args[1];
-        String zosmfJwtBuilderPath = System.getProperty("apiml.security.auth.zosmfJwtEndpoint", "/jwt/ibm/api/zOSMFBuilder/jwk");
+        String zosmfJwtBuilderPath = System.getProperty("apiml.security.auth.zosmf.jwtEndpoint", "/jwt/ibm/api/zOSMFBuilder/jwk");
         ZosmfJwkToPublicKey zosmfJwkToPublicKey = new ZosmfJwkToPublicKey(restTemplate, zosmfJwtBuilderPath);
 
         System.out.printf("Loading public key of z/OSMF at %s%n", jwkUrl); // NOSONAR

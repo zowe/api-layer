@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.acceptance.netflix;
 
+import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.MyDataCenterInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +45,7 @@ public class ApplicationRegistry {
      * @param service    Details of the service to be registered in the Gateway
      * @param addTimeout Whether the custom metadata should be provided for given service.
      */
-    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled) {
+    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances) {
         String id = service.getId();
         String locationPattern = service.getLocationPattern();
         String serviceRoute = service.getServiceRoute();
@@ -53,7 +55,10 @@ public class ApplicationRegistry {
 
         Map<String, String> metadata = createMetadata(addTimeout, corsEnabled);
 
-        withMetadata.addInstance(getStandardInstance(metadata, id));
+        withMetadata.addInstance(getStandardInstance(metadata, id, id));
+        if (multipleInstances) {
+            withMetadata.addInstance(getStandardInstance(metadata, id, id + "-copy"));
+        }
         applications.addApplication(withMetadata);
         ZuulProperties.ZuulRoute route = new ZuulProperties.ZuulRoute(locationPattern, service.getId());
         zuulRouteLinkedHashMap.put(locationPattern, route);
@@ -117,12 +122,14 @@ public class ApplicationRegistry {
         }
     }
 
-    private InstanceInfo getStandardInstance(Map<String, String> metadata, String serviceId) {
+    private InstanceInfo getStandardInstance(Map<String, String> metadata, String serviceId, String instanceId) {
         return InstanceInfo.Builder.newBuilder()
             .setAppName(serviceId)
+            .setInstanceId(instanceId)
             .setHostName("localhost")
             .setVIPAddress(serviceId)
             .setMetadata(metadata)
+            .setDataCenterInfo(new MyDataCenterInfo(DataCenterInfo.Name.MyOwn))
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .build();
     }
@@ -135,6 +142,7 @@ public class ApplicationRegistry {
             metadata.put("apiml.connectionManagerTimeout", "5000");
             metadata.put("apiml.okToRetryOnAllOperations", "true");
         }
+        metadata.put("apiml.lb.instanceIdHeader","enabled");
         metadata.put("apiml.corsEnabled", String.valueOf(corsEnabled));
         metadata.put("apiml.routes.gateway-url", "/");
         return metadata;

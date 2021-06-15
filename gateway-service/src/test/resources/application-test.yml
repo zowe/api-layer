@@ -33,7 +33,8 @@ apiml:
             verifySslCertificatesOfServices: true
         auth:
             provider: dummy
-            zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id
+            zosmf:
+                serviceId: zosmf  # Replace me with the correct z/OSMF service id
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
             jwtKeyAlias: jwtSecret
@@ -156,10 +157,7 @@ eureka:
     instance:
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
-        port: ${server.port}
-        securePort: ${server.port}
-        nonSecurePortEnabled: false # must be set to false if you are using SSL
-        securePortEnabled: ${server.ssl.enabled}
+        #ports are computed in code
         preferIpAddress: ${apiml.service.preferIpAddress}
         homePageUrl: ${apiml.service.scheme}://${apiml.gateway.hostname}:${apiml.service.port}/
         statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info

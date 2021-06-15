@@ -25,6 +25,7 @@ apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
     routing:
         mode: new
+        instanceIdHeader: false
     service:
         # The `apiml.service` node contains information required by any APIML service
         id: gateway  # Service ID of this service. It is fixed for APIML API Gateway
@@ -38,6 +39,9 @@ apiml:
 
     catalog:
         serviceId: apicatalog
+    metrics:
+        serviceId: metrics-service
+        enabled: false
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
@@ -175,10 +179,7 @@ eureka:
     instance:
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
-        port: ${server.internal.port}
-        securePort: ${server.internal.port}
-        nonSecurePortEnabled: false # must be set to false if you are using SSL
-        securePortEnabled: ${server.ssl.enabled}
+        #ports are computed in code
         preferIpAddress: ${apiml.service.preferIpAddress}
         homePageUrl: ${apiml.service.scheme}://${apiml.gateway.hostname}:${apiml.service.port}/
         statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
@@ -206,6 +207,7 @@ eureka:
                     description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
                 authentication:
                     sso: true
+
     client:
         fetchRegistry: true
         registerWithEureka: true
@@ -261,3 +263,25 @@ spring:
         - diag
 
 logbackServiceName: ZWEAGW1
+
+---
+spring:
+    profiles: attls
+
+server:
+    internal:
+        ssl:
+            enabled: false
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+        discoveryServiceUrls: http://localhost:10001/eureka/
+apiml:
+    service:
+        scheme: http
+zuul.debug.request: false
+

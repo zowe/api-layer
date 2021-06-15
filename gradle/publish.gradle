@@ -9,14 +9,16 @@ ext.javaLibraries = [
     'apiml-common',
     'apiml-security-common',
     'caching-service',
+    'metrics-service',
     'discovery-service',
     'gateway-service',
     'security-service-client-spring',
     'zaas-client',
-    'discoverable-client'
+    'discoverable-client',
+    'certificate-analyser'
 ]
 
-ext.serviceJars = [ 'api-catalog-package', 'discovery-package', 'gateway-package', 'caching-service-package', 'apiml-common-lib-package' ]
+ext.serviceJars = [ 'api-catalog-package', 'discovery-package', 'gateway-package', 'caching-service-package', 'metrics-service-package','apiml-common-lib-package' ]
 
 ext.enablers = [ext.javaEnabler, ext.springBootEnabler, ext.micronautEnabler]
 ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
