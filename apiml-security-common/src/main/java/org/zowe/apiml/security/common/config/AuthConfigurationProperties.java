@@ -10,6 +10,7 @@
 package org.zowe.apiml.security.common.config;
 
 import lombok.Data;
+import org.apache.tomcat.util.http.SameSiteCookies;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
@@ -77,18 +78,7 @@ public class AuthConfigurationProperties {
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
         private Integer cookieMaxAge = -1;
-        private CookieSameSiteAttribute cookieSameSite = CookieSameSiteAttribute.LAX;
-    }
-
-    public enum CookieSameSiteAttribute {
-        NONE,
-        LAX,
-        STRICT;
-
-        @Override
-        public String toString() {
-            return this.name().toLowerCase();
-        }
+        private SameSiteCookies cookieSameSite = SameSiteCookies.LAX;
     }
 
     @Data

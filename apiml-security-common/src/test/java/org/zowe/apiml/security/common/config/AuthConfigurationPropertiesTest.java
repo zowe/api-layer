@@ -32,8 +32,8 @@ class AuthConfigurationPropertiesTest {
     }
 
     @Test
-    void whenGetCookieSameSite_thenReturnLowercase() {
-        String sameSite = authConfigurationProperties.getCookieProperties().getCookieSameSite().toString();
-        assertEquals("lax", sameSite);
+    void whenGetDefaultCookieSameSite_thenReturnLax() {
+        String sameSite = authConfigurationProperties.getCookieProperties().getCookieSameSite().getValue();
+        assertEquals("Lax", sameSite);
     }
 }
