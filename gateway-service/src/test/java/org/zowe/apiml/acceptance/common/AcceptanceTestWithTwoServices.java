@@ -49,8 +49,8 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @BeforeEach
     public void prepareApplications() {
         applicationRegistry.clearApplications();
-        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, false);
-        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, true);
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, false, false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, true, false);
     }
 
     protected void mockValid200HttpResponse() throws IOException {
@@ -59,10 +59,10 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
 
     protected void mockValid200HttpResponseWithAddedCors() throws IOException {
         mockValid200HttpResponseWithHeaders(new Header[]{
-            new BasicHeader("Access-Control-Allow-Origin","test"),
-            new BasicHeader("Access-Control-Allow-Methods","RANDOM"),
-            new BasicHeader("Access-Control-Allow-Headers","origin,x-test"),
-            new BasicHeader("Access-Control-Allow-Credentials","true"),
+            new BasicHeader("Access-Control-Allow-Origin", "test"),
+            new BasicHeader("Access-Control-Allow-Methods", "RANDOM"),
+            new BasicHeader("Access-Control-Allow-Headers", "origin,x-test"),
+            new BasicHeader("Access-Control-Allow-Credentials", "true"),
         });
     }
 

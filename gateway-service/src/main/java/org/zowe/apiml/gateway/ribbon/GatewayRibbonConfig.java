@@ -9,17 +9,24 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.*;
+import org.springframework.core.env.MapPropertySource;
+import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Configuration of client side load balancing with Ribbon
@@ -54,30 +61,70 @@ public class GatewayRibbonConfig {
         return client;
     }
 
+    /**
+     *
+     * Main place where load balancer is constructed. Here is where we plug in the {@link LoadBalancerRuleAdapter}
+     * to act as a rule for selecting servers.
+     *
+     * The factory for predicates is also initialized here with information fom InstanceInfo
+     *
+     * Called at first request's invocation and bean is service-scoped (1 bean per serviceId)
+     *
+     * @param config Ribbon's client config
+     * @param serverList List of available servers
+     * @param serverListFilter Not sure
+     * @param ping Server probing mechanism (initialized as server list from Discovery)
+     * @param serverListUpdater Not sure
+     * @param loadBalancerRegistry Keeps track of all load balancer beans
+     * @param predicateFactory Factory for creating predicates for server filtering
+     * @return Initialized load balancer bean
+     */
     @Bean
     @Primary
     @Autowired
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
                                             IPing ping, ServerListUpdater serverListUpdater,
-                                            LoadBalancerRegistry loadBalancerRegistry, PredicateFactory predicateFactory) {
+                                            LoadBalancerRegistry loadBalancerRegistry, ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory) {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
 
         InstanceInfoExtractor infoExtractor = new InstanceInfoExtractor(serverList.getInitialListOfServers());
 
+        InstanceInfo randomInstanceInfo = infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available"));
+
+        Map<String, Object> metadataMap = new HashMap<>();
+        randomInstanceInfo.getMetadata().forEach(
+            (key, value) -> metadataMap.put(LoadBalancerConstants.getMetadataPrefix() + key, value)
+        );
+
+        predicateFactory.addInitializer(randomInstanceInfo.getAppName(), context ->
+            context.getEnvironment().getPropertySources()
+                .addFirst( new MapPropertySource("InstanceInfoMetadata", metadataMap))
+        );
+
         IRule rule = new LoadBalancerRuleAdapter(
-            infoExtractor.getInstanceInfo().orElseThrow(() -> new IllegalStateException("Not able to retrieve InstanceInfo from server list, Load balancing is not available")),
+            randomInstanceInfo,
             predicateFactory, config);
 
         return new ApimlLoadBalancer<>(config, rule, ping, serverList,
             serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
 
+    /**
+     * Factory for load balancer predicates
+     *
+     * Takes in {@link LoadBalancingPredicatesRibbonConfig} which specifies the composition of load
+     * balancer predicates.
+     *
+     * This is static now, but in the future can be wired in as a bean to allow broader extensibility
+     *
+     */
     @Bean
-    public PredicateFactory predicateFactory() {
-        return new PredicateFactory(RibbonClientConfiguration.class, "ribbon", "ribbon.client.name");
+    public ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory() {
+        return new ConfigurableNamedContextFactory<>(LoadBalancingPredicatesRibbonConfig.class, "contextConfiguration",
+            LoadBalancerConstants.INSTANCE_KEY + LoadBalancerConstants.SERVICEID_KEY);
     }
 
 }

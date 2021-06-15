@@ -151,7 +151,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
                 URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(
                     PASSTICKET_TEST_ENDPOINT,
-                    Collections.singletonList(new BasicNameValuePair("applid", "XBADAPPL"))
+                    Collections.singletonList(new BasicNameValuePair("applId", "XBADAPPL"))
                 );
 
                 given()

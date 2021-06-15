@@ -2,6 +2,22 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `1.22.0 (2021-06-14)`
+
+* Feature: Deterministic routing based on the provided headers is now available. Clients can now specify which instance of a service the user should be routed to. This enables reusability of underlying resources such as LPARs associated with a specific service instance (#1496) ([ed91f25](https://github.com/zowe/api-layer/commit/ed91f25)), closes [#1496](https://github.com/zowe/api-layer/issues/1496).
+* Feature: Basic authentication via Websocket is now fully supported (#1482) ([112da99](https://github.com/zowe/api-layer/commit/112da99)), closes [#1482](https://github.com/zowe/api-layer/issues/1482).
+* Feature: Passwords can be changed via SAF. An endpoint is exposed allowing users to change passwords using this API ML endpoint (#1471) ([3f3c2af](https://github.com/zowe/api-layer/commit/3f3c2af)), closes [#1471](https://github.com/zowe/api-layer/issues/1471).
+* Feature: A self-service application is now available that can run in the infrastructure of the user to verify whether certificates are properly created and configured (#1441) ([e694c0f](https://github.com/zowe/api-layer/commit/e694c0f)), closes [#1441](https://github.com/zowe/api-layer/issues/1441)
+
+
+* Bugfix: Use the apiml.service.id in the API Catalog as used in other services. (#1475) ([7bc8f99](https://github.com/zowe/api-layer/commit/7bc8f99)), closes [#1475](https://github.com/zowe/api-layer/issues/1475)
+* Bugfix: Change the registration to use the correct hostname in `instanceId` (#1473) ([1d6caa8](https://github.com/zowe/api-layer/commit/1d6caa8)), closes [#1473](https://github.com/zowe/api-layer/issues/1473)
+* Bugfix: The HTTP client is not closed when generating a passticket. The ZAAS client can now reuse connections and provide correct login with passtickets (#1470) ([ed9f929](https://github.com/zowe/api-layer/commit/ed9f929)), closes [#1470](https://github.com/zowe/api-layer/issues/1470).
+* Bugfix: Configurable jwt alias at startup via environment variable (#1442) ([0e3df7a](https://github.com/zowe/api-layer/commit/0e3df7a)), closes [#1442](https://github.com/zowe/api-layer/issues/1442)
+* Bugfix: Use the actual hostname instead of the one provided by Spring Cloud (#1434) ([6b8c38a](https://github.com/zowe/api-layer/commit/6b8c38a)), closes [#1434](https://github.com/zowe/api-layer/issues/1434)
+* Bugfix: Distinguish lib and fat jars (#1398) ([f771a40](https://github.com/zowe/api-layer/commit/f771a40)), closes [#1398](https://github.com/zowe/api-layer/issues/1398)
+* Bugfix: Accept list of Discovery services in the Catalog. If the Catalog fails to contact to the Discovery service, the Catalog tries to contact another service from the list (#1376) ([42ae70d](https://github.com/zowe/api-layer/commit/42ae70d)), closes [#1376](https://github.com/zowe/api-layer/issues/1376)
+
 ## `1.21.1 (2021-04-26)`
 
 * Feature: Configuration of the API ML run is now permitted where the hostname in the certificate is not verified in a strict manner. The certificate Common Name or Subject Alternate Name (SAN) are NOT checked. This facilitates deployment to Marist when certificates are valid but do not contain a valid hostname. This is for development purposes only and should not be used for production. (#1334) ([2da761a](https://github.com/zowe/api-layer/commit/2da761a)), closes [#1334](https://github.com/zowe/api-layer/issues/1355) 

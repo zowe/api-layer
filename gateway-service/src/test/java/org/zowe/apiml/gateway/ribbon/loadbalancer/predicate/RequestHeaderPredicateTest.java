@@ -67,7 +67,7 @@ class RequestHeaderPredicateTest {
         }
 
         @ParameterizedTest(name = "{index} - testedHeader: {0} ")
-        @CsvSource(value = {"x-host", "X-HOST", "x-HosT"})
+        @CsvSource(value = {"X-InstanceId", "x-instanceid", "X-INSTANCEID"})
         void filtersOnInstanceId(String headerName) {
             httpServletRequest.addHeader(headerName, "server1");
             RequestHeaderPredicate predicate = new RequestHeaderPredicate();
