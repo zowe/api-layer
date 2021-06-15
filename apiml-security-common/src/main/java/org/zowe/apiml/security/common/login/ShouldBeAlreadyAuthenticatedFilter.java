@@ -21,6 +21,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * This filter stops processing of security filter chain. After {@link NonCompulsoryAuthenticationProcessingFilter} instances are processed
+ * without producing a valid Authentication, this filter is intended to stop the chain processing
+ * and signal authentication failure.
+ */
 public class ShouldBeAlreadyAuthenticatedFilter extends AbstractAuthenticationProcessingFilter {
 
     private final AuthenticationFailureHandler failureHandler;
