@@ -94,7 +94,7 @@ jobs:
                 volumes:
                     - /$(pwd)/docker/nginx/load-balancer.conf:/etc/nginx
                     #                    - ./docker/nginx/conf/nginx.conf:/etc/nginx/conf.d/nginx.conf
-                    - /$(pwd)/keystore:/etc/ssl/private
+                    - /$(pwd)/keystore/docker:/etc/ssl/private
             #                    - ./keystore:/etc/ssl/private
             #                extra_hosts:
             #                    host.docker.internal: host-gateway
