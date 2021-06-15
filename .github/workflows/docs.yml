@@ -4,6 +4,7 @@ on:
     schedule:
         # * is a special character in YAML so you have to quote this string
         - cron:  '0 0 * * 5'
+    workflow_dispatch:
 
 jobs:
     analyze:
@@ -33,7 +34,7 @@ jobs:
                   git config --global user.name "Zowe Robot"
                   cd ../scripts/docs
                   npm install
-                  node index.js zowe api-layer ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.pull_request.number }}
+                  node index.js zowe api-layer ${{ secrets.ZOWE_ROBOT_TOKEN }}
 
 
             - name: Store results
