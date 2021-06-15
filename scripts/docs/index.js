@@ -2,7 +2,7 @@ import {Octokit} from "octokit";
 import {readFile} from "fs/promises";
 import {execSync} from "child_process";
 const {
-    createHash,
+    randomBytes,
 } = await import('crypto');
 
 // Get the directory with files
@@ -10,7 +10,7 @@ const owner = process.argv[2];
 const repository = process.argv[3];
 const githubToken = process.argv[4];
 // replace with short hash
-const branchHash = createHash("sha256");
+const branchHash = randomBytes(32).toString('hex');
 
 (async function () {
 
