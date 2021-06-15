@@ -67,7 +67,9 @@ class NonCompulsoryAuthenticationProcessingFilterTest {
 
     @Test
     void authenticationExceptionStopsFilterchain() throws IOException, ServletException {
-        underTest = new FilterImpl(() -> { throw new BadCredentialsException("bad");});
+        underTest = new FilterImpl(() -> {
+            throw new BadCredentialsException("bad");
+        });
         underTest.doFilter(req, res, filterChain);
         verify(filterChain, never()).doFilter(any(), any());
     }
