@@ -46,12 +46,9 @@ gitProperties {
 
 dependencies {
     implementation project(':onboarding-enabler-spring')
+
     implementation project(':zaas-client')
-    implementation('javax.servlet:javax.servlet-api') {
-        version {
-            strictly '4.0.1'
-        }
-    }
+
     implementation libraries.springFox
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator

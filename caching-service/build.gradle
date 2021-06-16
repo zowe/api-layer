@@ -48,11 +48,6 @@ dependencies {
     implementation project(':common-service-core')
 
     implementation project(':onboarding-enabler-spring')
-    implementation('javax.servlet:javax.servlet-api') {
-        version {
-            strictly '4.0.1'
-        }
-    }
 
     implementation libraries.jjwt
     implementation libraries.jjwt_impl
@@ -67,6 +62,7 @@ dependencies {
     implementation libraries.spring_retry
     implementation libraries.spring_boot_starter_aop
     implementation libraries.lettuce
+    implementation libraries.tomcat_embed_core
 
     implementation libraries.gson
     compileOnly libraries.lombok

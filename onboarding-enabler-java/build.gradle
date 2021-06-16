@@ -5,7 +5,9 @@ dependencies {
     implementation libraries.javax_annotation
     implementation libraries.jackson_annotations
     implementation libraries.jackson_dataformat_yaml
-    implementation libraries.eureka_client
+    implementation('com.netflix.eureka:eureka-client:1.10.14') {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
