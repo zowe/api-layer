@@ -20,14 +20,17 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.commons.attls.InboundAttls;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.SocketChannel;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
@@ -74,11 +77,18 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 int fileDescriptor = (int) getFDVal.invoke(socketChannel);
                 System.out.println("method: " + fileDescriptor);
                 InboundAttls.init(fileDescriptor);
+                System.out.println("Is zos " + "z/os".equalsIgnoreCase(System.getProperty("os.name")));
                 if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
                     if (InboundAttls.getCertificate() != null) {
                         try {
+                            System.out.println("cyphers:" + InboundAttls.getNegotiatedCipher2());
                             InputStream targetStream = new ByteArrayInputStream(InboundAttls.getCertificate());
+                            System.out.println("Input stream");
+                            String result = new BufferedReader(new InputStreamReader(targetStream))
+                                .lines().collect(Collectors.joining("\n"));
 
+
+                            System.out.println(result);
                             X509Certificate certificate = (X509Certificate) CertificateFactory
                                 .getInstance("X509")
                                 .generateCertificate(targetStream);
@@ -94,7 +104,12 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return handler.process(socket, status);
+            try {
+                return handler.process(socket, status);
+            } finally {
+                InboundAttls.dispose();
+            }
+
         }
 
         @Override
