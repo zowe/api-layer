@@ -11,7 +11,10 @@ package org.zowe.apiml.product.tomcat;
 
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
-import org.apache.tomcat.util.net.*;
+import org.apache.tomcat.util.net.AbstractEndpoint;
+import org.apache.tomcat.util.net.NioChannel;
+import org.apache.tomcat.util.net.SocketEvent;
+import org.apache.tomcat.util.net.SocketWrapperBase;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
@@ -72,7 +75,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 System.out.println("method: " + fileDescriptor);
                 InboundAttls.init(fileDescriptor);
                 if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
-                    if(InboundAttls.getCertificate() != null) {
+                    if (InboundAttls.getCertificate() != null) {
                         try {
                             InputStream targetStream = new ByteArrayInputStream(InboundAttls.getCertificate());
 
@@ -80,7 +83,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                                 .getInstance("X509")
                                 .generateCertificate(targetStream);
                             System.out.println("user id:" + certificate.toString());
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             System.err.println("Error reading cert: " + e);
                         }
                     } else {
