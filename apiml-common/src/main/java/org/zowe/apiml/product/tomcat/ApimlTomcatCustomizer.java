@@ -11,10 +11,7 @@ package org.zowe.apiml.product.tomcat;
 
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
-import org.apache.tomcat.util.net.AbstractEndpoint;
-import org.apache.tomcat.util.net.SecureNioChannel;
-import org.apache.tomcat.util.net.SocketEvent;
-import org.apache.tomcat.util.net.SocketWrapperBase;
+import org.apache.tomcat.util.net.*;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
@@ -61,7 +58,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
 
         @Override
         public SocketState process(SocketWrapperBase<S> socket, SocketEvent status) {
-            SecureNioChannel secureChannel = (SecureNioChannel) socket.getSocket();
+            NioChannel secureChannel = (NioChannel) socket.getSocket();
             SocketChannel socketChannel = secureChannel.getIOChannel();
             try {
                 Class<?> socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
@@ -71,7 +68,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 System.out.println("method: " + fileDescriptor);
                 InboundAttls.init(fileDescriptor);
                 if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
-                    System.out.println(InboundAttls.getUserId());
+                    System.out.println("user id:" + InboundAttls.getUserId());
                 }
 
             } catch (Exception e) {
