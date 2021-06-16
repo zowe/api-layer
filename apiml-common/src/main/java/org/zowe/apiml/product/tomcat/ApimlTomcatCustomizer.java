@@ -80,7 +80,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 InboundAttls.setAlwaysLoadCertificate(true);
                 System.out.println("Is zos " + "z/os".equalsIgnoreCase(System.getProperty("os.name")));
                 if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
-                    if (InboundAttls.getCertificate() != null) {
+                    if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
                         try {
                             System.out.println("cyphers:" + InboundAttls.getNegotiatedCipher2());
                             InputStream targetStream = new ByteArrayInputStream(InboundAttls.getCertificate());
@@ -88,7 +88,6 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
 
                             String result = new BufferedReader(new InputStreamReader(targetStream))
                                 .lines().collect(Collectors.joining("\n"));
-
 
                             System.out.println(result);
                             X509Certificate certificate = (X509Certificate) CertificateFactory
@@ -103,11 +102,9 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                         System.out.println("no cert in attls context");
                     }
                 }
-
+                return handler.process(socket, status);
             } catch (Exception e) {
                 e.printStackTrace();
-            }
-            try {
                 return handler.process(socket, status);
             } finally {
                 InboundAttls.dispose();
