@@ -20,7 +20,6 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 /**
  * Handles the successful login
  */
@@ -53,6 +52,9 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
      * @param response send back this response
      */
     private void setCookie(String token, HttpServletResponse response) {
+        // SameSite attribute is not supported in Cookie used in HttpServletResponse.addCookie,
+        // so specify Set-Cookie header directly
+
         AuthConfigurationProperties.CookieProperties cookieProperties = authConfigurationProperties.getCookieProperties();
         String cookieHeader = String.format(
             "%s=%s; HttpOnly; Comment=%s; Path=%s; SameSite=%s; MaxAge=%s;",
