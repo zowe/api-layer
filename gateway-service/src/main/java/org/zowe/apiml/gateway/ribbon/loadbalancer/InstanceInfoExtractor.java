@@ -17,6 +17,9 @@ import lombok.Getter;
 
 import java.util.*;
 
+/**
+ * Utility class to extract InstanceInfo object out of list of {@link Server} instances
+ */
 public class InstanceInfoExtractor {
 
     @Getter

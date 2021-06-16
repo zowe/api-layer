@@ -16,15 +16,22 @@ import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+/**
+ * This adapter holds the load balancing logic by facilitating server selection.
+ * There is plenty of debug log to increase supportability
+ *
+ */
 @Slf4j
 public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
 
     private InstanceInfo instanceInfo;
-    private PredicateFactory predicateFactory;
+    private ConfigurableNamedContextFactory<?> configurableNamedContextFactory;
     private Map<String, RequestAwarePredicate> predicateMap;
 
     // used zuul's implementation of round robin server selection
@@ -38,11 +45,11 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
     public LoadBalancerRuleAdapter() {
     }
 
-    public LoadBalancerRuleAdapter(InstanceInfo instanceInfo, PredicateFactory predicateFactory, IClientConfig config) {
-        this.predicateMap = predicateFactory.getInstances(instanceInfo.getAppName(), RequestAwarePredicate.class);
+    public LoadBalancerRuleAdapter(InstanceInfo instanceInfo, ConfigurableNamedContextFactory<?> configurableNamedContextFactory, IClientConfig config) {
+        this.predicateMap = configurableNamedContextFactory.getInstances(instanceInfo.getAppName(), RequestAwarePredicate.class);
 
         this.instanceInfo = instanceInfo;
-        this.predicateFactory = predicateFactory;
+        this.configurableNamedContextFactory = configurableNamedContextFactory;
 
         //mirror original zuul setup
         availabilityPredicate = new AvailabilityPredicate(this, config);
@@ -87,7 +94,7 @@ public class LoadBalancerRuleAdapter extends ClientConfigEnabledRoundRobinRule {
     public String toString() {
         return "LoadBalancerRuleAdapter{" +
             "info=" + instanceInfo +
-            ", predicateFactory=" + predicateFactory +
+            ", predicateFactory=" + configurableNamedContextFactory +
             ", predicates=" + predicateMap +
             '}';
     }

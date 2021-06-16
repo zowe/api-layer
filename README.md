@@ -48,16 +48,16 @@ The following tools are required to build and develop the API Mediation Layer:
 
 **Follow these steps:**
 
-1. Install `concurrently` globally:
-
-  ```sh
-   npm install -g concurrently
-   ```
-
-2. Build all modules:
+1. Build all modules:
 
   ```sh
    ./gradlew build
+   ```
+
+2. Install `concurrently` globally:
+
+  ```sh
+   npm install -g concurrently
    ```
 
 3. Run all service on your local machine:
