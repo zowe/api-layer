@@ -31,6 +31,7 @@ import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
+import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
 /**
  * Main configuration class of Spring web security for Api Catalog
@@ -96,10 +97,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // login endpoint
             .and()
-            .addFilterBefore(
-                loginFilter(authConfigurationProperties.getServiceLoginEndpoint()),
-                UsernamePasswordAuthenticationFilter.class
-            )
+            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getServiceLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getServiceLoginEndpoint()), ShouldBeAlreadyAuthenticatedFilter.class)
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll()
 
