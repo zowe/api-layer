@@ -32,8 +32,8 @@ class AuthConfigurationPropertiesTest {
     }
 
     @Test
-    void whenGetDefaultCookieSameSite_thenReturnLax() {
+    void whenGetDefaultCookieSameSite_thenReturnStrict() {
         String sameSite = authConfigurationProperties.getCookieProperties().getCookieSameSite().getValue();
-        assertEquals("Lax", sameSite);
+        assertEquals("Strict", sameSite);
     }
 }

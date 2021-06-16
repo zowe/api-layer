@@ -98,7 +98,7 @@ class LoginTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(SC_NO_CONTENT))
                     // RestAssured version in use doesn't have SameSite attribute in cookie so validate using the Set-Cookie header
-                    .header("Set-Cookie", containsString("SameSite=Lax"))
+                    .header("Set-Cookie", containsString("SameSite=Strict"))
                     .cookie(COOKIE_NAME, not(isEmptyString()))
                     .extract().detailedCookie(COOKIE_NAME);
 
@@ -116,7 +116,7 @@ class LoginTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(SC_NO_CONTENT))
                     // RestAssured version in use doesn't have SameSite attribute in cookie so validate using the Set-Cookie header
-                    .header("Set-Cookie", containsString("SameSite=Lax"))
+                    .header("Set-Cookie", containsString("SameSite=Strict"))
                     .cookie(COOKIE_NAME, not(isEmptyString()))
                     .extract().cookie(COOKIE_NAME);
 
