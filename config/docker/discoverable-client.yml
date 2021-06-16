@@ -1,0 +1,29 @@
+spring:
+    profiles:
+        include: diag
+    output:
+        ansi:
+            enabled: always
+
+# The `apiml` node contains API Mediation Layer specific configuration
+apiml:
+    service:
+        # The `apiml.service` node contains information required by any APIML service
+        serviceId: discoverableclient  # Service ID of this service
+        hostname: discoverable-client  # Hostname that is advertised in Eureka. Default is valid only for localhost
+        port: 10012  # Default port for discoverable-client service
+          # IP address that is advertised in Eureka. Default is valid only for localhost
+        discoveryServiceUrls: https://discovery-service:10011/eureka/
+
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
+server:
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: /docker/all-services.keystore.p12
+        keyStorePassword: password
+        trustStore: /docker/all-services.truststore.p12
+        trustStorePassword: password

@@ -96,7 +96,7 @@ server:
             trustStorePassword: ${server.ssl.trustStorePassword:password}
             clientAuth: ${server.ssl.clientAuth}
     max-http-header-size: 48000
-    address: ${apiml.service.ipAddress}
+    address: ${apiml.service.hostname}
     port: ${apiml.service.port}
     ssl:
         enabled: true

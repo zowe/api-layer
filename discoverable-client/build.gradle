@@ -15,6 +15,13 @@ normalization {
 
 apply plugin: 'org.springframework.boot'
 apply plugin: 'com.gorylenko.gradle-git-properties'
+apply plugin: 'com.google.cloud.tools.jib'
+apply from: "../gradle/jib.gradle"
+
+def debugPort = 5122
+def componentName = "discoverable-client"
+
+setJib(componentName, debugPort)
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -40,6 +47,11 @@ gitProperties {
 dependencies {
     implementation project(':onboarding-enabler-spring')
     implementation project(':zaas-client')
+    implementation('javax.servlet:javax.servlet-api') {
+        version {
+            strictly '3.1.0'
+        }
+    }
     implementation libraries.springFox
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
