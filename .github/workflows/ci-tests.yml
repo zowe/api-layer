@@ -73,7 +73,7 @@ jobs:
 
     CITestsDocker:
         needs: BuildAndPackage
-#        runs-on: ubuntu-latest
+        runs-on: ubuntu-latest
         container: ubuntu:latest
 
         timeout-minutes: 20
@@ -870,7 +870,7 @@ jobs:
     CITestsHA:
         needs: CITestsDocker
         container: ubuntu:latest
-#        runs-on: ubuntu-latest
+        runs-on: ubuntu-latest
         timeout-minutes: 20
 
         steps:
