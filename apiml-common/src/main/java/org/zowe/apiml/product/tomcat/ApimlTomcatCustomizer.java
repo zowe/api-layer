@@ -17,9 +17,13 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.commons.attls.InboundAttls;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.SocketChannel;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Set;
 
 @Component
@@ -68,7 +72,11 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 System.out.println("method: " + fileDescriptor);
                 InboundAttls.init(fileDescriptor);
                 if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
-                    System.out.println("user id:" + InboundAttls.getUserId());
+                    InputStream targetStream = new ByteArrayInputStream(InboundAttls.getCertificate());
+                    X509Certificate certificate = (X509Certificate) CertificateFactory
+                        .getInstance("X509")
+                        .generateCertificate(targetStream);
+                    System.out.println("user id:" + certificate.toString());
                 }
 
             } catch (Exception e) {
