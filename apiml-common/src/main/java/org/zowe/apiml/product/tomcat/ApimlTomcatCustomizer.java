@@ -20,17 +20,12 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.commons.attls.InboundAttls;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.SocketChannel;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
@@ -86,14 +81,15 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                             InputStream targetStream = new ByteArrayInputStream(InboundAttls.getCertificate());
                             System.out.println("Input stream");
 
-                            String result = new BufferedReader(new InputStreamReader(targetStream))
-                                .lines().collect(Collectors.joining("\n"));
+                            int b = 0;
+                            while ((b = targetStream.read()) != -1) {
+                                // Convert byte to character
+                                char ch = (char) b;
 
-                            System.out.println(result);
-                            X509Certificate certificate = (X509Certificate) CertificateFactory
-                                .getInstance("X509")
-                                .generateCertificate(targetStream);
-                            System.out.println("user id:" + certificate.toString());
+                                // Print the character
+                                System.out.print("Char : " + ch);
+                            }
+                            System.out.println("cyphers 4:" + InboundAttls.getNegotiatedCipher4());
 
                         } catch (Exception e) {
                             System.err.println("Error reading cert: " + e);
