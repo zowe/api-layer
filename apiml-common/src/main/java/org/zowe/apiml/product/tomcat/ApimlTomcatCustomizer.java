@@ -70,6 +70,10 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 int fileDescriptor = (int) getFDVal.invoke(socketChannel);
                 System.out.println("method: " + fileDescriptor);
                 InboundAttls.init(fileDescriptor);
+                if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
+                    System.out.println(InboundAttls.getUserId());
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
