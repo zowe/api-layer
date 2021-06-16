@@ -760,3 +760,52 @@ jobs:
                     rm -f ~/.gradle/caches/modules-2/modules-2.lock
                     rm -f ~/.gradle/caches/modules-2/gc.properties
                     rm -rf ~/.gradle/caches/build-cache-1
+
+    sonarQubeScan:
+
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.11
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.11
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew --info coverage sonarqube
+                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
