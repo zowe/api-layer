@@ -77,6 +77,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 int fileDescriptor = (int) getFDVal.invoke(socketChannel);
                 System.out.println("method: " + fileDescriptor);
                 InboundAttls.init(fileDescriptor);
+                InboundAttls.setAlwaysLoadCertificate(true);
                 System.out.println("Is zos " + "z/os".equalsIgnoreCase(System.getProperty("os.name")));
                 if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
                     if (InboundAttls.getCertificate() != null) {
@@ -84,6 +85,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                             System.out.println("cyphers:" + InboundAttls.getNegotiatedCipher2());
                             InputStream targetStream = new ByteArrayInputStream(InboundAttls.getCertificate());
                             System.out.println("Input stream");
+
                             String result = new BufferedReader(new InputStreamReader(targetStream))
                                 .lines().collect(Collectors.joining("\n"));
 
@@ -93,6 +95,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                                 .getInstance("X509")
                                 .generateCertificate(targetStream);
                             System.out.println("user id:" + certificate.toString());
+
                         } catch (Exception e) {
                             System.err.println("Error reading cert: " + e);
                         }
