@@ -79,7 +79,7 @@ apiml:
 ##############################################################################################
 
 server:
-    address: ${apiml.service.hostname}
+    address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
     servlet:
         contextPath: ${apiml.service.contextPath}

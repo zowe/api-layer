@@ -49,7 +49,7 @@ spring:
         banner-mode: ${apiml.banner:"off"}
 
 server:
-    address: ${apiml.service.hostname}
+    address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
     ssl:
         enabled: false

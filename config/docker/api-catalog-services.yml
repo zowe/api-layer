@@ -9,8 +9,8 @@ eureka:
         leaseRenewalIntervalInSeconds: 1
 
 server:
+    address: ${apiml.service.hostname}
     ssl:
-        enabled: true
         keyAlias: localhost
         keyPassword: password
         keyStore: /docker/all-services.keystore.p12

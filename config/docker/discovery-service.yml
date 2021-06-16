@@ -1,9 +1,6 @@
-spring.profiles.include: diag
-
 apiml:
     service:
         hostname: discovery-service
-        port: 10011
     discovery:
         staticApiDefinitionsDirectories: config/docker/api-defs
     security:
@@ -15,6 +12,8 @@ spring:
     output:
         ansi:
             enabled: always
+    profiles:
+        include: diag
 
 eureka:
     client:
@@ -22,13 +21,12 @@ eureka:
         registryFetchIntervalSeconds: 1
 
 server:
+    address: ${apiml.service.hostname}
     ssl:
         keyAlias: localhost
         keyPassword: password
-        keyStoreType: PKCS12
         keyStore: /docker/all-services.keystore.p12
         keyStorePassword: password
-        trustStoreType: PKCS12
         trustStore: /docker/all-services.truststore.p12
         trustStorePassword: password
 
