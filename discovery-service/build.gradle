@@ -55,17 +55,13 @@ configurations.all {
 
 dependencies {
     implementation(project(':security-service-client-spring'))
-    implementation('javax.servlet:javax.servlet-api') {
-        version {
-            strictly '4.0.1'
-        }
-    }
-
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_security
     implementation libraries.spring_boot_starter_actuator
-    implementation libraries.spring_cloud_starter_eureka_server
+    implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.8.RELEASE')  {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
     implementation libraries.jackson_dataformat_yaml
     implementation libraries.jetty_client
     implementation libraries.jetty_http
