@@ -11,18 +11,19 @@ package org.zowe.apiml.product.tomcat;
 
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
-import org.apache.tomcat.util.net.AbstractEndpoint;
-import org.apache.tomcat.util.net.NioChannel;
-import org.apache.tomcat.util.net.SocketEvent;
-import org.apache.tomcat.util.net.SocketWrapperBase;
+import org.apache.tomcat.util.net.*;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.commons.attls.InboundAttls;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.SocketChannel;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Set;
 
 @Component
@@ -71,8 +72,20 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 System.out.println("method: " + fileDescriptor);
                 InboundAttls.init(fileDescriptor);
                 if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
-                    System.out.println("Cert bytes");
-                    System.out.println(InboundAttls.getCertificate());
+                    if(InboundAttls.getCertificate() != null) {
+                        try {
+                            InputStream targetStream = new ByteArrayInputStream(InboundAttls.getCertificate());
+
+                            X509Certificate certificate = (X509Certificate) CertificateFactory
+                                .getInstance("X509")
+                                .generateCertificate(targetStream);
+                            System.out.println("user id:" + certificate.toString());
+                        } catch (Exception e){
+                            System.err.println("Error reading cert: " + e);
+                        }
+                    } else {
+                        System.out.println("no cert in attls context");
+                    }
                 }
 
             } catch (Exception e) {
