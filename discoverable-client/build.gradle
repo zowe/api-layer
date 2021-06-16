@@ -49,7 +49,7 @@ dependencies {
     implementation project(':zaas-client')
     implementation('javax.servlet:javax.servlet-api') {
         version {
-            strictly '3.1.0'
+            strictly '4.0.1'
         }
     }
     implementation libraries.springFox
