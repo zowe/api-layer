@@ -75,8 +75,7 @@ jobs:
         needs: BuildAndPackage
         runs-on: ubuntu-latest
         timeout-minutes: 20
-        container:
-            image: ubuntu:latest
+        container: ubuntu:latest
 
         services:
             nginx:
@@ -869,8 +868,7 @@ jobs:
 
     CITestsHA:
         needs: CITestsDocker
-        container:
-            image: ubuntu:latest
+        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
