@@ -24,6 +24,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -94,12 +95,13 @@ public class SouthboundServicesRoutingTest {
             void routeToUndefinedGatewayInstance() {
                 final int instances = gatewayServiceConfiguration.getInstances();
                 assumeTrue(instances == 2);
+                String host = gatewayServiceConfiguration.getHost().split(",")[0];
                 //@formatter:off
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
                 given()
                     .when()
                     .header("X-Host", "wrongService")
-                    .get(HttpRequestUtils.getUriFromGateway(DISCOVERABLE_GREET))
+                    .get(HttpRequestUtils.getUriFromGateway(DISCOVERABLE_GREET, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
                     .then()
                     .statusCode(is(HttpStatus.SC_SERVICE_UNAVAILABLE))
                     .extract().body().asString();
