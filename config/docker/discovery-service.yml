@@ -2,7 +2,7 @@ apiml:
     service:
         hostname: discovery-service
     discovery:
-        staticApiDefinitionsDirectories: config/docker/api-defs
+        staticApiDefinitionsDirectories: /docker/api-defs
     security:
         ssl:
             verifySslCertificatesOfServices: false
