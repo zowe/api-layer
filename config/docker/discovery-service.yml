@@ -5,7 +5,7 @@ apiml:
         staticApiDefinitionsDirectories: /docker/api-defs
     security:
         ssl:
-            verifySslCertificatesOfServices: false
+            verifySslCertificatesOfServices: true
     banner: console
 
 spring:
