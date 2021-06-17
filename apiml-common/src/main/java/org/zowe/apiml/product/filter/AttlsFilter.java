@@ -10,6 +10,7 @@
 package org.zowe.apiml.product.filter;
 
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.commons.attls.InboundAttls;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -32,6 +33,15 @@ public class AttlsFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         X509Certificate[] certificates = new X509Certificate[1];
         String clientCert = request.getHeader("X-SSL-CERT");
+        try {
+            if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
+                System.out.println("cert exists");
+            }
+            System.out.println("Cert does not exist");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
         if (clientCert != null) {
             try {
                 clientCert = URLDecoder.decode(clientCert, StandardCharsets.UTF_8.name());
