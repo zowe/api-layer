@@ -100,10 +100,14 @@ public class GatewayMultipleInstancesTest {
             }
 
             private void checkInstancesAreUp(String port) throws IOException {
-                HttpResponse response = HttpRequestUtils.getResponse(HEALTH_ENDPOINT, HttpStatus.SC_OK, Integer.parseInt(port));
-                DocumentContext context = JsonPath.parse(EntityUtils.toString(response.getEntity()));
-                Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
-                assertThat(amountOfActiveGateways, is(2));
+                String[] hosts = gatewayServiceConfiguration.getHost().split(",");
+                for (String host : hosts) {
+                    HttpResponse response = HttpRequestUtils.getResponse(HEALTH_ENDPOINT, HttpStatus.SC_OK, Integer.parseInt(port), host);
+                    DocumentContext context = JsonPath.parse(EntityUtils.toString(response.getEntity()));
+                    Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
+                    assertThat(amountOfActiveGateways, is(2));
+                }
+
             }
         }
     }

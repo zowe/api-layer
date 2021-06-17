@@ -41,13 +41,14 @@ public class HttpRequestUtils {
      */
     public static HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
         int port = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+        String host = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
 
-        return getResponse(endpoint, returnCode, port);
+        return getResponse(endpoint, returnCode, port, host);
     }
 
-    public static HttpResponse getResponse(String endpoint, int returnCode, int port) throws IOException {
+    public static HttpResponse getResponse(String endpoint, int returnCode, int port, String host) throws IOException {
         HttpGet request = new HttpGet(
-            getUriFromGateway(endpoint, port, Collections.emptyList())
+            getUriFromGateway(endpoint, port, host, Collections.emptyList())
         );
 
         // When
@@ -65,10 +66,9 @@ public class HttpRequestUtils {
         return new HttpGet(uri);
     }
 
-    public static URI getUriFromGateway(String endpoint, int port, List<NameValuePair> arguments) {
+    public static URI getUriFromGateway(String endpoint, int port, String host, List<NameValuePair> arguments) {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String scheme = gatewayServiceConfiguration.getScheme();
-        String host = gatewayServiceConfiguration.getHost();
         URI uri = null;
         try {
             uri = new URIBuilder()
@@ -87,11 +87,11 @@ public class HttpRequestUtils {
     }
 
     public static URI getUriFromGateway(String endpoint, List<NameValuePair> arguments) {
-        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), arguments);
+        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost(), arguments);
     }
 
     public static URI getUriFromGateway(String endpoint) {
-        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), Collections.emptyList());
+        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost(), Collections.emptyList());
     }
 
     public static URI getUriFromDiscovery(String endpoint) throws URISyntaxException {
