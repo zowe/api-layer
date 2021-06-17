@@ -873,13 +873,13 @@ jobs:
         timeout-minutes: 20
 
         services:
-#            nginx:
-#                image: nginx:latest
-#                ports:
-#                    - 443:443
-#                volumes:
-#                    - /$(pwd)/docker/nginx/load-balancer.conf:/etc/nginx
-#                    - /$(pwd)/keystore/docker:/etc/ssl/private
+            nginx:
+                image: nginx:latest
+                ports:
+                    - 443:443
+                volumes:
+                    - /$(pwd)/docker/nginx/load-balancer.conf:/etc/nginx
+                    - /$(pwd)/keystore/docker:/etc/ssl/private
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services
             caching-service:
