@@ -4,9 +4,9 @@ credentials:
     password: validPassword
 gatewayServiceConfiguration:
     scheme: https
-    host: gateway-service
+    host: gateway-service,gateway-service-2
     port: 10010
-    internalPorts: 10017
+    internalPorts: 10017,10027
     externalPort: 10010
     # for ATTLS external testing, there is proxy server for integration tests on external env, this is actual GW port to verify returned value
     realPort: 10010
@@ -17,7 +17,7 @@ discoveryServiceConfiguration:
     scheme: https
     user: user
     password: user
-    host: discovery-service
+    host: discovery-service,discovery-service-2
     port: 10011
     instances: 2
 discoverableClientConfiguration:

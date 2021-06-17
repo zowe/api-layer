@@ -68,7 +68,6 @@ public class GatewayMultipleInstancesTest {
                 assertThat(gatewayServiceConfiguration.getInternalPorts(), is(not(nullValue())), is(not("")));
 
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
-                assumeTrue(internalPorts.length == instances);
                 for (String port : internalPorts) {
                     checkInstancesAreUp(port);
                 }
@@ -90,9 +89,13 @@ public class GatewayMultipleInstancesTest {
                 String instanceId = XmlPath.from(xml).getString("applications.application.instance.instanceId");
                 assertThat(instanceId, is(not("")));
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
-//                assumeTrue(internalPorts.length == instances);
+                String[] hosts = gatewayServiceConfiguration.getHost().split(",");
+
+                for (String host : hosts) {
+                    assertThat(instanceId.contains(host + ":" + "gateway" + ":"), is(true));
+                }
                 for (String port : internalPorts) {
-                    assertThat(instanceId.contains(gatewayServiceConfiguration.getHost() + ":" + "gateway" + ":" + port), is(true));
+                    assertThat(instanceId.contains(":" + "gateway" + ":" + port), is(true));
                 }
             }
 
