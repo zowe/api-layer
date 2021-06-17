@@ -136,7 +136,7 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
     }
 
     // /application endpoints
-    @ParameterizedTest
+    @ParameterizedTest(name = "givenTLS_testApplicationBeansEndpoints_Get {index} {0} ")
     @NotAttlsTest
     @ValueSource(strings = {"/application/beans", "/discovery/api/v1/staticApi", "/"})
     void givenTLS_testApplicationBeansEndpoints_Get(String path) throws Exception {
@@ -149,7 +149,7 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
             .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "givenATTLS_testApplicationBeansEndpoints_Get {index} {0} ")
     @AttlsTest
     @ValueSource(strings = {"/application/beans", "/"})
     void givenATTLS_testApplicationBeansEndpoints_Get(String path) throws Exception {
@@ -162,7 +162,7 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
             .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "testApplicationInfoEndpoints_Auth {index} {0} ")
     @ValueSource(strings = {"/application/info", "/discovery/api/v1/staticApi", "/"})
     void testApplicationInfoEndpoints_Auth(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
@@ -174,7 +174,7 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
             .statusCode(is(HttpStatus.SC_OK));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "testApplicationInfoEndpoints_Cookie {index} {0} ")
     @ValueSource(strings = {"/application/info", "/discovery/api/v1/staticApi", "/"})
     void testApplicationInfoEndpoints_Cookie(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();

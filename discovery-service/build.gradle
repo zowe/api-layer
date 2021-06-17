@@ -17,6 +17,14 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
 apply from: "$projectDir/gradle/lite.gradle"
+apply plugin: 'com.google.cloud.tools.jib'
+apply from: "../gradle/jib.gradle"
+
+def debugPort = 5121
+def componentName = "discovery-service"
+
+setJib(componentName, debugPort)
+jib.container.args.add('--spring.profiles.active=https')
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -47,12 +55,13 @@ configurations.all {
 
 dependencies {
     implementation(project(':security-service-client-spring'))
-
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_security
     implementation libraries.spring_boot_starter_actuator
-    implementation libraries.spring_cloud_starter_eureka_server
+    implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.8.RELEASE')  {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
     implementation libraries.jackson_dataformat_yaml
     implementation libraries.jetty_client
     implementation libraries.jetty_http
