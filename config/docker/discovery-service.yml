@@ -1,0 +1,32 @@
+apiml:
+    service:
+        hostname: discovery-service
+    discovery:
+        staticApiDefinitionsDirectories: config/docker/api-defs
+    security:
+        ssl:
+            verifySslCertificatesOfServices: false
+    banner: console
+
+spring:
+    output:
+        ansi:
+            enabled: always
+    profiles:
+        include: diag
+
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
+
+server:
+    address: ${apiml.service.hostname}
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: /docker/all-services.keystore.p12
+        keyStorePassword: password
+        trustStore: /docker/all-services.truststore.p12
+        trustStorePassword: password
+
