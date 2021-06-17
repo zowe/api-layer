@@ -9,11 +9,11 @@
  */
 package org.zowe.apiml.gateway.filters.post;
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.util.CookieUtil;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
@@ -47,13 +47,20 @@ public class ConvertAuthTokenInUriToCookieFilter extends ZuulFilter {
         AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
         if ((context.getRequestQueryParams() != null) && context.getRequestQueryParams().containsKey(cp.getCookieName())) {
             HttpServletResponse servletResponse = context.getResponse();
-            Cookie cookie = new Cookie(cp.getCookieName(), context.getRequestQueryParams().get(cp.getCookieName()).get(0));
-            cookie.setPath(cp.getCookiePath());
-            cookie.setSecure(true);
-            cookie.setHttpOnly(true);
-            cookie.setMaxAge(cp.getCookieMaxAge());
-            cookie.setComment(cp.getCookieComment());
-            servletResponse.addCookie(cookie);
+
+            // SameSite attribute is not supported in Cookie used in HttpServletResponse.addCookie,
+            // so specify Set-Cookie header directly
+            String cookieHeader = CookieUtil.setCookieHeader(
+                cp.getCookieName(),
+                context.getRequestQueryParams().get(cp.getCookieName()).get(0),
+                cp.getCookieComment(),
+                cp.getCookiePath(),
+                cp.getCookieSameSite().getValue(),
+                cp.getCookieMaxAge(),
+                true,
+                true
+            );
+            servletResponse.addHeader("Set-Cookie", cookieHeader);
 
             String url = context.getRequest().getRequestURL().toString();
             String newUrl;
