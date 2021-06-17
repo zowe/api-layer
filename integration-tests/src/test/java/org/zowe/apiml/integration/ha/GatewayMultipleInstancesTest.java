@@ -67,10 +67,7 @@ public class GatewayMultipleInstancesTest {
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
                 assertThat(gatewayServiceConfiguration.getInternalPorts(), is(not(nullValue())), is(not("")));
 
-                String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
-                for (String port : internalPorts) {
-                    checkInstancesAreUp(port);
-                }
+                checkInstancesAreUp();
             }
 
             @Test
@@ -99,10 +96,11 @@ public class GatewayMultipleInstancesTest {
                 }
             }
 
-            private void checkInstancesAreUp(String port) throws IOException {
+            private void checkInstancesAreUp() throws IOException {
                 String[] hosts = gatewayServiceConfiguration.getHost().split(",");
+                int port = gatewayServiceConfiguration.getPort();
                 for (String host : hosts) {
-                    HttpResponse response = HttpRequestUtils.getResponse(HEALTH_ENDPOINT, HttpStatus.SC_OK, Integer.parseInt(port), host);
+                    HttpResponse response = HttpRequestUtils.getResponse(HEALTH_ENDPOINT, HttpStatus.SC_OK, port, host);
                     DocumentContext context = JsonPath.parse(EntityUtils.toString(response.getEntity()));
                     Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
                     assertThat(amountOfActiveGateways, is(2));

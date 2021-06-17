@@ -64,9 +64,11 @@ public class SouthboundServicesRoutingTest {
                 final int instances = gatewayServiceConfiguration.getInstances();
                 assumeTrue(instances == 2);
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
+                String[] hosts = gatewayServiceConfiguration.getInternalPorts().split(",");
+                int port = gatewayServiceConfiguration.getPort();
                 assumeTrue(internalPorts.length == instances);
-                for (String port : internalPorts) {
-                    HttpRequestUtils.getResponse(DISCOVERABLE_GREET, SC_OK, Integer.parseInt(port));
+                for (String host : hosts) {
+                    HttpRequestUtils.getResponse(DISCOVERABLE_GREET, SC_OK, port, host);
                 }
             }
 
