@@ -73,8 +73,10 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 System.out.println("method: " + fileDescriptor);
                 InboundAttls.init(fileDescriptor);
                 InboundAttls.setAlwaysLoadCertificate(true);
-                System.out.println("Is zos " + "z/os".equalsIgnoreCase(System.getProperty("os.name")));
+
                 if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
+                    System.out.println("Secure conn " + InboundAttls.getStatConn());
+                    System.out.println("Is zos " + "z/os".equalsIgnoreCase(System.getProperty("os.name")));
                     if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
                         try {
                             System.out.println("cyphers:" + InboundAttls.getNegotiatedCipher2());
