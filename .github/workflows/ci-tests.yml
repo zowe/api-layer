@@ -868,11 +868,65 @@ jobs:
 #                    rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsHA:
-        needs: CITestsDocker
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
+        services:
+            nginx:
+                image: nginx:latest
+                #                credentials:
+                #                    username: zowe-robot
+                #                    password: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+                ports:
+                    - 443:443
+                volumes:
+                    - /$(pwd)/docker/nginx/load-balancer.conf:/etc/nginx
+                    - /$(pwd)/keystore/docker:/etc/ssl/private
+
+            api-catalog-services:
+                image: 'ghcr.io/balhar-jakub/api-catalog-services'
+                ports:
+                    - 10014:10014
+            caching-service:
+                image: 'ghcr.io/balhar-jakub/caching-service'
+                ports:
+                    - 10016:10016
+            discoverable-client:
+                image: 'ghcr.io/balhar-jakub/discoverable-client'
+                ports:
+                    - 10012:10012
+            discovery-service:
+                image: 'ghcr.io/balhar-jakub/discovery-service'
+                ports:
+                    - 10011:10011
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+            discovery-service-2:
+                image: 'ghcr.io/balhar-jakub/discovery-service'
+                ports:
+                    - 10020:10011
+                env:
+                    APIML_SERVICE_HOSTNAME: discovery-service-2
+                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+            gateway-service:
+                image: 'ghcr.io/balhar-jakub/gateway-service'
+                ports:
+                    - 10010:10010
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+            gateway-service-2:
+                image: 'ghcr.io/balhar-jakub/gateway-service'
+                #                ports:
+                #                    - 10018:10010
+                env:
+                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    SERVER_INTERNAL_PORT: 10027
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+            mock-zosmf:
+                image: 'ghcr.io/balhar-jakub/mock-zosmf'
+                ports:
+                    - 10013:10013
         steps:
             - uses: actions/checkout@v2
               with:
@@ -917,29 +971,6 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-#            - name: Start nginx proxy
-#              run: |
-#                  cd docker/nginx
-#                  docker-compose up --detach
-#            - name: Build docker containers
-#              run: |
-#                  ./gradlew jibDockerBuild
-
-#            - name: Create a new bridge network
-#              run: |
-#                  docker network create api-layer-full
-
-#            - name: Create Docker containers for the services
-#              run: |
-#                  docker create --name discovery-service --network api-layer-full --network-alias discovery-service -p 10011:10011 ghcr.io/zowe/discovery-service
-#                  docker create --name discoverable-client --network api-layer-full --network-alias discoverable-client -p 10012:10012 ghcr.io/zowe/discoverable-client
-#                  docker create --name gateway-service --network api-layer-full --network-alias gateway-service -p 10010:10010 ghcr.io/zowe/gateway-service
-#                  docker create --name discovery-service --network api-layer-full --network-alias discovery-service -p 10011:10011 ghcr.io/zowe/discovery-service
-#                  docker create --name api-catalog-service --network api-layer-full --network-alias api-catalog-service -p 10014:10014 ghcr.io/zowe/api-catalog-services
-#            - name: Run API Mediation Layer in on Docker containers
-#              run: |
-#                  npm install
-#                  npm run api-layer-docker
 
             - name: Build with Gradle
               run: >
