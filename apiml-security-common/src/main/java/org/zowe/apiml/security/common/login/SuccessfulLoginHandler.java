@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.util.CookieUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,23 +56,17 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
         // SameSite attribute is not supported in Cookie used in HttpServletResponse.addCookie,
         // so specify Set-Cookie header directly
 
-        AuthConfigurationProperties.CookieProperties cookieProperties = authConfigurationProperties.getCookieProperties();
-        String cookieHeader = String.format(
-            "%s=%s; HttpOnly; Comment=%s; Path=%s; SameSite=%s;",
-            cookieProperties.getCookieName(),
+        AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
+        String cookieHeader = CookieUtil.setCookieHeader(
+            cp.getCookieName(),
             token,
-            cookieProperties.getCookieComment(),
-            cookieProperties.getCookiePath(),
-            cookieProperties.getCookieSameSite().getValue()
+            cp.getCookieComment(),
+            cp.getCookiePath(),
+            cp.getCookieSameSite().getValue(),
+            cp.getCookieMaxAge(),
+            true,
+            cp.isCookieSecure()
         );
-
-        if (cookieProperties.getCookieMaxAge() != null) {
-            cookieHeader += "Max-Age=" + cookieProperties.getCookieMaxAge() + ";";
-        }
-
-        if (cookieProperties.isCookieSecure()) {
-            cookieHeader += " Secure;";
-        }
 
         response.addHeader("Set-Cookie", cookieHeader);
     }

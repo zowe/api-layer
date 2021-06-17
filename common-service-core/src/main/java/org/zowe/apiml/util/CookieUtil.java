@@ -18,12 +18,38 @@ import org.apache.commons.lang3.StringUtils;
 @UtilityClass
 public final class CookieUtil {
 
+    public static String setCookieHeader(String name, String value, String comment, String path, String sameSite,
+                                         Integer maxAge, boolean isHttpOnly, boolean isSecure) {
+        String cookieHeader = String.format(
+            "%s=%s; Comment=%s; Path=%s; SameSite=%s;",
+            name,
+            value,
+            comment,
+            path,
+            sameSite
+        );
+
+        if (maxAge != null) {
+            cookieHeader += " Max-Age=" + maxAge + ";";
+        }
+
+        if (isHttpOnly) {
+            cookieHeader += " HttpOnly;";
+        }
+
+        if (isSecure) {
+            cookieHeader += " Secure;";
+        }
+
+        return cookieHeader;
+    }
+
     /**
      * It replace or add cookie into header string value (see header with name "Cookie").
      *
      * @param cookieHeader original header string value
-     * @param name name of cookie to add or replace
-     * @param value value of cookie to add or replace
+     * @param name         name of cookie to add or replace
+     * @param value        value of cookie to add or replace
      * @return new header string, which contains a new cookie
      */
     public static String setCookie(String cookieHeader, String name, String value) {
@@ -51,7 +77,7 @@ public final class CookieUtil {
      * cookie, it return original header value string.
      *
      * @param cookieHeader original header string value
-     * @param name name of cookie to remove
+     * @param name         name of cookie to remove
      * @return new header string, without a specified cookie
      */
     public static String removeCookie(String cookieHeader, String name) {
