@@ -230,6 +230,28 @@ task runCITests(type: Test) {
     }
 }
 
+task runContainerTests(type: Test) {
+    group "Integration tests"
+    description "Run only tests without long tests"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'SlowTests',
+            'AdditionalLocalTest',
+            'MainframeDependentTests',
+            'SAFAuthTest',
+            'AttlsTest',
+            'RegistrationTest',
+            'NodeEnablerTest'
+        )
+    }
+}
+
 task runCITestsAttls(type: Test) {
     group "Integration tests"
     description ""
