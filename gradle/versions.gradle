@@ -28,7 +28,7 @@ ext {
     gradleGitPropertiesVersion = '2.2.4'
     jettyWebSocketClientVersion = '9.4.39.v20210325'
     junitJupiterVersion = '5.5.2'
-    eurekaClientVersion = '1.10.14'
+    eurekaClientVersion = '1.10.15'
     netflixServoVersion = '0.12.28'
     logbackVersion = '1.2.3'
     spring4Version = '4.3.7.RELEASE'
