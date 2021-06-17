@@ -77,7 +77,7 @@ public class AuthConfigurationProperties {
         private boolean cookieSecure = true;
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
-        private Integer cookieMaxAge = -1;
+        private Integer cookieMaxAge = null;
         private SameSiteCookies cookieSameSite = SameSiteCookies.STRICT;
     }
 

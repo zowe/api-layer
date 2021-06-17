@@ -57,14 +57,17 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
 
         AuthConfigurationProperties.CookieProperties cookieProperties = authConfigurationProperties.getCookieProperties();
         String cookieHeader = String.format(
-            "%s=%s; HttpOnly; Comment=%s; Path=%s; SameSite=%s; MaxAge=%s;",
+            "%s=%s; HttpOnly; Comment=%s; Path=%s; SameSite=%s;",
             cookieProperties.getCookieName(),
             token,
             cookieProperties.getCookieComment(),
             cookieProperties.getCookiePath(),
-            cookieProperties.getCookieSameSite().getValue(),
-            cookieProperties.getCookieMaxAge()
+            cookieProperties.getCookieSameSite().getValue()
         );
+
+        if (cookieProperties.getCookieMaxAge() != null) {
+            cookieHeader += "Max-Age=" + cookieProperties.getCookieMaxAge() + ";";
+        }
 
         if (cookieProperties.isCookieSecure()) {
             cookieHeader += " Secure;";

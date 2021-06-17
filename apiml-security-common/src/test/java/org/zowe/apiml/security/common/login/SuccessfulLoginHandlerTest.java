@@ -54,7 +54,7 @@ class SuccessfulLoginHandlerTest {
             assertEquals(cp.getCookieName(), cookie.getName());
             assertEquals(dummyAuth.getCredentials(), cookie.getValue());
             assertEquals(cp.getCookiePath(), cookie.getPath());
-            assertEquals(cp.getCookieMaxAge(), cookie.getMaxAge());
+            assertEquals(-1, cookie.getMaxAge());
             assertTrue(cookie.isHttpOnly());
             assertTrue(cookie.getSecure());
         }
