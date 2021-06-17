@@ -10,11 +10,20 @@
 
 package org.zowe.apiml.discovery.config;
 
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.apache.coyote.AbstractProtocol;
+import org.apache.coyote.http11.Http11NioProtocol;
+import org.apache.tomcat.util.net.AbstractEndpoint;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.tomcat.ApimlTomcatCustomizer;
+import org.zowe.commons.attls.InboundAttls;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * General beans setup and creation class for Discovery service
@@ -31,5 +40,28 @@ public class BeanConfig {
         messageService.loadMessages("/security-common-log-messages.yml");
         messageService.loadMessages("/discovery-log-messages.yml");
         return messageService;
+    }
+
+    @Bean
+    public <S, U> TomcatConnectorCustomizer tomcatAttlsCustomizer() {
+        InboundAttls.setAlwaysLoadCertificate(true);
+        return connector -> {
+            Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
+            try {
+
+                Field handlerField = AbstractProtocol.class.getDeclaredField("handler");
+                handlerField.setAccessible(true);
+
+                AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>) handlerField.get(protocolHandler);
+                handler = new ApimlTomcatCustomizer.ApimlAttlHandler<S>(handler);
+                Method method = AbstractProtocol.class.getDeclaredMethod("getEndpoint");
+                method.setAccessible(true);
+                AbstractEndpoint<S, U> abstractEndpoint = (AbstractEndpoint<S, U>) method.invoke(protocolHandler);
+
+                abstractEndpoint.setHandler(handler);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        };
     }
 }

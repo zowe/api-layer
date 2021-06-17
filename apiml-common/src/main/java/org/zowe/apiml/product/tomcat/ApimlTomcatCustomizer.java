@@ -33,6 +33,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
 
     @Override
     public void customize(TomcatServletWebServerFactory factory) {
+        InboundAttls.setAlwaysLoadCertificate(true);
         factory.addConnectorCustomizers(connector -> {
             Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
             try {
@@ -53,7 +54,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
         });
     }
 
-    private static class ApimlAttlHandler<S> implements AbstractEndpoint.Handler<S> {
+    public static class ApimlAttlHandler<S> implements AbstractEndpoint.Handler<S> {
 
         private final AbstractEndpoint.Handler<S> handler;
 
