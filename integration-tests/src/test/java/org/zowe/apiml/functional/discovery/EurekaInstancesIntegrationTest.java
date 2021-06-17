@@ -15,6 +15,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -164,6 +165,7 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
 
     @ParameterizedTest(name = "testApplicationInfoEndpoints_Auth {index} {0} ")
     @ValueSource(strings = {"/application/info", "/discovery/api/v1/staticApi", "/"})
+    @Disabled
     void testApplicationInfoEndpoints_Auth(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
@@ -176,6 +178,7 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
 
     @ParameterizedTest(name = "testApplicationInfoEndpoints_Cookie {index} {0} ")
     @ValueSource(strings = {"/application/info", "/discovery/api/v1/staticApi", "/"})
+    @Disabled
     void testApplicationInfoEndpoints_Cookie(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
@@ -199,6 +202,7 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
     }
 
     @Test
+    @Disabled
     void verifyHttpHeadersOnUi() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         Map<String, String> expectedHeaders = new HashMap<>();
@@ -239,7 +243,6 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
 
         Response response = RestAssured
             .given()
-            .auth().basic(username, password)
             .get(getDiscoveryUriWithPath("/application/info"));
         Map<String, String> responseHeaders = new HashMap<>();
         response.getHeaders().forEach(h -> responseHeaders.put(h.getName(), h.getValue()));
