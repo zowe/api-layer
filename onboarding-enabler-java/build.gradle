@@ -5,7 +5,7 @@ dependencies {
     implementation libraries.javax_annotation
     implementation libraries.jackson_annotations
     implementation libraries.jackson_dataformat_yaml
-    implementation('com.netflix.eureka:eureka-client:1.10.14') {
+    implementation(libraries.eureka_client) {
         exclude group: "javax.servlet", module: "servlet-api"
     }
 
