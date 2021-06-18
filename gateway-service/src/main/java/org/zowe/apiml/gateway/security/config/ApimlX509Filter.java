@@ -9,11 +9,13 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -23,15 +25,24 @@ import java.util.stream.Collectors;
 /**
  * This filter processes certificates on request. It decides, which certificates are considered for client authentication
  */
-@RequiredArgsConstructor
 @Slf4j
 public class ApimlX509Filter extends X509AuthenticationFilter {
 
-    private static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
-    private static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
-    private static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
+    protected static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
+    protected static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
+    protected static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
 
     private final Set<String> publicKeyCertificatesBase64;
+    private List<RequestMatcher> runOnThesePaths;
+
+    public ApimlX509Filter(Set<String> publicKeyCertificatesBase64) {
+        this(publicKeyCertificatesBase64, Collections.singletonList(new AntPathRequestMatcher("/**")));
+    }
+
+    public ApimlX509Filter(Set<String> publicKeyCertificatesBase64, List<RequestMatcher> runOnThesePaths) {
+        this.publicKeyCertificatesBase64 = publicKeyCertificatesBase64;
+        this.runOnThesePaths = runOnThesePaths;
+    }
 
     private Set<String> getPublicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
@@ -65,7 +76,11 @@ public class ApimlX509Filter extends X509AuthenticationFilter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
+        HttpServletRequest sevletRequest = (HttpServletRequest) request;
+
+        if (runOnThesePaths.stream().anyMatch(requestMatcher -> requestMatcher.matches(sevletRequest))) {
             categorizeCerts(request);
+        }
         super.doFilter(request, response, chain);
     }
 

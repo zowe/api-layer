@@ -8,31 +8,29 @@ package org.zowe.apiml.gateway.security.config;/*
  * Copyright Contributors to the Zowe Project.
  */
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.mockito.verification.VerificationMode;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.gateway.utils.X509Utils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ApimlX509FilterTest {
 
-    private ServletRequest request;
-    private ServletResponse response;
+    private MockHttpServletRequest request;
+    private HttpServletResponse response;
     private FilterChain chain;
 
     @BeforeEach
@@ -79,6 +77,59 @@ class ApimlX509FilterTest {
         assertSame(certificates[3], filtered[1]);
 
         verify(chain, times(1)).doFilter(request, response);
+    }
+
+    @Nested
+    class givenAntMatchers {
+
+        private MockHttpServletRequest requestSpy;
+
+        @BeforeEach
+        void setUp() {
+            request.setServletPath("/suffering/from/success");
+            X509Certificate[] certificates = new X509Certificate[]{
+                X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1")),
+                X509Utils.getCertificate(X509Utils.correctBase64("apimlCert1")),
+                X509Utils.getCertificate(X509Utils.correctBase64("foreignCert2")),
+                X509Utils.getCertificate(X509Utils.correctBase64("apimlCert2"))
+            };
+            request.setAttribute(ApimlX509Filter.ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, certificates);
+            requestSpy = spy(request);
+        }
+
+        @Test
+        void whenNoMatcherConstructorThenDoFiltering() throws IOException, ServletException {
+            ApimlX509Filter underTest = new ApimlX509Filter(Collections.emptySet());
+            underTest.doFilter(requestSpy, response, chain);
+            verifyFilteringHappened(requestSpy, atLeastOnce());
+        }
+
+        @Test
+        void whenUrlMatchesThenDoFiltering() throws IOException, ServletException {
+
+            ApimlX509Filter underTest = getApimlX509Filter(new AntPathRequestMatcher("/"));
+
+            underTest.doFilter(requestSpy, response, chain);
+            verifyFilteringHappened(requestSpy, never());
+
+            underTest =  getApimlX509Filter(new AntPathRequestMatcher("/**"));
+            underTest.doFilter(requestSpy, response, chain);
+            verifyFilteringHappened(requestSpy, atLeastOnce());
+        }
+
+        private ApimlX509Filter getApimlX509Filter(AntPathRequestMatcher matcher) {
+            ApimlX509Filter underTest = new ApimlX509Filter(Collections.emptySet(),
+                Collections.singletonList(matcher)
+            );
+            underTest.setAuthenticationDetailsSource(mock(AuthenticationDetailsSource.class));
+            underTest.setAuthenticationManager(mock(AuthenticationManager.class));
+            return underTest;
+        }
+
+        void verifyFilteringHappened(HttpServletRequest mock, VerificationMode mode) {
+            verify(mock, mode).setAttribute(eq(ApimlX509Filter.ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE), any());
+            verify(mock, mode).setAttribute(eq(ApimlX509Filter.ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE), any());
+        }
     }
 
 }
