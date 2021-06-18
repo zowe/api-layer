@@ -235,6 +235,8 @@ task runContainerTests(type: Test) {
     description "Run only tests without long tests"
 
     outputs.cacheIf { false }
+    systemProperty "environment.config", "-docker"
+    systemProperty "environment.offPlatform", "true"
 
     systemProperties System.properties
     useJUnitPlatform {
@@ -259,7 +261,7 @@ task runCITestsAttls(type: Test) {
     outputs.cacheIf { false }
 
     systemProperties System.properties
-    systemProperty "environment.attls", true
+    systemProperty "environment.config", "-attls"
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',

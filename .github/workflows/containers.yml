@@ -9,7 +9,7 @@ on:
 jobs:
     PublishContainers:
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 6
 
         steps:
             -   uses: actions/checkout@v2
@@ -54,7 +54,7 @@ jobs:
         needs: PublishContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 20
+        timeout-minutes: 10
 
         services:
             api-catalog-services:
@@ -100,9 +100,6 @@ jobs:
             -   name: Run CI Tests
                 run: >
                     ./gradlew runContainerTests --info
-                    -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
-                    -Dcredentials.user=USER -Dcredentials.password=validPassword
-                    -Dzosmf.host=localhost -Dzosmf.port=10013 -Dzosmf.serviceId=mockzosmf -Dinternal.gateway.port=10017
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
