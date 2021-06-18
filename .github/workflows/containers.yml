@@ -96,7 +96,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Run CI Tests
                 run: >
-                    ./gradlew runContainerTests --info
+                    ./gradlew :integration-tests:runContainerTests --info
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -160,7 +160,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Run CI Tests
                 run: >
-                    ./gradlew runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -226,7 +226,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -293,7 +293,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -360,7 +360,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -424,7 +424,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew runBaseTestsInternalPort --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runBaseTestsInternalPort --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -500,7 +500,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: CI Test with Gradle
                 run: >
-                    ./gradlew runCITestsAttls --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runCITestsAttls --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -593,7 +593,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -683,7 +683,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-attls -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
