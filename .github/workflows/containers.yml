@@ -591,9 +591,6 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-            -   name: Start Redis
-                run: |
-                    docker-compose -f redis/docker-compose-replica-tls.yml up --detach
             -   name: Build with Gradle
                 run: >
                     ./gradlew runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
