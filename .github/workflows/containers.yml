@@ -448,14 +448,24 @@ jobs:
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    SPRING_PROFILES_ACTIVE: attls
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    SPRING_PROFILES_ACTIVE: attls
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    SPRING_PROFILES_ACTIVE: attls
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    SPRING_PROFILES_ACTIVE: attls
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    SPRING_PROFILES_ACTIVE: attls
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
             reverse-proxy:
