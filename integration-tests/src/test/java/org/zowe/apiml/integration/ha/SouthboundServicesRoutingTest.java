@@ -65,7 +65,7 @@ public class SouthboundServicesRoutingTest {
                 final int instances = gatewayServiceConfiguration.getInstances();
                 assumeTrue(instances == 2);
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
-                String[] hosts = gatewayServiceConfiguration.getInternalPorts().split(",");
+                String[] hosts = gatewayServiceConfiguration.getHost().split(",");
                 int port = gatewayServiceConfiguration.getPort();
                 assumeTrue(internalPorts.length == instances);
                 for (String host : hosts) {
@@ -77,6 +77,7 @@ public class SouthboundServicesRoutingTest {
             void routeToSpecificInstance() throws URISyntaxException {
                 final int instances = gatewayServiceConfiguration.getInstances();
                 assumeTrue(instances == 2);
+                String host = gatewayServiceConfiguration.getHost().split(",")[0];
                 //@formatter:off
                 extractHostAndPortMetadata();
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -84,7 +85,7 @@ public class SouthboundServicesRoutingTest {
                 given()
                     .when()
                     .header("X-Host", discoverableClientInstanceId)
-                    .get(HttpRequestUtils.getUriFromGateway(DISCOVERABLE_GREET))
+                    .get(HttpRequestUtils.getUriFromGateway(DISCOVERABLE_GREET, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
                     .then()
                     .statusCode(is(HttpStatus.SC_OK))
                     .extract().body().asString();
