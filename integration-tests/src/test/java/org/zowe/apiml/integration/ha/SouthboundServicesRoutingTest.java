@@ -146,7 +146,6 @@ public class SouthboundServicesRoutingTest {
 
             void shutDownGatewayInstance(String host) {
                 //@formatter:off
-                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
                 given()
                     .auth().basic(username, password)
                     .when()
