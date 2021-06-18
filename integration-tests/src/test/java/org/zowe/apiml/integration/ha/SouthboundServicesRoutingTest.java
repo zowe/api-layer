@@ -17,7 +17,7 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.categories.ChaoticHATest;
+import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -37,13 +37,12 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 /**
  * Verify that a southbound service can route through multiples Gateway instances
  */
-@ChaoticHATest
+@HATest
 public class SouthboundServicesRoutingTest {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
 
     private final String DISCOVERABLE_GREET = "/api/v1/discoverableclient/greeting";
     private final String EUREKA_APPS = "/eureka/apps";
-    private final String GATEWAY_SHUTDOWN = "/application/shutdown";
 
     private String username;
     private String password;
@@ -82,7 +81,6 @@ public class SouthboundServicesRoutingTest {
                 String host = gatewayServiceConfiguration.getHost().split(",")[0];
                 //@formatter:off
                 extractHostAndPortMetadata();
-                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
                 String discoverableClientInstanceId = discoverableClientHost + ":" + "discoverableclient" + ":" + discoverableClientPort;
                 given()
                     .when()
@@ -128,32 +126,6 @@ public class SouthboundServicesRoutingTest {
                 Node instanceNode = discoverableClientNode.children().get("instance");
                 discoverableClientHost = instanceNode.children().get("hostName").toString();
                 discoverableClientPort = instanceNode.children().get("securePort").toString();
-            }
-        }
-
-        @Nested
-        class whenOneGatewayIsNotAvailable {
-            @Test
-            void routeToTheAliveGatewayInstance() throws IOException {
-                final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances > 1);
-                String[] hosts = gatewayServiceConfiguration.getHost().split(",");
-                shutDownGatewayInstance(hosts[0]);
-                int port = gatewayServiceConfiguration.getPort();
-                //@formatter:off
-                HttpRequestUtils.getResponse(DISCOVERABLE_GREET, SC_OK, port, hosts[1]);
-            }
-
-            void shutDownGatewayInstance(String host) {
-                //@formatter:off
-                given()
-                    .auth().basic(username, password)
-                    .when()
-                    .post(HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
-                    .then()
-                    .statusCode(is(SC_OK))
-                    .extract().body().asString();
-                //@formatter:on
             }
         }
     }
