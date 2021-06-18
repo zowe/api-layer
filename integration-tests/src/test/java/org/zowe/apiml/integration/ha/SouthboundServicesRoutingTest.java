@@ -43,6 +43,8 @@ public class SouthboundServicesRoutingTest {
 
     private final String DISCOVERABLE_GREET = "/api/v1/discoverableclient/greeting";
     private final String EUREKA_APPS = "/eureka/apps";
+    private final String GATEWAY_SHUTDOWN = "/application/shutdown";
+
     private String username;
     private String password;
     private String discoverableClientPort;
@@ -126,6 +128,32 @@ public class SouthboundServicesRoutingTest {
                 Node instanceNode = discoverableClientNode.children().get("instance");
                 discoverableClientHost = instanceNode.children().get("hostName").toString();
                 discoverableClientPort = instanceNode.children().get("securePort").toString();
+            }
+        }
+
+        @Nested
+        class whenOneGatewayIsNotAvailable {
+            @Test
+            void routeToTheAliveGatewayInstance() throws IOException {
+                final int instances = gatewayServiceConfiguration.getInstances();
+                assumeTrue(instances > 1);
+                String[] hosts = gatewayServiceConfiguration.getHost().split(",");
+                shutDownGatewayInstance(hosts[0]);
+                int port = gatewayServiceConfiguration.getPort();
+                //@formatter:off
+                HttpRequestUtils.getResponse(DISCOVERABLE_GREET, SC_OK, port, hosts[1]);
+            }
+
+            void shutDownGatewayInstance(String host) {
+                //@formatter:off
+                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+                given()
+                    .when()
+                    .post(HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
+                    .then()
+                    .statusCode(is(SC_OK))
+                    .extract().body().asString();
+                //@formatter:on
             }
         }
     }
