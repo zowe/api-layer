@@ -104,13 +104,289 @@ jobs:
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-            - name: Store results
-              uses: actions/upload-artifact@v2
-              if: always()
-              with:
-                  name: CITests
-                  path: |
-                      integration-tests/build/reports/**
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: ContainerCITests
+                    path: |
+                        integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
+
+    CITestsRegistration:
+        needs: PublishContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 10
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-zosmf:
+                image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: ContainerCITestsRegistration
+                    path: |
+                        integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
+
+    CITestsZosmfRsu2012:
+        needs: PublishContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 10
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-zosmf:
+                image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    ZOSMF_APPLIED_APARS: PH12143,RSU2012
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew runZosmfAuthTest --scan --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: ContainerCITestsZosmfRsu2012
+                    path: |
+                        integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
+
+
+    CITestsZosmfWithoutJwt:
+        needs: PublishContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 10
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-zosmf:
+                image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    ZOSMF_APPLIED_APARS: ''
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew runZosmfAuthTest --scan --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: ContainerCITestsZosmfWithoutJwt
+                    path: |
+                        integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
+
+
+    CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
+        needs: PublishContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 10
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-zosmf:
+                image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    ZOSMF_APPLIED_APARS: AuthenticateApar
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew runZosmfAuthTest --scan --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint
+                    path: |
+                        integration-tests/build/reports/**
             -   name: Cleanup Gradle Cache
                 run: |
                     rm -f ~/.gradle/caches/modules-2/modules-2.lock
