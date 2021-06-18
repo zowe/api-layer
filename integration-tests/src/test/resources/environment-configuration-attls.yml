@@ -4,7 +4,7 @@ credentials:
     password: validPassword
 gatewayServiceConfiguration:
     scheme: https
-    host: reverse
+    host: reverse-proxy
     port: 10030
     internalPorts: 10030
     externalPort: 10030
@@ -17,7 +17,7 @@ discoveryServiceConfiguration:
     scheme: http
     user: user
     password: user
-    host: reverse
+    host: reverse-proxy
     port: 10001
     instances: 1
 discoverableClientConfiguration:

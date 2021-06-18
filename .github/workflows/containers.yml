@@ -439,6 +439,76 @@ jobs:
                     rm -f ~/.gradle/caches/modules-2/gc.properties
                     rm -rf ~/.gradle/caches/build-cache-1
 
+    CITestsATTLS:
+        needs: PublishContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 6
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-zosmf:
+                image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
+            reverse-proxy:
+                image: nginx
+                volumes:
+                    - /api-layer/docker/nginx/docker:/etc/nginx
+                    - /api-layer/keystore:/etc/ssl/private
+
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: CI Test with Gradle
+                run: >
+                    ./gradlew :integration-tests:runCITestsAttls --info -Denvironment.config=-attls -Denvironment.offPlatform=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: ContainerCITestsATTLS
+                    path: |
+                        integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
+
     CITestsWithRedis:
         needs: PublishContainers
         runs-on: ubuntu-latest
