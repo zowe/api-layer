@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
@@ -99,6 +100,8 @@ class LoginTest implements TestWithStartedInstances {
                     .post(loginUrl)
                 .then()
                     .statusCode(is(SC_NO_CONTENT))
+                    // RestAssured version in use doesn't have SameSite attribute in cookie so validate using the Set-Cookie header
+                    .header("Set-Cookie", containsString("SameSite=Strict"))
                     .cookie(COOKIE_NAME, not(isEmptyString()))
                     .extract().detailedCookie(COOKIE_NAME);
 
@@ -115,6 +118,8 @@ class LoginTest implements TestWithStartedInstances {
                     .post(loginUrl)
                 .then()
                     .statusCode(is(SC_NO_CONTENT))
+                    // RestAssured version in use doesn't have SameSite attribute in cookie so validate using the Set-Cookie header
+                    .header("Set-Cookie", containsString("SameSite=Strict"))
                     .cookie(COOKIE_NAME, not(isEmptyString()))
                     .extract().cookie(COOKIE_NAME);
 
