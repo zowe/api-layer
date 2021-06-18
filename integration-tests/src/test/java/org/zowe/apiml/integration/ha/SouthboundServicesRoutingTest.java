@@ -84,7 +84,7 @@ public class SouthboundServicesRoutingTest {
                 String discoverableClientInstanceId = discoverableClientHost + ":" + "discoverableclient" + ":" + discoverableClientPort;
                 given()
                     .when()
-                    .header("X-Host", discoverableClientInstanceId)
+                    .header("X-InstanceId", discoverableClientInstanceId)
                     .get(HttpRequestUtils.getUriFromGateway(DISCOVERABLE_GREET, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
                     .then()
                     .statusCode(is(HttpStatus.SC_OK))
@@ -101,7 +101,7 @@ public class SouthboundServicesRoutingTest {
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
                 given()
                     .when()
-                    .header("X-Host", "wrongService")
+                    .header("X-InstanceId", "wrongService")
                     .get(HttpRequestUtils.getUriFromGateway(DISCOVERABLE_GREET, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
                     .then()
                     .statusCode(is(HttpStatus.SC_SERVICE_UNAVAILABLE))
