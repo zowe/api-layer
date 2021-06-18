@@ -65,7 +65,6 @@ public class ChaoticTest {
                 String[] hosts = gatewayServiceConfiguration.getHost().split(",");
                 shutDownGatewayInstance(hosts[0]);
                 int port = gatewayServiceConfiguration.getPort();
-                //@formatter:off
                 HttpRequestUtils.getResponse(DISCOVERABLE_GREET, SC_OK, port, hosts[1]);
             }
 
@@ -76,7 +75,7 @@ public class ChaoticTest {
                 given()
                     .auth().basic(username, password)
                     .when()
-                    .post(HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
+                    .get(HttpRequestUtils.getUriFromGateway("/", gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
                     .then()
                     .statusCode(is(SC_OK))
                     .extract().body().asString();
