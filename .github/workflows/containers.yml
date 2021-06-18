@@ -466,8 +466,8 @@ jobs:
                     - 10030:10030
                     - 10016:10016
                 volumes:
-                    - ../../docker/nginx/conf:/etc/nginx
-                    - ../../keystore:/etc/ssl/private
+                    - /api-layer/docker/nginx/conf:/etc/nginx
+                    - /api-layer/keystore:/etc/ssl/private
                 options: '--add-host=host.docker.internal: host-gateway'
 
 
@@ -552,16 +552,16 @@ jobs:
                 ports:
                     - "6379:6379"
                 volumes:
-                    - ../../keystore:/usr/local/etc/keystore
-                    - ../../docker/redis/master-tls:/usr/local/etc/redis/
+                    - /api-layer/keystore:/usr/local/etc/keystore
+                    - /api-layer/docker/redis/master-tls:/usr/local/etc/redis/
 
             redis-replica:
                 image: redis:latest
                 ports:
                     - "6380:6380"
                 volumes:
-                    - ../../keystore:/usr/local/etc/keystore
-                    - ../../docker/redis/replica-tls:/usr/local/etc/redis/
+                    - /api-layer/keystore:/usr/local/etc/keystore
+                    - /api-layer/docker/redis/replica-tls:/usr/local/etc/redis/
 
 
         steps:
@@ -648,14 +648,14 @@ jobs:
                 ports:
                     - "6379:6379"
                 volumes:
-                    - ../../docker/redis/master:/usr/local/etc/redis/
+                    - /api-layer/docker/redis/master:/usr/local/etc/redis/
 
             redis-replica:
                 image: redis:latest
                 ports:
                     - "6380:6380"
                 volumes:
-                    - ../../docker/redis/replica:/usr/local/etc/redis/
+                    - /api-layer/docker/redis/replica:/usr/local/etc/redis/
 
         steps:
             -   uses: actions/checkout@v2
