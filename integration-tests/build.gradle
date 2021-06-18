@@ -83,6 +83,17 @@ task environmentCheck(type: Test) {
 }
 
 
+task runStartUpCheck(type: Test) {
+    group 'integration tests'
+    description "Check that the API Mediation Layer is up and running"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags 'StartupCheck'
+    }
+    outputs.upToDateWhen { false }
+}
+
 task runWebsocketTests(type: Test) {
     group "integration tests"
     description "Runs tests for WebSockets"

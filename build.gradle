@@ -131,6 +131,11 @@ task runCITests(dependsOn: [":integration-tests:runCITests"]) {
     group "Integration tests"
 }
 
+task runStartupCheck(dependsOn: [":integration-tests:runStartupCheck"]) {
+    description "Run Startup check"
+    group "Integration tests"
+}
+
 task runContainerTests(dependsOn: [":integration-tests:runContainerTests"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
