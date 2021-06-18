@@ -12,12 +12,15 @@ package org.zowe.apiml.functional.apicatalog;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.SslContext;
 
 import java.util.stream.Stream;
 
@@ -52,8 +55,9 @@ public class ApiCatalogAuthenticationTest {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
+         SslContext.prepareSslAuthentication();
     }
 
     //@formatter:off
@@ -123,6 +127,39 @@ public class ApiCatalogAuthenticationTest {
                         "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+        }
+    }
+
+    @Nested
+    class WhenAccessingApidocWithCertificate {
+
+        @Test
+        void givenValidCertificate_thenReturnOk() {
+            given()
+                .config(SslContext.clientCertApiml)
+            .when()
+                .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + CATALOG_APIDOC_ENDPOINT))
+            .then()
+                .statusCode(HttpStatus.OK.value());
+        }
+
+        @Test
+        void givenUnTrustedCertificateAndNoBasicAuth_thenReturnUnauthorized() {
+            given()
+                .config(SslContext.selfSignedUntrusted)
+            .when()
+                .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + CATALOG_APIDOC_ENDPOINT))
+            .then()
+                .statusCode(HttpStatus.UNAUTHORIZED.value());
+        }
+
+        @Test
+        void givenNoCertificateAndNoBasicAuth_thenReturnUnauthorized() {
+            given()
+            .when()
+                .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + CATALOG_APIDOC_ENDPOINT))
+            .then()
+                .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
     }
 }
