@@ -63,7 +63,7 @@ public class SouthboundServicesRoutingTest {
             @Test
             void routeToAllGatewayInstances() throws IOException {
                 final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances == 2);
+                assumeTrue(instances > 1);
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
                 String[] hosts = gatewayServiceConfiguration.getHost().split(",");
                 int port = gatewayServiceConfiguration.getPort();
@@ -76,7 +76,7 @@ public class SouthboundServicesRoutingTest {
             @Test
             void routeToSpecificInstance() throws URISyntaxException {
                 final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances == 2);
+                assumeTrue(instances > 1);
                 String host = gatewayServiceConfiguration.getHost().split(",")[0];
                 //@formatter:off
                 extractHostAndPortMetadata();
@@ -95,7 +95,7 @@ public class SouthboundServicesRoutingTest {
             @Test
             void routeToUndefinedGatewayInstance() {
                 final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances == 2);
+                assumeTrue(instances > 1);
                 String host = gatewayServiceConfiguration.getHost().split(",")[0];
                 //@formatter:off
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());

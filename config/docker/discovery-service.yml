@@ -3,7 +3,6 @@ apiml:
         hostname: discovery-service
     discovery:
         staticApiDefinitionsDirectories: config/docker/api-defs
-        allPeersUrls: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
     security:
         ssl:
             verifySslCertificatesOfServices: false

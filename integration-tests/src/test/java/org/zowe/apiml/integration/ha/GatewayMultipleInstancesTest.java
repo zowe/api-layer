@@ -63,7 +63,7 @@ public class GatewayMultipleInstancesTest {
         class WhenSendingRequest {
             @Test
             void gatewayInstancesAreUp() throws IOException {
-                assumeTrue(instances == 2);
+                assumeTrue(instances > 1);
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
                 assertThat(gatewayServiceConfiguration.getInternalPorts(), is(not(nullValue())), is(not("")));
 
@@ -72,7 +72,7 @@ public class GatewayMultipleInstancesTest {
 
             @Test
             void gatewayInstancesAreRegistered() throws URISyntaxException {
-                assumeTrue(instances == 2);
+                assumeTrue(instances > 1);
                 //@formatter:off
                 String xml =
                     given()
@@ -103,7 +103,7 @@ public class GatewayMultipleInstancesTest {
                     HttpResponse response = HttpRequestUtils.getResponse(HEALTH_ENDPOINT, HttpStatus.SC_OK, port, host);
                     DocumentContext context = JsonPath.parse(EntityUtils.toString(response.getEntity()));
                     Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
-                    assertThat(amountOfActiveGateways, is(2));
+                    assertThat(amountOfActiveGateways, is(instances));
                 }
 
             }
