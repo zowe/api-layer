@@ -192,7 +192,10 @@ task runHATests(dependsOn: ":integration-tests:runHATests") {
     description "Run HA tests tests only"
     group "Integration tests"
 }
-
+task runChaoticHATests(dependsOn: ":integration-tests:runChaoticHATests") {
+    description "Run Chaotic HA tests tests only"
+    group "Integration tests"
+}
 
 clean.dependsOn nodejsClean
 

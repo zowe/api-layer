@@ -17,7 +17,7 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.categories.HATest;
+import org.zowe.apiml.util.categories.ChaoticHATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -37,7 +37,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 /**
  * Verify that a southbound service can route through multiples Gateway instances
  */
-@HATest
+@ChaoticHATest
 public class SouthboundServicesRoutingTest {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
 

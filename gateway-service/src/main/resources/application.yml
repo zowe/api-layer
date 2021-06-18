@@ -230,7 +230,10 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,routes,loggers
+                include: health,info,routes,loggers,shutdown
+    endpoint:
+        shutdown:
+            enabled: true
 
 logging:
     level:
