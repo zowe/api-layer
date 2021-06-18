@@ -468,7 +468,7 @@ jobs:
                 volumes:
                     - /api-layer/docker/nginx/conf:/etc/nginx
                     - /api-layer/keystore:/etc/ssl/private
-                options: '--add-host=host.docker.internal: host-gateway'
+                options: '--add-host host.docker.internal:host-gateway'
 
 
         steps:
