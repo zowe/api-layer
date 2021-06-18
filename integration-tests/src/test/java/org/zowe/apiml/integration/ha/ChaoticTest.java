@@ -11,6 +11,7 @@
 package org.zowe.apiml.integration.ha;
 
 import io.restassured.RestAssured;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 /**
  * Verify behaviour of the application under chaotic testing
  */
+@Slf4j
 @ChaoticHATest
 public class ChaoticTest {
 
@@ -68,6 +70,8 @@ public class ChaoticTest {
             }
 
             void shutDownGatewayInstance(String host) {
+                log.error("CIAO:");
+                log.error(HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()).toString());
                 //@formatter:off
                 given()
                     .auth().basic(username, password)
@@ -79,6 +83,32 @@ public class ChaoticTest {
                 //@formatter:on
             }
         }
+
+//        @Nested
+//        class whenOneDiscoveryServiceIsNotAvailable {
+//            @Test
+//            void routeToTheAliveGatewayInstance() throws IOException {
+//                final int instances = gatewayServiceConfiguration.getInstances();
+//                assumeTrue(instances > 1);
+//                String[] hosts = gatewayServiceConfiguration.getHost().split(",");
+//                shutDownGatewayInstance(hosts[0]);
+//                int port = gatewayServiceConfiguration.getPort();
+//                //@formatter:off
+//                HttpRequestUtils.getResponse(DISCOVERABLE_GREET, SC_OK, port, hosts[1]);
+//            }
+//
+//            void shutDownGatewayInstance(String host) {
+//                //@formatter:off
+//                given()
+//                    .auth().basic(username, password)
+//                    .when()
+//                    .post(HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
+//                    .then()
+//                    .statusCode(is(SC_OK))
+//                    .extract().body().asString();
+//                //@formatter:on
+//            }
+//        }
     }
 
 }
