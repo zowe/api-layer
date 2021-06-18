@@ -131,7 +131,7 @@ task runCITests(dependsOn: [":integration-tests:runCITests"]) {
     group "Integration tests"
 }
 
-task runStartupCheck(dependsOn: [":integration-tests:runStartupCheck"]) {
+task runStartUpCheck(dependsOn: [":integration-tests:runStartUpCheck"]) {
     description "Run Startup check"
     group "Integration tests"
 }

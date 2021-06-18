@@ -322,7 +322,8 @@ task runBaseTests(type: Test) {
         )
         excludeTags(
             'MainframeDependentTests',
-            'RegistrationTest'
+            'RegistrationTest',
+            'NodeEnablerTest'
         )
     }
 }

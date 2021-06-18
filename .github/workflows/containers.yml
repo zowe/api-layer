@@ -51,7 +51,7 @@ jobs:
         needs: PublishContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 6
 
         services:
             api-catalog-services:
@@ -115,7 +115,7 @@ jobs:
         needs: PublishContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 6
 
         services:
             api-catalog-services:
@@ -179,7 +179,7 @@ jobs:
         needs: PublishContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 6
 
         services:
             api-catalog-services:
@@ -246,7 +246,7 @@ jobs:
         needs: PublishContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 6
 
         services:
             api-catalog-services:
@@ -313,7 +313,7 @@ jobs:
         needs: PublishContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 6
 
         services:
             api-catalog-services:
@@ -379,7 +379,7 @@ jobs:
         needs: PublishContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 6
 
         services:
             api-catalog-services:
@@ -443,7 +443,7 @@ jobs:
         needs: PublishContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 6
 
         services:
             api-catalog-services:
@@ -458,6 +458,18 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
+            reverse:
+                image: nginx
+                ports:
+                    - 10000:10000
+                    - 10001:10001
+                    - 10030:10030
+                    - 10016:10016
+                volumes:
+                    - ../../docker/nginx/conf:/etc/nginx
+                    - ../../keystore:/etc/ssl/private
+                options: '--add-host=host.docker.internal: host-gateway'
+
 
         steps:
             -   uses: actions/checkout@v2
@@ -486,10 +498,6 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-            -   name: Start nginx proxy
-                run: |
-                    cd docker/nginx
-                    docker-compose up --detach
             -   name: CI Test with Gradle
                 run: >
                     ./gradlew runCITestsAttls --info -Denvironment.config=-docker -Denvironment.offPlatform=true
@@ -511,7 +519,7 @@ jobs:
         needs: PublishContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 6
 
         services:
             api-catalog-services:
@@ -539,6 +547,22 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZOSMF_APPLIED_APARS: AuthenticateApar
+            redis-master:
+                image: redis:latest
+                ports:
+                    - "6379:6379"
+                volumes:
+                    - ../../keystore:/usr/local/etc/keystore
+                    - ../../docker/redis/master-tls:/usr/local/etc/redis/
+
+            redis-replica:
+                image: redis:latest
+                ports:
+                    - "6380:6380"
+                volumes:
+                    - ../../keystore:/usr/local/etc/keystore
+                    - ../../docker/redis/replica-tls:/usr/local/etc/redis/
+
 
         steps:
             -   uses: actions/checkout@v2
@@ -591,7 +615,7 @@ jobs:
         needs: PublishContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
-        timeout-minutes: 10
+        timeout-minutes: 6
 
         services:
             api-catalog-services:
@@ -619,6 +643,19 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZOSMF_APPLIED_APARS: AuthenticateApar
+            redis-master:
+                image: redis:latest
+                ports:
+                    - "6379:6379"
+                volumes:
+                    - ../../docker/redis/master:/usr/local/etc/redis/
+
+            redis-replica:
+                image: redis:latest
+                ports:
+                    - "6380:6380"
+                volumes:
+                    - ../../docker/redis/replica:/usr/local/etc/redis/
 
         steps:
             -   uses: actions/checkout@v2
@@ -647,9 +684,6 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-            -   name: Start Redis
-                run: |
-                    docker-compose -f redis/docker-compose-replica.yml up --detach
             -   name: Build with Gradle
                 run: >
                     ./gradlew runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
