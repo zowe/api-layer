@@ -500,7 +500,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: CI Test with Gradle
                 run: >
-                    ./gradlew :integration-tests:runCITestsAttls --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runCITestsAttls --info -Denvironment.config=-attls -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
@@ -683,7 +683,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-attls -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
