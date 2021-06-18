@@ -38,16 +38,20 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
+            -   name: Start nginx proxy
+                run: |
+                    cd docker/nginx
+                    docker-compose up --detach
             -   name: Build with Gradle
                 run: >
-                    ./gradlew build runStartUpCheck -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            - name: Store results
-              uses: actions/upload-artifact@v2
-              if: always()
-              with:
-                  name: CITests
-                  path: |
-                      integration-tests/build/reports/**
+                    ./gradlew build runCITestsAttls -Denvironment.config=-attls -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: CITests
+                    path: |
+                        integration-tests/build/reports/**
             -   name: Cleanup Gradle Cache
                 run: |
                     rm -f ~/.gradle/caches/modules-2/modules-2.lock
