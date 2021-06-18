@@ -258,6 +258,9 @@ management:
             base-path: /application
             exposure:
                 include: "*"
+    endpoint:
+        shutdown:
+            enabled: true
 
 zuul.debug.request: true
 ---
