@@ -16,9 +16,7 @@ import io.restassured.RestAssured;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.util.EntityUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.categories.ChaoticHATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -40,6 +38,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  * Verify behaviour of the application under chaotic testing
  */
 @ChaoticHATest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ChaoticTest {
 
     private GatewayServiceConfiguration gatewayServiceConfiguration;
@@ -70,6 +69,7 @@ public class ChaoticTest {
             // attempt
 
             @Test
+            @Order(1)
             void gatewayInstancesAreUp() throws IOException {
                 assumeTrue(instances > 1);
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -90,6 +90,7 @@ public class ChaoticTest {
             }
             //
             @Test
+            @Order(2)
             void routeToTheAliveGatewayInstance() throws IOException {
                 final int instances = gatewayServiceConfiguration.getInstances();
                 assumeTrue(instances > 1);
