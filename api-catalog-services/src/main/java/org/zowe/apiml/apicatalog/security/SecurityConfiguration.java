@@ -20,8 +20,12 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
@@ -32,6 +36,8 @@ import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
+
+import java.util.Collections;
 
 /**
  * Main configuration class of Spring web security for Api Catalog
@@ -112,12 +118,23 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
+            .x509().userDetailsService(x509UserDetailsService()).and()
+            .addFilterBefore(simpleX509AuthenticationFilter("/apidoc/**"), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
             .antMatchers("/static-api/**").authenticated()
             .antMatchers("/containers/**").authenticated()
             .antMatchers("/apidoc/**").authenticated()
             .antMatchers("/application/health", "/application/info").permitAll()
             .antMatchers("/application/**").authenticated();
+    }
+
+    private ACSimpleX509AuthenticationFilter simpleX509AuthenticationFilter(String loginEndpoint) {
+        PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
+        provider.setPreAuthenticatedUserDetailsService((token) -> new User(token.getPrincipal().toString(), "", Collections.singletonList(new SimpleGrantedAuthority("TRUSTED_CERTIFICATE"))));
+
+        return new ACSimpleX509AuthenticationFilter(loginEndpoint,
+            handlerInitializer.getSuccessfulLoginHandler(),
+            provider);
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
@@ -151,6 +168,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getAuthenticationFailureHandler(),
             handlerInitializer.getResourceAccessExceptionHandler(),
             authConfigurationProperties);
+    }
+
+    private UserDetailsService x509UserDetailsService() {
+        return username -> new User("apidocClient", "", Collections.emptyList());
     }
 
     @Bean
