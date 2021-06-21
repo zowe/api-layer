@@ -39,3 +39,14 @@ server:
         keyStorePassword: password
         trustStore: /docker/all-services.truststore.p12
         trustStorePassword: password
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: shutdown
+
+    endpoint:
+        shutdown:
+            enabled: true
