@@ -60,9 +60,9 @@ public class SouthboundServicesRoutingTest {
     @Nested
     class GivenHASetUp {
         @Nested
-        class WhenDiscoverableClientSendRequest {
+        class WhenCallingDiscoverableClient {
             @Test
-            void routeToAllGatewayInstances() throws IOException {
+            void routeThroughEveryInstance() throws IOException {
                 final int instances = gatewayServiceConfiguration.getInstances();
                 assumeTrue(instances > 1);
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
@@ -93,7 +93,7 @@ public class SouthboundServicesRoutingTest {
             }
 
             @Test
-            void routeToUndefinedGatewayInstance() {
+            void routeToWrongInstanceIdentifier() {
                 final int instances = gatewayServiceConfiguration.getInstances();
                 assumeTrue(instances > 1);
                 String host = gatewayServiceConfiguration.getHost().split(",")[0];
@@ -126,6 +126,8 @@ public class SouthboundServicesRoutingTest {
                 Node instanceNode = discoverableClientNode.children().get("instance");
                 discoverableClientHost = instanceNode.children().get("hostName").toString();
                 discoverableClientPort = instanceNode.children().get("securePort").toString();
+                assertThat(discoverableClientHost, is(not("")));
+                assertThat(discoverableClientPort, is(not("")));
             }
         }
     }
