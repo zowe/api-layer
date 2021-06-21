@@ -673,23 +673,6 @@ jobs:
                     java-version: 1.8
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
-            -   name: Restore produced jars
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        build/libs
-                        api-catalog-services/build/libs
-                        caching-service/build/libs
-                        discoverable-client/build/libs
-                        discovery-service/build/libs
-                        gateway-service/build/libs
-                        integration-tests/build
-                        mock-zosmf/build/libs
-                        onboarding-enabler-nodejs/node_modules
-                        onboarding-enabler-nodejs-sample-app/node_modules
-                    key: ${{ runner.OS }}-artifacts001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-artifacts001-
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -710,10 +693,7 @@ jobs:
 
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runHATests --info --scan
-                    -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
-                    -Dcredentials.user=USER -Dcredentials.password=validPassword
-                    -Dzosmf.serviceId=mockzosmf -Denvironment.offPlatform=true
+                    ./gradlew runHATests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
