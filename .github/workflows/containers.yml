@@ -502,19 +502,6 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-            -   name: Install Docker
-                run: |
-                    apt-get update
-                    apt-get install -y curl gnupg2
-                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-                    apt-get update
-                    apt-get install -y docker-ce docker-ce-cli containerd.io
-            -   name: Get data
-                run: |
-                    docker ps -a
-                    docker ps -a -q | xargs -L 1 docker logs
-                    curl -k https://reverse-proxy:10030/
             -   name: CI Test with Gradle
                 run: >
                     ./gradlew :integration-tests:runCITestsAttls --info -Denvironment.config=-attls -Denvironment.offPlatform=true
