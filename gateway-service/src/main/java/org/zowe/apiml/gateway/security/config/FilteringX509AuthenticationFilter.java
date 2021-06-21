@@ -26,22 +26,22 @@ import java.util.stream.Collectors;
  * This filter processes certificates on request. It decides, which certificates are considered for client authentication
  */
 @Slf4j
-public class ApimlX509Filter extends X509AuthenticationFilter {
+public class FilteringX509AuthenticationFilter extends X509AuthenticationFilter {
 
     protected static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
     protected static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
     protected static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
 
     private final Set<String> publicKeyCertificatesBase64;
-    private List<RequestMatcher> runOnThesePaths;
+    private List<RequestMatcher> filterCertsOnThesePaths;
 
-    public ApimlX509Filter(Set<String> publicKeyCertificatesBase64) {
+    public FilteringX509AuthenticationFilter(Set<String> publicKeyCertificatesBase64) {
         this(publicKeyCertificatesBase64, Collections.singletonList(new AntPathRequestMatcher("/**")));
     }
 
-    public ApimlX509Filter(Set<String> publicKeyCertificatesBase64, List<RequestMatcher> runOnThesePaths) {
+    public FilteringX509AuthenticationFilter(Set<String> publicKeyCertificatesBase64, List<RequestMatcher> filterCertsOnThesePaths) {
         this.publicKeyCertificatesBase64 = publicKeyCertificatesBase64;
-        this.runOnThesePaths = runOnThesePaths;
+        this.filterCertsOnThesePaths = filterCertsOnThesePaths;
     }
 
     private Set<String> getPublicKeyCertificatesBase64() {
@@ -78,10 +78,14 @@ public class ApimlX509Filter extends X509AuthenticationFilter {
         throws IOException, ServletException {
         HttpServletRequest sevletRequest = (HttpServletRequest) request;
 
-        if (runOnThesePaths.stream().anyMatch(requestMatcher -> requestMatcher.matches(sevletRequest))) {
+        if (filterCertsOnThesePaths.stream().anyMatch(requestMatcher -> requestMatcher.matches(sevletRequest))) {
             categorizeCerts(request);
+            super.doFilter(request, response, chain);
+        } else {
+            super.doFilter(request, response, chain);
         }
-        super.doFilter(request, response, chain);
+
+
     }
 
     private X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {

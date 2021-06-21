@@ -30,12 +30,12 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
-class X509AuthenticationFilterTest {
+class SimpleX509AuthenticationFilterTest {
 
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
 
-    private X509AuthenticationFilter x509AuthenticationFilter;
+    private SimpleX509AuthenticationFilter simpleX509AuthenticationFilter;
 
     private AuthenticationSuccessHandler successHandler;
 
@@ -53,7 +53,7 @@ class X509AuthenticationFilterTest {
         authenticationProvider = mock(AuthenticationProvider.class);
         filterChain = mock(FilterChain.class);
         authenticationService = mock(AuthenticationService.class);
-        x509AuthenticationFilter = new X509AuthenticationFilter("/api/v1/gateway/auth/login", successHandler, authenticationProvider);
+        simpleX509AuthenticationFilter = new SimpleX509AuthenticationFilter("/api/v1/gateway/auth/login", successHandler, authenticationProvider);
 
         when(authenticationService.getJwtTokenFromRequest(httpServletRequest)).thenReturn(Optional.of("jwt"));
     }
@@ -65,7 +65,7 @@ class X509AuthenticationFilterTest {
         httpServletRequest.setAttribute("client.auth.X509Certificate", x509Certificate);
         httpServletResponse = new MockHttpServletResponse();
 
-        x509AuthenticationFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        simpleX509AuthenticationFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         verify(authenticationProvider).authenticate(new X509AuthenticationToken(x509Certificate));
     }
@@ -80,7 +80,7 @@ class X509AuthenticationFilterTest {
         httpServletResponse = new MockHttpServletResponse();
         when(authenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)))
             .thenReturn(new TokenAuthentication("user", "jwt"));
-        x509AuthenticationFilter.doFilter(httpServletRequest, httpServletResponse, filterChain);
+        simpleX509AuthenticationFilter.doFilter(httpServletRequest, httpServletResponse, filterChain);
 
         verify(authenticationProvider).authenticate(new X509AuthenticationToken(x509Certificate));
     }
@@ -91,7 +91,7 @@ class X509AuthenticationFilterTest {
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
 
-        x509AuthenticationFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        simpleX509AuthenticationFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         verify(authenticationProvider, times(0)).authenticate(new X509AuthenticationToken(x509Certificate));
     }

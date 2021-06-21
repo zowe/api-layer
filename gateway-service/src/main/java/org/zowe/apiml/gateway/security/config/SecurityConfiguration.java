@@ -25,12 +25,11 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.web.cors.*;
 import org.zowe.apiml.gateway.controllers.AuthController;
@@ -40,6 +39,7 @@ import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
+import org.zowe.apiml.gateway.services.ServicesInfoController;
 import org.zowe.apiml.product.filter.AttlsFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
@@ -126,7 +126,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpointOldFormat()).authenticated()
             .and().x509()
-            .userDetailsService(x509UserDetailsService())
+            .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+            .x509AuthenticationFilter(filteringX509AuthenticationFilter())
 
             // logout endpoint
             .and()
@@ -145,7 +146,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers("/application/health", "/application/info", "/application/version").permitAll()
             .antMatchers("/application/**").authenticated()
-            .antMatchers("/gateway/services/**").authenticated()
+
+            // services info controller
+            .and()
+            .authorizeRequests()
+            .antMatchers(HttpMethod.GET, ServicesInfoController.SERVICES_URL, ServicesInfoController.SERVICES_URL + "/**").authenticated()
+            .and().x509()
+            .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+            .x509AuthenticationFilter(filteringX509AuthenticationFilter()) //the filter leaks everywhere with .x509(), because it's set on the x509 configurer
 
             // auth controller
             .and()
@@ -158,29 +166,27 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).authenticated()
             .and().x509()
-            .x509AuthenticationFilter(apimlX509Filter())
             .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-            .userDetailsService(x509UserDetailsService())
+            .x509AuthenticationFilter(filteringX509AuthenticationFilter())
 
             // cache controller
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH, CacheServiceController.CONTROLLER_PATH + "/**").authenticated()
             .and().x509()
-            .x509AuthenticationFilter(apimlX509Filter())
             .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-            .userDetailsService(x509UserDetailsService())
+            .x509AuthenticationFilter(filteringX509AuthenticationFilter())
 
             // add filters - login, query, ticket
             .and()
 
             .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getGatewayLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpoint()), ShouldBeAlreadyAuthenticatedFilter.class)
-            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), X509AuthenticationFilter.class)
+            .addFilterBefore(simpleX509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpoint()), ShouldBeAlreadyAuthenticatedFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), SimpleX509AuthenticationFilter.class)
 
             .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), ShouldBeAlreadyAuthenticatedFilter.class)
-            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), X509AuthenticationFilter.class)
+            .addFilterBefore(simpleX509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), ShouldBeAlreadyAuthenticatedFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), SimpleX509AuthenticationFilter.class)
 
 
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
@@ -242,8 +248,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getResourceAccessExceptionHandler());
     }
 
-    private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
-        return new X509AuthenticationFilter(loginEndpoint,
+    private SimpleX509AuthenticationFilter simpleX509AuthenticationFilter(String loginEndpoint) {
+        return new SimpleX509AuthenticationFilter(loginEndpoint,
             handlerInitializer.getSuccessfulLoginHandler(),
             x509AuthenticationProvider);
     }
@@ -322,15 +328,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * is never used
      * 2) Move the logic to decide whether the client which is signed by the Gateway client certificate should be used
      * into the HttpClientChooser - This didn't work as the HttpClientChooser isn't used in these specific calls.
+     *
+     * The FilteringX509AuthenticationFilter can be configured with paths, where the filtering should occur. The paths are
+     * enumerated here with ant matchers.
      */
-    private ApimlX509Filter apimlX509Filter() throws Exception {
-        ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
+    private FilteringX509AuthenticationFilter filteringX509AuthenticationFilter() throws Exception {
+        FilteringX509AuthenticationFilter out = new FilteringX509AuthenticationFilter(publicKeyCertificatesBase64, Arrays.asList(
+            new AntPathRequestMatcher(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH),
+            new AntPathRequestMatcher(AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH),
+            new AntPathRequestMatcher(AuthController.CONTROLLER_PATH),
+            new AntPathRequestMatcher(CacheServiceController.CONTROLLER_PATH + "/**", HttpMethod.DELETE.name())
+            ));
+
         out.setAuthenticationManager(authenticationManager());
         return out;
-    }
-
-    private UserDetailsService x509UserDetailsService() {
-        return username -> new User("gatewayClient", "", Collections.emptyList());
     }
 
     @Override

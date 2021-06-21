@@ -27,7 +27,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class ApimlX509FilterTest {
+class FilteringX509AuthenticationFilterTest {
 
     private MockHttpServletRequest request;
     private HttpServletResponse response;
@@ -42,7 +42,7 @@ class ApimlX509FilterTest {
 
     @Test
     void givenNoCertificates_thenDontUpdate_whenCallFilter() throws IOException, ServletException {
-        ApimlX509Filter filter = new ApimlX509Filter(Collections.emptySet());
+        FilteringX509AuthenticationFilter filter = new FilteringX509AuthenticationFilter(Collections.emptySet());
 
         filter.doFilter(request, response, chain);
 
@@ -52,7 +52,7 @@ class ApimlX509FilterTest {
 
     @Test
     void giveCertificates_thenRemoveForeign_whenCallFilter() throws IOException, ServletException {
-        ApimlX509Filter filter = new ApimlX509Filter(new HashSet<>(Arrays.asList(
+        FilteringX509AuthenticationFilter filter = new FilteringX509AuthenticationFilter(new HashSet<>(Arrays.asList(
             X509Utils.correctBase64("apimlCert1"),
             X509Utils.correctBase64("apimlCert2")
         )));
@@ -93,13 +93,13 @@ class ApimlX509FilterTest {
                 X509Utils.getCertificate(X509Utils.correctBase64("foreignCert2")),
                 X509Utils.getCertificate(X509Utils.correctBase64("apimlCert2"))
             };
-            request.setAttribute(ApimlX509Filter.ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, certificates);
+            request.setAttribute(FilteringX509AuthenticationFilter.ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, certificates);
             requestSpy = spy(request);
         }
 
         @Test
         void whenNoMatcherConstructorThenDoFiltering() throws IOException, ServletException {
-            ApimlX509Filter underTest = new ApimlX509Filter(Collections.emptySet());
+            FilteringX509AuthenticationFilter underTest = new FilteringX509AuthenticationFilter(Collections.emptySet());
             underTest.doFilter(requestSpy, response, chain);
             verifyFilteringHappened(requestSpy, atLeastOnce());
         }
@@ -107,7 +107,7 @@ class ApimlX509FilterTest {
         @Test
         void whenUrlMatchesThenDoFiltering() throws IOException, ServletException {
 
-            ApimlX509Filter underTest = getApimlX509Filter(new AntPathRequestMatcher("/"));
+            FilteringX509AuthenticationFilter underTest = getApimlX509Filter(new AntPathRequestMatcher("/"));
 
             underTest.doFilter(requestSpy, response, chain);
             verifyFilteringHappened(requestSpy, never());
@@ -117,8 +117,8 @@ class ApimlX509FilterTest {
             verifyFilteringHappened(requestSpy, atLeastOnce());
         }
 
-        private ApimlX509Filter getApimlX509Filter(AntPathRequestMatcher matcher) {
-            ApimlX509Filter underTest = new ApimlX509Filter(Collections.emptySet(),
+        private FilteringX509AuthenticationFilter getApimlX509Filter(AntPathRequestMatcher matcher) {
+            FilteringX509AuthenticationFilter underTest = new FilteringX509AuthenticationFilter(Collections.emptySet(),
                 Collections.singletonList(matcher)
             );
             underTest.setAuthenticationDetailsSource(mock(AuthenticationDetailsSource.class));
@@ -127,8 +127,8 @@ class ApimlX509FilterTest {
         }
 
         void verifyFilteringHappened(HttpServletRequest mock, VerificationMode mode) {
-            verify(mock, mode).setAttribute(eq(ApimlX509Filter.ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE), any());
-            verify(mock, mode).setAttribute(eq(ApimlX509Filter.ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE), any());
+            verify(mock, mode).setAttribute(eq(FilteringX509AuthenticationFilter.ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE), any());
+            verify(mock, mode).setAttribute(eq(FilteringX509AuthenticationFilter.ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE), any());
         }
     }
 
