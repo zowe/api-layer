@@ -424,19 +424,3 @@ task runHATests(type: Test) {
     }
 
 }
-
-task runChaoticHATests(type: Test) {
-    group "Integration tests"
-    description "Run Chaotic tests verifying High Availability"
-
-    outputs.cacheIf { false }
-
-    systemProperty "environment.ha", true
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
-            'ChaoticHATest'
-        )
-    }
-
-}
