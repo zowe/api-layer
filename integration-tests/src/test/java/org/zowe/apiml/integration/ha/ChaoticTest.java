@@ -11,32 +11,26 @@
 package org.zowe.apiml.integration.ha;
 
 import io.restassured.RestAssured;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.ChaoticHATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
 import java.util.Collections;
 
+import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 /**
  * Verify behaviour of the application under chaotic testing
  */
-@Slf4j
 @ChaoticHATest
 public class ChaoticTest {
 
@@ -73,26 +67,15 @@ public class ChaoticTest {
             }
 
             void shutDownGatewayInstance(String host) throws IOException {
-                log.error("CIAO:");
-                log.error(HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()).toString());
-//                //@formatter:off
-//                given()
-//                    .auth().basic(username, password)
-//                    .when()
-//                    .post(HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
-//                    .then()
-//                    .statusCode(is(SC_OK))
-//                    .extract().body().asString();
-//                //@formatter:on
-                HttpPost request = new HttpPost(
-                    HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList())
-                );
-
-                // When
-                HttpResponse response = HttpClientUtils.client().execute(request);
-
-                // Then
-                assertThat(response.getStatusLine().getStatusCode(), equalTo(SC_OK));
+                //@formatter:off
+                given()
+                    .auth().basic(username, password)
+                    .when()
+                    .post(HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
+                    .then()
+                    .statusCode(is(SC_OK))
+                    .extract().body().asString();
+                //@formatter:on
             }
         }
 
