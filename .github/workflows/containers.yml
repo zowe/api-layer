@@ -708,16 +708,16 @@ jobs:
                     restore-keys: |
                         ${{ runner.OS }}-node001-
 
-#            -   name: Run HA Tests
-#                run: >
-#                    ./gradlew runHATests --info --scan
-#                    -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
-#                    -Dcredentials.user=USER -Dcredentials.password=validPassword
-#                    -Dzosmf.serviceId=mockzosmf -Denvironment.offPlatform=true
-#                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-#                env:
-#                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-#                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Run HA Tests
+                run: >
+                    ./gradlew runHATests --info --scan
+                    -DauxiliaryUserList.value="unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword"
+                    -Dcredentials.user=USER -Dcredentials.password=validPassword
+                    -Dzosmf.serviceId=mockzosmf -Denvironment.offPlatform=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Chaotic HA Tests
                 run: >
