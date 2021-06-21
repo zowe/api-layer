@@ -107,8 +107,8 @@ public class ChaoticTest {
                     .when()
                     .post(HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
                     .then()
-                    .statusCode(is(SC_OK))
-                    .extract().body().asString();
+                    .statusCode(is(SC_OK));
+//                    .extract().body().asString();
                 //@formatter:on
             }
         }
