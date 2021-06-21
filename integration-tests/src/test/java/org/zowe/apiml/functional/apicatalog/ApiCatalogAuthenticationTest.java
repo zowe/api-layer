@@ -10,6 +10,7 @@
 package org.zowe.apiml.functional.apicatalog;
 
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -54,10 +55,10 @@ public class ApiCatalogAuthenticationTest {
         );
     }
 
-    @BeforeEach
-    void setUp() throws Exception {
+    @BeforeAll
+    static void setUp() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
-         SslContext.prepareSslAuthentication();
+        SslContext.prepareSslAuthentication();
     }
 
     //@formatter:off
