@@ -442,7 +442,6 @@ jobs:
     CITestsATTLS:
         needs: PublishContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 6
 
         services:
@@ -494,6 +493,11 @@ jobs:
                     key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
                         ${{ runner.os }}-gradle001-
+            -   name: Get data
+                run: >
+                    curl -k https://reverse-proxy:10030/
+                    docker ps -a
+                    docker ps -a -q | xargs -L 1 docker logs
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
