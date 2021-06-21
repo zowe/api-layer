@@ -25,7 +25,12 @@ public class ConfigReader {
     private static String configurationFile;
 
     static {
-        configurationFile = "environment-configuration" + System.getProperty("environment.config", "") + ".yml";
+        if ("true".equals(System.getProperty("environment.ha"))) {
+            configurationFile = "environment-configuration-ha.yml";
+        }
+        else {
+            configurationFile = "environment-configuration" + System.getProperty("environment.config", "") + ".yml";
+        }
     }
 
     private static volatile EnvironmentConfiguration instance;
