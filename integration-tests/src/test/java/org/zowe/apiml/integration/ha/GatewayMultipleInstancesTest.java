@@ -27,7 +27,6 @@ import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
@@ -44,7 +43,6 @@ public class GatewayMultipleInstancesTest {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
     private DiscoveryRequests discoveryRequests;
     private final String HEALTH_ENDPOINT = "/application/health";
-    private final String EUREKA_APPS = "/eureka/apps";
     private String username;
     private String password;
     private int instances;
@@ -71,7 +69,7 @@ public class GatewayMultipleInstancesTest {
             }
 
             @Test
-            void gatewayInstancesAreRegistered() throws URISyntaxException {
+            void gatewayInstancesAreRegistered() {
                 assumeTrue(instances > 1);
 
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
