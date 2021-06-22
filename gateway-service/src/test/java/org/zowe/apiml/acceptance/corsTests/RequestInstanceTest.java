@@ -24,12 +24,15 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.reset;
 
 @AcceptanceTest
 public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
     @BeforeEach
     public void prepareApplications() {
+        reset(mockClient);
+
         applicationRegistry.clearApplications();
         applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false);
         applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true);

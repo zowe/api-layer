@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
 @AcceptanceTest
-@DirtiesContext
 class GatewaySpecificEndpointsCorsDisabledTest extends AcceptanceTestWithBasePath {
     @Test
     // Verify the header to allow CORS isn't set

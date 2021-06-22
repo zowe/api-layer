@@ -30,6 +30,7 @@ import java.util.Locale;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 
 @AcceptanceTest
 public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
@@ -49,6 +50,9 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @BeforeEach
     public void prepareApplications() {
         applicationRegistry.clearApplications();
+        reset(mockClient);
+        reset(httpEntity);
+
         applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, false, false);
         applicationRegistry.addApplication(serviceWithCustomConfiguration, true, true, false);
     }

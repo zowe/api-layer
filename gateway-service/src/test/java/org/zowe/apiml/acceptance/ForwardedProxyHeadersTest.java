@@ -22,10 +22,8 @@ import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
-@Disabled
 @AcceptanceTest
 class ForwardedProxyHeadersTest extends AcceptanceTestWithTwoServices {
     @Test

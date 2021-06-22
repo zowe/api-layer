@@ -27,7 +27,6 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@Disabled("Failing only on release pipeline")
 @AcceptanceTest
 class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
     private int SECOND = 1000;

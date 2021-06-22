@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@Disabled
 @AcceptanceTest
 class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
@@ -60,6 +59,7 @@ class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
     }
 
     @Test
+    @Disabled
     void givenRetryOnAllOperationsIsEnabled_whenPostReturnsUnavailable_thenRetry() throws Exception {
         applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
         mockUnavailableHttpResponseWithEntity(503);
