@@ -13,7 +13,6 @@ package org.zowe.apiml.integration.ha;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.restassured.RestAssured;
-import io.restassured.path.xml.XmlPath;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 
@@ -21,6 +20,7 @@ import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.DiscoveryRequests;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -29,7 +29,6 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -43,18 +42,19 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 @HATest
 public class GatewayMultipleInstancesTest {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
+    private DiscoveryRequests discoveryRequests;
     private final String HEALTH_ENDPOINT = "/application/health";
     private final String EUREKA_APPS = "/eureka/apps";
     private String username;
     private String password;
     private int instances;
-
     @BeforeEach
     void setUp() {
         gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
         instances = gatewayServiceConfiguration.getInstances();
+        discoveryRequests = new DiscoveryRequests();
     }
 
     @Nested
@@ -73,27 +73,14 @@ public class GatewayMultipleInstancesTest {
             @Test
             void gatewayInstancesAreRegistered() throws URISyntaxException {
                 assumeTrue(instances > 1);
-                //@formatter:off
-                String xml =
-                    given()
-                        .auth().basic(username, password)
-                        .when()
-                        .get(HttpRequestUtils.getUriFromDiscovery(EUREKA_APPS))
-                        .then()
-                        .statusCode(is(HttpStatus.SC_OK))
-                        .extract().body().asString();
-                //@formatter:on
-                String instanceId = XmlPath.from(xml).getString("applications.application.instance.instanceId");
-                assertThat(instanceId, is(not("")));
+
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
                 String[] hosts = gatewayServiceConfiguration.getHost().split(",");
 
-                for (String host : hosts) {
-                    assertThat(instanceId.contains(host + ":" + "gateway" + ":"), is(true));
-                }
-                for (String port : internalPorts) {
-                    assertThat(instanceId.contains(":" + "gateway" + ":" + port), is(true));
-                }
+                String instanceId = hosts[0] + ":" + "gateway" + ":" + internalPorts[0];
+                assertThat(discoveryRequests.isApplicationRegistered("GATEWAY", instanceId), is(true));
+                instanceId = hosts[1] + ":" + "gateway" + ":" + internalPorts[1];
+                assertThat(discoveryRequests.isApplicationRegistered("GATEWAY", instanceId), is(true));
             }
 
             private void checkInstancesAreUp() throws IOException {
