@@ -9,13 +9,19 @@ on:
 jobs:
     BuildAndTest:
         runs-on: ubuntu-latest
-        container: gradle:6.9.0-jdk8
         timeout-minutes: 10
 
         steps:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    distibution: 'adopt'
+                    java-version: 8.0.252
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
             -   name: Cache Gradle packages
                 uses: actions/cache@v2
                 with:
@@ -35,7 +41,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    gradle build runStartUpCheck -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    ./gradlew build runStartUpCheck -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
