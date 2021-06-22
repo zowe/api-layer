@@ -109,7 +109,7 @@ public class ApiMediationLayerStartupChecker {
                 String[] internalPorts = gatewayConfiguration.getInternalPorts().split(",");
                 for (String port : internalPorts) {
                     log.debug("Trying to access the Gateway at port {}", port);
-                    HttpRequestUtils.getResponse(healthEndpoint, HttpStatus.SC_OK, Integer.parseInt(port));
+                    HttpRequestUtils.getResponse(healthEndpoint, HttpStatus.SC_OK, Integer.parseInt(port), gatewayConfiguration.getHost());
                 }
             }
 
