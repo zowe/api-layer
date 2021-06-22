@@ -15,8 +15,8 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
+            -   name: Set up JDK
+                uses: actions/setup-java@v2
                 with:
                     distibution: 'adopt'
                     java-version: 8.0.252
