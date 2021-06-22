@@ -43,14 +43,10 @@ public class GatewayMultipleInstancesTest {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
     private DiscoveryRequests discoveryRequests;
     private final String HEALTH_ENDPOINT = "/application/health";
-    private String username;
-    private String password;
     private int instances;
     @BeforeEach
     void setUp() {
         gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        username = ConfigReader.environmentConfiguration().getCredentials().getUser();
-        password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
         instances = gatewayServiceConfiguration.getInstances();
         discoveryRequests = new DiscoveryRequests();
     }
