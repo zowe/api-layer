@@ -33,15 +33,15 @@ public class FilteringX509AuthenticationFilter extends X509AuthenticationFilter 
     protected static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
 
     private final Set<String> publicKeyCertificatesBase64;
-    private List<RequestMatcher> filterCertsOnThesePaths;
+    private List<RequestMatcher> runFilterOnThesePaths;
 
     public FilteringX509AuthenticationFilter(Set<String> publicKeyCertificatesBase64) {
         this(publicKeyCertificatesBase64, Collections.singletonList(new AntPathRequestMatcher("/**")));
     }
 
-    public FilteringX509AuthenticationFilter(Set<String> publicKeyCertificatesBase64, List<RequestMatcher> filterCertsOnThesePaths) {
+    public FilteringX509AuthenticationFilter(Set<String> publicKeyCertificatesBase64, List<RequestMatcher> runFilterOnThesePaths) {
         this.publicKeyCertificatesBase64 = publicKeyCertificatesBase64;
-        this.filterCertsOnThesePaths = filterCertsOnThesePaths;
+        this.runFilterOnThesePaths = runFilterOnThesePaths;
     }
 
     private Set<String> getPublicKeyCertificatesBase64() {
@@ -78,11 +78,11 @@ public class FilteringX509AuthenticationFilter extends X509AuthenticationFilter 
         throws IOException, ServletException {
         HttpServletRequest sevletRequest = (HttpServletRequest) request;
 
-        if (filterCertsOnThesePaths.stream().anyMatch(requestMatcher -> requestMatcher.matches(sevletRequest))) {
+        if (runFilterOnThesePaths.stream().anyMatch(requestMatcher -> requestMatcher.matches(sevletRequest))) {
             categorizeCerts(request);
             super.doFilter(request, response, chain);
         } else {
-            super.doFilter(request, response, chain);
+            chain.doFilter(request, response);
         }
 
 

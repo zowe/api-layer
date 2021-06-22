@@ -126,8 +126,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpointOldFormat()).authenticated()
             .and().x509()
-            .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-            .x509AuthenticationFilter(filteringX509AuthenticationFilter())
+            .userDetailsService(new SimpleUserDetailService())
 
             // logout endpoint
             .and()
@@ -166,16 +165,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).authenticated()
             .and().x509()
-            .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
             .x509AuthenticationFilter(filteringX509AuthenticationFilter())
+            .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
 
             // cache controller
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH, CacheServiceController.CONTROLLER_PATH + "/**").authenticated()
             .and().x509()
-            .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
             .x509AuthenticationFilter(filteringX509AuthenticationFilter())
+            .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
 
             // add filters - login, query, ticket
             .and()
@@ -331,12 +330,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      *
      * The FilteringX509AuthenticationFilter can be configured with paths, where the filtering should occur. The paths are
      * enumerated here with ant matchers.
+     *
+     * This filter is propagated on all endpoints. The {@link SimpleX509AuthenticationFilter} depends on this filter prefiltering
+     * the request. This filter should also authenticate and assign priviledge, so there is conflict.
      */
     private FilteringX509AuthenticationFilter filteringX509AuthenticationFilter() throws Exception {
         FilteringX509AuthenticationFilter out = new FilteringX509AuthenticationFilter(publicKeyCertificatesBase64, Arrays.asList(
             new AntPathRequestMatcher(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH),
             new AntPathRequestMatcher(AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH),
             new AntPathRequestMatcher(AuthController.CONTROLLER_PATH),
+            new AntPathRequestMatcher(authConfigurationProperties.getGatewayLoginEndpoint()),
+            new AntPathRequestMatcher(authConfigurationProperties.getGatewayLoginEndpointOldFormat()),
             new AntPathRequestMatcher(CacheServiceController.CONTROLLER_PATH + "/**", HttpMethod.DELETE.name())
             ));
 
