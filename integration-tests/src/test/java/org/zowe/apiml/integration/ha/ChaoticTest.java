@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -69,6 +70,7 @@ public class ChaoticTest {
             void shutDownGatewayInstance(String host) {
                 //@formatter:off
                 given()
+                    .contentType(JSON)
                     .auth().basic(username, password)
                     .when()
                     .post(HttpRequestUtils.getUriFromGateway(GATEWAY_SHUTDOWN, gatewayServiceConfiguration.getPort(), host, Collections.emptyList()))
