@@ -12,7 +12,6 @@ package org.zowe.apiml.acceptance;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
