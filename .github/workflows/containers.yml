@@ -701,7 +701,7 @@ jobs:
 
             -   name: Run Chaotic HA Tests
                 run: >
-                    ./gradlew runHATests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
+                    ./gradlew runChaoticHATests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
