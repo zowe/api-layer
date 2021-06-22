@@ -36,8 +36,8 @@ public class RemoteHandshake implements Verifier {
         } catch (MalformedURLException e) {
             System.out.println("Incorrect url \"" + serviceAddress + "\". Error message: " + e.getMessage());
         } catch (SSLHandshakeException e) {
-            System.out.println("Handshake failed. Service \"" + serviceAddress +
-                "\" is not trusted. Please add CA of this certificate to your truststore " + trustStore);
+            System.out.println("SSL Handshake failed for address \"" + serviceAddress +
+                "\". Cause of error: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Failed when calling url: \"" + serviceAddress + "\" Error message: " + e.getMessage());
         }

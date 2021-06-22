@@ -27,7 +27,12 @@ public class LocalVerifier implements Verifier {
             "  against truststore: " + stores.getConf().getTrustStore());
         try {
             String alias = stores.getConf().getKeyAlias();
-            Certificate[] certificate = stores.getKeyStore().getCertificateChain(alias);
+            Certificate[] certificate;
+            if(alias == null) {
+                alias = stores.getKeyStore().aliases().nextElement();
+            }
+            certificate = stores.getKeyStore().getCertificateChain(alias);
+
             if (certificate == null) {
                 System.out.println("Alias \"" + alias + "\" is not available in keystore.");
                 return;
@@ -57,7 +62,7 @@ public class LocalVerifier implements Verifier {
                 }
 
             }
-            System.out.println("Add " + x509Certificate.getIssuerDN() + " certificate authority to the trust store ");
+            System.err.println("No trusted certificate found. Add " + x509Certificate.getIssuerDN() + " certificate authority to the trust store ");
         } catch (KeyStoreException e) {
             System.err.println("Error loading secret from keystore" + e.getMessage());
         }

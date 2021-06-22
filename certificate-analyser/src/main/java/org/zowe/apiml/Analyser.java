@@ -30,19 +30,25 @@ public class Analyser {
             Stores stores = new Stores(conf);
             VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContextWithoutKeystore(stores);
             List<Verifier> verifiers = new ArrayList<>();
-            HttpClient client = new HttpClient(verifierSslContext.getSslContext());
+            HttpClient client;
             if (conf.getRemoteUrl() != null) {
-                verifiers.add(new RemoteHandshake(verifierSslContext, client));
+                if (conf.isClientCertAuth()) {
+                    verifierSslContext = VerifierSSLContext.initSSLContextWithKeystore(stores);
+                    client = new HttpClient(verifierSslContext.getSslContextWithKeystore());
+                } else {
+                    client = new HttpClient(verifierSslContext.getSslContext());
+                }
+                verifiers.add(new RemoteHandshake(verifierSslContext,client));
             } else {
                 System.out.println("No remote will be verified. Specify \"-r\" or \"--remoteurl\" if you wish to verify the trust.");
             }
 
             if (conf.isDoLocalHandshake()) {
                 verifierSslContext = VerifierSSLContext.initSSLContextWithKeystore(stores);
-                HttpClient clientWithKeystore = new HttpClient(verifierSslContext.getSslContextWithKeystore());
-
-                verifiers.add(new LocalHandshake(verifierSslContext, clientWithKeystore));
+                client = new HttpClient(verifierSslContext.getSslContextWithKeystore());
+                verifiers.add(new LocalHandshake(verifierSslContext, client));
             }
+
             verifiers.add(new LocalVerifier(stores));
             verifiers.forEach(Verifier::verify);
 
