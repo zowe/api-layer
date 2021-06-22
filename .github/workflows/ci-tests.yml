@@ -18,7 +18,7 @@ jobs:
             -   name: Set up JDK
                 uses: actions/setup-java@v2
                 with:
-                    distibution: 'adopt'
+                    distribution: 'adopt'
                     java-version: 8.0.252
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
