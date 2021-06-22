@@ -30,4 +30,10 @@ class AuthConfigurationPropertiesTest {
         authConfigurationProperties.getZosmf().setServiceId("ZOSMF_SID");
         assertEquals("ZOSMF_SID", authConfigurationProperties.validatedZosmfServiceId());
     }
+
+    @Test
+    void whenGetDefaultCookieSameSite_thenReturnStrict() {
+        String sameSite = authConfigurationProperties.getCookieProperties().getCookieSameSite().getValue();
+        assertEquals("Strict", sameSite);
+    }
 }
