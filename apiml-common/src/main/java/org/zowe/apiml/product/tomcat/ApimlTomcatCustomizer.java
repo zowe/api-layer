@@ -80,7 +80,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                     System.out.println("Is zos " + "z/os".equalsIgnoreCase(System.getProperty("os.name")));
                     if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
                         try {
-                            System.out.println("cyphers:" + InboundAttls.getNegotiatedCipher2());
+                            System.out.println("ciphers:" + InboundAttls.getNegotiatedCipher2());
                             InputStream targetStream = new ByteArrayInputStream(InboundAttls.getCertificate());
                             System.out.println("Input stream");
 
