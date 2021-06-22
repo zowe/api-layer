@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import java.util.Collections;
 
-public class SimpleUserDetailService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>, UserDetailsService{
+public class SimpleUserDetailService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>, UserDetailsService {
 
     private UserDetails constructUserDetails(String username) {
         return new User(username, "", Collections.singletonList(new SimpleGrantedAuthority("TRUSTED_CERTIFICATE")));

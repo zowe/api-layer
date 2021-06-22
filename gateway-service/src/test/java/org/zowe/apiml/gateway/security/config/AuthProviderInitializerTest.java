@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 
 import static org.mockito.Mockito.*;
@@ -20,21 +21,18 @@ class AuthProviderInitializerTest {
 
     private CompoundAuthProvider loginAuthProvider;
     private TokenAuthenticationProvider tokenAuthenticationProvider;
-    private CertificateAuthenticationProvider certificateAuthenticationProvider;
 
     @BeforeEach
     void setup() {
         tokenAuthenticationProvider = mock(TokenAuthenticationProvider.class);
         loginAuthProvider =  mock(CompoundAuthProvider.class);
-        certificateAuthenticationProvider = mock(CertificateAuthenticationProvider.class);
     }
 
     @Test
     void givenValidProviders_whenTheClassIsCreated_thenTheProvidersArePassedToSpring() {
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
             loginAuthProvider,
-            tokenAuthenticationProvider,
-            certificateAuthenticationProvider
+            tokenAuthenticationProvider
         );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
@@ -42,6 +40,6 @@ class AuthProviderInitializerTest {
 
         verify(authenticationManagerBuilder).authenticationProvider(loginAuthProvider);
         verify(authenticationManagerBuilder).authenticationProvider(tokenAuthenticationProvider);
-        verify(authenticationManagerBuilder).authenticationProvider(certificateAuthenticationProvider);
+        verify(authenticationManagerBuilder).authenticationProvider(any(PreAuthenticatedAuthenticationProvider.class));
     }
 }
