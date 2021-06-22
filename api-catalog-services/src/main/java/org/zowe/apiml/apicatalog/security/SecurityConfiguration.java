@@ -20,6 +20,8 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -32,6 +34,8 @@ import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
+
+import java.util.Collections;
 
 /**
  * Main configuration class of Spring web security for Api Catalog
@@ -112,12 +116,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
+            .x509().userDetailsService(x509UserDetailsService()).and()
             .authorizeRequests()
             .antMatchers("/static-api/**").authenticated()
             .antMatchers("/containers/**").authenticated()
             .antMatchers("/apidoc/**").authenticated()
             .antMatchers("/application/health", "/application/info").permitAll()
             .antMatchers("/application/**").authenticated();
+    }
+
+    private UserDetailsService x509UserDetailsService() {
+        return username -> new User(username, "", Collections.emptyList());
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
