@@ -71,45 +71,13 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
+            -   name: Run Integration Tests
+                uses: ./.github/actions/container-integration
                 with:
-                    java-version: 1.8
-            -   name: Grant execute permission for gradlew
-                run: chmod +x gradlew
-            -   name: Cache Gradle packages
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.gradle/caches
-                        ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
-            -   name: Cache Node.js modules
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
-            -   name: Run CI Tests
-                run: >
-                    ./gradlew :integration-tests:runContainerTests --info
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITests
-                    path: |
-                        integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+                    gradle_task_name: ':integration-tests:runContainerTests'
+                    integration_tests_config: '-docker'
+                    artifacts_name: 'CITests'
+
 
     CITestsRegistration:
         needs: PublishContainers
@@ -135,45 +103,12 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
+            -   name: Run Integration Tests
+                uses: ./.github/actions/container-integration
                 with:
-                    java-version: 1.8
-            -   name: Grant execute permission for gradlew
-                run: chmod +x gradlew
-            -   name: Cache Gradle packages
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.gradle/caches
-                        ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
-            -   name: Cache Node.js modules
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
-            -   name: Run CI Tests
-                run: >
-                    ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsRegistration
-                    path: |
-                        integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+                    gradle_task_name: ':integration-tests:runRegistrationTests'
+                    integration_tests_config: '-docker'
+                    artifacts_name: 'ContainerCITestsRegistration'
 
     CITestsZosmfRsu2012:
         needs: PublishContainers
@@ -201,45 +136,12 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
+            -   name: Run Integration Tests
+                uses: ./.github/actions/container-integration
                 with:
-                    java-version: 1.8
-            -   name: Grant execute permission for gradlew
-                run: chmod +x gradlew
-            -   name: Cache Gradle packages
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.gradle/caches
-                        ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
-            -   name: Cache Node.js modules
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsZosmfRsu2012
-                    path: |
-                        integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+                    gradle_task_name: ':integration-tests:runZosmfAuthTest'
+                    integration_tests_config: '-docker'
+                    artifacts_name: 'ContainerCITestsZosmfRsu2012'
 
 
     CITestsZosmfWithoutJwt:
@@ -268,45 +170,12 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
+            -   name: Run Integration Tests
+                uses: ./.github/actions/container-integration
                 with:
-                    java-version: 1.8
-            -   name: Grant execute permission for gradlew
-                run: chmod +x gradlew
-            -   name: Cache Gradle packages
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.gradle/caches
-                        ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
-            -   name: Cache Node.js modules
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsZosmfWithoutJwt
-                    path: |
-                        integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+                    gradle_task_name: ':integration-tests:runZosmfAuthTest'
+                    integration_tests_config: '-docker'
+                    artifacts_name: 'ContainerCITestsZosmfWithoutJwt'
 
 
     CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
@@ -335,45 +204,13 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
+            -   name: Run Integration Tests
+                uses: ./.github/actions/container-integration
                 with:
-                    java-version: 1.8
-            -   name: Grant execute permission for gradlew
-                run: chmod +x gradlew
-            -   name: Cache Gradle packages
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.gradle/caches
-                        ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
-            -   name: Cache Node.js modules
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint
-                    path: |
-                        integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+                    gradle_task_name: ':integration-tests:runZosmfAuthTest'
+                    integration_tests_config: '-docker'
+                    artifacts_name: 'ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint'
+
 
     CITestsInternalPort:
         needs: PublishContainers
@@ -399,45 +236,12 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
+            -   name: Run Integration Tests
+                uses: ./.github/actions/container-integration
                 with:
-                    java-version: 1.8
-            -   name: Grant execute permission for gradlew
-                run: chmod +x gradlew
-            -   name: Cache Gradle packages
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.gradle/caches
-                        ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
-            -   name: Cache Node.js modules
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runBaseTestsInternalPort --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsInternalPort
-                    path: |
-                        integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+                    gradle_task_name: ':integration-tests:runBaseTestsInternalPort'
+                    integration_tests_config: '-docker'
+                    artifacts_name: 'ContainerCITestsInternalPort'
 
     CITestsWithRedis:
         needs: PublishContainers
@@ -492,45 +296,13 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
+            -   name: Run Integration Tests
+                uses: ./.github/actions/container-integration
                 with:
-                    java-version: 1.8
-            -   name: Grant execute permission for gradlew
-                run: chmod +x gradlew
-            -   name: Cache Gradle packages
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.gradle/caches
-                        ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
-            -   name: Cache Node.js modules
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsWithRedis
-                    path: |
-                        integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+                    gradle_task_name: ':integration-tests:runCachingServiceTests'
+                    integration_tests_config: '-docker'
+                    artifacts_name: 'ContainerCITestsWithRedis'
+
 
     CITestsWithRedisWithoutSslVerification:
         needs: PublishContainers
@@ -582,45 +354,13 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
+            -   name: Run Integration Tests
+                uses: ./.github/actions/container-integration
                 with:
-                    java-version: 1.8
-            -   name: Grant execute permission for gradlew
-                run: chmod +x gradlew
-            -   name: Cache Gradle packages
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.gradle/caches
-                        ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
-            -   name: Cache Node.js modules
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: ContainerCITestsWithRedisWithoutSslVerification
-                    path: |
-                        integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+                    gradle_task_name: ':integration-tests:runCachingServiceTests'
+                    integration_tests_config: '-docker'
+                    artifacts_name: 'ContainerCITestsWithRedisWithoutSslVerification'
+
 
     CITestsHA:
         needs: PublishContainers
@@ -667,49 +407,9 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
+            -   name: Run Integration Tests
+                uses: ./.github/actions/container-integration
                 with:
-                    java-version: 1.8
-            -   name: Grant execute permission for gradlew
-                run: chmod +x gradlew
-            -   name: Cache Gradle packages
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.gradle/caches
-                        ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
-            -   name: Cache Node.js modules
-                uses: actions/cache@v2
-                with:
-                    path: |
-                        ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
-
-            -   name: Run HA Tests
-                run: >
-                    ./gradlew runHATests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Store results
-                uses: actions/upload-artifact@v2
-                if: always()
-                with:
-                    name: CITestsHA
-                    path: |
-                        integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
-
-
+                    gradle_task_name: ':integration-tests:runHATests'
+                    integration_tests_config: '-ha'
+                    artifacts_name: 'CITestsHA'
