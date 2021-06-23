@@ -47,7 +47,7 @@ dependencies {
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_validation
     implementation libraries.spring_boot_starter_security
-
+    implementation libraries.zowe_attls
     implementation libraries.bootstrap
     implementation libraries.jquery
 
