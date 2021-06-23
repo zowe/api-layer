@@ -44,8 +44,8 @@ public class ChaoticTest {
 
     private final String DISCOVERABLE_GREET = "/api/v1/discoverableclient/greeting";
     private final String SHUTDOWN = "/application/shutdown";
-    final int gatewayInstances = gatewayServiceConfiguration.getInstances();
-    final int discoveryInstances = discoveryServiceConfiguration.getInstances();
+    private int gatewayInstances;
+    private int discoveryInstances;
     private DiscoveryRequests discoveryRequests;
     private String username;
     private String password;
@@ -59,6 +59,8 @@ public class ChaoticTest {
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
         hosts = discoveryServiceConfiguration.getHost().split(",");
         discoveryRequests = new DiscoveryRequests(hosts[1]);
+        gatewayInstances = gatewayServiceConfiguration.getInstances();
+        discoveryInstances = discoveryServiceConfiguration.getInstances();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 

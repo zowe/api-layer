@@ -51,8 +51,8 @@ public class SouthboundServicesRoutingTest {
     private String discoverableClientPort;
     private String discoverableClientHost;
     private String[] hosts;
-    final int gatewayInstances = gatewayServiceConfiguration.getInstances();
-    final int discoveryInstances = discoveryServiceConfiguration.getInstances();
+    private int gatewayInstances;
+    private int discoveryInstances;
 
     @BeforeEach
     void setUp() {
@@ -61,6 +61,8 @@ public class SouthboundServicesRoutingTest {
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
         hosts = discoveryServiceConfiguration.getHost().split(",");
+        gatewayInstances = gatewayServiceConfiguration.getInstances();
+        discoveryInstances = discoveryServiceConfiguration.getInstances();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 

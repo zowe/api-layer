@@ -46,8 +46,8 @@ public class GatewayMultipleInstancesTest {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private DiscoveryRequests discoveryRequests;
     private final String HEALTH_ENDPOINT = "/application/health";
-    final int gatewayInstances = gatewayServiceConfiguration.getInstances();
-    final int discoveryInstances = discoveryServiceConfiguration.getInstances();
+    private int gatewayInstances;
+    private int discoveryInstances;
     private String[] hosts;
 
     @BeforeEach
@@ -55,6 +55,8 @@ public class GatewayMultipleInstancesTest {
         gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         discoveryRequests = new DiscoveryRequests(hosts[0]);
+        gatewayInstances = gatewayServiceConfiguration.getInstances();
+        discoveryInstances = discoveryServiceConfiguration.getInstances();
         hosts = discoveryServiceConfiguration.getHost().split(",");
     }
 
