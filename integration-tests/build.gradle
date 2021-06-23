@@ -260,7 +260,9 @@ task runContainerTests(type: Test) {
             'SAFAuthTest',
             'AttlsTest',
             'RegistrationTest',
-            'NodeEnablerTest'
+            'NodeEnablerTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
 }
