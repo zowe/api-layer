@@ -87,7 +87,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                             byte[] encodedCert = Base64.encodeBase64(InboundAttls.getCertificate());
                             String s = new String(encodedCert);
                             System.out.println("encoded cert" + s);
-                            s = "-----BEGIN CERTIFICATE-----\n" + s + "-----END CERTIFICATE-----";
+                            s = "-----BEGIN CERTIFICATE-----\n" + s + "\n-----END CERTIFICATE-----";
 
                             System.out.println(s);
 
