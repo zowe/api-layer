@@ -1,0 +1,7 @@
+server:
+    ssl:
+        keyStore: /docker/all-services.keystore.p12
+        trustStore: /docker/all-services.truststore.p12
+
+zosmf:
+    jwtKeyStorePath: /docker/all-services.keystore.p12

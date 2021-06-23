@@ -32,9 +32,7 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.*;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
@@ -49,6 +47,7 @@ import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
+import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
 import java.util.*;
 
@@ -174,10 +173,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // add filters - login, query, ticket
             .and()
-            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(x509Filter(authConfigurationProperties.getGatewayLoginEndpoint()), LoginFilter.class)
-            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(x509Filter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), LoginFilter.class)
+
+            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getGatewayLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpoint()), ShouldBeAlreadyAuthenticatedFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), X509AuthenticationFilter.class)
+
+            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), ShouldBeAlreadyAuthenticatedFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), X509AuthenticationFilter.class)
+
+
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
@@ -237,7 +242,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getResourceAccessExceptionHandler());
     }
 
-    private X509AuthenticationFilter x509Filter(String loginEndpoint) {
+    private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
         return new X509AuthenticationFilter(loginEndpoint,
             handlerInitializer.getSuccessfulLoginHandler(),
             x509AuthenticationProvider);

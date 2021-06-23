@@ -11,28 +11,32 @@ package org.zowe.apiml.integration.authentication.providers;
 
 import io.jsonwebtoken.Claims;
 import io.restassured.RestAssured;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.Cookie;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.http.HttpStatus;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
-import org.zowe.apiml.util.categories.SAFAuthTest;
-import org.zowe.apiml.util.categories.zOSMFAuthTest;
+import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
@@ -62,11 +66,11 @@ class LoginTest implements TestWithStartedInstances {
         return new URI[]{LOGIN_ENDPOINT_URL, LOGIN_ENDPOINT_URL_OLD_FORMAT};
     }
 
-    protected String getUsername() {
+    public String getUsername() {
         return USERNAME;
     }
 
-    protected String getPassword() {
+    public String getPassword() {
         return PASSWORD;
     }
 
@@ -96,6 +100,8 @@ class LoginTest implements TestWithStartedInstances {
                     .post(loginUrl)
                 .then()
                     .statusCode(is(SC_NO_CONTENT))
+                    // RestAssured version in use doesn't have SameSite attribute in cookie so validate using the Set-Cookie header
+                    .header("Set-Cookie", containsString("SameSite=Strict"))
                     .cookie(COOKIE_NAME, not(isEmptyString()))
                     .extract().detailedCookie(COOKIE_NAME);
 
@@ -112,6 +118,8 @@ class LoginTest implements TestWithStartedInstances {
                     .post(loginUrl)
                 .then()
                     .statusCode(is(SC_NO_CONTENT))
+                    // RestAssured version in use doesn't have SameSite attribute in cookie so validate using the Set-Cookie header
+                    .header("Set-Cookie", containsString("SameSite=Strict"))
                     .cookie(COOKIE_NAME, not(isEmptyString()))
                     .extract().cookie(COOKIE_NAME);
 
@@ -196,6 +204,7 @@ class LoginTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(SC_BAD_REQUEST));
             }
+
         }
     }
 
@@ -225,6 +234,66 @@ class LoginTest implements TestWithStartedInstances {
         }
     }
     //@formatter:on
+
+    private static Stream<Arguments> testLoginFactCombinationsSource() {
+
+        LoginRequest validLoginRequest = new LoginRequest(LoginTest.USERNAME, LoginTest.PASSWORD);
+        LoginRequest incorrectUser = new LoginRequest("aaa", "aaa");
+        URI loginNew = LOGIN_ENDPOINT_URL;
+        URI loginOld = LOGIN_ENDPOINT_URL_OLD_FORMAT;
+
+        return Stream.of(
+            //URI loginUrl, RestAssuredConfig config, LoginRequest loginRequest, String user, String pw, HttpStatus rc, String loggedUser
+
+            Arguments.of("Login with body no cert", loginNew, SslContext.tlsWithoutCert, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
+            Arguments.of("Login with body no cert", loginOld, SslContext.tlsWithoutCert, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
+
+            Arguments.of("Login with basic and body (basic has precedence)", loginNew, SslContext.tlsWithoutCert, validLoginRequest, "aaaa", "aaaa", HttpStatus.UNAUTHORIZED, null),
+            Arguments.of("Login with basic and body (basic has precedence)", loginOld, SslContext.tlsWithoutCert, validLoginRequest, "aaaa", "aaaa", HttpStatus.UNAUTHORIZED, null),
+
+            Arguments.of("Login with trusted cert and body (body or basic has precedence)", loginNew, SslContext.clientCertValid, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
+            Arguments.of("Login with trusted cert and body (body or basic has precedence)", loginOld, SslContext.clientCertValid, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
+
+            Arguments.of("Login with aml cert (aml cert filtered out)", loginNew, SslContext.clientCertApiml, null, null, null, HttpStatus.BAD_REQUEST, null),
+            Arguments.of("Login with aml cert (aml cert filtered out)", loginOld, SslContext.clientCertApiml, null, null, null, HttpStatus.BAD_REQUEST, null),
+
+            Arguments.of("Login with trusted cert", loginNew, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, "APIMTST"),
+            Arguments.of("Login with trusted cert", loginOld, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, "APIMTST"),
+
+            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginNew, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
+            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginOld, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME)
+            );
+    }
+
+    @Nested
+    class GivenCombinationsOfAuthenticationFacts {
+
+        @ParameterizedTest(name = "{0} on {1}")
+        @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#testLoginFactCombinationsSource")
+        void loginEndpointActsAsExpected(String testName, URI loginUrl, RestAssuredConfig config, LoginRequest loginRequest, String user, String pw, HttpStatus rc, String loggedUser) {
+
+            RequestSpecification r = given().config(config);
+            if (user != null) {
+                r.auth().preemptive().basic(user, pw);
+            }
+            if (loginRequest != null) {
+                r.contentType(JSON).body(loginRequest);
+            }
+
+            Response response = r.when()
+                .post(loginUrl);
+
+            response.then()
+            .statusCode(is(rc.value()));
+
+            if (loggedUser != null) {
+                Cookie cookie = response.detailedCookie(COOKIE_NAME);
+                assertValidAuthToken(cookie, Optional.of(loggedUser));
+            }
+
+        }
+    }
+
 
     private String getPath(URI loginUrl) {
         String urlPath = loginUrl.getPath();

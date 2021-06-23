@@ -1,0 +1,10 @@
+apiml:
+    service:
+        discoveryServiceUrls: https://discovery-service:10011/eureka/
+        hostname: metrics-service
+
+server:
+    ssl:
+        keyAlias: localhost
+        keyStore: /docker/all-services.keystore.p12
+        trustStore: /docker/all-services.truststore.p12

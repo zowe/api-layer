@@ -1,5 +1,7 @@
 dependencies {
-    compile(libraries.eureka_client)
+    compile(libraries.eureka_client) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
     compile libraries.netflix_servo
 
     compile(libraries.http_client)

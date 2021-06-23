@@ -9,18 +9,17 @@
  */
 package org.zowe.apiml.security.common.login;
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.util.CookieUtil;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 
 /**
  * Handles the successful login
@@ -54,13 +53,21 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
      * @param response send back this response
      */
     private void setCookie(String token, HttpServletResponse response) {
-        Cookie tokenCookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
-        tokenCookie.setComment(authConfigurationProperties.getCookieProperties().getCookieComment());
-        tokenCookie.setPath(authConfigurationProperties.getCookieProperties().getCookiePath());
-        tokenCookie.setHttpOnly(true);
-        tokenCookie.setMaxAge(authConfigurationProperties.getCookieProperties().getCookieMaxAge());
-        tokenCookie.setSecure(authConfigurationProperties.getCookieProperties().isCookieSecure());
+        // SameSite attribute is not supported in Cookie used in HttpServletResponse.addCookie,
+        // so specify Set-Cookie header directly
 
-        response.addCookie(tokenCookie);
+        AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
+        String cookieHeader = CookieUtil.setCookieHeader(
+            cp.getCookieName(),
+            token,
+            cp.getCookieComment(),
+            cp.getCookiePath(),
+            cp.getCookieSameSite().getValue(),
+            cp.getCookieMaxAge(),
+            true,
+            cp.isCookieSecure()
+        );
+
+        response.addHeader("Set-Cookie", cookieHeader);
     }
 }
