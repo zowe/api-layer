@@ -14,6 +14,7 @@ logging:
         org.zowe.apiml.gateway.error: INFO
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
+        org.springframework.security: DEBUG
         net.sf.ehcache: WARN
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         # New Config
