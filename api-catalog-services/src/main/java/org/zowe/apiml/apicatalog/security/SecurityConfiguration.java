@@ -54,6 +54,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @EnableApimlAuth
 public class SecurityConfiguration {
+    private static final String APIDOC_ROUTES = "/apidoc/**";
 
     private final ObjectMapper securityObjectMapper;
     private final AuthConfigurationProperties authConfigurationProperties;
@@ -91,11 +92,11 @@ public class SecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(
-                baseConfiguration(http.antMatcher("/apidoc/**")),
+                baseConfiguration(http.antMatcher(APIDOC_ROUTES)),
                 authenticationManager()
             )
                 .authorizeRequests()
-                .antMatchers("/apidoc/**").authenticated();
+                .antMatchers(APIDOC_ROUTES).authenticated();
 
             if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
                 http.x509().userDetailsService(x509UserDetailsService());
@@ -103,6 +104,10 @@ public class SecurityConfiguration {
                     http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 }
             }
+        }
+
+        private UserDetailsService x509UserDetailsService() {
+            return username -> new User(username, "", Collections.emptyList());
         }
     }
 
@@ -132,7 +137,7 @@ public class SecurityConfiguration {
                 .authorizeRequests()
                 .antMatchers("/static-api/**").authenticated()
                 .antMatchers("/containers/**").authenticated()
-                .antMatchers("/apidoc/**").authenticated()
+                .antMatchers(APIDOC_ROUTES).authenticated()
                 .antMatchers("/application/health", "/application/info").permitAll()
                 .antMatchers("/application/**").authenticated();
         }
@@ -151,7 +156,7 @@ public class SecurityConfiguration {
                 handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher("/application/**")
             )
             .defaultAuthenticationEntryPointFor(
-                handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher("/apidoc/**")
+                handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher(APIDOC_ROUTES)
             )
             .defaultAuthenticationEntryPointFor(
                 handlerInitializer.getUnAuthorizedHandler(), new AntPathRequestMatcher("/**")
@@ -229,10 +234,6 @@ public class SecurityConfiguration {
             handlerInitializer.getAuthenticationFailureHandler(),
             handlerInitializer.getResourceAccessExceptionHandler(),
             authConfigurationProperties);
-    }
-
-    private UserDetailsService x509UserDetailsService() {
-        return username -> new User(username, "", Collections.emptyList());
     }
 
     @Bean

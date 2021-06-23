@@ -34,7 +34,7 @@ import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @GeneralAuthenticationTest
-public class ApiCatalogAuthenticationTest {
+class ApiCatalogAuthenticationTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
