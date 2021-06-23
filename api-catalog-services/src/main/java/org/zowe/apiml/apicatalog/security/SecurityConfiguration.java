@@ -68,6 +68,12 @@ public class SecurityConfiguration {
     @Order(1)
     public class FilterChainBasicAuthOrTokenOrCertForApiDoc extends WebSecurityConfigurerAdapter {
 
+        @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+        private boolean verifySslCertificatesOfServices;
+
+        @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+        private boolean nonStrictVerifySslCertificatesOfServices;
+
         @Value("${server.attls.enabled:false}")
         private boolean isAttlsEnabled;
 
@@ -89,12 +95,13 @@ public class SecurityConfiguration {
                 authenticationManager()
             )
                 .authorizeRequests()
-                .antMatchers("/apidoc/**").authenticated()
-                .and()
-                .x509().userDetailsService(x509UserDetailsService());
+                .antMatchers("/apidoc/**").authenticated();
 
-            if (isAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+            if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
+                http.x509().userDetailsService(x509UserDetailsService());
+                if (isAttlsEnabled) {
+                    http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                }
             }
         }
     }
