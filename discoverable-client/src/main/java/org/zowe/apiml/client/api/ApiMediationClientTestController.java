@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.model.Registered;
 import org.zowe.apiml.client.service.ApiMediationClientService;
 import org.zowe.apiml.exception.ServiceDefinitionException;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @RestController
 @RequestMapping("/api/v1/apiMediationClient")
@@ -32,6 +33,7 @@ public class ApiMediationClientTestController {
 
     @PostMapping
     @ApiOperation(value = "Forward registration to discovery service via API mediation client")
+    @HystrixCommand
     public ResponseEntity<String> forwardRegistration() {
         try {
             apiMediationClientService.register();
@@ -43,6 +45,7 @@ public class ApiMediationClientTestController {
 
     @DeleteMapping
     @ApiOperation(value = "Forward un-registration to discovery service via API mediation client")
+    @HystrixCommand
     public ResponseEntity<String> forwardUnRegistration() {
         apiMediationClientService.unregister();
         return ResponseEntity.ok().build();
@@ -50,6 +53,7 @@ public class ApiMediationClientTestController {
 
     @GetMapping
     @ApiOperation(value = "Indicate if registration with discovery service via API mediation client was successful")
+    @HystrixCommand
     public Registered isRegistered() {
         boolean isRegistered = apiMediationClientService.isRegistered();
         return new Registered(isRegistered);

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -43,6 +44,7 @@ public class PassTicketTestController {
      */
     @GetMapping(value = "/api/v1/passticketTest")
     @ApiOperation(value = "Validate that the PassTicket in Authorization header is valid", tags = { "Test Operations" })
+    @HystrixCommand()
     public void passticketTest(@RequestHeader("authorization") String authorization,
             @RequestParam(value = "applId", defaultValue = "", required = false) String applId)
             throws IRRPassTicketEvaluationException
