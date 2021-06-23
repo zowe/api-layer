@@ -48,8 +48,9 @@ public class Analyser {
                 client = new HttpClient(verifierSslContext.getSslContextWithKeystore());
                 verifiers.add(new LocalHandshake(verifierSslContext, client));
             }
-
-            verifiers.add(new LocalVerifier(stores));
+            if(conf.getKeyStore() != null) {
+                verifiers.add(new LocalVerifier(stores));
+            }
             verifiers.forEach(Verifier::verify);
 
         } catch (Exception e) {

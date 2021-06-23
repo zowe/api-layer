@@ -38,7 +38,7 @@ public class ApimlConf {
     private boolean doLocalHandshake;
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display a help message")
     private boolean helpRequested = false;
-    @Option(names = {"-ca", "--certauth"}, description = "Add client certificate to remote HTTPS request")
+    @Option(names = {"-c", "--clientcert"}, description = "Add client certificate to HTTPS request")
     private boolean clientCertAuth;
 
     public String getKeyStore() {

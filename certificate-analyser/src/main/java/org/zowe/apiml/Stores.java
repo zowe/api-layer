@@ -29,12 +29,48 @@ public class Stores {
 
     public Stores(ApimlConf conf) {
         this.conf = conf;
-        init(conf);
+        init();
     }
 
-    void init(ApimlConf conf) {
+    void init() {
+        try {
+            initKeystore();
+            if(trustStore == null){
+                initTruststore();
+            }
+        } catch (FileNotFoundException e) {
+            throw new StoresNotInitializeException("Error while loading keystore file. Error message: " + e.getMessage() + "\n" +
+                "Possible solution: Verify correct path to the keystore. Change owner or permission to the keystore file.");
+        } catch (Exception e) {
+            throw new StoresNotInitializeException(e.getMessage());
+        }
+    }
+
+    private void initTruststore() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
+        if (conf.getTrustStore() == null) {
+            System.out.println("No keystore specified, will use empty.");
+            try {
+                this.trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            } catch (KeyStoreException e) {
+                System.err.println(e.getMessage());
+            }
+            return;
+        }
+        try (InputStream trustStoreIStream = new FileInputStream(conf.getTrustStore())) {
+            this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
+        }
+
+    }
+
+    private void initKeystore() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
         if (conf.getKeyStore() == null) {
-            throw new StoresNotInitializeException("Stores can't be created. Please specify \"-k\" or \"--keystore\" parameter.");
+            System.out.println("No keystore specified, will use empty.");
+            try {
+                this.keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            } catch (KeyStoreException e) {
+                System.err.println(e.getMessage());
+            }
+            return;
         }
         if (conf.getKeyStore().startsWith(SAFKEYRING)) {
             try (InputStream keyringIStream = keyRingUrl(conf.getKeyStore()).openStream()) {
@@ -44,15 +80,8 @@ public class Stores {
                 throw new StoresNotInitializeException(e.getMessage());
             }
         } else {
-            try (InputStream keyStoreIStream = new FileInputStream(conf.getKeyStore());
-                 InputStream trustStoreIStream = new FileInputStream(conf.getTrustStore())) {
+            try (InputStream keyStoreIStream = new FileInputStream(conf.getKeyStore())) {
                 this.keyStore = readKeyStore(keyStoreIStream, conf.getKeyPasswd().toCharArray(), conf.getKeyStoreType());
-                this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
-            } catch (FileNotFoundException e) {
-                throw new StoresNotInitializeException("Error while loading keystore file. Error message: " + e.getMessage() + "\n" +
-                    "Possible solution: Verify correct path to the keystore. Change owner or permission to the keystore file.");
-            } catch (Exception e) {
-                throw new StoresNotInitializeException(e.getMessage());
             }
         }
     }
