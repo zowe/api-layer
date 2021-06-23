@@ -50,7 +50,8 @@ public class ChaoticTest {
     private DiscoveryRequests discoveryRequests;
     private String username;
     private String password;
-    private String[] hosts;
+    private String[] discoveryHosts;
+    private String[] gatewayHosts;
 
     @BeforeEach
     void setUp() {
@@ -59,8 +60,9 @@ public class ChaoticTest {
         discoveryServiceConfiguration = environmentConfiguration.getDiscoveryServiceConfiguration();
         username = environmentConfiguration.getCredentials().getUser();
         password = environmentConfiguration.getCredentials().getPassword();
-        hosts = discoveryServiceConfiguration.getHost().split(",");
-        discoveryRequests = new DiscoveryRequests(hosts[1]);
+        discoveryHosts = discoveryServiceConfiguration.getHost().split(",");
+        gatewayHosts = discoveryServiceConfiguration.getHost().split(",");
+        discoveryRequests = new DiscoveryRequests(discoveryHosts[1]);
         gatewayInstances = gatewayServiceConfiguration.getInstances();
         discoveryInstances = discoveryServiceConfiguration.getInstances();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -73,8 +75,7 @@ public class ChaoticTest {
             @Test
             void serviceStillRegisteredToOtherDiscovery() throws URISyntaxException {
                 assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
-                String[] hosts = discoveryServiceConfiguration.getHost().split(",");
-                shutDownDiscoveryInstance(hosts[0]);
+                shutDownDiscoveryInstance(discoveryHosts[0]);
                 assertThat(discoveryRequests.isApplicationRegistered("DISCOVERABLECLIENT"), is(true));
             }
 
@@ -97,10 +98,9 @@ public class ChaoticTest {
             @Test
             void routeToInstanceThroughAliveGateway() throws IOException {
                 assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
-                String[] hosts = gatewayServiceConfiguration.getHost().split(",");
-                shutDownGatewayInstance(hosts[0]);
+                shutDownGatewayInstance(gatewayHosts[0]);
                 int port = gatewayServiceConfiguration.getPort();
-                HttpRequestUtils.getResponse(DISCOVERABLE_GREET, SC_OK, port, hosts[1]);
+                HttpRequestUtils.getResponse(DISCOVERABLE_GREET, SC_OK, port, gatewayHosts[1]);
             }
 
             void shutDownGatewayInstance(String host) {
