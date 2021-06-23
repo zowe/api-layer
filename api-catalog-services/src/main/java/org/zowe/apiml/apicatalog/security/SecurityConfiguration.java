@@ -11,6 +11,7 @@ package org.zowe.apiml.apicatalog.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -26,7 +27,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.zowe.apiml.product.filter.AttlsFilter;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
@@ -65,6 +68,9 @@ public class SecurityConfiguration {
     @Order(1)
     public class FilterChainBasicAuthOrTokenOrCertForApiDoc extends WebSecurityConfigurerAdapter {
 
+        @Value("${server.attls.enabled:false}")
+        private boolean isAttlsEnabled;
+
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
@@ -86,6 +92,10 @@ public class SecurityConfiguration {
                 .antMatchers("/apidoc/**").authenticated()
                 .and()
                 .x509().userDetailsService(x509UserDetailsService());
+
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+            }
         }
     }
 
