@@ -70,7 +70,7 @@ public class DiscoveryRequests {
                 instanceIds.stream()
                     .flatMap(Collection::stream)
                     .forEach(instance -> {
-                        if (instance.equals(instanceId)) {
+                        if (instance.equals(instanceId.get())) {
                             isRegistered.set(true);
                         }
                     });
