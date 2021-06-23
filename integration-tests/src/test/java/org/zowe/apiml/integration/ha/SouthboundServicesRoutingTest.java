@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
+import org.zowe.apiml.util.config.EnvironmentConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -56,10 +57,11 @@ public class SouthboundServicesRoutingTest {
 
     @BeforeEach
     void setUp() {
-        gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
-        username = ConfigReader.environmentConfiguration().getCredentials().getUser();
-        password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+        EnvironmentConfiguration environmentConfiguration = ConfigReader.environmentConfiguration();
+        gatewayServiceConfiguration = environmentConfiguration.getGatewayServiceConfiguration();
+        discoveryServiceConfiguration = environmentConfiguration.getDiscoveryServiceConfiguration();
+        username = environmentConfiguration.getCredentials().getUser();
+        password = environmentConfiguration.getCredentials().getPassword();
         hosts = discoveryServiceConfiguration.getHost().split(",");
         gatewayInstances = gatewayServiceConfiguration.getInstances();
         discoveryInstances = discoveryServiceConfiguration.getInstances();

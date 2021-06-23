@@ -18,6 +18,7 @@ import org.zowe.apiml.util.DiscoveryRequests;
 import org.zowe.apiml.util.categories.ChaoticHATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
+import org.zowe.apiml.util.config.EnvironmentConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -53,10 +54,11 @@ public class ChaoticTest {
 
     @BeforeEach
     void setUp() {
-        gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
-        username = ConfigReader.environmentConfiguration().getCredentials().getUser();
-        password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+        EnvironmentConfiguration environmentConfiguration = ConfigReader.environmentConfiguration();
+        gatewayServiceConfiguration = environmentConfiguration.getGatewayServiceConfiguration();
+        discoveryServiceConfiguration = environmentConfiguration.getDiscoveryServiceConfiguration();
+        username = environmentConfiguration.getCredentials().getUser();
+        password = environmentConfiguration.getCredentials().getPassword();
         hosts = discoveryServiceConfiguration.getHost().split(",");
         discoveryRequests = new DiscoveryRequests(hosts[1]);
         gatewayInstances = gatewayServiceConfiguration.getInstances();
@@ -78,7 +80,6 @@ public class ChaoticTest {
 
             void shutDownDiscoveryInstance(String host) throws URISyntaxException {
                 //@formatter:off
-                System.out.println(HttpRequestUtils.getUriFromDiscovery(SHUTDOWN, host));
                 given()
                     .contentType(JSON)
                     .auth().basic(username, password)

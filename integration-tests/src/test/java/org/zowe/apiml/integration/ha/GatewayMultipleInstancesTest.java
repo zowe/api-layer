@@ -24,6 +24,7 @@ import org.zowe.apiml.util.DiscoveryRequests;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
+import org.zowe.apiml.util.config.EnvironmentConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -52,12 +53,14 @@ public class GatewayMultipleInstancesTest {
 
     @BeforeEach
     void setUp() {
-        gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
-        discoveryRequests = new DiscoveryRequests(hosts[0]);
+        EnvironmentConfiguration environmentConfiguration = ConfigReader.environmentConfiguration();
+        gatewayServiceConfiguration = environmentConfiguration.getGatewayServiceConfiguration();
+        discoveryServiceConfiguration = environmentConfiguration.getDiscoveryServiceConfiguration();
         gatewayInstances = gatewayServiceConfiguration.getInstances();
         discoveryInstances = discoveryServiceConfiguration.getInstances();
         hosts = discoveryServiceConfiguration.getHost().split(",");
+        discoveryRequests = new DiscoveryRequests(hosts[0]);
+
     }
 
     @Nested
