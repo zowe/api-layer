@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.client.api;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +54,6 @@ public class ApiMediationClientTestController {
 
     @GetMapping
     @ApiOperation(value = "Indicate if registration with discovery service via API mediation client was successful")
-    @HystrixCommand
     public Registered isRegistered() {
         boolean isRegistered = apiMediationClientService.isRegistered();
         return new Registered(isRegistered);
