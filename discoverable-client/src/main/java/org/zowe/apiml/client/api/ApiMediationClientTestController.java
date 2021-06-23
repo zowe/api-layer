@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.client.api;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.model.Registered;
 import org.zowe.apiml.client.service.ApiMediationClientService;
 import org.zowe.apiml.exception.ServiceDefinitionException;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @RestController
 @RequestMapping("/api/v1/apiMediationClient")
