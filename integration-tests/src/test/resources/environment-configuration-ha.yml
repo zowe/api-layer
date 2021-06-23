@@ -1,0 +1,41 @@
+credentials:
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: USER
+    password: validPassword
+gatewayServiceConfiguration:
+    scheme: https
+    host: gateway-service,gateway-service-2
+    port: 10010
+    internalPorts: 10017,10027
+    externalPort: 10010
+    # for ATTLS external testing, there is proxy server for integration tests on external env, this is actual GW port to verify returned value
+    realPort: 10010
+    # for ATTLS external testing, there is proxy server for integration tests on external env, this is actual GW scheme to verify returned value
+    realScheme: https
+    instances: 2
+discoveryServiceConfiguration:
+    scheme: https
+    user: user
+    password: user
+    host: discovery-service
+    port: 10011
+    instances: 2
+discoverableClientConfiguration:
+    applId: ZOWEAPPL
+tlsConfiguration:
+    keyAlias: localhost
+    keyPassword: password
+    keyStoreType: PKCS12
+    keyStore: ../keystore/docker/all-services.keystore.p12
+    clientKeystore: ../keystore/client_cert/client-certs.p12
+    keyStorePassword: password
+    trustStoreType: PKCS12
+    trustStore: ../keystore/docker/all-services.truststore.p12
+    trustStorePassword: password
+zosmfServiceConfiguration:
+    scheme: https
+    host: mock-zosmf
+    port: 10013
+    serviceId: mockzosmf
+auxiliaryUserList:
+    value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
