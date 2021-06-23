@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -40,6 +41,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 @HATest
 public class SouthboundServicesRoutingTest {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
+    private DiscoveryServiceConfiguration discoveryServiceConfiguration;
 
     private final String DISCOVERABLE_GREET = "/api/v1/discoverableclient/greeting";
     private final String EUREKA_APPS = "/eureka/apps";
@@ -48,10 +50,12 @@ public class SouthboundServicesRoutingTest {
     private String password;
     private String discoverableClientPort;
     private String discoverableClientHost;
+    private String[] hosts = discoveryServiceConfiguration.getHost().split(",");
 
     @BeforeEach
     void setUp() {
         gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -115,7 +119,7 @@ public class SouthboundServicesRoutingTest {
                     given()
                         .auth().basic(username, password)
                         .when()
-                        .get(HttpRequestUtils.getUriFromDiscovery(EUREKA_APPS))
+                        .get(HttpRequestUtils.getUriFromDiscovery(EUREKA_APPS, hosts[0]))
                         .then()
                         .statusCode(is(HttpStatus.SC_OK))
                         .extract().body().asString();

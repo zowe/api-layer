@@ -23,10 +23,12 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.DiscoveryRequests;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
@@ -41,14 +43,18 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 @HATest
 public class GatewayMultipleInstancesTest {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
+    private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private DiscoveryRequests discoveryRequests;
     private final String HEALTH_ENDPOINT = "/application/health";
     private int instances;
+    private String[] hosts = discoveryServiceConfiguration.getHost().split(",");
+
     @BeforeEach
     void setUp() {
         gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         instances = gatewayServiceConfiguration.getInstances();
-        discoveryRequests = new DiscoveryRequests();
+        discoveryRequests = new DiscoveryRequests(hosts[0]);
     }
 
     @Nested
@@ -72,9 +78,9 @@ public class GatewayMultipleInstancesTest {
                 String[] hosts = gatewayServiceConfiguration.getHost().split(",");
 
                 String instanceId = hosts[0] + ":" + "gateway" + ":" + internalPorts[0];
-                assertThat(discoveryRequests.isApplicationRegistered("GATEWAY", instanceId), is(true));
+                assertThat(discoveryRequests.isApplicationRegistered("GATEWAY", Optional.of(instanceId)), is(true));
                 instanceId = hosts[1] + ":" + "gateway" + ":" + internalPorts[1];
-                assertThat(discoveryRequests.isApplicationRegistered("GATEWAY", instanceId), is(true));
+                assertThat(discoveryRequests.isApplicationRegistered("GATEWAY", Optional.of(instanceId)), is(true));
             }
 
             private void checkInstancesAreUp() throws IOException {

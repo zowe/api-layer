@@ -94,12 +94,12 @@ public class HttpRequestUtils {
         return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost(), Collections.emptyList());
     }
 
-    public static URI getUriFromDiscovery(String endpoint) throws URISyntaxException {
+    public static URI getUriFromDiscovery(String endpoint, String host) throws URISyntaxException {
         DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
         return new URIBuilder()
             .setScheme(discoveryServiceConfiguration.getScheme())
-            .setHost(discoveryServiceConfiguration.getHost())
+            .setHost(host)
             .setPort(discoveryServiceConfiguration.getPort())
             .setPath(endpoint)
             .build();
