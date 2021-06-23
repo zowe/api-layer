@@ -61,7 +61,7 @@ public class ChaoticTest {
         username = environmentConfiguration.getCredentials().getUser();
         password = environmentConfiguration.getCredentials().getPassword();
         discoveryHosts = discoveryServiceConfiguration.getHost().split(",");
-        gatewayHosts = discoveryServiceConfiguration.getHost().split(",");
+        gatewayHosts = gatewayServiceConfiguration.getHost().split(",");
         discoveryRequests = new DiscoveryRequests(discoveryHosts[1]);
         gatewayInstances = gatewayServiceConfiguration.getInstances();
         discoveryInstances = discoveryServiceConfiguration.getInstances();
