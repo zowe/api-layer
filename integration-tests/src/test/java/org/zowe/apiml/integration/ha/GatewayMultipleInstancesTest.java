@@ -46,14 +46,14 @@ public class GatewayMultipleInstancesTest {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private DiscoveryRequests discoveryRequests;
     private final String HEALTH_ENDPOINT = "/application/health";
-    private int instances;
+    final int gatewayInstances = gatewayServiceConfiguration.getInstances();
+    final int discoveryInstances = discoveryServiceConfiguration.getInstances();
     private String[] hosts;
 
     @BeforeEach
     void setUp() {
         gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
-        instances = gatewayServiceConfiguration.getInstances();
         discoveryRequests = new DiscoveryRequests(hosts[0]);
         hosts = discoveryServiceConfiguration.getHost().split(",");
     }
@@ -64,7 +64,7 @@ public class GatewayMultipleInstancesTest {
         class WhenSendingRequest {
             @Test
             void gatewayInstancesAreUp() throws IOException {
-                assumeTrue(instances > 1);
+                assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
                 assertThat(gatewayServiceConfiguration.getInternalPorts(), is(not(nullValue())), is(not("")));
 
@@ -73,7 +73,7 @@ public class GatewayMultipleInstancesTest {
 
             @Test
             void gatewayInstancesAreRegistered() {
-                assumeTrue(instances > 1);
+                assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
 
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
                 String[] hosts = gatewayServiceConfiguration.getHost().split(",");
@@ -91,7 +91,7 @@ public class GatewayMultipleInstancesTest {
                     HttpResponse response = HttpRequestUtils.getResponse(HEALTH_ENDPOINT, HttpStatus.SC_OK, port, host);
                     DocumentContext context = JsonPath.parse(EntityUtils.toString(response.getEntity()));
                     Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
-                    assertThat(amountOfActiveGateways, is(instances));
+                    assertThat(amountOfActiveGateways, is(gatewayInstances));
                 }
 
             }

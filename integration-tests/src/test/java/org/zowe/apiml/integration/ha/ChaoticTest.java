@@ -44,6 +44,8 @@ public class ChaoticTest {
 
     private final String DISCOVERABLE_GREET = "/api/v1/discoverableclient/greeting";
     private final String SHUTDOWN = "/application/shutdown";
+    final int gatewayInstances = gatewayServiceConfiguration.getInstances();
+    final int discoveryInstances = discoveryServiceConfiguration.getInstances();
     private DiscoveryRequests discoveryRequests;
     private String username;
     private String password;
@@ -66,8 +68,7 @@ public class ChaoticTest {
         class whenOneDiscoveryServiceIsNotAvailable {
             @Test
             void serviceStillRegisteredToOtherDiscovery() throws URISyntaxException {
-                final int instances = discoveryServiceConfiguration.getInstances();
-                assumeTrue(instances > 1);
+                assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
                 String[] hosts = discoveryServiceConfiguration.getHost().split(",");
                 shutDownDiscoveryInstance(hosts[0]);
                 assertThat(discoveryRequests.isApplicationRegistered("DISCOVERABLECLIENT"), is(true));
@@ -92,8 +93,7 @@ public class ChaoticTest {
         class whenOneGatewayIsNotAvailable {
             @Test
             void routeToInstanceThroughAliveGateway() throws IOException {
-                final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances > 1);
+                assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
                 String[] hosts = gatewayServiceConfiguration.getHost().split(",");
                 shutDownGatewayInstance(hosts[0]);
                 int port = gatewayServiceConfiguration.getPort();

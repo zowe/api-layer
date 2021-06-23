@@ -51,6 +51,8 @@ public class SouthboundServicesRoutingTest {
     private String discoverableClientPort;
     private String discoverableClientHost;
     private String[] hosts;
+    final int gatewayInstances = gatewayServiceConfiguration.getInstances();
+    final int discoveryInstances = discoveryServiceConfiguration.getInstances();
 
     @BeforeEach
     void setUp() {
@@ -68,12 +70,11 @@ public class SouthboundServicesRoutingTest {
         class WhenCallingDiscoverableClient {
             @Test
             void routeThroughEveryInstance() throws IOException {
-                final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances > 1);
+                assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
                 String[] hosts = gatewayServiceConfiguration.getHost().split(",");
                 int port = gatewayServiceConfiguration.getPort();
-                assumeTrue(internalPorts.length == instances);
+                assumeTrue(internalPorts.length == gatewayInstances);
                 for (String host : hosts) {
                     HttpRequestUtils.getResponse(DISCOVERABLE_GREET, SC_OK, port, host);
                 }
@@ -81,8 +82,7 @@ public class SouthboundServicesRoutingTest {
 
             @Test
             void routeToSpecificInstance() throws URISyntaxException {
-                final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances > 1);
+                assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
                 String host = gatewayServiceConfiguration.getHost().split(",")[0];
                 //@formatter:off
                 extractHostAndPortMetadata();
@@ -99,8 +99,7 @@ public class SouthboundServicesRoutingTest {
 
             @Test
             void routeToWrongInstanceIdentifier() {
-                final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances > 1);
+                assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
                 String host = gatewayServiceConfiguration.getHost().split(",")[0];
                 //@formatter:off
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
