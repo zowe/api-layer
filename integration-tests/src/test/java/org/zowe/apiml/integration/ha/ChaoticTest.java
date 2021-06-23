@@ -47,7 +47,7 @@ public class ChaoticTest {
     private DiscoveryRequests discoveryRequests;
     private String username;
     private String password;
-    private String[] hosts = discoveryServiceConfiguration.getHost().split(",");
+    private String[] hosts;
 
     @BeforeEach
     void setUp() {
@@ -55,7 +55,7 @@ public class ChaoticTest {
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-
+        hosts = discoveryServiceConfiguration.getHost().split(",");
         discoveryRequests = new DiscoveryRequests(hosts[1]);
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }

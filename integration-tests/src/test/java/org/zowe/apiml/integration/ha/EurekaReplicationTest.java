@@ -39,13 +39,14 @@ class EurekaReplicationTest implements TestWithStartedInstances {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private String username;
     private String password;
-    private String[] hosts = discoveryServiceConfiguration.getHost().split(",");
+    private String[] hosts;
 
     @BeforeEach
     void setUp() {
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+        hosts = discoveryServiceConfiguration.getHost().split(",");
     }
 
     /**
