@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.product.tomcat;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.AbstractEndpoint;
@@ -21,10 +22,11 @@ import org.springframework.stereotype.Component;
 import org.zowe.commons.attls.InboundAttls;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.SocketChannel;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Set;
 
 @Component
@@ -68,10 +70,10 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             SocketChannel socketChannel = secureChannel.getIOChannel();
             try {
                 Class<?> socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
-                Method getFDVal = socketChannelImpl.getDeclaredMethod("getFDVal");
-                getFDVal.setAccessible(true);
-                int fileDescriptor = (int) getFDVal.invoke(socketChannel);
-                System.out.println("method: " + fileDescriptor);
+                Field fdField = socketChannelImpl.getDeclaredField("fdVal");
+                fdField.setAccessible(true);
+                int fileDescriptor = fdField.getInt(socketChannel);
+                System.out.println(fileDescriptor);
                 InboundAttls.init(fileDescriptor);
                 InboundAttls.setAlwaysLoadCertificate(true);
 
@@ -81,17 +83,16 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                     if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
                         try {
                             System.out.println("ciphers:" + InboundAttls.getNegotiatedCipher2());
-                            InputStream targetStream = new ByteArrayInputStream(InboundAttls.getCertificate());
-                            System.out.println("Input stream");
 
-                            int b = 0;
-                            while ((b = targetStream.read()) != -1) {
-                                // Convert byte to character
-                                char ch = (char) b;
+                            byte[] encodedCert = Base64.encodeBase64(InboundAttls.getCertificate());
+                            String s = new String(encodedCert);
+                            s = "-----BEGIN CERTIFICATE-----\n" + s + "\n-----END CERTIFICATE-----";
 
-                                // Print the character
-                                System.out.print("Char : " + ch);
-                            }
+                            X509Certificate certificate = (X509Certificate) CertificateFactory
+                                .getInstance("X509")
+                                .generateCertificate(new ByteArrayInputStream(s.getBytes()));
+                            System.out.println("certificate: " + certificate.toString());
+                            System.out.println("subject DN: " + certificate.getSubjectDN().getName());
                             System.out.println("cyphers 4:" + InboundAttls.getNegotiatedCipher4());
 
                         } catch (Exception e) {
