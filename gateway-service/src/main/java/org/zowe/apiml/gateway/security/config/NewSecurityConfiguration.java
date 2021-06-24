@@ -36,8 +36,7 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
-import org.zowe.apiml.gateway.security.query.QueryFilter;
-import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
+import org.zowe.apiml.gateway.security.query.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -147,13 +146,11 @@ public class NewSecurityConfiguration {
     @Order(2)
     class Query extends WebSecurityConfigurerAdapter {
 
-        private final CompoundAuthProvider compoundAuthProvider;
-        private final AuthenticationProvider tokenAuthenticationProvider;
+        private final TokenAuthenticationProvider tokenAuthenticationProvider;
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
-            auth.authenticationProvider(tokenAuthenticationProvider); // for authenticating Tokens
+            auth.authenticationProvider(tokenAuthenticationProvider);
         }
 
         @Override
@@ -166,6 +163,34 @@ public class NewSecurityConfiguration {
                 .and()
                 .logout().disable()
                 .addFilterBefore(queryFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+        }
+    }
+
+    @Configuration
+    @RequiredArgsConstructor
+    @Order(3)
+    class Ticket extends WebSecurityConfigurerAdapter {
+
+        private final AuthenticationProvider tokenAuthenticationProvider;
+
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) {
+            auth.authenticationProvider(tokenAuthenticationProvider); // for authenticating Tokens
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            baseConfigure(http.requestMatchers().antMatchers(
+                authConfigurationProperties.getGatewayTicketEndpoint(),
+                authConfigurationProperties.getGatewayTicketEndpointOldFormat()
+            ).and()).authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .logout().disable()
+                .x509() //TODO is certificate filtering required here?
+                .userDetailsService(new SimpleUserDetailService())
+                .and()
+                .addFilterBefore(ticketFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
         }
     }
 
@@ -244,6 +269,20 @@ public class NewSecurityConfiguration {
             authenticationService,
             HttpMethod.GET,
             false,
+            authenticationManager);
+    }
+
+    /**
+     * Processes /ticket requests
+     */
+    private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) throws Exception {
+        return new QueryFilter(
+            ticketEndpoint,
+            successfulTicketHandler,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            authenticationService,
+            HttpMethod.POST,
+            true,
             authenticationManager);
     }
 
