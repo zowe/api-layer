@@ -15,12 +15,12 @@ import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ApimlTomcatCustomizerTest {
 
     @Test
-    void parseCertificateFromPem () throws Exception{
+    void parseCertificateFromPem() throws Exception {
         String pemCert = "-----BEGIN CERTIFICATE-----\n" +
             " MIIHZjCCBk6gAwIBAgIQBhv8eupzzw6gJyKT1TpwQjANBgkqhkiG9w0BAQsFADBNMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMScwJQYDVQQDEx5EaWdp\n" +
             " Q2VydCBTSEEyIFNlY3VyZSBTZXJ2ZXIgQ0EwHhcNMTkwOTI2MDAwMDAwWhcNMjEwOTI1MTIwMDAwWjB9MQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTERMA8G\n" +
@@ -46,6 +46,6 @@ class ApimlTomcatCustomizerTest {
         X509Certificate certificate = (X509Certificate) CertificateFactory
             .getInstance("X509")
             .generateCertificate(new ByteArrayInputStream(pemCert.getBytes()));
-        assertEquals("CN=usilca32.lvn.broadcom.net, OU=IT, O=Broadcom Inc, L=San Jose, ST=California, C=US",certificate.getSubjectDN().toString());
+        assertEquals("CN=usilca32.lvn.broadcom.net, OU=IT, O=Broadcom Inc, L=San Jose, ST=California, C=US", certificate.getSubjectDN().toString());
     }
 }
