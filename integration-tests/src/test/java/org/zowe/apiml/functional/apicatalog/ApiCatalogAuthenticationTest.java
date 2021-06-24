@@ -10,7 +10,9 @@
 package org.zowe.apiml.functional.apicatalog;
 
 import io.restassured.RestAssured;
+import io.restassured.config.SSLConfig;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -69,6 +71,12 @@ class ApiCatalogAuthenticationTest {
             .orElseThrow(() -> new RuntimeException("Cannot determine API Catalog service from Discovery"));
     }
 
+    @BeforeEach
+    void clearSsl() {
+        RestAssured.config = RestAssured.config().sslConfig(SSLConfig.sslConfig());
+        RestAssured.useRelaxedHTTPSValidation();
+    }
+
     //@formatter:off
     @Nested
     class WhenAccessingCatalog {
@@ -79,9 +87,9 @@ class ApiCatalogAuthenticationTest {
             void givenValidBasicAuthentication(String endpoint) {
                 given()
                     .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
-                .when()
+                    .when()
                     .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
-                .then()
+                    .then()
                     .statusCode(is(SC_OK));
             }
 
@@ -91,9 +99,9 @@ class ApiCatalogAuthenticationTest {
                 given()
                     .config(SslContext.clientCertApiml)
                     .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
-                .when()
+                    .when()
                     .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
-                .then()
+                    .then()
                     .statusCode(is(SC_OK));
             }
         }
@@ -106,9 +114,9 @@ class ApiCatalogAuthenticationTest {
                 String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID_PATH + endpoint + "'";
 
                 given()
-                .when()
+                    .when()
                     .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
-                .then()
+                    .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX)
                     .body(
@@ -123,9 +131,9 @@ class ApiCatalogAuthenticationTest {
 
                 given()
                     .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
-                .when()
+                    .when()
                     .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
-                .then()
+                    .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
                         "messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
@@ -140,9 +148,9 @@ class ApiCatalogAuthenticationTest {
 
                 given()
                     .cookie(COOKIE, invalidToken)
-                .when()
+                    .when()
                     .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
-                .then()
+                    .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
                         "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
@@ -163,9 +171,9 @@ class ApiCatalogAuthenticationTest {
                 void givenValidCertificate() {
                     given()
                         .config(SslContext.clientCertApiml)
-                    .when()
+                        .when()
                         .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
-                    .then()
+                        .then()
                         .statusCode(HttpStatus.OK.value());
                 }
 
@@ -174,9 +182,9 @@ class ApiCatalogAuthenticationTest {
                     given()
                         .config(SslContext.clientCertApiml)
                         .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
-                    .when()
+                        .when()
                         .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
-                    .then()
+                        .then()
                         .statusCode(is(SC_OK));
                 }
             }
@@ -187,18 +195,18 @@ class ApiCatalogAuthenticationTest {
                 void givenUnTrustedCertificateAndNoBasicAuth_thenReturnUnauthorized() {
                     given()
                         .config(SslContext.selfSignedUntrusted)
-                    .when()
+                        .when()
                         .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
-                    .then()
+                        .then()
                         .statusCode(HttpStatus.UNAUTHORIZED.value());
                 }
 
                 @Test
                 void givenNoCertificateAndNoBasicAuth_thenReturnUnauthorized() {
                     given()
-                    .when()
+                        .when()
                         .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
-                    .then()
+                        .then()
                         .statusCode(HttpStatus.UNAUTHORIZED.value());
                 }
             }
@@ -208,9 +216,9 @@ class ApiCatalogAuthenticationTest {
         void givenOnlyValidCertificate_whenAccessNotApiDocRoute_thenReturnUnauthorized() {
             given()
                 .config(SslContext.clientCertApiml)
-            .when()
+                .when()
                 .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
-            .then()
+                .then()
                 .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
     }
