@@ -84,6 +84,18 @@ class ApiCatalogAuthenticationTest {
                 .then()
                     .statusCode(is(SC_OK));
             }
+
+            @ParameterizedTest(name = "givenValidBasicAuthentication {index} {0} ")
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
+            void givenValidBasicAuthenticationAndCertificate(String endpoint) {
+                given()
+                    .config(SslContext.clientCertApiml)
+                    .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                .when()
+                    .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
+                .then()
+                    .statusCode(is(SC_OK));
+            }
         }
 
         @Nested
@@ -140,45 +152,66 @@ class ApiCatalogAuthenticationTest {
     }
 
     @Nested
-    class WhenAccessingApidocWithCertificateViaServiceUrl {
+    class WhenAccessingWithCertificateViaServiceUrl {
+
+        @Nested
+        class WhenAccessApiDocRoute {
+
+            @Nested
+            class ThenReturnOk {
+                @Test
+                void givenValidCertificate() {
+                    given()
+                        .config(SslContext.clientCertApiml)
+                    .when()
+                        .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
+                    .then()
+                        .statusCode(HttpStatus.OK.value());
+                }
+
+                @Test
+                void givenValidCertificateAndBasicAuth() {
+                    given()
+                        .config(SslContext.clientCertApiml)
+                        .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                    .when()
+                        .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
+                    .then()
+                        .statusCode(is(SC_OK));
+                }
+            }
+
+            @Nested
+            class ThenReturnUnauthorized {
+                @Test
+                void givenUnTrustedCertificateAndNoBasicAuth_thenReturnUnauthorized() {
+                    given()
+                        .config(SslContext.selfSignedUntrusted)
+                    .when()
+                        .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
+                    .then()
+                        .statusCode(HttpStatus.UNAUTHORIZED.value());
+                }
+
+                @Test
+                void givenNoCertificateAndNoBasicAuth_thenReturnUnauthorized() {
+                    given()
+                    .when()
+                        .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
+                    .then()
+                        .statusCode(HttpStatus.UNAUTHORIZED.value());
+                }
+            }
+        }
 
         @Test
-        void givenValidCertificate_thenReturnOk() {
+        void givenOnlyValidCertificate_whenAccessNotApiDocRoute_thenReturnUnauthorized() {
             given()
                 .config(SslContext.clientCertApiml)
             .when()
-                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
-            .then()
-                .statusCode(HttpStatus.OK.value());
-        }
-
-        @Test
-        void givenUnTrustedCertificateAndNoBasicAuth_thenReturnUnauthorized() {
-            given()
-                .config(SslContext.selfSignedUntrusted)
-            .when()
-                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
+                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
             .then()
                 .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
-
-        @Test
-        void givenNoCertificateAndNoBasicAuth_thenReturnUnauthorized() {
-            given()
-            .when()
-                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
-            .then()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
-        }
-    }
-
-    @Test
-    void givenOnlyValidCertificate_whenAccessNotApiDocRoute_thenReturnUnauthorized() {
-        given()
-            .config(SslContext.clientCertApiml)
-        .when()
-            .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
-        .then()
-            .statusCode(HttpStatus.UNAUTHORIZED.value());
     }
 }
