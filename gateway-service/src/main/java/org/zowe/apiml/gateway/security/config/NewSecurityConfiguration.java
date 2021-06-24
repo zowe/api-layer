@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -29,7 +30,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.QueryFilter;
@@ -40,6 +44,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
@@ -97,7 +102,6 @@ public class NewSecurityConfiguration {
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
-            //TODO eliminate AuthProviderInitializer?
             auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
             auth.authenticationProvider(new CertificateAuthenticationProvider()); // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
         }
@@ -106,7 +110,9 @@ public class NewSecurityConfiguration {
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers(HttpMethod.POST,
                     authConfigurationProperties.getGatewayLoginEndpoint(),
-                    authConfigurationProperties.getGatewayLoginEndpointOldFormat()
+                    authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
+                    authConfigurationProperties.getGatewayLogoutEndpoint(),
+                    authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
                 ).and())
                 .authorizeRequests()
                 .anyRequest().permitAll()
@@ -118,7 +124,15 @@ public class NewSecurityConfiguration {
                 .userDetailsService(new SimpleUserDetailService())
 
                 .and()
-                .logout().disable()
+                .logout()
+                .logoutRequestMatcher(new RegexRequestMatcher(
+                    String.format("(%s|%s)",
+                        authConfigurationProperties.getGatewayLogoutEndpoint(),
+                        authConfigurationProperties.getGatewayLogoutEndpointOldFormat())
+                    , HttpMethod.POST.name()))
+                .addLogoutHandler(logoutHandler())
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+                .and()
 
                 //drive filter order this way
                 .addFilterBefore(loginFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
@@ -254,6 +268,11 @@ public class NewSecurityConfiguration {
             handlerInitializer.getResourceAccessExceptionHandler(),
             authConfigurationProperties,
             PROTECTED_ENDPOINTS);
+    }
+
+    private LogoutHandler logoutHandler() {
+        FailedAuthenticationHandler failure = handlerInitializer.getAuthenticationFailureHandler();
+        return new JWTLogoutHandler(authenticationService, failure);
     }
 
 }
