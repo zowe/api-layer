@@ -19,21 +19,27 @@ import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
+import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
@@ -98,7 +104,7 @@ public class NewSecurityConfiguration {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers(
+            baseConfigure(http.requestMatchers().antMatchers(HttpMethod.POST,
                     authConfigurationProperties.getGatewayLoginEndpoint(),
                     authConfigurationProperties.getGatewayLoginEndpointOldFormat()
                 ).and())
@@ -120,14 +126,38 @@ public class NewSecurityConfiguration {
                 .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
 
         }
+    }
 
+    @Configuration
+    @RequiredArgsConstructor
+    @Order(2)
+    class Query extends WebSecurityConfigurerAdapter {
 
+        private final CompoundAuthProvider compoundAuthProvider;
+        private final AuthenticationProvider tokenAuthenticationProvider;
 
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) {
+            auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
+            auth.authenticationProvider(tokenAuthenticationProvider); // for authenticating Tokens
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            baseConfigure(http.requestMatchers().antMatchers(
+                authConfigurationProperties.getGatewayQueryEndpoint(),
+                authConfigurationProperties.getGatewayQueryEndpointOldFormat()
+                ).and()).authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .logout().disable()
+                .addFilterBefore(queryFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+        }
     }
 
     @Configuration
     @Order(100)
-    class defaultSecurity extends WebSecurityConfigurerAdapter {
+    class DefaultSecurity extends WebSecurityConfigurerAdapter {
 
         // Only once here is correct, putting it to other filter chains causes multiple evaluations
         @Override
@@ -190,6 +220,40 @@ public class NewSecurityConfiguration {
         return new X509AuthenticationFilter(loginEndpoint,
             handlerInitializer.getSuccessfulLoginHandler(),
             x509AuthenticationProvider);
+    }
+
+    private QueryFilter queryFilter(String queryEndpoint, AuthenticationManager authenticationManager) throws Exception {
+        return new QueryFilter(
+            queryEndpoint,
+            successfulQueryHandler,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            authenticationService,
+            HttpMethod.GET,
+            false,
+            authenticationManager);
+    }
+
+    /**
+     * Secures content with a basic authentication
+     */
+    private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) throws Exception {
+        return new BasicContentFilter(
+            authenticationManager,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler(),
+            PROTECTED_ENDPOINTS);
+    }
+
+    /**
+     * Secures content with a token stored in a cookie
+     */
+    private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) throws Exception {
+        return new CookieContentFilter(
+            authenticationManager,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler(),
+            authConfigurationProperties,
+            PROTECTED_ENDPOINTS);
     }
 
 }
