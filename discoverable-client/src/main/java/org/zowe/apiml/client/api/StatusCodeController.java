@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @RestController
 @Slf4j
@@ -33,6 +34,7 @@ public class StatusCodeController {
     @PostMapping(value = "/api/v1/status-code")
     @ApiOperation(value = "Parametrized status code",
         tags = {"Other Operations"})
+    @HystrixCommand
     public ResponseEntity<String> returnStatusCodeForPOST(@RequestParam(value = "code", defaultValue = "200") int statusCode) {
         log.info("Calling POST from gateway, status code: {}",statusCode);
         return ResponseEntity.status(statusCode).body("status code: " + statusCode);

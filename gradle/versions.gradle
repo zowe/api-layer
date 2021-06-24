@@ -92,6 +92,8 @@ ext {
         spring_cloud_starter_eureka        : "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:${springCloudVersion}",
         spring_cloud_starter_eureka_server : "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:${springCloudVersion}",
         spring_cloud_starter_ribbon        : "org.springframework.cloud:spring-cloud-starter-netflix-ribbon:${springCloudVersion}",
+        spring_cloud_starter_hystrix       : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix:${springCloudVersion}",
+        spring_cloud_hystrix_dashboard     : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix-dashboard:${springCloudVersion}",
 
         spring_security_web                : "org.springframework.security:spring-security-web:${springSecurityVersion}",
         spring_security_config             : "org.springframework.security:spring-security-config:${springSecurityVersion}",
