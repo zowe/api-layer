@@ -19,13 +19,13 @@ import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
@@ -62,6 +62,9 @@ public class NewSecurityConfiguration {
     @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
     private String ignoredHeadersWhenCorsEnabled;
 
+    // TODO gateway assumes this, not configurable
+    private String applicationContextPath = "/gateway";
+
     private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
 
     private final ObjectMapper securityObjectMapper;
@@ -80,17 +83,17 @@ public class NewSecurityConfiguration {
 
 
     @Configuration
+    @RequiredArgsConstructor
     @Order(1)
     class authenticationFunctionality extends WebSecurityConfigurerAdapter {
 
-        @Override
-        public void configure(WebSecurity web) throws Exception {
-            configureWebSecurity(web);
-        }
+        private final CompoundAuthProvider compoundAuthProvider;
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
-            //authProviderInitializer.configure(auth);
+            //TODO eliminate AuthProviderInitializer?
+            auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
+            auth.authenticationProvider(new CertificateAuthenticationProvider()); // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
         }
 
         @Override
@@ -102,43 +105,35 @@ public class NewSecurityConfiguration {
                 .authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
-                .logout().disable() //TODO see if this doesn't screw up the other filterchain
 
-                .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(x509AuthenticationFilter("/**"), ShouldBeAlreadyAuthenticatedFilter.class)
-                .addFilterBefore(loginFilter("/**"), X509AuthenticationFilter.class);
+                .x509()
+                .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) //this filter selects certificates to use for authentication and pushes to custom attribute
+                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+                .userDetailsService(new SimpleUserDetailService())
+
+                .and()
+                .logout().disable()
+
+                //drive filter order this way
+                .addFilterBefore(loginFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
+                .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+
         }
 
-        private LoginFilter loginFilter(String loginEndpoint) throws Exception {
-            return new LoginFilter(
-                loginEndpoint,
-                handlerInitializer.getSuccessfulLoginHandler(),
-                handlerInitializer.getAuthenticationFailureHandler(),
-                securityObjectMapper,
-                authenticationManager(),
-                handlerInitializer.getResourceAccessExceptionHandler());
-        }
 
-        // TODO refactor this filter to not rely on prefiltering by another filter
-        private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
-            return new X509AuthenticationFilter(loginEndpoint,
-                handlerInitializer.getSuccessfulLoginHandler(),
-                x509AuthenticationProvider);
-        }
+
     }
 
     @Configuration
     @Order(100)
     class defaultSecurity extends WebSecurityConfigurerAdapter {
 
+        // Only once here is correct, putting it to other filter chains causes multiple evaluations
         @Override
         public void configure(WebSecurity web) throws Exception {
             configureWebSecurity(web);
         }
-//        @Override
-//        protected void configure(AuthenticationManagerBuilder auth) {
-//            authProviderInitializer.configure(auth);
-//        }
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
@@ -159,6 +154,7 @@ public class NewSecurityConfiguration {
             .and();
     }
 
+    //Web security only needs to be configured once
     public void configureWebSecurity(WebSecurity web) {
         StrictHttpFirewall firewall = new StrictHttpFirewall();
         firewall.setAllowUrlEncodedSlash(true);
@@ -168,10 +164,32 @@ public class NewSecurityConfiguration {
         firewall.setAllowSemicolon(true);
         web.httpFirewall(firewall);
 
-//        web.ignoring()
-//            .antMatchers(AuthController.CONTROLLER_PATH + AuthController.PUBLIC_KEYS_PATH + "/**");
+        // This is to allow for internal error controller through
         web.ignoring()
-            .antMatchers(InternalServerErrorController.ERROR_ENDPOINT);
+            .antMatchers(InternalServerErrorController.ERROR_ENDPOINT,
+                "/application/health", "/application/info", applicationContextPath + "/version");
+    }
+
+    private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) throws Exception {
+        return new LoginFilter(
+            loginEndpoint,
+            handlerInitializer.getSuccessfulLoginHandler(),
+            handlerInitializer.getAuthenticationFailureHandler(),
+            securityObjectMapper,
+            authenticationManager,
+            handlerInitializer.getResourceAccessExceptionHandler());
+    }
+
+    private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) throws Exception {
+        ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
+        out.setAuthenticationManager(authenticationManager);
+        return out;
+    }
+
+    private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
+        return new X509AuthenticationFilter(loginEndpoint,
+            handlerInitializer.getSuccessfulLoginHandler(),
+            x509AuthenticationProvider);
     }
 
 }
