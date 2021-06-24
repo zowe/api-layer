@@ -85,11 +85,6 @@ public class SecurityConfiguration {
         }
 
         @Override
-        public void configure(WebSecurity web) {
-            configureNoSecurityEndpoints(web);
-        }
-
-        @Override
         protected void configure(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(
                 baseConfiguration(http.antMatcher(APIDOC_ROUTES)),
@@ -125,7 +120,15 @@ public class SecurityConfiguration {
 
         @Override
         public void configure(WebSecurity web) {
-            configureNoSecurityEndpoints(web);
+            // skip security filters matchers
+            String[] noSecurityAntMatchers = {
+                "/",
+                "/static/**",
+                "/favicon.ico",
+                "/api-doc"
+            };
+
+            web.ignoring().antMatchers(noSecurityAntMatchers);
         }
 
         @Override
@@ -189,18 +192,6 @@ public class SecurityConfiguration {
             .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
 
         return http;
-    }
-
-    private void configureNoSecurityEndpoints(WebSecurity web) {
-        // skip security filters matchers
-        String[] noSecurityAntMatchers = {
-            "/",
-            "/static/**",
-            "/favicon.ico",
-            "/api-doc"
-        };
-
-        web.ignoring().antMatchers(noSecurityAntMatchers);
     }
 
     private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
