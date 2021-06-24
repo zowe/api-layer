@@ -19,6 +19,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
+import org.zowe.apiml.util.config.EnvironmentConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -40,6 +42,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 @HATest
 public class SouthboundServicesRoutingTest {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
+    private DiscoveryServiceConfiguration discoveryServiceConfiguration;
 
     private final String DISCOVERABLE_GREET = "/api/v1/discoverableclient/greeting";
     private final String EUREKA_APPS = "/eureka/apps";
@@ -48,12 +51,20 @@ public class SouthboundServicesRoutingTest {
     private String password;
     private String discoverableClientPort;
     private String discoverableClientHost;
+    private String[] hosts;
+    private int gatewayInstances;
+    private int discoveryInstances;
 
     @BeforeEach
     void setUp() {
-        gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        username = ConfigReader.environmentConfiguration().getCredentials().getUser();
-        password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+        EnvironmentConfiguration environmentConfiguration = ConfigReader.environmentConfiguration();
+        gatewayServiceConfiguration = environmentConfiguration.getGatewayServiceConfiguration();
+        discoveryServiceConfiguration = environmentConfiguration.getDiscoveryServiceConfiguration();
+        username = environmentConfiguration.getCredentials().getUser();
+        password = environmentConfiguration.getCredentials().getPassword();
+        hosts = discoveryServiceConfiguration.getHost().split(",");
+        gatewayInstances = gatewayServiceConfiguration.getInstances();
+        discoveryInstances = discoveryServiceConfiguration.getInstances();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 
@@ -63,12 +74,11 @@ public class SouthboundServicesRoutingTest {
         class WhenCallingDiscoverableClient {
             @Test
             void routeThroughEveryInstance() throws IOException {
-                final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances > 1);
+                assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
                 String[] internalPorts = gatewayServiceConfiguration.getInternalPorts().split(",");
                 String[] hosts = gatewayServiceConfiguration.getHost().split(",");
                 int port = gatewayServiceConfiguration.getPort();
-                assumeTrue(internalPorts.length == instances);
+                assumeTrue(internalPorts.length == gatewayInstances);
                 for (String host : hosts) {
                     HttpRequestUtils.getResponse(DISCOVERABLE_GREET, SC_OK, port, host);
                 }
@@ -76,8 +86,7 @@ public class SouthboundServicesRoutingTest {
 
             @Test
             void routeToSpecificInstance() throws URISyntaxException {
-                final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances > 1);
+                assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
                 String host = gatewayServiceConfiguration.getHost().split(",")[0];
                 //@formatter:off
                 extractHostAndPortMetadata();
@@ -94,8 +103,7 @@ public class SouthboundServicesRoutingTest {
 
             @Test
             void routeToWrongInstanceIdentifier() {
-                final int instances = gatewayServiceConfiguration.getInstances();
-                assumeTrue(instances > 1);
+                assumeTrue(gatewayInstances > 1 && discoveryInstances > 1);
                 String host = gatewayServiceConfiguration.getHost().split(",")[0];
                 //@formatter:off
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -115,7 +123,7 @@ public class SouthboundServicesRoutingTest {
                     given()
                         .auth().basic(username, password)
                         .when()
-                        .get(HttpRequestUtils.getUriFromDiscovery(EUREKA_APPS))
+                        .get(HttpRequestUtils.getUriFromDiscovery(EUREKA_APPS, hosts[0]))
                         .then()
                         .statusCode(is(HttpStatus.SC_OK))
                         .extract().body().asString();

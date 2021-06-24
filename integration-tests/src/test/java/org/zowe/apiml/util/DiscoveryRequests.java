@@ -12,6 +12,7 @@ package org.zowe.apiml.util;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
+import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -22,19 +23,24 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
+@RequiredArgsConstructor
 public class DiscoveryRequests {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
     private final String scheme = discoveryServiceConfiguration.getScheme();
-    private final String host = discoveryServiceConfiguration.getHost();
+    private final String host;
     private final int port = discoveryServiceConfiguration.getPort();
 
-    public boolean isApplicationRegistered(String appName, String instanceId) {
+    public boolean isApplicationRegistered(String appName) {
+        return isApplicationRegistered(appName, Optional.empty());
+    }
+    public boolean isApplicationRegistered(String appName, Optional<String> instanceId) {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         try {
@@ -49,25 +55,26 @@ public class DiscoveryRequests {
                 .jsonPath();
 
             List<ArrayList> appNames = result.get("applications.application.instance.app");
-            List<ArrayList> instanceIds = result.get("applications.application.instance.instanceId");
             AtomicBoolean isRegistered = new AtomicBoolean(false);
             appNames.stream()
                 .flatMap(Collection::stream)
                 .forEach(application -> {
                     if (application.equals(appName.toUpperCase())) {
                         isRegistered.set(true);
-                    } else {
-                        isRegistered.set(false);
                     }
                 });
 
-            instanceIds.stream()
-                .flatMap(Collection::stream)
-                .forEach(instance -> {
-                    if (instance.equals(instanceId)) {
-                        isRegistered.set(true);
-                    }
-                });
+            if (instanceId.isPresent()) {
+                isRegistered.set(false);
+                List<ArrayList> instanceIds = result.get("applications.application.instance.instanceId");
+                instanceIds.stream()
+                    .flatMap(Collection::stream)
+                    .forEach(instance -> {
+                        if (instance.equals(instanceId.get())) {
+                            isRegistered.set(true);
+                        }
+                    });
+            }
 
             return isRegistered.get();
 

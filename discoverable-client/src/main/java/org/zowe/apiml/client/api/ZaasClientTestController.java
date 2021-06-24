@@ -23,6 +23,7 @@ import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @RestController
 @RequestMapping("/api/v1/zaasClient")
@@ -41,6 +42,7 @@ public class ZaasClientTestController {
 
     @PostMapping(value = "/login")
     @ApiOperation(value = "Forward login to gateway service via zaas client")
+    @HystrixCommand
     public ResponseEntity<String> forwardLogin(@RequestBody LoginRequest loginRequest) {
         try {
             String jwt = zaasClient.login(loginRequest.getUsername(), loginRequest.getPassword());
@@ -53,6 +55,7 @@ public class ZaasClientTestController {
 
     @PostMapping(value = "/logout")
     @ApiOperation(value = "Forward logout to gateway service via zaas client")
+    @HystrixCommand
     public ResponseEntity<String> forwardLogout(
         @CookieValue(value = "apimlAuthenticationToken", required = false) String cookieToken,
         @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader

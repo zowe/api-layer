@@ -167,14 +167,15 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info
+                include: health,info,shutdown
     health:
         defaults:
             enabled: false
     endpoint:
         health:
             showDetails: always
-
+        shutdown:
+            enabled: true
 eureka:
     instance:
         hostname: ${apiml.service.hostname}
@@ -228,7 +229,10 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,routes,loggers
+                include: health,info,routes,loggers,shutdown
+    endpoint:
+        shutdown:
+            enabled: true
 
 logging:
     level:
