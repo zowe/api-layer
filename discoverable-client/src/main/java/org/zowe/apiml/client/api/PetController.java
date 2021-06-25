@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +64,7 @@ public class PetController {
     @ApiResponses( value = {
         @ApiResponse(code = 200, message = "List of pets", response = Pet.class, responseContainer = "List")
     })
+    @HystrixCommand()
     public List<Pet> getAllPets() {
         List<Pet> pets = petService.getAll();
         if (pets == null) {
@@ -96,6 +98,7 @@ public class PetController {
         @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
         @ApiResponse(code = 400, message = "Request object is not valid", response = ApiMessageView.class)
     })
+    @HystrixCommand()
     public Pet addPet(@ApiParam(value = "Pet object that needs to be added", required = true)
                       @Validated(value = {New.class})
                       @RequestBody Pet pet) {
@@ -123,6 +126,7 @@ public class PetController {
         @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
         @ApiResponse(code = 404, message = "The pet with id is not found.", response = ApiMessageView.class)
     })
+    @HystrixCommand()
     public Pet getPetById(@ApiParam(value = "Pet id to return", required = true, example = "1")
                           @PathVariable("id") Long id) {
         Pet pet = petService.getById(id);
@@ -156,6 +160,7 @@ public class PetController {
         @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
         @ApiResponse(code = 404, message = "Pet not found", response = ApiMessageView.class)
     })
+    @HystrixCommand()
     public Pet updatePetById(@ApiParam(value = "Pet id to update", required = true, example = "1")
                              @PathVariable("id") Long id,
                              @ApiParam(value = "Pet object that needs to be updated", required = true)
@@ -193,6 +198,7 @@ public class PetController {
         @ApiResponse(code = 403, message = "Forbidden", response = ApiMessageView.class),
         @ApiResponse(code = 404, message = "Pet not found", response = ApiMessageView.class)
     })
+    @HystrixCommand()
     public void deletePetById(@ApiParam(value = "Pet id to delete", required = true, example = "1")
                               @PathVariable("id") Long id) {
         petService.deleteById(id);

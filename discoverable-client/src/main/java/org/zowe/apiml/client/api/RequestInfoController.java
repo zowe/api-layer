@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -53,6 +54,7 @@ public class RequestInfoController {
         @ApiResponse(code = 500, message = "Error in parsing of request ")
     })
     @ResponseBody
+    @HystrixCommand
     public RequestInfo getRequestInfo(HttpServletRequest httpServletRequest) throws CertificateEncodingException, IOException {
         RequestInfo out = new RequestInfo();
 
