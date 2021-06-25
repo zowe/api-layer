@@ -6,7 +6,7 @@ ext {
     lombokVersion = '1.18.16'
     slf4jVersion = '1.7.25'
     jsonVersion = '20180813'
-    jsonPathVersion = '2.4.0'
+    jsonPathVersion = '2.6.0'
     httpClientVersion = '4.5.3'
     guavaVersion = '23.2-jre'
     mockSpringRestVersion = '1.0.2'
