@@ -20,6 +20,7 @@ import org.zowe.apiml.acceptance.netflix.ApimlRouteLocatorStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
+import org.zowe.apiml.gateway.filters.post.PostStoreLoadBalancerCacheFilter;
 import org.zowe.apiml.gateway.filters.post.RoutedInstanceIdFilter;
 import org.zowe.apiml.gateway.filters.pre.*;
 import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
@@ -98,5 +99,9 @@ public class ApimlRoutingConfig {
     public RoutedInstanceIdFilter routedServerFilter() {
         return new RoutedInstanceIdFilter();
     }
+
+    @Bean
+    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.authenticateBased", havingValue = "enabled")
+    public PostStoreLoadBalancerCacheFilter postStoreLoadBalancerCacheFilter() { return new PostStoreLoadBalancerCacheFilter();}
 
 }
