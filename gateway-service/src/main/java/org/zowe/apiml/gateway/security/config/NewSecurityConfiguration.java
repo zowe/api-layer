@@ -34,11 +34,14 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
+import org.zowe.apiml.gateway.controllers.AuthController;
+import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
+import org.zowe.apiml.gateway.services.ServicesInfoController;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
@@ -195,6 +198,58 @@ public class NewSecurityConfiguration {
     }
 
     @Configuration
+    @RequiredArgsConstructor
+    @Order(4)
+    class CertificateProtectedEndpoints extends WebSecurityConfigurerAdapter {
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            baseConfigure(http.requestMatchers()
+                    .antMatchers(HttpMethod.DELETE,CacheServiceController.CONTROLLER_PATH + "/**")
+                    .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).and()
+                ).authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .logout().disable()
+                .x509()
+                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+                .userDetailsService(new SimpleUserDetailService());
+        }
+    }
+
+    @Configuration
+    @RequiredArgsConstructor
+    @Order(5)
+    class CertificateOrAuthProtectedEndpoints extends WebSecurityConfigurerAdapter {
+
+        private final CompoundAuthProvider compoundAuthProvider;
+        private final AuthenticationProvider tokenAuthenticationProvider;
+
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) {
+            auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
+            auth.authenticationProvider(tokenAuthenticationProvider); // for authenticating Tokens
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            baseConfigure(http.requestMatchers()
+                .antMatchers("/application/**")
+                .antMatchers(ServicesInfoController.SERVICES_URL + "/**").and()
+            ).authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .logout().disable()
+                .x509()
+                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+                .userDetailsService(new SimpleUserDetailService())
+                .and()
+                .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class) //TODO these filters are behind x509 filter
+                .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+        }
+    }
+
+    @Configuration
     @Order(100)
     class DefaultSecurity extends WebSecurityConfigurerAdapter {
 
@@ -233,10 +288,12 @@ public class NewSecurityConfiguration {
         firewall.setAllowSemicolon(true);
         web.httpFirewall(firewall);
 
-        // This is to allow for internal error controller through
+        // Endpoints without protection
         web.ignoring()
-            .antMatchers(InternalServerErrorController.ERROR_ENDPOINT,
-                "/application/health", "/application/info", applicationContextPath + "/version");
+            .antMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
+                "/application/health", "/application/info", applicationContextPath + "/version",
+                AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
+                AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
     }
 
     private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) throws Exception {
