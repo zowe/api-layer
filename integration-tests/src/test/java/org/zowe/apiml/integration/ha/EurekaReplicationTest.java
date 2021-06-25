@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.HATest;
+import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 
 import java.util.List;
@@ -39,8 +40,8 @@ class EurekaReplicationTest implements TestWithStartedInstances {
             void eurekaReplicasAreVisible() {
                 assumeTrue(haDiscoveryRequests.existing() > 1);
 
-                List<Integer> instances = haDiscoveryRequests.getAmountOfRegisteredInstancesForService("DISCOVERY");
-                for(Integer registeredToInstance: instances) {
+                List<Integer> instances = haDiscoveryRequests.getAmountOfRegisteredInstancesForService(Apps.DISCOVERY);
+                for (Integer registeredToInstance : instances) {
                     assertThat(registeredToInstance, is(haDiscoveryRequests.existing()));
                 }
             }

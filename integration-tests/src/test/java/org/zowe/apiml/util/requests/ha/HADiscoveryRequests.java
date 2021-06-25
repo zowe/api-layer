@@ -42,7 +42,7 @@ public class HADiscoveryRequests {
         AtomicBoolean allUp = new AtomicBoolean(true);
 
         discoveryServices.parallelStream().forEach(service -> {
-            if(!service.isUp()) {
+            if (!service.isUp()) {
                 allUp.set(false);
             }
         });
@@ -72,7 +72,7 @@ public class HADiscoveryRequests {
         AtomicBoolean allRegistered = new AtomicBoolean(true);
 
         discoveryServices.parallelStream().forEach(service -> {
-            if(!service.isApplicationRegistered(appName)) {
+            if (!service.isApplicationRegistered(appName)) {
                 allRegistered.set(false);
             }
         });

@@ -13,6 +13,7 @@ package org.zowe.apiml.integration.ha;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.ChaoticHATest;
+import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,7 +36,7 @@ public class DiscoveryChaoticTest {
                 assumeTrue(haDiscoveryRequests.existing() > 1);
 
                 haDiscoveryRequests.shutdown(0);
-                assertThat(haDiscoveryRequests.isApplicationRegistered(1, "DISCOVERABLECLIENT"), is(true));
+                assertThat(haDiscoveryRequests.isApplicationRegistered(1, Apps.DISCOVERABLE_CLIENT), is(true));
             }
         }
     }

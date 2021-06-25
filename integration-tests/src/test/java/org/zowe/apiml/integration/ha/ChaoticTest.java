@@ -15,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.ChaoticHATest;
+import org.zowe.apiml.util.requests.Apps;
+import org.zowe.apiml.util.requests.Endpoints;
 import org.zowe.apiml.util.requests.JsonResponse;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
@@ -33,8 +35,6 @@ public class ChaoticTest {
     private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
 
-    private final String DISCOVERABLE_GREET = "/api/v1/discoverableclient/greeting";
-
     @BeforeEach
     void setUp() {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -50,7 +50,7 @@ public class ChaoticTest {
 
                 haDiscoveryRequests.shutdown(0);
 
-                assertThat(haDiscoveryRequests.isApplicationRegistered(1, "DISCOVERABLECLIENT"), is(true));
+                assertThat(haDiscoveryRequests.isApplicationRegistered(1, Apps.DISCOVERABLE_CLIENT), is(true));
             }
         }
 
@@ -62,7 +62,7 @@ public class ChaoticTest {
 
                 haGatewayRequests.shutdown(0);
 
-                JsonResponse response = haGatewayRequests.route(1, DISCOVERABLE_GREET);
+                JsonResponse response = haGatewayRequests.route(1, Endpoints.DISCOVERABLE_GREET);
                 assertThat(response.getStatus(), is(SC_OK));
             }
         }

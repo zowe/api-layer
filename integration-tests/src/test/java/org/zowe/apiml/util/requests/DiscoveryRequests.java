@@ -62,7 +62,7 @@ public class DiscoveryRequests {
 
     public boolean isUp() {
         try {
-            ReadContext healthResponse = requests.getJson(getDiscoveryUriWithPath("/application/health"));
+            ReadContext healthResponse = requests.getJson(getDiscoveryUriWithPath(Endpoints.HEALTH));
             String health = healthResponse.read("$.status");
 
             return health.equals("UP");
@@ -72,7 +72,7 @@ public class DiscoveryRequests {
     }
 
     public ReadContext getJsonEurekaApps() throws URISyntaxException {
-        return requests.getJson(getDiscoveryUriWithPath("/eureka/apps"));
+        return requests.getJson(getDiscoveryUriWithPath(Endpoints.APPLICATIONS));
     }
 
     public int getAmountOfRegisteredInstancesForService(String appName) {
@@ -87,14 +87,12 @@ public class DiscoveryRequests {
     }
 
     public void shutdown() {
-        String SHUTDOWN = "/application/shutdown";
-
         try {
             given()
                 .contentType(JSON)
                 .auth().basic(credentials.getUser(), credentials.getPassword())
             .when()
-                .post(getDiscoveryUriWithPath(SHUTDOWN))
+                .post(getDiscoveryUriWithPath(Endpoints.SHUTDOWN))
             .then()
                 .statusCode(is(SC_OK));
         } catch (Exception e) {

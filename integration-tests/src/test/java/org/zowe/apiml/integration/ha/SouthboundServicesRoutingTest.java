@@ -13,6 +13,7 @@ package org.zowe.apiml.integration.ha;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.HATest;
+import org.zowe.apiml.util.requests.Endpoints;
 import org.zowe.apiml.util.requests.JsonResponse;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
@@ -30,8 +31,6 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 public class SouthboundServicesRoutingTest {
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
 
-    private final String DISCOVERABLE_GREET = "/api/v1/discoverableclient/greeting";
-
     @Nested
     class GivenHASetUp {
         @Nested
@@ -40,7 +39,7 @@ public class SouthboundServicesRoutingTest {
             void routeThroughEveryInstance() {
                 assumeTrue(haGatewayRequests.existing() > 1);
 
-                List<JsonResponse> responses = haGatewayRequests.route(DISCOVERABLE_GREET);
+                List<JsonResponse> responses = haGatewayRequests.route(Endpoints.DISCOVERABLE_GREET);
                 for (JsonResponse response : responses) {
                     assertThat(response.getStatus(), is(SC_OK));
                 }

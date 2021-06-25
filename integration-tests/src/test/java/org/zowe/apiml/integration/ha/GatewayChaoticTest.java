@@ -13,10 +13,9 @@ package org.zowe.apiml.integration.ha;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.ChaoticHATest;
+import org.zowe.apiml.util.requests.Endpoints;
 import org.zowe.apiml.util.requests.JsonResponse;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
-
-import java.io.IOException;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,20 +29,17 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 public class GatewayChaoticTest {
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
 
-    private final String DISCOVERABLE_GREET = "/api/v1/discoverableclient/greeting";
-
-
     @Nested
     class GivenHASetUp {
         @Nested
         class whenOneGatewayIsNotAvailable {
             @Test
-            void routeToInstanceThroughAliveGateway() throws IOException {
+            void routeToInstanceThroughAliveGateway() {
                 assumeTrue(haGatewayRequests.existing() > 1);
 
                 haGatewayRequests.shutdown(0);
 
-                JsonResponse result = haGatewayRequests.route(1, DISCOVERABLE_GREET);
+                JsonResponse result = haGatewayRequests.route(1, Endpoints.DISCOVERABLE_GREET);
                 assertThat(result.getStatus(), is(SC_OK));
             }
         }

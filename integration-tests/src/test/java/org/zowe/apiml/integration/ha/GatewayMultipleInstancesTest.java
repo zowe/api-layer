@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.HATest;
+import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
@@ -51,7 +52,7 @@ public class GatewayMultipleInstancesTest {
             void gatewayInstancesAreRegistered() {
                 assumeTrue(haGatewayRequests.existing() > 1 && haDiscoveryRequests.existing() > 1);
 
-                assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, "GATEWAY"), is(2));
+                assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.GATEWAY), is(2));
             }
         }
     }

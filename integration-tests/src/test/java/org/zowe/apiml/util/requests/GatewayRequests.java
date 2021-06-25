@@ -48,14 +48,12 @@ public class GatewayRequests {
     }
 
     public void shutdown() {
-        String SHUTDOWN = "/application/shutdown";
-
         try {
             given()
                 .contentType(JSON)
                 .auth().basic(credentials.getUser(), credentials.getPassword())
             .when()
-                .post(getGatewayUriWithPath(SHUTDOWN))
+                .post(getGatewayUriWithPath(Endpoints.SHUTDOWN))
             .then()
                 .statusCode(is(SC_OK));
         } catch (Exception e) {
@@ -66,7 +64,7 @@ public class GatewayRequests {
 
     public boolean isUp() {
         try {
-            ReadContext healthResponse = requests.getJson(getGatewayUriWithPath("/application/health"));
+            ReadContext healthResponse = requests.getJson(getGatewayUriWithPath(Endpoints.HEALTH));
             String health = healthResponse.read("$.status");
 
             return health.equals("UP");
