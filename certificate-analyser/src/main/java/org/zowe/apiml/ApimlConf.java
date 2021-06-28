@@ -36,8 +36,10 @@ public class ApimlConf {
     private String remoteUrl;
     @Option(names = {"-l", "--local"}, description = "Do SSL handshake on localhost")
     private boolean doLocalHandshake;
-    @Option(names = {"-h", "--help"}, usageHelp = true, description = "display a help message")
+    @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display a help message")
     private boolean helpRequested = false;
+    @Option(names = {"-c", "--clientcert"}, description = "Add client certificate to HTTPS request")
+    private boolean clientCertAuth;
 
     public String getKeyStore() {
         return keyStore;
@@ -77,6 +79,10 @@ public class ApimlConf {
 
     public boolean isDoLocalHandshake() {
         return doLocalHandshake;
+    }
+
+    public boolean isClientCertAuth() {
+        return clientCertAuth;
     }
 
     private String defaultValue(String value, String defaultVal) {
