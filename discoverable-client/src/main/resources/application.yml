@@ -133,10 +133,15 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,routes
+                include: hystrix.stream, health, info, routes
     health:
         defaults:
             enabled: false
+
+hystrix:
+    dashboard:
+        proxy-stream-allow-list: '*'
+    command.default.execution.timeout.enabled: false
 
 ---
 spring:

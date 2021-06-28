@@ -116,7 +116,9 @@ task runIntegrationTests(type: Test) {
             'StartupCheck',
             'EnvironmentCheck',
             'SlowTests',
-            'AdditionalLocalTest'
+            'AdditionalLocalTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
 }
@@ -133,7 +135,9 @@ task runLocalIntegrationTests(type: Test) {
             'EnvironmentCheck',
             'SlowTests',
             'MainframeDependentTests',
-            'AdditionalLocalTest'
+            'AdditionalLocalTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
     outputs.upToDateWhen { false }
@@ -150,7 +154,9 @@ task runAllLocalIntegrationTests(type: Test) {
             'StartupCheck',
             'EnvironmentCheck',
             'SlowTests',
-            'MainframeDependentTests'
+            'MainframeDependentTests',
+            'HATest',
+            'ChaoticHATest'
         )
     }
     outputs.upToDateWhen { false }
@@ -168,7 +174,9 @@ task runAllIntegrationTestsNormal(type: Test) {
             'AdditionalLocalTest',
             'NotForMainframeTest',
             'zOSMFAuthTest',
-            'SAFAuthTest'
+            'SAFAuthTest',
+            'HATest',
+            'ChaoticHATest'
         )
 
     }
@@ -214,7 +222,9 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'EnvironmentCheck',
             'AdditionalLocalTest',
             'TestsNotMeantForZowe',
-            'DiscoverableClientDependentTest'
+            'DiscoverableClientDependentTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
     outputs.upToDateWhen { false }
@@ -236,7 +246,9 @@ task runCITests(type: Test) {
             'MainframeDependentTests',
             'SAFAuthTest',
             'AttlsTest',
-            'RegistrationTest'
+            'RegistrationTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
 }
@@ -260,7 +272,9 @@ task runContainerTests(type: Test) {
             'SAFAuthTest',
             'AttlsTest',
             'RegistrationTest',
-            'NodeEnablerTest'
+            'NodeEnablerTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
 }
@@ -282,7 +296,9 @@ task runCITestsAttls(type: Test) {
             'MainframeDependentTests',
             'SAFAuthTest',
             'NotAttlsTest',
-            'RegistrationTest'
+            'RegistrationTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
 }
@@ -323,7 +339,9 @@ task runBaseTests(type: Test) {
         excludeTags(
             'MainframeDependentTests',
             'RegistrationTest',
-            'NodeEnablerTest'
+            'NodeEnablerTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
 }
@@ -406,5 +424,37 @@ task runBaseTestsInternalPort(type: Test) {
     dependsOn runBaseTests
     systemProperties System.properties
     systemProperty "gateway.port", System.getProperty("internal.gateway.port")
+
+}
+
+task runHATests(type: Test) {
+    group "Integration tests"
+    description "Run tests verifying High Availability"
+
+    outputs.cacheIf { false }
+
+    systemProperty "environment.ha", true
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'HATest'
+        )
+    }
+
+}
+
+task runChaoticHATests(type: Test) {
+    group "Integration tests"
+    description "Run Chaotic tests verifying High Availability"
+
+    outputs.cacheIf { false }
+
+    systemProperty "environment.ha", true
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'ChaoticHATest'
+        )
+    }
 
 }

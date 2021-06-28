@@ -7,8 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/**
- * The intention here is to collect tests verifying correct behavior of the whole cluster in the HA setup.
- * This includes tests verifying whether the cluster behaves correctly when some of the core services are down.
- */
-package org.zowe.apiml.integration.ha;
+package org.zowe.apiml.util.requests;
+
+import com.jayway.jsonpath.ReadContext;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+
+@Data
+@RequiredArgsConstructor
+public class JsonResponse {
+    final int status;
+    final ReadContext json;
+}

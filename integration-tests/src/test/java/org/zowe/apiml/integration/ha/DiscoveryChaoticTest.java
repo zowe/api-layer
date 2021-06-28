@@ -7,44 +7,38 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.integration.ha;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.HATest;
+import org.zowe.apiml.util.categories.ChaoticHATest;
 import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
-
-import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
- * Verify that eureka is aware of other replicas if they are online.
+ * Verify behaviour of the Discovery Service under chaotic testing
  */
-@HATest
-class EurekaReplicationTest implements TestWithStartedInstances {
-    private HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
+@ChaoticHATest
+public class DiscoveryChaoticTest {
+    private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
 
-    /**
-     * It tests for registered instances.
-     */
     @Nested
-    class GivenMultipleEurekaInstances {
+    class GivenHASetUp {
         @Nested
-        class WhenLookingForEurekas {
+        class whenOneDiscoveryServiceIsNotAvailable {
             @Test
-            void eurekaReplicasAreVisible() {
+            void serviceStillRegisteredToOtherDiscovery() {
                 assumeTrue(haDiscoveryRequests.existing() > 1);
 
-                List<Integer> instances = haDiscoveryRequests.getAmountOfRegisteredInstancesForService(Apps.DISCOVERY);
-                for (Integer registeredToInstance : instances) {
-                    assertThat(registeredToInstance, is(haDiscoveryRequests.existing()));
-                }
+                haDiscoveryRequests.shutdown(0);
+                assertThat(haDiscoveryRequests.isApplicationRegistered(1, Apps.DISCOVERABLE_CLIENT), is(true));
             }
         }
     }
+
 }
