@@ -10,8 +10,13 @@
 package org.zowe.apiml;
 
 import java.security.KeyStoreException;
-import java.security.cert.*;
-import java.util.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
 @SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class LocalVerifier implements Verifier {
 
@@ -28,7 +33,7 @@ public class LocalVerifier implements Verifier {
         try {
             String alias = stores.getConf().getKeyAlias();
             Certificate[] certificate;
-            if(alias == null) {
+            if (alias == null) {
                 alias = stores.getKeyStore().aliases().nextElement();
             }
             certificate = stores.getKeyStore().getCertificateChain(alias);

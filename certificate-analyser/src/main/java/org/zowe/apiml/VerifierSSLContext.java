@@ -49,8 +49,8 @@ public class VerifierSSLContext {
         X509KeyManager originalKm = (X509KeyManager) keyFactory.getKeyManagers()[0];
         X509KeyManager km = new X509KeyManager() {
             public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
-                if(stores.getConf().getKeyAlias() == null){
-                    return originalKm.chooseClientAlias(keyType,issuers,socket);
+                if (stores.getConf().getKeyAlias() == null) {
+                    return originalKm.chooseClientAlias(keyType, issuers, socket);
                 }
                 return stores.getConf().getKeyAlias();
             }
@@ -71,8 +71,8 @@ public class VerifierSSLContext {
 
             @Override
             public String chooseServerAlias(String s, Principal[] principals, Socket socket) {
-                if(stores.getConf().getKeyAlias() == null){
-                    return originalKm.chooseServerAlias(s,principals,socket);
+                if (stores.getConf().getKeyAlias() == null) {
+                    return originalKm.chooseServerAlias(s, principals, socket);
                 }
                 return stores.getConf().getKeyAlias();
             }

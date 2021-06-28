@@ -35,7 +35,7 @@ public class Stores {
     void init() {
         try {
             initKeystore();
-            if(trustStore == null){
+            if (trustStore == null) {
                 initTruststore();
             }
         } catch (FileNotFoundException e) {

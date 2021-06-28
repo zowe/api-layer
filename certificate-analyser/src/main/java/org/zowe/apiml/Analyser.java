@@ -13,6 +13,7 @@ import picocli.CommandLine;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class Analyser {
 
@@ -38,7 +39,7 @@ public class Analyser {
                 } else {
                     client = new HttpClient(verifierSslContext.getSslContext());
                 }
-                verifiers.add(new RemoteHandshake(verifierSslContext,client));
+                verifiers.add(new RemoteHandshake(verifierSslContext, client));
             } else {
                 System.out.println("No remote will be verified. Specify \"-r\" or \"--remoteurl\" if you wish to verify the trust.");
             }
@@ -48,7 +49,7 @@ public class Analyser {
                 client = new HttpClient(verifierSslContext.getSslContextWithKeystore());
                 verifiers.add(new LocalHandshake(verifierSslContext, client));
             }
-            if(conf.getKeyStore() != null) {
+            if (conf.getKeyStore() != null) {
                 verifiers.add(new LocalVerifier(stores));
             }
             verifiers.forEach(Verifier::verify);
