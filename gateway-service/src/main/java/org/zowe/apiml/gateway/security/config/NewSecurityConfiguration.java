@@ -250,6 +250,7 @@ public class NewSecurityConfiguration {
     }
 
     @Configuration
+    @RequiredArgsConstructor
     @Order(100)
     class DefaultSecurity extends WebSecurityConfigurerAdapter {
 
@@ -263,7 +264,9 @@ public class NewSecurityConfiguration {
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers("/**").and())
                 .authorizeRequests()
-                .anyRequest().denyAll();
+                .anyRequest()
+                .permitAll()
+                .and().logout().disable();
         }
     }
 
@@ -275,6 +278,8 @@ public class NewSecurityConfiguration {
             .frameOptions().disable()
             .and().exceptionHandling().authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler())
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .exceptionHandling().authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler())
             .and();
     }
 
