@@ -13,6 +13,8 @@ package org.zowe.apiml.gateway.filters.post;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
@@ -29,6 +31,8 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * The filter checks whether the service requires a sticky session. It also checks whether the user is authenticated and
  * if the user is authenticated and there is no instance in the cache stores the selected instance in the cache.
  */
+@Getter
+@RequiredArgsConstructor
 public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
 
     @Autowired
@@ -56,8 +60,8 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
         RequestContext context = RequestContext.getCurrentContext();
         String user = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
-        if (jwtToken != null) {
+        Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
+        if (jwtToken.isPresent()) {
 
             Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
             if (instance.isPresent()) {
