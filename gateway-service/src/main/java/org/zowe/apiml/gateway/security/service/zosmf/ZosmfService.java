@@ -292,6 +292,10 @@ public class ZosmfService extends AbstractZosmfService {
             }
         } catch (HttpServerErrorException serverError) {
             log.warn("z/OSMF internal error", serverError);
+            return false;
+        } catch (Exception e) {
+            log.warn("z/OSMF JWT builder endpoint with HTTP method GET has failed with exception: {}", e);
+            return false;
         }
         return true;
     }

@@ -14,9 +14,7 @@ import com.netflix.discovery.DiscoveryClient;
 import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
@@ -24,18 +22,13 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -324,6 +317,15 @@ class ZosmfServiceTest {
         ZosmfService zosmfService = getZosmfServiceSpy();
 
         HttpServerErrorException responseException = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+        prepareZosmfEndpoint(responseException);
+        assertFalse(zosmfService.jwtBuilderEndpointExists());
+    }
+
+    @Test
+    void testJwtEndpointExistsRandomException() {
+        ZosmfService zosmfService = getZosmfServiceSpy();
+
+        Exception responseException = new IllegalArgumentException("This cannot happen, right?");
         prepareZosmfEndpoint(responseException);
         assertFalse(zosmfService.jwtBuilderEndpointExists());
     }

@@ -15,9 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -50,9 +49,9 @@ import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
-import java.util.*;
+import java.util.Set;
 
-@Profile("newSecurity")
+@ConditionalOnProperty(name = "apiml.security.filterChainConfiguration", havingValue = "new", matchIfMissing = false)
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -67,14 +66,6 @@ public class NewSecurityConfiguration {
         "/gateway/services"
     };
 
-    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/api/v1/gateway/**", "/gateway/version");
-
-    @Value("${apiml.service.corsEnabled:false}")
-    private boolean corsEnabled;
-
-    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
-    private String ignoredHeadersWhenCorsEnabled;
-
     // TODO gateway assumes this, not configurable
     private String applicationContextPath = "/gateway";
 
@@ -86,10 +77,8 @@ public class NewSecurityConfiguration {
     private final HandlerInitializer handlerInitializer;
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final SuccessfulTicketHandler successfulTicketHandler;
-    private final AuthProviderInitializer authProviderInitializer;
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
-    private final ZuulProperties zuulProperties;
     private final X509AuthenticationProvider x509AuthenticationProvider;
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
@@ -262,7 +251,7 @@ public class NewSecurityConfiguration {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers("/**").and())
+            baseConfigure(http.requestMatchers().antMatchers("/**", applicationContextPath + "/version").and())
                 .authorizeRequests()
                 .anyRequest()
                 .permitAll()
@@ -273,7 +262,7 @@ public class NewSecurityConfiguration {
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
         return http
             .cors()
-            .and().csrf().disable()    // NOSONAR
+            .and().csrf().disable()    // NOSONAR we are using SAMESITE cookie to mitigate CSRF
             .headers().httpStrictTransportSecurity().disable()
             .frameOptions().disable()
             .and().exceptionHandling().authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler())
@@ -293,12 +282,14 @@ public class NewSecurityConfiguration {
         firewall.setAllowSemicolon(true);
         web.httpFirewall(firewall);
 
-        // Endpoints without protection
+        // Endpoints that skip Spring Security completely
+        // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
         web.ignoring()
             .antMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
-                "/application/health", "/application/info", applicationContextPath + "/version",
+                "/application/health", "/application/info",
                 AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
                 AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
+
     }
 
     private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) throws Exception {

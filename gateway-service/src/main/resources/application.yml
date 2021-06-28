@@ -56,6 +56,7 @@ apiml:
                                              # properly.
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
+        filterChainConfiguration: new
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         auth:
             provider: zosmf
