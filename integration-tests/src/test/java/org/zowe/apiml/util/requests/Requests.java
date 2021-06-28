@@ -31,7 +31,7 @@ public class Requests {
             .statusCode(is(HttpStatus.SC_OK))
             .extract()
             .body()
-            .toString();
+            .asString();
 
         return JsonPath.parse(apps);
     }

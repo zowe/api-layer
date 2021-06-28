@@ -48,7 +48,7 @@ public class GatewayRequests {
         this.host = host;
         this.port = port;
 
-        log.info("Created gateway requests for: {}{}:{}", scheme, host, port);
+        log.info("Created gateway requests for: {}://{}:{}", scheme, host, port);
     }
 
     public void shutdown() {

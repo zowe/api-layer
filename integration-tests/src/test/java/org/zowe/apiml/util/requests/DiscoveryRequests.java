@@ -12,6 +12,7 @@ package org.zowe.apiml.util.requests;
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.RestAssured;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONArray;
 import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.Credentials;
@@ -51,16 +52,15 @@ public class DiscoveryRequests {
         this.host = host;
         this.port = port;
 
-        log.info("Created discovery requests for: {}{}:{}", scheme, host, port);
+        log.info("Created discovery requests for: {}://{}:{}", scheme, host, port);
     }
 
     public boolean isApplicationRegistered(String appName) {
         try {
             log.info("DiscoveryRequests#isApplicationRegistered: {}", appName);
 
-            ReadContext result = getJsonEurekaApps();
-
-            return result.read("$.applications.application.app[?(@.name=" + appName + ")].instances.length()");
+            int amountOfRegistered = getAmountOfRegisteredInstancesForService(appName);
+            return amountOfRegistered > 0;
         } catch (Exception e) {
             log.info("DiscoveryRequests#isApplicationRegistered: {}", appName, e);
             return false;
@@ -92,7 +92,8 @@ public class DiscoveryRequests {
 
             ReadContext result = getJsonEurekaApps();
 
-            return result.read("$.applications.application.app[?(@.name=" + appName + ")].instances.length()");
+            JSONArray amount = result.read("$.applications.application[?(@.name=~ /" + appName + "/)].instance.length()");
+            return (int) amount.get(0);
         } catch (Exception e) {
             log.info("DiscoveryRequests#getAmountOfRegisteredInstancesForService", e);
 
