@@ -34,8 +34,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SEND_RESPONSE_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -62,6 +61,7 @@ class PostStoreLoadBalancerCacheFilterTest {
         response = new MockHttpServletResponse();
         ctx.setRequest(request);
         ctx.setResponse(response);
+        ctx.set(SERVICE_ID_KEY, "instance");
         authentication = mock(Authentication.class);
     }
 
@@ -86,9 +86,9 @@ class PostStoreLoadBalancerCacheFilterTest {
 
             doReturn(Optional.of("jwtToken")).when(authenticationService).getJwtTokenFromRequest(any());
             postStoreLoadBalancerCacheFilter.run();
-            Mockito.verify(info, times(2)).getInstanceId();
-            assertThat(postStoreLoadBalancerCacheFilter.getInstancesCache().toString(), is("{user instance=instance}"));
-            assertThat(postStoreLoadBalancerCacheFilter.getInstancesCache().size(), is(1));
+            Mockito.verify(info, times(1)).getInstanceId();
+            assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().toString(), is("{user:instance=instance}"));
+            assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().size(), is(1));
         }
     }
 
@@ -106,7 +106,7 @@ class PostStoreLoadBalancerCacheFilterTest {
 
             doReturn(Optional.empty()).when(authenticationService).getJwtTokenFromRequest(any());
             postStoreLoadBalancerCacheFilter.run();
-            assertThat(postStoreLoadBalancerCacheFilter.getInstancesCache().size(), is(0));
+            assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().size(), is(0));
         }
     }
 }

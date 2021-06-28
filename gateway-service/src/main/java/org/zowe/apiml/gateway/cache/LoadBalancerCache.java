@@ -9,18 +9,22 @@
  */
 package org.zowe.apiml.gateway.cache;
 
+import lombok.Getter;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Cache for storing Load Balancer related information. The initial goal was to support user based instance load
  * balancing
  */
+@Getter
 public class LoadBalancerCache {
     private final Map<String, String> cache;
 
     public LoadBalancerCache() {
-        cache = new HashMap<>();
+        cache = new ConcurrentHashMap<>();
     }
 
     /**
