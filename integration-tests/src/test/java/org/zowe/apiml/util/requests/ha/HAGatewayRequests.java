@@ -27,8 +27,8 @@ public class HAGatewayRequests {
         String[] gatewayHosts = environmentConfiguration().getGatewayServiceConfiguration().getHost().split(",");
         String[] internalPorts = environmentConfiguration().getGatewayServiceConfiguration().getInternalPorts().split(",");
         for (int i = 0; i < gatewayHosts.length; i++) {
+            String host = gatewayHosts[i];
             String internalPort = internalPorts[i];
-            String host = internalPorts[i];
 
             gatewayServices.add(new GatewayRequests(host, internalPort));
         }
