@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.product.filter;
 
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.commons.attls.InboundAttls;
 
@@ -18,9 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
@@ -31,30 +29,32 @@ public class AttlsFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        X509Certificate[] certificates = new X509Certificate[1];
-        String clientCert = request.getHeader("X-SSL-CERT");
         try {
             if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
-                System.out.println("cert exists");
+                try {
+
+                    byte[] encodedCert = Base64.encodeBase64(InboundAttls.getCertificate());
+                    String s = new String(encodedCert);
+                    s = "-----BEGIN CERTIFICATE-----\n" + s + "\n-----END CERTIFICATE-----";
+
+                    X509Certificate certificate = (X509Certificate) CertificateFactory
+                        .getInstance("X509")
+                        .generateCertificate(new ByteArrayInputStream(s.getBytes()));
+                    X509Certificate[] certificates = new X509Certificate[1];
+                    certificates[0] = certificate;
+                    request.setAttribute("javax.servlet.request.X509Certificate", certificates);
+
+                } catch (Exception e) {
+                    System.err.println("Error reading cert: " + e);
+
+                }
+            } else {
+                System.out.println("no cert in attls context");
+
             }
-            System.out.println("Cert does not exist");
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
-
-        if (clientCert != null) {
-            try {
-                clientCert = URLDecoder.decode(clientCert, StandardCharsets.UTF_8.name());
-                InputStream targetStream = new ByteArrayInputStream(clientCert.getBytes());
-                certificates[0] = (X509Certificate) CertificateFactory
-                    .getInstance("X509")
-                    .generateCertificate(targetStream);
-            } catch (Exception e) {
-                filterChain.doFilter(request, response);
-            }
-            request.setAttribute("javax.servlet.request.X509Certificate", certificates);
-        }
-
 
         filterChain.doFilter(request, response);
     }

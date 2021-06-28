@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.product.tomcat;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.AbstractEndpoint;
@@ -21,12 +20,9 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.commons.attls.InboundAttls;
 
-import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.SocketChannel;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.Set;
 
 @Component
@@ -75,33 +71,6 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 int fileDescriptor = fdField.getInt(socketChannel);
                 System.out.println(fileDescriptor);
                 InboundAttls.init(fileDescriptor);
-                InboundAttls.setAlwaysLoadCertificate(true);
-
-                if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
-                    System.out.println("Secure conn " + InboundAttls.getStatConn());
-                    System.out.println("Is zos " + "z/os".equalsIgnoreCase(System.getProperty("os.name")));
-                    if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
-                        try {
-                            System.out.println("ciphers:" + InboundAttls.getNegotiatedCipher2());
-
-                            byte[] encodedCert = Base64.encodeBase64(InboundAttls.getCertificate());
-                            String s = new String(encodedCert);
-                            s = "-----BEGIN CERTIFICATE-----\n" + s + "\n-----END CERTIFICATE-----";
-
-                            X509Certificate certificate = (X509Certificate) CertificateFactory
-                                .getInstance("X509")
-                                .generateCertificate(new ByteArrayInputStream(s.getBytes()));
-                            System.out.println("certificate: " + certificate.toString());
-                            System.out.println("subject DN: " + certificate.getSubjectDN().getName());
-                            System.out.println("cyphers 4:" + InboundAttls.getNegotiatedCipher4());
-
-                        } catch (Exception e) {
-                            System.err.println("Error reading cert: " + e);
-                        }
-                    } else {
-                        System.out.println("no cert in attls context");
-                    }
-                }
                 return handler.process(socket, status);
             } catch (Exception e) {
                 e.printStackTrace();
