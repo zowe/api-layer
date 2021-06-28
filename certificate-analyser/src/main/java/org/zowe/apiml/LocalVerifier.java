@@ -53,7 +53,7 @@ public class LocalVerifier implements Verifier {
                         System.out.println("Trusted certificate is stored under alias: " + cert.getKey());
                         System.out.println("Certificate authority: " + trustedCA.getSubjectDN());
                         System.out.println("Details about valid certificate:");
-                        printDetails();
+                        printDetails(alias);
 
                         return;
                     }
@@ -69,8 +69,8 @@ public class LocalVerifier implements Verifier {
 
     }
 
-    void printDetails() throws KeyStoreException {
-        Certificate[] certificate = stores.getKeyStore().getCertificateChain(stores.getConf().getKeyAlias());
+    void printDetails(String keyAlias) throws KeyStoreException {
+        Certificate[] certificate = stores.getKeyStore().getCertificateChain(keyAlias);
         X509Certificate serverCert = (X509Certificate) certificate[0];
         try {
             System.out.println("++++++++");
