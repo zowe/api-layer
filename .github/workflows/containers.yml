@@ -626,7 +626,7 @@ jobs:
         needs: PublishContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 20
+        timeout-minutes: 6
 
         services:
             nginx:
@@ -716,7 +716,7 @@ jobs:
         needs: PublishContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 20
+        timeout-minutes: 6
 
         services:
             nginx:
@@ -807,7 +807,7 @@ jobs:
         needs: PublishContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 20
+        timeout-minutes: 6
 
         services:
             nginx:
