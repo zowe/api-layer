@@ -11,6 +11,7 @@ package org.zowe.apiml.util.requests;
 
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.RestAssured;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.Credentials;
@@ -25,6 +26,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
+@Slf4j
 public class GatewayRequests {
     private static final GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private static final Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
@@ -34,8 +36,8 @@ public class GatewayRequests {
     private final String host;
     private final int port;
 
-    public GatewayRequests(String host) {
-        this(gatewayServiceConfiguration.getScheme(), host, gatewayServiceConfiguration.getPort(), new Requests());
+    public GatewayRequests(String host, String port) {
+        this(gatewayServiceConfiguration.getScheme(), host, Integer.parseInt(port), new Requests());
     }
 
     public GatewayRequests(String scheme, String host, int port, Requests requests) {
@@ -45,9 +47,13 @@ public class GatewayRequests {
         this.scheme = scheme;
         this.host = host;
         this.port = port;
+
+        log.info("Created gateway requests for: {}{}:{}", scheme, host, port);
     }
 
     public void shutdown() {
+        log.info("GatewayRequests#shutdown");
+
         try {
             given()
                 .contentType(JSON)
@@ -57,26 +63,33 @@ public class GatewayRequests {
             .then()
                 .statusCode(is(SC_OK));
         } catch (Exception e) {
-            // Log
-            e.printStackTrace();
+            log.info("GatewayRequests#shutdown", e);
         }
     }
 
     public boolean isUp() {
         try {
+            log.info("GatewayRequests#isUp");
+
             ReadContext healthResponse = requests.getJson(getGatewayUriWithPath(Endpoints.HEALTH));
             String health = healthResponse.read("$.status");
 
             return health.equals("UP");
         } catch (Exception e) {
+            log.info("GatewayRequests#isUP", e);
+
             return false;
         }
     }
 
     public JsonResponse route(String path) {
         try {
+            log.info("GatewayRequests#route - {}", path);
+
             return requests.getJsonResponse(getGatewayUriWithPath(path));
         } catch (URISyntaxException e) {
+            log.info("GatewayRequests#route - {}", path, e);
+
             throw new RuntimeException("Incorrect URI");
         }
     }

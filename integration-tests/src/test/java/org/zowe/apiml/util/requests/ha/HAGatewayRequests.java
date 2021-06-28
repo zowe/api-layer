@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.util.requests.ha;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.util.requests.GatewayRequests;
 import org.zowe.apiml.util.requests.JsonResponse;
 
@@ -18,14 +19,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 
+@Slf4j
 public class HAGatewayRequests {
     public List<GatewayRequests> gatewayServices = new ArrayList<>();
 
     public HAGatewayRequests() {
-        String[] discoveryHosts = environmentConfiguration().getDiscoveryServiceConfiguration().getHost().split(",");
-        for (String host : discoveryHosts) {
-            gatewayServices.add(new GatewayRequests(host));
+        String[] gatewayHosts = environmentConfiguration().getGatewayServiceConfiguration().getHost().split(",");
+        String[] internalPorts = environmentConfiguration().getGatewayServiceConfiguration().getInternalPorts().split(",");
+        for (int i = 0; i < gatewayHosts.length; i++) {
+            String internalPort = internalPorts[i];
+            String host = internalPorts[i];
+
+            gatewayServices.add(new GatewayRequests(host, internalPort));
         }
+
+        log.info("Created HAGatewayRequests");
     }
 
     public int existing() {

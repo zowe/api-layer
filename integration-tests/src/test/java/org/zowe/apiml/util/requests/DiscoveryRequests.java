@@ -11,6 +11,7 @@ package org.zowe.apiml.util.requests;
 
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.RestAssured;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.Credentials;
@@ -28,6 +29,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 /**
  * This class is built with the expectation that there is one discovery service to communicate with.
  */
+@Slf4j
 public class DiscoveryRequests {
     private static final DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
     private static final Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
@@ -48,25 +50,34 @@ public class DiscoveryRequests {
         this.scheme = scheme;
         this.host = host;
         this.port = port;
+
+        log.info("Created discovery requests for: {}{}:{}", scheme, host, port);
     }
 
     public boolean isApplicationRegistered(String appName) {
         try {
+            log.info("DiscoveryRequests#isApplicationRegistered: {}", appName);
+
             ReadContext result = getJsonEurekaApps();
 
             return result.read("$.applications.application.app[?(@.name=" + appName + ")].instances.length()");
         } catch (Exception e) {
+            log.info("DiscoveryRequests#isApplicationRegistered: {}", appName, e);
             return false;
         }
     }
 
     public boolean isUp() {
         try {
+            log.info("DiscoveryRequests#isUp");
+
             ReadContext healthResponse = requests.getJson(getDiscoveryUriWithPath(Endpoints.HEALTH));
             String health = healthResponse.read("$.status");
 
             return health.equals("UP");
         } catch (Exception e) {
+            log.info("DiscoveryRequests#isUp", e);
+
             return false;
         }
     }
@@ -77,10 +88,13 @@ public class DiscoveryRequests {
 
     public int getAmountOfRegisteredInstancesForService(String appName) {
         try {
+            log.info("DiscoveryRequests#getAmountOfRegisteredInstancesForService: {}", appName);
+
             ReadContext result = getJsonEurekaApps();
 
             return result.read("$.applications.application.app[?(@.name=" + appName + ")].instances.length()");
         } catch (Exception e) {
+            log.info("DiscoveryRequests#getAmountOfRegisteredInstancesForService", e);
 
             return 0;
         }
@@ -88,6 +102,8 @@ public class DiscoveryRequests {
 
     public void shutdown() {
         try {
+            log.info("DiscoveryRequests#shutdown");
+
             given()
                 .contentType(JSON)
                 .auth().basic(credentials.getUser(), credentials.getPassword())
@@ -96,8 +112,7 @@ public class DiscoveryRequests {
             .then()
                 .statusCode(is(SC_OK));
         } catch (Exception e) {
-            // Log
-            e.printStackTrace();
+            log.info("DiscoveryRequests#shutdown", e);
         }
     }
 

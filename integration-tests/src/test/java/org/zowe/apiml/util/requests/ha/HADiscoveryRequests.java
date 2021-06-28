@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.util.requests.ha;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.util.requests.DiscoveryRequests;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 /**
  * Basically wrapper around the requests to multiple instances. Understand the context of the multiple Discovery services.
  */
+@Slf4j
 public class HADiscoveryRequests {
     public List<DiscoveryRequests> discoveryServices = new ArrayList<>();
 
@@ -28,6 +30,8 @@ public class HADiscoveryRequests {
         for (String host : discoveryHosts) {
             discoveryServices.add(new DiscoveryRequests(host));
         }
+
+        log.info("Created HADiscoveryRequests");
     }
 
     public int existing() {
