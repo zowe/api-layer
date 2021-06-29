@@ -29,7 +29,6 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * Based on the authentication information decide which instance should be used.
  * If the user is authenticated and already has routing information stored in cache, use the information.
  * <p>
- * TODO: Evict the information based on the configuration.
  * There is also terrible overhead as this happens for all instance ids.
  */
 @RequiredArgsConstructor

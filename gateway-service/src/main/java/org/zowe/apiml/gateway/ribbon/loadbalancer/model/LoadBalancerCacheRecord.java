@@ -15,7 +15,7 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * Data POJO that represents entry in load balancing service
+ * Data POJO that represents entry in load balancing service cache
  */
 @Data
 public class LoadBalancerCacheRecord {
