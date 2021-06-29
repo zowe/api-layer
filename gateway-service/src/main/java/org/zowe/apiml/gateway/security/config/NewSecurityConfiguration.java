@@ -79,7 +79,7 @@ public class NewSecurityConfiguration {
         "/gateway/services"
     };
 
-    private String applicationContextPath = "/gateway";
+    private String applicationContextPath = "/gateway"; //NOSONAR this is hardcoded as there is no value for this in config
 
     private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
 
@@ -99,7 +99,7 @@ public class NewSecurityConfiguration {
     @Configuration
     @RequiredArgsConstructor
     @Order(1)
-    class authenticationFunctionality extends WebSecurityConfigurerAdapter {
+    class AuthenticationFunctionality extends WebSecurityConfigurerAdapter {
 
         private final CompoundAuthProvider compoundAuthProvider;
 
@@ -142,6 +142,33 @@ public class NewSecurityConfiguration {
                 .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                 .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
         }
+
+        private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
+            return new LoginFilter(
+                loginEndpoint,
+                handlerInitializer.getSuccessfulLoginHandler(),
+                handlerInitializer.getAuthenticationFailureHandler(),
+                securityObjectMapper,
+                authenticationManager,
+                handlerInitializer.getResourceAccessExceptionHandler());
+        }
+
+        private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) {
+            ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
+            out.setAuthenticationManager(authenticationManager);
+            return out;
+        }
+
+        private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
+            return new X509AuthenticationFilter(loginEndpoint,
+                handlerInitializer.getSuccessfulLoginHandler(),
+                x509AuthenticationProvider);
+        }
+
+        private LogoutHandler logoutHandler() {
+            FailedAuthenticationHandler failure = handlerInitializer.getAuthenticationFailureHandler();
+            return new JWTLogoutHandler(authenticationService, failure);
+        }
     }
 
     /**
@@ -170,6 +197,17 @@ public class NewSecurityConfiguration {
                 .and()
                 .logout().disable() // logout filter in this chain not needed
                 .addFilterBefore(queryFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+        }
+
+        private QueryFilter queryFilter(String queryEndpoint, AuthenticationManager authenticationManager) {
+            return new QueryFilter(
+                queryEndpoint,
+                successfulQueryHandler,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                authenticationService,
+                HttpMethod.GET,
+                false,
+                authenticationManager);
         }
     }
 
@@ -204,6 +242,17 @@ public class NewSecurityConfiguration {
                 .userDetailsService(new SimpleUserDetailService())
                 .and()
                 .addFilterBefore(ticketFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+        }
+
+        private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
+            return new QueryFilter(
+                ticketEndpoint,
+                successfulTicketHandler,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                authenticationService,
+                HttpMethod.POST,
+                true,
+                authenticationManager);
         }
     }
 
@@ -257,6 +306,29 @@ public class NewSecurityConfiguration {
                 // place the following filters before the x509 filter
                 .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+        }
+
+        /**
+         * Processes basic authenticaiton credentials and authenticates them
+         */
+        private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
+            return new BasicContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler(),
+                PROTECTED_ENDPOINTS);
+        }
+
+        /**
+         * Processes token credentials stored in cookie and authenticates them
+         */
+        private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
+            return new CookieContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler(),
+                authConfigurationProperties,
+                PROTECTED_ENDPOINTS);
         }
     }
 
@@ -321,76 +393,9 @@ public class NewSecurityConfiguration {
 
     }
 
-    private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) throws Exception {
-        return new LoginFilter(
-            loginEndpoint,
-            handlerInitializer.getSuccessfulLoginHandler(),
-            handlerInitializer.getAuthenticationFailureHandler(),
-            securityObjectMapper,
-            authenticationManager,
-            handlerInitializer.getResourceAccessExceptionHandler());
-    }
 
-    private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) throws Exception {
-        ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
-        out.setAuthenticationManager(authenticationManager);
-        return out;
-    }
 
-    private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
-        return new X509AuthenticationFilter(loginEndpoint,
-            handlerInitializer.getSuccessfulLoginHandler(),
-            x509AuthenticationProvider);
-    }
 
-    private QueryFilter queryFilter(String queryEndpoint, AuthenticationManager authenticationManager) throws Exception {
-        return new QueryFilter(
-            queryEndpoint,
-            successfulQueryHandler,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            authenticationService,
-            HttpMethod.GET,
-            false,
-            authenticationManager);
-    }
 
-    private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) throws Exception {
-        return new QueryFilter(
-            ticketEndpoint,
-            successfulTicketHandler,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            authenticationService,
-            HttpMethod.POST,
-            true,
-            authenticationManager);
-    }
-
-    /**
-     * Processes basic authenticaiton credentials and authenticates them
-     */
-    private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) throws Exception {
-        return new BasicContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler(),
-            PROTECTED_ENDPOINTS);
-    }
-
-    /**
-     * Processes token credentials stored in cookie and authenticates them
-     */
-    private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) throws Exception {
-        return new CookieContentFilter(
-            authenticationManager,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            handlerInitializer.getResourceAccessExceptionHandler(),
-            authConfigurationProperties,
-            PROTECTED_ENDPOINTS);
-    }
-
-    private LogoutHandler logoutHandler() {
-        FailedAuthenticationHandler failure = handlerInitializer.getAuthenticationFailureHandler();
-        return new JWTLogoutHandler(authenticationService, failure);
-    }
 
 }

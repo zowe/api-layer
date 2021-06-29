@@ -17,6 +17,8 @@ import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 
 /**
  * Initialize authentication and authorization provider set by apiml.security.auth.provider parameter
+ *
+ * @deprecated ({@Link NewSecurityConfiguration} doesnt need this class and it should be decomissioned)
  */
 @Component
 @Deprecated

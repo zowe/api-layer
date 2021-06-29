@@ -24,6 +24,7 @@ import java.util.*;
 /**
  * Externalized configuration of CORS behavior
  */
+//NOSONAR duplicate block with deprecated class. Will resolve when deprecated class removed
 @ConditionalOnProperty(name = "apiml.security.filterChainConfiguration", havingValue = "new", matchIfMissing = false)
 @Configuration
 @RequiredArgsConstructor
@@ -47,7 +48,7 @@ public class CorsBeans {
             addCorsRelatedIgnoredHeaders();
 
             config.setAllowCredentials(true);
-            config.addAllowedOrigin(CorsConfiguration.ALL);
+            config.addAllowedOrigin(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods());
             pathsToEnable = CORS_ENABLED_ENDPOINTS;
