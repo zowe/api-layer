@@ -13,7 +13,11 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.gateway.cache.LoadBalancerCache;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.AuthenticationBasedPredicate;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredicate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
 /**
  * This class configures the load balancer's composition in terms of what predicates will be
@@ -32,5 +36,14 @@ public class LoadBalancingPredicatesRibbonConfig {
     @ConditionalOnProperty(name = "instance.metadata.apiml.lb.instanceIdHeader", havingValue = "enabled")
     public RequestAwarePredicate headerPredicate() {
         return new RequestHeaderPredicate();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.authenticationBased", havingValue = "enabled")
+    public AuthenticationBasedPredicate authenticationBasedPredicate(AuthenticationService authenticationService, LoadBalancerCache cache) {
+        return new AuthenticationBasedPredicate(
+            new HttpAuthenticationService(authenticationService),
+            cache
+        );
     }
 }
