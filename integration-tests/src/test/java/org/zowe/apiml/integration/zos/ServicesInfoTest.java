@@ -11,17 +11,14 @@ package org.zowe.apiml.integration.zos;
 
 import io.restassured.RestAssured;
 import org.apache.http.message.BasicNameValuePair;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.*;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.SslContext;
 
 import java.net.URI;
 import java.util.Collections;
@@ -62,6 +59,11 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
     private static String token;
 
+    @BeforeAll
+    public static void init() throws Exception {
+        SslContext.prepareSslAuthentication();
+    }
+
     @Nested
     class WhenGettingInformationAboutServices {
 
@@ -81,6 +83,22 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED));
                 //@formatter:on
+            }
+        }
+
+        @Nested
+        class givenClientCertificateCallDirectlyTowardsGateway {
+            @ParameterizedTest(name = "givenClientCertificate_returns200WithoutSafCheck {index} {0} ")
+            @ValueSource(strings = {
+                SERVICES_ENDPOINT_NOT_VERSIONED,
+                SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
+            })
+            void returns200WithoutSafCheck(String endpoint) {
+                given().config(SslContext.clientCertUser)
+                .when()
+                    .get(getUriFromGateway(endpoint))
+                    .then()
+                    .statusCode(is(SC_OK));
             }
         }
 
