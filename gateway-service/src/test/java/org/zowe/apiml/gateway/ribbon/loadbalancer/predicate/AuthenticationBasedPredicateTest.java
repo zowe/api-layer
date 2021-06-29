@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
 import java.util.Optional;
@@ -24,8 +25,7 @@ import java.util.Optional;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 public class AuthenticationBasedPredicateTest {
@@ -101,13 +101,14 @@ public class AuthenticationBasedPredicateTest {
                 class AndCachedValue {
                     @BeforeEach
                     void setUp() {
-                        when(cache.retrieve(VALID_USER, SERVICE_ID)).thenReturn(VALID_INSTANCE);
+                        when(cache.retrieve(VALID_USER, SERVICE_ID)).thenReturn(new LoadBalancerCacheRecord(VALID_INSTANCE));
                     }
 
                     @Test
                     void withTheSameInstanceId_returnTrue() {
                         DiscoveryEnabledServer server = discoveryEnabledServer(VALID_INSTANCE);
-
+                        AuthenticationBasedPredicate underTest = spy(new AuthenticationBasedPredicate(authenticationService, cache));
+                        when(underTest.isTooOld(anyLong())).thenReturn(false);
                         boolean amongSelected = underTest.apply(context, server);
                         assertThat(amongSelected, is(true));
                     }

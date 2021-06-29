@@ -15,11 +15,10 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
+import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
 import java.util.*;
 
@@ -34,10 +33,8 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @RequiredArgsConstructor
 public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
 
-    @Autowired
-    private AuthenticationService authenticationService;
-
-    private final LoadBalancerCache loadBalancerCache = new LoadBalancerCache();
+    private final HttpAuthenticationService authenticationService;
+    private final LoadBalancerCache loadBalancerCache;
 
     @Override
     public String filterType() {
@@ -57,22 +54,22 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
     @Override
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
-        String user = SecurityContextHolder.getContext().getAuthentication().getName();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
-        Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
-        if (jwtToken.isPresent()) {
+        Optional<String> authenticatedUser = authenticationService.getAuthenticatedUser(context.getRequest());
+        if (authenticatedUser.isPresent()) {
 
             Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
             if (instance.isPresent()) {
-                if (checkIfInstanceIsCached(user, currentServiceId)) {
-                    loadBalancerCache.store(user, currentServiceId, instance.get().getInstanceId());
+                if (checkIfInstanceIsNotCached(authenticatedUser.get(), currentServiceId)) {
+                    LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(instance.get().getInstanceId());
+                    loadBalancerCache.store(authenticatedUser.get(), currentServiceId, loadBalancerCacheRecord);
                 }
             }
         }
         return null;
     }
 
-    private boolean checkIfInstanceIsCached(String user, String service) {
-        return loadBalancerCache.retrieve(user, service) == null || loadBalancerCache.retrieve(user, service).isEmpty();
+    private boolean checkIfInstanceIsNotCached(String user, String service) {
+        return loadBalancerCache.retrieve(user, service) == null;
     }
 }

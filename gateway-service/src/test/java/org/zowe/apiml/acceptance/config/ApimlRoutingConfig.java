@@ -18,11 +18,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.acceptance.netflix.ApimlRouteLocatorStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
+import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
 import org.zowe.apiml.gateway.filters.post.PostStoreLoadBalancerCacheFilter;
 import org.zowe.apiml.gateway.filters.post.RoutedInstanceIdFilter;
 import org.zowe.apiml.gateway.filters.pre.*;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
@@ -101,7 +104,10 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.authenticateBased", havingValue = "enabled")
-    public PostStoreLoadBalancerCacheFilter postStoreLoadBalancerCacheFilter() { return new PostStoreLoadBalancerCacheFilter();}
+    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.authenticationBased", havingValue = "enabled")
+    public PostStoreLoadBalancerCacheFilter postStoreLoadBalancerCacheFilter(AuthenticationService authenticationService,
+                                                                             LoadBalancerCache cache) {
+        return new PostStoreLoadBalancerCacheFilter(new HttpAuthenticationService(authenticationService), cache);
+    }
 
 }

@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.cache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,12 +30,12 @@ public class LoadBalancerCacheTest {
 
             @BeforeEach
             void store() {
-                cache.store(user, service, instance);
+                cache.store(user, service, new LoadBalancerCacheRecord(instance));
             }
 
             @Test
             void itemIsRetrieved() {
-                assertThat(cache.retrieve(user, service), is(instance));
+                assertThat(cache.retrieve(user, service).getInstanceId(), is(instance));
             }
         }
     }

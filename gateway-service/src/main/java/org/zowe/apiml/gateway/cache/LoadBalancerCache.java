@@ -10,8 +10,8 @@
 package org.zowe.apiml.gateway.cache;
 
 import lombok.Getter;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Getter
 public class LoadBalancerCache {
-    private final Map<String, String> cache;
+    private final Map<String, LoadBalancerCacheRecord> cache;
 
     public LoadBalancerCache() {
         cache = new ConcurrentHashMap<>();
@@ -32,12 +32,12 @@ public class LoadBalancerCache {
      *
      * @param user     User being routed towards southbound service
      * @param service  Service towards which is the user routed
-     * @param instance Selected instance
+     * @param loadBalancerCacheRecord  Object containing the selected instance and its creation time
      * @return True if storing succeeded, otherwise false
      */
-    public boolean store(String user, String service, String instance) {
+    public boolean store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
         try {
-            cache.put(user + ":" + service, instance);
+            cache.put(user + ":" + service, loadBalancerCacheRecord);
             return true;
         } catch (UnsupportedOperationException | ClassCastException | IllegalArgumentException e) {
             return false;
@@ -49,9 +49,9 @@ public class LoadBalancerCache {
      *
      * @param user    User being routed towards southbound service
      * @param service Service towards which is the user routed
-     * @return Retrieved instance to use for this user.
+     * @return Retrieved record containing the instance to use for this user and its creation time.
      */
-    public String retrieve(String user, String service) {
+    public LoadBalancerCacheRecord retrieve(String user, String service) {
         return cache.get(user + ":" + service);
     }
 }

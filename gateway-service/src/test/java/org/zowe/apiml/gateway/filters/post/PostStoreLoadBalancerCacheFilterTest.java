@@ -16,8 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -26,12 +24,14 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
@@ -40,20 +40,20 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PostStoreLoadBalancerCacheFilterTest {
 
-    @Mock
-    private AuthenticationService authenticationService;
-
-    @InjectMocks
-    private PostStoreLoadBalancerCacheFilter postStoreLoadBalancerCacheFilter;
+    PostStoreLoadBalancerCacheFilter postStoreLoadBalancerCacheFilter;
 
     private RequestContext ctx;
     private InstanceInfo info;
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
     private Authentication authentication;
+    HttpAuthenticationService authenticationService;
+    String VALID_USER = "annie";
+    LoadBalancerCache loadBalancerCache;
 
     @BeforeEach
     void setUp() {
+        authenticationService = mock(HttpAuthenticationService.class);
         ctx = RequestContext.getCurrentContext();
         ctx.clear();
         info = mock(InstanceInfo.class);
@@ -63,6 +63,9 @@ class PostStoreLoadBalancerCacheFilterTest {
         ctx.setResponse(response);
         ctx.set(SERVICE_ID_KEY, "instance");
         authentication = mock(Authentication.class);
+        loadBalancerCache = new LoadBalancerCache();
+
+        postStoreLoadBalancerCacheFilter = new PostStoreLoadBalancerCacheFilter(authenticationService, loadBalancerCache);
     }
 
     @Test
@@ -81,13 +84,13 @@ class PostStoreLoadBalancerCacheFilterTest {
             when(info.getInstanceId()).thenReturn("instance");
             RequestContextUtils.setInstanceInfo(info);
 
-            when(authentication.getName()).thenReturn("user");
+            when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            doReturn(Optional.of("jwtToken")).when(authenticationService).getJwtTokenFromRequest(any());
             postStoreLoadBalancerCacheFilter.run();
             Mockito.verify(info, times(1)).getInstanceId();
-            assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().toString(), is("{user:instance=instance}"));
+            System.out.println(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache());
+            assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().toString(), containsString("{annie:instance=LoadBalancerCacheRecord(instanceId=instance, creationTime="));
             assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().size(), is(1));
         }
     }
@@ -101,10 +104,9 @@ class PostStoreLoadBalancerCacheFilterTest {
             when(info.getInstanceId()).thenReturn("instance");
             RequestContextUtils.setInstanceInfo(info);
 
-            when(authentication.getName()).thenReturn("user");
+            when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.empty());
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            doReturn(Optional.empty()).when(authenticationService).getJwtTokenFromRequest(any());
             postStoreLoadBalancerCacheFilter.run();
             assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().size(), is(0));
         }

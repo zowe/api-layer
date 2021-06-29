@@ -12,11 +12,15 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer.predicate;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.RequestAwarePredicate;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
@@ -32,6 +36,9 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 public class AuthenticationBasedPredicate extends RequestAwarePredicate {
     private final HttpAuthenticationService authenticationService;
     private final LoadBalancerCache cache;
+
+    @Value("${instance.metadata.apiml.lb.cacheRecordExpirationTimeInHours:8}")
+    private int expirationTime;
 
     @Override
     public boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server) {
@@ -50,9 +57,10 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
         }
 
         String username = authenticatedUser.get();
-        String instanceId = cache.retrieve(username, serviceId);
-        if (instanceId != null) {
-            return server.getInstanceInfo().getInstanceId().equalsIgnoreCase(instanceId);
+        LoadBalancerCacheRecord loadBalancerCacheRecord = cache.retrieve(username, serviceId);
+        if (loadBalancerCacheRecord != null && loadBalancerCacheRecord.getInstanceId() != null) {
+            long creationTime = loadBalancerCacheRecord.getCreationTime();
+            return !isTooOld(creationTime) && server.getInstanceInfo().getInstanceId().equalsIgnoreCase(loadBalancerCacheRecord.getInstanceId());
         } else {
             // There is no preference for given user
             return true;
@@ -62,5 +70,13 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
     @Override
     public String toString() {
         return "AuthenticationBasedPredicate (USERNAME)";
+    }
+
+    public boolean isTooOld(long cachedDate) {
+        Calendar calendar = Calendar.getInstance();
+        Date now = new Date();
+        calendar.setTime(new Date(cachedDate));
+        calendar.add(Calendar.HOUR, expirationTime);
+        return now.after(calendar.getTime());
     }
 }
