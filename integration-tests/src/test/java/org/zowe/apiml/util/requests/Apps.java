@@ -7,8 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/**
- * The intention here is to collect tests verifying correct behavior of the whole cluster in the HA setup.
- * This includes tests verifying whether the cluster behaves correctly when some of the core services are down.
- */
-package org.zowe.apiml.integration.ha;
+package org.zowe.apiml.util.requests;
+
+public class Apps {
+    public static final String GATEWAY = "GATEWAY";
+    public static final String DISCOVERY = "DISCOVERY";
+    public static final String DISCOVERABLE_CLIENT = "DISCOVERABLECLIENT";
+}
