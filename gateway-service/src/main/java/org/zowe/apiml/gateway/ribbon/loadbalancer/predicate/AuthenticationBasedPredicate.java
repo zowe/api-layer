@@ -15,8 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.RequestAwarePredicate;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
 import java.util.Optional;
 
@@ -25,13 +24,13 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 /**
  * Based on the authentication information decide which instance should be used.
  * If the user is authenticated and already has routing information stored in cache, use the information.
- *
+ * <p>
  * TODO: Evict the information based on the configuration.
  * There is also terrible overhead as this happens for all instance ids.
  */
 @RequiredArgsConstructor
 public class AuthenticationBasedPredicate extends RequestAwarePredicate {
-    private final AuthenticationService authenticationService;
+    private final HttpAuthenticationService authenticationService;
     private final LoadBalancerCache cache;
 
     @Override
@@ -43,7 +42,7 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
             return true;
         }
 
-        Optional<String> authenticatedUser = getUsername(requestContext);
+        Optional<String> authenticatedUser = authenticationService.getAuthenticatedUser(requestContext.getRequest());
 
         if (!authenticatedUser.isPresent()) {
             // Allow selection of any instance.
@@ -52,24 +51,12 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
 
         String username = authenticatedUser.get();
         String instanceId = cache.retrieve(username, serviceId);
-        if(instanceId != null) {
+        if (instanceId != null) {
             return server.getInstanceInfo().getInstanceId().equalsIgnoreCase(instanceId);
         } else {
             // There is no preference for given user
             return true;
         }
-    }
-
-    private Optional<String> getUsername(RequestContext context) {
-        String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
-        if (jwtToken != null) {
-            TokenAuthentication authentication = authenticationService.validateJwtToken(jwtToken);
-            if (authentication.isAuthenticated()) {
-                return Optional.of(authentication.getPrincipal());
-            }
-        }
-
-        return Optional.empty();
     }
 
     @Override

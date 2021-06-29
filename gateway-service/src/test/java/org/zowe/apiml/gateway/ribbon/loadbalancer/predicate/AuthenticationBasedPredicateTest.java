@@ -17,8 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
 import java.util.Optional;
 
@@ -34,7 +33,7 @@ public class AuthenticationBasedPredicateTest {
     String VALID_USER = "annie";
     String VALID_INSTANCE = "fox_jackal";
 
-    AuthenticationService authenticationService;
+    HttpAuthenticationService authenticationService;
     LoadBalancerCache cache;
     AuthenticationBasedPredicate underTest;
     RequestContext requestContext;
@@ -42,7 +41,7 @@ public class AuthenticationBasedPredicateTest {
 
     @BeforeEach
     void setUp() {
-        authenticationService = mock(AuthenticationService.class);
+        authenticationService = mock(HttpAuthenticationService.class);
         cache = mock(LoadBalancerCache.class);
 
         context = mock(LoadBalancingContext.class);
@@ -76,20 +75,7 @@ public class AuthenticationBasedPredicateTest {
             class AndNoUser {
                 @Test
                 void returnTrue() {
-                    when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
-
-                    boolean amongSelected = underTest.apply(context, mock(DiscoveryEnabledServer.class));
-                    assertThat(amongSelected, is(true));
-                }
-            }
-
-            @Nested
-            class AndInvalidUser {
-                @Test
-                void returnTrue() {
-                    String invalidJwtToken = "invalidToken";
-                    when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(invalidJwtToken));
-                    when(authenticationService.validateJwtToken(invalidJwtToken)).thenReturn(authentication(invalidJwtToken, false));
+                    when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.empty());
 
                     boolean amongSelected = underTest.apply(context, mock(DiscoveryEnabledServer.class));
                     assertThat(amongSelected, is(true));
@@ -100,9 +86,7 @@ public class AuthenticationBasedPredicateTest {
             class AndValidUser {
                 @BeforeEach
                 void setUp() {
-                    String validJwtToken = "validToken";
-                    when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(validJwtToken));
-                    when(authenticationService.validateJwtToken(validJwtToken)).thenReturn(authentication(validJwtToken, true));
+                    when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
                 }
 
                 @Test
@@ -146,11 +130,5 @@ public class AuthenticationBasedPredicateTest {
         when(server.getInstanceInfo()).thenReturn(info);
         when(info.getInstanceId()).thenReturn(instanceId);
         return server;
-    }
-
-    private TokenAuthentication authentication(String jwtToken, boolean authenticated) {
-        TokenAuthentication authentication = new TokenAuthentication(VALID_USER, jwtToken);
-        authentication.setAuthenticated(authenticated);
-        return authentication;
     }
 }
