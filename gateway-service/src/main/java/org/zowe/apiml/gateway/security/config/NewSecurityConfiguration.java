@@ -99,7 +99,7 @@ public class NewSecurityConfiguration {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers(HttpMethod.POST,
+            baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                     authConfigurationProperties.getGatewayLoginEndpoint(),
                     authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
                     authConfigurationProperties.getGatewayLogoutEndpoint(),
