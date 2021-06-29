@@ -13,6 +13,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
+import org.springframework.test.context.junit.jupiter.DisabledIf;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -24,6 +25,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @AcceptanceTest
+@DisabledIf(
+    expression = "${environment.older}",
+    loadContext = true
+)
 class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
     @Test

@@ -3,6 +3,9 @@ logging:
     level:
         ROOT: TRACE
 
+environment:
+    older: false
+
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
     service:

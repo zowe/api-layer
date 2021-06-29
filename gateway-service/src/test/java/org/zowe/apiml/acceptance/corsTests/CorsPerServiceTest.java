@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.DisabledIf;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -47,6 +48,10 @@ import static org.mockito.Mockito.*;
 @AcceptanceTest
 @ActiveProfiles("test")
 @DirtiesContext
+@DisabledIf(
+    expression = "${environment.older}",
+    loadContext = true
+)
 class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
         // Verify the header to allow CORS isn't set
