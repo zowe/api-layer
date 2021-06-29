@@ -58,6 +58,7 @@ import java.util.*;
  * 1. Adds Login and Query endpoints
  * 2. Allows basic and token (cookie) authentication
  */
+@Deprecated
 @ConditionalOnProperty(name = "apiml.security.filterChainConfiguration", havingValue = "legacy", matchIfMissing = false)
 @Configuration
 @EnableWebSecurity

@@ -16,6 +16,10 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import java.util.Collections;
 
+/**
+ * User detail service that is usable in all x509 filter types
+ * Assigns an authority to created user, which can be leveraged in method security expressions etc..
+ */
 public class SimpleUserDetailService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>, UserDetailsService {
 
     private UserDetails constructUserDetails(String username) {

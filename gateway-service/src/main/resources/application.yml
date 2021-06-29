@@ -21,7 +21,6 @@ logging:
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         javax.servlet: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        org.zowe.apiml.gateway.security.config.FilteringX509AuthenticationFilter: DEBUG
         org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter: DEBUG
         org.zowe.apiml.gateway.security: DEBUG
 

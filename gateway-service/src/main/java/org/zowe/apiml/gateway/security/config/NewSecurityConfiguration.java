@@ -51,6 +51,18 @@ import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
 import java.util.Set;
 
+/**
+ * Main configuration place for Gateway endpoint security
+ *
+ * Security is configured with separate filterchains per groups of endpoints
+ * The main theme is to keep the filterchains independent and isolated
+ * Gives more control over the behavior of individual filter chain
+ * This makes the security filters simpler as they don't have to be smart
+ * Also separates the x509 filters per filterchain for more control
+ *
+ * Authentication providers are initialized per filterchain's needs. No unused auth providers on chains.
+ */
+
 @ConditionalOnProperty(name = "apiml.security.filterChainConfiguration", havingValue = "new", matchIfMissing = false)
 @Configuration
 @EnableWebSecurity
@@ -58,6 +70,7 @@ import java.util.Set;
 @Slf4j
 public class NewSecurityConfiguration {
 
+    //TODO remove this
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {
         "/gateway/api/v1",
@@ -66,7 +79,6 @@ public class NewSecurityConfiguration {
         "/gateway/services"
     };
 
-    // TODO gateway assumes this, not configurable
     private String applicationContextPath = "/gateway";
 
     private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
@@ -110,7 +122,7 @@ public class NewSecurityConfiguration {
                 .and()
 
                 .x509()
-                .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) //this filter selects certificates to use for authentication and pushes to custom attribute
+                .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) //this filter selects certificates to use for user authentication and pushes them to custom attribute
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService())
 
@@ -129,10 +141,13 @@ public class NewSecurityConfiguration {
                 .addFilterBefore(loginFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                 .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
-
         }
     }
 
+    /**
+     * Query and Ticket endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
+     * Query endpoint does not require certificate to be present in RequestContext
+     */
     @Configuration
     @RequiredArgsConstructor
     @Order(2)
@@ -153,10 +168,15 @@ public class NewSecurityConfiguration {
                 ).and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
-                .logout().disable()
+                .logout().disable() // logout filter in this chain not needed
                 .addFilterBefore(queryFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
         }
     }
+
+    /**
+     * Query and Ticket endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
+     * Ticket endpoint does require certificate to be present in RequestContext
+     */
 
     @Configuration
     @RequiredArgsConstructor
@@ -178,8 +198,9 @@ public class NewSecurityConfiguration {
             ).and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
-                .logout().disable()
-                .x509() //TODO is certificate filtering required here?
+                .logout().disable() // logout filter in this chain not needed
+                .x509() //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
+                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService())
                 .and()
                 .addFilterBefore(ticketFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
@@ -199,8 +220,8 @@ public class NewSecurityConfiguration {
                 ).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
-                .logout().disable()
-                .x509()
+                .logout().disable() // logout filter in this chain not needed
+                .x509() // default x509 filter, authenticates trusted cert
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService());
         }
@@ -228,13 +249,14 @@ public class NewSecurityConfiguration {
             ).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
-                .logout().disable()
-                .x509()
+                .logout().disable() // logout filter in this chain not needed
+                .x509() // default x509 filter, authenticates trusted cert
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService())
                 .and()
-                .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class) //TODO these filters are behind x509 filter
-                .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+                // place the following filters before the x509 filter
+                .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
         }
     }
 
@@ -243,7 +265,9 @@ public class NewSecurityConfiguration {
     @Order(100)
     class DefaultSecurity extends WebSecurityConfigurerAdapter {
 
-        // Only once here is correct, putting it to other filter chains causes multiple evaluations
+        /**
+         * "Singleton" configuration of web security
+         */
         @Override
         public void configure(WebSecurity web) throws Exception {
             configureWebSecurity(web);
@@ -259,6 +283,9 @@ public class NewSecurityConfiguration {
         }
     }
 
+    /**
+     * Common configuration for all filterchains
+     */
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
         return http
             .cors()
@@ -272,7 +299,9 @@ public class NewSecurityConfiguration {
             .and();
     }
 
-    //Web security only needs to be configured once
+    /**
+     * Web security only needs to be configured once, putting it to multiple filter chains causes multiple evaluations of the same rules
+     */
     public void configureWebSecurity(WebSecurity web) {
         StrictHttpFirewall firewall = new StrictHttpFirewall();
         firewall.setAllowUrlEncodedSlash(true);
@@ -325,9 +354,6 @@ public class NewSecurityConfiguration {
             authenticationManager);
     }
 
-    /**
-     * Processes /ticket requests
-     */
     private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) throws Exception {
         return new QueryFilter(
             ticketEndpoint,
@@ -340,7 +366,7 @@ public class NewSecurityConfiguration {
     }
 
     /**
-     * Secures content with a basic authentication
+     * Processes basic authenticaiton credentials and authenticates them
      */
     private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) throws Exception {
         return new BasicContentFilter(
@@ -351,7 +377,7 @@ public class NewSecurityConfiguration {
     }
 
     /**
-     * Secures content with a token stored in a cookie
+     * Processes token credentials stored in cookie and authenticates them
      */
     private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) throws Exception {
         return new CookieContentFilter(

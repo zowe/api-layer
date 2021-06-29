@@ -19,6 +19,7 @@ import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
  * Initialize authentication and authorization provider set by apiml.security.auth.provider parameter
  */
 @Component
+@Deprecated
 public class AuthProviderInitializer {
 
     private final CompoundAuthProvider loginAuthProvider;
