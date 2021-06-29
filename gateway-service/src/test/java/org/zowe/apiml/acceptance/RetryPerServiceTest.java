@@ -10,6 +10,7 @@
 package org.zowe.apiml.acceptance;
 
 import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -21,8 +22,7 @@ import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @AcceptanceTest
 @DisabledIf(
@@ -30,6 +30,11 @@ import static org.mockito.Mockito.verify;
     loadContext = true
 )
 class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
+    @AfterEach
+    void clean() {
+        reset(httpEntity);
+        reset(mockClient);
+    }
 
     @Test
     void givenRetryOnAllOperationsIsDisabled_whenGetReturnsUnavailable_thenRetry() throws Exception {

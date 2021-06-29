@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.acceptance.corsTests;
+package org.zowe.apiml.acceptance;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -32,6 +32,7 @@ public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
     @BeforeEach
     public void prepareApplications() {
         reset(mockClient);
+        reset(httpEntity);
 
         applicationRegistry.clearApplications();
         applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false);

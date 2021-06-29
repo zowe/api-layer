@@ -12,6 +12,7 @@ package org.zowe.apiml.acceptance;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.DisabledIf;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.*;
     expression = "${environment.older}",
     loadContext = true
 )
+@DirtiesContext
 class ForwardedProxyHeadersTest extends AcceptanceTestWithTwoServices {
     @Test
     void givenServiceWithOverwritenTimeoutAndAnotherWithout_whenOverwritingConfigurationForOneService_thenTheOtherServicesKeepDefault() throws IOException {
