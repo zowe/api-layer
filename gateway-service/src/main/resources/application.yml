@@ -14,15 +14,12 @@ logging:
         org.zowe.apiml.gateway.error: INFO
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
-        org.springframework.security: DEBUG
         net.sf.ehcache: WARN
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         # New Config
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         javax.servlet: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter: DEBUG
-        org.zowe.apiml.gateway.security: DEBUG
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
@@ -293,3 +290,12 @@ apiml:
         scheme: http
 zuul.debug.request: false
 
+---
+spring:
+    profiles: securityFilterchainDebug
+
+logging:
+    level:
+        org.springframework.security: DEBUG
+        org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter: DEBUG
+        org.zowe.apiml.gateway.security: DEBUG
