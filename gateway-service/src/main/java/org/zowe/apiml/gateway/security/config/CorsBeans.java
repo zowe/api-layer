@@ -24,7 +24,6 @@ import java.util.*;
 /**
  * Externalized configuration of CORS behavior
  */
-//NOSONAR duplicate block with deprecated class. Will resolve when deprecated class removed
 @ConditionalOnProperty(name = "apiml.security.filterChainConfiguration", havingValue = "new", matchIfMissing = false)
 @Configuration
 @RequiredArgsConstructor

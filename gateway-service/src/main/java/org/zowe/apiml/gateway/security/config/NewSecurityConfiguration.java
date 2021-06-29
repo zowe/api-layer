@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -70,15 +69,6 @@ import java.util.Set;
 @Slf4j
 public class NewSecurityConfiguration {
 
-    //TODO remove this
-    // List of endpoints protected by content filters
-    private static final String[] PROTECTED_ENDPOINTS = {
-        "/gateway/api/v1",
-        "/api/v1/gateway",
-        "/application",
-        "/gateway/services"
-    };
-
     private String applicationContextPath = "/gateway"; //NOSONAR this is hardcoded as there is no value for this in config
 
     private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
@@ -92,8 +82,6 @@ public class NewSecurityConfiguration {
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
     private final X509AuthenticationProvider x509AuthenticationProvider;
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
 
 
     @Configuration
@@ -316,7 +304,7 @@ public class NewSecurityConfiguration {
                 authenticationManager,
                 handlerInitializer.getAuthenticationFailureHandler(),
                 handlerInitializer.getResourceAccessExceptionHandler(),
-                PROTECTED_ENDPOINTS);
+                new String[] {"/**"});
         }
 
         /**
@@ -328,7 +316,7 @@ public class NewSecurityConfiguration {
                 handlerInitializer.getAuthenticationFailureHandler(),
                 handlerInitializer.getResourceAccessExceptionHandler(),
                 authConfigurationProperties,
-                PROTECTED_ENDPOINTS);
+                new String[] {"/**"});
         }
     }
 
