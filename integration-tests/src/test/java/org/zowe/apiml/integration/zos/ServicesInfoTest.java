@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
@@ -78,7 +77,8 @@ class ServicesInfoTest implements TestWithStartedInstances {
             })
             void givenNoAuthentication(String endpoint) {
                 //@formatter:off
-                when()
+                given().config(SslContext.tlsWithoutCert)
+                .when()
                     .get(getUriFromGateway(endpoint))
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED));
@@ -99,6 +99,19 @@ class ServicesInfoTest implements TestWithStartedInstances {
                     .get(getUriFromGateway(endpoint))
                     .then()
                     .statusCode(is(SC_OK));
+            }
+
+            @ParameterizedTest(name = "givenClientCertificate_returns401WithUntrustedCert {index} {0} ")
+            @ValueSource(strings = {
+                SERVICES_ENDPOINT_NOT_VERSIONED,
+                SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
+            })
+            void returns401WithUntrustedCert(String endpoint) {
+                given().config(SslContext.selfSignedUntrusted)
+                    .when()
+                    .get(getUriFromGateway(endpoint))
+                    .then()
+                    .statusCode(is(SC_UNAUTHORIZED));
             }
         }
 
