@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -50,6 +51,7 @@ public class PageRedirectionController {
     @ApiResponses(value = {
         @ApiResponse(code = 307, message = "Redirect to specified location", response = String.class)
     })
+    @HystrixCommand
     public RedirectLocation redirectPage(@ApiParam(value = "Location that need to be redirected to", required = true, example = "https://host:port/context/path")
                                          @RequestBody RedirectLocation redirectLocation,
                                          HttpServletResponse response) {

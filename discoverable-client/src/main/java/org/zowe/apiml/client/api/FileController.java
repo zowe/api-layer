@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import javax.servlet.ServletContext;
 import java.io.InputStream;
 /**
@@ -28,6 +29,7 @@ public class FileController {
         this.servletContext = servletContext;
     }
     @GetMapping(value = "/api/v1/get-file", produces = "image/png")
+    @HystrixCommand()
     public ResponseEntity<InputStreamResource> downloadImage() {
         String fileName = "api-catalog.png";
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileName);

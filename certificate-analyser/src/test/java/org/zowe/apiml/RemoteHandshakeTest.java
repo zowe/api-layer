@@ -10,9 +10,13 @@
 
 package org.zowe.apiml;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
@@ -58,23 +62,49 @@ class RemoteHandshakeTest {
             "Handshake was successful. Service \"https://localhost:10010\" is trusted by truststore \"../keystore/localhost/localhost.truststore.p12\".\n";
         assertEquals(expectedMsg, TerminalUtils.normalizeLineEnds(outputStream.toString()));
     }
-    @Test
-    void providedMalformedUrl_thenUserIsInformed() throws Exception {
-        String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.truststore.p12",
-            "--keypasswd", "password",
-            "--keyalias", "localhost",
-            "-r", "malformedurl"};
 
-        ApimlConf conf = new ApimlConf();
-        CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
-        Stores stores = new Stores(conf);
-        VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContextWithoutKeystore(stores);
-        HttpClient client = mock(HttpClient.class);
-        RemoteHandshake remoteHandshake = new RemoteHandshake(verifierSslContext, client);
-        when(client.executeCall(any())).thenReturn(200);
-        remoteHandshake.verify();
-        String expectedMsg = "Incorrect url \"malformedurl\". Error message: no protocol: malformedurl\n";
-        assertEquals(expectedMsg, TerminalUtils.normalizeLineEnds(outputStream.toString()));
+    @Nested
+    class WhenErrorOccurs {
+        @Test
+        void malformedUrlIsDisplayed() throws Exception {
+            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
+                "--truststore", "../keystore/localhost/localhost.truststore.p12",
+                "--keypasswd", "password",
+                "--keyalias", "localhost",
+                "-r", "malformedurl"};
+
+            ApimlConf conf = new ApimlConf();
+            CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
+            Stores stores = new Stores(conf);
+            VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContextWithoutKeystore(stores);
+            HttpClient client = mock(HttpClient.class);
+            RemoteHandshake remoteHandshake = new RemoteHandshake(verifierSslContext, client);
+            remoteHandshake.verify();
+            String expectedMsg = "Incorrect url \"malformedurl\". Error message: no protocol: malformedurl\n";
+            assertEquals(expectedMsg, TerminalUtils.normalizeLineEnds(outputStream.toString()));
+        }
+
+        @Test
+        void sslErrorIsTranslated() throws Exception {
+            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
+                "--truststore", "../keystore/localhost/localhost.truststore.p12",
+                "--keypasswd", "password",
+                "--keyalias", "localhost",
+                "-r", "https://localhost:10010"};
+
+            ApimlConf conf = new ApimlConf();
+            CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
+            Stores stores = new Stores(conf);
+            VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContextWithoutKeystore(stores);
+            HttpClient client = mock(HttpClient.class);
+            RemoteHandshake remoteHandshake = new RemoteHandshake(verifierSslContext, client);
+            String sslError = "Received fatal alert: handshake_failure";
+            when(client.executeCall(any())).thenThrow(new SSLHandshakeException(sslError));
+            remoteHandshake.verify();
+            String expectedMsg = "Start of the remote SSL handshake.\nSSL Handshake failed for address \"https://localhost:10010\". Cause of error: " + sslError + "\n";
+            assertEquals(expectedMsg, TerminalUtils.normalizeLineEnds(outputStream.toString()));
+        }
     }
+
+
 }
