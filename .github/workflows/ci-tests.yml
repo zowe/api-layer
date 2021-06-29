@@ -49,6 +49,7 @@ jobs:
                     name: CITests
                     path: |
                         integration-tests/build/reports/**
+                        gateway-service/build/reports/tests/test/**
             -   name: Cleanup Gradle Cache
                 run: |
                     rm -f ~/.gradle/caches/modules-2/modules-2.lock
