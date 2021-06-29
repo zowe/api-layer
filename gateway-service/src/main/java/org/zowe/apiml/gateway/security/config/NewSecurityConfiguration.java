@@ -272,6 +272,11 @@ public class NewSecurityConfiguration {
         private final CompoundAuthProvider compoundAuthProvider;
         private final AuthenticationProvider tokenAuthenticationProvider;
 
+        private final String[] protectedEndpoints = {
+            "/application",
+            ServicesInfoController.SERVICES_URL
+        };
+
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
@@ -304,7 +309,7 @@ public class NewSecurityConfiguration {
                 authenticationManager,
                 handlerInitializer.getAuthenticationFailureHandler(),
                 handlerInitializer.getResourceAccessExceptionHandler(),
-                new String[] {"/**"});
+                protectedEndpoints);
         }
 
         /**
@@ -316,7 +321,7 @@ public class NewSecurityConfiguration {
                 handlerInitializer.getAuthenticationFailureHandler(),
                 handlerInitializer.getResourceAccessExceptionHandler(),
                 authConfigurationProperties,
-                new String[] {"/**"});
+                protectedEndpoints);
         }
     }
 
