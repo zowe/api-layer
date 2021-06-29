@@ -69,7 +69,6 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 Field fdField = socketChannelImpl.getDeclaredField("fdVal");
                 fdField.setAccessible(true);
                 int fileDescriptor = fdField.getInt(socketChannel);
-                System.out.println(fileDescriptor);
                 InboundAttls.init(fileDescriptor);
                 return handler.process(socket, status);
             } catch (Exception e) {

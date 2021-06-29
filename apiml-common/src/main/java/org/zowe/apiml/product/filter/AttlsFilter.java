@@ -36,7 +36,7 @@ public class AttlsFilter extends OncePerRequestFilter {
                     byte[] encodedCert = Base64.encodeBase64(InboundAttls.getCertificate());
                     String s = new String(encodedCert);
                     s = "-----BEGIN CERTIFICATE-----\n" + s + "\n-----END CERTIFICATE-----";
-
+                    System.out.println(s);
                     X509Certificate certificate = (X509Certificate) CertificateFactory
                         .getInstance("X509")
                         .generateCertificate(new ByteArrayInputStream(s.getBytes()));
