@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.product.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.commons.attls.InboundAttls;
@@ -31,32 +32,28 @@ public class AttlsFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
-                try {
-
-                    byte[] encodedCert = Base64.encodeBase64(InboundAttls.getCertificate());
-                    String s = new String(encodedCert);
-                    s = "-----BEGIN CERTIFICATE-----\n" + s + "\n-----END CERTIFICATE-----";
-                    System.out.println(s);
-                    X509Certificate certificate = (X509Certificate) CertificateFactory
-                        .getInstance("X509")
-                        .generateCertificate(new ByteArrayInputStream(s.getBytes()));
-                    X509Certificate[] certificates = new X509Certificate[1];
-                    certificates[0] = certificate;
-                    request.setAttribute("javax.servlet.request.X509Certificate", certificates);
-
-                } catch (Exception e) {
-                    System.err.println("Error reading cert: " + e);
-
-                }
+                byte[] encodedCert = Base64.encodeBase64(InboundAttls.getCertificate());
+                String s = new String(encodedCert);
+                s = "-----BEGIN CERTIFICATE-----\n" + s + "\n-----END CERTIFICATE-----";
+                System.out.println(s);
+                X509Certificate certificate = (X509Certificate) CertificateFactory
+                    .getInstance("X509")
+                    .generateCertificate(new ByteArrayInputStream(s.getBytes()));
+                X509Certificate[] certificates = new X509Certificate[1];
+                certificates[0] = certificate;
+                request.setAttribute("javax.servlet.request.X509Certificate", certificates);
             } else {
                 System.out.println("no cert in attls context");
-
             }
+            filterChain.doFilter(request, response);
         } catch (Exception e) {
             e.printStackTrace();
+            response.setStatus(500);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.writeValue(response.getWriter(), "Exception reading certificate");
         }
 
-        filterChain.doFilter(request, response);
+
     }
 
 }

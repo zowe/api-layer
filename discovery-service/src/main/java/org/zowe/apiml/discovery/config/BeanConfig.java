@@ -53,7 +53,7 @@ public class BeanConfig {
                 handlerField.setAccessible(true);
 
                 AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>) handlerField.get(protocolHandler);
-                handler = new ApimlTomcatCustomizer.ApimlAttlHandler<S>(handler);
+                handler = new ApimlTomcatCustomizer.ApimlAttlsHandler<S>(handler);
                 Method method = AbstractProtocol.class.getDeclaredMethod("getEndpoint");
                 method.setAccessible(true);
                 AbstractEndpoint<S, U> abstractEndpoint = (AbstractEndpoint<S, U>) method.invoke(protocolHandler);

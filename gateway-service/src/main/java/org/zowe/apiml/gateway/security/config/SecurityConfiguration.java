@@ -43,6 +43,7 @@ import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.product.filter.AttlsFilter;
+import org.zowe.apiml.product.filter.SecureConnectionFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
@@ -187,6 +188,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         if (isAttlsEnabled) {
             http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+            http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
     }
 

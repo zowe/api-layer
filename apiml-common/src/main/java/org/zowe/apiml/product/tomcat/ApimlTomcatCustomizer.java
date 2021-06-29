@@ -35,28 +35,25 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
         factory.addConnectorCustomizers(connector -> {
             Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
             try {
-
                 Field handlerField = AbstractProtocol.class.getDeclaredField("handler");
                 handlerField.setAccessible(true);
-
                 AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>) handlerField.get(protocolHandler);
-                handler = new ApimlAttlHandler<S>(handler);
+                handler = new ApimlAttlsHandler<S>(handler);
                 Method method = AbstractProtocol.class.getDeclaredMethod("getEndpoint");
                 method.setAccessible(true);
                 AbstractEndpoint<S, U> abstractEndpoint = (AbstractEndpoint<S, U>) method.invoke(protocolHandler);
-
                 abstractEndpoint.setHandler(handler);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new AttlsHandlerException("Not able to add handler.", e);
             }
         });
     }
 
-    public static class ApimlAttlHandler<S> implements AbstractEndpoint.Handler<S> {
+    public static class ApimlAttlsHandler<S> implements AbstractEndpoint.Handler<S> {
 
         private final AbstractEndpoint.Handler<S> handler;
 
-        public ApimlAttlHandler(AbstractEndpoint.Handler<S> handler) {
+        public ApimlAttlsHandler(AbstractEndpoint.Handler<S> handler) {
             this.handler = handler;
         }
 
@@ -71,9 +68,8 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 int fileDescriptor = fdField.getInt(socketChannel);
                 InboundAttls.init(fileDescriptor);
                 return handler.process(socket, status);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return handler.process(socket, status);
+            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException("Different implementation expected.", e);
             } finally {
                 InboundAttls.dispose();
             }
