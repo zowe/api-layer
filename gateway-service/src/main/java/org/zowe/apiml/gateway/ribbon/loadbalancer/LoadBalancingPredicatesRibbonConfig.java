@@ -33,13 +33,13 @@ import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 public class LoadBalancingPredicatesRibbonConfig {
 
     @Bean
-    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.instanceIdHeader", havingValue = "enabled")
+    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.instanceIdHeaderEnabled", havingValue = "true")
     public RequestAwarePredicate headerPredicate() {
         return new RequestHeaderPredicate();
     }
 
     @Bean
-    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.authenticationBased", havingValue = "enabled")
+    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.authenticationBasedEnabled", havingValue = "true")
     public AuthenticationBasedPredicate authenticationBasedPredicate(AuthenticationService authenticationService, LoadBalancerCache cache) {
         return new AuthenticationBasedPredicate(
             new HttpAuthenticationService(authenticationService),

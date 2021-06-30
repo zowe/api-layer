@@ -113,7 +113,7 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.authenticationBased", havingValue = "enabled")
+    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.authenticationBasedEnabled", havingValue = "true")
     public PostStoreLoadBalancerCacheFilter postStoreLoadBalancerCacheFilter(AuthenticationService authenticationService,
                                                                              LoadBalancerCache cache) {
         return new PostStoreLoadBalancerCacheFilter(new HttpAuthenticationService(authenticationService), cache);
