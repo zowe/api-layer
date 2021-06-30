@@ -16,7 +16,7 @@ server:
         keyStore: /docker/all-services.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
-        clientAuth:
+        clientAuth: want
 
 apiml:
     service:
