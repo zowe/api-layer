@@ -144,11 +144,11 @@ public class HttpConfig {
 
             factory.setSystemSslProperties();
 
-            if (isAttlsEnabled) {
-                publicKeyCertificatesBase64 = SecurityUtils.readApimlCertChainPemPublicKeys();
-            } else {
+//            if (isAttlsEnabled) {
+//                publicKeyCertificatesBase64 = SecurityUtils.readApimlCertChainPemPublicKeys();
+//            } else {
                 publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-            }
+//            }
         } catch (HttpsConfigError e) {
             System.exit(1); // NOSONAR
         } catch (Exception e) {
