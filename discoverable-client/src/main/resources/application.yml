@@ -96,8 +96,7 @@ apiml:
                 gatewayAuthEndpoint: /api/v1/gateway/auth
                 corsEnabled: false
                 lb:
-                    instanceIdHeaderEnabled: true
-                    authenticationBasedEnabled: true
+                    type: headerRequest
                     cacheRecordExpirationTimeInHours: 8
 
 server:
