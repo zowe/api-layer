@@ -51,6 +51,11 @@ public class AuthenticationBasedPredicateTest {
         underTest = new AuthenticationBasedPredicate(authenticationService, cache);
     }
 
+    @Test
+    void testToString() {
+        assertThat(underTest.toString(), is("AuthenticationBasedPredicate (USERNAME)"));
+    }
+
     @Nested
     class WhenFiltering {
         @Nested
@@ -106,6 +111,16 @@ public class AuthenticationBasedPredicateTest {
 
                     @Test
                     void withTheSameInstanceId_returnTrue() {
+                        DiscoveryEnabledServer server = discoveryEnabledServer(VALID_INSTANCE);
+                        AuthenticationBasedPredicate underTest = spy(new AuthenticationBasedPredicate(authenticationService, cache));
+                        when(underTest.isTooOld(anyLong())).thenReturn(false);
+                        boolean amongSelected = underTest.apply(context, server);
+                        assertThat(amongSelected, is(true));
+                    }
+
+                    @Test
+                    void withInstanceIdNull_returnTrue() {
+                        when(cache.retrieve(VALID_USER, SERVICE_ID)).thenReturn(new LoadBalancerCacheRecord(null));
                         DiscoveryEnabledServer server = discoveryEnabledServer(VALID_INSTANCE);
                         AuthenticationBasedPredicate underTest = spy(new AuthenticationBasedPredicate(authenticationService, cache));
                         when(underTest.isTooOld(anyLong())).thenReturn(false);
