@@ -137,6 +137,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Dinstance.metadata.apiml.lb.instanceIdHeaderEnabled=${APIML_LB_INSTANCE_ID_HEADER_ENABLED:-false} \
     -Dinstance.metadata.apiml.lb.authenticationBasedEnabled=${APIML_LB_AUTHENTICATION_BASED_ENABLED:-false} \
+    -Dinstance.metadata.apiml.lb.cacheRecordExpirationTimeInHours=${APIML_LB_CACHE_RECORD_EXPIRATION_TIME_HOURS:-8} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -jar ${JAR_FILE} &

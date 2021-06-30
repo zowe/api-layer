@@ -98,6 +98,7 @@ apiml:
                 lb:
                     instanceIdHeaderEnabled: true
                     authenticationBasedEnabled: true
+                    cacheRecordExpirationTimeInHours: 8
 
 server:
     error:
