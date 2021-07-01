@@ -29,7 +29,6 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * The filter checks whether the service requires a sticky session. It also checks whether the user is authenticated and
  * if the user is authenticated and there is no instance in the cache stores the selected instance in the cache.
  */
-@Getter
 @RequiredArgsConstructor
 public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
 
@@ -53,19 +52,30 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
 
     @Override
     public Object run() {
+        Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
+        if (!instance.isPresent()) {
+            return null;
+        }
+
+        InstanceInfo selectedInstance = instance.get();
+        String lbType = selectedInstance.getMetadata().get("apiml.lb.type");
+        if (lbType == null
+            || !lbType.equals("authentication")
+            || selectedInstance.getInstanceId() == null
+        ) {
+            return null;
+        }
+
         RequestContext context = RequestContext.getCurrentContext();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
         Optional<String> authenticatedUser = authenticationService.getAuthenticatedUser(context.getRequest());
         if (authenticatedUser.isPresent()) {
-
-            Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
-            if (instance.isPresent()) {
-                if (checkIfInstanceIsNotCached(authenticatedUser.get(), currentServiceId)) {
-                    LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(instance.get().getInstanceId());
-                    loadBalancerCache.store(authenticatedUser.get(), currentServiceId, loadBalancerCacheRecord);
-                }
+            if (checkIfInstanceIsNotCached(authenticatedUser.get(), currentServiceId)) {
+                LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(instance.get().getInstanceId());
+                loadBalancerCache.store(authenticatedUser.get(), currentServiceId, loadBalancerCacheRecord);
             }
         }
+
         return null;
     }
 

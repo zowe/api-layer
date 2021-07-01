@@ -46,6 +46,19 @@ public class ApplicationRegistry {
      * @param addTimeout Whether the custom metadata should be provided for given service.
      */
     public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances) {
+        addApplication(service, addTimeout, corsEnabled, multipleInstances, "headerRequest");
+    }
+
+    /**
+     * Add new route to a service.
+     *
+     * @param service    Details of the service to be registered in the Gateway
+     * @param addTimeout Whether the custom metadata should be provided for given service.
+     * @param corsEnabled Whether the custom metadata should contain cors related behavior.
+     * @param loadBalancerStrategy What strategy should be applied by LoadBalancer. E.g use header, base the
+     *                             authentication on the user and so on.
+     */
+    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances, String loadBalancerStrategy) {
         String id = service.getId();
         String locationPattern = service.getLocationPattern();
         String serviceRoute = service.getServiceRoute();
@@ -53,7 +66,7 @@ public class ApplicationRegistry {
         Applications applications = new Applications();
         Application withMetadata = new Application(id);
 
-        Map<String, String> metadata = createMetadata(addTimeout, corsEnabled);
+        Map<String, String> metadata = createMetadata(addTimeout, corsEnabled, loadBalancerStrategy);
 
         withMetadata.addInstance(getStandardInstance(metadata, id, id));
         if (multipleInstances) {
@@ -131,10 +144,12 @@ public class ApplicationRegistry {
             .setMetadata(metadata)
             .setDataCenterInfo(new MyDataCenterInfo(DataCenterInfo.Name.MyOwn))
             .setStatus(InstanceInfo.InstanceStatus.UP)
+            .setSecurePort((int) (Math.random() * 10000))
+            .setPort((int) (Math.random() * 10000))
             .build();
     }
 
-    private Map<String, String> createMetadata(boolean addRibbonConfig, boolean corsEnabled) {
+    private Map<String, String> createMetadata(boolean addRibbonConfig, boolean corsEnabled, String loadBalancerStrategy) {
         Map<String, String> metadata = new HashMap<>();
         if (addRibbonConfig) {
             metadata.put("apiml.connectTimeout", "5000");
@@ -142,7 +157,7 @@ public class ApplicationRegistry {
             metadata.put("apiml.connectionManagerTimeout", "5000");
             metadata.put("apiml.okToRetryOnAllOperations", "true");
         }
-        metadata.put("apiml.lb.type", "headerRequest");
+        metadata.put("apiml.lb.type", loadBalancerStrategy);
         metadata.put("apiml.lb.cacheRecordExpirationTimeInHours", "8");
         metadata.put("apiml.corsEnabled", String.valueOf(corsEnabled));
         metadata.put("apiml.routes.gateway-url", "/");

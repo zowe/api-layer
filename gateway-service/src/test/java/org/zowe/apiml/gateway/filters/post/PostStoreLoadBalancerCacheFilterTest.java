@@ -15,133 +15,139 @@ import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class PostStoreLoadBalancerCacheFilterTest {
 
-    PostStoreLoadBalancerCacheFilter postStoreLoadBalancerCacheFilter;
+    private PostStoreLoadBalancerCacheFilter underTest;
 
-    private RequestContext ctx;
+    private HttpAuthenticationService authenticationService;
+    private LoadBalancerCache loadBalancerCache;
+
     private InstanceInfo info;
-    private MockHttpServletRequest request;
-    private MockHttpServletResponse response;
-    private Authentication authentication;
-    HttpAuthenticationService authenticationService;
-    String VALID_USER = "annie";
-    LoadBalancerCache loadBalancerCache;
+
+    private final String VALID_USER = "annie";
+    private final String VALID_SERVICE_ID = "hairdresser-service";
+    private final String VALID_INSTANCE_ID = "kamenicka";
 
     @BeforeEach
     void setUp() {
-        authenticationService = mock(HttpAuthenticationService.class);
-        ctx = RequestContext.getCurrentContext();
+        RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
+        ctx.set(SERVICE_ID_KEY, VALID_SERVICE_ID);
+
         info = mock(InstanceInfo.class);
-        request = new MockHttpServletRequest();
-        response = new MockHttpServletResponse();
-        ctx.setRequest(request);
-        ctx.setResponse(response);
-        ctx.set(SERVICE_ID_KEY, "instance");
-        authentication = mock(Authentication.class);
+        RequestContextUtils.setInstanceInfo(info);
+
+        authenticationService = mock(HttpAuthenticationService.class);
         loadBalancerCache = new LoadBalancerCache();
 
-        postStoreLoadBalancerCacheFilter = new PostStoreLoadBalancerCacheFilter(authenticationService, loadBalancerCache);
+        underTest = new PostStoreLoadBalancerCacheFilter(authenticationService, loadBalancerCache);
     }
 
     @Test
     void verifyFilterProperties() {
-        assertThat(postStoreLoadBalancerCacheFilter.shouldFilter(), is(true));
-        assertThat(postStoreLoadBalancerCacheFilter.filterOrder(), is(SEND_RESPONSE_FILTER_ORDER - 1));
-        assertThat(postStoreLoadBalancerCacheFilter.filterType(), is(POST_TYPE));
+        assertThat(underTest.shouldFilter(), is(true));
+        assertThat(underTest.filterOrder(), is(SEND_RESPONSE_FILTER_ORDER - 1));
+        assertThat(underTest.filterType(), is(POST_TYPE));
     }
 
     @Nested
-    class GivenAuthenticationAndInstanceInfo {
-
-        @Test
-        void addInstanceInfoToCache() {
-
-            when(info.getInstanceId()).thenReturn("instance");
-            RequestContextUtils.setInstanceInfo(info);
-
-            when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            postStoreLoadBalancerCacheFilter.run();
-            Mockito.verify(info, times(1)).getInstanceId();
-            assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().toString(), containsString("{annie:instance=LoadBalancerCacheRecord(instanceId=instance, creationTime="));
-            assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().size(), is(1));
+    class GivenAuthenticationBasedBalancingIsntEnabled {
+        @BeforeEach
+        void setUp() {
+            Map<String, String> metadata = new HashMap<>();
+            when(info.getMetadata()).thenReturn(metadata);
         }
 
-        @Test
-        void doNotCacheInstanceInfo() {
-            loadBalancerCache = mock(LoadBalancerCache.class);
-            when(loadBalancerCache.retrieve(anyString(), anyString())).thenReturn(new LoadBalancerCacheRecord("instance"));
+        @Nested
+        class GivenAuthenticationAndInstanceInfo {
 
-            postStoreLoadBalancerCacheFilter = new PostStoreLoadBalancerCacheFilter(authenticationService, loadBalancerCache);
-            when(info.getInstanceId()).thenReturn("instance");
-            RequestContextUtils.setInstanceInfo(info);
+            @Test
+            void dontAddToCache() {
+                when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
 
-            when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
 
-            postStoreLoadBalancerCacheFilter.run();
-            Mockito.verify(info, times(0)).getInstanceId();
-            assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().size(), is(0));
-        }
-
-    }
-
-    @Nested
-    class GivenNoAuthentication {
-
-        @Test
-        void filterShouldReturnNull() {
-
-            when(info.getInstanceId()).thenReturn("instance");
-            RequestContextUtils.setInstanceInfo(info);
-
-            when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.empty());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            postStoreLoadBalancerCacheFilter.run();
-            assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().size(), is(0));
+                underTest.run();
+                assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
+            }
         }
     }
 
     @Nested
-    class GivenAuthenticationButNoInstanceInfo {
+    class GivenAuthenticationBasedBalancingIsEnabled {
+        @BeforeEach
+        void setUp() {
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put("apiml.lb.type", "authentication");
+            when(info.getMetadata()).thenReturn(metadata);
+        }
 
-        @Test
-        void filterShouldReturnNull() {
+        @Nested
+        class GivenAuthenticationAndInstanceInfo {
 
-            when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            @Test
+            void whenNotInCacheAddInstanceToCache() {
+                when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
 
-            postStoreLoadBalancerCacheFilter.run();
-            Mockito.verify(info, times(0)).getInstanceId();
-            assertThat(postStoreLoadBalancerCacheFilter.getLoadBalancerCache().getCache().size(), is(0));
+                when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
+
+                underTest.run();
+                assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(not(nullValue())));
+            }
+
+            @Test
+            void whenInCacheDoNothing() {
+                loadBalancerCache.store(VALID_USER, VALID_SERVICE_ID, new LoadBalancerCacheRecord(VALID_INSTANCE_ID));
+                when(info.getInstanceId()).thenReturn("nowhere");
+
+                when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
+
+                underTest.run();
+                LoadBalancerCacheRecord record = loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID);
+                assertThat(record.getInstanceId(), is(VALID_INSTANCE_ID));
+            }
+        }
+
+        @Nested
+        class GivenNoAuthentication {
+
+            @Test
+            void dontStoreInstanceInfo() {
+                when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
+
+                when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.empty());
+
+                underTest.run();
+                assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
+            }
+        }
+
+        @Nested
+        class GivenAuthenticationButNoInstanceInfo {
+
+            @Test
+            void dontStoreInstanceInfo() {
+                when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
+
+                underTest.run();
+
+                assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
+            }
         }
     }
 }
