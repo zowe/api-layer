@@ -84,6 +84,15 @@ public class NewSecurityConfiguration {
     private final X509AuthenticationProvider x509AuthenticationProvider;
 
 
+    /**
+     * Login and Logout endpoints
+     *
+     * logout filter matches for logout request and handles logout
+     * apimlX509filter sifts through certs for authentication
+     * login filter authenticates credentials
+     * x509AuthenticationFilter authenticates certificate from apimlX509Filter
+     * shouldAlreadyBeAuthenticated stops processing of request and ends the chain
+     */
     @Configuration
     @RequiredArgsConstructor
     @Order(1)
@@ -161,7 +170,7 @@ public class NewSecurityConfiguration {
 
     /**
      * Query and Ticket endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
-     * Query endpoint does not require certificate to be present in RequestContext
+     * Query endpoint does not require certificate to be present in RequestContext. It verifies JWT token.
      */
     @Configuration
     @RequiredArgsConstructor
@@ -201,7 +210,7 @@ public class NewSecurityConfiguration {
 
     /**
      * Query and Ticket endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
-     * Ticket endpoint does require certificate to be present in RequestContext
+     * Ticket endpoint does require certificate to be present in RequestContext. It verifies the JWT token.
      */
 
     @Configuration
@@ -244,6 +253,10 @@ public class NewSecurityConfiguration {
         }
     }
 
+    /**
+     * Endpoints which are protected by client certificate
+     * Default Spring security x509 filter authenticates any trusted certificate
+     */
     @Configuration
     @RequiredArgsConstructor
     @Order(4)
@@ -264,6 +277,11 @@ public class NewSecurityConfiguration {
         }
     }
 
+    /**
+     * Endpoints which require either authentication or client certificate
+     * Filters for tokens and credentials are placed in front of certificate filter for precedence
+     * Default Spring security x509 filter authenticates any trusted certificate
+     */
     @Configuration
     @RequiredArgsConstructor
     @Order(5)
@@ -325,6 +343,12 @@ public class NewSecurityConfiguration {
         }
     }
 
+    /**
+     * fallback filterchain for all other requests
+     * All Routing goes through here
+     * The filterchain does not require authentication
+     * Web security is configured here and only here
+     */
     @Configuration
     @RequiredArgsConstructor
     @Order(100)
