@@ -112,8 +112,7 @@ class AuthenticationBasedPredicateTest {
                     @Test
                     void withTheSameInstanceId_returnTrue() {
                         DiscoveryEnabledServer server = discoveryEnabledServer(VALID_INSTANCE);
-                        AuthenticationBasedPredicate underTest = spy(new AuthenticationBasedPredicate(authenticationService, cache));
-                        when(underTest.isTooOld(anyLong())).thenReturn(false);
+
                         boolean amongSelected = underTest.apply(context, server);
                         assertThat(amongSelected, is(true));
                     }
@@ -122,8 +121,7 @@ class AuthenticationBasedPredicateTest {
                     void withInstanceIdNull_returnTrue() {
                         when(cache.retrieve(VALID_USER, SERVICE_ID)).thenReturn(new LoadBalancerCacheRecord(null));
                         DiscoveryEnabledServer server = discoveryEnabledServer(VALID_INSTANCE);
-                        AuthenticationBasedPredicate underTest = spy(new AuthenticationBasedPredicate(authenticationService, cache));
-                        when(underTest.isTooOld(anyLong())).thenReturn(false);
+
                         boolean amongSelected = underTest.apply(context, server);
                         assertThat(amongSelected, is(true));
                     }
@@ -134,6 +132,22 @@ class AuthenticationBasedPredicateTest {
 
                         boolean amongSelected = underTest.apply(context, server);
                         assertThat(amongSelected, is(false));
+                    }
+                }
+
+                @Nested
+                class AndOldCachedValue {
+                    @BeforeEach
+                    void setUp() {
+                        when(cache.retrieve(VALID_USER, SERVICE_ID)).thenReturn(new LoadBalancerCacheRecord(VALID_INSTANCE, 0));
+                    }
+
+                    @Test
+                    void withDifferentInstanceId_returnTrue() {
+                        DiscoveryEnabledServer server = discoveryEnabledServer("invalid-fox");
+
+                        boolean amongSelected = underTest.apply(context, server);
+                        assertThat(amongSelected, is(true));
                     }
                 }
             }

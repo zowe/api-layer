@@ -37,7 +37,7 @@ public class LoadBalancerCache {
      */
     public boolean store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
         try {
-            cache.put(user + ":" + service, loadBalancerCacheRecord);
+            cache.put(getKey(user, service), loadBalancerCacheRecord);
             return true;
         } catch (UnsupportedOperationException | ClassCastException | IllegalArgumentException e) {
             return false;
@@ -52,6 +52,20 @@ public class LoadBalancerCache {
      * @return Retrieved record containing the instance to use for this user and its creation time.
      */
     public LoadBalancerCacheRecord retrieve(String user, String service) {
-        return cache.get(user + ":" + service);
+        return cache.get(getKey(user, service));
+    }
+
+    /**
+     * Delete information stored for given user and service.
+     *
+     * @param user    User being routed towards southbound service
+     * @param service Service towards which is the user routed
+     */
+    public void delete(String user, String service) {
+        cache.remove(getKey(user, service));
+    }
+
+    private String getKey(String user, String service) {
+        return user + ":" + service;
     }
 }

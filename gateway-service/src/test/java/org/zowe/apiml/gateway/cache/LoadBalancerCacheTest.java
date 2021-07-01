@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class LoadBalancerCacheTest {
@@ -36,6 +37,12 @@ public class LoadBalancerCacheTest {
             @Test
             void itemIsRetrieved() {
                 assertThat(cache.retrieve(user, service).getInstanceId(), is(instance));
+            }
+
+            @Test
+            void afterDeletionItemIsLost() {
+                cache.delete(user, service);
+                assertThat(cache.retrieve(user, service), is(nullValue()));
             }
         }
     }

@@ -59,7 +59,12 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
         LoadBalancerCacheRecord loadBalancerCacheRecord = cache.retrieve(username, serviceId);
         if (loadBalancerCacheRecord != null && loadBalancerCacheRecord.getInstanceId() != null) {
             long creationTime = loadBalancerCacheRecord.getCreationTime();
-            return !isTooOld(creationTime) && server.getInstanceInfo().getInstanceId().equalsIgnoreCase(loadBalancerCacheRecord.getInstanceId());
+            if (isTooOld(creationTime)) {
+                cache.delete(username, serviceId);
+                return true;
+            } else {
+                return server.getInstanceInfo().getInstanceId().equalsIgnoreCase(loadBalancerCacheRecord.getInstanceId());
+            }
         } else {
             // There is no preference for given user
             return true;
@@ -71,7 +76,7 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
         return "AuthenticationBasedPredicate (USERNAME)";
     }
 
-    public boolean isTooOld(long cachedDate) {
+    private boolean isTooOld(long cachedDate) {
         Calendar calendar = Calendar.getInstance();
         Date now = new Date();
         calendar.setTime(new Date(cachedDate));

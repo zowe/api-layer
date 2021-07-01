@@ -20,7 +20,16 @@ import java.util.Date;
 @Data
 public class LoadBalancerCacheRecord {
     private final String instanceId;
-    private final long creationTime = currentTime();
+    private final long creationTime;
+
+    public LoadBalancerCacheRecord(String instanceId) {
+        this(instanceId, currentTime());
+    }
+
+    public LoadBalancerCacheRecord(String instanceId, long creationTime) {
+        this.instanceId = instanceId;
+        this.creationTime = creationTime;
+    }
 
     private static long currentTime() {
         return new Date().getTime();
