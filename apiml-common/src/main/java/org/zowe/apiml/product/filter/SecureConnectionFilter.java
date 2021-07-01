@@ -22,20 +22,24 @@ import java.io.IOException;
 public class SecureConnectionFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        try {
-            if (InboundAttls.getStatConn() != StatConn.SECURE) {
-                response.setStatus(500);
-                ObjectMapper objectMapper = new ObjectMapper();
-                objectMapper.writeValue(response.getWriter(), "Connection is not secure");
-            } else {
-                filterChain.doFilter(request, response);
+        if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
+            try {
+                if (InboundAttls.getStatConn() != StatConn.SECURE) {
+                    response.setStatus(500);
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.writeValue(response.getWriter(), "Connection is not secure");
+                } else {
+                    filterChain.doFilter(request, response);
+                }
+            } catch (ContextIsNotInitializedException e) {
+                e.printStackTrace();
+            } catch (UnknownEnumValueException e) {
+                e.printStackTrace();
+            } catch (IoctlCallException e) {
+                e.printStackTrace();
             }
-        } catch (ContextIsNotInitializedException e) {
-            e.printStackTrace();
-        } catch (UnknownEnumValueException e) {
-            e.printStackTrace();
-        } catch (IoctlCallException e) {
-            e.printStackTrace();
+        } else {
+            filterChain.doFilter(request, response);
         }
     }
 }

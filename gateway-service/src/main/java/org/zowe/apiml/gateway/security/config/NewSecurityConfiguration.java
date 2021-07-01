@@ -315,7 +315,7 @@ public class NewSecurityConfiguration {
                 // place the following filters before the x509 filter
                 .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                .addFilterBefore(new AttlsFilter(), BasicContentFilter.class)
                 .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
 
