@@ -109,6 +109,7 @@ eureka:
         securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
             apiml:
+                corsEnabled: true
                 catalog:
                     tile:
                         id: ${apiml.catalog.id}
