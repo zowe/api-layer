@@ -37,7 +37,7 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
     private final LoadBalancerCache cache;
 
     @Value("${instance.metadata.apiml.lb.cacheRecordExpirationTimeInHours:8}")
-    private int expirationTime;
+    int expirationTime;
 
     @Override
     public boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server) {

@@ -49,6 +49,7 @@ class AuthenticationBasedPredicateTest {
         when(context.getRequestContext()).thenReturn(requestContext);
 
         underTest = new AuthenticationBasedPredicate(authenticationService, cache);
+        underTest.expirationTime = 8;
     }
 
     @Test
