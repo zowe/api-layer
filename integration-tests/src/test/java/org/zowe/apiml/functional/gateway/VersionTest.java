@@ -23,7 +23,7 @@ import static org.hamcrest.CoreMatchers.*;
 class VersionTest {
     private static String[] versionUrls() {
         return new String[]{
-            "/application/version", "/gateway/version", "/api/v1/gateway/version", "/api/v1/gateway/version"
+            "/application/version", "/gateway/version", "/api/v1/gateway/version", "/gateway/api/v1/version"
         };
     }
 
