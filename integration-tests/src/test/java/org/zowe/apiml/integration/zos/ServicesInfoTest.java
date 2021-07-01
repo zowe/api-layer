@@ -87,7 +87,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
         }
 
         @Nested
-        class givenClientCertificateCallDirectlyTowardsGateway {
+        class GivenClientCertificateCallDirectlyTowardsGateway {
             @ParameterizedTest(name = "givenClientCertificate_returns200WithoutSafCheck {index} {0} ")
             @ValueSource(strings = {
                 SERVICES_ENDPOINT_NOT_VERSIONED,
