@@ -13,14 +13,13 @@ package org.zowe.apiml.gateway.filters.post;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
-import java.util.*;
+import java.util.Optional;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
