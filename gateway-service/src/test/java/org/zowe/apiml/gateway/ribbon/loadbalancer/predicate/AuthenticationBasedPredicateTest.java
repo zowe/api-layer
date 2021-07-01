@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
-public class AuthenticationBasedPredicateTest {
+class AuthenticationBasedPredicateTest {
     String SERVICE_ID = "serviceID";
     String VALID_USER = "annie";
     String VALID_INSTANCE = "fox_jackal";

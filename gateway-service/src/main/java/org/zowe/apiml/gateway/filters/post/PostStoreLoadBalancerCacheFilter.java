@@ -68,17 +68,15 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
         RequestContext context = RequestContext.getCurrentContext();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
         Optional<String> authenticatedUser = authenticationService.getAuthenticatedUser(context.getRequest());
-        if (authenticatedUser.isPresent()) {
-            if (checkIfInstanceIsNotCached(authenticatedUser.get(), currentServiceId)) {
-                LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(instance.get().getInstanceId());
-                loadBalancerCache.store(authenticatedUser.get(), currentServiceId, loadBalancerCacheRecord);
-            }
+        if (authenticatedUser.isPresent() && instanceIsNotCached(authenticatedUser.get(), currentServiceId)) {
+            LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(instance.get().getInstanceId());
+            loadBalancerCache.store(authenticatedUser.get(), currentServiceId, loadBalancerCacheRecord);
         }
 
         return null;
     }
 
-    private boolean checkIfInstanceIsNotCached(String user, String service) {
+    private boolean instanceIsNotCached(String user, String service) {
         return loadBalancerCache.retrieve(user, service) == null;
     }
 }

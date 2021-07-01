@@ -35,7 +35,7 @@ import static org.zowe.apiml.constants.ApimlConstants.COOKIE_AUTH_NAME;
  * Verify that the behavior configured for the routing chooses for the same user the same service instance.
  */
 @AcceptanceTest
-public class DeterministicUserBasedRouting extends AcceptanceTestWithTwoServices {
+class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
     @BeforeEach
     public void prepareApplications() {
         applicationRegistry.clearApplications();
