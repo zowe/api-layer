@@ -9,5 +9,6 @@
  */
 /**
  * The intention here is to collect tests verifying correct behavior of the whole cluster in the HA setup.
+ * This includes tests verifying whether the cluster behaves correctly when some of the core services are down.
  */
 package org.zowe.apiml.integration.ha;

@@ -32,6 +32,7 @@ buildscript {
         classpath 'net.researchgate:gradle-release:2.7.0'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
         classpath 'org.owasp:dependency-check-gradle:3.3.4'
+        classpath 'gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:3.1.1'
     }
 }
 
@@ -130,6 +131,16 @@ task runCITests(dependsOn: [":integration-tests:runCITests"]) {
     group "Integration tests"
 }
 
+task runStartUpCheck(dependsOn: [":integration-tests:runStartUpCheck"]) {
+    description "Run Startup check"
+    group "Integration tests"
+}
+
+task runContainerTests(dependsOn: [":integration-tests:runContainerTests"]) {
+    description "Run Integration Test Without MF Dependencies"
+    group "Integration tests"
+}
+
 task runCITestsAttls(dependsOn: [":integration-tests:runCITestsAttls"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
@@ -187,8 +198,14 @@ task runCachingServiceTests(dependsOn: ":integration-tests:runCachingServiceTest
     description "Run base tests on internal port"
     group "Integration tests"
 }
-
-
+task runHATests(dependsOn: ":integration-tests:runHATests") {
+    description "Run HA tests tests only"
+    group "Integration tests"
+}
+task runChaoticHATests(dependsOn: ":integration-tests:runChaoticHATests") {
+    description "Run Chaotic HA tests tests only"
+    group "Integration tests"
+}
 
 clean.dependsOn nodejsClean
 

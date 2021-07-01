@@ -6,7 +6,7 @@ ext {
     lombokVersion = '1.18.16'
     slf4jVersion = '1.7.25'
     jsonVersion = '20180813'
-    jsonPathVersion = '2.4.0'
+    jsonPathVersion = '2.6.0'
     httpClientVersion = '4.5.3'
     guavaVersion = '23.2-jre'
     mockSpringRestVersion = '1.0.2'
@@ -28,7 +28,7 @@ ext {
     gradleGitPropertiesVersion = '2.2.4'
     jettyWebSocketClientVersion = '9.4.39.v20210325'
     junitJupiterVersion = '5.5.2'
-    eurekaClientVersion = '1.10.14'
+    eurekaClientVersion = '1.10.15'
     netflixServoVersion = '0.12.28'
     logbackVersion = '1.2.3'
     spring4Version = '4.3.7.RELEASE'
@@ -94,6 +94,8 @@ ext {
         spring_cloud_starter_eureka        : "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:${springCloudVersion}",
         spring_cloud_starter_eureka_server : "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:${springCloudVersion}",
         spring_cloud_starter_ribbon        : "org.springframework.cloud:spring-cloud-starter-netflix-ribbon:${springCloudVersion}",
+        spring_cloud_starter_hystrix       : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix:${springCloudVersion}",
+        spring_cloud_hystrix_dashboard     : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix-dashboard:${springCloudVersion}",
 
         spring_security_web                : "org.springframework.security:spring-security-web:${springSecurityVersion}",
         spring_security_config             : "org.springframework.security:spring-security-config:${springSecurityVersion}",

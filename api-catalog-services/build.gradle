@@ -17,6 +17,13 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
 apply from: "$projectDir/gradle/lite.gradle"
+apply plugin: 'com.google.cloud.tools.jib'
+apply from: "../gradle/jib.gradle"
+
+def debugPort = 5124
+def componentName = "api-catalog-services"
+
+setJib(componentName, debugPort)
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
