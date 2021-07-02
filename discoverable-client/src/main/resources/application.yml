@@ -97,7 +97,6 @@ apiml:
                 corsEnabled: false
                 lb:
                     type: headerRequest
-                    cacheRecordExpirationTimeInHours: 8
 
 server:
     error:
