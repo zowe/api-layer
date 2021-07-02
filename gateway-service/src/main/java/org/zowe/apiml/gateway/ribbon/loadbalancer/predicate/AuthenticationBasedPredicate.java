@@ -23,8 +23,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
-
 /**
  * Based on the authentication information decide which instance should be used.
  * If the user is authenticated and already has routing information stored in cache, use the information.
@@ -42,7 +40,7 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
     @Override
     public boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server) {
         RequestContext requestContext = context.getRequestContext();
-        String serviceId = (String) requestContext.get(SERVICE_ID_KEY);
+        String serviceId = context.getServiceId();
         if (serviceId == null) {
             // This should never happen
             return true;
