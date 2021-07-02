@@ -129,7 +129,7 @@ class RestResponseHandlerTest {
     @Test
     void handleBadResponseWithHttpServerError() {
         HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Some server error");
-        assertThrows(HttpServerErrorException.class, () -> {
+        assertThrows(ServiceNotAccessibleException.class, () -> {
             handler.handleBadResponse(exception, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
         });
     }
