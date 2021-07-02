@@ -29,6 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 class AuthenticationBasedPredicateTest {
     String SERVICE_ID = "serviceID";
@@ -64,7 +65,7 @@ class AuthenticationBasedPredicateTest {
         class GivenNoService {
             @Test
             void returnTrue() {
-                when(context.getServiceId()).thenReturn(null);
+                when(requestContext.get(SERVICE_ID_KEY)).thenReturn(null);
 
                 boolean amongSelected = underTest.apply(context, mock(DiscoveryEnabledServer.class));
                 assertThat(amongSelected, is(true));
@@ -75,7 +76,7 @@ class AuthenticationBasedPredicateTest {
         class GivenValidService {
             @BeforeEach
             void setUp() {
-                when(context.getServiceId()).thenReturn(SERVICE_ID);
+                when(requestContext.get(SERVICE_ID_KEY)).thenReturn(SERVICE_ID);
             }
 
             @Nested
