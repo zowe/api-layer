@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,7 +57,11 @@ import java.util.*;
  * <p>
  * 1. Adds Login and Query endpoints
  * 2. Allows basic and token (cookie) authentication
+ *
+ * @deprecated ({@Link NewSecurityConfiguration} to eventually replace this configuration)
  */
+@Deprecated
+@ConditionalOnProperty(name = "apiml.security.filterChainConfiguration", havingValue = "legacy", matchIfMissing = false)
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
