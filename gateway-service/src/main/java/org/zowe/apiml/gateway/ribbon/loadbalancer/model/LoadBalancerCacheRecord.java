@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer.model;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * Data POJO that represents entry in load balancing service cache
