@@ -50,6 +50,7 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
     }
 
     @Override
+    @SuppressWarnings("squid:S3516") // We always have to return null
     public Object run() {
         Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
         if (!instance.isPresent()) {
@@ -69,9 +70,8 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
         Optional<String> authenticatedUser = authenticationService.getAuthenticatedUser(context.getRequest());
         if (authenticatedUser.isPresent() && !instanceIsCached(authenticatedUser.get(), currentServiceId)) {
-            Integer responseStatusCode = (Integer) context.get("responseStatusCode");
             // Dont store instance info when failed.
-            if (context.get("throwable") != null || (responseStatusCode != null && responseStatusCode >= 500)) {
+            if (context.get("throwable") != null) {
                 return null;
             }
 

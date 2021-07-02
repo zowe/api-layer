@@ -35,7 +35,7 @@ public class LoadBalancerCache {
      * @param loadBalancerCacheRecord  Object containing the selected instance and its creation time
      * @return True if storing succeeded, otherwise false
      */
-    public boolean store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
+    public synchronized boolean store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
         try {
             cache.put(getKey(user, service), loadBalancerCacheRecord);
             return true;
@@ -51,7 +51,7 @@ public class LoadBalancerCache {
      * @param service Service towards which is the user routed
      * @return Retrieved record containing the instance to use for this user and its creation time.
      */
-    public LoadBalancerCacheRecord retrieve(String user, String service) {
+    public synchronized LoadBalancerCacheRecord retrieve(String user, String service) {
         return cache.get(getKey(user, service));
     }
 
@@ -61,7 +61,7 @@ public class LoadBalancerCache {
      * @param user    User being routed towards southbound service
      * @param service Service towards which is the user routed
      */
-    public void delete(String user, String service) {
+    public synchronized void delete(String user, String service) {
         cache.remove(getKey(user, service));
     }
 

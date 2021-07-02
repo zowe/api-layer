@@ -15,13 +15,13 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.message.BasicStatusLine;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.security.common.login.LoginRequest;
 
 import java.io.IOException;
@@ -29,7 +29,8 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.*;
@@ -40,8 +41,13 @@ import static org.zowe.apiml.constants.ApimlConstants.COOKIE_AUTH_NAME;
  */
 @AcceptanceTest
 class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
+
+    @Autowired
+    protected LoadBalancerCache cache;
+
     @BeforeEach
     public void prepareApplications() {
+        cache.getCache().clear();
         applicationRegistry.clearApplications();
         applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, "authentication");
         applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, "authentication");
@@ -51,8 +57,10 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
     class GivenAuthenticatedUserAndMoreInstancesOfService {
         @Nested
         class WhenCallingToServiceMultipleTimes {
-            @Test
+            // This was failing on second attempt, it is resolved by synchronizing the cache methods. Not the best solution but results in expected behavior.
+            @RepeatedTest(10)
             void thenCallTheSameInstance() throws IOException {
+
                 Cookie token = jwtToken();
 
                 applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
@@ -63,22 +71,6 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
 
                 assertThat(selectedInFirstCall.compareTo(selectedInSecondCall), is(0));
                 assertThat(selectedInFirstCall.compareTo(selectedInThirdCall), is(0));
-            }
-
-            @Test
-            void andCallToTheServiceFails_callAtRandom() throws IOException {
-                Cookie token = jwtToken();
-
-                applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-
-                URI selectedInFirstCall = routeToService(token, SC_INTERNAL_SERVER_ERROR);
-                URI selectedInSecondCall = routeToService(token, SC_INTERNAL_SERVER_ERROR);
-                URI selectedInThirdCall = routeToService(token, SC_INTERNAL_SERVER_ERROR);
-
-                boolean firstTwoSame = selectedInFirstCall.compareTo(selectedInSecondCall) == 0;
-                boolean lastTwoSame = selectedInSecondCall.compareTo(selectedInThirdCall) == 0;
-
-                assertThat(firstTwoSame && lastTwoSame, is(false));
             }
         }
 
