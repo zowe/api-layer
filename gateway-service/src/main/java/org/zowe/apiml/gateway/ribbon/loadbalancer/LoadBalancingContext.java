@@ -22,13 +22,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 @Getter
 public class LoadBalancingContext {
-    private final String serviceId;
+    private final String key;
     private final InstanceInfo instanceInfo;
     private RequestContext requestContext;
     private SecurityContext securityContext;
 
-    public LoadBalancingContext(String serviceId, InstanceInfo instanceInfo) {
-        this.serviceId = serviceId;
+    public LoadBalancingContext(String key, InstanceInfo instanceInfo) {
+        this.key = key;
         this.instanceInfo = instanceInfo;
         this.requestContext = RequestContext.getCurrentContext();
         this.securityContext = SecurityContextHolder.getContext();
