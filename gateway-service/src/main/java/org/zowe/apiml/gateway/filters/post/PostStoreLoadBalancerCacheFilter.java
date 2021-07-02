@@ -19,6 +19,7 @@ import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
@@ -58,7 +59,11 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
         }
 
         InstanceInfo selectedInstance = instance.get();
-        String lbType = selectedInstance.getMetadata().get("apiml.lb.type");
+        Map<String, String> metadata = selectedInstance.getMetadata();
+        if (metadata == null) {
+            return null;
+        }
+        String lbType = metadata.get("apiml.lb.type");
         if (lbType == null
             || !lbType.equals("authentication")
             || selectedInstance.getInstanceId() == null
