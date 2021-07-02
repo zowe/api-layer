@@ -20,13 +20,15 @@ import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AuthenticationBasedPredicateTest {
     String SERVICE_ID = "serviceID";
@@ -48,8 +50,7 @@ class AuthenticationBasedPredicateTest {
         requestContext = mock(RequestContext.class);
         when(context.getRequestContext()).thenReturn(requestContext);
 
-        underTest = new AuthenticationBasedPredicate(authenticationService, cache);
-        underTest.expirationTime = 8;
+        underTest = new AuthenticationBasedPredicate(authenticationService, cache, 8);
     }
 
     @Test
@@ -63,7 +64,7 @@ class AuthenticationBasedPredicateTest {
         class GivenNoService {
             @Test
             void returnTrue() {
-                when(requestContext.get(SERVICE_ID_KEY)).thenReturn(null);
+                when(context.getServiceId()).thenReturn(null);
 
                 boolean amongSelected = underTest.apply(context, mock(DiscoveryEnabledServer.class));
                 assertThat(amongSelected, is(true));
@@ -74,7 +75,7 @@ class AuthenticationBasedPredicateTest {
         class GivenValidService {
             @BeforeEach
             void setUp() {
-                when(requestContext.get(SERVICE_ID_KEY)).thenReturn(SERVICE_ID);
+                when(context.getServiceId()).thenReturn(SERVICE_ID);
             }
 
             @Nested
@@ -140,7 +141,9 @@ class AuthenticationBasedPredicateTest {
                 class AndOldCachedValue {
                     @BeforeEach
                     void setUp() {
-                        when(cache.retrieve(VALID_USER, SERVICE_ID)).thenReturn(new LoadBalancerCacheRecord(VALID_INSTANCE, 0));
+                        when(cache.retrieve(VALID_USER, SERVICE_ID)).thenReturn(
+                            new LoadBalancerCacheRecord(VALID_INSTANCE, LocalDateTime.now().minus(10, ChronoUnit.HOURS))
+                        );
                     }
 
                     @Test

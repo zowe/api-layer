@@ -10,11 +10,16 @@
 package org.zowe.apiml.acceptance;
 
 import io.restassured.http.Cookie;
+import org.apache.http.Header;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.message.BasicStatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.security.common.login.LoginRequest;
@@ -24,8 +29,7 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.*;
@@ -49,29 +53,52 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
         class WhenCallingToServiceMultipleTimes {
             @Test
             void thenCallTheSameInstance() throws IOException {
-                LoginRequest loginRequest = new LoginRequest("user", "user");
-
-                Cookie token = given()
-                    .contentType(JSON)
-                    .body(loginRequest)
-                .when()
-                    .post(basePath + "/gateway/api/v1/auth/login")
-                .then()
-                    .statusCode(is(SC_NO_CONTENT))
-                    .extract()
-                    .detailedCookie(COOKIE_AUTH_NAME);
+                Cookie token = jwtToken();
 
                 applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
 
-                URI selectedInFirstCall = routeToService(token);
-                URI selectedInSecondCall = routeToService(token);
+                URI selectedInFirstCall = routeToService(token, SC_OK);
+                URI selectedInSecondCall = routeToService(token, SC_OK);
+                URI selectedInThirdCall = routeToService(token, SC_OK);
+
                 assertThat(selectedInFirstCall.compareTo(selectedInSecondCall), is(0));
+                assertThat(selectedInFirstCall.compareTo(selectedInThirdCall), is(0));
+            }
+
+            @Test
+            void andCallToTheServiceFails_callAtRandom() throws IOException {
+                Cookie token = jwtToken();
+
+                applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
+
+                URI selectedInFirstCall = routeToService(token, SC_INTERNAL_SERVER_ERROR);
+                URI selectedInSecondCall = routeToService(token, SC_INTERNAL_SERVER_ERROR);
+                URI selectedInThirdCall = routeToService(token, SC_INTERNAL_SERVER_ERROR);
+
+                boolean firstTwoSame = selectedInFirstCall.compareTo(selectedInSecondCall) == 0;
+                boolean lastTwoSame = selectedInSecondCall.compareTo(selectedInThirdCall) == 0;
+
+                assertThat(firstTwoSame && lastTwoSame, is(false));
             }
         }
 
-        private URI routeToService(Cookie token) throws IOException {
+        private Cookie jwtToken() {
+            LoginRequest loginRequest = new LoginRequest("user", "user");
+
+            return given()
+                .contentType(JSON)
+                .body(loginRequest)
+            .when()
+                .post(basePath + "/gateway/api/v1/auth/login")
+            .then()
+                .statusCode(is(SC_NO_CONTENT))
+                .extract()
+                .detailedCookie(COOKIE_AUTH_NAME);
+        }
+
+        private URI routeToService(Cookie token, int status) throws IOException {
             reset(mockClient);
-            mockValid200HttpResponse();
+            mockResponseWithStatus(status);
 
             // First call stores the information about selected service
             given()
@@ -79,13 +106,20 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
                 .when()
                 .get(basePath + serviceWithCustomConfiguration.getPath())
                 .then()
-                .statusCode(is(SC_OK));
+                .statusCode(is(status));
 
             ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
             verify(mockClient, times(1)).execute(captor.capture());
 
             HttpUriRequest toVerify = captor.getValue();
             return toVerify.getURI();
+        }
+
+        private void mockResponseWithStatus(int status) throws IOException {
+            CloseableHttpResponse response = mock(CloseableHttpResponse.class);
+            Mockito.when(response.getStatusLine()).thenReturn(new BasicStatusLine(new ProtocolVersion("http", 1, 1), status, ""));
+            Mockito.when(response.getAllHeaders()).thenReturn(new Header[]{});
+            Mockito.when(mockClient.execute(any())).thenReturn(response);
         }
     }
 }

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +32,8 @@ import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
  */
 @Configuration
 public class LoadBalancingPredicatesRibbonConfig {
+    @Value("${instance.metadata.apiml.lb.cacheRecordExpirationTimeInHours:8}")
+    private int expirationTime;
 
     @Bean
     @ConditionalOnProperty(name = "instance.metadata.apiml.lb.type", havingValue = "headerRequest")
@@ -43,7 +46,8 @@ public class LoadBalancingPredicatesRibbonConfig {
     public AuthenticationBasedPredicate authenticationBasedPredicate(AuthenticationService authenticationService, LoadBalancerCache cache) {
         return new AuthenticationBasedPredicate(
             new HttpAuthenticationService(authenticationService),
-            cache
+            cache,
+            expirationTime
         );
     }
 }

@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer.model;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -20,18 +21,14 @@ import java.util.Date;
 @Data
 public class LoadBalancerCacheRecord {
     private final String instanceId;
-    private final long creationTime;
+    private final LocalDateTime creationTime;
 
     public LoadBalancerCacheRecord(String instanceId) {
-        this(instanceId, currentTime());
+        this(instanceId, LocalDateTime.now());
     }
 
-    public LoadBalancerCacheRecord(String instanceId, long creationTime) {
+    public LoadBalancerCacheRecord(String instanceId, LocalDateTime creationTime) {
         this.instanceId = instanceId;
         this.creationTime = creationTime;
-    }
-
-    private static long currentTime() {
-        return new Date().getTime();
     }
 }
