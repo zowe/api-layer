@@ -9,7 +9,7 @@ apiml:
         staticApiDefinitionsDirectories: config/local/api-defs
     security:
         ssl:
-            verifySslCertificatesOfServices: true
+            verifySslCertificatesOfServices: false
     banner: console
 
 spring:

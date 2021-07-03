@@ -41,7 +41,7 @@ apiml:
         serviceId: apicatalog
     metrics:
         serviceId: metrics-service
-        enabled: false
+        enabled: true
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses

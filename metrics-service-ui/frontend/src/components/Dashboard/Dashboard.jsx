@@ -9,8 +9,11 @@
  */
 
 import Typography from '@material-ui/core/Typography';
+import HystrixCommandMonitor from './HystrixCommandMonitor';
 
 export default function Dashboard() {
+    /* eslint-disable-next-line */
+    let hystrixMonitor = new HystrixCommandMonitor(0, 'dependencies', {});
     return (
         <Typography id="name" variant="h2" component="h1" gutterBottom align="center">
             Metrics Service
