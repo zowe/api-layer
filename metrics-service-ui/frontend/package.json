@@ -28,6 +28,8 @@
         "redux-persist-transform-filter": "0.0.20",
         "redux-thunk": "2.3.0",
         "rxjs": "6.6.7",
+        "tinysort": "^3.2.7",
+        "underscore": "^1.13.1",
         "uuid": "8.3.2"
     },
     "devDependencies": {

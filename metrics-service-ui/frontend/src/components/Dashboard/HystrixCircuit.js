@@ -74,10 +74,16 @@ export default function HystrixCircuit(props) {
             </div>
 
             <div className="rate">
-                <a href="#disable" title="Total Request Rate per Second per Reporting Host" className="tooltip rate"><span className="smaller">Host: </span><span className="ratePerSecondPerHost">{addCommas(roundNumber(ratePerSecondPerHost))}</span>/s</a>
+                <a href="#disable" title="Total Request Rate per Second per Reporting Host" className="tooltip rate">
+                    <span className="smaller">Host: </span>
+                    <span className="ratePerSecondPerHost">{addCommas(roundNumber(ratePerSecondPerHost))}</span>/s
+                </a>
             </div>
             <div className="rate">
-                <a href="#disable" title="Total Request Rate per Second for Cluster" className="tooltip rate"><span className="smaller">Cluster: </span><span className="ratePerSecond">{addCommas(roundNumber(ratePerSecond))}</span>/s</a>
+                <a href="#disable" title="Total Request Rate per Second for Cluster" className="tooltip rate">
+                    <span className="smaller">Cluster: </span>
+                    <span className="ratePerSecond">{addCommas(roundNumber(ratePerSecond))}</span>/s
+                </a>
             </div>
 
             <div className="circuitStatus">
