@@ -115,7 +115,7 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenApiCatalogInstanceWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
-        discoveryReturnValidApiCatalog();
+        discoveryReturnValidApiCatalog(1);
         when(providers.isZosfmUsed()).thenReturn(true);
         when(providers.isZosmfAvailable()).thenReturn(false);
 
@@ -148,9 +148,9 @@ class GatewayHomepageControllerTest {
     }
 
     @Test
-    void givenApiCatalogInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenApiCatalogInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
         discoveryReturnValidZosmfAuthorizationInstance();
-        discoveryReturnValidApiCatalog();
+        discoveryReturnValidApiCatalog(2);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -180,15 +180,19 @@ class GatewayHomepageControllerTest {
         );
     }
 
-    private void discoveryReturnValidApiCatalog() {
+    private void discoveryReturnValidApiCatalog(int numberOfInstances) {
         Map<String, String> metadataMap = new HashMap<>();
         metadataMap.put("apiml.routes.ui-v1.gatewayUrl", "/ui/v1");
         metadataMap.put("apiml.routes.ui-v1.serviceUrl", "/apicatalog");
-        ServiceInstance apiCatalogServiceInstance = new DefaultServiceInstance("instanceId", "serviceId",
-            "host", 10000, true, metadataMap);
+        ArrayList<ServiceInstance> apiCatalogServiceInstances = new ArrayList<>();
+        for (int n = 0; n < numberOfInstances; n++) {
+            apiCatalogServiceInstances.add(
+                new DefaultServiceInstance("instanceId", "serviceId",
+                    "host", 10000 + n, true, metadataMap)
+            );
+        }
 
-        when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(
-            Collections.singletonList(apiCatalogServiceInstance));
+        when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(apiCatalogServiceInstances);
     }
 
     @Test
