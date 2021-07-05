@@ -1,9 +1,4 @@
-/* eslint-disable prefer-template */
-/* eslint-disable prettier/prettier */
-/* eslint-disable no-console */
-/* eslint-disable prefer-const */
-/* eslint-disable no-unused-vars */
-
+/* eslint-disable */
 window.HystrixCircuitContainerTemplate = (props) => {
     const { name, index } = props;
     let displayName = name;

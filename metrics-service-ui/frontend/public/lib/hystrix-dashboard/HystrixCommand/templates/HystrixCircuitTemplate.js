@@ -1,6 +1,4 @@
-/* eslint-disable camelcase */
-/* eslint-disable no-else-return */
-/* eslint-disable prettier/prettier */
+/* eslint-disable */
 window.HystrixCircuitTemplate = (props) => {
     const {
         addCommas,

@@ -211,8 +211,7 @@
 				}
 				
 				// it doesn't exist so add it
-				var html = HystrixCircuitContainerTemplate(data);
-				console.log(html);
+				var html = window.HystrixCircuitContainerTemplate(data);
 				// remove the loading thing first
 				$('#' + containerId + ' span.loading').remove();
 				// now create the new data and add it
@@ -227,7 +226,7 @@
 			
 			
 			// now update/insert the data
-			$('#CIRCUIT_' + data.escapedName + ' div.monitor_data').html(HystrixCircuitTemplate(data));
+			$('#CIRCUIT_' + data.escapedName + ' div.monitor_data').html(window.HystrixCircuitTemplate(data));
 			var ratePerSecond = data.ratePerSecond;
 			var ratePerSecondPerHost = data.ratePerSecondPerHost;
 			var ratePerSecondPerHostDisplay = ratePerSecondPerHost;
