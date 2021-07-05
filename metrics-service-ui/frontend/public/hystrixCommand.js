@@ -1,19 +1,6 @@
 /* eslint-disable */
 (function(window) {
 
-	// cache the templates we use on this page as global variables (asynchronously)
-	jQuery.get("https://localhost:10010/metrics-service/ui/v1/hystrixCircuit.html", function(data) {
-		hystrixTemplateCircuit = data;
-	});
-	jQuery.get("https://localhost:10010/metrics-service/ui/v1/hystrixCircuitContainer.html", function(data) {
-		hystrixTemplateCircuitContainer = data;
-	});
-
-	function getRelativePath(path) {
-		var p = location.pathname.slice(0, location.pathname.lastIndexOf("/")+1);
-		return p + path;
-	}
-
 	/**
 	 * Object containing functions for displaying and updating the UI with streaming data.
 	 * 
@@ -224,7 +211,8 @@
 				}
 				
 				// it doesn't exist so add it
-				var html = tmpl(hystrixTemplateCircuitContainer, data);
+				var html = HystrixCircuitContainerTemplate(data);
+				console.log(html);
 				// remove the loading thing first
 				$('#' + containerId + ' span.loading').remove();
 				// now create the new data and add it
@@ -239,8 +227,7 @@
 			
 			
 			// now update/insert the data
-			$('#CIRCUIT_' + data.escapedName + ' div.monitor_data').html(tmpl(hystrixTemplateCircuit, data));
-			
+			$('#CIRCUIT_' + data.escapedName + ' div.monitor_data').html(HystrixCircuitTemplate(data));
 			var ratePerSecond = data.ratePerSecond;
 			var ratePerSecondPerHost = data.ratePerSecondPerHost;
 			var ratePerSecondPerHostDisplay = ratePerSecondPerHost;

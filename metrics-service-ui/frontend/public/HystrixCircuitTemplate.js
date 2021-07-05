@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-else-return */
 /* eslint-disable prettier/prettier */
-window.HystrixCircuit = (props) => {
+window.HystrixCircuitTemplate = (props) => {
     const {
         addCommas,
         rollingCountTimeout,
@@ -25,71 +25,71 @@ window.HystrixCircuit = (props) => {
         rollingCountShortCircuited,
     } = props;
     return (
-        `<div className="counters">
-            <div className="cell line">
+        `<div class="counters">
+            <div class="cell line">
                 <a
                     href="#disable"
                     title="Error Percentage [Timed-out + Threadpool Rejected + Failure / Total]"
-                    className="tooltip errorPercentage"
+                    class="tooltip errorPercentage"
                 >
-                    <span className="value">${errorPercentage}%</span>
+                    <span class="value">${errorPercentage}%</span>
                 </a>
             </div>
 
-            <div className="cell borderRight">
-                <a href="#disable" title="Timed-out Request Count" className="line tooltip timeout">
+            <div class="cell borderRight">
+                <a href="#disable" title="Timed-out Request Count" class="line tooltip timeout">
                     ${' '}
                     ${addCommas(rollingCountTimeout)}${' '}
                 </a>
-                ${propertyValue_executionIsolationStrategy === 'THREAD' && `(
-                    <a href="#disable" title="Threadpool Rejected Request Count" className="line tooltip rejected">
+                ${propertyValue_executionIsolationStrategy === 'THREAD' ? (`
+                    <a href="#disable" title="Threadpool Rejected Request Count" class="line tooltip rejected">
                         ${addCommas(rollingCountThreadPoolRejected)}
                     </a>
-                )`}
+                `): ''}
 
-                ${propertyValue_executionIsolationStrategy === 'SEMAPHORE' && (
-                    `<a href="#disable" title="Semaphore Rejected Request Count" className="line tooltip rejected">
+                ${propertyValue_executionIsolationStrategy === 'SEMAPHORE'? (
+                    `<a href="#disable" title="Semaphore Rejected Request Count" class="line tooltip rejected">
                         ${addCommas(rollingCountSemaphoreRejected)}
                     </a>`
-                )}
+                ): ''}
 
-                <a href="#disable" title="Failure Request Count" className="line tooltip failure">
+                <a href="#disable" title="Failure Request Count" class="line tooltip failure">
                     ${addCommas(rollingCountFailure)}
                 </a>
             </div>
-            <div className="cell borderRight">
-                <a href="#disable" title="Successful Request Count" className="line tooltip success">
+            <div class="cell borderRight">
+                <a href="#disable" title="Successful Request Count" class="line tooltip success">
                     ${addCommas(rollingCountSuccess)}
                 </a>
-                <a href="#disable" title="Short-circuited Request Count" className="line tooltip shortCircuited">
+                <a href="#disable" title="Short-circuited Request Count" class="line tooltip shortCircuited">
                     ${addCommas(rollingCountShortCircuited)}
                 </a>
-                <a href="#disable" title="Bad Request Count" className="line tooltip badRequest">
+                <a href="#disable" title="Bad Request Count" class="line tooltip badRequest">
                     ${addCommas(rollingCountBadRequests)}
                 </a>
                 <br />
             </div>
         </div>
 
-        <div className="rate">
-            <a href="#disable" title="Total Request Rate per Second per Reporting Host" className="tooltip rate">
-                <span className="smaller">Host: </span>
-                <span className="ratePerSecondPerHost">${addCommas(roundNumber(ratePerSecondPerHost))}</span>/s
+        <div class="rate">
+            <a href="#disable" title="Total Request Rate per Second per Reporting Host" class="tooltip rate">
+                <span class="smaller">Host: </span>
+                <span class="ratePerSecondPerHost">${addCommas(roundNumber(ratePerSecondPerHost))}</span>/s
             </a>
         </div>
-        <div className="rate">
-            <a href="#disable" title="Total Request Rate per Second for Cluster" className="tooltip rate">
-                <span className="smaller">Cluster: </span>
-                <span className="ratePerSecond">${addCommas(roundNumber(ratePerSecond))}</span>/s
+        <div class="rate">
+            <a href="#disable" title="Total Request Rate per Second for Cluster" class="tooltip rate">
+                <span class="smaller">Cluster: </span>
+                <span class="ratePerSecond">${addCommas(roundNumber(ratePerSecond))}</span>/s
             </a>
         </div>
 
-        <div className="circuitStatus">
-            ${propertyValue_circuitBreakerForceClosed && (
-                `<span className="smaller">
+        <div class="circuitStatus">
+            ${propertyValue_circuitBreakerForceClosed? (
+                `<span class="smaller">
                     <font color="orange">Forced Closed</font>
                 </span>`
-            )}
+            ): ''}
             ${(() => {
                 if (propertyValue_circuitBreakerForceOpen) {
                     return (
@@ -130,39 +130,39 @@ window.HystrixCircuit = (props) => {
             })()}
         </div>
 
-        <div className="spacer" />
+        <div class="spacer" />
 
-        <div className="tableRow">
+        <div class="tableRow">
             ${typeof reportingHosts !== 'undefined' ? (
-                `<div className="cell header">Hosts</div>
-                <div className="cell data">{reportingHosts}</div>`
+                `<div class="cell header">Hosts</div>
+                <div class="cell data">${reportingHosts}</div>`
             ) : (
-                `<div className="cell header">Host</div>
-                <div className="cell data">Single</div>`
+                `<div class="cell header">Host</div>
+                <div class="cell data">Single</div>`
             )}
-            <div className="cell header">90th</div>
-            <div className="cell data latency90">
-                <span className="value">${getInstanceAverage(latencyExecute['90'], reportingHosts, false)}</span>ms
+            <div class="cell header">90th</div>
+            <div class="cell data latency90">
+                <span class="value">${getInstanceAverage(latencyExecute['90'], reportingHosts, false)}</span>ms
             </div>
         </div>
-        <div className="tableRow">
-            <div className="cell header">Median</div>
-            <div className="cell data latencyMedian">
-                <span className="value">${getInstanceAverage(latencyExecute['50'], reportingHosts, false)}</span>ms
+        <div class="tableRow">
+            <div class="cell header">Median</div>
+            <div class="cell data latencyMedian">
+                <span class="value">${getInstanceAverage(latencyExecute['50'], reportingHosts, false)}</span>ms
             </div>
-            <div className="cell header">99th</div>
-            <div className="cell data latency99">
-                <span className="value">${getInstanceAverage(latencyExecute['99'], reportingHosts, false)}</span>ms
+            <div class="cell header">99th</div>
+            <div class="cell data latency99">
+                <span class="value">${getInstanceAverage(latencyExecute['99'], reportingHosts, false)}</span>ms
             </div>
         </div>
-        <div className="tableRow">
-            <div className="cell header">Mean</div>
-            <div className="cell data latencyMean">
-                <span className="value">${latencyExecute_mean}</span>ms
+        <div class="tableRow">
+            <div class="cell header">Mean</div>
+            <div class="cell data latencyMean">
+                <span class="value">${latencyExecute_mean}</span>ms
             </div>
-            <div className="cell header">99.5th</div>
-            <div className="cell data latency995">
-                <span className="value">${getInstanceAverage(latencyExecute['99.5'], reportingHosts, false)}</span>ms
+            <div class="cell header">99.5th</div>
+            <div class="cell data latency995">
+                <span class="value">${getInstanceAverage(latencyExecute['99.5'], reportingHosts, false)}</span>ms
             </div>
         </div>`)
 }
