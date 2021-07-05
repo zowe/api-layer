@@ -20,7 +20,7 @@ window.HystrixCircuitContainerTemplate = (props) => {
                 <div
                     style="position:absolute;top:0;width:100%;height:15px;opacity:0.8; background:white;"
                 >
-                    <p class="name" />
+                    <p class="name" ${toolTip}>${displayName}</p>
                 </div>
                 <div
                     style="position:absolute;top:15px;; opacity:0.8; background:white; width:100%; height:95%;"
