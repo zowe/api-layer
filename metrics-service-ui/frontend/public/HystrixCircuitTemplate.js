@@ -1,9 +1,7 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable no-else-return */
 /* eslint-disable camelcase */
-import React from 'react';
-
-export default function HystrixCircuit(props) {
+/* eslint-disable no-else-return */
+/* eslint-disable prettier/prettier */
+window.HystrixCircuit = (props) => {
     const {
         addCommas,
         rollingCountTimeout,

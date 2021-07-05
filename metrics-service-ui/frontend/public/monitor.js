@@ -99,7 +99,7 @@ function addMonitors() {
                 '<div id="streamHeader">' +
                     '<h2><span id="' + title_name + '"></span>Hystrix Stream: ' + s.titleName + '</h2>' +
                 '</div>' +
-                '<div class="container">' +
+                '<div class="monitor-container">' +
                     '<div class="row">' +
                         '<div class="menubar">' +
                             '<div class="title">' +

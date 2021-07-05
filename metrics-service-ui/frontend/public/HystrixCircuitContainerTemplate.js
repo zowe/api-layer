@@ -1,10 +1,9 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-console */
 /* eslint-disable prefer-const */
 /* eslint-disable no-unused-vars */
-import React, { useEffect } from 'react';
-import * as d3 from 'd3';
 
-export default function HystrixCircuitContainer(props) {
+window.HystrixCircuitContainer = (props) => {
     const { name, index } = props;
     let displayName = name;
     let toolTip = '';

@@ -1,10 +1,13 @@
 /* eslint-disable */
-
 (function(window) {
 
 	// cache the templates we use on this page as global variables (asynchronously)
-	hystrixTemplateCircuit = `<div class="counters"><div class="cell line"><a href="javascript://" title="Error Percentage [Timed-out + Threadpool Rejected + Failure / Total]" class="tooltip errorPercentage"><span class="value"><%=errorPercentage %></span> %</a></div><div class="cell borderRight"><a href="javascript://" title="Timed-out Request Count" class="line tooltip timeout"><%=addCommas(rollingCountTimeout) %></a><% if(propertyValue_executionIsolationStrategy=='THREAD'){%><a href="javascript://" title="Threadpool Rejected Request Count" class="line tooltip rejected"><%=addCommas(rollingCountThreadPoolRejected) %></a><%}%><% if(propertyValue_executionIsolationStrategy=='SEMAPHORE'){%><a href="javascript://" title="Semaphore Rejected Request Count" class="line tooltip rejected"><%=addCommas(rollingCountSemaphoreRejected) %></a><%}%><a href="javascript://" title="Failure Request Count" class="line tooltip failure"><%=addCommas(rollingCountFailure) %></a> </div><div class="cell borderRight"><a href="javascript://" title="Successful Request Count" class="line tooltip success"><%=addCommas(rollingCountSuccess) %></a><a href="javascript://" title="Short-circuited Request Count" class="line tooltip shortCircuited"><%=addCommas(rollingCountShortCircuited) %></a><a href="javascript://" title="Bad Request Count" class="line tooltip badRequest"><%=addCommas(rollingCountBadRequests) %></a><br></div></div><div class="rate"><a href="javascript://" title="Total Request Rate per Second per Reporting Host" class="tooltip rate"><span class="smaller">Host: </span><span class="ratePerSecondPerHost"><%=addCommas(roundNumber(ratePerSecondPerHost)) %></span>/s</a></div><div class="rate"><a href="javascript://" title="Total Request Rate per Second for Cluster" class="tooltip rate"><span class="smaller">Cluster: </span><span class="ratePerSecond"><%=addCommas(roundNumber(ratePerSecond)) %></span>/s</a></div><div class="circuitStatus"><% if(propertyValue_circuitBreakerForceClosed){%><span class="smaller">[ <font color="orange">Forced Closed</font>]</span><%}%><% if(propertyValue_circuitBreakerForceOpen){%>Circuit <font color="red">Forced Open</font><%}else{%><% if(isCircuitBreakerOpen==reportingHosts){%>Circuit <font color="red">Open</font><%}else if(isCircuitBreakerOpen==0){%>Circuit <font color="green">Closed</font><%}else{/* We have some circuits that are open */ %><% if(typeof isCircuitBreakerOpen==='object' ){%>Circuit <font color="red">Open <%=isCircuitBreakerOpen.true %></font> <font color="green">Closed <%=isCircuitBreakerOpen.false %></font><%}else{%>Circuit <font color="orange"><%=isCircuitBreakerOpen.toString().replace("true", "Open").replace("false", "Closed") %></font><%}%><%}%><%}%></div><div class="spacer"></div><div class="tableRow"><% if(typeof reportingHosts !='undefined'){%><div class="cell header">Hosts</div><div class="cell data"><%=reportingHosts %></div><%}else{%><div class="cell header">Host</div><div class="cell data">Single</div><%}%><div class="cell header">90th</div><div class="cell data latency90"><span class="value"><%=getInstanceAverage(latencyExecute['90'], reportingHosts, false) %></span>ms</div></div><div class="tableRow"><div class="cell header">Median</div><div class="cell data latencyMedian"><span class="value"><%=getInstanceAverage(latencyExecute['50'], reportingHosts, false) %></span>ms</div><div class="cell header">99th</div><div class="cell data latency99"><span class="value"><%=getInstanceAverage(latencyExecute['99'], reportingHosts, false) %></span>ms</div></div><div class="tableRow"><div class="cell header">Mean</div><div class="cell data latencyMean"><span class="value"><%=latencyExecute_mean %></span>ms</div><div class="cell header">99.5th</div><div class="cell data latency995"><span class="value"><%=getInstanceAverage(latencyExecute['99.5'], reportingHosts, false) %></span>ms</div></div>`;
-	hystrixTemplateCircuitContainer = `<div class="monitor" id="CIRCUIT_<%=name + '_' + index %>" style="position:relative;"><%var displayName=name;var toolTip="";if(displayName.length > 32){displayName=displayName.substring(0,4) + "..." + displayName.substring(displayName.length-20, displayName.length);toolTip="title="" + name + """;}%><div id="chart_CIRCUIT_<%=name + '_' + index %>" class="chart" style="position:absolute;top:0px;left:0; float:left; width:100%; height:100%;"></div><div style="position:absolute;top:0;width:100%;height:15px;opacity:0.8; background:white;"> <% if(includeDetailIcon){%> <p class="name" <%=toolTip %> style="padding-right:16px"> <%=displayName %> <a href="../dependencies/command.jsp?name=<%=name + '_' + index %>"><img src="../components/hystrixCommand/magnifying-glass-icon-20.png" height="14px" width="14px" border="0" style="position: absolute; right:0px;"></a> </p><%}else{%> <p class="name" <%=toolTip %>><%=displayName %></p><%}%> </div><div style="position:absolute;top:15px;; opacity:0.8; background:white; width:100%; height:95%;"><div class="monitor_data"></div></div><div id="graph_CIRCUIT_<%=name + '_' + index %>" class="graph" style="position:absolute;top:25px;left:0; float:left; width:140px; height:62px;"></div><script>var y=200;/* escape with two backslashes */var vis=d3.select("#chart_CIRCUIT_<%=name.replace(/([ !"#$%&'()*+,./:;<=>?@[\]^\`{|}~])/g,'\\\\$1') + '_' + index %>").append("svg:svg").attr("width", "100%").attr("height", "100%");/* add a circle -- we don't use the data point, we set it manually, so just passing in [1] */var circle=vis.selectAll("circle").data([1]).enter().append("svg:circle");/* setup the initial styling and sizing of the circle */circle.style("fill", "green").attr("cx", "30%").attr("cy", "30%").attr("r", 5);/* add the line graph - it will be populated by javascript, no default to show here *//* escape with two backslashes */var graph=d3.select("#graph_CIRCUIT_<%=name.replace(/([ !"#$%&'()*+,./:;<=>?@[\]^\`{|}~])/g,'\\\\$1') + '_' + index %>").append("svg:svg").attr("width", "100%").attr("height", "100%");</script></div>`;
+	jQuery.get("https://localhost:10010/metrics-service/ui/v1/hystrixCircuit.html", function(data) {
+		hystrixTemplateCircuit = data;
+	});
+	jQuery.get("https://localhost:10010/metrics-service/ui/v1/hystrixCircuitContainer.html", function(data) {
+		hystrixTemplateCircuitContainer = data;
+	});
 
 	function getRelativePath(path) {
 		var p = location.pathname.slice(0, location.pathname.lastIndexOf("/")+1);
@@ -221,24 +224,12 @@
 				}
 				
 				// it doesn't exist so add it
-				var html = tmpl("hystrixCircuitContainer", data);
+				var html = tmpl(hystrixTemplateCircuitContainer, data);
 				// remove the loading thing first
 				$('#' + containerId + ' span.loading').remove();
 				// now create the new data and add it
 				$('#' + containerId + '').append(html);
-
-				var y = 200;
-				/* escape with two backslashes */
-				var vis = d3.select("#chart_CIRCUIT_<%= name.replace(/([ !\"#$%&'()*+,./:;<=>?@[\]^`{|}~])/g,'\\\\$1') + '_' + index %>").append("svg:svg").attr("width", "100%").attr("height", "100%");
-				/* add a circle -- we don't use the data point, we set it manually, so just passing in [1] */
-				var circle = vis.selectAll("circle").data([1]).enter().append("svg:circle");
-				/* setup the initial styling and sizing of the circle */
-				circle.style("fill", "green").attr("cx", "30%").attr("cy", "30%").attr("r", 5);
 				
-				/* add the line graph - it will be populated by javascript, no default to show here */
-				/* escape with two backslashes */
-				var graph = d3.select("#graph_CIRCUIT_<%= name.replace(/([ !\"#$%&'()*+,./:;<=>?@[\]^`{|}~])/g,'\\\\$1') + '_' + index %>").append("svg:svg").attr("width", "100%").attr("height", "100%");
-						
 				// add the default sparkline graph
 				d3.selectAll('#graph_CIRCUIT_' + data.escapedName + ' svg').append("svg:path");
 				
@@ -248,50 +239,7 @@
 			
 			
 			// now update/insert the data
-
-			// data.addCommas = (data.addCommas === undefined)? "" : data.addCommas,
-			// data.rollingCountTimeout = (data.rollingCountTimeout === undefined)? "" : data.rollingCountTimeout,
-			// data.propertyValue_executionIsolationStrategy = (data.propertyValue_executionIsolationStrategy === undefined)? "" : data.propertyValue_executionIsolationStrategy,
-			// data.propertyValue_circuitBreakerForceClosed = (data.propertyValue_circuitBreakerForceClosed === undefined)? "" : data.propertyValue_circuitBreakerForceClosed,
-			// data.errorPercentage = (data.errorPercentage === undefined)? "" : data.errorPercentage,
-			// data.reportingHosts = (data.reportingHosts === undefined)? "" : data.reportingHosts,
-			// data.getInstanceAverage = (data.getInstanceAverage === undefined)? "" : data.getInstanceAverage,
-			// data.latencyExecute = (data.latencyExecute === undefined)? "" : data.latencyExecute,
-			// data.latencyExecute_mean = (data.latencyExecute_mean === undefined)? "" : data.latencyExecute_mean,
-			// data.isCircuitBreakerOpen = (data.isCircuitBreakerOpen === undefined)? "" : data.isCircuitBreakerOpen,
-			// data.propertyValue_circuitBreakerForceOpen = (data.propertyValue_circuitBreakerForceOpen === undefined)? "" : data.propertyValue_circuitBreakerForceOpen,
-			// data.rollingCountThreadPoolRejected = (data.rollingCountThreadPoolRejected === undefined)? "" : data.rollingCountThreadPoolRejected,
-			// data.rollingCountSemaphoreRejected = (data.rollingCountSemaphoreRejected === undefined)? "" : data.rollingCountSemaphoreRejected,
-			// data.rollingCountFailure = (data.rollingCountFailure === undefined)? "" : data.rollingCountFailure,
-			// data.rollingCountSuccess = (data.rollingCountSuccess === undefined)? "" : data.rollingCountSuccess,
-			// data.rollingCountBadRequests = (data.rollingCountBadRequests === undefined)? "" : data.rollingCountBadRequests,
-			// data.ratePerSecondPerHost = (data.ratePerSecondPerHost === undefined)? "" : data.ratePerSecondPerHost,
-			// data.ratePerSecond = (data.ratePerSecond === undefined)? "" : data.ratePerSecond,
-			// data.roundNumber = (data.roundNumber === undefined)? "" : data.roundNumber,
-			// data.rollingCountShortCircuited = (data.rollingCountShortCircuited === undefined)? "" : data.rollingCountShortCircuited,
-
-			$('#CIRCUIT_' + data.escapedName + ' div.monitor_data').html(tmpl("hystrixCircuit", {
-				addCommas: data.addCommas,
-				rollingCountTimeout: data.rollingCountTimeout,
-				propertyValue_executionIsolationStrategy: data.propertyValue_executionIsolationStrategy,
-				propertyValue_circuitBreakerForceClosed: data.propertyValue_circuitBreakerForceClosed,
-				errorPercentage: data.errorPercentage,
-				reportingHosts: data.reportingHosts,
-				getInstanceAverage: data.getInstanceAverage,
-				latencyExecute: data.latencyExecute,
-				latencyExecute_mean: data.latencyExecute_mean,
-				isCircuitBreakerOpen: data.isCircuitBreakerOpen,
-				propertyValue_circuitBreakerForceOpen: data.propertyValue_circuitBreakerForceOpen,
-				rollingCountThreadPoolRejected: data.rollingCountThreadPoolRejected,
-				rollingCountSemaphoreRejected: data.rollingCountSemaphoreRejected,
-				rollingCountFailure: data.rollingCountFailure,
-				rollingCountSuccess: data.rollingCountSuccess,
-				rollingCountBadRequests: data.rollingCountBadRequests,
-				ratePerSecondPerHost: data.ratePerSecondPerHost,
-				ratePerSecond: data.ratePerSecond,
-				roundNumber: data.roundNumber,
-				rollingCountShortCircuited: data.rollingCountShortCircuited
-			}));
+			$('#CIRCUIT_' + data.escapedName + ' div.monitor_data').html(tmpl(hystrixTemplateCircuit, data));
 			
 			var ratePerSecond = data.ratePerSecond;
 			var ratePerSecondPerHost = data.ratePerSecondPerHost;
