@@ -187,7 +187,7 @@ class GatewayHomepageControllerTest {
         ArrayList<ServiceInstance> apiCatalogServiceInstances = new ArrayList<>();
         for (int n = 0; n < numberOfInstances; n++) {
             apiCatalogServiceInstances.add(
-                new DefaultServiceInstance("instanceId", "serviceId",
+                new DefaultServiceInstance("instanceId" + n, "serviceId",
                     "host", 10000 + n, true, metadataMap)
             );
         }
