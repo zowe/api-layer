@@ -14,6 +14,35 @@ const ajaxError = {
 };
 
 describe('>>> Dashboard component tests', () => {
+    
+    it('should have "Refresh Static APIs" button', () => {
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+            />
+        );
+        let button = wrapper.find('#refresh-api-button');
+        expect(button.length).toEqual(1);
+    });
+
+    it('should have "Onboard New API" button', () => {
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+            />
+        );
+        let button = wrapper.find('#wizard-YAML-button');
+        expect(button.length).toEqual(1);
+    });
+
     it('should display no results if search fails', () => {
         const dashboard = shallow(
             <Dashboard
