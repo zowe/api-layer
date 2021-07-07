@@ -1,5 +1,6 @@
 import { Text, Button } from 'mineral-ui';
 import React, { Component } from 'react';
+import * as log from 'loglevel';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import './Dashboard.css';
@@ -31,6 +32,10 @@ export default class Dashboard extends Component {
         refreshedStaticApi();
     };
 
+    launchWizard = () => {
+        log.error('button works');
+    };
+
     render() {
         const {
             tiles,
@@ -54,6 +59,9 @@ export default class Dashboard extends Component {
             <div>
                 <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
                     Refresh Static APIs
+                </Button>
+                <Button id="wizard-YAML-button" size="medium" onClick={this.launchWizard}>
+                    Onboard New API
                 </Button>
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
