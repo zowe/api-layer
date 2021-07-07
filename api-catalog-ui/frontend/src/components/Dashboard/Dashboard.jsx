@@ -8,6 +8,7 @@ import Tile from '../Tile/Tile';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ErrorDialog from '../Error/ErrorDialog';
+import WizardDialog from '../Wizard/WizardDialog';
 
 export default class Dashboard extends Component {
     componentDidMount() {
@@ -63,6 +64,7 @@ export default class Dashboard extends Component {
                 <Button id="wizard-YAML-button" size="medium" onClick={this.launchWizard}>
                     Onboard New API
                 </Button>
+                <WizardDialog />
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">
