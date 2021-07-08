@@ -148,6 +148,19 @@ class GatewayHomepageControllerTest {
     }
 
     @Test
+    void givenOneApiCatalogInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
+        discoveryReturnValidZosmfAuthorizationInstance();
+        discoveryReturnValidApiCatalog(1);
+
+        Model model = new ConcurrentModel();
+        gatewayHomepageController.home(model);
+
+
+        assertCatalogIsUpMessageShown(model.asMap());
+        assertThat(model.asMap(), hasEntry("catalogStatusText", "The API Catalog is running"));
+    }
+
+    @Test
     void givenApiCatalogInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
         discoveryReturnValidZosmfAuthorizationInstance();
         discoveryReturnValidApiCatalog(2);
@@ -155,7 +168,9 @@ class GatewayHomepageControllerTest {
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
+
         assertCatalogIsUpMessageShown(model.asMap());
+        assertThat(model.asMap(), hasEntry("catalogStatusText", "2 API Catalog instances are running"));
     }
 
     private void assertCatalogIsDownMessageShown(Map<String, Object> preparedModelView) {
@@ -167,7 +182,6 @@ class GatewayHomepageControllerTest {
 
     private void assertCatalogIsUpMessageShown(Map<String, Object> preparedModelView) {
         assertThat(preparedModelView, hasEntry("catalogIconName", "success"));
-        assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog is running"));
         assertThat(preparedModelView, hasEntry("catalogLinkEnabled", true));
         assertThat(preparedModelView, hasEntry("catalogLink", "/apicatalog/ui/v1"));
     }

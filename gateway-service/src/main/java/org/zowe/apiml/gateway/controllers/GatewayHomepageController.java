@@ -155,8 +155,10 @@ public class GatewayHomepageController {
             if (catalogCount > 0) {
                 linkEnabled = true;
                 catalogIconName = SUCCESS_ICON_NAME;
-                catalogStatusText = "The API Catalog is running";
                 catalogLink = getCatalogLink(serviceInstances.get(0));
+
+                catalogStatusText = catalogCount > 1 ?
+                    catalogCount + " API Catalog instances are running" : "The API Catalog is running";
             }
         }
 
