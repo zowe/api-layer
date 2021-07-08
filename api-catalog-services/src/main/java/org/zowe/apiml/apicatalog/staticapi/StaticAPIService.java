@@ -82,7 +82,7 @@ public class StaticAPIService {
     }
 
     private List<String> getDiscoveryServiceUrls() {
-        String[] discoveryServiceLocations = discoveryConfigProperties.getLocations().split(",");
+        String[] discoveryServiceLocations = discoveryConfigProperties.getLocations();
 
         List<String> discoveryServiceUrls = new ArrayList<>();
         for (String location : discoveryServiceLocations) {

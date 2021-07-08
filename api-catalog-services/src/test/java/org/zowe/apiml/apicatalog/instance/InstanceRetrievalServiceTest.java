@@ -67,7 +67,7 @@ class InstanceRetrievalServiceTest {
     void setup() {
 
         instanceRetrievalService = new InstanceRetrievalService(discoveryConfigProperties, restTemplate);
-        discoveryServiceList = discoveryConfigProperties.getLocations().split(",");
+        discoveryServiceList = discoveryConfigProperties.getLocations();
         discoveryServiceAllAppsUrl = discoveryServiceList[0] + APPS_ENDPOINT;
     }
 

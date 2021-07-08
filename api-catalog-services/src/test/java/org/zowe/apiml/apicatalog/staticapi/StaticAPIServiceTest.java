@@ -50,7 +50,7 @@ class StaticAPIServiceTest {
 
         @Test
         void givenRefreshAPIWithSecureDiscoveryService_thenReturnApiResponseCodeWithBody() {
-            when(discoveryConfigProperties.getLocations()).thenReturn(DISCOVERY_LOCATION);
+            when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION});
 
             mockRestTemplateExchange(DISCOVERY_URL, new ResponseEntity<>("This is body", HttpStatus.OK));
 
@@ -61,7 +61,7 @@ class StaticAPIServiceTest {
 
         @Test
         void givenRefreshAPIWithUnSecureDiscoveryService_thenReturnApiResponseCodeWithBody() {
-            when(discoveryConfigProperties.getLocations()).thenReturn(DISCOVERY_LOCATION_HTTP);
+            when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION_HTTP});
 
             mockRestTemplateExchange(DISCOVERY_URL_HTTP, new ResponseEntity<>("This is body", HttpStatus.OK));
 
@@ -72,7 +72,7 @@ class StaticAPIServiceTest {
 
         @Nested
         class GivenTwoDiscoveryUrls {
-            private final String discoveryLocations = DISCOVERY_LOCATION + "," + DISCOVERY_LOCATION_2;
+            private final String[] discoveryLocations = {DISCOVERY_LOCATION, DISCOVERY_LOCATION_2};
 
             @Test
             void whenFirstFails_thenReturnResponseFromSecond() {
@@ -113,7 +113,7 @@ class StaticAPIServiceTest {
 
     @Test
     void givenNoDiscoveryLocations_whenAttemptRefresh_thenReturn500AndNullBody() {
-        when(discoveryConfigProperties.getLocations()).thenReturn("");
+        when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{});
 
         StaticAPIResponse actualResponse = staticAPIService.refresh();
         StaticAPIResponse expectedResponse = new StaticAPIResponse(500, null);
