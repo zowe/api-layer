@@ -55,18 +55,23 @@ class RedisConfigTest {
             }
 
             @Test
-            void givenOnlyPassword_thenUseDefaultUsernameAndGivenPassword() {
-
-            }
-
-            @Test
             void givenOnlyUsername_thenUseGivenUsernameAndNoPassword() {
+                String uri = "user@host";
+                underTest.setMasterNodeUri(uri);
+                underTest.init();
 
+                assertEquals("user", underTest.getUsername());
+                assertEquals("", underTest.getPassword());
             }
 
             @Test
             void givenNoUsernameOrPassword_thenUseDefaultUsernameAndNoPassword() {
+                String uri = "host";
+                underTest.setMasterNodeUri(uri);
+                underTest.init();
 
+                assertEquals("default", underTest.getUsername());
+                assertEquals("", underTest.getPassword());
             }
         }
 
@@ -74,7 +79,7 @@ class RedisConfigTest {
         class WhenParseSentinelUriCredentials {
             @Test
             void givenPassword_thenSetPassword() {
-                String uri = "pass@host";
+                String uri = "default:pass@host";
                 RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
                 assertEquals("pass", node.getPassword());
             }

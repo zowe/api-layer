@@ -24,17 +24,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RedisConfig {
     private static final int DEFAULT_PORT = 6379;
-    private static final String CREDENTIALS_SEPARATOR = "@";
+    private static final String DEFAULT_USER = "default";
+    private static final String DEFAULT_PASSWORD = "";
+
+    private static final String AUTHENTICATION_SEPARATOR = "@";
     private static final String PORT_SEPARATOR = ":";
+    private static final String CREDENTIALS_SEPARATOR = ":";
 
     private final GeneralConfig generalConfig;
 
     private String masterNodeUri;
     private String host;
-    private Integer port = 6379;
+    private Integer port;
     private Integer timeout = 60;
-    private String username = "default";
-    private String password = "";
+    private String username;
+    private String password;
 
     private Sentinel sentinel;
     private SslConfig ssl;
@@ -88,12 +92,12 @@ public class RedisConfig {
     }
 
     private static boolean uriContainsCredentials(String nodeUri) {
-        return nodeUri.contains(CREDENTIALS_SEPARATOR);
+        return nodeUri.contains(AUTHENTICATION_SEPARATOR);
     }
 
     private static boolean uriContainsPort(String nodeUri) {
         if (uriContainsCredentials(nodeUri)) {
-            return nodeUri.substring(nodeUri.indexOf(CREDENTIALS_SEPARATOR) + 1).contains(PORT_SEPARATOR);
+            return nodeUri.substring(nodeUri.indexOf(AUTHENTICATION_SEPARATOR) + 1).contains(PORT_SEPARATOR);
         } else {
             return nodeUri.contains(PORT_SEPARATOR);
         }
@@ -101,19 +105,28 @@ public class RedisConfig {
 
     private static NodeUriCredentials parseCredentialsFromUri(String nodeUri) {
         if (!uriContainsCredentials(nodeUri)) {
-            return new NodeUriCredentials("", "");
+            return new NodeUriCredentials(DEFAULT_USER, DEFAULT_PASSWORD);
         }
 
-        String credentials = nodeUri.substring(0, nodeUri.indexOf(CREDENTIALS_SEPARATOR));
+        String credentials = nodeUri.substring(0, nodeUri.indexOf(AUTHENTICATION_SEPARATOR));
+
+        if (credentials.contains(CREDENTIALS_SEPARATOR)) {
+            // password and username provided
+            String[] splitCredentials = credentials.split(CREDENTIALS_SEPARATOR);
+            return new NodeUriCredentials(splitCredentials[0], splitCredentials[1]);
+        } else {
+            // only password provided
+            return new NodeUriCredentials(DEFAULT_USER, credentials);
+        }
     }
 
     private static String parseHostFromUri(String nodeUri) {
         if (uriContainsCredentials(nodeUri)) {
             if (uriContainsPort(nodeUri)) {
-                String hostAndPort = nodeUri.substring(nodeUri.indexOf(CREDENTIALS_SEPARATOR) + 1);
+                String hostAndPort = nodeUri.substring(nodeUri.indexOf(AUTHENTICATION_SEPARATOR) + 1);
                 return hostAndPort.substring(0, hostAndPort.indexOf(PORT_SEPARATOR));
             } else {
-                return nodeUri.substring(nodeUri.indexOf(CREDENTIALS_SEPARATOR) + 1);
+                return nodeUri.substring(nodeUri.indexOf(AUTHENTICATION_SEPARATOR) + 1);
             }
         } else if (uriContainsPort(nodeUri)) {
             return nodeUri.substring(0, nodeUri.indexOf(PORT_SEPARATOR));
@@ -128,7 +141,7 @@ public class RedisConfig {
         }
 
         if (uriContainsCredentials(nodeUri)) {
-            String hostAndPort = nodeUri.substring(nodeUri.indexOf(CREDENTIALS_SEPARATOR) + 1);
+            String hostAndPort = nodeUri.substring(nodeUri.indexOf(AUTHENTICATION_SEPARATOR) + 1);
             return Integer.parseInt(hostAndPort.substring(hostAndPort.indexOf(PORT_SEPARATOR) + 1));
         } else {
             return Integer.parseInt(nodeUri.substring(nodeUri.indexOf(PORT_SEPARATOR) + 1));
