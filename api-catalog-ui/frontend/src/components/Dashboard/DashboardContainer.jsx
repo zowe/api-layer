@@ -10,6 +10,7 @@ import { clearService } from '../../actions/selected-service-actions';
 import { filterText, clear } from '../../actions/filter-actions';
 import { createLoadingSelector, getVisibleTiles } from '../../selectors/selectors';
 import { clearError, refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
+import { wizardToggleDisplay } from '../../actions/wizard-actions';
 
 const loadingSelector = createLoadingSelector(['FETCH_TILES']);
 
@@ -32,6 +33,7 @@ const mapDispatchToProps = {
     clear,
     refreshedStaticApi,
     clearError,
+    wizardToggleDisplay,
 };
 
 export default connect(

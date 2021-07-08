@@ -1,6 +1,5 @@
 import { Text, Button } from 'mineral-ui';
 import React, { Component } from 'react';
-import * as log from 'loglevel';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import './Dashboard.css';
@@ -8,7 +7,7 @@ import Tile from '../Tile/Tile';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ErrorDialog from '../Error/ErrorDialog';
-import WizardDialog from '../Wizard/WizardDialog';
+import WizardContainer from '../Wizard/WizardContainer';
 
 export default class Dashboard extends Component {
     componentDidMount() {
@@ -33,8 +32,9 @@ export default class Dashboard extends Component {
         refreshedStaticApi();
     };
 
-    launchWizard = () => {
-        log.error('button works');
+    toggleWizard = () => {
+        const { wizardToggleDisplay } = this.props;
+        wizardToggleDisplay();
     };
 
     render() {
@@ -61,10 +61,10 @@ export default class Dashboard extends Component {
                 <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
                     Refresh Static APIs
                 </Button>
-                <Button id="wizard-YAML-button" size="medium" onClick={this.launchWizard}>
+                <Button id="wizard-YAML-button" size="medium" onClick={this.toggleWizard}>
                     Onboard New API
                 </Button>
-                <WizardDialog />
+                <WizardContainer />
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">

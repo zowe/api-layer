@@ -1,9 +1,14 @@
 import { connect } from 'react-redux';
 import WizardDialog from './WizardDialog';
+import { wizardToggleDisplay } from '../../actions/wizard-actions';
 
-const mapStateToProps = () => ({});
+const mapStateToProps = state => ({
+    wizardIsOpen: state.wizardReducer.wizardIsOpen,
+});
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+    wizardToggleDisplay,
+};
 
 export default connect(
     mapStateToProps,
