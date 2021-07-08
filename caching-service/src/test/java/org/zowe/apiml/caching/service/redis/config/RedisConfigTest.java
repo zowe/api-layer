@@ -14,8 +14,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.config.GeneralConfig;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 class RedisConfigTest {
@@ -38,6 +37,101 @@ class RedisConfigTest {
         void givenValidSentinel_thenReturnTrue() {
             underTest.setSentinel(new RedisConfig.Sentinel());
             assertTrue(underTest.usesSentinel());
+        }
+    }
+
+    @Nested
+    class WhenParseUri {
+        @Nested
+        class WhenParseMasterUriCredentials {
+            @Test
+            void givenUsernameAndPassword_thenUseBoth() {
+                String uri = "user:pass@host";
+                underTest.setMasterNodeUri(uri);
+                underTest.init();
+
+                assertEquals("user", underTest.getUsername());
+                assertEquals("pass", underTest.getPassword());
+            }
+
+            @Test
+            void givenOnlyPassword_thenUseDefaultUsernameAndGivenPassword() {
+
+            }
+
+            @Test
+            void givenOnlyUsername_thenUseGivenUsernameAndNoPassword() {
+
+            }
+
+            @Test
+            void givenNoUsernameOrPassword_thenUseDefaultUsernameAndNoPassword() {
+
+            }
+        }
+
+        @Nested
+        class WhenParseSentinelUriCredentials {
+            @Test
+            void givenPassword_thenSetPassword() {
+                String uri = "pass@host";
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
+                assertEquals("pass", node.getPassword());
+            }
+
+            @Test
+            void givenNoPassword_thenNoPassword() {
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode("host");
+                assertEquals("", node.getPassword());
+            }
+        }
+
+        @Nested
+        class WhenParsePort {
+            @Test
+            void givenPort_thenSetPort() {
+                String uri = "host:1234";
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
+                assertEquals(1234, node.getPort());
+            }
+
+            @Test
+            void givenNoPort_thenUseDefaultPort() {
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode("host");
+                assertEquals(6379, node.getPort());
+            }
+        }
+
+        @Nested
+        class WhenParseHost_ThenSetHost {
+            // TODO value source
+            @Test
+            void givenUsernameAndPasswordAndNoPort() {
+                String uri = "user:pass@host";
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
+                assertEquals("host", node.getHost());
+            }
+
+            @Test
+            void givenUsernameAndPasswordAndPort() {
+                String uri = "user:pass@host:1234";
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
+                assertEquals("host", node.getHost());
+            }
+
+            @Test
+            void givenNoCredentialsAndPort() {
+                String uri = "host:1234";
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
+                assertEquals("host", node.getHost());
+            }
+
+            @Test
+            void givenNoCredentialsAndNoPort() {
+                String uri = "host";
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
+                assertEquals("host", node.getHost());
+            }
         }
     }
 
