@@ -10,3 +10,26 @@
 
 export const TOGGLE_DISPLAY = 'TOGGLE_DISPLAY';
 export const SAVE_FILE = 'SAVE_FILE';
+export const data = [
+    {
+        text: 'Basic info',
+    },
+    {
+        text: 'URL',
+    },
+    {
+        text: 'Discovery Service URL',
+    },
+    {
+        text: 'Routes',
+    },
+    {
+        text: 'API info',
+    },
+    {
+        text: 'Catalog',
+    },
+    {
+        text: 'SSL',
+    },
+];
