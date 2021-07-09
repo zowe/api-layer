@@ -14,7 +14,7 @@ const ajaxError = {
 };
 
 describe('>>> Dashboard component tests', () => {
-    
+
     it('should have "Refresh Static APIs" button', () => {
         const wrapper = shallow(
             <Dashboard
@@ -117,6 +117,23 @@ describe('>>> Dashboard component tests', () => {
         const instance = wrapper.instance();
         instance.handleSearch();
         expect(filterText).toHaveBeenCalled();
+    });
+
+    it('should toggle display on button click', () => {
+        const wizardToggleDisplay = jest.fn();
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                wizardToggleDisplay={wizardToggleDisplay}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.toggleWizard();
+        expect(wizardToggleDisplay).toHaveBeenCalled();
     });
 
     it('should create tile', () => {
