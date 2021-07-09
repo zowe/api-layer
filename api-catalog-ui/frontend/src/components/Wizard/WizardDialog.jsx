@@ -3,11 +3,15 @@ import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActi
 import './wizard.css';
 
 export default class WizardDialog extends Component {
+    closeWizard = () => {
+        const { wizardToggleDisplay } = this.props;
+        wizardToggleDisplay();
+    };
     render() {
-        const { wizardIsOpen, wizardToggleDisplay } = this.props;
+        const { wizardIsOpen } = this.props;
         return (
             <div className="dialog">
-                <Dialog isOpen={wizardIsOpen} onClose={wizardToggleDisplay}>
+                <Dialog isOpen={wizardIsOpen} closeOnClickOutside={false}>
                     <DialogHeader>
                         <DialogTitle>Onboard a New API</DialogTitle>
                     </DialogHeader>
@@ -16,8 +20,10 @@ export default class WizardDialog extends Component {
                     </DialogBody>
                     <DialogFooter className="dialog-footer">
                         <DialogActions>
-                            <Button size="medium">Cancel</Button>
-                            <Button size="medium">Action</Button>
+                            <Button size="medium" onClick={this.closeWizard}>
+                                Cancel
+                            </Button>
+                            <Button size="medium">Save file</Button>
                         </DialogActions>
                     </DialogFooter>
                 </Dialog>
