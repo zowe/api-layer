@@ -112,11 +112,11 @@ class StaticAPIServiceTest {
     }
 
     @Test
-    void givenNoDiscoveryLocations_whenAttemptRefresh_thenReturn500AndNullBody() {
+    void givenNoDiscoveryLocations_whenAttemptRefresh_thenReturn500() {
         when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{});
 
         StaticAPIResponse actualResponse = staticAPIService.refresh();
-        StaticAPIResponse expectedResponse = new StaticAPIResponse(500, null);
+        StaticAPIResponse expectedResponse = new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
         assertEquals(expectedResponse, actualResponse);
     }
 

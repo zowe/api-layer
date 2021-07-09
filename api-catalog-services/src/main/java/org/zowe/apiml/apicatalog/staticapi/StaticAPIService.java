@@ -66,7 +66,7 @@ public class StaticAPIService {
             }
         }
 
-        return new StaticAPIResponse(500, null);
+        return new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
     }
 
     private HttpEntity<?> getHttpEntity(String discoveryServiceUrl) {
