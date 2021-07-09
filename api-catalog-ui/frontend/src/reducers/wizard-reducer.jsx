@@ -15,6 +15,7 @@ const wizardReducerDefaultState = {
 };
 
 const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
+    if(action == null) return state;
     switch (action.type) {
         case TOGGLE_DISPLAY:
             return {
