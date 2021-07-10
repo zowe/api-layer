@@ -112,8 +112,11 @@ management:
                 include: health, info, turbine.stream
 
 turbine:
-    clusterNameExpression: new String("default")
-    instanceUrlSuffix: /discoverableclient/application/hystrix.stream
+    aggregator:
+        cluster-config: DISCOVERABLECLIENT
+    clusterNameExpression: metadata['cluster']
+    instanceUrlSuffix:
+        DISCOVERABLECLIENT: /discoverableclient/application/hystrix.stream
     appConfig: discoverableclient
 
 ---

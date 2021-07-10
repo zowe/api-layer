@@ -25,6 +25,9 @@ eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
+    instance:
+        metadata-map:
+            cluster: discoverableclient
 apiml:
     enabled: true
     service:
@@ -97,6 +100,7 @@ apiml:
                 corsEnabled: false
                 lb:
                     instanceIdHeader: enabled
+            cluster: DISCOVERABLECLIENT
 
 server:
     error:
