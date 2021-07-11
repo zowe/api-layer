@@ -13,17 +13,21 @@ import Container from '@material-ui/core/Container';
 import React, { useEffect } from 'react';
 // import HystrixCommandMonitor from './HystrixCommandMonitor';
 // import addStreams from './monitor';
+import axios from 'axios';
 import './hystrixCommand.css';
 
 export default function Dashboard() {
     useEffect(() => {
-        // const hystrixMonitor = new HystrixCommandMonitor(0, 'content', { includeDetailIcon: false });
-        // // start the EventSource which will open a streaming connection to the server
-        // const source = new EventSource('https://localhost:10012/discoverableclient/application/hystrix.stream');
-        // // add the listener that will process incoming events
-        // source.addEventListener('message', hystrixMonitor.eventSourceMessageListener, false);
+        // eslint-disable-next-line no-console
+        console.log(`${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_METRICS_HOME}`);
+        axios.get('https://localhost:10010/api/v1/metrics-service/clusters', { withCredentials: true }).then((res) => {
+            // eslint-disable-next-line no-console
+            console.log(res.data);
+        });
         setTimeout(() => {
-            window.addStreams();
+            window.addStreams(
+                'https://localhost:10010/api/v1/metrics-service/turbine.stream?cluster=DISCOVERABLECLIENT'
+            );
         }, 0);
     }, []);
     return (

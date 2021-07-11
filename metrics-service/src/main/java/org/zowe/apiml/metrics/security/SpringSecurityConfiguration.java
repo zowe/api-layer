@@ -110,6 +110,8 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
+            .antMatchers("/turbine.stream").authenticated()
+            .antMatchers("/clusters").authenticated()
             .antMatchers("/application/health", "/application/info").permitAll();
     }
 

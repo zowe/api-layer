@@ -16,7 +16,7 @@ function getUrlVars() {
 
 var hystrixStreams = [];
 
-function addStreams() {
+function addStreams(proxyStream) {
     var urlVars = getUrlVars();
 
     var streams = urlVars.streams ? JSON.parse(decodeURIComponent(urlVars.streams)) :
@@ -57,10 +57,8 @@ function addStreams() {
             }
         }
 
-        var proxyStream = "https://localhost:10012/discoverableclient/application/hystrix.stream";
-
         // start the EventSource which will open a streaming connection to the server
-        var source = new EventSource(proxyStream);
+        var source = new EventSource(proxyStream, { withCredentials: true });
 
         // add the listener that will process incoming events
         source.addEventListener('message', hystrixMonitor.eventSourceMessageListener, false);
