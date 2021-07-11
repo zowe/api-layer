@@ -137,6 +137,7 @@ eureka:
 
                 authentication:
                     sso: true
+            cluster: APICATALOG
     client:
         healthcheck:
             enabled: true
@@ -164,7 +165,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers
+                include: health, info, loggers, hystrix.stream
 
 logging:
     level:
@@ -220,6 +221,7 @@ eureka:
                       version: 1.0.0
                       gatewayUrl: api/v1
                       swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                cluster: APICATALOG
 apiml:
     service:
         scheme: http

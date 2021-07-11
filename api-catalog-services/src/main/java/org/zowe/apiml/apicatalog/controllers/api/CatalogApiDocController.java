@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
@@ -62,6 +63,7 @@ public class CatalogApiDocController {
         @ApiResponse(code = 404, message = "URI not found"),
         @ApiResponse(code = 500, message = "An unexpected condition occurred"),
     })
+    @HystrixCommand()
     public ResponseEntity<String> getApiDocInfo(
         @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId,
@@ -84,6 +86,7 @@ public class CatalogApiDocController {
         @ApiResponse(code = 404, message = "URI not found"),
         @ApiResponse(code = 500, message = "An unexpected condition occurred"),
     })
+    @HystrixCommand()
     public ResponseEntity<String> getApiDiff(
         @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId,

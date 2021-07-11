@@ -141,7 +141,7 @@ public class SecurityConfiguration {
                 .antMatchers("/static-api/**").authenticated()
                 .antMatchers("/containers/**").authenticated()
                 .antMatchers(APIDOC_ROUTES).authenticated()
-                .antMatchers("/application/health", "/application/info").permitAll()
+                .antMatchers("/application/health", "/application/info", "/application/hystrix.stream").permitAll()
                 .antMatchers("/application/**").authenticated();
         }
     }

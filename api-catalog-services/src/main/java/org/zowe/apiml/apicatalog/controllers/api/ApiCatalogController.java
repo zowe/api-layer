@@ -27,6 +27,7 @@ import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,6 +76,7 @@ public class ApiCatalogController {
             @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
         }
     )
+    @HystrixCommand()
     public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalThrowable {
         try {
             Iterable<APIContainer> allContainers = cachedProductFamilyService.getAllContainers();
@@ -104,6 +106,7 @@ public class ApiCatalogController {
             @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
         }
     )
+    @HystrixCommand()
     public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
         try {
             List<APIContainer> apiContainers = new ArrayList<>();

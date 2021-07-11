@@ -113,11 +113,12 @@ management:
 
 turbine:
     aggregator:
-        cluster-config: DISCOVERABLECLIENT
+        clusterConfig: DISCOVERABLECLIENT,APICATALOG
     clusterNameExpression: metadata['cluster']
     instanceUrlSuffix:
         DISCOVERABLECLIENT: /discoverableclient/application/hystrix.stream
-    appConfig: discoverableclient
+        APICATALOG: /apicatalog/application/hystrix.stream
+    appConfig: discoverableclient,apicatalog
 
 ---
 spring:
