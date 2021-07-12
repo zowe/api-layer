@@ -259,6 +259,9 @@ management:
             exposure:
                 include: "*"
 
+server:
+    max-http-header-size: 40000
+
 zuul.debug.request: true
 ---
 spring:
