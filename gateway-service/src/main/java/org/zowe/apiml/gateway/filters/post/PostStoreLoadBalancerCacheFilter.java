@@ -19,6 +19,7 @@ import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
@@ -50,6 +51,7 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
     }
 
     @Override
+    @SuppressWarnings("squid:S3516") // We always have to return null
     public Object run() {
         Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
         if (!instance.isPresent()) {
@@ -57,7 +59,11 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
         }
 
         InstanceInfo selectedInstance = instance.get();
-        String lbType = selectedInstance.getMetadata().get("apiml.lb.type");
+        Map<String, String> metadata = selectedInstance.getMetadata();
+        if (metadata == null) {
+            return null;
+        }
+        String lbType = metadata.get("apiml.lb.type");
         if (lbType == null
             || !lbType.equals("authentication")
             || selectedInstance.getInstanceId() == null
@@ -69,9 +75,8 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
         Optional<String> authenticatedUser = authenticationService.getAuthenticatedUser(context.getRequest());
         if (authenticatedUser.isPresent() && !instanceIsCached(authenticatedUser.get(), currentServiceId)) {
-            Integer responseStatusCode = (Integer) context.get("responseStatusCode");
             // Dont store instance info when failed.
-            if (context.get("throwable") != null || (responseStatusCode != null && responseStatusCode >= 500)) {
+            if (context.get("throwable") != null) {
                 return null;
             }
 
