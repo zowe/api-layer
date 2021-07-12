@@ -22,6 +22,11 @@ export const data = [
     },
     {
         text: 'URL',
+        content: {
+            homePageRelativeUrl: '',
+            statusPageRelativeUrl: '',
+            healthCheckRelativeUrl: '',
+        },
     },
     {
         text: 'Discovery Service URL',
