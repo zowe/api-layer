@@ -45,7 +45,7 @@ public class Requests {
             .get(uri)
             .then().extract();
 
-        String responseText = response.body().toString();
+        String responseText = response.body().asString();
         ReadContext context = JsonPath.parse(responseText);
         log.info("Response: {}, Response Code: {}", responseText, response.statusCode());
         return new JsonResponse(response.statusCode(), context);
