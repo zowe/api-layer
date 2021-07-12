@@ -1,10 +1,10 @@
 caching:
     storage:
-        mode: inMemory
+        mode: redis
         redis:
             host: localhost
             timeout: 60
-            masterNodeUri: default:password@localhost:6379
+            masterNodeUri: default:heslo@localhost:6379
             ssl:
                 enabled: false
                 keyStore: ${server.ssl.keyStore}
@@ -12,8 +12,11 @@ caching:
                 trustStore: ${server.ssl.trustStore}
                 trustStorePassword: ${server.ssl.trustStorePassword}
             sentinel:
-                masterInstance: masterid
-                nodes: password@localhost:26379,password2@localhost2:26380
+                masterInstance: redismaster
+                nodes:
+                    - sentinelpassword@localhost:26379
+                    - sentinelpassword@localhost:26380
+                    - sentinelpassword@localhost:26381
 
 logging:
     level:
