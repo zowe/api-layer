@@ -13,6 +13,12 @@ export const SAVE_FILE = 'SAVE_FILE';
 export const data = [
     {
         text: 'Basic info',
+        content: {
+            serviceId: '',
+            title: '',
+            description: '',
+            baseUrl: '',
+        },
     },
     {
         text: 'URL',
