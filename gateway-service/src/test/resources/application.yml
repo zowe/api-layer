@@ -1,4 +1,3 @@
-spring.profiles.include: diag
 logging:
     level:
         ROOT: TRACE
@@ -42,6 +41,8 @@ apiml:
             jwtKeyAlias: jwtSecret
 
 spring:
+    profiles:
+        include: diag
     application:
         name: ${apiml.service.id}
     cloud:
@@ -92,6 +93,7 @@ server:
         keyAlias: localhost
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+    max-http-header-size: 40000
 
 zuul:
     sslHostnameValidationEnabled: false

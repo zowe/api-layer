@@ -11,6 +11,7 @@ package org.zowe.apiml.acceptance.common;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
 import org.zowe.apiml.acceptance.config.DiscoveryClientTestConfig;
 import org.zowe.apiml.acceptance.config.GatewayOverrideConfig;
@@ -26,5 +27,6 @@ import java.lang.annotation.Target;
 @SpringBootTest(classes = GatewayTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"management.server.port=10090","server.internal.enabled=false","apiml.routing.instanceIdHeader=true"})
 @Import({GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class})
+@DirtiesContext
 public @interface AcceptanceTest {
 }
