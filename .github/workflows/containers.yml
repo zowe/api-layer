@@ -477,7 +477,7 @@ jobs:
                     - "6379:6379"
                 volumes:
                     - /api-layer/keystore:/usr/local/etc/keystore
-                    - /api-layer/docker/redis/master-tls:/usr/local/etc/redis/
+                    - /api-layer/docker/redis/config/master-tls.conf:/usr/local/etc/redis/redis.conf
 
             redis-replica:
                 image: redis:latest
@@ -485,7 +485,7 @@ jobs:
                     - "6380:6380"
                 volumes:
                     - /api-layer/keystore:/usr/local/etc/keystore
-                    - /api-layer/docker/redis/replica-tls:/usr/local/etc/redis/
+                    - /api-layer/docker/redis/config/replica-tls.conf:/usr/local/etc/redis/redis.conf
 
 
         steps:
@@ -569,14 +569,14 @@ jobs:
                 ports:
                     - "6379:6379"
                 volumes:
-                    - /api-layer/docker/redis/master:/usr/local/etc/redis/
+                    - /api-layer/docker/redis/config/master.conf:/usr/local/etc/redis/redis.conf
 
             redis-replica:
                 image: redis:latest
                 ports:
                     - "6380:6380"
                 volumes:
-                    - /api-layer/docker/redis/replica:/usr/local/etc/redis/
+                    - /api-layer/docker/redis/config/replica.conf:/usr/local/etc/redis/redis.conf
 
         steps:
             -   uses: actions/checkout@v2
