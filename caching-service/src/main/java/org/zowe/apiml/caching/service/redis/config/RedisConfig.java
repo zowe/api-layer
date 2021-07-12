@@ -31,15 +31,14 @@ public class RedisConfig {
     private static final String PORT_SEPARATOR = ":";
     private static final String CREDENTIALS_SEPARATOR = ":";
 
-    private final GeneralConfig generalConfig;
-
-    private String masterNodeUri;
-    private String host;
-    private Integer port;
     private Integer timeout = 60;
-    private String username;
-    private String password;
+    private String masterNodeUri;
 
+    private final GeneralConfig generalConfig;
+    private String host;
+    private Integer port = DEFAULT_PORT;
+    private String username = DEFAULT_USER;
+    private String password = DEFAULT_PASSWORD;
     private Sentinel sentinel;
     private SslConfig ssl;
 
