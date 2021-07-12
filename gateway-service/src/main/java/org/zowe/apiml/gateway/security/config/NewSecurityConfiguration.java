@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -40,6 +41,8 @@ import org.zowe.apiml.gateway.security.query.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
+import org.zowe.apiml.product.filter.AttlsFilter;
+import org.zowe.apiml.product.filter.SecureConnectionFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
@@ -82,7 +85,8 @@ public class NewSecurityConfiguration {
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
     private final X509AuthenticationProvider x509AuthenticationProvider;
-
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     /**
      * Login and Logout endpoints
@@ -138,6 +142,10 @@ public class NewSecurityConfiguration {
                 .addFilterBefore(loginFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                 .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+            }
         }
 
         private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
@@ -239,6 +247,10 @@ public class NewSecurityConfiguration {
                 .userDetailsService(new SimpleUserDetailService())
                 .and()
                 .addFilterBefore(ticketFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+            }
         }
 
         private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
@@ -274,6 +286,10 @@ public class NewSecurityConfiguration {
                 .x509() // default x509 filter, authenticates trusted cert
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService());
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+            }
         }
     }
 
@@ -317,6 +333,10 @@ public class NewSecurityConfiguration {
                 // place the following filters before the x509 filter
                 .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+            }
         }
 
         /**
