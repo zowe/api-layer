@@ -10,8 +10,13 @@
 package org.zowe.apiml;
 
 import java.security.KeyStoreException;
-import java.security.cert.*;
-import java.util.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
 @SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class LocalVerifier implements Verifier {
 
@@ -27,7 +32,12 @@ public class LocalVerifier implements Verifier {
             "  against truststore: " + stores.getConf().getTrustStore());
         try {
             String alias = stores.getConf().getKeyAlias();
-            Certificate[] certificate = stores.getKeyStore().getCertificateChain(alias);
+            Certificate[] certificate;
+            if (alias == null) {
+                alias = stores.getKeyStore().aliases().nextElement();
+            }
+            certificate = stores.getKeyStore().getCertificateChain(alias);
+
             if (certificate == null) {
                 System.out.println("Alias \"" + alias + "\" is not available in keystore.");
                 return;
@@ -48,7 +58,7 @@ public class LocalVerifier implements Verifier {
                         System.out.println("Trusted certificate is stored under alias: " + cert.getKey());
                         System.out.println("Certificate authority: " + trustedCA.getSubjectDN());
                         System.out.println("Details about valid certificate:");
-                        printDetails();
+                        printDetails(alias);
 
                         return;
                     }
@@ -57,15 +67,15 @@ public class LocalVerifier implements Verifier {
                 }
 
             }
-            System.out.println("Add " + x509Certificate.getIssuerDN() + " certificate authority to the trust store ");
+            System.err.println("No trusted certificate found. Add " + x509Certificate.getIssuerDN() + " certificate authority to the trust store ");
         } catch (KeyStoreException e) {
             System.err.println("Error loading secret from keystore" + e.getMessage());
         }
 
     }
 
-    void printDetails() throws KeyStoreException {
-        Certificate[] certificate = stores.getKeyStore().getCertificateChain(stores.getConf().getKeyAlias());
+    void printDetails(String keyAlias) throws KeyStoreException {
+        Certificate[] certificate = stores.getKeyStore().getCertificateChain(keyAlias);
         X509Certificate serverCert = (X509Certificate) certificate[0];
         try {
             System.out.println("++++++++");

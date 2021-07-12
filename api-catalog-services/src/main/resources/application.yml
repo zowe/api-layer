@@ -91,6 +91,7 @@ server:
         trustStore: ${apiml.security.ssl.trustStore}
         trustStoreType: ${apiml.security.ssl.trustStoreType}
         trustStorePassword: ${apiml.security.ssl.trustStorePassword}
+        clientAuth: want
     error:
         whitelabel:
             enabled: false

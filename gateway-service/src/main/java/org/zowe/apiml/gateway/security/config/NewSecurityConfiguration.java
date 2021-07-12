@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -37,14 +36,10 @@ import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
-import org.zowe.apiml.gateway.security.query.QueryFilter;
-import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
-import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
+import org.zowe.apiml.gateway.security.query.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
-import org.zowe.apiml.product.filter.AttlsFilter;
-import org.zowe.apiml.product.filter.SecureConnectionFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
@@ -57,13 +52,13 @@ import java.util.Set;
 
 /**
  * Main configuration place for Gateway endpoint security
- * <p>
+ *
  * Security is configured with separate filterchains per groups of endpoints
  * The main theme is to keep the filterchains independent and isolated
  * Gives more control over the behavior of individual filter chain
  * This makes the security filters simpler as they don't have to be smart
  * Also separates the x509 filters per filterchain for more control
- * <p>
+ *
  * Authentication providers are initialized per filterchain's needs. No unused auth providers on chains.
  */
 
@@ -87,9 +82,17 @@ public class NewSecurityConfiguration {
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
     private final X509AuthenticationProvider x509AuthenticationProvider;
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
 
+
+    /**
+     * Login and Logout endpoints
+     *
+     * logout filter matches for logout request and handles logout
+     * apimlX509filter sifts through certs for authentication
+     * login filter authenticates credentials
+     * x509AuthenticationFilter authenticates certificate from apimlX509Filter
+     * shouldAlreadyBeAuthenticated stops processing of request and ends the chain
+     */
     @Configuration
     @RequiredArgsConstructor
     @Order(1)
@@ -106,11 +109,11 @@ public class NewSecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                authConfigurationProperties.getGatewayLoginEndpoint(),
-                authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
-                authConfigurationProperties.getGatewayLogoutEndpoint(),
-                authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
-            ).and())
+                    authConfigurationProperties.getGatewayLoginEndpoint(),
+                    authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
+                    authConfigurationProperties.getGatewayLogoutEndpoint(),
+                    authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
+                ).and())
                 .authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
@@ -134,11 +137,7 @@ public class NewSecurityConfiguration {
                 //drive filter order this way
                 .addFilterBefore(loginFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
-                .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
-
-                .addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-
+                .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
         }
 
         private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
@@ -171,7 +170,7 @@ public class NewSecurityConfiguration {
 
     /**
      * Query and Ticket endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
-     * Query endpoint does not require certificate to be present in RequestContext
+     * Query endpoint does not require certificate to be present in RequestContext. It verifies JWT token.
      */
     @Configuration
     @RequiredArgsConstructor
@@ -190,7 +189,7 @@ public class NewSecurityConfiguration {
             baseConfigure(http.requestMatchers().antMatchers(
                 authConfigurationProperties.getGatewayQueryEndpoint(),
                 authConfigurationProperties.getGatewayQueryEndpointOldFormat()
-            ).and()).authorizeRequests()
+                ).and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable() // logout filter in this chain not needed
@@ -211,7 +210,7 @@ public class NewSecurityConfiguration {
 
     /**
      * Query and Ticket endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
-     * Ticket endpoint does require certificate to be present in RequestContext
+     * Ticket endpoint does require certificate to be present in RequestContext. It verifies the JWT token.
      */
 
     @Configuration
@@ -239,10 +238,7 @@ public class NewSecurityConfiguration {
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService())
                 .and()
-                .addFilterBefore(ticketFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-
+                .addFilterBefore(ticketFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
         }
 
         private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
@@ -257,6 +253,10 @@ public class NewSecurityConfiguration {
         }
     }
 
+    /**
+     * Endpoints which are protected by client certificate
+     * Default Spring security x509 filter authenticates any trusted certificate
+     */
     @Configuration
     @RequiredArgsConstructor
     @Order(4)
@@ -265,21 +265,23 @@ public class NewSecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers()
-                .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH + "/**")
-                .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).and()
-            ).authorizeRequests()
+                    .antMatchers(HttpMethod.DELETE,CacheServiceController.CONTROLLER_PATH + "/**")
+                    .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).and()
+                ).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable() // logout filter in this chain not needed
                 .x509() // default x509 filter, authenticates trusted cert
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                .userDetailsService(new SimpleUserDetailService())
-                .and()
-                .addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+                .userDetailsService(new SimpleUserDetailService());
         }
     }
 
+    /**
+     * Endpoints which require either authentication or client certificate
+     * Filters for tokens and credentials are placed in front of certificate filter for precedence
+     * Default Spring security x509 filter authenticates any trusted certificate
+     */
     @Configuration
     @RequiredArgsConstructor
     @Order(5)
@@ -314,9 +316,7 @@ public class NewSecurityConfiguration {
                 .and()
                 // place the following filters before the x509 filter
                 .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+                .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
         }
 
         /**
@@ -343,6 +343,12 @@ public class NewSecurityConfiguration {
         }
     }
 
+    /**
+     * fallback filterchain for all other requests
+     * All Routing goes through here
+     * The filterchain does not require authentication
+     * Web security is configured here and only here
+     */
     @Configuration
     @RequiredArgsConstructor
     @Order(100)
@@ -403,6 +409,10 @@ public class NewSecurityConfiguration {
                 AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
 
     }
+
+
+
+
 
 
 }
