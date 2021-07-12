@@ -1,6 +1,6 @@
 caching:
     storage:
-        mode: redis
+        mode: inMemory
         redis:
             host: localhost
             timeout: 60
