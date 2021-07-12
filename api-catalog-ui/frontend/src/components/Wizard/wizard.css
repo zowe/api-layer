@@ -12,10 +12,10 @@
     border-top: none;
 }
 
-.dialog {
-    color: red;
-}
-
 .wizardForm *{
     margin-top: 5px;
+}
+
+.selector{
+    max-width: 300px;
 }
