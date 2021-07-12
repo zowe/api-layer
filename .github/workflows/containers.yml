@@ -671,6 +671,11 @@ jobs:
                 uses: actions/setup-java@v1
                 with:
                     java-version: 1.8
+            -   name: Setup Docker
+                uses: docker-practice/actions-setup-docker@master
+            -   name: Docker
+                run: |
+                    docker version
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
             -   name: Cache Gradle packages
@@ -699,6 +704,10 @@ jobs:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
+            -   name: Get Container Logs
+                run: |
+                    docker ps -a
+                    docker ps -q | xargs -L 1 docker logs
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
