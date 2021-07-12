@@ -18,6 +18,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 class RedisConfigTest {
+    private static final int PORT = 1234;
+    private static final String HOST = "host";
+    private static final String USER = "user";
+    private static final String PASSWORD = "pass";
+
     private RedisConfig underTest;
 
     @BeforeEach
@@ -46,28 +51,27 @@ class RedisConfigTest {
         class WhenParseMasterUriCredentials {
             @Test
             void givenUsernameAndPassword_thenUseBoth() {
-                String uri = "user:pass@host";
+                String uri = String.format("%s:%s@%s", USER, PASSWORD, HOST);
                 underTest.setMasterNodeUri(uri);
                 underTest.init();
 
-                assertEquals("user", underTest.getUsername());
-                assertEquals("pass", underTest.getPassword());
+                assertEquals(USER, underTest.getUsername());
+                assertEquals(PASSWORD, underTest.getPassword());
             }
 
             @Test
-            void givenOnlyUsername_thenUseGivenUsernameAndNoPassword() {
-                String uri = "user@host";
+            void givenOnlyPassword_thenUseGivenPasswordAndDefaultUsername() {
+                String uri = String.format("%s@%s", PASSWORD, HOST);
                 underTest.setMasterNodeUri(uri);
                 underTest.init();
 
-                assertEquals("user", underTest.getUsername());
-                assertEquals("", underTest.getPassword());
+                assertEquals("default", underTest.getUsername());
+                assertEquals(PASSWORD, underTest.getPassword());
             }
 
             @Test
             void givenNoUsernameOrPassword_thenUseDefaultUsernameAndNoPassword() {
-                String uri = "host";
-                underTest.setMasterNodeUri(uri);
+                underTest.setMasterNodeUri(HOST);
                 underTest.init();
 
                 assertEquals("default", underTest.getUsername());
@@ -79,14 +83,14 @@ class RedisConfigTest {
         class WhenParseSentinelUriCredentials {
             @Test
             void givenPassword_thenSetPassword() {
-                String uri = "default:pass@host";
+                String uri = String.format("%s@%s", PASSWORD, HOST);
                 RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
-                assertEquals("pass", node.getPassword());
+                assertEquals(PASSWORD, node.getPassword());
             }
 
             @Test
             void givenNoPassword_thenNoPassword() {
-                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode("host");
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(HOST);
                 assertEquals("", node.getPassword());
             }
         }
@@ -95,47 +99,46 @@ class RedisConfigTest {
         class WhenParsePort {
             @Test
             void givenPort_thenSetPort() {
-                String uri = "host:1234";
+                String uri = String.format("%s:%d", HOST, PORT);
                 RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
-                assertEquals(1234, node.getPort());
+                assertEquals(PORT, node.getPort());
             }
 
             @Test
             void givenNoPort_thenUseDefaultPort() {
-                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode("host");
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(HOST);
                 assertEquals(6379, node.getPort());
             }
         }
 
         @Nested
         class WhenParseHost_ThenSetHost {
-            // TODO value source
+
             @Test
             void givenUsernameAndPasswordAndNoPort() {
-                String uri = "user:pass@host";
+                String uri = String.format("%s:%s@%s", USER, PASSWORD, HOST);
                 RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
-                assertEquals("host", node.getHost());
+                assertEquals(HOST, node.getHost());
             }
 
             @Test
             void givenUsernameAndPasswordAndPort() {
-                String uri = "user:pass@host:1234";
+                String uri = String.format("%s:%s@%s:%d", USER, PASSWORD, HOST, PORT);
                 RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
-                assertEquals("host", node.getHost());
+                assertEquals(HOST, node.getHost());
             }
 
             @Test
             void givenNoCredentialsAndPort() {
-                String uri = "host:1234";
+                String uri = String.format("%s:%d", HOST, PORT);
                 RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
-                assertEquals("host", node.getHost());
+                assertEquals(HOST, node.getHost());
             }
 
             @Test
             void givenNoCredentialsAndNoPort() {
-                String uri = "host";
-                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(uri);
-                assertEquals("host", node.getHost());
+                RedisConfig.Sentinel.SentinelNode node = new RedisConfig.Sentinel.SentinelNode(HOST);
+                assertEquals(HOST, node.getHost());
             }
         }
     }
