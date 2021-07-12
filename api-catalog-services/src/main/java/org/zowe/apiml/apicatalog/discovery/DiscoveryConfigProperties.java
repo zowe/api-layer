@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 public class DiscoveryConfigProperties {
 
     @Value("${apiml.service.discoveryServiceUrls}")
-    private String locations;
+    private String[] locations;
 
     @Value("${apiml.service.eurekaUserName:eureka}")
     private String eurekaUserName;
