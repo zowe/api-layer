@@ -152,11 +152,13 @@ public class GatewayHomepageController {
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(apiCatalogServiceId);
         if (serviceInstances != null && authServiceEnabled) {
             long catalogCount = serviceInstances.size();
-            if (catalogCount == 1) {
+            if (catalogCount > 0) {
                 linkEnabled = true;
                 catalogIconName = SUCCESS_ICON_NAME;
-                catalogStatusText = "The API Catalog is running";
                 catalogLink = getCatalogLink(serviceInstances.get(0));
+
+                catalogStatusText = catalogCount > 1 ?
+                    catalogCount + " API Catalog instances are running" : "The API Catalog is running";
             }
         }
 
