@@ -27,7 +27,7 @@ spring:
 
 server:
     address: ${apiml.service.hostname}
-    max-http-header-size: 40KB
+    max-http-header-size: 40000
     internal:
         enabled: true
         port: 10017

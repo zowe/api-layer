@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@Disabled
 @AcceptanceTest
 class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 

@@ -93,6 +93,7 @@ server:
         keyAlias: localhost
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+    max-http-header-size: 40000
 
 zuul:
     sslHostnameValidationEnabled: false
