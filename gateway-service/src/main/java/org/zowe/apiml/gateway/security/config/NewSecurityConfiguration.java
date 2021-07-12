@@ -142,10 +142,7 @@ public class NewSecurityConfiguration {
                 .addFilterBefore(loginFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                 .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
-            if (isAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
+
         }
 
         private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
@@ -247,10 +244,6 @@ public class NewSecurityConfiguration {
                 .userDetailsService(new SimpleUserDetailService())
                 .and()
                 .addFilterBefore(ticketFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
-            if (isAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
         }
 
         private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
@@ -286,10 +279,6 @@ public class NewSecurityConfiguration {
                 .x509() // default x509 filter, authenticates trusted cert
                 .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(new SimpleUserDetailService());
-            if (isAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
         }
     }
 
@@ -333,10 +322,6 @@ public class NewSecurityConfiguration {
                 // place the following filters before the x509 filter
                 .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-            if (isAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
         }
 
         /**
@@ -396,6 +381,10 @@ public class NewSecurityConfiguration {
      * Common configuration for all filterchains
      */
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
+        if (isAttlsEnabled) {
+            http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+            http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+        }
         return http
             .cors()
             .and().csrf().disable()    // NOSONAR we are using SAMESITE cookie to mitigate CSRF
