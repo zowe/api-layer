@@ -36,6 +36,8 @@ public class GatewayRequests {
     private final String host;
     private final int port;
 
+    private final String instance;
+
     public GatewayRequests(String host, String port) {
         this(gatewayServiceConfiguration.getScheme(), host, Integer.parseInt(port), new Requests());
     }
@@ -48,11 +50,12 @@ public class GatewayRequests {
         this.host = host;
         this.port = port;
 
-        log.info("Created gateway requests for: {}://{}:{}", scheme, host, port);
+        instance = String.format("%s://%s:%s", scheme, host, port);
+        log.info("Created gateway requests for: {}", instance);
     }
 
     public void shutdown() {
-        log.info("GatewayRequests#shutdown");
+        log.info("GatewayRequests#shutdown Instance: {}", instance);
 
         try {
             given()
@@ -69,7 +72,7 @@ public class GatewayRequests {
 
     public boolean isUp() {
         try {
-            log.info("GatewayRequests#isUp");
+            log.info("GatewayRequests#isUp Instance: {}", instance);
 
             ReadContext healthResponse = requests.getJson(getGatewayUriWithPath(Endpoints.HEALTH));
             String health = healthResponse.read("$.status");
@@ -84,7 +87,7 @@ public class GatewayRequests {
 
     public JsonResponse route(String path) {
         try {
-            log.info("GatewayRequests#route - {}", path);
+            log.info("GatewayRequests#route - {} Instance: {}", path, instance);
 
             return requests.getJsonResponse(getGatewayUriWithPath(path));
         } catch (URISyntaxException e) {

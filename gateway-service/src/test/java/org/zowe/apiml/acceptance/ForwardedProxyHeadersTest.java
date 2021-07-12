@@ -10,7 +10,6 @@
 package org.zowe.apiml.acceptance;
 
 import org.apache.http.client.methods.HttpUriRequest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
@@ -25,7 +24,6 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@Disabled
 @AcceptanceTest
 class ForwardedProxyHeadersTest extends AcceptanceTestWithTwoServices {
     @Test
