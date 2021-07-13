@@ -37,7 +37,9 @@ import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
-import org.zowe.apiml.gateway.security.query.*;
+import org.zowe.apiml.gateway.security.query.QueryFilter;
+import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
+import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
@@ -55,13 +57,13 @@ import java.util.Set;
 
 /**
  * Main configuration place for Gateway endpoint security
- *
+ * <p>
  * Security is configured with separate filterchains per groups of endpoints
  * The main theme is to keep the filterchains independent and isolated
  * Gives more control over the behavior of individual filter chain
  * This makes the security filters simpler as they don't have to be smart
  * Also separates the x509 filters per filterchain for more control
- *
+ * <p>
  * Authentication providers are initialized per filterchain's needs. No unused auth providers on chains.
  */
 
@@ -90,7 +92,7 @@ public class NewSecurityConfiguration {
 
     /**
      * Login and Logout endpoints
-     *
+     * <p>
      * logout filter matches for logout request and handles logout
      * apimlX509filter sifts through certs for authentication
      * login filter authenticates credentials
@@ -113,11 +115,11 @@ public class NewSecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                    authConfigurationProperties.getGatewayLoginEndpoint(),
-                    authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
-                    authConfigurationProperties.getGatewayLogoutEndpoint(),
-                    authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
-                ).and())
+                authConfigurationProperties.getGatewayLoginEndpoint(),
+                authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
+                authConfigurationProperties.getGatewayLogoutEndpoint(),
+                authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
+            ).and())
                 .authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
@@ -194,7 +196,7 @@ public class NewSecurityConfiguration {
             baseConfigure(http.requestMatchers().antMatchers(
                 authConfigurationProperties.getGatewayQueryEndpoint(),
                 authConfigurationProperties.getGatewayQueryEndpointOldFormat()
-                ).and()).authorizeRequests()
+            ).and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable() // logout filter in this chain not needed
@@ -270,9 +272,9 @@ public class NewSecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers()
-                    .antMatchers(HttpMethod.DELETE,CacheServiceController.CONTROLLER_PATH + "/**")
-                    .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).and()
-                ).authorizeRequests()
+                .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH + "/**")
+                .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).and()
+            ).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable() // logout filter in this chain not needed
@@ -418,10 +420,6 @@ public class NewSecurityConfiguration {
                 AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
 
     }
-
-
-
-
 
 
 }

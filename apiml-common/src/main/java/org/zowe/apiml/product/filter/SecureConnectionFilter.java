@@ -17,9 +17,23 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 public class SecureConnectionFilter extends OncePerRequestFilter {
+
+    static {
+        try {
+            extractLib(System.getProperty("java.library.path"), "lib" + AttlsContext.ATTLS_LIBRARY_NAME + ".so");
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
@@ -40,6 +54,19 @@ public class SecureConnectionFilter extends OncePerRequestFilter {
             }
         } else {
             filterChain.doFilter(request, response);
+        }
+    }
+
+    public static void extractLib(String directory, String fileName) throws IOException {
+        File library = new File(directory, fileName);
+        try (InputStream inputStream = AttlsContext.class.getResourceAsStream("/lib/" + fileName)) {
+            Files.copy(inputStream, library.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            library.delete();
+            throw e;
+        } catch (NullPointerException e) {
+            library.delete();
+            throw new FileNotFoundException(fileName + " does not exist in JAR.");
         }
     }
 }
