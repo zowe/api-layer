@@ -2,7 +2,6 @@ caching:
     storage:
         mode: inMemory
         redis:
-            host: localhost
             timeout: 60
             masterNodeUri: default:heslo@localhost:6379
             ssl:
