@@ -83,7 +83,7 @@ public class RedisConfig {
 
     @Data
     public static class SslConfig {
-        private Boolean enabled = false;
+        private Boolean enabled = true;
         private String keyStore;
         private String keyStorePassword;
         private String trustStore;

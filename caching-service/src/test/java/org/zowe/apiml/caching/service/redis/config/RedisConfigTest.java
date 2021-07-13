@@ -152,16 +152,16 @@ class RedisConfigTest {
 
         @Test
         void givenSslNotEnabled_thenReturnFalse() {
-            underTest.setSsl(new RedisConfig.SslConfig());
+            RedisConfig.SslConfig sslConfig = new RedisConfig.SslConfig();
+            sslConfig.setEnabled(false);
+            underTest.setSsl(sslConfig);
+
             assertFalse(underTest.usesSsl());
         }
 
         @Test
         void givenEnabledSsl_thenReturnTrue() {
-            RedisConfig.SslConfig sslConfig = new RedisConfig.SslConfig();
-            sslConfig.setEnabled(true);
-            underTest.setSsl(sslConfig);
-
+            underTest.setSsl(new RedisConfig.SslConfig());
             assertTrue(underTest.usesSsl());
         }
     }

@@ -5,7 +5,7 @@ caching:
             timeout: 60
             masterNodeUri: default:heslo@localhost:6379
             ssl:
-                enabled: false
+                enabled: true
                 keyStore: ${server.ssl.keyStore}
                 keyStorePassword: ${server.ssl.keyStorePassword}
                 trustStore: ${server.ssl.trustStore}
