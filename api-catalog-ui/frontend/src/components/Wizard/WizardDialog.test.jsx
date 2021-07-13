@@ -11,15 +11,11 @@
 import * as enzyme from 'enzyme';
 import React from 'react';
 import WizardDialog from './WizardDialog';
+import { data } from './wizard_config';
 
 describe('>>> WizardDialog tests', () => {
     it('should render the dialog if store value is true', () => {
-        const wrapper = enzyme.shallow(
-            <WizardDialog
-                wizardToggleDisplay={jest.fn()}
-                wizardIsOpen={true}
-            />
-        );
+        const wrapper = enzyme.shallow(<WizardDialog wizardToggleDisplay={jest.fn()} inputData={data} wizardIsOpen />);
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
     });
 
