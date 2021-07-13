@@ -241,7 +241,7 @@ logging:
         org.zowe.apiml: DEBUG
         org.springframework: INFO
         org.apache: INFO
-        org.apache.http: DEBUG
+        org.apache.http: INFO
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN

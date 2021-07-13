@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters.pre;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * use the same authentication) it will modify immediately. Otherwise in request params will be set a command to
  * load balancer. The request will be modified after specific instance will be selected.
  */
+@Slf4j
 public class ServiceAuthenticationFilter extends ZuulFilter {
 
     @Autowired
@@ -61,6 +63,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
         AuthenticationCommand cmd = null;
 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
+        log.debug("Run authentication filter for service: {}", serviceId);
         try {
             String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
             cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, jwtToken);
