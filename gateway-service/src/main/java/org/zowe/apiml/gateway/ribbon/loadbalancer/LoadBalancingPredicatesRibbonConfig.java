@@ -10,10 +10,15 @@
 
 package org.zowe.apiml.gateway.ribbon.loadbalancer;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.gateway.cache.LoadBalancerCache;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.AuthenticationBasedPredicate;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredicate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 
 /**
  * This class configures the load balancer's composition in terms of what predicates will be
@@ -27,10 +32,22 @@ import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredica
  */
 @Configuration
 public class LoadBalancingPredicatesRibbonConfig {
+    @Value("${instance.metadata.apiml.lb.cacheRecordExpirationTimeInHours:8}")
+    private int expirationTime;
 
     @Bean
-    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.instanceIdHeader", havingValue = "enabled")
+    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.type", havingValue = "headerRequest")
     public RequestAwarePredicate headerPredicate() {
         return new RequestHeaderPredicate();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "instance.metadata.apiml.lb.type", havingValue = "authentication")
+    public AuthenticationBasedPredicate authenticationBasedPredicate(AuthenticationService authenticationService, LoadBalancerCache cache) {
+        return new AuthenticationBasedPredicate(
+            new HttpAuthenticationService(authenticationService),
+            cache,
+            expirationTime
+        );
     }
 }

@@ -96,7 +96,7 @@ apiml:
                 gatewayAuthEndpoint: /api/v1/gateway/auth
                 corsEnabled: false
                 lb:
-                    instanceIdHeader: enabled
+                    type: headerRequest
 
 server:
     error:
