@@ -156,9 +156,7 @@ management:
 
 ---
 spring:
-    profiles: dev
-    profiles.include:
-        diag
+    profiles: debug
 
 logging:
     level:
@@ -169,6 +167,12 @@ logging:
         com.netflix: INFO
 
 logbackServiceName: ZWEADC1
+
+---
+spring:
+    profiles: dev
+    profiles.include:
+        diag, debug
 
 ---
 spring:
