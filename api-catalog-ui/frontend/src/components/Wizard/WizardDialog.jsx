@@ -35,6 +35,16 @@ export default class WizardDialog extends Component {
         };
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleCategoryChange = this.handleCategoryChange.bind(this);
+        this.getPrev = this.getPrev.bind(this);
+        this.getNext = this.getNext.bind(this);
+    }
+
+    getPrev() {
+        this.setState({ selectedIndex: (this.state.selectedIndex + data.length - 1) % data.length });
+    }
+
+    getNext() {
+        this.setState({ selectedIndex: (this.state.selectedIndex + 1) % data.length });
     }
 
     handleInputChange(event) {
@@ -86,15 +96,15 @@ export default class WizardDialog extends Component {
         const { wizardIsOpen } = this.props;
         return (
             <div className="dialog">
-                <Dialog isOpen={wizardIsOpen} closeOnClickOutside={false}>
+                <Dialog id="wizard-dialog" isOpen={wizardIsOpen} closeOnClickOutside={false}>
                     <DialogHeader>
                         <DialogTitle>Onboard a New API</DialogTitle>
                     </DialogHeader>
                     <DialogBody>
                         <Text>This wizard will guide you through creating a correct YAML for your application.</Text>
                         <ButtonGroup aria-label="Optional compositions">
-                            <Button>Previous</Button>
-                            <Button>Next</Button>
+                            <Button onClick={this.getPrev}>Previous</Button>
+                            <Button onClick={this.getNext}>Next</Button>
                             <Select
                                 className="selector"
                                 data={data}
