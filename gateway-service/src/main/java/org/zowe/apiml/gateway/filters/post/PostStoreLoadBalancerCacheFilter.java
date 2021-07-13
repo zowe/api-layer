@@ -81,7 +81,11 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
         log.info("PostStoreLoadBalancerCacheFilter#run Current Service: {}", currentServiceId);
         Optional<String> authenticatedUser = authenticationService.getAuthenticatedUser(context.getRequest());
-        log.info("PostStoreLoadBalancerCacheFilter#run Authenticated User: {}", authenticatedUser.get());
+        if (authenticatedUser.isPresent()) {
+            log.info("PostStoreLoadBalancerCacheFilter#run Authenticated User: {}", authenticatedUser.get());
+        } else {
+            log.info("PostStoreLoadBalancerCacheFilter#run Not authenticated");
+        }
         if (authenticatedUser.isPresent() && !instanceIsCached(authenticatedUser.get(), currentServiceId)) {
             // Dont store instance info when failed.
             if (context.get("throwable") != null) {
