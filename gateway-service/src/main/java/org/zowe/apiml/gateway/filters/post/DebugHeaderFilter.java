@@ -53,8 +53,13 @@ public class DebugHeaderFilter extends ZuulFilter {
         log.debug("Filter Execution Summary: " + reqInfo);
         log.debug("RoutingDebug: " + debug);
         log.debug("RibbonRetryDebug: " + RequestContextUtils.getDebugInfo());
+
+        String debugInfo = Debug.getRoutingDebug().stream().collect(Collectors.joining("|"));
+        log.debug("Debug Info Size: {}", debugInfo.length());
+        log.debug("RibbonRetryDebug: {}", RequestContextUtils.getDebugInfo().length());
+
         RequestContext.getCurrentContext().addZuulResponseHeader(
-            "ZuulFilterDebug", Debug.getRoutingDebug().stream().collect(Collectors.joining("|")));
+            "ZuulFilterDebug", debugInfo);
         RequestContext.getCurrentContext().addZuulResponseHeader(
             "RibbonRetryDebug", RequestContextUtils.getDebugInfo());
         return null;
