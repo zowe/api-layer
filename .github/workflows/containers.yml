@@ -539,6 +539,7 @@ jobs:
                 env:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
                     CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@localhost:6379'
+                    CACHING_STORAGE_REDIS_SSL_ENABLED: false
                     VERIFY_CERTIFICATES: false
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
