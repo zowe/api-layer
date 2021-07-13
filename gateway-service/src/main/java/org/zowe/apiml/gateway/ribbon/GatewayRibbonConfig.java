@@ -112,19 +112,4 @@ public class GatewayRibbonConfig {
             serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
 
-    /**
-     * Factory for load balancer predicates
-     *
-     * Takes in {@link LoadBalancingPredicatesRibbonConfig} which specifies the composition of load
-     * balancer predicates.
-     *
-     * This is static now, but in the future can be wired in as a bean to allow broader extensibility
-     *
-     */
-    @Bean
-    public ConfigurableNamedContextFactory<NamedContextFactory.Specification> predicateFactory() {
-        return new ConfigurableNamedContextFactory<>(LoadBalancingPredicatesRibbonConfig.class, "contextConfiguration",
-            LoadBalancerConstants.INSTANCE_KEY + LoadBalancerConstants.SERVICEID_KEY);
-    }
-
 }
