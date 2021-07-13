@@ -23,7 +23,7 @@ spring:
         ansi:
             enabled: always
     profiles:
-        include: diag
+        include: diag, debug
 
 server:
     address: ${apiml.service.hostname}
