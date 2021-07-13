@@ -55,21 +55,21 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
     @Override
     @SuppressWarnings("squid:S3516") // We always have to return null
     public Object run() {
-        log.info("PostStoreLoadBalancerCacheFilter#run");
+        log.debug("PostStoreLoadBalancerCacheFilter#run");
         Optional<InstanceInfo> instance = RequestContextUtils.getInstanceInfo();
         if (!instance.isPresent()) {
-            log.info("PostStoreLoadBalancerCacheFilter#run No instance is present");
+            log.debug("PostStoreLoadBalancerCacheFilter#run No instance is present");
             return null;
         }
 
         InstanceInfo selectedInstance = instance.get();
         Map<String, String> metadata = selectedInstance.getMetadata();
         if (metadata == null) {
-            log.info("PostStoreLoadBalancerCacheFilter#run No metadata for the instance");
+            log.debug("PostStoreLoadBalancerCacheFilter#run No metadata for the instance");
             return null;
         }
         String lbType = metadata.get("apiml.lb.type");
-        log.info("PostStoreLoadBalancerCacheFilter#run Load Balancing Type: {}", lbType);
+        log.debug("PostStoreLoadBalancerCacheFilter#run Load Balancing Type: {}", lbType);
         if (lbType == null
             || !lbType.equals("authentication")
             || selectedInstance.getInstanceId() == null
@@ -79,23 +79,23 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
 
         RequestContext context = RequestContext.getCurrentContext();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
-        log.info("PostStoreLoadBalancerCacheFilter#run Current Service: {}", currentServiceId);
+        log.debug("PostStoreLoadBalancerCacheFilter#run Current Service: {}", currentServiceId);
         Optional<String> authenticatedUser = authenticationService.getAuthenticatedUser(context.getRequest());
         if (authenticatedUser.isPresent()) {
-            log.info("PostStoreLoadBalancerCacheFilter#run Authenticated User: {}", authenticatedUser.get());
+            log.debug("PostStoreLoadBalancerCacheFilter#run Authenticated User: {}", authenticatedUser.get());
         } else {
-            log.info("PostStoreLoadBalancerCacheFilter#run Not authenticated");
+            log.debug("PostStoreLoadBalancerCacheFilter#run Not authenticated");
         }
         if (authenticatedUser.isPresent() && !instanceIsCached(authenticatedUser.get(), currentServiceId)) {
             // Dont store instance info when failed.
             if (context.get("throwable") != null) {
-                log.info("PostStoreLoadBalancerCacheFilter#run Throwable was part of the response");
+                log.debug("PostStoreLoadBalancerCacheFilter#run Throwable was part of the response");
                 return null;
             }
 
             // Also take into account whether it's for the first time and what do we know here.
             LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(instance.get().getInstanceId());
-            log.info("PostStoreLoadBalancerCacheFilter#run Store to the cache");
+            log.debug("PostStoreLoadBalancerCacheFilter#run Store to the cache");
             loadBalancerCache.store(authenticatedUser.get(), currentServiceId, loadBalancerCacheRecord);
         }
 
