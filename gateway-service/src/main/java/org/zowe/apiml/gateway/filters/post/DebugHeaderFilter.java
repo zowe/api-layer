@@ -59,7 +59,7 @@ public class DebugHeaderFilter extends ZuulFilter {
         log.debug("RibbonRetryDebug: {}", RequestContextUtils.getDebugInfo().length());
 
         RequestContext.getCurrentContext().addZuulResponseHeader(
-            "ZuulFilterDebug", debugInfo);
+            "ZuulFilterDebug", debugInfo.substring(0, 4096));
         RequestContext.getCurrentContext().addZuulResponseHeader(
             "RibbonRetryDebug", RequestContextUtils.getDebugInfo());
         return null;
