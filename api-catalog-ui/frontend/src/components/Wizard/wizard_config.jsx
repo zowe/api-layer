@@ -12,8 +12,8 @@ export const data = [
     {
         text: 'URL',
         content: {
-            homePageRelativeUrl: '',
-            statusPageRelativeUrl: '',
+            homePageRelativeUrl: '/home',
+            statusPageRelativeUrl: './',
             healthCheckRelativeUrl: '',
         },
     },
