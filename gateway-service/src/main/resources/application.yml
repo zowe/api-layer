@@ -239,6 +239,7 @@ logging:
     level:
         ROOT: INFO
         org.zowe.apiml: DEBUG
+        org.zowe.apiml.gateway.routing.NewApimlRouteLocator: INFO
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: INFO
