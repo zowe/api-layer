@@ -642,37 +642,27 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-                volumes:
-                    - /$(pwd)/docker:/var/log/api-layer
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-                volumes:
-                    - /$(pwd)/docker:/var/log/api-layer
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-                volumes:
-                    - /$(pwd)/docker:/var/log/api-layer
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                volumes:
-                    - /$(pwd)/docker:/var/log/api-layer
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                volumes:
-                    - /$(pwd)/docker:/var/log/api-layer
         steps:
             -   uses: actions/checkout@v2
                 with:
@@ -700,15 +690,6 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-            -   name: Setup Docker
-                run: |
-                    apt update
-                    apt install -y apt-transport-https ca-certificates curl software-properties-common
-                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-                    apt update
-                    apt-cache policy docker-ce
-                    apt install -y docker-ce
 
             -   name: Run HA Tests
                 run: >
@@ -717,12 +698,6 @@ jobs:
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Get Container Logs
-                if: always()
-                run: |
-                    docker ps -a
-                    docker ps -q | xargs -L 1 docker logs
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -730,7 +705,6 @@ jobs:
                     name: CITestsHA
                     path: |
                         integration-tests/build/reports/**
-                        docker/*.log
             -   name: Cleanup Gradle Cache
                 run: |
                     rm -f ~/.gradle/caches/modules-2/modules-2.lock
