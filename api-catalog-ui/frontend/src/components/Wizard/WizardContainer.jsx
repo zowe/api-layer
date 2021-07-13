@@ -14,6 +14,7 @@ import { wizardToggleDisplay } from '../../actions/wizard-actions';
 
 const mapStateToProps = state => ({
     wizardIsOpen: state.wizardReducer.wizardIsOpen,
+    inputData: state.wizardReducer.inputData,
 });
 
 const mapDispatchToProps = {

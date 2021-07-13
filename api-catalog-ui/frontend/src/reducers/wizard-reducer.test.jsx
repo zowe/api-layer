@@ -10,13 +10,13 @@
 
 /* eslint-disable no-undef */
 
-
 import { TOGGLE_DISPLAY } from '../constants/wizard-constants';
 import wizardReducer from './wizard-reducer';
+import { data } from '../components/Wizard/wizard_config';
 
 describe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
-        expect(wizardReducer()).toEqual({ wizardIsOpen: false });
+        expect(wizardReducer()).toEqual({ wizardIsOpen: false, inputData: data });
     });
 
     it('should handle TOGGLE_DISPLAY true -> false', () => {

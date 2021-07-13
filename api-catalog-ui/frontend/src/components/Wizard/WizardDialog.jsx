@@ -76,7 +76,12 @@ export default class WizardDialog extends Component {
 
     loadInputs = () => {
         const dataAsObject = this.state.inputData[this.state.selectedIndex];
-        if (dataAsObject.content === undefined || Object.entries(dataAsObject.content).length === 0) return '';
+        if (
+            dataAsObject.content === undefined ||
+            dataAsObject.content === null ||
+            Object.entries(dataAsObject.content).length === 0
+        )
+            return '';
         const selectedData = Object.entries(dataAsObject.content);
         let key = 0;
         return selectedData.map(item => {
