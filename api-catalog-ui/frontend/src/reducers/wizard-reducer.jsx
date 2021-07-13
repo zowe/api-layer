@@ -9,9 +9,11 @@
  */
 
 import { TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { data } from '../components/Wizard/wizard_config';
 
 const wizardReducerDefaultState = {
     wizardIsOpen: false,
+    inputData: data,
 };
 
 const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {

@@ -10,7 +10,6 @@
 
 import React, { Component } from 'react';
 import TextInput from 'mineral-ui/TextInput';
-import * as log from 'loglevel';
 import ButtonGroup from 'mineral-ui/ButtonGroup';
 import {
     Dialog,
@@ -24,14 +23,13 @@ import {
     Select,
 } from 'mineral-ui';
 import './wizard.css';
-import { data } from '../../constants/wizard-constants';
 
 export default class WizardDialog extends Component {
     constructor(props) {
         super(props);
         this.state = {
             selectedIndex: 0,
-            inputData: [...data],
+            inputData: props.inputData,
         };
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleCategoryChange = this.handleCategoryChange.bind(this);
@@ -40,11 +38,15 @@ export default class WizardDialog extends Component {
     }
 
     getPrev() {
-        this.setState({ selectedIndex: (this.state.selectedIndex + data.length - 1) % data.length });
+        const index = this.state.selectedIndex;
+        const len = this.state.inputData.length;
+        this.setState({ selectedIndex: (index + len - 1) % len });
     }
 
     getNext() {
-        this.setState({ selectedIndex: (this.state.selectedIndex + 1) % data.length });
+        const index = this.state.selectedIndex;
+        const len = this.state.inputData.length;
+        this.setState({ selectedIndex: (index + 1) % len });
     }
 
     handleInputChange(event) {
@@ -59,8 +61,8 @@ export default class WizardDialog extends Component {
     }
 
     handleCategoryChange(event) {
-        for (let i = 0; i < data.length; i += 1) {
-            if (data[i].text === event.text) {
+        for (let i = 0; i < this.state.inputData.length; i += 1) {
+            if (this.state.inputData[i].text === event.text) {
                 this.setState({ selectedIndex: i });
                 break;
             }
@@ -107,7 +109,7 @@ export default class WizardDialog extends Component {
                             <Button onClick={this.getNext}>Next</Button>
                             <Select
                                 className="selector"
-                                data={data}
+                                data={this.state.inputData}
                                 selectedItem={this.state.inputData[this.state.selectedIndex]}
                                 onChange={this.handleCategoryChange}
                             />
@@ -119,12 +121,7 @@ export default class WizardDialog extends Component {
                             <Button size="medium" onClick={this.closeWizard}>
                                 Cancel
                             </Button>
-                            <Button
-                                size="medium"
-                                onClick={() => log.error(this.state.inputData[this.state.selectedIndex])}
-                            >
-                                Save file
-                            </Button>
+                            <Button size="medium">Save file</Button>
                         </DialogActions>
                     </DialogFooter>
                 </Dialog>
