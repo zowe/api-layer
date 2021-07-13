@@ -17,8 +17,11 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.filters.post.*;
 import org.zowe.apiml.gateway.filters.pre.*;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
 import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
@@ -107,6 +110,12 @@ public class ApimlRoutingConfig {
     @ConditionalOnProperty(name = "apiml.routing.instanceIdHeader", havingValue = "true")
     public RoutedInstanceIdFilter routedServerFilter() {
         return new RoutedInstanceIdFilter();
+    }
+
+    @Bean
+    public PostStoreLoadBalancerCacheFilter postStoreLoadBalancerCacheFilter(AuthenticationService authenticationService,
+                                                                             LoadBalancerCache cache) {
+        return new PostStoreLoadBalancerCacheFilter(new HttpAuthenticationService(authenticationService), cache);
     }
 
 }
