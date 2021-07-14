@@ -75,6 +75,53 @@ describe('>>> WizardDialog tests', () => {
         expect(wrapper.find('TextInput').length).toEqual(0);
     });
 
+    it('should change value in component\'s state on keystroke', () => {
+        const dummyData = [
+            {
+                text: 'Basic info',
+                content: {
+                    testInput: 'input',
+                },
+            },
+        ];
+        const expectedData = [
+            {
+                text: 'Basic info',
+                content: {
+                    testInput: 'test',
+                },
+            },
+        ];
+        const wrapper = enzyme.shallow(
+            <WizardDialog wizardToggleDisplay={jest.fn()} inputData={dummyData} wizardIsOpen />
+        );
+        wrapper.find('TextInput').first().simulate('change', { target: { name: 'testInput', value: 'test' } });
+        expect(wrapper.state()['inputData']).toEqual(expectedData);
+    });
+
+    it('should change categories', () => {
+        const dummyData = [
+            {
+                text: 'Category #1',
+                content: {
+                    testInput: 'test1',
+                },
+            },
+            {
+                text: 'Category #2',
+                content: {
+                    testInput2: 'test2',
+                },
+            },
+        ];
+        const wrapper = enzyme.shallow(
+            <WizardDialog wizardToggleDisplay={jest.fn()} inputData={dummyData} wizardIsOpen />
+        );
+        wrapper.setState({selectedIndex: 0});
+        wrapper.find('Select').first().simulate('change', { text: 'Category #2' } );
+        expect(wrapper.state().selectedIndex).toEqual(1);
+    });
+
     it('should close dialog on cancel', () => {
         const wizardToggleDisplay = jest.fn();
         const wrapper = enzyme.shallow(
@@ -85,6 +132,7 @@ describe('>>> WizardDialog tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
+                inputData={data}
             />
         );
         const instance = wrapper.instance();
@@ -92,4 +140,43 @@ describe('>>> WizardDialog tests', () => {
         expect(wizardToggleDisplay).toHaveBeenCalled();
     });
 
+    it('should get previous category', () => {
+        const prevIndex = jest.fn();
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                prevIndex={prevIndex}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                inputData={data}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.setState({ selectedIndex: 0 });
+        const len = data.length;
+        instance.getPrev();
+        expect(wrapper.state().selectedIndex).toEqual(len - 1);
+    });
+
+    it('should get next category', () => {
+        const nextIndex = jest.fn();
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                nextIndex={nextIndex}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                inputData={data}
+            />
+        );
+        const instance = wrapper.instance();
+        const len = data.length;
+        instance.setState({ selectedIndex: len - 1 });
+        instance.getNext();
+        expect(wrapper.state().selectedIndex).toEqual(0);
+    });
 });
