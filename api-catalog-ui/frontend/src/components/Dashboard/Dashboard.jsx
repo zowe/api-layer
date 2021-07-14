@@ -10,6 +10,13 @@ import ErrorDialog from '../Error/ErrorDialog';
 import WizardContainer from '../Wizard/WizardContainer';
 
 export default class Dashboard extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            WIP: true,
+        };
+    }
+
     componentDidMount() {
         const { fetchTilesStart, clearService } = this.props;
         clearService();
@@ -55,14 +62,13 @@ export default class Dashboard extends Component {
             fetchTilesStop();
             error = formatError(fetchTilesError);
         }
-        const WIP = true;
 
         return (
             <div>
                 <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
                     Refresh Static APIs
                 </Button>
-                {WIP ? (
+                {this.state.WIP ? (
                     ''
                 ) : (
                     <Button id="wizard-YAML-button" size="medium" onClick={this.toggleWizard}>

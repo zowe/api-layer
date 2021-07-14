@@ -29,7 +29,7 @@ describe('>>> Dashboard component tests', () => {
         expect(button.length).toEqual(1);
     });
 
-    it('should not have "Onboard New API" button', () => {
+    it('should (not) have "Onboard New API" button', () => {
         const wrapper = shallow(
             <Dashboard
                 tiles={null}
@@ -40,7 +40,10 @@ describe('>>> Dashboard component tests', () => {
             />
         );
         let button = wrapper.find('#wizard-YAML-button');
-        expect(button.length).toEqual(0);
+        let len;
+        if (wrapper.state().WIP) len = 0;
+        else len = 1;
+        expect(button.length).toEqual(len);
     });
 
     it('should display no results if search fails', () => {
