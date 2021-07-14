@@ -20,14 +20,28 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
 
-@RequiredArgsConstructor
+// TODO refactor this separately, out of Gateway?
 public class CachingServiceClient {
 
     private final RestTemplate restTemplate;
+    private final String gatewayProtocolHostPort;
+    private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache";
+
+    public CachingServiceClient(RestTemplate restTemplate, String gatewayProtocolHostPort) {
+        if (gatewayProtocolHostPort == null || gatewayProtocolHostPort.isEmpty()) {
+            throw new IllegalStateException("gatewayProtocolHostPort has to have value in format <protocol>://<host>:<port> and not be null");
+        }
+        if (restTemplate == null) {
+            throw new IllegalStateException("RestTemplate instance cannot be null");
+        }
+        this.restTemplate = restTemplate;
+        this.gatewayProtocolHostPort = gatewayProtocolHostPort;
+
+    }
 
     public void create(KeyValue kv) throws CachingServiceClientException {
         try {
-            ResponseEntity<String> response = restTemplate.exchange("https://localhost:10010/cachingservice/api/v1/cache", HttpMethod.POST, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
+            ResponseEntity<String> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.POST, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
         }
@@ -35,7 +49,7 @@ public class CachingServiceClient {
 
     public KeyValue read(String key) throws CachingServiceClientException {
         try {
-            ResponseEntity<KeyValue> response = response = restTemplate.exchange("https://localhost:10010/cachingservice/api/v1/cache" + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, new HttpHeaders()), KeyValue.class);
+            ResponseEntity<KeyValue> response = response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, new HttpHeaders()), KeyValue.class);
             if (response != null && response.hasBody()) {
                 return response.getBody();
             } else {
@@ -48,7 +62,7 @@ public class CachingServiceClient {
 
     public void update(KeyValue kv) throws CachingServiceClientException {
         try {
-            ResponseEntity<String> response = restTemplate.exchange("https://localhost:10010/cachingservice/api/v1/cache", HttpMethod.PUT, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
+            ResponseEntity<String> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.PUT, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to update keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
         }
@@ -56,7 +70,7 @@ public class CachingServiceClient {
 
     public void delete(String key) throws CachingServiceClientException {
         try {
-            ResponseEntity<String> response = restTemplate.exchange("https://localhost:10010/cachingservice/api/v1/cache" + "/" + key, HttpMethod.DELETE, new HttpEntity<KeyValue>(null, new HttpHeaders()), String.class);
+            ResponseEntity<String> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key, HttpMethod.DELETE, new HttpEntity<KeyValue>(null, new HttpHeaders()), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to delete key: " + key + ", caused by: " + e.getMessage(), e);
         }

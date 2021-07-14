@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-// TODO refactor this separately, out of Gateway?
 class CachingServiceClientTest {
     CachingServiceClient underTest;
     RestTemplate restTemplate = mock(RestTemplate.class);
@@ -29,7 +28,7 @@ class CachingServiceClientTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CachingServiceClient(restTemplate);
+        underTest = new CachingServiceClient(restTemplate, "https://localhost:10010");
     }
 
     @Nested
