@@ -61,7 +61,7 @@ class CachingServiceClientTest {
         @Test
         void updateWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
-            assertThrows(CachingServiceClient.CachingServiceClientException.class,() -> underTest.create(new CachingServiceClient.KeyValue("Britney", "Spears")));
+            assertThrows(CachingServiceClient.CachingServiceClientException.class,() -> underTest.update(new CachingServiceClient.KeyValue("Britney", "Spears")));
         }
     }
 
@@ -106,9 +106,9 @@ class CachingServiceClientTest {
         }
 
         @Test
-        void updateWithExceptionFromRestTemplateThrowsDefined() {
+        void deleteWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
-            assertThrows(CachingServiceClient.CachingServiceClientException.class,() -> underTest.create(new CachingServiceClient.KeyValue("Britney", "Spears")));
+            assertThrows(CachingServiceClient.CachingServiceClientException.class,() -> underTest.delete(keyToDelete));
         }
     }
 

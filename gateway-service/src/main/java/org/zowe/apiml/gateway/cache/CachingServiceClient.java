@@ -46,14 +46,20 @@ public class CachingServiceClient {
         }
     }
 
-    public ResponseEntity<String> update(KeyValue kv) {
-        ResponseEntity<String> response = restTemplate.exchange("https://localhost:10010/cachingservice/api/v1/cache", HttpMethod.PUT, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
-        return response;
+    public void update(KeyValue kv) throws CachingServiceClientException {
+        try {
+            ResponseEntity<String> response = restTemplate.exchange("https://localhost:10010/cachingservice/api/v1/cache", HttpMethod.PUT, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
+        } catch (RestClientException e) {
+            throw new CachingServiceClientException("Unable to update keyValue: " + kv.toString() + ", caused by: " + e.getMessage(), e);
+        }
     }
 
-    public ResponseEntity<String> delete(String key) {
-        ResponseEntity<String> response = restTemplate.exchange("https://localhost:10010/cachingservice/api/v1/cache" + "/" + key, HttpMethod.DELETE, new HttpEntity<KeyValue>(null, new HttpHeaders()), String.class);
-        return response;
+    public void delete(String key) throws CachingServiceClientException {
+        try {
+            ResponseEntity<String> response = restTemplate.exchange("https://localhost:10010/cachingservice/api/v1/cache" + "/" + key, HttpMethod.DELETE, new HttpEntity<KeyValue>(null, new HttpHeaders()), String.class);
+        } catch (RestClientException e) {
+            throw new CachingServiceClientException("Unable to delete key: " + key + ", caused by: " + e.getMessage(), e);
+        }
     }
 
     /**
