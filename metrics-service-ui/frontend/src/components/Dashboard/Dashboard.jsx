@@ -25,9 +25,7 @@ export default function Dashboard() {
             console.log(res.data);
         });
         setTimeout(() => {
-            window.addStreams(
-                'https://localhost:10010/api/v1/metrics-service/turbine.stream?cluster=DISCOVERABLECLIENT'
-            );
+            window.addStreams('https://localhost:10019/metrics-service/turbine.stream?cluster=DISCOVERABLECLIENT');
         }, 0);
     }, []);
     return (
