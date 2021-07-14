@@ -55,15 +55,20 @@ export default class Dashboard extends Component {
             fetchTilesStop();
             error = formatError(fetchTilesError);
         }
+        const WIP = true;
 
         return (
             <div>
                 <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
                     Refresh Static APIs
                 </Button>
-                <Button id="wizard-YAML-button" size="medium" onClick={this.toggleWizard}>
-                    Onboard New API
-                </Button>
+                {WIP ? (
+                    ''
+                ) : (
+                    <Button id="wizard-YAML-button" size="medium" onClick={this.toggleWizard}>
+                        Onboard New API
+                    </Button>
+                )}
                 <WizardContainer />
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
