@@ -22,4 +22,22 @@ describe('>>> WizardDialog tests', () => {
         );
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
     });
+
+    it('should close dialog on cancel', () => {
+        const wizardToggleDisplay = jest.fn();
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                wizardToggleDisplay={wizardToggleDisplay}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.closeWizard();
+        expect(wizardToggleDisplay).toHaveBeenCalled();
+    });
+
 });

@@ -119,6 +119,23 @@ describe('>>> Dashboard component tests', () => {
         expect(filterText).toHaveBeenCalled();
     });
 
+    it('should refresh static APIs on button click', () => {
+        const refreshedStaticApi = jest.fn();
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                refreshedStaticApi={refreshedStaticApi}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.refreshStaticApis();
+        expect(refreshedStaticApi).toHaveBeenCalled();
+    });
+
     it('should toggle display on button click', () => {
         const wizardToggleDisplay = jest.fn();
         const wrapper = shallow(
