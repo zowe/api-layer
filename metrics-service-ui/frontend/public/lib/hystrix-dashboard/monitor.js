@@ -58,7 +58,7 @@ function addStreams(proxyStream) {
         }
 
         // start the EventSource which will open a streaming connection to the server
-        var source = new EventSource(proxyStream, { withCredentials: true });
+        var source = new EventSource(proxyStream);
 
         // add the listener that will process incoming events
         source.addEventListener('message', hystrixMonitor.eventSourceMessageListener, false);
