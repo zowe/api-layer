@@ -82,7 +82,7 @@ class RedisConfigurationTest {
         @BeforeEach
         void useSentinel() {
             sentinelConfig = mock(RedisConfig.Sentinel.class);
-            when(sentinelConfig.getMaster()).thenReturn(MASTER);
+            when(sentinelConfig.getMasterInstance()).thenReturn(MASTER);
 
             when(redisConfig.usesSentinel()).thenReturn(true);
             when(redisConfig.getSentinel()).thenReturn(sentinelConfig);
@@ -103,14 +103,15 @@ class RedisConfigurationTest {
             String password1 = "password1";
             String password2 = "password2";
 
-            RedisConfig.Sentinel.SentinelNode node1 = new RedisConfig.Sentinel.SentinelNode();
-            node1.setHost(ip1);
-            node1.setPort(port1);
-            node1.setPassword(password1);
-            RedisConfig.Sentinel.SentinelNode node2 = new RedisConfig.Sentinel.SentinelNode();
-            node2.setHost(ip2);
-            node2.setPort(port2);
-            node2.setPassword(password2);
+            RedisConfig.Sentinel.SentinelNode node1 = mock(RedisConfig.Sentinel.SentinelNode.class);
+            when(node1.getHost()).thenReturn(ip1);
+            when(node1.getPort()).thenReturn(port1);
+            when(node1.getPassword()).thenReturn(password1);
+
+            RedisConfig.Sentinel.SentinelNode node2 = mock(RedisConfig.Sentinel.SentinelNode.class);
+            when(node2.getHost()).thenReturn(ip2);
+            when(node2.getPort()).thenReturn(port2);
+            when(node2.getPassword()).thenReturn(password2);
 
             List<RedisConfig.Sentinel.SentinelNode> nodesList = new ArrayList<>();
             nodesList.add(node1);
