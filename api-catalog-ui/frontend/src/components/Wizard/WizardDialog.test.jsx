@@ -19,22 +19,34 @@ describe('>>> WizardDialog tests', () => {
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
     });
 
-    xit('should create 4 inputs based on data', () => {
+    it('should create 4 inputs based on data', () => {
         const dummyData = [
             {
                 text: 'Dummy Data',
                 content: {
-                    test: '',
-                    test2: '',
-                    test3: '',
-                    test4: '',
+                    test: {
+                        value: '',
+                        question: '',
+                    },
+                    test2: {
+                        value: '',
+                        question: '',
+                    },
+                    test3: {
+                        value: '',
+                        question: '',
+                    },
+                    test4: {
+                        value: '',
+                        question: '',
+                    },
                 },
             },
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog wizardToggleDisplay={jest.fn()} inputData={dummyData} wizardIsOpen />
         );
-        expect(wrapper.find('TextInput').length).toEqual(4);
+        expect(wrapper.find('FormField').length).toEqual(4);
     });
 
     it('should create 0 inputs if content is an empty object', () => {
@@ -75,12 +87,15 @@ describe('>>> WizardDialog tests', () => {
         expect(wrapper.find('TextInput').length).toEqual(0);
     });
 
-    xit('should change value in component\'s state on keystroke', () => {
+    it('should change value in component\'s state on keystroke', () => {
         const dummyData = [
             {
                 text: 'Basic info',
                 content: {
-                    testInput: 'input',
+                    testInput: {
+                        value: 'input',
+                        question: '',
+                    },
                 },
             },
         ];
@@ -88,14 +103,17 @@ describe('>>> WizardDialog tests', () => {
             {
                 text: 'Basic info',
                 content: {
-                    testInput: 'test',
+                    testInput: {
+                        value: 'test',
+                        question: '',
+                    },
                 },
             },
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog wizardToggleDisplay={jest.fn()} inputData={dummyData} wizardIsOpen />
         );
-        wrapper.find('TextInput').first().simulate('change', { target: { name: 'testInput', value: 'test' } });
+        wrapper.find('FormField').first().simulate('change', { target: { name: 'testInput', value: 'test'} });
         expect(wrapper.state()['inputData']).toEqual(expectedData);
     });
 
