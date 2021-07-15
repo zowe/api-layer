@@ -17,6 +17,7 @@ import authenticationReducer from './authentication-reducer';
 import selectedServiceReducer from './selected-service-reducer';
 import refreshStaticApisReducer from './refresh-static-apis-reducer';
 import serviceVersionDiff from './service-version-diff-reducer';
+import wizardReducer from './wizard-reducer';
 
 const reducers = {
     filtersReducer,
@@ -27,6 +28,7 @@ const reducers = {
     selectedServiceReducer,
     refreshStaticApisReducer,
     serviceVersionDiff,
+    wizardReducer,
 };
 
 // eslint-disable-next-line import/prefer-default-export
