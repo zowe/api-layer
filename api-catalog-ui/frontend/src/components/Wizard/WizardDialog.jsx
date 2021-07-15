@@ -51,12 +51,13 @@ export default class WizardDialog extends Component {
     }
 
     handleInputChange(event) {
-        const { name } = event.target;
+        const { name, value } = event.target;
         const inputData = [...this.state.inputData];
         const objectToChange = inputData[this.state.selectedIndex];
+        const { question } = objectToChange.content[name];
         inputData[this.state.selectedIndex] = {
             ...objectToChange,
-            content: { ...objectToChange.content, [name]: event.target.value },
+            content: { ...objectToChange.content, [name]: { value, question } },
         };
         this.setState({ inputData });
     }
@@ -87,17 +88,20 @@ export default class WizardDialog extends Component {
         let key = 0;
         return selectedData.map(item => {
             key += 1;
+            let { question } = dataAsObject.content[item[0]];
+            if (question === undefined) {
+                question = '';
+            }
             return (
-                <div className="entry">
+                <div className="entry" key={key}>
                     <FormField
                         input={TextInput}
                         size="large"
                         name={item[0]}
                         onChange={this.handleInputChange}
-                        key={key}
                         placeholder={item[0]}
                         value={dataAsObject.content[item[0]].value}
-                        label={dataAsObject.content[item[0]].question}
+                        label={question}
                     />
                 </div>
             );
