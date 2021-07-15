@@ -12,8 +12,8 @@
     border-top: none;
 }
 
-.wizardForm *{
-    margin-top: 5px;
+.wizardForm .entry{
+    margin-top: 12px;
 }
 
 .selector{
