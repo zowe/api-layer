@@ -21,6 +21,7 @@ import {
     Button,
     Text,
     Select,
+    FormField,
 } from 'mineral-ui';
 import './wizard.css';
 
@@ -87,14 +88,18 @@ export default class WizardDialog extends Component {
         return selectedData.map(item => {
             key += 1;
             return (
-                <TextInput
-                    size="large"
-                    name={item[0]}
-                    onChange={this.handleInputChange}
-                    key={key}
-                    placeholder={item[0]}
-                    value={dataAsObject.content[item[0]]}
-                />
+                <div className="entry">
+                    <FormField
+                        input={TextInput}
+                        size="large"
+                        name={item[0]}
+                        onChange={this.handleInputChange}
+                        key={key}
+                        placeholder={item[0]}
+                        value={dataAsObject.content[item[0]].value}
+                        label={dataAsObject.content[item[0]].question}
+                    />
+                </div>
             );
         });
     };
