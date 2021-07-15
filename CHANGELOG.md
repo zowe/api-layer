@@ -15,8 +15,6 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Improve redis configuration for users (#1589) ([b1f7088](https://github.com/zowe/api-layer/commit/b1f7088)), closes [#1589](https://github.com/zowe/api-layer/issues/1589)
 * Bugfix:  Properly display API Catalog status on Gateway homepage (#1581) ([b8dd9cd](https://github.com/zowe/api-layer/commit/b8dd9cd)), closes [#1581](https://github.com/zowe/api-layer/issues/1581)
 * Bugfix:  change order of authentication filters on Login endpoint (#1526) ([3b93e9b](https://github.com/zowe/api-layer/commit/3b93e9b)), closes [#1526](https://github.com/zowe/api-layer/issues/1526)
-* Bugfix:  integration tests fails  (#1525) ([d839480](https://github.com/zowe/api-layer/commit/d839480)), closes [#1525](https://github.com/zowe/api-layer/issues/1525)
-* Bugfix:  key cache on commit hash (#1529) ([d5bd200](https://github.com/zowe/api-layer/commit/d5bd200)), closes [#1529](https://github.com/zowe/api-layer/issues/1529)
 * Bugfix:  wrong using of certificates in ZAAS client (#1514) ([964c4fa](https://github.com/zowe/api-layer/commit/964c4fa)), closes [#1514](https://github.com/zowe/api-layer/issues/1514)
 
 ## `1.22.0 (2021-06-14)`
