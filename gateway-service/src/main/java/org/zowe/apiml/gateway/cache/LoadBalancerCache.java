@@ -9,6 +9,9 @@
  */
 package org.zowe.apiml.gateway.cache;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Getter;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 
@@ -21,10 +24,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Getter
 public class LoadBalancerCache {
-    private final Map<String, LoadBalancerCacheRecord> cache;
+    private final Map<String, LoadBalancerCacheRecord> localCache;
+    private final CachingServiceClient remoteCache;
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    public LoadBalancerCache() {
-        cache = new ConcurrentHashMap<>();
+    public LoadBalancerCache(CachingServiceClient cachingServiceClient) {
+        this.remoteCache = cachingServiceClient;
+        localCache = new ConcurrentHashMap<>();
+        mapper.registerModule(new JavaTimeModule());
     }
 
     /**
@@ -37,7 +44,14 @@ public class LoadBalancerCache {
      */
     public synchronized boolean store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
         try {
-            cache.put(getKey(user, service), loadBalancerCacheRecord);
+            if (remoteCache != null) {
+                try {
+                    remoteCache.create(new CachingServiceClient.KeyValue(getKey(user, service), loadBalancerCacheRecord.toString()));
+                } catch (CachingServiceClient.CachingServiceClientException e) {
+                    // TODO what are the rules for this case?
+                }
+            }
+            localCache.put(getKey(user, service), loadBalancerCacheRecord);
             return true;
         } catch (UnsupportedOperationException | ClassCastException | IllegalArgumentException e) {
             return false;
@@ -52,7 +66,17 @@ public class LoadBalancerCache {
      * @return Retrieved record containing the instance to use for this user and its creation time.
      */
     public synchronized LoadBalancerCacheRecord retrieve(String user, String service) {
-        return cache.get(getKey(user, service));
+        if (remoteCache != null) {
+            try {
+                CachingServiceClient.KeyValue kv = remoteCache.read(getKey(user, service));
+                if (kv != null) {
+                    return mapper.readValue(kv.getValue(), LoadBalancerCacheRecord.class);
+                }
+            } catch (CachingServiceClient.CachingServiceClientException | JsonProcessingException e) {
+                // TODO what are the rules for this case?
+            }
+        }
+        return localCache.get(getKey(user, service));
     }
 
     /**
@@ -62,7 +86,14 @@ public class LoadBalancerCache {
      * @param service Service towards which is the user routed
      */
     public synchronized void delete(String user, String service) {
-        cache.remove(getKey(user, service));
+        if (remoteCache != null) {
+            try {
+                remoteCache.delete(getKey(user, service));
+            } catch (CachingServiceClient.CachingServiceClientException e) {
+                // TODO what are the rules for this case?
+            }
+        }
+        localCache.remove(getKey(user, service));
     }
 
     private String getKey(String user, String service) {

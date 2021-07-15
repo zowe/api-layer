@@ -18,8 +18,6 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
-
 // TODO refactor this separately, out of Gateway?
 public class CachingServiceClient {
 
@@ -85,26 +83,11 @@ public class CachingServiceClient {
     static class KeyValue {
         private final String key;
         private final String value;
-        private String serviceId;
-        private final String created;
-
-        public KeyValue(String key, String value) {
-            this.key = key;
-            this.value = value;
-            this.serviceId = "";
-            this.created = currentTime();
-        }
-
-        private static String currentTime() {
-            return String.valueOf(new Date().getTime());
-        }
 
         @JsonCreator
         public KeyValue() {
             key = "";
             value = "";
-            serviceId = "";
-            created = currentTime();
         }
     }
 

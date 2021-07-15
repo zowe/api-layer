@@ -19,7 +19,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
-import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.util.CacheUtils;
 
 import javax.annotation.PostConstruct;
@@ -77,8 +76,4 @@ public class CacheConfig {
         return new CacheUtils();
     }
 
-    @Bean
-    public LoadBalancerCache loadBalancerCache() {
-        return new LoadBalancerCache();
-    }
 }
