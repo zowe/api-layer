@@ -17,10 +17,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
-//TODO give this a name
 @Configuration
 @RequiredArgsConstructor
-public class Been {
+public class LoadBalancerCacheBeansConfig {
 
     private final GatewayConfigProperties gatewayConfigProperties;
 
