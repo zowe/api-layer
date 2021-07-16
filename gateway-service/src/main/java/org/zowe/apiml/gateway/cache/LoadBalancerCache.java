@@ -22,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Cache for storing Load Balancer related information. The initial goal was to support user based instance load
  * balancing
+ *
+ * Supports optional CachingServiceClient inject through constructor, which gives acts as remote cache. Remote cache
+ * entries have preference to local ones.
  */
 @Getter
 @Slf4j
