@@ -49,7 +49,7 @@ public class LoadBalancerCache {
      * @param loadBalancerCacheRecord  Object containing the selected instance and its creation time
      * @return True if storing succeeded, otherwise false
      */
-    public synchronized boolean store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
+    public boolean store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
         if (remoteCache != null) {
             try {
                 remoteCache.create(new CachingServiceClient.KeyValue(getKey(user, service), mapper.writeValueAsString(loadBalancerCacheRecord)));
@@ -72,7 +72,7 @@ public class LoadBalancerCache {
      * @param service Service towards which is the user routed
      * @return Retrieved record containing the instance to use for this user and its creation time.
      */
-    public synchronized LoadBalancerCacheRecord retrieve(String user, String service) {
+    public LoadBalancerCacheRecord retrieve(String user, String service) {
         if (remoteCache != null) {
             try {
                 CachingServiceClient.KeyValue kv = remoteCache.read(getKey(user, service));
@@ -98,7 +98,7 @@ public class LoadBalancerCache {
      * @param user    User being routed towards southbound service
      * @param service Service towards which is the user routed
      */
-    public synchronized void delete(String user, String service) {
+    public void delete(String user, String service) {
         if (remoteCache != null) {
             try {
                 remoteCache.delete(getKey(user, service));
