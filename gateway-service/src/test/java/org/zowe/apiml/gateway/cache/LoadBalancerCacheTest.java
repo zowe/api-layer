@@ -26,6 +26,7 @@ public class LoadBalancerCacheTest {
     {
         mapper.registerModule(new JavaTimeModule());
     }
+    String keyPrefix = LoadBalancerCache.loadBalancerKeyPrefix;
 
     @Nested
     class GivenEmptyCache {
@@ -74,15 +75,16 @@ public class LoadBalancerCacheTest {
             void storageHappensToLocalAndRemoteCache() throws CachingServiceClient.CachingServiceClientException, JsonProcessingException {
                 underTest.store("user", "serviceid", record);
                 String serializedRecord = mapper.writeValueAsString(record);
-                verify(cachingServiceClient).create(new CachingServiceClient.KeyValue("user:serviceid", serializedRecord));
-                assertThat(underTest.getLocalCache().containsKey("user:serviceid"), is(true));
+                // TODO should the keys be prefixed by loadbalancer denomination?
+                verify(cachingServiceClient).create(new CachingServiceClient.KeyValue(keyPrefix + "user:serviceid", serializedRecord));
+                assertThat(underTest.getLocalCache().containsKey(keyPrefix + "user:serviceid"), is(true));
             }
 
             @Test
             void storageFailsToRemoteCacheAndStoresLocal() throws CachingServiceClient.CachingServiceClientException {
                 doThrow(CachingServiceClient.CachingServiceClientException.class).when(cachingServiceClient).create(any());
                 underTest.store("user", "serviceid", record);
-                assertThat(underTest.getLocalCache().containsKey("user:serviceid"), is(true));
+                assertThat(underTest.getLocalCache().containsKey(keyPrefix + "user:serviceid"), is(true));
             }
         }
 
@@ -91,14 +93,14 @@ public class LoadBalancerCacheTest {
 
             @Test
             void retrievalFromRemoteHasPriority() throws CachingServiceClient.CachingServiceClientException, JsonProcessingException {
-                underTest.getLocalCache().put("user:serviceid", record);
+                underTest.getLocalCache().put(keyPrefix + "user:serviceid", record);
                 doThrow(CachingServiceClient.CachingServiceClientException.class).when(cachingServiceClient).read(any());
                 LoadBalancerCacheRecord retrievedRecord = underTest.retrieve("user", "serviceid");
                 assertThat(retrievedRecord.getInstanceId(), is("instanceid"));
 
                 LoadBalancerCacheRecord record = new LoadBalancerCacheRecord("Batman");
                 String serialzedRecord = mapper.writeValueAsString(record);
-                doReturn(new CachingServiceClient.KeyValue("user:serviceid", serialzedRecord)).when(cachingServiceClient).read("user:serviceid");
+                doReturn(new CachingServiceClient.KeyValue(keyPrefix + "user:serviceid", serialzedRecord)).when(cachingServiceClient).read(keyPrefix + "user:serviceid");
 
                 retrievedRecord = underTest.retrieve("user", "serviceid");
                 assertThat(retrievedRecord.getInstanceId(), is("Batman"));
@@ -110,9 +112,9 @@ public class LoadBalancerCacheTest {
         class Deletion {
             @Test
             void deleteRemovesAllEntriesLocalAndRemote() throws CachingServiceClient.CachingServiceClientException {
-                underTest.getLocalCache().put("user:serviceid", record);
+                underTest.getLocalCache().put(keyPrefix + "user:serviceid", record);
                 underTest.delete("user", "serviceid");
-                verify(cachingServiceClient).delete("user:serviceid");
+                verify(cachingServiceClient).delete(keyPrefix + "user:serviceid");
                 assertThat(underTest.retrieve("user", "serviceid"), is(nullValue()));
 
             }

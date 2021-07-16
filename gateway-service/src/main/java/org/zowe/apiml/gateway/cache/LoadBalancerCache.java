@@ -28,6 +28,8 @@ public class LoadBalancerCache {
     private final CachingServiceClient remoteCache;
     private final ObjectMapper mapper = new ObjectMapper();
 
+    public static final String loadBalancerKeyPrefix = "lb.";
+
     public LoadBalancerCache(CachingServiceClient cachingServiceClient) {
         this.remoteCache = cachingServiceClient;
         localCache = new ConcurrentHashMap<>();
@@ -104,6 +106,6 @@ public class LoadBalancerCache {
     }
 
     private String getKey(String user, String service) {
-        return user + ":" + service;
+        return loadBalancerKeyPrefix + user + ":" + service;
     }
 }
