@@ -12,7 +12,7 @@
    /* ==========================================================================
       Start of custom Webflow CSS
       ========================================================================== */
-   .header {
+   .login-header {
        display: -webkit-box;
        display: -webkit-flex;
        display: -ms-flexbox;
