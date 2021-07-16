@@ -10,22 +10,26 @@
 
 package org.zowe.apiml.gateway.cache;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 //TODO give this a name
 @Configuration
+@RequiredArgsConstructor
 public class Been {
 
-    //TODO find the gateway
+    private final GatewayConfigProperties gatewayConfigProperties;
+
     @Bean
     public CachingServiceClient cachingServiceClient(@Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
-        return new CachingServiceClient(restTemplate, "https://localhost:10010");
+        String gatewayUri = String.format("%s://%s", gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname());
+        return new CachingServiceClient(restTemplate, gatewayUri);
     }
 
-    //TODO loadBalancerCache is depending on configs from HttpConfig because it's using restTemplateWithKeystore.
     @Bean
     public LoadBalancerCache loadBalancerCache(CachingServiceClient cachingServiceClient) {
         return new LoadBalancerCache(cachingServiceClient);
