@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.cache;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -27,13 +28,21 @@ public class LoadBalancerCacheBeansConfig {
     private final GatewayConfigProperties gatewayConfigProperties;
 
     @Bean
+    @ConditionalOnProperty(name = "apiml.loadBalancer.distribute", havingValue = "true")
     public CachingServiceClient cachingServiceClient(@Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
         String gatewayUri = String.format("%s://%s", gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname());
         return new CachingServiceClient(restTemplate, gatewayUri);
     }
 
     @Bean
-    public LoadBalancerCache loadBalancerCache(CachingServiceClient cachingServiceClient) {
+    @ConditionalOnProperty(name = "apiml.loadBalancer.distribute", havingValue = "true")
+    public LoadBalancerCache loadBalancerCacheWithRemoteCache(CachingServiceClient cachingServiceClient) {
         return new LoadBalancerCache(cachingServiceClient);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "apiml.loadBalancer.distribute", havingValue = "false", matchIfMissing = true)
+    public LoadBalancerCache loadBalancerCacheOnlyLocalCache() {
+        return new LoadBalancerCache(null);
     }
 }

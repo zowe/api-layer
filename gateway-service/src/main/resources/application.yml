@@ -26,6 +26,8 @@ apiml:
     routing:
         mode: new
         instanceIdHeader: false
+    loadBalancer:
+        distribute: false
     service:
         # The `apiml.service` node contains information required by any APIML service
         id: gateway  # Service ID of this service. It is fixed for APIML API Gateway

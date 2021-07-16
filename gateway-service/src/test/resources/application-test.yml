@@ -19,6 +19,8 @@ apiml:
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         corsEnabled: true
+    loadBalancer:
+        distribute: false
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
