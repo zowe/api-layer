@@ -26,7 +26,7 @@ public class LoadBalancerCacheTest {
     {
         mapper.registerModule(new JavaTimeModule());
     }
-    String keyPrefix = LoadBalancerCache.loadBalancerKeyPrefix;
+    String keyPrefix = LoadBalancerCache.LOAD_BALANCER_KEY_PREFIX;
 
     @Nested
     class GivenEmptyCache {

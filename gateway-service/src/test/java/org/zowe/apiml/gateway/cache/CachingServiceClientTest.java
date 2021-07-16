@@ -38,7 +38,7 @@ class CachingServiceClientTest {
         void createWithoutProblem() {
             CachingServiceClient.KeyValue kv = new CachingServiceClient.KeyValue("Britney", "Spears");
             assertDoesNotThrow(() -> underTest.create(kv));
-            verify(restTemplate).exchange(eq(urlBase), eq(HttpMethod.POST), eq(new HttpEntity<>(kv, new HttpHeaders())), eq(String.class));
+            verify(restTemplate).exchange(urlBase, HttpMethod.POST, new HttpEntity<>(kv, new HttpHeaders()), String.class);
         }
 
         @Test
@@ -54,7 +54,7 @@ class CachingServiceClientTest {
         void updateWithoutProblem() {
             CachingServiceClient.KeyValue kv = new CachingServiceClient.KeyValue("Britney", "Speeeeers");
             assertDoesNotThrow(() -> underTest.update(kv));
-            verify(restTemplate).exchange(eq(urlBase), eq(HttpMethod.PUT), eq(new HttpEntity<>(kv, new HttpHeaders())), eq(String.class));
+            verify(restTemplate).exchange(urlBase, HttpMethod.PUT, new HttpEntity<>(kv, new HttpHeaders()), String.class);
         }
 
         @Test

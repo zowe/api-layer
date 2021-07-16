@@ -33,7 +33,7 @@ public class LoadBalancerCache {
     private final CachingServiceClient remoteCache;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public static final String loadBalancerKeyPrefix = "lb.";
+    public static final String LOAD_BALANCER_KEY_PREFIX = "lb.";
 
     public LoadBalancerCache(CachingServiceClient cachingServiceClient) {
         this.remoteCache = cachingServiceClient;
@@ -50,23 +50,19 @@ public class LoadBalancerCache {
      * @return True if storing succeeded, otherwise false
      */
     public synchronized boolean store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
-        try {
-            if (remoteCache != null) {
-                try {
-                    remoteCache.create(new CachingServiceClient.KeyValue(getKey(user, service), mapper.writeValueAsString(loadBalancerCacheRecord)));
-                    log.debug("Stored record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
-                } catch (CachingServiceClient.CachingServiceClientException e) {
-                    log.debug("Failed to store record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, e);
-                } catch (JsonProcessingException e) {
-                    log.debug("Failed to serialize record for user: {}, service: {}, record {},  with exception: {}", user, service, loadBalancerCacheRecord, e);
-                }
+        if (remoteCache != null) {
+            try {
+                remoteCache.create(new CachingServiceClient.KeyValue(getKey(user, service), mapper.writeValueAsString(loadBalancerCacheRecord)));
+                log.debug("Stored record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
+            } catch (CachingServiceClient.CachingServiceClientException e) {
+                log.debug("Failed to store record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, e);
+            } catch (JsonProcessingException e) {
+                log.debug("Failed to serialize record for user: {}, service: {}, record {},  with exception: {}", user, service, loadBalancerCacheRecord, e);
             }
-            localCache.put(getKey(user, service), loadBalancerCacheRecord);
-            log.debug("Stored record to local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
-            return true;
-        } catch (UnsupportedOperationException | ClassCastException | IllegalArgumentException e) {
-            return false;
         }
+        localCache.put(getKey(user, service), loadBalancerCacheRecord);
+        log.debug("Stored record to local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
+        return true;
     }
 
     /**
@@ -116,6 +112,6 @@ public class LoadBalancerCache {
     }
 
     private String getKey(String user, String service) {
-        return loadBalancerKeyPrefix + user + ":" + service;
+        return LOAD_BALANCER_KEY_PREFIX + user + ":" + service;
     }
 }
