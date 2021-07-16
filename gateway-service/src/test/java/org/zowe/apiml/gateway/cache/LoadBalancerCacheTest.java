@@ -71,9 +71,10 @@ public class LoadBalancerCacheTest {
         class Storage {
 
             @Test
-            void storageHappensToLocalAndRemoteCache() throws CachingServiceClient.CachingServiceClientException {
+            void storageHappensToLocalAndRemoteCache() throws CachingServiceClient.CachingServiceClientException, JsonProcessingException {
                 underTest.store("user", "serviceid", record);
-                verify(cachingServiceClient).create(new CachingServiceClient.KeyValue("user:serviceid", record.toString()));
+                String serializedRecord = mapper.writeValueAsString(record);
+                verify(cachingServiceClient).create(new CachingServiceClient.KeyValue("user:serviceid", serializedRecord));
                 assertThat(underTest.getLocalCache().containsKey("user:serviceid"), is(true));
             }
 

@@ -46,9 +46,13 @@ public class LoadBalancerCache {
         try {
             if (remoteCache != null) {
                 try {
-                    remoteCache.create(new CachingServiceClient.KeyValue(getKey(user, service), loadBalancerCacheRecord.toString()));
+                    remoteCache.create(new CachingServiceClient.KeyValue(getKey(user, service), mapper.writeValueAsString(loadBalancerCacheRecord)));
                 } catch (CachingServiceClient.CachingServiceClientException e) {
                     // TODO what are the rules for this case?
+                    // TODO Logging at least
+                    e.printStackTrace();
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
                 }
             }
             localCache.put(getKey(user, service), loadBalancerCacheRecord);
@@ -70,10 +74,12 @@ public class LoadBalancerCache {
             try {
                 CachingServiceClient.KeyValue kv = remoteCache.read(getKey(user, service));
                 if (kv != null) {
+                    //TODO not a json here, stored as String
                     return mapper.readValue(kv.getValue(), LoadBalancerCacheRecord.class);
                 }
             } catch (CachingServiceClient.CachingServiceClientException | JsonProcessingException e) {
                 // TODO what are the rules for this case?
+                e.printStackTrace();
             }
         }
         return localCache.get(getKey(user, service));
@@ -91,6 +97,7 @@ public class LoadBalancerCache {
                 remoteCache.delete(getKey(user, service));
             } catch (CachingServiceClient.CachingServiceClientException e) {
                 // TODO what are the rules for this case?
+                e.printStackTrace();
             }
         }
         localCache.remove(getKey(user, service));
