@@ -18,7 +18,15 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-// TODO refactor this separately, out of Gateway?
+
+/**
+ * Client for interaction with Caching Service
+ * Supports basic CRUD operations
+ * Assumes calling caching service through Gateway. Uses rest template with client certificate
+ * as Gateway will forward the certificates in headers to caching service, which in turn uses this
+ * as a distinguishing factor to store the keys.
+ *
+ */
 public class CachingServiceClient {
 
     private final RestTemplate restTemplate;
@@ -37,6 +45,11 @@ public class CachingServiceClient {
 
     }
 
+    /**
+     * Creates {@link KeyValue} in Caching Service.
+     * @param kv {@link KeyValue} to store
+     * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or cache conflict
+     */
     public void create(KeyValue kv) throws CachingServiceClientException {
         try {
             ResponseEntity<String> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.POST, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
@@ -45,6 +58,13 @@ public class CachingServiceClient {
         }
     }
 
+
+    /**
+     * Reads {@link KeyValue} from Caching Service
+     * @param key Key to read
+     * @return {@link KeyValue}
+     * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or 404 key not found in cache
+     */
     public KeyValue read(String key) throws CachingServiceClientException {
         try {
             ResponseEntity<KeyValue> response = response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, new HttpHeaders()), KeyValue.class);
@@ -58,6 +78,11 @@ public class CachingServiceClient {
         }
     }
 
+    /**
+     * Updates {@link KeyValue} in Caching Service
+     * @param kv {@link KeyValue} to update
+     * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or 404 key not found in cache
+     */
     public void update(KeyValue kv) throws CachingServiceClientException {
         try {
             ResponseEntity<String> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH, HttpMethod.PUT, new HttpEntity<KeyValue>(kv, new HttpHeaders()), String.class);
@@ -66,6 +91,11 @@ public class CachingServiceClient {
         }
     }
 
+    /**
+     * Deletes {@link KeyValue} from Caching Service
+     * @param key Key to delete
+     * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or 404 key not found in cache
+     */
     public void delete(String key) throws CachingServiceClientException {
         try {
             ResponseEntity<String> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key, HttpMethod.DELETE, new HttpEntity<KeyValue>(null, new HttpHeaders()), String.class);

@@ -17,6 +17,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
+/**
+ * Setup for caching service backed load balancing cache.
+ */
 @Configuration
 @RequiredArgsConstructor
 public class LoadBalancerCacheBeansConfig {

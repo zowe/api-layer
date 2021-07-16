@@ -54,15 +54,15 @@ public class LoadBalancerCache {
             if (remoteCache != null) {
                 try {
                     remoteCache.create(new CachingServiceClient.KeyValue(getKey(user, service), mapper.writeValueAsString(loadBalancerCacheRecord)));
-                    log.debug("Stored record to remote cache for user: {}, service {}, record: {}", user, service, loadBalancerCacheRecord);
+                    log.debug("Stored record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
                 } catch (CachingServiceClient.CachingServiceClientException e) {
-                    log.debug("Failed to store record for user: {}, service {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, e);
+                    log.debug("Failed to store record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, e);
                 } catch (JsonProcessingException e) {
-                    log.debug("Failed to serialize record for user: {}, service {}, record {},  with exception: {}", user, service, loadBalancerCacheRecord, e);
+                    log.debug("Failed to serialize record for user: {}, service: {}, record {},  with exception: {}", user, service, loadBalancerCacheRecord, e);
                 }
             }
             localCache.put(getKey(user, service), loadBalancerCacheRecord);
-            log.debug("Stored record to local cache for user: {}, service {}, record: {}", user, service, loadBalancerCacheRecord);
+            log.debug("Stored record to local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
             return true;
         } catch (UnsupportedOperationException | ClassCastException | IllegalArgumentException e) {
             return false;
@@ -82,17 +82,17 @@ public class LoadBalancerCache {
                 CachingServiceClient.KeyValue kv = remoteCache.read(getKey(user, service));
                 if (kv != null) {
                     LoadBalancerCacheRecord loadBalancerCacheRecord = mapper.readValue(kv.getValue(), LoadBalancerCacheRecord.class);
-                    log.debug("Retrieved record from remote cache for user: {}, service {}, record: {}", user, service, loadBalancerCacheRecord);
+                    log.debug("Retrieved record from remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
                     return loadBalancerCacheRecord;
                 }
             } catch (CachingServiceClient.CachingServiceClientException e) {
-                log.debug("Failed to retrieve record for user: {}, service {}, with exception: {}", user, service, e);
+                log.debug("Failed to retrieve record for user: {}, service: {}, with exception: {}", user, service, e);
             } catch (JsonProcessingException e) {
-                log.debug("Failed to deserialize record for user: {}, service {}, with exception: {}", user, service, e);
+                log.debug("Failed to deserialize record for user: {}, service: {}, with exception: {}", user, service, e);
             }
         }
         LoadBalancerCacheRecord loadBalancerCacheRecord = localCache.get(getKey(user, service));
-        log.debug("Retrieved record from local cache for user: {}, service {}, record: {}", user, service, loadBalancerCacheRecord);
+        log.debug("Retrieved record from local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
         return loadBalancerCacheRecord;
     }
 
@@ -106,13 +106,13 @@ public class LoadBalancerCache {
         if (remoteCache != null) {
             try {
                 remoteCache.delete(getKey(user, service));
-                log.debug("Deleted record from remote cache for user: {}, service {}", user, service);
+                log.debug("Deleted record from remote cache for user: {}, service: {}", user, service);
             } catch (CachingServiceClient.CachingServiceClientException e) {
-                log.debug("Failed to deleted record from remote cache for user: {}, service {}, with exception: {}", user, service, e);
+                log.debug("Failed to deleted record from remote cache for user: {}, service: {}, with exception: {}", user, service, e);
             }
         }
         localCache.remove(getKey(user, service));
-        log.debug("Deleted record from local cache for user: {}, service {}", user, service);
+        log.debug("Deleted record from local cache for user: {}, service: {}", user, service);
     }
 
     private String getKey(String user, String service) {
