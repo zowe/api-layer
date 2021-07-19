@@ -121,12 +121,10 @@ a {
     }
 }
 
-#refresh-api-button {
-    margin: -48px 100px;
+#onboarding-btns {
+    margin: -52px 100px;
     float: right;
 }
-
-#wizard-YAML-button {
-    margin: -48px 270px;
-    float: right;
+#onboarding-btns > span {
+    margin-right: 10px;
 }
