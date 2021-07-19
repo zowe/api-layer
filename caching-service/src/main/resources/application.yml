@@ -145,7 +145,6 @@ spring:
     profiles: attls
 
 server:
-    port: 10006
     attls:
         enabled: true
     ssl:
@@ -154,7 +153,6 @@ server:
 apiml:
     service:
         scheme: http
-        discoveryServiceUrls: http://localhost:10001/eureka/
 
 eureka:
     instance:
