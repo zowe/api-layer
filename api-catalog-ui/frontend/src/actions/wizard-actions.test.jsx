@@ -19,11 +19,11 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.wizardToggleDisplay()).toEqual(expectedAction);
     });
-    it('should save YAML file', () => {
+    it('should select enabler', () => {
         const expectedAction = {
-            type: constants.SAVE_FILE,
-            payload: null,
+            type: constants.SELECT_ENABLER,
+            payload: { enablerName: 'Test' },
         };
-        expect(actions.saveGeneratedFile()).toEqual(expectedAction);
+        expect(actions.selectEnabler("Test")).toEqual(expectedAction);
     });
 });

@@ -15,6 +15,7 @@ import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 
 const mapStateToProps = state => ({
     wizardIsOpen: state.wizardReducer.wizardIsOpen,
+    enablerName: state.wizardReducer.enablerName,
 });
 
 const mapDispatchToProps = {

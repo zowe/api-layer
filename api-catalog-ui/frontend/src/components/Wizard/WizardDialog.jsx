@@ -25,12 +25,12 @@ export default class WizardDialog extends Component {
     };
 
     render() {
-        const { wizardIsOpen } = this.props;
+        const { wizardIsOpen, enablerName } = this.props;
         return (
             <div className="dialog">
                 <Dialog isOpen={wizardIsOpen} closeOnClickOutside={false}>
                     <DialogHeader>
-                        <DialogTitle>Onboard a New API</DialogTitle>
+                        <DialogTitle>{enablerName}</DialogTitle>
                     </DialogHeader>
                     <DialogBody>
                         <Text>This wizard will guide you through creating a correct YAML for your application.</Text>

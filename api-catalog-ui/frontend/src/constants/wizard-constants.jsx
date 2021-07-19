@@ -9,4 +9,4 @@
  */
 
 export const TOGGLE_DISPLAY = 'TOGGLE_DISPLAY';
-export const SAVE_FILE = 'SAVE_FILE';
+export const SELECT_ENABLER = 'SELECT_ENABLER';

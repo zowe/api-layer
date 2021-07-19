@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { SAVE_FILE, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
 
 export function wizardToggleDisplay() {
     return {
@@ -17,9 +17,9 @@ export function wizardToggleDisplay() {
     };
 }
 
-export function saveGeneratedFile() {
+export function selectEnabler(enablerName) {
     return {
-        type: SAVE_FILE,
-        payload: null,
+        type: SELECT_ENABLER,
+        payload: { enablerName },
     };
 }
