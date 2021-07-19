@@ -82,8 +82,9 @@ export default class WizardDialog extends Component {
             dataAsObject.content === undefined ||
             dataAsObject.content === null ||
             Object.entries(dataAsObject.content).length === 0
-        )
+        ) {
             return '';
+        }
         const selectedData = Object.entries(dataAsObject.content);
         let key = 0;
         return selectedData.map(item => {
