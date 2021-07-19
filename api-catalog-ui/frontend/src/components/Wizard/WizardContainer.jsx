@@ -11,6 +11,7 @@
 import { connect } from 'react-redux';
 import WizardDialog from './WizardDialog';
 import { wizardToggleDisplay } from '../../actions/wizard-actions';
+import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 
 const mapStateToProps = state => ({
     wizardIsOpen: state.wizardReducer.wizardIsOpen,
@@ -18,6 +19,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
     wizardToggleDisplay,
+    refreshedStaticApi,
 };
 
 export default connect(

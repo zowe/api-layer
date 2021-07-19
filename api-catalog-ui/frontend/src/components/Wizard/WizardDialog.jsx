@@ -17,6 +17,13 @@ export default class WizardDialog extends Component {
         const { wizardToggleDisplay } = this.props;
         wizardToggleDisplay();
     };
+
+    doneWizard = () => {
+        const { refreshedStaticApi, wizardToggleDisplay } = this.props;
+        wizardToggleDisplay();
+        refreshedStaticApi();
+    };
+
     render() {
         const { wizardIsOpen } = this.props;
         return (
@@ -33,7 +40,9 @@ export default class WizardDialog extends Component {
                             <Button size="medium" onClick={this.closeWizard}>
                                 Cancel
                             </Button>
-                            <Button size="medium">Save file</Button>
+                            <Button size="medium" onClick={this.doneWizard}>
+                                Done
+                            </Button>
                         </DialogActions>
                     </DialogFooter>
                 </Dialog>
