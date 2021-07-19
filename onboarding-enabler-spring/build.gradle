@@ -37,5 +37,5 @@ dependencies {
 }
 
 jar {
-    enabled: trueZ
+    enabled: true
 }
