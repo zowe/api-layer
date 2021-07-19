@@ -68,7 +68,12 @@ export default class Dashboard extends Component {
         return (
             <div>
                 <ButtonGroup id="onboarding-btns" aria-label="Wizard dropdown & refresh static APIs">
-                    <DialogDropdown WIP={this.state.WIP} data={enablerData} toggleWizard={this.toggleWizard} />
+                    <DialogDropdown
+                        selectEnabler={this.props.selectEnabler}
+                        WIP={this.state.WIP}
+                        data={enablerData}
+                        toggleWizard={this.toggleWizard}
+                    />
                     <Button id="refresh-api-button" onClick={this.refreshStaticApis}>
                         Refresh Static APIs
                     </Button>

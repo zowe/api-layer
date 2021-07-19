@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/prefer-default-export
-// import { wizardToggleDisplay } from '../../actions/wizard-actions';
-
 export const enablerData = [
     {
         text: 'Plain Java Enabler',

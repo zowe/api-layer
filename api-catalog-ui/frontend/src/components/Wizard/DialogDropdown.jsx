@@ -20,16 +20,22 @@ export default class DialogDropdown extends Component {
         this.state = {
             data: this.props.data,
         };
+        this.handleClick = this.handleClick.bind(this);
     }
 
     componentDidMount() {
         this.openOnClick();
     }
 
+    handleClick(event) {
+        this.props.selectEnabler(event.target.innerText);
+        this.props.toggleWizard();
+    }
+
     openOnClick() {
         const { data } = this.state;
         if (Array.isArray(data)) {
-            this.setState({ data: data.map(item => ({ ...item, onClick: this.props.toggleWizard })) });
+            this.setState({ data: data.map(item => ({ ...item, onClick: this.handleClick })) });
         }
     }
 
