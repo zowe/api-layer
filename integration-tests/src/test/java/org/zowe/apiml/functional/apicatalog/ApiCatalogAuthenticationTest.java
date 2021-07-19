@@ -134,10 +134,9 @@ class ApiCatalogAuthenticationTest {
                     .when()
                     .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
                     .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
                     .body(
                         "messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
-                    );
+                    ).statusCode(is(SC_UNAUTHORIZED));
             }
 
             @ParameterizedTest(name = "givenInvalidTokenInCookie {index} {0}")
