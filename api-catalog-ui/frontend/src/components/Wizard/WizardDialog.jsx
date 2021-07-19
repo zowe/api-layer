@@ -76,6 +76,13 @@ export default class WizardDialog extends Component {
         wizardToggleDisplay();
     };
 
+    doneWizard = () => {
+        const { refreshedStaticApi, wizardToggleDisplay } = this.props;
+        wizardToggleDisplay();
+        refreshedStaticApi();
+    };
+
+
     loadInputs = () => {
         const dataAsObject = this.state.inputData[this.state.selectedIndex];
         if (
@@ -136,7 +143,9 @@ export default class WizardDialog extends Component {
                             <Button size="medium" onClick={this.closeWizard}>
                                 Cancel
                             </Button>
-                            <Button size="medium">Save file</Button>
+                            <Button size="medium" onClick={this.doneWizard}>
+                                Done
+                            </Button>
                         </DialogActions>
                     </DialogFooter>
                 </Dialog>
