@@ -44,8 +44,8 @@ export default class DialogDropdown extends Component {
             return null;
         }
         return (
-            <Dropdown iconEnd={<IconArrowDropDown />} data={this.state.data}>
-                <Button id="wizard-YAML-button" iconEnd={<IconArrowDropDown />}>
+            <Dropdown data={this.state.data}>
+                <Button id="wizard-YAML-button" size="medium" iconEnd={<IconArrowDropDown />}>
                     Onboard New API
                 </Button>
             </Dropdown>
