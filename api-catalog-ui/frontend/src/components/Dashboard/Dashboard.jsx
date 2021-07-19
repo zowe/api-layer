@@ -1,5 +1,4 @@
-import { Text, Button, ButtonGroup, Dropdown } from 'mineral-ui';
-import { IconArrowDropDown } from 'mineral-ui-icons';
+import { Text, Button, ButtonGroup } from 'mineral-ui';
 import React, { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -10,12 +9,13 @@ import formatError from '../Error/ErrorFormatter';
 import ErrorDialog from '../Error/ErrorDialog';
 import WizardContainer from '../Wizard/WizardContainer';
 import { enablerData } from '../Wizard/wizard-config';
+import DialogDropdown from '../Wizard/DIalogDropdown';
 
 export default class Dashboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            WIP: false,
+            WIP: true,
         };
     }
 
@@ -68,15 +68,7 @@ export default class Dashboard extends Component {
         return (
             <div>
                 <ButtonGroup id="onboarding-btns">
-                    {this.state.WIP ? (
-                        <span />
-                    ) : (
-                        <Dropdown iconEnd={<IconArrowDropDown />} data={enablerData}>
-                            <Button id="wizard-YAML-button" iconEnd={<IconArrowDropDown />} onClick={this.toggleWizard}>
-                                Onboard New API
-                            </Button>
-                        </Dropdown>
-                    )}
+                    <DialogDropdown WIP={this.state.WIP} data={enablerData} toggleWizard={this.toggleWizard} />
                     <Button id="refresh-api-button" onClick={this.refreshStaticApis}>
                         Refresh Static APIs
                     </Button>
