@@ -20,6 +20,10 @@ import lombok.Getter;
 public class GatewayConfigProperties {
 
     private String scheme;
+
+    /**
+     * Format: hostname:port
+     */
     private String hostname;
 
 }

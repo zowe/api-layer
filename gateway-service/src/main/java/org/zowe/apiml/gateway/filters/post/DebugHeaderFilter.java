@@ -13,6 +13,7 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 
@@ -31,6 +32,9 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @Slf4j
 public class DebugHeaderFilter extends ZuulFilter {
 
+    @Value("${zuul.debug.request.debugHeaderLimit:4096}")
+    private int debugHeaderLimit;
+
     @Override
     public String filterType() {
         return POST_TYPE;
@@ -48,7 +52,6 @@ public class DebugHeaderFilter extends ZuulFilter {
 
     @Override
     public Object run() {
-        int debugHeaderLimit = 4096;
 
         String debug = convertToPrettyPrintString(Debug.getRoutingDebug());
         String reqInfo = RequestContext.getCurrentContext().getFilterExecutionSummary().toString();

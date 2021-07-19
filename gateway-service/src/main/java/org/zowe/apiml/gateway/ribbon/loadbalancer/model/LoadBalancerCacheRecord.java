@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.gateway.ribbon.loadbalancer.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -26,7 +28,8 @@ public class LoadBalancerCacheRecord {
         this(instanceId, LocalDateTime.now());
     }
 
-    public LoadBalancerCacheRecord(String instanceId, LocalDateTime creationTime) {
+    @JsonCreator
+    public LoadBalancerCacheRecord(@JsonProperty("instanceId") String instanceId, @JsonProperty("creationTime") LocalDateTime creationTime) {
         this.instanceId = instanceId;
         this.creationTime = creationTime;
     }

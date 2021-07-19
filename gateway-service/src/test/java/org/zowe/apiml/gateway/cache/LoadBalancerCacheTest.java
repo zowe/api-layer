@@ -9,19 +9,28 @@
  */
 package org.zowe.apiml.gateway.cache;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.*;
 
 public class LoadBalancerCacheTest {
+
+    static ObjectMapper mapper = new ObjectMapper();
+    {
+        mapper.registerModule(new JavaTimeModule());
+    }
+    String keyPrefix = LoadBalancerCache.LOAD_BALANCER_KEY_PREFIX;
+
     @Nested
     class GivenEmptyCache {
-        LoadBalancerCache cache = new LoadBalancerCache();
+        LoadBalancerCache cache = new LoadBalancerCache(null);
 
         @Nested
         class WhenItemStoredInCache {
@@ -43,6 +52,71 @@ public class LoadBalancerCacheTest {
             void afterDeletionItemIsLost() {
                 cache.delete(user, service);
                 assertThat(cache.retrieve(user, service), is(nullValue()));
+            }
+        }
+    }
+
+    @Nested
+    class givenDistributedCache {
+
+        CachingServiceClient cachingServiceClient = mock(CachingServiceClient.class);
+        LoadBalancerCache underTest;
+        private LoadBalancerCacheRecord record = new LoadBalancerCacheRecord("instanceid");;
+
+        @BeforeEach
+        void setUp() {
+           underTest = new LoadBalancerCache(cachingServiceClient);
+        }
+
+        @Nested
+        class Storage {
+
+            @Test
+            void storageHappensToLocalAndRemoteCache() throws CachingServiceClient.CachingServiceClientException, JsonProcessingException {
+                underTest.store("user", "serviceid", record);
+                String serializedRecord = mapper.writeValueAsString(record);
+                // TODO should the keys be prefixed by loadbalancer denomination?
+                verify(cachingServiceClient).create(new CachingServiceClient.KeyValue(keyPrefix + "user:serviceid", serializedRecord));
+                assertThat(underTest.getLocalCache().containsKey(keyPrefix + "user:serviceid"), is(true));
+            }
+
+            @Test
+            void storageFailsToRemoteCacheAndStoresLocal() throws CachingServiceClient.CachingServiceClientException {
+                doThrow(CachingServiceClient.CachingServiceClientException.class).when(cachingServiceClient).create(any());
+                underTest.store("user", "serviceid", record);
+                assertThat(underTest.getLocalCache().containsKey(keyPrefix + "user:serviceid"), is(true));
+            }
+        }
+
+        @Nested
+        class Retrieval {
+
+            @Test
+            void retrievalFromRemoteHasPriority() throws CachingServiceClient.CachingServiceClientException, JsonProcessingException {
+                underTest.getLocalCache().put(keyPrefix + "user:serviceid", record);
+                doThrow(CachingServiceClient.CachingServiceClientException.class).when(cachingServiceClient).read(any());
+                LoadBalancerCacheRecord retrievedRecord = underTest.retrieve("user", "serviceid");
+                assertThat(retrievedRecord.getInstanceId(), is("instanceid"));
+
+                LoadBalancerCacheRecord record = new LoadBalancerCacheRecord("Batman");
+                String serialzedRecord = mapper.writeValueAsString(record);
+                doReturn(new CachingServiceClient.KeyValue(keyPrefix + "user:serviceid", serialzedRecord)).when(cachingServiceClient).read(keyPrefix + "user:serviceid");
+
+                retrievedRecord = underTest.retrieve("user", "serviceid");
+                assertThat(retrievedRecord.getInstanceId(), is("Batman"));
+            }
+
+        }
+
+        @Nested
+        class Deletion {
+            @Test
+            void deleteRemovesAllEntriesLocalAndRemote() throws CachingServiceClient.CachingServiceClientException {
+                underTest.getLocalCache().put(keyPrefix + "user:serviceid", record);
+                underTest.delete("user", "serviceid");
+                verify(cachingServiceClient).delete(keyPrefix + "user:serviceid");
+                assertThat(underTest.retrieve("user", "serviceid"), is(nullValue()));
+
             }
         }
     }
