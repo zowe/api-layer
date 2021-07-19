@@ -4,11 +4,9 @@
 export const enablerData = [
     {
         text: 'Plain Java Enabler',
-        onClick: '',
     },
     {
         text: 'Spring Enabler',
-        onClick: '',
     },
     {
         text: 'Micronaut Enabler',
