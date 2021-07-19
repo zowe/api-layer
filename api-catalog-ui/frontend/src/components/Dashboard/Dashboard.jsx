@@ -1,4 +1,5 @@
-import { Text, Button } from 'mineral-ui';
+import { Text, Button, ButtonGroup, Dropdown } from 'mineral-ui';
+import { IconArrowDropDown } from 'mineral-ui-icons';
 import React, { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -8,12 +9,13 @@ import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ErrorDialog from '../Error/ErrorDialog';
 import WizardContainer from '../Wizard/WizardContainer';
+import { enablerData } from '../Wizard/wizard-config';
 
 export default class Dashboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            WIP: true,
+            WIP: false,
         };
     }
 
@@ -65,16 +67,20 @@ export default class Dashboard extends Component {
 
         return (
             <div>
-                <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
-                    Refresh Static APIs
-                </Button>
-                {this.state.WIP ? (
-                    ''
-                ) : (
-                    <Button id="wizard-YAML-button" size="medium" onClick={this.toggleWizard}>
-                        Onboard New API
+                <ButtonGroup id="onboarding-btns">
+                    {this.state.WIP ? (
+                        <span />
+                    ) : (
+                        <Dropdown iconEnd={<IconArrowDropDown />} data={enablerData}>
+                            <Button id="wizard-YAML-button" iconEnd={<IconArrowDropDown />} onClick={this.toggleWizard}>
+                                Onboard New API
+                            </Button>
+                        </Dropdown>
+                    )}
+                    <Button id="refresh-api-button" onClick={this.refreshStaticApis}>
+                        Refresh Static APIs
                     </Button>
-                )}
+                </ButtonGroup>
                 <WizardContainer />
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
