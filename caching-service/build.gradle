@@ -48,7 +48,7 @@ dependencies {
     implementation project(':common-service-core')
 
     implementation project(':onboarding-enabler-spring')
-
+    implementation libraries.zowe_attls
     implementation libraries.jjwt
     implementation libraries.jjwt_impl
     implementation libraries.jjwt_jackson
