@@ -100,7 +100,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 }
                 filterChain.doFilter(request, response);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Not possible to get certificate from context",e);
                 response.setStatus(500);
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.writeValue(response.getWriter(), "Exception reading certificate");

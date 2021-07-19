@@ -226,4 +226,3 @@ apiml:
         scheme: http
         nonSecurePortEnabled: true
         securePortEnabled: false
-        discoveryServiceUrls: http://localhost:10001/eureka/
