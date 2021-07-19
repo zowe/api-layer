@@ -34,7 +34,7 @@ export default class DialogDropdown extends Component {
     }
 
     renderDropdown() {
-        if (this.props.WIP) {
+        if (this.props.WIP || !Array.isArray(this.state.data)) {
             return null;
         }
         return (

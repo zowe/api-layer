@@ -40,4 +40,24 @@ describe('>>> WizardDialog tests', () => {
         expect(wizardToggleDisplay).toHaveBeenCalled();
     });
 
+    it('should close dialog and refresh static APIs on Done', () => {
+        const wizardToggleDisplay = jest.fn();
+        const refreshedStaticApi = jest.fn();
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                wizardToggleDisplay={wizardToggleDisplay}
+                refreshedStaticApi={refreshedStaticApi}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.doneWizard();
+        expect(wizardToggleDisplay).toHaveBeenCalled();
+        expect(refreshedStaticApi).toHaveBeenCalled();
+    });
+
 });
