@@ -9,7 +9,7 @@ import formatError from '../Error/ErrorFormatter';
 import ErrorDialog from '../Error/ErrorDialog';
 import WizardContainer from '../Wizard/WizardContainer';
 import { enablerData } from '../Wizard/wizard-config';
-import DialogDropdown from '../Wizard/DIalogDropdown';
+import DialogDropdown from '../Wizard/DialogDropdown';
 
 export default class Dashboard extends Component {
     constructor(props) {
@@ -67,7 +67,7 @@ export default class Dashboard extends Component {
 
         return (
             <div>
-                <ButtonGroup id="onboarding-btns">
+                <ButtonGroup id="onboarding-btns" aria-label="Wizard dropdown & refresh static APIs">
                     <DialogDropdown WIP={this.state.WIP} data={enablerData} toggleWizard={this.toggleWizard} />
                     <Button id="refresh-api-button" onClick={this.refreshStaticApis}>
                         Refresh Static APIs

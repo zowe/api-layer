@@ -15,13 +15,31 @@ import Button from 'mineral-ui/Button';
 import './wizard.css';
 
 export default class DialogDropdown extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            data: this.props.data,
+        };
+    }
+
+    componentDidMount() {
+        this.openOnClick();
+    }
+
+    openOnClick() {
+        const { data } = this.state;
+        if (Array.isArray(data)) {
+            this.setState({ data: data.map(item => ({ ...item, onClick: this.props.toggleWizard })) });
+        }
+    }
+
     renderDropdown() {
         if (this.props.WIP) {
             return null;
         }
         return (
-            <Dropdown iconEnd={<IconArrowDropDown />} data={this.props.data}>
-                <Button id="wizard-YAML-button" iconEnd={<IconArrowDropDown />} onClick={this.props.toggleWizard}>
+            <Dropdown iconEnd={<IconArrowDropDown />} data={this.state.data}>
+                <Button id="wizard-YAML-button" iconEnd={<IconArrowDropDown />}>
                     Onboard New API
                 </Button>
             </Dropdown>
