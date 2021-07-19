@@ -121,10 +121,10 @@ a {
     }
 }
 
-#onboarding-btns {
-    margin: -52px 100px;
+#dash-buttons {
+    margin: -48px 100px;
     float: right;
 }
-#onboarding-btns > span {
+#dash-buttons > span {
     margin-right: 10px;
 }

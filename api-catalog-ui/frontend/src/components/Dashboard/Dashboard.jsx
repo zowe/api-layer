@@ -1,4 +1,4 @@
-import { Text, Button, ButtonGroup } from 'mineral-ui';
+import { Text, Button } from 'mineral-ui';
 import React, { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -67,17 +67,17 @@ export default class Dashboard extends Component {
 
         return (
             <div>
-                <ButtonGroup id="onboarding-btns" aria-label="Wizard dropdown & refresh static APIs">
+                <div id="dash-buttons">
                     <DialogDropdown
                         selectEnabler={this.props.selectEnabler}
                         WIP={this.state.WIP}
                         data={enablerData}
                         toggleWizard={this.toggleWizard}
                     />
-                    <Button id="refresh-api-button" onClick={this.refreshStaticApis}>
+                    <Button size="medium" onClick={this.refreshStaticApis}>
                         Refresh Static APIs
                     </Button>
-                </ButtonGroup>
+                </div>
                 <WizardContainer />
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
