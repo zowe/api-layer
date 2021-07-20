@@ -10,7 +10,9 @@
 
 /* eslint-disable no-undef */
 
+
 import { TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { data } from '../components/Wizard/wizard_config';
 import wizardReducer, { wizardReducerDefaultState } from './wizard-reducer';
 
 describe('>>> Wizard reducer tests', () => {

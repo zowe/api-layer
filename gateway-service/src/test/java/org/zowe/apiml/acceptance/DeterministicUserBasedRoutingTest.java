@@ -45,9 +45,8 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
     @Autowired
     protected LoadBalancerCache cache;
 
-    @BeforeEach
     public void prepareApplications() {
-        cache.getCache().clear();
+        cache.getLocalCache().clear();
         applicationRegistry.clearApplications();
         applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, "authentication");
         applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, "authentication");
@@ -57,9 +56,16 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
     class GivenAuthenticatedUserAndMoreInstancesOfService {
         @Nested
         class WhenCallingToServiceMultipleTimes {
-            // This was failing on second attempt, it is resolved by synchronizing the cache methods. Not the best solution but results in expected behavior.
+
+            boolean initialized = false;
+
             @RepeatedTest(10)
-            void thenCallTheSameInstance() throws IOException {
+            void thenCallTheSameInstance(RepetitionInfo repetitionInfo) throws IOException {
+
+                // initialize the cache and registry only once on first repetition
+                if (repetitionInfo.getCurrentRepetition() == 1) {
+                    prepareApplications();
+                }
 
                 Cookie token = jwtToken();
 

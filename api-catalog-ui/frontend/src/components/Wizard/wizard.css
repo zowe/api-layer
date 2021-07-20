@@ -11,3 +11,11 @@
 .dialog-footer{
     border-top: none;
 }
+
+.wizardForm .entry{
+    margin-top: 12px;
+}
+
+.selector{
+    max-width: 300px;
+}

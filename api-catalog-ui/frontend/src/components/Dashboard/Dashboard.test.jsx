@@ -3,6 +3,7 @@ import * as React from 'react';
 // tslint:disable-next-line:no-implicit-dependencies
 import { shallow } from 'enzyme';
 import Dashboard from './Dashboard';
+import { data } from '../Wizard/wizard_config';
 
 const ajaxError = {
     message: 'ajax Error 404',
@@ -115,6 +116,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
+                inputData={data}
             />
         );
         const instance = wrapper.instance();

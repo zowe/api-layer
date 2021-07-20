@@ -9,10 +9,12 @@
  */
 
 import { SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { data } from '../components/Wizard/wizard_config';
 
 export const wizardReducerDefaultState = {
     wizardIsOpen: false,
     enablerName: 'Static Onboarding',
+    inputData: data,
 };
 
 const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
