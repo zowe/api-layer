@@ -55,6 +55,8 @@ public class DistributedLoadBalancingTest {
 
         assertThat(routedInstanceId, is(notNullValue()));
 
+
+
         String[] results = new String[10];
         for (int i=0; i<10; i++) {
             String routedInstanceIdOnOtherGateway = given()
@@ -67,7 +69,7 @@ public class DistributedLoadBalancingTest {
         String resultLog = Arrays.asList(results).stream().collect(Collectors.joining(","));
 
         // Want to see how the tests performed.
-        assertThat(resultLog, containsString("match, match, match, match, match, match, match, match, match, match"));
+        assertThat(resultLog, containsString("match,match,match,match,match,match,match,match,match,match"));
 
     }
 }
