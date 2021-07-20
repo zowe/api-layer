@@ -57,7 +57,7 @@ describe('>>> DialogDropdown tests', () => {
         expect(typeof(instance.state.data[0].onClick)).toEqual("function");
     });
 
-    xit('should handle click on dropdown categories', () => {
+    it('should handle click on dropdown categories', () => {
         const toggleWizard = jest.fn();
         const selectEnabler = jest.fn();
         const dummyData = [{
@@ -72,11 +72,9 @@ describe('>>> DialogDropdown tests', () => {
                 selectEnabler={selectEnabler}
             />
         );
-        wrapper.find('#wizard-YAML-button').first().simulate('click');
-        wrapper.find({role: "menuitem"}).first().simulate('click', { target: { innerText: 'Some Enabler' } });
-
+        wrapper.instance().handleClick({ target: { innerText: 'TestEnabler' } });
         expect(toggleWizard).toHaveBeenCalled();
-        expect(selectEnabler).toHaveBeenCalled();
+        expect(selectEnabler).toHaveBeenCalledWith('TestEnabler');
     });
 
     it('should not render if data not an array', () => {

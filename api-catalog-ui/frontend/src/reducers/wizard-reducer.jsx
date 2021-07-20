@@ -9,7 +9,7 @@
  */
 
 import { SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
-import { data } from '../components/Wizard/wizard_config';
+import { data, data2 } from '../components/Wizard/wizard_config';
 
 export const wizardReducerDefaultState = {
     wizardIsOpen: false,
@@ -18,7 +18,10 @@ export const wizardReducerDefaultState = {
 };
 
 const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
-    if (action == null) return state;
+    if (action == null) {
+        return state;
+    }
+    let result = {};
     switch (action.type) {
         case TOGGLE_DISPLAY:
             return {
@@ -26,10 +29,27 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
                 wizardIsOpen: !state.wizardIsOpen,
             };
         case SELECT_ENABLER:
-            return {
-                ...state,
+            switch (action.payload.enablerName) {
+                case 'Plain Java Enabler':
+                    result = {
+                        ...state,
+                        inputData: data,
+                    };
+                    break;
+                case 'Spring Enabler':
+                    result = {
+                        ...state,
+                        inputData: data2,
+                    };
+                    break;
+                default:
+                    result = { ...state };
+            }
+            result = {
+                ...result,
                 enablerName: action.payload.enablerName,
             };
+            return result;
         default:
             return state;
     }
