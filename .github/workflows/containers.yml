@@ -744,12 +744,14 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    APIML_ROUTING_INSTANCEIDHEADER: true
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    APIML_ROUTING_INSTANCEIDHEADER: true
         steps:
             -   uses: actions/checkout@v2
                 with:
@@ -780,7 +782,7 @@ jobs:
 
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runHATests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
+                    ./gradlew runLbHaTests --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -790,7 +792,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsHA
+                    name: LbHaTests
                     path: |
                         integration-tests/build/reports/**
             -   name: Cleanup Gradle Cache
