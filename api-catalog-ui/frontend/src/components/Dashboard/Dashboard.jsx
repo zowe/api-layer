@@ -74,7 +74,7 @@ export default class Dashboard extends Component {
                         data={enablerData}
                         toggleWizard={this.toggleWizard}
                     />
-                    <Button size="medium" onClick={this.refreshStaticApis}>
+                    <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
                         Refresh Static APIs
                     </Button>
                 </div>
