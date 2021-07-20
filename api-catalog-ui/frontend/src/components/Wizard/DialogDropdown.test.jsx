@@ -1,6 +1,6 @@
 import * as enzyme from 'enzyme';
 import DialogDropdown from './DialogDropdown';
-import React from 'react';
+import React from 'react'
 
 describe('>>> DialogDropdown tests', () => {
     it('should have "Onboard New API" button', () => {
@@ -45,11 +45,6 @@ describe('>>> DialogDropdown tests', () => {
             text: 'Plain Java Enabler',
         },
         ];
-        const expectedData = [{
-            text: 'Plain Java Enabler',
-            onClick: testFunc,
-        },
-            ]
         const wrapper = enzyme.shallow(
             <DialogDropdown
                 WIP={true}
@@ -59,7 +54,29 @@ describe('>>> DialogDropdown tests', () => {
         );
         let instance = wrapper.instance();
         instance.openOnClick();
-        expect(instance.state.data).toEqual(expectedData);
+        expect(typeof(instance.state.data[0].onClick)).toEqual("function");
+    });
+
+    xit('should handle click on dropdown categories', () => {
+        const toggleWizard = jest.fn();
+        const selectEnabler = jest.fn();
+        const dummyData = [{
+            text: 'Plain Java Enabler',
+        },
+        ];
+        const wrapper = enzyme.shallow(
+            <DialogDropdown
+                WIP={false}
+                data={dummyData}
+                toggleWizard={toggleWizard}
+                selectEnabler={selectEnabler}
+            />
+        );
+        wrapper.find('#wizard-YAML-button').first().simulate('click');
+        wrapper.find({role: "menuitem"}).first().simulate('click', { target: { innerText: 'Some Enabler' } });
+
+        expect(toggleWizard).toHaveBeenCalled();
+        expect(selectEnabler).toHaveBeenCalled();
     });
 
     it('should not render if data not an array', () => {
