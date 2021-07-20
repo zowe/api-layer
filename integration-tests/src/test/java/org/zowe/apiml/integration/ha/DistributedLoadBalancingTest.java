@@ -57,7 +57,7 @@ public class DistributedLoadBalancingTest {
                 .cookie(COOKIE_NAME, jwt)
                 .get("https://gateway-service-2:10010/api/v1/discoverableclient/greeting")
                 .header("X-InstanceId");
-            assertThat(routedInstanceIdOnOtherGateway, is(routedInstanceId));
+            assertThat("Failure on iteration: " + i, routedInstanceIdOnOtherGateway, is(routedInstanceId));
         }
 
     }
