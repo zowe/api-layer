@@ -82,6 +82,11 @@ export default class WizardDialog extends Component {
         refreshedStaticApi();
     };
 
+    refreshInputData() {
+        this.setState({ inputData: this.props.inputData });
+        this.props.changedEnablers();
+    }
+
     loadInputs = () => {
         const dataAsObject = this.state.inputData[this.state.selectedIndex];
         if (
@@ -116,7 +121,10 @@ export default class WizardDialog extends Component {
     };
 
     render() {
-        const { wizardIsOpen, enablerName } = this.props;
+        const { wizardIsOpen, enablerName, enablerChanged } = this.props;
+        if (enablerChanged) {
+            this.refreshInputData();
+        }
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} closeOnClickOutside={false}>

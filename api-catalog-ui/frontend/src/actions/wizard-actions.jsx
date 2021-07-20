@@ -8,7 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { SELECT_ENABLER, TOGGLE_DISPLAY, ENABLER_CHANGED } from '../constants/wizard-constants';
+
+export function changedEnablers() {
+    return {
+        type: ENABLER_CHANGED,
+        payload: null,
+    };
+}
 
 export function wizardToggleDisplay() {
     return {
