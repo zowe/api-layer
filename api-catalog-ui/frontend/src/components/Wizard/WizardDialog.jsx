@@ -82,7 +82,6 @@ export default class WizardDialog extends Component {
         refreshedStaticApi();
     };
 
-
     loadInputs = () => {
         const dataAsObject = this.state.inputData[this.state.selectedIndex];
         if (

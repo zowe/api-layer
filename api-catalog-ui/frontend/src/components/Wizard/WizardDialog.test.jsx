@@ -170,6 +170,7 @@ describe('>>> WizardDialog tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
+                inputData={data}
             />
         );
         const instance = wrapper.instance();

@@ -8,7 +8,7 @@ import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ErrorDialog from '../Error/ErrorDialog';
 import WizardContainer from '../Wizard/WizardContainer';
-import { enablerData } from '../Wizard/wizard-config';
+import { enablerData } from '../Wizard/wizard_config';
 import DialogDropdown from '../Wizard/DialogDropdown';
 
 export default class Dashboard extends Component {
