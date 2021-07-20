@@ -19,7 +19,7 @@ import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -44,12 +44,21 @@ public class DistributedLoadBalancingTest {
 
         String jwt = gatewayToken();
 
-        String header = given()
+        String routedInstanceId = given()
             .cookie(COOKIE_NAME, jwt)
             .get("https://gateway-service:10010/api/v1/discoverableclient/greeting")
             .header("X-InstanceId");
 
-        assertThat(header, is(nullValue()));
+        assertThat(routedInstanceId, is(notNullValue()));
+
+
+        for (int i=0; i<10; i++) {
+            String routedInstanceIdOnOtherGateway = given()
+                .cookie(COOKIE_NAME, jwt)
+                .get("https://gateway-service-2:10010/api/v1/discoverableclient/greeting")
+                .header("X-InstanceId");
+            assertThat(routedInstanceIdOnOtherGateway, is(routedInstanceId));
+        }
 
     }
 }
