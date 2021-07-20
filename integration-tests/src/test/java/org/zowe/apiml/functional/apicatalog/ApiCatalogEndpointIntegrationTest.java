@@ -52,7 +52,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
     void setUp() {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String host = gatewayServiceConfiguration.getHost();
-        int port = gatewayServiceConfiguration.getRealPort();
+        int port = gatewayServiceConfiguration.getExternalPort();
         baseHost = host + ":" + port;
     }
 
