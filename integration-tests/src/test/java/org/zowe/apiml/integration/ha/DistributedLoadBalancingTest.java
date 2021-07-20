@@ -18,7 +18,11 @@ import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -51,14 +55,19 @@ public class DistributedLoadBalancingTest {
 
         assertThat(routedInstanceId, is(notNullValue()));
 
-
+        String[] results = new String[10];
         for (int i=0; i<10; i++) {
             String routedInstanceIdOnOtherGateway = given()
                 .cookie(COOKIE_NAME, jwt)
                 .get("https://gateway-service-2:10010/api/v1/discoverableclient/greeting")
                 .header("X-InstanceId");
-            assertThat("Failure on iteration: " + i, routedInstanceIdOnOtherGateway, is(routedInstanceId));
+            results[i] = routedInstanceId.equals(routedInstanceIdOnOtherGateway) ? "match" : "nomatch";
         }
+
+        String resultLog = Arrays.asList(results).stream().collect(Collectors.joining(","));
+
+        // Want to see how the tests performed.
+        assertThat(resultLog, containsString("match, match, match, match, match, match, match, match, match, match"));
 
     }
 }
