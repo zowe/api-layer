@@ -70,6 +70,8 @@ public class ConfigReader {
                             gatewayServiceConfiguration,
                             discoveryServiceConfiguration,
                             discoverableClientConfiguration,
+                            new ApiCatalogServiceConfiguration(),
+                            new CachingServiceConfiguration(),
                             tlsConfiguration,
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
@@ -97,6 +99,8 @@ public class ConfigReader {
 
                     configuration.getAuxiliaryUserList().setValue(System.getProperty("auxiliaryUserList.value", String.valueOf(configuration.getAuxiliaryUserList().getValue())));
 
+                    configuration.getApiCatalogServiceConfiguration().setUrl(System.getProperty("apicatalog.url"));
+                    configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url"));
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);
 

@@ -22,6 +22,10 @@ discoveryServiceConfiguration:
     instances: 1
 discoverableClientConfiguration:
     applId: ZOWEAPPL
+apiCatalogServiceConfiguration:
+    url:
+cachingServiceConfiguration:
+    url:
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

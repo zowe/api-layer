@@ -23,6 +23,8 @@ public class EnvironmentConfiguration {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private DiscoverableClientConfiguration discoverableClientConfiguration;
+    private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
+    private CachingServiceConfiguration cachingServiceConfiguration;
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
     private AuxiliaryUserList auxiliaryUserList;
