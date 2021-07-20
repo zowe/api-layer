@@ -18,10 +18,12 @@ import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 @LbHaTest
 public class DistributedLoadBalancingTest {
@@ -39,6 +41,15 @@ public class DistributedLoadBalancingTest {
 
         assumeTrue(haGatewayRequests.existing() > 1);
         assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
+
+        String jwt = gatewayToken();
+
+        String header = given()
+            .cookie(COOKIE_NAME, jwt)
+            .get("https://gateway-service:10010/api/v1/discoverableclient/greeting")
+            .header("X-InstanceId");
+
+        assertThat(header, is(nullValue()));
 
     }
 }
