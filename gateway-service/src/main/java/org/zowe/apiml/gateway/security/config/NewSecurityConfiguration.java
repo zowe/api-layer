@@ -317,13 +317,14 @@ public class NewSecurityConfiguration {
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable() // logout filter in this chain not needed
-                .x509() // default x509 filter, authenticates trusted cert
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                .userDetailsService(new SimpleUserDetailService())
-                .and()
                 // place the following filters before the x509 filter
                 .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+            if (!isAttlsEnabled) {
+                http.x509() // default x509 filter, authenticates trusted cert
+                    .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+                    .userDetailsService(new SimpleUserDetailService());
+            }
         }
 
         /**
