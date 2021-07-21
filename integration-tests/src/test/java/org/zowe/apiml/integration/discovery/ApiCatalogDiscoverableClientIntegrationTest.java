@@ -115,6 +115,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
     }
 
     @Nested
+    @NotAttlsTest
     class WhenGettingDifferenceBetweenVersions {
         @Nested
         class ReturnDifference {
