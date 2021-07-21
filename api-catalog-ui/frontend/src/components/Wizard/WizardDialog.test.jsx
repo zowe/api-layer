@@ -221,20 +221,6 @@ describe('>>> WizardDialog tests', () => {
 
     it('should refresh input data', () => {
         const changedEnablers = jest.fn();
-        const dummyData = [
-            {
-                text: 'Category #1',
-                content: {
-                    testInput: 'test1',
-                },
-            },
-            {
-                text: 'Category #2',
-                content: {
-                    testInput2: 'test2',
-                },
-            },
-        ]
         const wrapper = enzyme.shallow(
             <WizardDialog
                 tiles={null}
@@ -242,7 +228,7 @@ describe('>>> WizardDialog tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
-                inputData={dummyData}
+                inputData={data}
                 changedEnablers={changedEnablers}
             />
         );

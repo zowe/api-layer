@@ -22,36 +22,33 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
     if (action == null) {
         return state;
     }
-    let result = {};
     switch (action.type) {
         case TOGGLE_DISPLAY:
             return {
                 ...state,
                 wizardIsOpen: !state.wizardIsOpen,
             };
-        case SELECT_ENABLER:
-            switch (action.payload.enablerName) {
-                case 'Plain Java Enabler':
-                    result = {
-                        ...state,
-                        inputData: data,
-                    };
-                    break;
-                case 'Spring Enabler':
-                    result = {
-                        ...state,
-                        inputData: data2,
-                    };
-                    break;
-                default:
-                    result = { ...state };
+        case SELECT_ENABLER: {
+            const mapped = {
+                'Plain Java Enabler': data,
+                'Spring Enabler': data2,
+            };
+            const { enablerName } = action.payload;
+            if (enablerName in mapped) {
+                return {
+                    ...state,
+                    enablerName,
+                    inputData: mapped[enablerName],
+                    enablerChanged: true,
+                };
             }
-            result = {
-                ...result,
-                enablerName: action.payload.enablerName,
+            return {
+                ...state,
+                enablerName,
+                inputData: [],
                 enablerChanged: true,
             };
-            return result;
+        }
         case ENABLER_CHANGED:
             return {
                 ...state,

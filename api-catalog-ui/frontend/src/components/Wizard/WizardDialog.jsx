@@ -90,6 +90,7 @@ export default class WizardDialog extends Component {
     loadInputs = () => {
         const dataAsObject = this.state.inputData[this.state.selectedIndex];
         if (
+            dataAsObject === undefined ||
             dataAsObject.content === undefined ||
             dataAsObject.content === null ||
             Object.entries(dataAsObject.content).length === 0
