@@ -8,6 +8,8 @@ import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ErrorDialog from '../Error/ErrorDialog';
 import WizardContainer from '../Wizard/WizardContainer';
+import { enablerData } from '../Wizard/wizard_config';
+import DialogDropdown from '../Wizard/DialogDropdown';
 
 export default class Dashboard extends Component {
     constructor(props) {
@@ -65,16 +67,17 @@ export default class Dashboard extends Component {
 
         return (
             <div>
-                <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
-                    Refresh Static APIs
-                </Button>
-                {this.state.WIP ? (
-                    ''
-                ) : (
-                    <Button id="wizard-YAML-button" size="medium" onClick={this.toggleWizard}>
-                        Onboard New API
+                <div id="dash-buttons">
+                    <DialogDropdown
+                        selectEnabler={this.props.selectEnabler}
+                        WIP={this.state.WIP}
+                        data={enablerData}
+                        toggleWizard={this.toggleWizard}
+                    />
+                    <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
+                        Refresh Static APIs
                     </Button>
-                )}
+                </div>
                 <WizardContainer />
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (

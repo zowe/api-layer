@@ -76,9 +76,21 @@ export default class WizardDialog extends Component {
         wizardToggleDisplay();
     };
 
+    doneWizard = () => {
+        const { refreshedStaticApi, wizardToggleDisplay } = this.props;
+        wizardToggleDisplay();
+        refreshedStaticApi();
+    };
+
+    refreshInputData() {
+        this.setState({ inputData: this.props.inputData });
+        this.props.changedEnablers();
+    }
+
     loadInputs = () => {
         const dataAsObject = this.state.inputData[this.state.selectedIndex];
         if (
+            dataAsObject === undefined ||
             dataAsObject.content === undefined ||
             dataAsObject.content === null ||
             Object.entries(dataAsObject.content).length === 0
@@ -110,12 +122,15 @@ export default class WizardDialog extends Component {
     };
 
     render() {
-        const { wizardIsOpen } = this.props;
+        const { wizardIsOpen, enablerName, enablerChanged } = this.props;
+        if (enablerChanged) {
+            this.refreshInputData();
+        }
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} closeOnClickOutside={false}>
                     <DialogHeader>
-                        <DialogTitle>Onboard a New API</DialogTitle>
+                        <DialogTitle>Onboard a New API Using {enablerName}</DialogTitle>
                     </DialogHeader>
                     <DialogBody>
                         <Text>This wizard will guide you through creating a correct YAML for your application.</Text>
@@ -136,7 +151,9 @@ export default class WizardDialog extends Component {
                             <Button size="medium" onClick={this.closeWizard}>
                                 Cancel
                             </Button>
-                            <Button size="medium">Save file</Button>
+                            <Button size="medium" onClick={this.doneWizard}>
+                                Done
+                            </Button>
                         </DialogActions>
                     </DialogFooter>
                 </Dialog>
