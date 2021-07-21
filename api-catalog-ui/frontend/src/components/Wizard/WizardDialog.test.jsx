@@ -218,4 +218,54 @@ describe('>>> WizardDialog tests', () => {
         instance.getNext();
         expect(wrapper.state().selectedIndex).toEqual(0);
     });
+
+    it('should refresh input data', () => {
+        const changedEnablers = jest.fn();
+        const dummyData = [
+            {
+                text: 'Category #1',
+                content: {
+                    testInput: 'test1',
+                },
+            },
+            {
+                text: 'Category #2',
+                content: {
+                    testInput2: 'test2',
+                },
+            },
+        ]
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                inputData={dummyData}
+                changedEnablers={changedEnablers}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.refreshInputData();
+        expect(changedEnablers).toHaveBeenCalled();
+    })
+
+    it('should refresh input data if enablerChanged is true', () => {
+        const changedEnablers = jest.fn();
+        enzyme.shallow(
+            <WizardDialog
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                inputData={data}
+                changedEnablers={changedEnablers}
+                enablerChanged={true}
+            />
+        );
+        expect(changedEnablers).toHaveBeenCalled();
+    })
+
 });
