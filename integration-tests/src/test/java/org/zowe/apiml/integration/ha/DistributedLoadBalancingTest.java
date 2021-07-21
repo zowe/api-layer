@@ -55,21 +55,32 @@ public class DistributedLoadBalancingTest {
 
         assertThat(routedInstanceId, is(notNullValue()));
 
+        // Try first on local instance
+        String[] results1 = new String[10];
+        for (int i=0; i<10; i++) {
+            String routedInstanceIdOnOtherGateway = given()
+                .cookie(COOKIE_NAME, jwt)
+                .get("https://gateway-service:10010/api/v1/discoverableclient/greeting")
+                .header("X-InstanceId");
+            results1[i] = routedInstanceId.equals(routedInstanceIdOnOtherGateway) ? "match" : "nomatch";
+        }
+
+        String resultLog1 = Arrays.asList(results1).stream().collect(Collectors.joining(","));
+        assertThat("Result of testing against same gateway instance", resultLog1, containsString("match,match,match,match,match,match,match,match,match,match"));
 
 
-        String[] results = new String[10];
+        // Try second on the other instance
+        String[] results2 = new String[10];
         for (int i=0; i<10; i++) {
             String routedInstanceIdOnOtherGateway = given()
                 .cookie(COOKIE_NAME, jwt)
                 .get("https://gateway-service-2:10010/api/v1/discoverableclient/greeting")
                 .header("X-InstanceId");
-            results[i] = routedInstanceId.equals(routedInstanceIdOnOtherGateway) ? "match" : "nomatch";
+            results2[i] = routedInstanceId.equals(routedInstanceIdOnOtherGateway) ? "match" : "nomatch";
         }
 
-        String resultLog = Arrays.asList(results).stream().collect(Collectors.joining(","));
-
-        // Want to see how the tests performed.
-        assertThat(resultLog, containsString("match,match,match,match,match,match,match,match,match,match"));
+        String resultLog2 = Arrays.asList(results2).stream().collect(Collectors.joining(","));
+        assertThat("Result of testing against another gateway instance", resultLog2, containsString("match,match,match,match,match,match,match,match,match,match"));
 
     }
 }
