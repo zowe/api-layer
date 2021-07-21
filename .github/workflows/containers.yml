@@ -452,15 +452,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
-                    CACHING_STORAGE_REDIS_HOST: 'localhost'
-                    CACHING_STORAGE_REDIS_PORT: 6379
-                    CACHING_STORAGE_REDIS_USERNAME: 'default'
-                    CACHING_STORAGE_REDIS_PASSWORD: 'heslo'
+                    CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@localhost:6379'
                     CACHING_STORAGE_REDIS_SSL_ENABLED: true
-                    CACHING_STORAGE_REDIS_SSL_KEYSTORE: keystore/localhost/localhost.keystore.p12
-                    CACHING_STORAGE_REDIS_SSL_KEYSTOREPASSWORD: password
-                    CACHING_STORAGE_REDIS_SSL_TRUSTSTORE: keystore/localhost/localhost.truststore.p12
-                    CACHING_STORAGE_REDIS_SSL_TRUSTSTOREPASSWORD: password
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
@@ -477,7 +470,7 @@ jobs:
                     - "6379:6379"
                 volumes:
                     - /api-layer/keystore:/usr/local/etc/keystore
-                    - /api-layer/docker/redis/master-tls:/usr/local/etc/redis/
+                    - /api-layer/docker/redis/config/master-tls.conf:/usr/local/etc/redis/redis.conf
 
             redis-replica:
                 image: redis:latest
@@ -485,7 +478,7 @@ jobs:
                     - "6380:6380"
                 volumes:
                     - /api-layer/keystore:/usr/local/etc/keystore
-                    - /api-layer/docker/redis/replica-tls:/usr/local/etc/redis/
+                    - /api-layer/docker/redis/config/replica-tls.conf:/usr/local/etc/redis/redis.conf
 
 
         steps:
@@ -545,10 +538,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'redis'
-                    CACHING_STORAGE_REDIS_HOST: 'localhost'
-                    CACHING_STORAGE_REDIS_PORT: 6379
-                    CACHING_STORAGE_REDIS_USERNAME: 'default'
-                    CACHING_STORAGE_REDIS_PASSWORD: 'heslo'
+                    CACHING_STORAGE_REDIS_MASTERNODEURI: 'default:heslo@localhost:6379'
+                    CACHING_STORAGE_REDIS_SSL_ENABLED: false
                     VERIFY_CERTIFICATES: false
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
@@ -569,14 +560,14 @@ jobs:
                 ports:
                     - "6379:6379"
                 volumes:
-                    - /api-layer/docker/redis/master:/usr/local/etc/redis/
+                    - /api-layer/docker/redis/config/master.conf:/usr/local/etc/redis/redis.conf
 
             redis-replica:
                 image: redis:latest
                 ports:
                     - "6380:6380"
                 volumes:
-                    - /api-layer/docker/redis/replica:/usr/local/etc/redis/
+                    - /api-layer/docker/redis/config/replica.conf:/usr/local/etc/redis/redis.conf
 
         steps:
             -   uses: actions/checkout@v2

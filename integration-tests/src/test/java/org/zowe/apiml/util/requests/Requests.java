@@ -14,6 +14,7 @@ import com.jayway.jsonpath.ReadContext;
 import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 
 import java.net.URI;
@@ -21,6 +22,7 @@ import java.net.URI;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
+@Slf4j
 public class Requests {
     public ReadContext getJson(URI uri) {
         String apps = given()
@@ -43,7 +45,9 @@ public class Requests {
             .get(uri)
             .then().extract();
 
-        ReadContext context = JsonPath.parse(response.body().toString());
+        String responseText = response.body().asString();
+        ReadContext context = JsonPath.parse(responseText);
+        log.info("Response: {}, Response Code: {}", responseText, response.statusCode());
         return new JsonResponse(response.statusCode(), context);
     }
 }
