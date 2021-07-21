@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CatalogTest;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
+import org.zowe.apiml.util.categories.NotAttlsTest;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.http.HttpSecurityUtils;
@@ -52,6 +53,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
     @Nested
     class WhenGettingApiDoc {
         @Nested
+        @NotAttlsTest
         class ReturnRelevantApiDoc {
             @Test
             void givenV1ApiDocPath() throws Exception {

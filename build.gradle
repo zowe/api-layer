@@ -141,11 +141,6 @@ task runContainerTests(dependsOn: [":integration-tests:runContainerTests"]) {
     group "Integration tests"
 }
 
-task runCITestsAttls(dependsOn: [":integration-tests:runCITestsAttls"]) {
-    description "Run Integration Test Without MF Dependencies"
-    group "Integration tests"
-}
-
 task runRegistrationTests(dependsOn: [":integration-tests:runRegistrationTests"]) {
     description "Run Integration Test verifying registration and deregistration"
     group "Integration tests"

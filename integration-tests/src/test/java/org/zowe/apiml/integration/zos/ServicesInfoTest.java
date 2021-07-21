@@ -13,7 +13,9 @@ import io.restassured.RestAssured;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.*;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
@@ -34,7 +36,7 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 /**
  * Verify it's possible to retrieve information about services onboarded to the gateway if the user requesting the
  * information has valid authorization in the ESM.
- *
+ * <p>
  * The integration is about verifying the integration with ESM.
  */
 @GeneralAuthenticationTest
@@ -49,7 +51,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
     private final static String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getUser();
     private final static String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getPassword();
 
-    private static final String SERVICES_ENDPOINT = "gateway/api/v1/services";
+    private static final String SERVICES_ENDPOINT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getServicesEndpoint();
     private static final String SERVICES_ENDPOINT_NOT_VERSIONED = "gateway/services";
 
     private static final String API_CATALOG_SERVICE_ID = "apicatalog";
@@ -63,24 +65,29 @@ class ServicesInfoTest implements TestWithStartedInstances {
         SslContext.prepareSslAuthentication();
     }
 
+
     @Nested
     class WhenGettingInformationAboutServices {
 
         @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class ReturnUnauthorized {
+            Stream<String> endpoints(){
+                return Stream.of(
+                    SERVICES_ENDPOINT,
+                    SERVICES_ENDPOINT_NOT_VERSIONED,
+                    SERVICES_ENDPOINT + "/" + API_CATALOG_SERVICE_ID,
+                    SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
+                );
+            }
             @ParameterizedTest(name = "givenNoAuthentication {index} {0} ")
-            @ValueSource(strings = {
-                SERVICES_ENDPOINT,
-                SERVICES_ENDPOINT_NOT_VERSIONED,
-                SERVICES_ENDPOINT + "/" + API_CATALOG_SERVICE_ID,
-                SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
-            })
+            @MethodSource("endpoints")
             void givenNoAuthentication(String endpoint) {
                 //@formatter:off
                 given().config(SslContext.tlsWithoutCert)
-                .when()
+                    .when()
                     .get(getUriFromGateway(endpoint))
-                .then()
+                    .then()
                     .statusCode(is(SC_UNAUTHORIZED));
                 //@formatter:on
             }
@@ -95,7 +102,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
             })
             void returns200WithoutSafCheck(String endpoint) {
                 given().config(SslContext.clientCertUser)
-                .when()
+                    .when()
                     .get(getUriFromGateway(endpoint))
                     .then()
                     .statusCode(is(SC_OK));
@@ -124,15 +131,16 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
                 token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
             }
+
             @Test
             @SuppressWarnings({"squid:S2699", "Assets are after then()"})
             void givenValidToken() {
                 //@formatter:off
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-                .when()
+                    .when()
                     .get(getUriFromGateway(SERVICES_ENDPOINT))
-                .then()
+                    .then()
                     .statusCode(is(SC_OK))
                     .header(VERSION_HEADER, CURRENT_VERSION)
                     .body("serviceId", hasItems("gateway", "discovery", API_CATALOG_SERVICE_ID));
@@ -150,9 +158,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 //@formatter:off
                 given()
                     .auth().basic(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD)
-                .when()
+                    .when()
                     .get(getUriFromGateway(SERVICES_ENDPOINT))
-                .then()
+                    .then()
                     .statusCode(is(SC_FORBIDDEN))
                     .body("messages.find { it.messageNumber == 'ZWEAT403E' }.messageContent", startsWith(expectedMessage));
                 //@formatter:on
@@ -176,6 +184,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
             token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
         }
+
         @Nested
         class ReturnDetailedInformationInObject {
             @ParameterizedTest(name = "givenValidTokenWithAuthorizedUserAndValidServiceId {index} {0} {1} {2} {3}")
@@ -185,9 +194,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 //@formatter:off
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-                .when()
+                    .when()
                     .get(uri)
-                .then()
+                    .then()
                     .statusCode(is(SC_OK))
                     .header(VERSION_HEADER, CURRENT_VERSION)
 
@@ -207,9 +216,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 //@formatter:off
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-                .when()
+                    .when()
                     .get(getUriFromGateway(SERVICES_ENDPOINT, Collections.singletonList(new BasicNameValuePair("apiId", API_CATALOG_SERVICE_API_ID))))
-                .then()
+                    .then()
                     .statusCode(is(SC_OK))
                     .header(VERSION_HEADER, CURRENT_VERSION)
 

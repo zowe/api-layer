@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.NotAttlsTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
@@ -82,6 +83,7 @@ class ApiCatalogAuthenticationTest {
 
     //@formatter:off
     @Nested
+    @NotAttlsTest
     class WhenAccessingCatalog {
         @Nested
         class ReturnOk {
