@@ -72,7 +72,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
         @Nested
         @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class ReturnUnauthorized {
-            Stream<String> endpoints(){
+            Stream<String> endpoints() {
                 return Stream.of(
                     SERVICES_ENDPOINT,
                     SERVICES_ENDPOINT_NOT_VERSIONED,
@@ -80,6 +80,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
                     SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
                 );
             }
+
             @ParameterizedTest(name = "givenNoAuthentication {index} {0} ")
             @MethodSource("endpoints")
             void givenNoAuthentication(String endpoint) {
