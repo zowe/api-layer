@@ -77,7 +77,6 @@ public class HttpsWebSecurityConfig {
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
-                .antMatchers("/application/health", "/application/info", "/favicon.ico").permitAll()
                 .antMatchers("/**").authenticated()
                 .and()
                 .httpBasic().realmName(DISCOVERY_REALM);
@@ -106,7 +105,10 @@ public class HttpsWebSecurityConfig {
                 "/eureka/css/**",
                 "/eureka/js/**",
                 "/eureka/fonts/**",
-                "/eureka/images/**"
+                "/eureka/images/**",
+                "/application/health",
+                "/application/info",
+                "/favicon.ico"
             };
             web.ignoring().antMatchers(noSecurityAntMatchers);
         }
