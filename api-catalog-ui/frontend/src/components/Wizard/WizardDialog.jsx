@@ -130,7 +130,7 @@ export default class WizardDialog extends Component {
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} closeOnClickOutside={false}>
                     <DialogHeader>
-                        <DialogTitle>{enablerName}</DialogTitle>
+                        <DialogTitle>Onboard a New API Using {enablerName}</DialogTitle>
                     </DialogHeader>
                     <DialogBody>
                         <Text>This wizard will guide you through creating a correct YAML for your application.</Text>
