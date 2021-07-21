@@ -4,10 +4,10 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `1.23.0 (2021-07-26)`
 
-* Feature:  Authentication based server side load balancing (#1576) ([4ad382e](https://github.com/zowe/api-layer/commit/4ad382e)), closes [#1576](https://github.com/zowe/api-layer/issues/1576)
+* Feature:  Authentication based server-side load balancing (#1576) ([4ad382e](https://github.com/zowe/api-layer/commit/4ad382e)), closes [#1576](https://github.com/zowe/api-layer/issues/1576)
 * Feature:  Catalog: authenticate with client certificate for /apidoc/** endpoints (#1568) ([79dedfd](https://github.com/zowe/api-layer/commit/79dedfd)), closes [#1568](https://github.com/zowe/api-layer/issues/1568)
 * Feature:  Gateway: authenticate with client certificate for /gateway/services/** endpoint (#1568) ([d0d7b0af92de20fe606076e90f48604018cdf099](https://github.com/zowe/api-layer/commit/d0d7b0af92de20fe606076e90f48604018cdf099)), closes [#1568](https://github.com/zowe/api-layer/issues/1568)
-* Feature:  Make cookie samesite configurable (#1545) ([135904c](https://github.com/zowe/api-layer/commit/135904c)), closes [#1545](https://github.com/zowe/api-layer/issues/1545)
+* Feature:  Make cookie samesite configurable. The configuration parameter `apiml.auth.cookieProperties.cookieSameSite` makes it possible for users to configure the SameSite attribute of the `apimlAuthenticationToken` cookie (#1545) ([135904c](https://github.com/zowe/api-layer/commit/135904c)), closes [#1545](https://github.com/zowe/api-layer/issues/1545)
 * Feature:  per service load balancer configuration (#1536) ([db0c070](https://github.com/zowe/api-layer/commit/db0c070)), closes [#1536](https://github.com/zowe/api-layer/issues/1536)
 
 
@@ -15,8 +15,8 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Handle multiple discovery service instances in static refresh (#1582) ([d7237ce](https://github.com/zowe/api-layer/commit/d7237ce)), closes [#1582](https://github.com/zowe/api-layer/issues/1582)
 * Bugfix:  Improve redis configuration for users (#1589) ([b1f7088](https://github.com/zowe/api-layer/commit/b1f7088)), closes [#1589](https://github.com/zowe/api-layer/issues/1589)
 * Bugfix:  Properly display API Catalog status on Gateway homepage (#1581) ([b8dd9cd](https://github.com/zowe/api-layer/commit/b8dd9cd)), closes [#1581](https://github.com/zowe/api-layer/issues/1581)
-* Bugfix:  change order of authentication filters on Login endpoint (#1526) ([3b93e9b](https://github.com/zowe/api-layer/commit/3b93e9b)), closes [#1526](https://github.com/zowe/api-layer/issues/1526)
-* Bugfix:  wrong using of certificates in ZAAS client (#1514) ([964c4fa](https://github.com/zowe/api-layer/commit/964c4fa)), closes [#1514](https://github.com/zowe/api-layer/issues/1514)
+* Bugfix:  Change order of authentication filters on Login endpoint (#1526) ([3b93e9b](https://github.com/zowe/api-layer/commit/3b93e9b)), closes [#1526](https://github.com/zowe/api-layer/issues/1526)
+* Bugfix:  Wrong using of certificates in ZAAS client (#1514) ([964c4fa](https://github.com/zowe/api-layer/commit/964c4fa)), closes [#1514](https://github.com/zowe/api-layer/issues/1514)
 
 ## `1.22.0 (2021-06-14)`
 
