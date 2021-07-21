@@ -4,7 +4,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `1.23.0 (2021-07-26)`
 
-* Feature:  Authentication based server-side load balancing (#1576) ([4ad382e](https://github.com/zowe/api-layer/commit/4ad382e)), closes [#1576](https://github.com/zowe/api-layer/issues/1576)
+* Feature:  Authentication based server-side load balancing. A service can now configure itself with the Authentication based load balancing scheme whereby a user is directed to the same instance of a service for a given period of time (#1576) ([4ad382e](https://github.com/zowe/api-layer/commit/4ad382e)), closes [#1576](https://github.com/zowe/api-layer/issues/1576).
 * Feature:  Catalog: authenticate with client certificate for /apidoc/** endpoints (#1568) ([79dedfd](https://github.com/zowe/api-layer/commit/79dedfd)), closes [#1568](https://github.com/zowe/api-layer/issues/1568)
 * Feature:  Gateway: authenticate with client certificate for /gateway/services/** endpoint (#1568) ([d0d7b0af92de20fe606076e90f48604018cdf099](https://github.com/zowe/api-layer/commit/d0d7b0af92de20fe606076e90f48604018cdf099)), closes [#1568](https://github.com/zowe/api-layer/issues/1568)
 * Feature:  Make cookie samesite configurable. The configuration parameter `apiml.auth.cookieProperties.cookieSameSite` makes it possible for users to configure the SameSite attribute of the `apimlAuthenticationToken` cookie (#1545) ([135904c](https://github.com/zowe/api-layer/commit/135904c)), closes [#1545](https://github.com/zowe/api-layer/issues/1545)
