@@ -288,7 +288,15 @@ server:
 apiml:
     service:
         scheme: http
-zuul.debug.request: false
+zuul:
+    debug:
+        request: false
+    ignoredPatterns:
+        - /ws/**
+        - /gateway/api/v*/services/**
+        - /api/v*/gateway/services/**
+        - /apicatalog/api/v*/apidoc/**
+        - /api/v*/apicatalog/apidoc/**
 
 eureka:
     instance:
