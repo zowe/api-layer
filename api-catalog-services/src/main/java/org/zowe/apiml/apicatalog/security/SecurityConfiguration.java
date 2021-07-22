@@ -102,11 +102,15 @@ public class SecurityConfiguration {
                 .antMatchers(APIDOC_ROUTES).authenticated();
 
             if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
-                http.x509()
-                    .x509AuthenticationFilter(apimlX509Filter(authenticationManager()))
-                    .userDetailsService(x509UserDetailsService());
                 if (isAttlsEnabled) {
-                    http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                    http.x509()
+                        .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) // filter out API ML certificate
+                        .userDetailsService(x509UserDetailsService())
+                        .and()
+                        .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                } else {
+                    http.x509()
+                        .userDetailsService(x509UserDetailsService());
                 }
             }
         }

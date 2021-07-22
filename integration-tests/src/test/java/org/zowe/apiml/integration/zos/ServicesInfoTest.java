@@ -51,7 +51,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
     private final static String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getUser();
     private final static String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getPassword();
 
-    private static final String SERVICES_ENDPOINT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getServicesEndpoint();
+    private static final String SERVICES_ENDPOINT = "gateway/api/v1/services";
     private static final String SERVICES_ENDPOINT_NOT_VERSIONED = "gateway/services";
 
     private static final String API_CATALOG_SERVICE_ID = "apicatalog";
