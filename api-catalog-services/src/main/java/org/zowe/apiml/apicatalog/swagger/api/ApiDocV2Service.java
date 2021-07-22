@@ -66,7 +66,7 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, gatewayConfigProperties);
         log.debug("Updating host for service with id: " + serviceId + " to: " + gatewayConfigProperties.getHostname());
-        swagger.setSchemes(Collections.singletonList(Scheme.forValue("https")));
+        swagger.setSchemes(Collections.singletonList(Scheme.forValue(gatewayConfigProperties.getScheme())));
         swagger.setHost(gatewayConfigProperties.getHostname());
         if (!hidden) {
             swagger.getInfo().setDescription(swagger.getInfo().getDescription() + swaggerLink);

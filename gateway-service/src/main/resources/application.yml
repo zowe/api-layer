@@ -299,6 +299,7 @@ zuul:
 
 eureka:
     instance:
+        homePageUrl: https://${apiml.gateway.hostname}:${apiml.service.port}/
         metadata-map:
             apiml:
                 apiInfo:
