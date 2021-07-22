@@ -296,10 +296,6 @@ apiml:
 zuul:
     debug:
         request: false
-    ignoredPatterns:
-        - /ws/**
-        - /gateway/api/v*/services/**
-        - /api/v*/gateway/services/**
 
 eureka:
     instance:
