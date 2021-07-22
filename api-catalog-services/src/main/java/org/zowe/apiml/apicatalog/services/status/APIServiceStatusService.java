@@ -108,11 +108,6 @@ public class APIServiceStatusService {
             return new ResponseEntity<>(result, createHeaders(), HttpStatus.OK);
         } catch (NullPointerException e) {
             throw new ApiDiffNotAvailableException(String.format("No Diff available for %s and versions %s and %s", serviceId, apiVersion1, apiVersion2));
-        } catch (IllegalArgumentException e) {
-            log.error("Exception while doing diff");
-            log.error(doc1);
-            log.error(doc2);
-            throw new ApiDiffNotAvailableException(String.format("Exception while doing diff for %s and versions %s and %s", serviceId, apiVersion1, apiVersion2));
         }
     }
 

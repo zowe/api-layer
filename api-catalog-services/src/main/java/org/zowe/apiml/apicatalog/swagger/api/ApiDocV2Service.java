@@ -17,6 +17,7 @@ import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
 import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -28,6 +29,9 @@ import java.util.Map;
 
 @Slf4j
 public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
+
+    @Value("${gateway.scheme.external:https}")
+    private String scheme;
 
     public ApiDocV2Service(GatewayClient gatewayClient) {
         super(gatewayClient);
@@ -64,9 +68,9 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
      */
     private void updateSchemeHostAndLink(Swagger swagger, String serviceId, boolean hidden) {
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, gatewayConfigProperties);
+        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, gatewayConfigProperties, scheme);
         log.debug("Updating host for service with id: " + serviceId + " to: " + gatewayConfigProperties.getHostname());
-        swagger.setSchemes(Collections.singletonList(Scheme.forValue("https")));
+        swagger.setSchemes(Collections.singletonList(Scheme.forValue(scheme)));
         swagger.setHost(gatewayConfigProperties.getHostname());
         if (!hidden) {
             swagger.getInfo().setDescription(swagger.getInfo().getDescription() + swaggerLink);
