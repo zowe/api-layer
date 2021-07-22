@@ -12,11 +12,12 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer.predicate;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.RequestAwarePredicate;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
-import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
+import org.zowe.apiml.gateway.security.service.AuthenticationServiceUtils;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -31,8 +32,9 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * There is also terrible overhead as this happens for all instance ids.
  */
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationBasedPredicate extends RequestAwarePredicate {
-    private final HttpAuthenticationService authenticationService;
+    private final AuthenticationServiceUtils authenticationService;
     private final LoadBalancerCache cache;
     private final int expirationTime;
 
@@ -45,22 +47,23 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
             return true;
         }
 
-        Optional<String> authenticatedUser = authenticationService.getAuthenticatedUser(requestContext.getRequest());
+        Optional<String> authenticatedUser = authenticationService.getPrincipalFromRequest(requestContext.getRequest());
 
         if (!authenticatedUser.isPresent()) {
-            // Allow selection of any instance.
+            log.debug("No authentication present on request, not filtering instance: {}", serviceId);
             return true;
         }
 
         String username = authenticatedUser.get();
         LoadBalancerCacheRecord loadBalancerCacheRecord = cache.retrieve(username, serviceId);
         if (loadBalancerCacheRecord == null || loadBalancerCacheRecord.getInstanceId() == null) {
-            // This is the first time
+            log.debug("No preference exists, not filtering instance: {}", serviceId);
             return true;
         }
 
         if (isTooOld(loadBalancerCacheRecord.getCreationTime())) {
             cache.delete(username, serviceId);
+            log.debug("Expired preference exists and was deleted. not filtering instance: {}", serviceId);
             return true;
         }
 

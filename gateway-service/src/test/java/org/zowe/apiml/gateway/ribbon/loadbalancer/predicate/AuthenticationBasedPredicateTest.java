@@ -12,13 +12,11 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer.predicate;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
-import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
+import org.zowe.apiml.gateway.security.service.AuthenticationServiceUtils;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -36,7 +34,7 @@ class AuthenticationBasedPredicateTest {
     String VALID_USER = "annie";
     String VALID_INSTANCE = "fox_jackal";
 
-    HttpAuthenticationService authenticationService;
+    AuthenticationServiceUtils authenticationService;
     LoadBalancerCache cache;
     AuthenticationBasedPredicate underTest;
     RequestContext requestContext;
@@ -44,7 +42,7 @@ class AuthenticationBasedPredicateTest {
 
     @BeforeEach
     void setUp() {
-        authenticationService = mock(HttpAuthenticationService.class);
+        authenticationService = mock(AuthenticationServiceUtils.class);
         cache = mock(LoadBalancerCache.class);
 
         context = mock(LoadBalancingContext.class);
@@ -94,7 +92,7 @@ class AuthenticationBasedPredicateTest {
             class AndValidUser {
                 @BeforeEach
                 void setUp() {
-                    when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
+                    when(authenticationService.getPrincipalFromRequest(any())).thenReturn(Optional.of(VALID_USER));
                 }
 
                 @Test

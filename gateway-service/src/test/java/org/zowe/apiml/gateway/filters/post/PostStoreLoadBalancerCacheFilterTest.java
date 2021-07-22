@@ -16,7 +16,7 @@ import org.junit.jupiter.api.*;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
-import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
+import org.zowe.apiml.gateway.security.service.AuthenticationServiceUtils;
 
 import java.util.*;
 
@@ -30,7 +30,7 @@ class PostStoreLoadBalancerCacheFilterTest {
 
     private PostStoreLoadBalancerCacheFilter underTest;
 
-    private HttpAuthenticationService authenticationService;
+    private AuthenticationServiceUtils authenticationService;
     private LoadBalancerCache loadBalancerCache;
 
     private InstanceInfo info;
@@ -48,7 +48,7 @@ class PostStoreLoadBalancerCacheFilterTest {
         info = mock(InstanceInfo.class);
         RequestContextUtils.setInstanceInfo(info);
 
-        authenticationService = mock(HttpAuthenticationService.class);
+        authenticationService = mock(AuthenticationServiceUtils.class);
         loadBalancerCache = new LoadBalancerCache(null);
 
         underTest = new PostStoreLoadBalancerCacheFilter(authenticationService, loadBalancerCache);
@@ -75,9 +75,6 @@ class PostStoreLoadBalancerCacheFilterTest {
             @Test
             void dontAddToCache() {
                 when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
-
-                when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
-
                 underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
@@ -100,7 +97,7 @@ class PostStoreLoadBalancerCacheFilterTest {
             void whenNotInCacheAddInstanceToCache() {
                 when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
 
-                when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
+                when(authenticationService.getPrincipalFromRequest(any())).thenReturn(Optional.of(VALID_USER));
 
                 underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(not(nullValue())));
@@ -110,8 +107,6 @@ class PostStoreLoadBalancerCacheFilterTest {
             void whenInCacheDoNothing() {
                 loadBalancerCache.store(VALID_USER, VALID_SERVICE_ID, new LoadBalancerCacheRecord(VALID_INSTANCE_ID));
                 when(info.getInstanceId()).thenReturn("nowhere");
-
-                when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
 
                 underTest.run();
                 LoadBalancerCacheRecord record = loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID);
@@ -125,9 +120,6 @@ class PostStoreLoadBalancerCacheFilterTest {
             @Test
             void dontStoreInstanceInfo() {
                 when(info.getInstanceId()).thenReturn(VALID_INSTANCE_ID);
-
-                when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.empty());
-
                 underTest.run();
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
@@ -138,10 +130,7 @@ class PostStoreLoadBalancerCacheFilterTest {
 
             @Test
             void dontStoreInstanceInfo() {
-                when(authenticationService.getAuthenticatedUser(any())).thenReturn(Optional.of(VALID_USER));
-
                 underTest.run();
-
                 assertThat(loadBalancerCache.retrieve(VALID_USER, VALID_SERVICE_ID), is(nullValue()));
             }
         }
