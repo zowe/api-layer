@@ -35,6 +35,7 @@ import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
@@ -88,6 +89,7 @@ public class SecurityConfiguration {
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
             auth.authenticationProvider(gatewayTokenProvider);
+            auth.authenticationProvider(new CertificateAuthenticationProvider());
         }
 
         @Override
@@ -115,6 +117,8 @@ public class SecurityConfiguration {
 
         private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) {
             ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
+            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
             out.setAuthenticationManager(authenticationManager);
             return out;
         }

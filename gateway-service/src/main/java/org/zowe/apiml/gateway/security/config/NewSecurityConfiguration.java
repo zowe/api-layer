@@ -46,6 +46,7 @@ import org.zowe.apiml.gateway.services.ServicesInfoController;
 import org.zowe.apiml.product.filter.AttlsFilter;
 import org.zowe.apiml.product.filter.SecureConnectionFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;

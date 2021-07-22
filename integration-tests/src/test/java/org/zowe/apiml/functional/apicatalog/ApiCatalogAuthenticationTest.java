@@ -173,7 +173,7 @@ class ApiCatalogAuthenticationTest {
                 @Test
                 void givenValidCertificate() {
                     given()
-                        .config(SslContext.clientCertApiml)
+                        .config(SslContext.clientCertUser)
                         .when()
                         .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
                         .then()

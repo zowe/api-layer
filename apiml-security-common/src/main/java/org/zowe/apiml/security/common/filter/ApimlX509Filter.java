@@ -33,7 +33,7 @@ public class ApimlX509Filter extends X509AuthenticationFilter {
 
     private final Set<String> publicKeyCertificatesBase64;
 
-    private Set<String> getPublicKeyCertificatesBase64() {
+    public Set<String> getPublicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
     }
 
@@ -75,10 +75,20 @@ public class ApimlX509Filter extends X509AuthenticationFilter {
             .collect(Collectors.toList()).toArray(new X509Certificate[0]);
     }
 
-    private String base64EncodePublicKey(X509Certificate cert) {
+    public String base64EncodePublicKey(X509Certificate cert) {
         return Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
+    }
+
+    public void setCertificateForClientAuth(Predicate<X509Certificate> certificateForClientAuth) {
+        this.certificateForClientAuth = certificateForClientAuth;
+    }
+
+    public void setNotCertificateForClientAuth(Predicate<X509Certificate> notCertificateForClientAuth) {
+        this.notCertificateForClientAuth = notCertificateForClientAuth;
     }
 
     Predicate<X509Certificate> certificateForClientAuth = crt -> !getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
     Predicate<X509Certificate> notCertificateForClientAuth = crt -> getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
+
+
 }
