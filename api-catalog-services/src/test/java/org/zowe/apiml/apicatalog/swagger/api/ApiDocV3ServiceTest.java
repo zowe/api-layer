@@ -21,6 +21,7 @@ import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.constants.CoreService;
@@ -57,6 +58,7 @@ class ApiDocV3ServiceTest {
         GatewayConfigProperties gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
         apiDocV3Service = new ApiDocV3Service(gatewayClient);
+        ReflectionTestUtils.setField(apiDocV3Service,"scheme","https");
     }
 
     @Test
