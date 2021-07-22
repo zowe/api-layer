@@ -49,6 +49,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.filter.ApimlX509Filter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;

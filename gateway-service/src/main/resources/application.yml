@@ -300,8 +300,6 @@ zuul:
         - /ws/**
         - /gateway/api/v*/services/**
         - /api/v*/gateway/services/**
-        - /apicatalog/api/v*/apidoc/**
-        - /api/v*/apicatalog/apidoc/**
 
 eureka:
     instance:

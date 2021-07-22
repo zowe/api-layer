@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CatalogTest;
-import org.zowe.apiml.util.categories.NotAttlsTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
@@ -96,7 +95,6 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     }
 
     @Nested
-    @NotAttlsTest
     class ApiDoc {
         @Test
             // Functional

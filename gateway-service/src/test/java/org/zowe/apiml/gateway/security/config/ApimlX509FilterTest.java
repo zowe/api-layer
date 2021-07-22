@@ -14,6 +14,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.zowe.apiml.gateway.utils.X509Utils;
+import org.zowe.apiml.security.common.filter.ApimlX509Filter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
