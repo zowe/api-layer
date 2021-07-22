@@ -11,7 +11,6 @@ package org.zowe.apiml.functional.apicatalog;
 
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -53,7 +52,7 @@ class ApiCatalogAuthenticationTest {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
-    private static String apiCatalogServiceUrl = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getUrl();
+    private static String apiCatalogServiceUrl;
 
     static Stream<Arguments> urlsToTest() {
         return Stream.of(
@@ -68,10 +67,8 @@ class ApiCatalogAuthenticationTest {
         SslContext.prepareSslAuthentication();
 
         List<DiscoveryUtils.InstanceInfo> apiCatalogInstances = DiscoveryUtils.getInstances(CATALOG_SERVICE_ID);
-        if (StringUtils.isEmpty(apiCatalogServiceUrl)) {
-            apiCatalogServiceUrl = apiCatalogInstances.stream().findFirst().map(i -> String.format("%s", i.getUrl()))
-                .orElseThrow(() -> new RuntimeException("Cannot determine API Catalog service from Discovery"));
-        }
+        apiCatalogServiceUrl = apiCatalogInstances.stream().findFirst().map(i -> String.format("%s", i.getUrl()))
+            .orElseThrow(() -> new RuntimeException("Cannot determine API Catalog service from Discovery"));
     }
 
     @BeforeEach

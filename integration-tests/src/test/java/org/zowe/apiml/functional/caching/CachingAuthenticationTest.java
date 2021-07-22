@@ -12,7 +12,6 @@ package org.zowe.apiml.functional.caching;
 
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -24,7 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
 import org.zowe.apiml.util.categories.NotAttlsTest;
-import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -44,7 +42,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
     private static final String INFO_PATH = "/cachingservice/application/info";
     private static final String APIDOC_PATH = "/cachingservice/v2/api-docs";
 
-    private String caching_url = ConfigReader.environmentConfiguration().getCachingServiceConfiguration().getUrl();
+    private String caching_url;
     private static final String CERT_HEADER_NAME = "X-Certificate-DistinguishedName";
 
     @BeforeAll
@@ -57,10 +55,9 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
     void setupCachingUrl() {
         // TODO: Move to the DiscoveryRequests
         List<DiscoveryUtils.InstanceInfo> cachingInstances = DiscoveryUtils.getInstances("cachingservice");
-        if (StringUtils.isEmpty(caching_url)) {
-            caching_url = cachingInstances.stream().findFirst().map(i -> String.format("%s", i.getUrl()))
-                .orElseThrow(() -> new RuntimeException("Cannot determine Caching service from Discovery"));
-        }
+        caching_url = cachingInstances.stream().findFirst().map(i -> String.format("%s", i.getUrl()))
+            .orElseThrow(() -> new RuntimeException("Cannot determine Caching service from Discovery"));
+
         clearSsl();
     }
 
