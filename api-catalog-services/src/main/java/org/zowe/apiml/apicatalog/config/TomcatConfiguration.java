@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.config;
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.AbstractEndpoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
@@ -30,15 +31,20 @@ import java.util.Collections;
 @Configuration
 public class TomcatConfiguration {
 
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
+
     @Bean
     public ServletWebServerFactory servletContainer() {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
-        tomcat.setTomcatConnectorCustomizers(Collections.singletonList(tomcatAttlsCustomizer()));
+        if (isAttlsEnabled) {
+            tomcat.setTomcatConnectorCustomizers(Collections.singletonList(tomcatAttlsCustomizer()));
+        }
         return tomcat;
     }
 
-    public <S, U> TomcatConnectorCustomizer tomcatAttlsCustomizer() {
+    private <S, U> TomcatConnectorCustomizer tomcatAttlsCustomizer() {
         InboundAttls.setAlwaysLoadCertificate(true);
         return connector -> {
             Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();

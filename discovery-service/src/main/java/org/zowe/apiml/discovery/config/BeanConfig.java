@@ -13,6 +13,7 @@ package org.zowe.apiml.discovery.config;
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.AbstractEndpoint;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,6 +44,7 @@ public class BeanConfig {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
     public <S, U> TomcatConnectorCustomizer tomcatAttlsCustomizer() {
         InboundAttls.setAlwaysLoadCertificate(true);
         return connector -> {

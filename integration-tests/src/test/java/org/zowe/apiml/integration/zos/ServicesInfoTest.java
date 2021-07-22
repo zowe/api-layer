@@ -102,7 +102,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
             })
             void returns200WithoutSafCheck(String endpoint) {
-                given().config(SslContext.clientCertUser)
+                given().config(SslContext.clientCertApiml)
                     .when()
                     .get(getUriFromGateway(endpoint))
                     .then()

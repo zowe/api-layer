@@ -41,11 +41,9 @@ public class AttlsFilter extends OncePerRequestFilter {
                 X509Certificate[] certificates = new X509Certificate[1];
                 certificates[0] = certificate;
                 request.setAttribute("javax.servlet.request.X509Certificate", certificates);
-            } else {
-                System.out.println("no cert in attls context");
             }
         } catch (Exception e) {
-            logger.error("Not possible to get certificate from context", e);
+            logger.error("Not possible to get certificate from AT-TLS context", e);
             response.setStatus(500);
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writeValue(response.getWriter(), "Exception reading certificate");

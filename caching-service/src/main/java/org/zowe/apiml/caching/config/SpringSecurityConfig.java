@@ -95,16 +95,14 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                     X509Certificate[] certificates = new X509Certificate[1];
                     certificates[0] = certificate;
                     request.setAttribute("javax.servlet.request.X509Certificate", certificates);
-                } else {
-                    System.out.println("no cert in attls context");
                 }
-                filterChain.doFilter(request, response);
             } catch (Exception e) {
                 logger.error("Not possible to get certificate from context", e);
                 response.setStatus(500);
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.writeValue(response.getWriter(), "Exception reading certificate");
             }
+            filterChain.doFilter(request, response);
         }
     }
 }

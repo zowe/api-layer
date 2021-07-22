@@ -308,6 +308,7 @@ public class NewSecurityConfiguration {
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
             auth.authenticationProvider(tokenAuthenticationProvider); // for authenticating Tokens
+            auth.authenticationProvider(new CertificateAuthenticationProvider());
         }
 
         @Override
