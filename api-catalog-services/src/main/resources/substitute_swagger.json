@@ -9,7 +9,7 @@
     },
     "host": "$host",
     "basePath": "$basePath",
-    "schemes": ["https"],
+    "schemes": ["$scheme"],
     "tags": [
         {
             "name": "apimlHidden"

@@ -191,7 +191,7 @@ class LocalApiDocServiceTest {
             "    },\n" +
             "    \"host\": \"gateway:10000\",\n" +
             "    \"basePath\": \"/service/api/v1\",\n" +
-            "    \"schemes\": [\"https\"],\n" +
+            "    \"schemes\": [\"http\"],\n" +
             "    \"tags\": [\n" +
             "        {\n" +
             "            \"name\": \"apimlHidden\"\n" +
