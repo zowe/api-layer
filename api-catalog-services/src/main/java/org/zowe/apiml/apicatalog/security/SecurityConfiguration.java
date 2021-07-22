@@ -31,7 +31,6 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.product.filter.AttlsFilter;
-import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
@@ -67,6 +66,7 @@ public class SecurityConfiguration {
     private final GatewayTokenProvider gatewayTokenProvider;
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
+
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
      */
@@ -112,6 +112,7 @@ public class SecurityConfiguration {
         private UserDetailsService x509UserDetailsService() {
             return username -> new User(username, "", Collections.emptyList());
         }
+
         private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) {
             ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
             out.setAuthenticationManager(authenticationManager);
