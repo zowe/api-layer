@@ -23,7 +23,7 @@ public class OpenApiUtil {
     public static final String SEPARATOR = "/";
 
     public static String getOpenApiLink(String serviceId, GatewayConfigProperties gatewayConfigProperties) {
-        String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname()
+        String link = "https" + "://" + gatewayConfigProperties.getHostname()
             + SEPARATOR + CoreService.API_CATALOG.getServiceId() + CATALOG_VERSION
             + CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
         return "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";
