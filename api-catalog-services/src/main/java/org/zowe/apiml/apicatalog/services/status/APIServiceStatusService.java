@@ -9,18 +9,9 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Applications;
 import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
 import org.openapitools.openapidiff.core.output.HtmlRender;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
@@ -28,6 +19,15 @@ import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
 import org.zowe.apiml.apicatalog.services.status.event.model.ContainerStatusChangeEvent;
 import org.zowe.apiml.apicatalog.services.status.event.model.STATUS_EVENT_TYPE;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDiffNotAvailableException;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.shared.Applications;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,8 +90,7 @@ public class APIServiceStatusService {
 
     /**
      * Return the diff of two api versions
-     *
-     * @param serviceId   the unique service id
+     * @param serviceId the unique service id
      * @param apiVersion1 the old version of the api
      * @param apiVersion2 the new version of the api
      * @return response containing HTML document detailing changes between api doc versions

@@ -26,5 +26,4 @@ public class TomcatConfiguration {
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         return tomcat;
     }
-
 }
