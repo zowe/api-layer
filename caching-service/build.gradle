@@ -46,7 +46,7 @@ gitProperties {
 
 dependencies {
     implementation project(':common-service-core')
-
+    implementation project(':apiml-tomcat-common')
     implementation project(':onboarding-enabler-spring')
     implementation libraries.zowe_attls
     implementation libraries.jjwt

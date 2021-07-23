@@ -12,7 +12,11 @@ package org.zowe.apiml.caching.config;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 
 @Configuration
 @Data
@@ -22,4 +26,9 @@ public class GeneralConfig {
     private String evictionStrategy;
     @Value("${caching.storage.size:100}")
     private int maxDataSize;
+
+    @Bean
+    public <S, U> WebServerFactoryCustomizer<TomcatServletWebServerFactory> tomcatCustomizer() {
+        return new ApimlTomcatCustomizer<S, U>();
+    }
 }
