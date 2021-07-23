@@ -12,13 +12,6 @@ import * as constants from '../constants/wizard-constants';
 import * as actions from './wizard-actions';
 
 describe('>>> Wizard actions tests', () => {
-    it('should change enablers', () => {
-        const expectedAction = {
-            type: constants.ENABLER_CHANGED,
-            payload: null,
-        };
-        expect(actions.changedEnablers()).toEqual(expectedAction);
-    });
     it('should toggle the wizard', () => {
         const expectedAction = {
             type: constants.TOGGLE_DISPLAY,

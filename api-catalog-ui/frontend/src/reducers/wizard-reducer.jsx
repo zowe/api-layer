@@ -8,14 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { ENABLER_CHANGED, INPUT_UPDATED, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { INPUT_UPDATED, NEXT_CATEGORY, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
 import { data, data2 } from '../components/Wizard/wizard_config';
 
 export const wizardReducerDefaultState = {
     wizardIsOpen: false,
     enablerName: 'Static Onboarding',
+    selectedCategory: 0,
     inputData: data,
-    enablerChanged: false,
 };
 
 const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
@@ -49,11 +49,6 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
                 enablerChanged: true,
             };
         }
-        case ENABLER_CHANGED:
-            return {
-                ...state,
-                enablerChanged: false,
-            };
         case INPUT_UPDATED: {
             const { category } = action.payload;
             const inputData = state.inputData.map(group => {
@@ -64,6 +59,8 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
             });
             return { ...state, inputData, enablerChanged: true };
         }
+        case NEXT_CATEGORY:
+            return { ...state, selectedCategory: (state.selectedCategory + 1) % state.inputData.length };
         default:
             return state;
     }

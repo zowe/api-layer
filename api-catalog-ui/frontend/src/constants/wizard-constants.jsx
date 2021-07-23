@@ -9,6 +9,6 @@
  */
 
 export const INPUT_UPDATED = 'INPUT_UPDATED';
-export const ENABLER_CHANGED = 'ENABLER_CHANGED';
 export const TOGGLE_DISPLAY = 'TOGGLE_DISPLAY';
 export const SELECT_ENABLER = 'SELECT_ENABLER';
+export const NEXT_CATEGORY = 'NEXT_CATEGORY';

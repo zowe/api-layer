@@ -10,7 +10,7 @@
 
 /* eslint-disable no-undef */
 
-import { ENABLER_CHANGED, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
 import { data } from '../components/Wizard/wizard_config';
 import wizardReducer, { wizardReducerDefaultState } from './wizard-reducer';
 
@@ -74,17 +74,6 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [], enablerChanged: false }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Non-existent Enabler' },
-        })).toEqual(expectedState);
-    });
-
-    it('should handle ENABLER_CHANGED', () => {
-        const expectedState = {
-            enablerChanged: false,
-        };
-
-        expect(wizardReducer({ enablerChanged: true }, {
-            type: ENABLER_CHANGED,
-            payload: null
         })).toEqual(expectedState);
     });
 });

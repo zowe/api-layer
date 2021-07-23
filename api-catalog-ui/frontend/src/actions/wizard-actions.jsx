@@ -8,19 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { SELECT_ENABLER, TOGGLE_DISPLAY, ENABLER_CHANGED, INPUT_UPDATED } from '../constants/wizard-constants';
+import { SELECT_ENABLER, TOGGLE_DISPLAY, INPUT_UPDATED, NEXT_CATEGORY } from '../constants/wizard-constants';
 
 export function updateWizardData(category) {
     return {
         type: INPUT_UPDATED,
         payload: { category },
-    };
-}
-
-export function changedEnablers() {
-    return {
-        type: ENABLER_CHANGED,
-        payload: null,
     };
 }
 
@@ -35,5 +28,12 @@ export function selectEnabler(enablerName) {
     return {
         type: SELECT_ENABLER,
         payload: { enablerName },
+    };
+}
+
+export function nextWizardCategory() {
+    return {
+        type: NEXT_CATEGORY,
+        payload: null,
     };
 }

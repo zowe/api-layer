@@ -13,13 +13,13 @@ import React from 'react';
 import WizardDialog from './WizardDialog';
 import { data } from './wizard_config';
 
-describe('>>> WizardDialog tests', () => {
+xdescribe('>>> WizardDialog tests', () => {
     it('should render the dialog if store value is true', () => {
         const wrapper = enzyme.shallow(<WizardDialog wizardToggleDisplay={jest.fn()} inputData={data} wizardIsOpen />);
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
     });
 
-    xit('should create 4 inputs based on data', () => {
+    it('should create 4 inputs based on data', () => {
         const dummyData = [
             {
                 text: 'Dummy Data',
