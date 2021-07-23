@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.commons.attls.InboundAttls;
@@ -37,7 +36,7 @@ public class AttlsFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             logger.error("Not possible to get certificate from AT-TLS context", e);
-            AttlsErrorHandler.handleError(response,"Exception reading certificate");
+            AttlsErrorHandler.handleError(response, "Exception reading certificate");
         }
         filterChain.doFilter(request, response);
 

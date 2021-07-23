@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.exception;
 
-public class InboundAttlsException extends RuntimeException{
+public class InboundAttlsException extends RuntimeException {
     public InboundAttlsException(String message, Throwable cause) {
         super(message, cause);
     }
