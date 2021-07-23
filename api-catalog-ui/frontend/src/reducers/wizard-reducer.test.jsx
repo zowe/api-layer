@@ -10,13 +10,13 @@
 
 /* eslint-disable no-undef */
 
-
-import { TOGGLE_DISPLAY } from '../constants/wizard-constants';
-import wizardReducer from './wizard-reducer';
+import { ENABLER_CHANGED, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { data } from '../components/Wizard/wizard_config';
+import wizardReducer, { wizardReducerDefaultState } from './wizard-reducer';
 
 describe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
-        expect(wizardReducer()).toEqual({ wizardIsOpen: false });
+        expect(wizardReducer()).toEqual(wizardReducerDefaultState);
     });
 
     it('should handle TOGGLE_DISPLAY true -> false', () => {
@@ -49,5 +49,42 @@ describe('>>> Wizard reducer tests', () => {
         };
 
         expect(wizardReducer({ wizardIsOpen: true }, null)).toEqual(expectedState);
+    });
+
+    it('should handle SELECT_ENABLER', () => {
+        const expectedState = {
+            inputData: data,
+            enablerChanged: true,
+            enablerName: 'Plain Java Enabler',
+        };
+
+        expect(wizardReducer({ inputData: [], enablerChanged: false }, {
+            type: SELECT_ENABLER,
+            payload: { enablerName: 'Plain Java Enabler' },
+        })).toEqual(expectedState);
+    });
+
+    it('should handle default state in SELECT_ENABLER', () => {
+        const expectedState = {
+            inputData: [],
+            enablerChanged: true,
+            enablerName: 'Non-existent Enabler',
+        };
+
+        expect(wizardReducer({ inputData: [], enablerChanged: false }, {
+            type: SELECT_ENABLER,
+            payload: { enablerName: 'Non-existent Enabler' },
+        })).toEqual(expectedState);
+    });
+
+    it('should handle ENABLER_CHANGED', () => {
+        const expectedState = {
+            enablerChanged: false,
+        };
+
+        expect(wizardReducer({ enablerChanged: true }, {
+            type: ENABLER_CHANGED,
+            payload: null
+        })).toEqual(expectedState);
     });
 });

@@ -7,15 +7,17 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+package org.zowe.apiml.util.categories;
 
-.dialog-footer{
-    border-top: none;
-}
+import org.junit.jupiter.api.Tag;
 
-.wizardForm .entry{
-    margin-top: 12px;
-}
+import java.lang.annotation.*;
 
-.selector{
-    max-width: 300px;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+
+@Tag("LbHaTest")
+@Target({ TYPE, METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface LbHaTest {
 }

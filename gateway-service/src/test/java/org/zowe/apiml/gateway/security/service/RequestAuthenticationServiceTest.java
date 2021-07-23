@@ -11,22 +11,22 @@ package org.zowe.apiml.gateway.security.service;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-public class HttpAuthenticationServiceTest {
+public class RequestAuthenticationServiceTest {
     String VALID_USER = "tom";
 
     AuthenticationService authenticationService = mock(AuthenticationService.class);
-    HttpAuthenticationService underTest = new HttpAuthenticationService(authenticationService);
+    RequestAuthenticationService underTest = new RequestAuthenticationService(authenticationService);
     HttpServletRequest request = mock(HttpServletRequest.class);
 
     @Nested
@@ -71,5 +71,34 @@ public class HttpAuthenticationServiceTest {
         TokenAuthentication authentication = new TokenAuthentication(VALID_USER, jwtToken);
         authentication.setAuthenticated(authenticated);
         return authentication;
+    }
+
+    @Nested
+    class WhenGettingPrincipalFromRequest {
+
+        @Test
+        void emptyRequestGivesEmpty() {
+            assertThat(underTest.getPrincipalFromRequest(request), is(Optional.empty()));
+        }
+
+        @Test
+        void emptyWhenTokenNotReturned() {
+            doReturn(Optional.empty()).when(authenticationService).getJwtTokenFromRequest(any());
+            assertThat(underTest.getPrincipalFromRequest(request), is(Optional.empty()));
+        }
+
+        @Test
+        void emptyWhenTokenCannotBeParsed() {
+            doReturn(Optional.of("jwtTokenString")).when(authenticationService).getJwtTokenFromRequest(any());
+            doThrow(TokenNotValidException.class).when(authenticationService).parseJwtToken(any());
+            assertThat(underTest.getPrincipalFromRequest(request), is(Optional.empty()));
+        }
+
+        @Test
+        void principalWithValidToken() {
+            doReturn(Optional.of("jwtTokenString")).when(authenticationService).getJwtTokenFromRequest(any());
+            doReturn(new QueryResponse("domain", "user", new Date(), new Date(), QueryResponse.Source.ZOSMF)).when(authenticationService).parseJwtToken(any());
+            assertThat(underTest.getPrincipalFromRequest(request), is(Optional.of("user")));
+        }
     }
 }

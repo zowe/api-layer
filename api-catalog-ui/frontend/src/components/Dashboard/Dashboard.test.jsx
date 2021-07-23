@@ -3,6 +3,7 @@ import * as React from 'react';
 // tslint:disable-next-line:no-implicit-dependencies
 import { shallow } from 'enzyme';
 import Dashboard from './Dashboard';
+import { data } from '../Wizard/wizard_config';
 
 const ajaxError = {
     message: 'ajax Error 404',
@@ -27,23 +28,6 @@ describe('>>> Dashboard component tests', () => {
         );
         let button = wrapper.find('#refresh-api-button');
         expect(button.length).toEqual(1);
-    });
-
-    it('should (not) have "Onboard New API" button', () => {
-        const wrapper = shallow(
-            <Dashboard
-                tiles={null}
-                fetchTilesStart={jest.fn()}
-                fetchTilesStop={jest.fn()}
-                clearService={jest.fn()}
-                clear={jest.fn()}
-            />
-        );
-        let button = wrapper.find('#wizard-YAML-button');
-        let len;
-        if (wrapper.state().WIP) len = 0;
-        else len = 1;
-        expect(button.length).toEqual(len);
     });
 
     it('should display no results if search fails', () => {
@@ -132,6 +116,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
+                inputData={data}
             />
         );
         const instance = wrapper.instance();

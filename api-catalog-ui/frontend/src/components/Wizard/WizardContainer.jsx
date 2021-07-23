@@ -10,14 +10,20 @@
 
 import { connect } from 'react-redux';
 import WizardDialog from './WizardDialog';
-import { wizardToggleDisplay } from '../../actions/wizard-actions';
+import { wizardToggleDisplay, changedEnablers } from '../../actions/wizard-actions';
+import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 
 const mapStateToProps = state => ({
     wizardIsOpen: state.wizardReducer.wizardIsOpen,
+    enablerName: state.wizardReducer.enablerName,
+    inputData: state.wizardReducer.inputData,
+    enablerChanged: state.wizardReducer.enablerChanged,
 });
 
 const mapDispatchToProps = {
     wizardToggleDisplay,
+    refreshedStaticApi,
+    changedEnablers,
 };
 
 export default connect(
