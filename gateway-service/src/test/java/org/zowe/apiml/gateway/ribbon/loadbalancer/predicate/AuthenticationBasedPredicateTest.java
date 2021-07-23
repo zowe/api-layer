@@ -16,7 +16,7 @@ import org.junit.jupiter.api.*;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
-import org.zowe.apiml.gateway.security.service.AuthenticationServiceUtils;
+import org.zowe.apiml.gateway.security.service.RequestAuthenticationService;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -34,7 +34,7 @@ class AuthenticationBasedPredicateTest {
     String VALID_USER = "annie";
     String VALID_INSTANCE = "fox_jackal";
 
-    AuthenticationServiceUtils authenticationService;
+    RequestAuthenticationService authenticationService;
     LoadBalancerCache cache;
     AuthenticationBasedPredicate underTest;
     RequestContext requestContext;
@@ -42,7 +42,7 @@ class AuthenticationBasedPredicateTest {
 
     @BeforeEach
     void setUp() {
-        authenticationService = mock(AuthenticationServiceUtils.class);
+        authenticationService = mock(RequestAuthenticationService.class);
         cache = mock(LoadBalancerCache.class);
 
         context = mock(LoadBalancingContext.class);

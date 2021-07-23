@@ -18,7 +18,7 @@ import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.filters.post.*;
 import org.zowe.apiml.gateway.filters.pre.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.AuthenticationServiceUtils;
+import org.zowe.apiml.gateway.security.service.RequestAuthenticationService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -74,6 +74,6 @@ public class FilterConfig {
     @Bean
     public PostStoreLoadBalancerCacheFilter postStoreLoadBalancerCacheFilter(AuthenticationService authenticationService,
                                                                              LoadBalancerCache cache) {
-        return new PostStoreLoadBalancerCacheFilter(new AuthenticationServiceUtils(authenticationService), cache);
+        return new PostStoreLoadBalancerCacheFilter(new RequestAuthenticationService(authenticationService), cache);
     }
 }

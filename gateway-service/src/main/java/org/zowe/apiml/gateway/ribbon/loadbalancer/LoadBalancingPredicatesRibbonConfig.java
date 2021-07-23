@@ -18,7 +18,7 @@ import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.AuthenticationBasedPredicate;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.predicate.RequestHeaderPredicate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.AuthenticationServiceUtils;
+import org.zowe.apiml.gateway.security.service.RequestAuthenticationService;
 
 /**
  * This class configures the load balancer's composition in terms of what predicates will be
@@ -45,7 +45,7 @@ public class LoadBalancingPredicatesRibbonConfig {
     @ConditionalOnProperty(name = "instance.metadata.apiml.lb.type", havingValue = "authentication")
     public AuthenticationBasedPredicate authenticationBasedPredicate(AuthenticationService authenticationService, LoadBalancerCache cache) {
         return new AuthenticationBasedPredicate(
-            new AuthenticationServiceUtils(authenticationService),
+            new RequestAuthenticationService(authenticationService),
             cache,
             expirationTime
         );

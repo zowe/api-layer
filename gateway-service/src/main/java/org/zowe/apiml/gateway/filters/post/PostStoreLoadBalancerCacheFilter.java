@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
-import org.zowe.apiml.gateway.security.service.AuthenticationServiceUtils;
+import org.zowe.apiml.gateway.security.service.RequestAuthenticationService;
 
 import java.util.Map;
 import java.util.Optional;
@@ -32,7 +32,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @RequiredArgsConstructor
 public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
 
-    private final AuthenticationServiceUtils authenticationService;
+    private final RequestAuthenticationService authenticationService;
     private final LoadBalancerCache loadBalancerCache;
 
     @Override

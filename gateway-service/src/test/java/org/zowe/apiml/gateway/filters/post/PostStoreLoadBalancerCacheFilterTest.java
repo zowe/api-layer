@@ -16,7 +16,7 @@ import org.junit.jupiter.api.*;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
-import org.zowe.apiml.gateway.security.service.AuthenticationServiceUtils;
+import org.zowe.apiml.gateway.security.service.RequestAuthenticationService;
 
 import java.util.*;
 
@@ -30,7 +30,7 @@ class PostStoreLoadBalancerCacheFilterTest {
 
     private PostStoreLoadBalancerCacheFilter underTest;
 
-    private AuthenticationServiceUtils authenticationService;
+    private RequestAuthenticationService authenticationService;
     private LoadBalancerCache loadBalancerCache;
 
     private InstanceInfo info;
@@ -48,7 +48,7 @@ class PostStoreLoadBalancerCacheFilterTest {
         info = mock(InstanceInfo.class);
         RequestContextUtils.setInstanceInfo(info);
 
-        authenticationService = mock(AuthenticationServiceUtils.class);
+        authenticationService = mock(RequestAuthenticationService.class);
         loadBalancerCache = new LoadBalancerCache(null);
 
         underTest = new PostStoreLoadBalancerCacheFilter(authenticationService, loadBalancerCache);

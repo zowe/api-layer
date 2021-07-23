@@ -17,7 +17,7 @@ import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.RequestAwarePredicate;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
-import org.zowe.apiml.gateway.security.service.AuthenticationServiceUtils;
+import org.zowe.apiml.gateway.security.service.RequestAuthenticationService;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -34,7 +34,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationBasedPredicate extends RequestAwarePredicate {
-    private final AuthenticationServiceUtils authenticationService;
+    private final RequestAuthenticationService authenticationService;
     private final LoadBalancerCache cache;
     private final int expirationTime;
 

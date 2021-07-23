@@ -23,7 +23,7 @@ import java.util.Optional;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class AuthenticationServiceUtils {
+public class RequestAuthenticationService {
     private final AuthenticationService authenticationService;
 
     /**

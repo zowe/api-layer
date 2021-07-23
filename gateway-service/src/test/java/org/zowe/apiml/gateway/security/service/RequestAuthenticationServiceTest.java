@@ -22,11 +22,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class AuthenticationServiceUtilsTest {
+public class RequestAuthenticationServiceTest {
     String VALID_USER = "tom";
 
     AuthenticationService authenticationService = mock(AuthenticationService.class);
-    AuthenticationServiceUtils underTest = new AuthenticationServiceUtils(authenticationService);
+    RequestAuthenticationService underTest = new RequestAuthenticationService(authenticationService);
     HttpServletRequest request = mock(HttpServletRequest.class);
 
     @Nested
