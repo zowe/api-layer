@@ -39,14 +39,12 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
                     ...state,
                     enablerName,
                     inputData: mapped[enablerName],
-                    enablerChanged: true,
                 };
             }
             return {
                 ...state,
                 enablerName,
                 inputData: [],
-                enablerChanged: true,
             };
         }
         case INPUT_UPDATED: {
@@ -57,7 +55,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
                 }
                 return group;
             });
-            return { ...state, inputData, enablerChanged: true };
+            return { ...state, inputData };
         }
         case NEXT_CATEGORY:
             return { ...state, selectedCategory: (state.selectedCategory + 1) % state.inputData.length };

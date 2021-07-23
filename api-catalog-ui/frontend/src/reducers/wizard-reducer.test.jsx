@@ -54,11 +54,10 @@ describe('>>> Wizard reducer tests', () => {
     it('should handle SELECT_ENABLER', () => {
         const expectedState = {
             inputData: data,
-            enablerChanged: true,
             enablerName: 'Plain Java Enabler',
         };
 
-        expect(wizardReducer({ inputData: [], enablerChanged: false }, {
+        expect(wizardReducer({ inputData: []}, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Plain Java Enabler' },
         })).toEqual(expectedState);
@@ -67,11 +66,10 @@ describe('>>> Wizard reducer tests', () => {
     it('should handle default state in SELECT_ENABLER', () => {
         const expectedState = {
             inputData: [],
-            enablerChanged: true,
             enablerName: 'Non-existent Enabler',
         };
 
-        expect(wizardReducer({ inputData: [], enablerChanged: false }, {
+        expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Non-existent Enabler' },
         })).toEqual(expectedState);

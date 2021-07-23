@@ -12,6 +12,13 @@ import * as constants from '../constants/wizard-constants';
 import * as actions from './wizard-actions';
 
 describe('>>> Wizard actions tests', () => {
+    it('should update the input', () => {
+        const expectedAction = {
+            type: constants.INPUT_UPDATED,
+            payload: { category: 'Test category' },
+        };
+        expect(actions.updateWizardData('Test category')).toEqual(expectedAction);
+    });
     it('should toggle the wizard', () => {
         const expectedAction = {
             type: constants.TOGGLE_DISPLAY,

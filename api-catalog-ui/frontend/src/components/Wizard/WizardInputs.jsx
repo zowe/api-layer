@@ -9,6 +9,7 @@
  */
 
 import React, { Component } from 'react';
+import * as log from 'loglevel';
 import { FormField } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
 
@@ -26,6 +27,7 @@ class WizardInputs extends Component {
             ...objectToChange,
             content: { ...objectToChange.content, [name]: { value, question } },
         };
+        log.error(objectToChange);
         this.props.updateWizardData(objectToChange);
     }
 
