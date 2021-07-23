@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @LbHaTest
-public class DistributedLoadBalancingTest {
+class DistributedLoadBalancingTest {
 
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
     private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
@@ -57,7 +57,7 @@ public class DistributedLoadBalancingTest {
 
         // Try first on local instance
         String[] results1 = new String[10];
-        for (int i=0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
             String routedInstanceIdOnOtherGateway = given()
                 .cookie(COOKIE_NAME, jwt)
                 .get("https://gateway-service:10010/api/v1/discoverableclient/greeting")
@@ -71,7 +71,7 @@ public class DistributedLoadBalancingTest {
 
         // Try second on the other instance
         String[] results2 = new String[10];
-        for (int i=0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
             String routedInstanceIdOnOtherGateway = given()
                 .cookie(COOKIE_NAME, jwt)
                 .get("https://gateway-service-2:10010/api/v1/discoverableclient/greeting")
