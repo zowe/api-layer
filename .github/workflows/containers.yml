@@ -27,9 +27,9 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle002-${{ github.sha }}
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.os }}-gradle002-${{ github.sha }}
+                        ${{ runner.os }}-gradle001-
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
@@ -780,9 +780,9 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle002-${{ github.sha }}
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                     restore-keys: |
-                        ${{ runner.os }}-gradle002-${{ github.sha }}
+                        ${{ runner.os }}-gradle001-
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
