@@ -9,7 +9,6 @@
  */
 
 import React, { Component } from 'react';
-import TextInput from 'mineral-ui/TextInput';
 import ButtonGroup from 'mineral-ui/ButtonGroup';
 import {
     Dialog,
@@ -21,18 +20,16 @@ import {
     Button,
     Text,
     Select,
-    FormField,
 } from 'mineral-ui';
 import './wizard.css';
+import WizardInputsContainer from './WizardInputsContainer';
 
 export default class WizardDialog extends Component {
     constructor(props) {
         super(props);
         this.state = {
             selectedIndex: 0,
-            inputData: props.inputData,
         };
-        this.handleInputChange = this.handleInputChange.bind(this);
         this.handleCategoryChange = this.handleCategoryChange.bind(this);
         this.getPrev = this.getPrev.bind(this);
         this.getNext = this.getNext.bind(this);
@@ -40,31 +37,19 @@ export default class WizardDialog extends Component {
 
     getPrev() {
         const index = this.state.selectedIndex;
-        const len = this.state.inputData.length;
+        const len = this.props.inputData.length;
         this.setState({ selectedIndex: (index + len - 1) % len });
     }
 
     getNext() {
         const index = this.state.selectedIndex;
-        const len = this.state.inputData.length;
+        const len = this.props.inputData.length;
         this.setState({ selectedIndex: (index + 1) % len });
     }
 
-    handleInputChange(event) {
-        const { name, value } = event.target;
-        const inputData = [...this.state.inputData];
-        const objectToChange = inputData[this.state.selectedIndex];
-        const { question } = objectToChange.content[name];
-        inputData[this.state.selectedIndex] = {
-            ...objectToChange,
-            content: { ...objectToChange.content, [name]: { value, question } },
-        };
-        this.setState({ inputData });
-    }
-
     handleCategoryChange(event) {
-        for (let i = 0; i < this.state.inputData.length; i += 1) {
-            if (this.state.inputData[i].text === event.text) {
+        for (let i = 0; i < this.props.inputData.length; i += 1) {
+            if (this.props.inputData[i].text === event.text) {
                 this.setState({ selectedIndex: i });
                 break;
             }
@@ -82,50 +67,9 @@ export default class WizardDialog extends Component {
         refreshedStaticApi();
     };
 
-    refreshInputData() {
-        this.setState({ inputData: this.props.inputData });
-        this.props.changedEnablers();
-    }
-
-    loadInputs = () => {
-        const dataAsObject = this.state.inputData[this.state.selectedIndex];
-        if (
-            dataAsObject === undefined ||
-            dataAsObject.content === undefined ||
-            dataAsObject.content === null ||
-            Object.entries(dataAsObject.content).length === 0
-        ) {
-            return '';
-        }
-        const selectedData = Object.entries(dataAsObject.content);
-        let key = 0;
-        return selectedData.map(item => {
-            key += 1;
-            let { question } = dataAsObject.content[item[0]];
-            if (question === undefined) {
-                question = '';
-            }
-            return (
-                <div className="entry" key={key}>
-                    <FormField
-                        input={TextInput}
-                        size="large"
-                        name={item[0]}
-                        onChange={this.handleInputChange}
-                        placeholder={item[0]}
-                        value={dataAsObject.content[item[0]].value}
-                        label={question}
-                    />
-                </div>
-            );
-        });
-    };
-
     render() {
-        const { wizardIsOpen, enablerName, enablerChanged } = this.props;
-        if (enablerChanged) {
-            this.refreshInputData();
-        }
+        const { wizardIsOpen, enablerName, inputData, selectedIndex } = this.props;
+        const selectedItem = inputData[selectedIndex];
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} closeOnClickOutside={false}>
@@ -139,12 +83,12 @@ export default class WizardDialog extends Component {
                             <Button onClick={this.getNext}>Next</Button>
                             <Select
                                 className="selector"
-                                data={this.state.inputData}
-                                selectedItem={this.state.inputData[this.state.selectedIndex]}
+                                data={inputData}
+                                selectedItem={selectedItem}
                                 onChange={this.handleCategoryChange}
                             />
                         </ButtonGroup>
-                        <div className="wizardForm"> {this.loadInputs()}</div>
+                        <WizardInputsContainer data={selectedItem} />
                     </DialogBody>
                     <DialogFooter className="dialog-footer">
                         <DialogActions>

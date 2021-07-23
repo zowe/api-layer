@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { ENABLER_CHANGED, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { ENABLER_CHANGED, INPUT_UPDATED, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
 import { data, data2 } from '../components/Wizard/wizard_config';
 
 export const wizardReducerDefaultState = {
@@ -54,6 +54,16 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
                 ...state,
                 enablerChanged: false,
             };
+        case INPUT_UPDATED: {
+            const { category } = action.payload;
+            const inputData = state.inputData.map(group => {
+                if (group.text === category.text) {
+                    return category;
+                }
+                return group;
+            });
+            return { ...state, inputData, enablerChanged: true };
+        }
         default:
             return state;
     }
