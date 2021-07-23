@@ -28,7 +28,8 @@ ext.projectsNeedLicense = [
     'onboarding-enabler-micronaut-sample-app',
     'onboarding-enabler-nodejs',
     'zaas-client',
-    'mock-zosmf'
+    'mock-zosmf',
+    'apiml-tomcat-common'
 ]
 
 configure(subprojects.findAll { it.name in projectsNeedLicense }) {
