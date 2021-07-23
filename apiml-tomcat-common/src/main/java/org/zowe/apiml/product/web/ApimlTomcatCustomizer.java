@@ -41,6 +41,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
     public void customizeConnector(Connector connector) {
         Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
         try {
+
             Field handlerField = AbstractProtocol.class.getDeclaredField("handler");
             handlerField.setAccessible(true);
             AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>) handlerField.get(protocolHandler);

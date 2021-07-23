@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.utils;
+package org.zowe.apiml.security.common.utils;
 
 import lombok.experimental.UtilityClass;
 
@@ -18,8 +18,7 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Collections;
 
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 @UtilityClass
 public class X509Utils {
