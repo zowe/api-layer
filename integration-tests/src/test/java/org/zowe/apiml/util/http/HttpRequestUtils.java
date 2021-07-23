@@ -14,15 +14,12 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.*;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -69,6 +66,10 @@ public class HttpRequestUtils {
     public static URI getUriFromGateway(String endpoint, int port, String host, List<NameValuePair> arguments) {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String scheme = gatewayServiceConfiguration.getScheme();
+
+        StringTokenizer hostnameTokenizer = new StringTokenizer(host, ",");
+        host = hostnameTokenizer.nextToken();
+
         URI uri = null;
         try {
             uri = new URIBuilder()

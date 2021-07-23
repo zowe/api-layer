@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
-import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
+import org.zowe.apiml.gateway.security.service.RequestAuthenticationService;
 
 import java.util.Map;
 import java.util.Optional;
@@ -32,7 +32,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @RequiredArgsConstructor
 public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
 
-    private final HttpAuthenticationService authenticationService;
+    private final RequestAuthenticationService authenticationService;
     private final LoadBalancerCache loadBalancerCache;
 
     @Override
@@ -73,8 +73,8 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
 
         RequestContext context = RequestContext.getCurrentContext();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
-        Optional<String> authenticatedUser = authenticationService.getAuthenticatedUser(context.getRequest());
-        if (authenticatedUser.isPresent() && !instanceIsCached(authenticatedUser.get(), currentServiceId)) {
+        Optional<String> principal = authenticationService.getPrincipalFromRequest(context.getRequest());
+        if (principal.isPresent() && !instanceIsCached(principal.get(), currentServiceId)) {
             // Dont store instance info when failed.
             if (context.get("throwable") != null) {
                 return null;
@@ -82,7 +82,7 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
 
             // Also take into account whether it's for the first time and what do we know here.
             LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(instance.get().getInstanceId());
-            loadBalancerCache.store(authenticatedUser.get(), currentServiceId, loadBalancerCacheRecord);
+            loadBalancerCache.store(principal.get(), currentServiceId, loadBalancerCacheRecord);
         }
 
         return null;
