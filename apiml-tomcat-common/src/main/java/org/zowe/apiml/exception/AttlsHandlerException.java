@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.product.tomcat;
+package org.zowe.apiml.exception;
 
 public class AttlsHandlerException extends RuntimeException {
     public AttlsHandlerException(String message, Throwable cause) {

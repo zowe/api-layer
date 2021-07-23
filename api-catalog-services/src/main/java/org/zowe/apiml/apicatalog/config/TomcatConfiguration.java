@@ -9,21 +9,10 @@
  */
 package org.zowe.apiml.apicatalog.config;
 
-import org.apache.coyote.AbstractProtocol;
-import org.apache.coyote.http11.Http11NioProtocol;
-import org.apache.tomcat.util.net.AbstractEndpoint;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.product.tomcat.ApimlTomcatCustomizer;
-import org.zowe.commons.attls.InboundAttls;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Collections;
 
 /**
  * Configuration of Tomcat for the API Gateway.
@@ -31,38 +20,11 @@ import java.util.Collections;
 @Configuration
 public class TomcatConfiguration {
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
-
     @Bean
     public ServletWebServerFactory servletContainer() {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
-        if (isAttlsEnabled) {
-            tomcat.setTomcatConnectorCustomizers(Collections.singletonList(tomcatAttlsCustomizer()));
-        }
         return tomcat;
     }
 
-    private <S, U> TomcatConnectorCustomizer tomcatAttlsCustomizer() {
-        InboundAttls.setAlwaysLoadCertificate(true);
-        return connector -> {
-            Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
-            try {
-
-                Field handlerField = AbstractProtocol.class.getDeclaredField("handler");
-                handlerField.setAccessible(true);
-
-                AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>) handlerField.get(protocolHandler);
-                handler = new ApimlTomcatCustomizer.ApimlAttlsHandler<S>(handler);
-                Method method = AbstractProtocol.class.getDeclaredMethod("getEndpoint");
-                method.setAccessible(true);
-                AbstractEndpoint<S, U> abstractEndpoint = (AbstractEndpoint<S, U>) method.invoke(protocolHandler);
-
-                abstractEndpoint.setHandler(handler);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        };
-    }
 }

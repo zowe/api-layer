@@ -1,13 +1,13 @@
 dependencies {
     compile project(':apiml-utility')
-
+    compile project(':apiml-tomcat-common')
     compile libraries.spring_boot_starter_web
     compile libraries.spring_boot_starter_validation
     compile libraries.jackson_databind
     compile libraries.apache_commons_lang3
     compile libraries.http_client
     compile libraries.http_core
-    compile libraries.zowe_attls
+
 
     compileOnly libraries.spring_boot_configuration_processor
     compileOnly libraries.lombok

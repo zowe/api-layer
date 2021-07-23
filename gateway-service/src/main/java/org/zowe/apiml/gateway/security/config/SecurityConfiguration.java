@@ -33,7 +33,11 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
-import org.springframework.web.cors.*;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.zowe.apiml.filter.AttlsFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
@@ -41,8 +45,6 @@ import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
-import org.zowe.apiml.product.filter.AttlsFilter;
-import org.zowe.apiml.product.filter.SecureConnectionFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
@@ -60,7 +62,7 @@ import java.util.*;
  * 1. Adds Login and Query endpoints
  * 2. Allows basic and token (cookie) authentication
  *
- * @deprecated ({@Link NewSecurityConfiguration} to eventually replace this configuration)
+ * @deprecated ({ @ Link NewSecurityConfiguration } to eventually replace this configuration)
  */
 @Deprecated
 @ConditionalOnProperty(name = "apiml.security.filterChainConfiguration", havingValue = "legacy", matchIfMissing = false)

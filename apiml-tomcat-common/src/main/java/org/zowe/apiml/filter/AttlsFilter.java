@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.product.filter;
+package org.zowe.apiml.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.binary.Base64;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.commons.attls.InboundAttls;
 

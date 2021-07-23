@@ -7,8 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.product.tomcat;
+package org.zowe.apiml.product.web;
 
+import org.apache.catalina.connector.Connector;
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.AbstractEndpoint;
@@ -19,6 +20,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.exception.AttlsHandlerException;
 import org.zowe.commons.attls.InboundAttls;
 
 import java.lang.reflect.Field;
@@ -30,25 +32,26 @@ import java.util.Set;
 @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
 public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
 
-
     @Override
     public void customize(TomcatServletWebServerFactory factory) {
         InboundAttls.setAlwaysLoadCertificate(true);
-        factory.addConnectorCustomizers(connector -> {
-            Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
-            try {
-                Field handlerField = AbstractProtocol.class.getDeclaredField("handler");
-                handlerField.setAccessible(true);
-                AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>) handlerField.get(protocolHandler);
-                handler = new ApimlAttlsHandler<S>(handler);
-                Method method = AbstractProtocol.class.getDeclaredMethod("getEndpoint");
-                method.setAccessible(true);
-                AbstractEndpoint<S, U> abstractEndpoint = (AbstractEndpoint<S, U>) method.invoke(protocolHandler);
-                abstractEndpoint.setHandler(handler);
-            } catch (Exception e) {
-                throw new AttlsHandlerException("Not able to add handler.", e);
-            }
-        });
+        factory.addConnectorCustomizers(this::customizeConnector);
+    }
+
+    public void customizeConnector(Connector connector) {
+        Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
+        try {
+            Field handlerField = AbstractProtocol.class.getDeclaredField("handler");
+            handlerField.setAccessible(true);
+            AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>) handlerField.get(protocolHandler);
+            handler = new ApimlAttlsHandler<S>(handler);
+            Method method = AbstractProtocol.class.getDeclaredMethod("getEndpoint");
+            method.setAccessible(true);
+            AbstractEndpoint<S, U> abstractEndpoint = (AbstractEndpoint<S, U>) method.invoke(protocolHandler);
+            abstractEndpoint.setHandler(handler);
+        } catch (Exception e) {
+            throw new AttlsHandlerException("Not able to add handler.", e);
+        }
     }
 
     public static class ApimlAttlsHandler<S> implements AbstractEndpoint.Handler<S> {

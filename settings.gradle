@@ -47,4 +47,5 @@ include 'certificate-analyser'
 include 'metrics-service'
 include 'metrics-service-ui'
 include 'metrics-service-package'
+include 'apiml-tomcat-common'
 
