@@ -12,6 +12,13 @@ import * as constants from '../constants/wizard-constants';
 import * as actions from './wizard-actions';
 
 describe('>>> Wizard actions tests', () => {
+    it('should get next category', () => {
+        const expectedAction = {
+            type: constants.NEXT_CATEGORY,
+            payload: null,
+        };
+        expect(actions.nextWizardCategory()).toEqual(expectedAction);
+    });
     it('should update the input', () => {
         const expectedAction = {
             type: constants.INPUT_UPDATED,
