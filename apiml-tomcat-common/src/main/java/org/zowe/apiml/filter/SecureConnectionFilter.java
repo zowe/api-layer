@@ -9,8 +9,8 @@
  */
 package org.zowe.apiml.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.exception.InboundAttlsException;
 import org.zowe.commons.attls.*;
 
 import javax.servlet.FilterChain;
@@ -26,14 +26,12 @@ public class SecureConnectionFilter extends OncePerRequestFilter {
         if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
             try {
                 if (InboundAttls.getStatConn() != StatConn.SECURE) {
-                    response.setStatus(500);
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    objectMapper.writeValue(response.getWriter(), "Connection is not secure");
+                    AttlsErrorHandler.handleError(response, "Connection is not secure");
                 } else {
                     filterChain.doFilter(request, response);
                 }
             } catch (ContextIsNotInitializedException | UnknownEnumValueException | IoctlCallException e) {
-                throw new RuntimeException("Connection security can't be verified", e);
+                throw new InboundAttlsException("Connection security can't be verified", e);
             }
         } else {
             filterChain.doFilter(request, response);

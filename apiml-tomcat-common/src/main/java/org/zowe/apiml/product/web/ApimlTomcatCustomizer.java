@@ -44,7 +44,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             Field handlerField = AbstractProtocol.class.getDeclaredField("handler");
             handlerField.setAccessible(true);
             AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>) handlerField.get(protocolHandler);
-            handler = new ApimlAttlsHandler<S>(handler);
+            handler = new ApimlAttlsHandler<>(handler);
             Method method = AbstractProtocol.class.getDeclaredMethod("getEndpoint");
             method.setAccessible(true);
             AbstractEndpoint<S, U> abstractEndpoint = (AbstractEndpoint<S, U>) method.invoke(protocolHandler);
@@ -74,7 +74,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 InboundAttls.init(fileDescriptor);
                 return handler.process(socket, status);
             } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException("Different implementation expected.", e);
+                throw new AttlsHandlerException("Different implementation expected.", e);
             } finally {
                 InboundAttls.dispose();
             }

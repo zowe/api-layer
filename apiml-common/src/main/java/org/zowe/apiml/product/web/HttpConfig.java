@@ -18,12 +18,17 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -144,11 +149,8 @@ public class HttpConfig {
 
             factory.setSystemSslProperties();
 
-//            if (isAttlsEnabled) {
-//                publicKeyCertificatesBase64 = SecurityUtils.readApimlCertChainPemPublicKeys();
-//            } else {
-                publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-//            }
+            publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
+
         } catch (HttpsConfigError e) {
             System.exit(1); // NOSONAR
         } catch (Exception e) {
