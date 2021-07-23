@@ -7,7 +7,7 @@ class WizardNavigation extends Component {
         const { nextWizardCategory } = this.props;
         return (
             <div>
-                <Button onClick={nextWizardCategory} iconStart={<IconChevronRight />} />
+                <Button id="next" onClick={nextWizardCategory} iconStart={<IconChevronRight />} />
             </div>
         );
     }

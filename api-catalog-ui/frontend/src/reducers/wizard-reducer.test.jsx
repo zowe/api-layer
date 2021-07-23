@@ -10,7 +10,7 @@
 
 /* eslint-disable no-undef */
 
-import { SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { INPUT_UPDATED, NEXT_CATEGORY, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
 import { data } from '../components/Wizard/wizard_config';
 import wizardReducer, { wizardReducerDefaultState } from './wizard-reducer';
 
@@ -57,7 +57,7 @@ describe('>>> Wizard reducer tests', () => {
             enablerName: 'Plain Java Enabler',
         };
 
-        expect(wizardReducer({ inputData: []}, {
+        expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Plain Java Enabler' },
         })).toEqual(expectedState);
@@ -72,6 +72,88 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Non-existent Enabler' },
+        })).toEqual(expectedState);
+    });
+
+    it('should update inputData on INPUT_UPDATED', () => {
+        const initialState = {
+            inputData: [
+                {
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '0', question: 'Why?' },
+                    }
+                },
+            ],
+        };
+
+        const expectedState = {
+            inputData: [
+                {
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '42', question: 'Why?' },
+                    }
+                },
+            ],
+        };
+
+        expect(wizardReducer(initialState, {
+            type: INPUT_UPDATED,
+            payload: {
+                category: {
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '42', question: 'Why?' },
+                    }
+                },
+            },
+        })).toEqual(expectedState);
+    });
+
+    it('should not update inputData on INPUT_UPDATED, if the "text" doesnt match', () => {
+        const initialState = {
+            inputData: [
+                {
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '0', question: 'Why?' },
+                    }
+                },
+            ],
+        };
+
+        const expectedState = {
+            inputData: [
+                {
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '0', question: 'Why?' },
+                    }
+                },
+            ],
+        };
+
+        expect(wizardReducer(initialState, {
+            type: INPUT_UPDATED,
+            payload: {
+                category: {
+                    text: 'ABC',
+                    content: {}
+                },
+            },
+        })).toEqual(expectedState);
+    });
+
+    it('should handle NEXT_CATEGORY', () => {
+        const expectedState = {
+            inputData: [{}, {}],
+            selectedCategory: 1,
+        };
+
+        expect(wizardReducer({ inputData: [{}, {}], selectedCategory: 0 }, {
+            type: NEXT_CATEGORY,
+            payload: null,
         })).toEqual(expectedState);
     });
 });
