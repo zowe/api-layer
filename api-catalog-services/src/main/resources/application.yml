@@ -149,6 +149,8 @@ management:
     endpoints:
         web:
             base-path: /application
+            exposure:
+                include: health,info
     health:
         defaults:
             enabled: false

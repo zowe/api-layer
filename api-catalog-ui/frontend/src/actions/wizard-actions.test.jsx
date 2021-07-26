@@ -12,6 +12,13 @@ import * as constants from '../constants/wizard-constants';
 import * as actions from './wizard-actions';
 
 describe('>>> Wizard actions tests', () => {
+    it('should change enablers', () => {
+        const expectedAction = {
+            type: constants.ENABLER_CHANGED,
+            payload: null,
+        };
+        expect(actions.changedEnablers()).toEqual(expectedAction);
+    });
     it('should toggle the wizard', () => {
         const expectedAction = {
             type: constants.TOGGLE_DISPLAY,
@@ -19,11 +26,11 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.wizardToggleDisplay()).toEqual(expectedAction);
     });
-    it('should save YAML file', () => {
+    it('should select enabler', () => {
         const expectedAction = {
-            type: constants.SAVE_FILE,
-            payload: null,
+            type: constants.SELECT_ENABLER,
+            payload: { enablerName: 'Test' },
         };
-        expect(actions.saveGeneratedFile()).toEqual(expectedAction);
+        expect(actions.selectEnabler("Test")).toEqual(expectedAction);
     });
 });

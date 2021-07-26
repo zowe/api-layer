@@ -14,24 +14,17 @@ import io.restassured.response.Response;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.AttlsTest;
-import org.zowe.apiml.util.categories.DiscoveryServiceTest;
-import org.zowe.apiml.util.categories.NotAttlsTest;
+import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -243,7 +236,8 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
 
         Response response = RestAssured
             .given()
-            .get(getDiscoveryUriWithPath("/application/info"));
+            .auth().basic(username, password)
+            .get(getDiscoveryUriWithPath("/application"));
         Map<String, String> responseHeaders = new HashMap<>();
         response.getHeaders().forEach(h -> responseHeaders.put(h.getName(), h.getValue()));
 

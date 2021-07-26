@@ -15,13 +15,10 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
-import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
-import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
-import org.zowe.apiml.gateway.filters.post.PostStoreLoadBalancerCacheFilter;
-import org.zowe.apiml.gateway.filters.post.RoutedInstanceIdFilter;
+import org.zowe.apiml.gateway.filters.post.*;
 import org.zowe.apiml.gateway.filters.pre.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.HttpAuthenticationService;
+import org.zowe.apiml.gateway.security.service.RequestAuthenticationService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -77,6 +74,6 @@ public class FilterConfig {
     @Bean
     public PostStoreLoadBalancerCacheFilter postStoreLoadBalancerCacheFilter(AuthenticationService authenticationService,
                                                                              LoadBalancerCache cache) {
-        return new PostStoreLoadBalancerCacheFilter(new HttpAuthenticationService(authenticationService), cache);
+        return new PostStoreLoadBalancerCacheFilter(new RequestAuthenticationService(authenticationService), cache);
     }
 }

@@ -54,3 +54,68 @@ export const data = [
         text: 'SSL',
     },
 ];
+
+export const data2 = [
+    {
+        text: 'Basic info',
+        content: {
+            serviceId: {
+                value: '',
+                question: 'Enter the id of your service',
+            },
+            title: {
+                value: '',
+                question: 'Add the title of your API',
+            },
+        },
+    },
+    {
+        text: 'URL',
+        content: {
+            homePageRelativeUrl: {
+                value: '',
+                question: 'Provide short description',
+            },
+            statusPageRelativeUrl: {
+                value: '',
+                question: 'Provide short description',
+            },
+        },
+    },
+    {
+        text: 'Discovery Service URL',
+    },
+    {
+        text: 'Routes',
+    },
+    {
+        text: 'API info',
+    },
+    {
+        text: 'Catalog',
+    },
+    {
+        text: 'SSL',
+    },
+];
+
+export const enablerData = [
+    {
+        text: 'Plain Java Enabler',
+    },
+    {
+        text: 'Spring Enabler',
+    },
+    {
+        text: 'Micronaut Enabler',
+    },
+    {
+        text: 'Node JS Enabler',
+    },
+    {
+        text: 'Static Onboarding',
+    },
+    {
+        text: 'Direct Call to Eureka',
+    },
+];
