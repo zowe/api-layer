@@ -12,16 +12,23 @@ package org.zowe.apiml.filter;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.security.cert.CertificateException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 class AttlsFilterTest {
 
     @Test
-    void populateRequestWithCertificate() throws CertificateException {
+    void providedCertificateInCorrectFormat_thenPopulateRequest() throws CertificateException {
         AttlsFilter attlsFilter = new AttlsFilter();
         String certificate =
             "MIID8TCCAtmgAwIBAgIUVyBCWfHF/ZwZKVsBEpTNIBj9mQcwDQYJKoZIhvcNAQEL\n" +
@@ -51,4 +58,14 @@ class AttlsFilterTest {
         attlsFilter.populateRequestWithCertificate(request, Base64.decodeBase64(certificate));
         assertNotNull(request.getAttribute("javax.servlet.request.X509Certificate"));
     }
+
+    @Test
+    void whenExceptionOccurs_thenCreateCorrectResponse() throws ServletException, IOException {
+        AttlsFilter filter = new AttlsFilter();
+        FilterChain chain = mock(FilterChain.class);
+        HttpServletResponse response = new MockHttpServletResponse();
+        filter.doFilterInternal(new MockHttpServletRequest(), response, chain);
+        assertEquals(500, response.getStatus());
+    }
+
 }
