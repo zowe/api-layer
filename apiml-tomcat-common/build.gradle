@@ -1,7 +1,6 @@
 dependencies {
     compile libraries.spring_boot_starter_web
     compile libraries.zowe_attls
-    testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile libraries.mockito_core
     testCompile libraries.mockito_jupiter
     testCompile libraries.spring_boot_starter_test
