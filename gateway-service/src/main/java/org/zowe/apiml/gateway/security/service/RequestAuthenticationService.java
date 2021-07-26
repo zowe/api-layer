@@ -10,16 +10,20 @@
 package org.zowe.apiml.gateway.security.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.AuthenticationException;
+import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 /**
- * Provide syntax sugar for HTTP based authentication
+ * Provide syntax sugar for {@link AuthenticationService}
  */
 @RequiredArgsConstructor
-public class HttpAuthenticationService {
+@Slf4j
+public class RequestAuthenticationService {
     private final AuthenticationService authenticationService;
 
     /**
@@ -38,5 +42,27 @@ public class HttpAuthenticationService {
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Extracts principal from JWT token in request without validating it
+     * This method is designed to not fail but rather return empty
+     *
+     * @param request
+     * @return Optional containing the username
+     */
+    public Optional<String> getPrincipalFromRequest(HttpServletRequest request) {
+        String jwtToken = authenticationService.getJwtTokenFromRequest(request).orElse(null);
+        if (jwtToken == null) {
+            return Optional.empty();
+        } else {
+            try {
+                QueryResponse queryResponse = authenticationService.parseJwtToken(jwtToken);
+                return Optional.of(queryResponse.getUserId());
+            } catch (AuthenticationException e) {
+                log.debug("Exception getting principal from request, returning empty principal.", e);
+                return Optional.empty();
+            }
+        }
     }
 }

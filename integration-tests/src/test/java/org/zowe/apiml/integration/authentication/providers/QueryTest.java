@@ -170,7 +170,7 @@ class QueryTest implements TestWithStartedInstances {
     }
 
     @Nested
-    class WhenUserAuthenticatesViaGetMethod {
+    class WhenUserQueriesViaPostMethod {
         @Nested
         class ReturnMethodNotAllowed {
             @ParameterizedTest(name = "givenValidCredentials {index} {0} ")
