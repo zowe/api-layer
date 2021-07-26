@@ -50,20 +50,20 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
         Optional<String> authenticatedUser = authenticationService.getPrincipalFromRequest(requestContext.getRequest());
 
         if (!authenticatedUser.isPresent()) {
-            log.debug("No authentication present on request, not filtering instance: {}", serviceId);
+            log.debug("No authentication present on request, not filtering instance: {}", context.getInstanceInfo().getInstanceId());
             return true;
         }
 
         String username = authenticatedUser.get();
         LoadBalancerCacheRecord loadBalancerCacheRecord = cache.retrieve(username, serviceId);
         if (loadBalancerCacheRecord == null || loadBalancerCacheRecord.getInstanceId() == null) {
-            log.debug("No preference exists, not filtering instance: {}", serviceId);
+            log.debug("No preference exists, not filtering instance: {}", context.getInstanceInfo().getInstanceId());
             return true;
         }
 
         if (isTooOld(loadBalancerCacheRecord.getCreationTime())) {
             cache.delete(username, serviceId);
-            log.debug("Expired preference exists and was deleted. not filtering instance: {}", serviceId);
+            log.debug("Expired preference exists and was deleted. not filtering instance: {}", context.getInstanceInfo().getInstanceId());
             return true;
         }
 
