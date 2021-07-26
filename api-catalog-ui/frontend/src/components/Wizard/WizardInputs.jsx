@@ -37,7 +37,7 @@ class WizardInputs extends Component {
             dataAsObject.content === null ||
             Object.entries(dataAsObject.content).length === 0
         ) {
-            return '';
+            return null;
         }
         const selectedData = Object.keys(dataAsObject.content);
         let key = 0;
