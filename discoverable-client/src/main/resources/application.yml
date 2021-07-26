@@ -176,13 +176,7 @@ spring:
 
 apiml:
     service:
-        discoveryServiceUrls: http://localhost:10011/eureka/
         scheme: http
-        customMetadata:
-            apiml:
-                enableUrlEncodedCharacters: true
-                gatewayPort: 10030
-                gatewayAuthEndpoint: /api/v1/gateway/auth
 
 server:
     ssl:

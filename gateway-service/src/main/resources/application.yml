@@ -289,23 +289,10 @@ server:
 
     service:
         scheme: http
-        discoveryServiceUrls: http://localhost:10011/eureka/
 apiml:
     service:
         scheme: http
-zuul:
-    debug:
-        request: false
 
-eureka:
-    instance:
-        metadata-map:
-            apiml:
-                apiInfo:
-                    -   apiId: zowe.apiml.gateway
-                        gatewayUrl: api/v1
-                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
-                        documentationUrl: http://zowe.github.io/docs-site/
 ---
 spring:
     profiles: securityFilterchainDebug
