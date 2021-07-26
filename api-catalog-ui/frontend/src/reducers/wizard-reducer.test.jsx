@@ -51,9 +51,12 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ wizardIsOpen: true }, null)).toEqual(expectedState);
     });
 
-    xit('should handle SELECT_ENABLER', () => {
+    it('should handle SELECT_ENABLER', () => {
+        const expectedData = data.filter(o=> {
+            return !(o.text === "API info" || o.text === "Discovery Service URL");
+        });
         const expectedState = {
-            inputData: data,
+            inputData: expectedData,
             enablerName: 'Plain Java Enabler',
         };
 
@@ -63,7 +66,7 @@ describe('>>> Wizard reducer tests', () => {
         })).toEqual(expectedState);
     });
 
-    xit('should handle default state in SELECT_ENABLER', () => {
+    it('should handle default state in SELECT_ENABLER', () => {
         const expectedState = {
             inputData: [],
             enablerName: 'Non-existent Enabler',

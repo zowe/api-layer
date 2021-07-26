@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import * as log from 'loglevel';
 import { INPUT_UPDATED, NEXT_CATEGORY, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
 import { data, enablerData } from '../components/Wizard/wizard_config';
 
@@ -34,7 +33,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
             const { enablerName } = action.payload;
             const enablerObj = enablerData.find(o => o.text === enablerName);
             if (enablerObj === undefined || enablerObj.categories === undefined) {
-                return state;
+                return { ...state, enablerName };
             }
             const { categories } = enablerObj;
             categories.forEach(categoryInfo => {
@@ -44,8 +43,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
                     inputData.push(category);
                 }
             });
-            log.error(inputData);
-            return { ...state, inputData };
+            return { ...state, enablerName, inputData };
         }
 
         case INPUT_UPDATED: {
