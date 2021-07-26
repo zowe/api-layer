@@ -74,8 +74,8 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
         RequestContext context = RequestContext.getCurrentContext();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
         Optional<String> principal = authenticationService.getPrincipalFromRequest(context.getRequest());
-        if (principal.isPresent() && !instanceIsCached(principal.get(), currentServiceId)) {
-            // Dont store instance info when failed.
+        if (principal.isPresent()) {
+            // Dont store instance info when there is exception in request processing. This means failed request.
             if (context.get("throwable") != null) {
                 return null;
             }
@@ -86,9 +86,5 @@ public class PostStoreLoadBalancerCacheFilter extends ZuulFilter {
         }
 
         return null;
-    }
-
-    private boolean instanceIsCached(String user, String service) {
-        return loadBalancerCache.retrieve(user, service) != null;
     }
 }

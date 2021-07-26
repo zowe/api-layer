@@ -48,6 +48,9 @@ class AuthenticationBasedPredicateTest {
         context = mock(LoadBalancingContext.class);
         requestContext = mock(RequestContext.class);
         when(context.getRequestContext()).thenReturn(requestContext);
+        InstanceInfo info = mock(InstanceInfo.class);
+        when(info.getInstanceId()).thenReturn("hostname:service:port");
+        when(context.getInstanceInfo()).thenReturn(info);
 
         underTest = new AuthenticationBasedPredicate(authenticationService, cache, 8);
     }
