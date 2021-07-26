@@ -10,7 +10,7 @@
 
 import { connect } from 'react-redux';
 import WizardNavigation from './WizardNavigation';
-import { nextWizardCategory } from '../../actions/wizard-actions';
+import { changeWizardCategory, nextWizardCategory } from '../../actions/wizard-actions';
 
 const mapStateToProps = state => ({
     selectedCategory: state.wizardReducer.selectedCategory,
@@ -19,6 +19,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
     nextWizardCategory,
+    changeWizardCategory,
 };
 
 export default connect(

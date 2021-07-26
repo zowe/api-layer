@@ -14,6 +14,11 @@ import './wizard.css';
 import WizardNavigationContainer from './WizardNavigationContainer';
 
 export default class WizardDialog extends Component {
+    constructor(props) {
+        super(props);
+        this.nextSave = this.nextSave.bind(this);
+    }
+
     closeWizard = () => {
         const { wizardToggleDisplay } = this.props;
         wizardToggleDisplay();
@@ -25,8 +30,17 @@ export default class WizardDialog extends Component {
         refreshedStaticApi();
     };
 
+    nextSave() {
+        const { selectedCategory, inputData, nextWizardCategory } = this.props;
+        if (selectedCategory < inputData.length - 1) {
+            nextWizardCategory();
+        } else {
+            this.doneWizard();
+        }
+    }
+
     render() {
-        const { wizardIsOpen, enablerName } = this.props;
+        const { wizardIsOpen, enablerName, inputData, selectedCategory } = this.props;
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} closeOnClickOutside={false}>
@@ -42,8 +56,8 @@ export default class WizardDialog extends Component {
                             <Button size="medium" onClick={this.closeWizard}>
                                 Cancel
                             </Button>
-                            <Button size="medium" onClick={this.doneWizard}>
-                                Finish
+                            <Button size="medium" onClick={this.nextSave}>
+                                {selectedCategory === inputData.length - 1 ? 'Save' : 'Next'}
                             </Button>
                         </DialogActions>
                     </DialogFooter>

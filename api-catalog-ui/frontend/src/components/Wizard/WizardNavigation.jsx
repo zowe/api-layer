@@ -14,7 +14,12 @@ class WizardNavigation extends Component {
     render() {
         return (
             <div>
-                <Tabs position="start" label="Categories">
+                <Tabs
+                    position="start"
+                    selectedTabIndex={this.props.selectedCategory}
+                    onChange={this.props.changeWizardCategory}
+                    label="Categories"
+                >
                     {this.loadTabs()}
                 </Tabs>
             </div>
