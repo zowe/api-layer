@@ -37,7 +37,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.filter.AttlsFilter;
-import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
@@ -201,7 +200,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         if (isAttlsEnabled) {
             http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-            http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
     }
 

@@ -1,4 +1,4 @@
-package org.zowe.apiml.gateway.security.config;/*
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -7,12 +7,13 @@ package org.zowe.apiml.gateway.security.config;/*
  *
  * Copyright Contributors to the Zowe Project.
  */
+package org.zowe.apiml.security.common.config;
+
 
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
