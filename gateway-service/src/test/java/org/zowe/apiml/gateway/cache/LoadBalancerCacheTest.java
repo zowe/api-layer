@@ -13,6 +13,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -72,17 +75,27 @@ public class LoadBalancerCacheTest {
         class Storage {
 
             @Test
-            void storageHappensToLocalAndRemoteCache() throws CachingServiceClient.CachingServiceClientException, JsonProcessingException {
+            void storageHappensToLocalAndRemoteCache() throws CachingServiceClientException, JsonProcessingException {
                 underTest.store("user", "serviceid", record);
                 String serializedRecord = mapper.writeValueAsString(record);
-                // TODO should the keys be prefixed by loadbalancer denomination?
                 verify(cachingServiceClient).create(new CachingServiceClient.KeyValue(keyPrefix + "user:serviceid", serializedRecord));
                 assertThat(underTest.getLocalCache().containsKey(keyPrefix + "user:serviceid"), is(true));
             }
 
             @Test
-            void storageFailsToRemoteCacheAndStoresLocal() throws CachingServiceClient.CachingServiceClientException {
-                doThrow(CachingServiceClient.CachingServiceClientException.class).when(cachingServiceClient).create(any());
+            void storageHappensToRemoteEvenForConflict() throws CachingServiceClientException, JsonProcessingException {
+                HttpClientErrorException clientErrorException = HttpClientErrorException.create(HttpStatus.CONFLICT, "", new HttpHeaders(), null, null);
+                CachingServiceClientException e = new CachingServiceClientException("oops", clientErrorException);
+                doThrow(e).when(cachingServiceClient).create(any());
+                String serializedRecord = mapper.writeValueAsString(record);
+
+                underTest.store("user", "serviceid", record);
+                verify(cachingServiceClient).update(new CachingServiceClient.KeyValue(keyPrefix + "user:serviceid", serializedRecord));
+            }
+
+            @Test
+            void storageFailsToRemoteCacheAndStoresLocal() throws CachingServiceClientException {
+                doThrow(CachingServiceClientException.class).when(cachingServiceClient).create(any());
                 underTest.store("user", "serviceid", record);
                 assertThat(underTest.getLocalCache().containsKey(keyPrefix + "user:serviceid"), is(true));
             }
@@ -92,9 +105,9 @@ public class LoadBalancerCacheTest {
         class Retrieval {
 
             @Test
-            void retrievalFromRemoteHasPriority() throws CachingServiceClient.CachingServiceClientException, JsonProcessingException {
+            void retrievalFromRemoteHasPriority() throws CachingServiceClientException, JsonProcessingException {
                 underTest.getLocalCache().put(keyPrefix + "user:serviceid", record);
-                doThrow(CachingServiceClient.CachingServiceClientException.class).when(cachingServiceClient).read(any());
+                doThrow(CachingServiceClientException.class).when(cachingServiceClient).read(any());
                 LoadBalancerCacheRecord retrievedRecord = underTest.retrieve("user", "serviceid");
                 assertThat(retrievedRecord.getInstanceId(), is("instanceid"));
 
@@ -111,7 +124,7 @@ public class LoadBalancerCacheTest {
         @Nested
         class Deletion {
             @Test
-            void deleteRemovesAllEntriesLocalAndRemote() throws CachingServiceClient.CachingServiceClientException {
+            void deleteRemovesAllEntriesLocalAndRemote() throws CachingServiceClientException {
                 underTest.getLocalCache().put(keyPrefix + "user:serviceid", record);
                 underTest.delete("user", "serviceid");
                 verify(cachingServiceClient).delete(keyPrefix + "user:serviceid");
