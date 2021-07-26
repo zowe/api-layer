@@ -292,6 +292,15 @@ server:
 apiml:
     service:
         scheme: http
+eureka:
+    instance:
+        metadata-map:
+            apiml:
+                apiInfo:
+                    -   apiId: zowe.apiml.gateway
+                        gatewayUrl: api/v1
+                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                        documentationUrl: https://zowe.github.io/docs-site/
 
 ---
 spring:

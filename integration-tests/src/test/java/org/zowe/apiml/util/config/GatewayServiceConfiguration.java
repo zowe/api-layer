@@ -23,5 +23,4 @@ public class GatewayServiceConfiguration {
     private int externalPort;
     private int instances;
     private String internalPorts;
-    private String servicesEndpoint;
 }
