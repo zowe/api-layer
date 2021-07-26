@@ -11,7 +11,6 @@
 import React, { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
-import WizardInputsContainer from './WizardInputsContainer';
 import WizardNavigationContainer from './WizardNavigationContainer';
 
 export default class WizardDialog extends Component {
@@ -27,8 +26,7 @@ export default class WizardDialog extends Component {
     };
 
     render() {
-        const { wizardIsOpen, enablerName, inputData, selectedCategory } = this.props;
-        const selectedItem = inputData[selectedCategory];
+        const { wizardIsOpen, enablerName } = this.props;
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} closeOnClickOutside={false}>
@@ -38,7 +36,6 @@ export default class WizardDialog extends Component {
                     <DialogBody>
                         <Text>This wizard will guide you through creating a correct YAML for your application.</Text>
                         <WizardNavigationContainer />
-                        <WizardInputsContainer data={selectedItem} />
                     </DialogBody>
                     <DialogFooter className="dialog-footer">
                         <DialogActions>
