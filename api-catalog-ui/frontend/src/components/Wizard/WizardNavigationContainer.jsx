@@ -14,6 +14,7 @@ import { nextWizardCategory } from '../../actions/wizard-actions';
 
 const mapStateToProps = state => ({
     selectedCategory: state.wizardReducer.selectedCategory,
+    inputData: state.wizardReducer.inputData,
 });
 
 const mapDispatchToProps = {

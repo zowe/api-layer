@@ -1,13 +1,22 @@
 import React, { Component } from 'react';
-import { Button } from 'mineral-ui';
-import { IconChevronRight } from 'mineral-ui-icons';
+import Tabs, { Tab } from 'mineral-ui/Tabs';
+import WizardInputs from './WizardInputs';
 
 class WizardNavigation extends Component {
+    loadTabs() {
+        return this.props.inputData.map(category => (
+            <Tab title={category.text}>
+                <WizardInputs data={category} />
+            </Tab>
+        ));
+    }
+
     render() {
-        const { nextWizardCategory } = this.props;
         return (
             <div>
-                <Button id="next" onClick={nextWizardCategory} iconStart={<IconChevronRight />} />
+                <Tabs position="start" label="Categories">
+                    {this.loadTabs()}
+                </Tabs>
             </div>
         );
     }

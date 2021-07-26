@@ -46,7 +46,7 @@ export default class WizardDialog extends Component {
                                 Cancel
                             </Button>
                             <Button size="medium" onClick={this.doneWizard}>
-                                Done
+                                Finish
                             </Button>
                         </DialogActions>
                     </DialogFooter>
