@@ -8,8 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-.dialog-footer {
-    border-top: none;
+.wizardForm {
+    padding: 0 2px;
 }
 
 .wizardForm .entry {
