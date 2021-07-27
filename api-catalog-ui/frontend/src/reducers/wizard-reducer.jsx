@@ -8,7 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { INPUT_UPDATED, NEXT_CATEGORY, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import {
+    CHANGE_CATEGORY,
+    INPUT_UPDATED,
+    NEXT_CATEGORY,
+    SELECT_ENABLER,
+    TOGGLE_DISPLAY,
+} from '../constants/wizard-constants';
 import { data, enablerData } from '../components/Wizard/wizard_config';
 
 export const wizardReducerDefaultState = {
@@ -58,6 +64,8 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
         }
         case NEXT_CATEGORY:
             return { ...state, selectedCategory: (state.selectedCategory + 1) % state.inputData.length };
+        case CHANGE_CATEGORY:
+            return { ...state, selectedCategory: action.payload.category };
         default:
             return state;
     }

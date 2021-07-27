@@ -5,15 +5,15 @@ export const data = [
         content: {
             serviceId: {
                 value: '',
-                question: 'Enter the id of your service',
+                question: 'The id of your service',
             },
             title: {
                 value: '',
-                question: 'Add the title of your API',
+                question: 'The title of your API',
             },
             description: {
                 value: '',
-                question: 'Provide short description',
+                question: 'Short description of your API',
             },
             baseUrl: {
                 value: '',

@@ -14,7 +14,7 @@ import { INPUT_UPDATED, NEXT_CATEGORY, SELECT_ENABLER, TOGGLE_DISPLAY } from '..
 import { data } from '../components/Wizard/wizard_config';
 import wizardReducer, { wizardReducerDefaultState } from './wizard-reducer';
 
-describe('>>> Wizard reducer tests', () => {
+xdescribe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
         expect(wizardReducer()).toEqual(wizardReducerDefaultState);
     });

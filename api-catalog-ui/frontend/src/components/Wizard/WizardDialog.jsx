@@ -11,10 +11,14 @@
 import React, { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
-import WizardInputsContainer from './WizardInputsContainer';
 import WizardNavigationContainer from './WizardNavigationContainer';
 
 export default class WizardDialog extends Component {
+    constructor(props) {
+        super(props);
+        this.nextSave = this.nextSave.bind(this);
+    }
+
     closeWizard = () => {
         const { wizardToggleDisplay } = this.props;
         wizardToggleDisplay();
@@ -26,9 +30,17 @@ export default class WizardDialog extends Component {
         refreshedStaticApi();
     };
 
+    nextSave() {
+        const { selectedCategory, inputData, nextWizardCategory } = this.props;
+        if (selectedCategory < inputData.length - 1) {
+            nextWizardCategory();
+        } else {
+            this.doneWizard();
+        }
+    }
+
     render() {
         const { wizardIsOpen, enablerName, inputData, selectedCategory } = this.props;
-        const selectedItem = inputData[selectedCategory];
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} closeOnClickOutside={false}>
@@ -38,15 +50,14 @@ export default class WizardDialog extends Component {
                     <DialogBody>
                         <Text>This wizard will guide you through creating a correct YAML for your application.</Text>
                         <WizardNavigationContainer />
-                        <WizardInputsContainer data={selectedItem} />
                     </DialogBody>
                     <DialogFooter className="dialog-footer">
                         <DialogActions>
                             <Button size="medium" onClick={this.closeWizard}>
                                 Cancel
                             </Button>
-                            <Button size="medium" onClick={this.doneWizard}>
-                                Done
+                            <Button size="medium" onClick={this.nextSave}>
+                                {selectedCategory === inputData.length - 1 ? 'Save' : 'Next'}
                             </Button>
                         </DialogActions>
                     </DialogFooter>

@@ -10,7 +10,7 @@
 
 import { connect } from 'react-redux';
 import WizardDialog from './WizardDialog';
-import { wizardToggleDisplay } from '../../actions/wizard-actions';
+import { nextWizardCategory, wizardToggleDisplay } from '../../actions/wizard-actions';
 import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 
 const mapStateToProps = state => ({
@@ -23,6 +23,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = {
     wizardToggleDisplay,
     refreshedStaticApi,
+    nextWizardCategory,
 };
 
 export default connect(
