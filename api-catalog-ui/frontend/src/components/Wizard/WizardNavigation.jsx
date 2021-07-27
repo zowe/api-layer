@@ -4,11 +4,15 @@ import WizardInputs from './WizardInputs';
 
 class WizardNavigation extends Component {
     loadTabs() {
-        return this.props.inputData.map(category => (
-            <Tab title={category.text}>
-                <WizardInputs data={category} />
-            </Tab>
-        ));
+        let index = 0;
+        return this.props.inputData.map(category => {
+            index += 1;
+            return (
+                <Tab key={index} title={category.text}>
+                    <WizardInputs data={category} />
+                </Tab>
+            );
+        });
     }
 
     render() {

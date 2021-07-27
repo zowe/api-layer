@@ -40,4 +40,11 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.selectEnabler("Test")).toEqual(expectedAction);
     });
+    it('should change the category', () => {
+        const expectedAction = {
+            type: constants.CHANGE_CATEGORY,
+            payload: { category: 3 },
+        };
+        expect(actions.changeWizardCategory(3)).toEqual(expectedAction);
+    });
 });
