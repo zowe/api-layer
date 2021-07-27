@@ -9,7 +9,6 @@ gatewayServiceConfiguration:
     internalPorts: 10030
     externalPort: 10030
     instances: 1
-    servicesEndpoint: gateway/api/v1/services
 discoveryServiceConfiguration:
     scheme: http
     user: user
