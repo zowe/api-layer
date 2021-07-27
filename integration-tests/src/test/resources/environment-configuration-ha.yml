@@ -9,6 +9,7 @@ gatewayServiceConfiguration:
     internalPorts: 10017,10027
     externalPort: 10010
     instances: 2
+    servicesEndpoint: gateway/api/v1/services
 discoveryServiceConfiguration:
     scheme: https
     user: user
