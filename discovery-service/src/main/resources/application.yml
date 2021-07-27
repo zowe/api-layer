@@ -180,10 +180,4 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
-        port: ${apiml.service.port}
-        homePageUrl: http://${apiml.service.hostname}:${apiml.service.port}/
-        statusPageUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/info
-        healthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
-        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
-
 
