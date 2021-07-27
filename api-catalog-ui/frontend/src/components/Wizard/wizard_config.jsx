@@ -55,53 +55,16 @@ export const data = [
     },
 ];
 
-export const data2 = [
-    {
-        text: 'Basic info',
-        content: {
-            serviceId: {
-                value: '',
-                question: 'Enter the id of your service',
-            },
-            title: {
-                value: '',
-                question: 'Add the title of your API',
-            },
-        },
-    },
-    {
-        text: 'URL',
-        content: {
-            homePageRelativeUrl: {
-                value: '',
-                question: 'Provide short description',
-            },
-            statusPageRelativeUrl: {
-                value: '',
-                question: 'Provide short description',
-            },
-        },
-    },
-    {
-        text: 'Discovery Service URL',
-    },
-    {
-        text: 'Routes',
-    },
-    {
-        text: 'API info',
-    },
-    {
-        text: 'Catalog',
-    },
-    {
-        text: 'SSL',
-    },
-];
-
 export const enablerData = [
     {
         text: 'Plain Java Enabler',
+        categories: [
+            { name: 'Basic info', indentation: false },
+            { name: 'URL', indentation: false },
+            { name: 'Routes', indentation: 'routes' },
+            { name: 'Catalog', indentation: 'catalog/tiles' },
+            { name: 'SSL', indentation: 'ssl' },
+        ],
     },
     {
         text: 'Spring Enabler',

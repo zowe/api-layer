@@ -10,7 +10,7 @@
 
 /* eslint-disable no-undef */
 
-import { ENABLER_CHANGED, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { INPUT_UPDATED, NEXT_CATEGORY, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
 import { data } from '../components/Wizard/wizard_config';
 import wizardReducer, { wizardReducerDefaultState } from './wizard-reducer';
 
@@ -52,13 +52,15 @@ describe('>>> Wizard reducer tests', () => {
     });
 
     it('should handle SELECT_ENABLER', () => {
+        const expectedData = data.filter(o=> {
+            return !(o.text === "API info" || o.text === "Discovery Service URL");
+        });
         const expectedState = {
-            inputData: data,
-            enablerChanged: true,
+            inputData: expectedData,
             enablerName: 'Plain Java Enabler',
         };
 
-        expect(wizardReducer({ inputData: [], enablerChanged: false }, {
+        expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Plain Java Enabler' },
         })).toEqual(expectedState);
@@ -67,24 +69,94 @@ describe('>>> Wizard reducer tests', () => {
     it('should handle default state in SELECT_ENABLER', () => {
         const expectedState = {
             inputData: [],
-            enablerChanged: true,
             enablerName: 'Non-existent Enabler',
         };
 
-        expect(wizardReducer({ inputData: [], enablerChanged: false }, {
+        expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Non-existent Enabler' },
         })).toEqual(expectedState);
     });
 
-    it('should handle ENABLER_CHANGED', () => {
-        const expectedState = {
-            enablerChanged: false,
+    it('should update inputData on INPUT_UPDATED', () => {
+        const initialState = {
+            inputData: [
+                {
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '0', question: 'Why?' },
+                    }
+                },
+            ],
         };
 
-        expect(wizardReducer({ enablerChanged: true }, {
-            type: ENABLER_CHANGED,
-            payload: null
+        const expectedState = {
+            inputData: [
+                {
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '42', question: 'Why?' },
+                    }
+                },
+            ],
+        };
+
+        expect(wizardReducer(initialState, {
+            type: INPUT_UPDATED,
+            payload: {
+                category: {
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '42', question: 'Why?' },
+                    }
+                },
+            },
+        })).toEqual(expectedState);
+    });
+
+    it('should not update inputData on INPUT_UPDATED, if the "text" doesnt match', () => {
+        const initialState = {
+            inputData: [
+                {
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '0', question: 'Why?' },
+                    }
+                },
+            ],
+        };
+
+        const expectedState = {
+            inputData: [
+                {
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '0', question: 'Why?' },
+                    }
+                },
+            ],
+        };
+
+        expect(wizardReducer(initialState, {
+            type: INPUT_UPDATED,
+            payload: {
+                category: {
+                    text: 'ABC',
+                    content: {}
+                },
+            },
+        })).toEqual(expectedState);
+    });
+
+    it('should handle NEXT_CATEGORY', () => {
+        const expectedState = {
+            inputData: [{}, {}],
+            selectedCategory: 1,
+        };
+
+        expect(wizardReducer({ inputData: [{}, {}], selectedCategory: 0 }, {
+            type: NEXT_CATEGORY,
+            payload: null,
         })).toEqual(expectedState);
     });
 });

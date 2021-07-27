@@ -9,23 +9,18 @@
  */
 
 import { connect } from 'react-redux';
-import WizardDialog from './WizardDialog';
-import { wizardToggleDisplay } from '../../actions/wizard-actions';
-import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
+import WizardNavigation from './WizardNavigation';
+import { nextWizardCategory } from '../../actions/wizard-actions';
 
 const mapStateToProps = state => ({
-    wizardIsOpen: state.wizardReducer.wizardIsOpen,
-    enablerName: state.wizardReducer.enablerName,
-    inputData: state.wizardReducer.inputData,
     selectedCategory: state.wizardReducer.selectedCategory,
 });
 
 const mapDispatchToProps = {
-    wizardToggleDisplay,
-    refreshedStaticApi,
+    nextWizardCategory,
 };
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(WizardDialog);
+)(WizardNavigation);

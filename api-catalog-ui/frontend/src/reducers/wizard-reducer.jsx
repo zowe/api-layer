@@ -8,14 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { ENABLER_CHANGED, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
-import { data, data2 } from '../components/Wizard/wizard_config';
+import { INPUT_UPDATED, NEXT_CATEGORY, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import { data, enablerData } from '../components/Wizard/wizard_config';
 
 export const wizardReducerDefaultState = {
     wizardIsOpen: false,
     enablerName: 'Static Onboarding',
-    inputData: data,
-    enablerChanged: false,
+    selectedCategory: 0,
+    inputData: [],
 };
 
 const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
@@ -29,31 +29,35 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
                 wizardIsOpen: !state.wizardIsOpen,
             };
         case SELECT_ENABLER: {
-            const mapped = {
-                'Plain Java Enabler': data,
-                'Spring Enabler': data2,
-            };
+            const inputData = [];
             const { enablerName } = action.payload;
-            if (enablerName in mapped) {
-                return {
-                    ...state,
-                    enablerName,
-                    inputData: mapped[enablerName],
-                    enablerChanged: true,
-                };
+            const enablerObj = enablerData.find(o => o.text === enablerName);
+            if (enablerObj === undefined || enablerObj.categories === undefined) {
+                return { ...state, enablerName };
             }
-            return {
-                ...state,
-                enablerName,
-                inputData: [],
-                enablerChanged: true,
-            };
+            const { categories } = enablerObj;
+            categories.forEach(categoryInfo => {
+                const category = data.find(o => o.text === categoryInfo.name);
+                if (category !== undefined) {
+                    category.indentation = categoryInfo.indentation;
+                    inputData.push(category);
+                }
+            });
+            return { ...state, enablerName, inputData };
         }
-        case ENABLER_CHANGED:
-            return {
-                ...state,
-                enablerChanged: false,
-            };
+
+        case INPUT_UPDATED: {
+            const { category } = action.payload;
+            const inputData = state.inputData.map(group => {
+                if (group.text === category.text) {
+                    return category;
+                }
+                return group;
+            });
+            return { ...state, inputData };
+        }
+        case NEXT_CATEGORY:
+            return { ...state, selectedCategory: (state.selectedCategory + 1) % state.inputData.length };
         default:
             return state;
     }
