@@ -22,6 +22,23 @@ Recommended setup for running API ML in the local setup. The API Mediation Layer
 
 3. Access the API Gateway on the URL: https://localhost:10010/ and wait until all services are green. 
 
+### Quick start for HA
+
+1. Build all containers for local usage:
+
+  ```sh
+   ./gradlew jibDockerBuild
+   ```
+
+2. Run the whole configuration via:
+
+  ```sh
+   docker compose -f docker/ha-local/docker-compose.yml up
+   ```
+
+3. Access the API Gateway on the URL: https://localhost:10010/ and wait until all services are green. 
+
+
 ## Single container
 
 **Deprecated**. Don't recommend to use anymore. 
