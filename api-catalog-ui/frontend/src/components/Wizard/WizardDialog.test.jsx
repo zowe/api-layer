@@ -75,7 +75,7 @@ describe('>>> WizardDialog tests', () => {
         expect(wizardToggleDisplay).toHaveBeenCalled();
     });
 
-    it('should close dialog and refresh static APIs on Done', () => {
+    it('should close dialog and refresh static APIs on Save', () => {
         const wizardToggleDisplay = jest.fn();
         const refreshedStaticApi = jest.fn();
         const wrapper = enzyme.shallow(
@@ -88,11 +88,34 @@ describe('>>> WizardDialog tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 inputData={data}
+                selectedCategory={data.length - 1}
+                nextWizardCategory={jest.fn()}
             />
         );
         const instance = wrapper.instance();
-        instance.doneWizard();
+        instance.nextSave();
         expect(wizardToggleDisplay).toHaveBeenCalled();
         expect(refreshedStaticApi).toHaveBeenCalled();
     });
+    it('should invoke nextCategory on clicking "Next"', () => {
+        const nextWizardCategory = jest.fn();
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                wizardToggleDisplay={jest.fn()}
+                refreshedStaticApi={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                inputData={data}
+                selectedCategory={0}
+                nextWizardCategory={nextWizardCategory}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.nextSave();
+        expect(nextWizardCategory).toHaveBeenCalled();
+    });
+
 });

@@ -10,7 +10,13 @@
 
 /* eslint-disable no-undef */
 
-import { INPUT_UPDATED, NEXT_CATEGORY, SELECT_ENABLER, TOGGLE_DISPLAY } from '../constants/wizard-constants';
+import {
+    CHANGE_CATEGORY,
+    INPUT_UPDATED,
+    NEXT_CATEGORY,
+    SELECT_ENABLER,
+    TOGGLE_DISPLAY
+} from '../constants/wizard-constants';
 import { data } from '../components/Wizard/wizard_config';
 import wizardReducer, { wizardReducerDefaultState } from './wizard-reducer';
 
@@ -52,8 +58,8 @@ describe('>>> Wizard reducer tests', () => {
     });
 
     it('should handle SELECT_ENABLER', () => {
-        const expectedData = data.filter(o=> {
-            return !(o.text === "API info" || o.text === "Discovery Service URL");
+        const expectedData = data.filter(o => {
+            return !(o.text === 'API info' || o.text === 'Discovery Service URL');
         });
         const expectedState = {
             inputData: expectedData,
@@ -157,6 +163,18 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [{}, {}], selectedCategory: 0 }, {
             type: NEXT_CATEGORY,
             payload: null,
+        })).toEqual(expectedState);
+    });
+
+    it('should handle CHANGE_CATEGORY', () => {
+        const expectedState = {
+            inputData: [{}, {}],
+            selectedCategory: 1,
+        };
+
+        expect(wizardReducer({ inputData: [{}, {}], selectedCategory: 0 }, {
+            type: CHANGE_CATEGORY,
+            payload: { category: 1 },
         })).toEqual(expectedState);
     });
 });
