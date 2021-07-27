@@ -44,7 +44,7 @@ class CachingServiceClientTest {
         @Test
         void createWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
-            assertThrows(CachingServiceClient.CachingServiceClientException.class,() -> underTest.create(new CachingServiceClient.KeyValue("Britney", "Spears")));
+            assertThrows(CachingServiceClientException.class,() -> underTest.create(new CachingServiceClient.KeyValue("Britney", "Spears")));
         }
     }
 
@@ -60,7 +60,7 @@ class CachingServiceClientTest {
         @Test
         void updateWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
-            assertThrows(CachingServiceClient.CachingServiceClientException.class,() -> underTest.update(new CachingServiceClient.KeyValue("Britney", "Spears")));
+            assertThrows(CachingServiceClientException.class,() -> underTest.update(new CachingServiceClient.KeyValue("Britney", "Spears")));
         }
     }
 
@@ -71,16 +71,16 @@ class CachingServiceClientTest {
 
         @Test
         void readWithNullResponseOrNullBody() {
-            assertThrows(CachingServiceClient.CachingServiceClientException.class, () -> underTest.read(keyToRead));
+            assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
             verify(restTemplate).exchange(eq(urlBase + "/" + keyToRead), eq(HttpMethod.GET), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
             ResponseEntity<CachingServiceClient.KeyValue> responseEntity = mock(ResponseEntity.class);
             doReturn(false).when(responseEntity).hasBody();
             doReturn(responseEntity).when(restTemplate).exchange(eq(urlBase + "/" + keyToRead), eq(HttpMethod.GET), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
-            assertThrows(CachingServiceClient.CachingServiceClientException.class, () -> underTest.read(keyToRead));
+            assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
         }
 
         @Test
-        void readWithoutProblem() throws CachingServiceClient.CachingServiceClientException {
+        void readWithoutProblem() throws CachingServiceClientException {
             ResponseEntity<CachingServiceClient.KeyValue> responseEntity = mock(ResponseEntity.class);
             doReturn(true).when(responseEntity).hasBody();
             doReturn(new CachingServiceClient.KeyValue(keyToRead, "Wonder")).when(responseEntity).getBody();
@@ -91,7 +91,7 @@ class CachingServiceClientTest {
         @Test
         void readWithExceptonFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
-            assertThrows(CachingServiceClient.CachingServiceClientException.class, () -> underTest.read(keyToRead));
+            assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
         }
     }
 
@@ -107,7 +107,7 @@ class CachingServiceClientTest {
         @Test
         void deleteWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
-            assertThrows(CachingServiceClient.CachingServiceClientException.class,() -> underTest.delete(keyToDelete));
+            assertThrows(CachingServiceClientException.class,() -> underTest.delete(keyToDelete));
         }
     }
 

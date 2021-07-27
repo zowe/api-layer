@@ -125,14 +125,4 @@ public class CachingServiceClient {
         }
     }
 
-    public class CachingServiceClientException extends Exception {
-
-        public CachingServiceClientException(String message, Throwable cause) {
-            super(message, cause);
-        }
-
-        public CachingServiceClientException(String message) {
-            super(message);
-        }
-    }
 }

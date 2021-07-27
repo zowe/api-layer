@@ -41,6 +41,7 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
     @Override
     public boolean apply(LoadBalancingContext context, DiscoveryEnabledServer server) {
         RequestContext requestContext = context.getRequestContext();
+        String instanceId = context.getInstanceInfo().getInstanceId();
         String serviceId = (String) requestContext.get(SERVICE_ID_KEY);
         if (serviceId == null) {
             // This should never happen
@@ -50,20 +51,20 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
         Optional<String> authenticatedUser = authenticationService.getPrincipalFromRequest(requestContext.getRequest());
 
         if (!authenticatedUser.isPresent()) {
-            log.debug("No authentication present on request, not filtering instance: {}", serviceId);
+            log.debug("No authentication present on request, not filtering instance: {}", instanceId);
             return true;
         }
 
         String username = authenticatedUser.get();
         LoadBalancerCacheRecord loadBalancerCacheRecord = cache.retrieve(username, serviceId);
         if (loadBalancerCacheRecord == null || loadBalancerCacheRecord.getInstanceId() == null) {
-            log.debug("No preference exists, not filtering instance: {}", serviceId);
+            log.debug("No preference exists, not filtering instance: {}", instanceId);
             return true;
         }
 
         if (isTooOld(loadBalancerCacheRecord.getCreationTime())) {
             cache.delete(username, serviceId);
-            log.debug("Expired preference exists and was deleted. not filtering instance: {}", serviceId);
+            log.debug("Expired preference exists and was deleted. not filtering instance: {}", instanceId);
             return true;
         }
 
