@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -32,18 +33,23 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
+import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
-import org.zowe.apiml.gateway.security.query.*;
+import org.zowe.apiml.gateway.security.query.QueryFilter;
+import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
+import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.filter.ApimlX509Filter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
@@ -52,13 +58,13 @@ import java.util.Set;
 
 /**
  * Main configuration place for Gateway endpoint security
- *
+ * <p>
  * Security is configured with separate filterchains per groups of endpoints
  * The main theme is to keep the filterchains independent and isolated
  * Gives more control over the behavior of individual filter chain
  * This makes the security filters simpler as they don't have to be smart
  * Also separates the x509 filters per filterchain for more control
- *
+ * <p>
  * Authentication providers are initialized per filterchain's needs. No unused auth providers on chains.
  */
 
@@ -82,11 +88,12 @@ public class NewSecurityConfiguration {
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
     private final X509AuthenticationProvider x509AuthenticationProvider;
-
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     /**
      * Login and Logout endpoints
-     *
+     * <p>
      * logout filter matches for logout request and handles logout
      * apimlX509filter sifts through certs for authentication
      * login filter authenticates credentials
@@ -109,11 +116,11 @@ public class NewSecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                    authConfigurationProperties.getGatewayLoginEndpoint(),
-                    authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
-                    authConfigurationProperties.getGatewayLogoutEndpoint(),
-                    authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
-                ).and())
+                authConfigurationProperties.getGatewayLoginEndpoint(),
+                authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
+                authConfigurationProperties.getGatewayLogoutEndpoint(),
+                authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
+            ).and())
                 .authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
@@ -138,6 +145,7 @@ public class NewSecurityConfiguration {
                 .addFilterBefore(loginFilter("/**", authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                 .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+
         }
 
         private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
@@ -189,7 +197,7 @@ public class NewSecurityConfiguration {
             baseConfigure(http.requestMatchers().antMatchers(
                 authConfigurationProperties.getGatewayQueryEndpoint(),
                 authConfigurationProperties.getGatewayQueryEndpointOldFormat()
-                ).and()).authorizeRequests()
+            ).and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable() // logout filter in this chain not needed
@@ -265,9 +273,9 @@ public class NewSecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers()
-                    .antMatchers(HttpMethod.DELETE,CacheServiceController.CONTROLLER_PATH + "/**")
-                    .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).and()
-                ).authorizeRequests()
+                .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH + "/**")
+                .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).and()
+            ).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable() // logout filter in this chain not needed
@@ -299,6 +307,7 @@ public class NewSecurityConfiguration {
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(compoundAuthProvider); // for authenticating credentials
             auth.authenticationProvider(tokenAuthenticationProvider); // for authenticating Tokens
+            auth.authenticationProvider(new CertificateAuthenticationProvider());
         }
 
         @Override
@@ -309,14 +318,29 @@ public class NewSecurityConfiguration {
             ).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
-                .logout().disable() // logout filter in this chain not needed
-                .x509() // default x509 filter, authenticates trusted cert
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                .userDetailsService(new SimpleUserDetailService())
-                .and()
+                .logout().disable();  // logout filter in this chain not needed
+            if (isAttlsEnabled) {
+                http.x509()
+                    .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) // filter out API ML certificate
+                    .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+                    .userDetailsService(new SimpleUserDetailService());
+            } else {
+                http.x509() // default x509 filter, authenticates trusted cert
+                    .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+                    .userDetailsService(new SimpleUserDetailService());
+            }
+            http.
                 // place the following filters before the x509 filter
-                .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+        }
+
+        private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) {
+            ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
+            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            out.setAuthenticationManager(authenticationManager);
+            return out;
         }
 
         /**
@@ -376,6 +400,9 @@ public class NewSecurityConfiguration {
      * Common configuration for all filterchains
      */
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
+        if (isAttlsEnabled) {
+            http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+        }
         return http
             .cors()
             .and().csrf().disable()    // NOSONAR we are using SAMESITE cookie to mitigate CSRF
@@ -409,10 +436,6 @@ public class NewSecurityConfiguration {
                 AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
 
     }
-
-
-
-
 
 
 }

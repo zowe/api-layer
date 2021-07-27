@@ -289,11 +289,9 @@ server:
 
     service:
         scheme: http
-        discoveryServiceUrls: http://localhost:10001/eureka/
 apiml:
     service:
         scheme: http
-zuul.debug.request: false
 
 ---
 spring:

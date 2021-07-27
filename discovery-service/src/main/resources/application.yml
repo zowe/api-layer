@@ -170,10 +170,6 @@ logbackServiceName: ZWEADS1
 spring:
     profiles: attls
 
-apiml:
-    discovery:
-        allPeersUrls: http://${apiml.service.hostname}:10001/eureka/
-
 server:
     attls:
         enabled: true
@@ -184,9 +180,4 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
-        port: 10001
-        homePageUrl: http://${apiml.service.hostname}:10001/
-        statusPageUrl: http://${apiml.service.hostname}:10001/application/info
-        healthCheckUrl: http://${apiml.service.hostname}:10001/application/health
-        secureHealthCheckUrl: http://${apiml.service.hostname}:10001/application/health
 

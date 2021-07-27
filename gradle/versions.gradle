@@ -50,8 +50,9 @@ ext {
     swaggerJerseyJaxrsVersion = '1.5.10'
     tomcatVersion = '9.0.50'
     velocityVersion = '2.0'
-
+    attlsVersion = '1.0.0'
     libraries = [
+        zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
         spring_boot_configuration_processor: "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}",
         spring_boot_starter                : "org.springframework.boot:spring-boot-starter:${springBootVersion}",
         spring_boot_starter_actuator       : "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}",

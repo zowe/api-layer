@@ -19,7 +19,8 @@ ext.javaProjectsWithUnitTests = [
     'onboarding-enabler-micronaut-sample-app',
     'apiml-security-common',
     'zaas-client',
-    'certificate-analyser'
+    'certificate-analyser',
+    'apiml-tomcat-common'
 ]
 
 ext.jacocoProjects = subprojects.findAll { it.name in javaProjectsWithUnitTests }

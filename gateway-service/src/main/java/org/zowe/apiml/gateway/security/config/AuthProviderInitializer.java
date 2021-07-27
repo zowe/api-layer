@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.login.dummy.DummyAuthenticationProvider;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
+import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 
 /**
  * Initialize authentication and authorization provider set by apiml.security.auth.provider parameter

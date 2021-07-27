@@ -43,9 +43,3 @@ spring:
         ansi:
             enabled: always
 
----
-spring:
-    profiles: attls
-apiml:
-    service:
-        gatewayHostname: http://localhost:10010

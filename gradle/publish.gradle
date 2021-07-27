@@ -15,7 +15,8 @@ ext.javaLibraries = [
     'security-service-client-spring',
     'zaas-client',
     'discoverable-client',
-    'certificate-analyser'
+    'certificate-analyser',
+    'apiml-tomcat-common'
 ]
 
 ext.serviceJars = ['api-catalog-package', 'discovery-package', 'gateway-package', 'caching-service-package', 'metrics-service-package', 'apiml-common-lib-package']

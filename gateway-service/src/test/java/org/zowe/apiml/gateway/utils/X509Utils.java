@@ -18,7 +18,8 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Collections;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 @UtilityClass
 public class X509Utils {

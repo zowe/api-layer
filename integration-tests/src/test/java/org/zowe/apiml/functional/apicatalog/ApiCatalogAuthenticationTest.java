@@ -11,6 +11,7 @@ package org.zowe.apiml.functional.apicatalog;
 
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -52,7 +53,7 @@ class ApiCatalogAuthenticationTest {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
-    private static String apiCatalogServiceUrl;
+    private static String apiCatalogServiceUrl = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getUrl();
 
     static Stream<Arguments> urlsToTest() {
         return Stream.of(
@@ -67,8 +68,10 @@ class ApiCatalogAuthenticationTest {
         SslContext.prepareSslAuthentication();
 
         List<DiscoveryUtils.InstanceInfo> apiCatalogInstances = DiscoveryUtils.getInstances(CATALOG_SERVICE_ID);
-        apiCatalogServiceUrl = apiCatalogInstances.stream().findFirst().map(i -> String.format("%s", i.getUrl()))
-            .orElseThrow(() -> new RuntimeException("Cannot determine API Catalog service from Discovery"));
+        if (StringUtils.isEmpty(apiCatalogServiceUrl)) {
+            apiCatalogServiceUrl = apiCatalogInstances.stream().findFirst().map(i -> String.format("%s", i.getUrl()))
+                .orElseThrow(() -> new RuntimeException("Cannot determine API Catalog service from Discovery"));
+        }
     }
 
     @BeforeEach
@@ -114,6 +117,7 @@ class ApiCatalogAuthenticationTest {
                 String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID_PATH + endpoint + "'";
 
                 given()
+                    .config(SslContext.tlsWithoutCert)
                     .when()
                     .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
                     .then()
@@ -134,10 +138,9 @@ class ApiCatalogAuthenticationTest {
                     .when()
                     .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
                     .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
                     .body(
                         "messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
-                    );
+                    ).statusCode(is(SC_UNAUTHORIZED));
             }
 
             @ParameterizedTest(name = "givenInvalidTokenInCookie {index} {0}")
@@ -170,7 +173,7 @@ class ApiCatalogAuthenticationTest {
                 @Test
                 void givenValidCertificate() {
                     given()
-                        .config(SslContext.clientCertApiml)
+                        .config(SslContext.clientCertUser)
                         .when()
                         .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
                         .then()

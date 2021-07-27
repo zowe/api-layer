@@ -170,10 +170,11 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     void verifyPassTicketHeaders(T v)
     {
         String basic = "Basic " + Base64.getEncoder().encodeToString((USERNAME + ":" + PASSWORD).getBytes());
-        v   .statusCode(200)
+        v
             .body("headers.authorization", not(startsWith("Bearer ")))
             .body("headers.authorization", startsWith("Basic "))
             .body("headers.authorization", not(equals(basic)))
-            .body("cookies", not(hasKey(COOKIE_NAME)));
+            .body("cookies", not(hasKey(COOKIE_NAME)))
+            .statusCode(200);
     }
 }
