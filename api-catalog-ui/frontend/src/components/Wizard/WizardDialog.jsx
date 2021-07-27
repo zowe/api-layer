@@ -43,7 +43,7 @@ export default class WizardDialog extends Component {
         const { wizardIsOpen, enablerName, inputData, selectedCategory } = this.props;
         return (
             <div className="dialog">
-                <Dialog id="wizard-dialog" isOpen={wizardIsOpen} closeOnClickOutside={false}>
+                <Dialog id="wizard-dialog" minHeight="1600px" isOpen={wizardIsOpen} closeOnClickOutside={false}>
                     <DialogHeader>
                         <DialogTitle>Onboard a New API Using {enablerName}</DialogTitle>
                     </DialogHeader>

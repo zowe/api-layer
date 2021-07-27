@@ -15,6 +15,7 @@ class WizardNavigation extends Component {
         return (
             <div>
                 <Tabs
+                    id="wizard-navigation"
                     position="start"
                     selectedTabIndex={this.props.selectedCategory}
                     onChange={this.props.changeWizardCategory}
