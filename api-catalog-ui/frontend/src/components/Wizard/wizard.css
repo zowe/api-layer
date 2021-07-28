@@ -8,14 +8,22 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-.dialog-footer{
-    border-top: none;
+.wizardForm {
+    padding: 0 2px;
 }
 
-.wizardForm .entry{
+.wizardForm .entry {
     margin-top: 12px;
 }
 
-.selector{
+.selector {
     max-width: 300px;
+}
+
+#wizard-navigation {
+    min-height: 20em;
+}
+
+#wizard-navigation > div {
+    max-height: 21em;
 }

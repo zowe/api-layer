@@ -7,20 +7,37 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
-/* eslint-disable no-undef */
-
 import React from 'react';
 import * as enzyme from 'enzyme';
 import WizardNavigation from './WizardNavigation';
-
 describe('>>> Wizard navigation tests', () => {
-    it('should invoke next_category on click', () => {
-        const next = jest.fn()
+    it('should load the tabs', () => {
+        const next = jest.fn();
+        const changeWizardCategory = jest.fn();
+        const dummyData = [
+            {
+                text: 'Some Enabler',
+                categories: [
+                    { name: 'Category 1', indentation: false },
+                    { name: 'Category 2', indentation: false },
+                ],
+            },
+            {
+                text: 'Other Enabler',
+                categories: [
+                    { name: 'Category 1', indentation: false },
+                    { name: 'Category 2', indentation: false },
+                ],
+            },
+        ];
         const wrapper = enzyme.shallow(
-            <WizardNavigation selectedCategory={0} nextWizardCategory={next} />
+            <WizardNavigation
+                selectedCategory={0}
+                inputData={dummyData}
+                nextWizardCategory={next}
+                changeWizardCategory={changeWizardCategory}
+            />
         );
-        wrapper.find('#next').first().simulate('click');
-        expect(next).toHaveBeenCalled();
+        expect(wrapper.find('Tab').length).toEqual(2);
     });
 });

@@ -7,8 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
-import { SELECT_ENABLER, TOGGLE_DISPLAY, INPUT_UPDATED, NEXT_CATEGORY } from '../constants/wizard-constants';
+import {
+    SELECT_ENABLER,
+    TOGGLE_DISPLAY,
+    INPUT_UPDATED,
+    NEXT_CATEGORY,
+    CHANGE_CATEGORY,
+} from '../constants/wizard-constants';
 
 export function updateWizardData(category) {
     return {
@@ -35,5 +40,12 @@ export function nextWizardCategory() {
     return {
         type: NEXT_CATEGORY,
         payload: null,
+    };
+}
+
+export function changeWizardCategory(num) {
+    return {
+        type: CHANGE_CATEGORY,
+        payload: { category: num },
     };
 }

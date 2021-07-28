@@ -10,7 +10,6 @@
 /* eslint-disable no-undef */
 import * as constants from '../constants/wizard-constants';
 import * as actions from './wizard-actions';
-
 describe('>>> Wizard actions tests', () => {
     it('should get next category', () => {
         const expectedAction = {
@@ -39,5 +38,12 @@ describe('>>> Wizard actions tests', () => {
             payload: { enablerName: 'Test' },
         };
         expect(actions.selectEnabler("Test")).toEqual(expectedAction);
+    });
+    it('should change the category', () => {
+        const expectedAction = {
+            type: constants.CHANGE_CATEGORY,
+            payload: { category: 3 },
+        };
+        expect(actions.changeWizardCategory(3)).toEqual(expectedAction);
     });
 });
