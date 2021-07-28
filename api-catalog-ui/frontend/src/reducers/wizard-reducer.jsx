@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
@@ -46,6 +45,14 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
                 const category = data.find(o => o.text === categoryInfo.name);
                 if (category !== undefined) {
                     category.indentation = categoryInfo.indentation;
+                    if (categoryInfo.multiple !== undefined) {
+                        category.multiple = categoryInfo.multiple;
+                    }
+                    if (category.multiple) {
+                        const arr = [];
+                        arr.push(category.content);
+                        category.content = arr;
+                    }
                     inputData.push(category);
                 }
             });

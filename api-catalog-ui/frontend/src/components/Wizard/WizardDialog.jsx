@@ -30,14 +30,14 @@ export default class WizardDialog extends Component {
         refreshedStaticApi();
     };
 
-    nextSave() {
+    nextSave = () => {
         const { selectedCategory, inputData, nextWizardCategory } = this.props;
         if (selectedCategory < inputData.length - 1) {
             nextWizardCategory();
         } else {
             this.doneWizard();
         }
-    }
+    };
 
     render() {
         const { wizardIsOpen, enablerName, inputData, selectedCategory } = this.props;
