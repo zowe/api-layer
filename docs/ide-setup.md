@@ -35,7 +35,7 @@ For each of the available services:
 2. Create New (Ctrl + N or Cmd + N) -> Application
 3. Choose main class (E.g `org.zowe.apiml.gateway.GatewayApplication`)
 4. Add Environment variable `spring.config.additional-location` and it's value `file:./config/local/{SERVICE_NAME}.yml` Replace SERVICE_NAME with respective main class (E.g `file:./config/local/gateway-service.yml`)
-    1. For the Discovery service add Environment variable `spring.profiles.active` and it's value `https`
+    * For the Discovery service add Environment variable `spring.profiles.active` and it's value `https`
 5. Run the service Run -> Run... (Alt + Shift + F10 or Ctrl + Option + R)
 
 ## Visual Studio Code setup
