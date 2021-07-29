@@ -23,7 +23,7 @@ export const wizardReducerDefaultState = {
     inputData: [],
 };
 
-const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
+const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { data, enablerData }) => {
     if (action == null) {
         return state;
     }
@@ -36,13 +36,13 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
         case SELECT_ENABLER: {
             const inputData = [];
             const { enablerName } = action.payload;
-            const enablerObj = enablerData.find(o => o.text === enablerName);
+            const enablerObj = config.enablerData.find(o => o.text === enablerName);
             if (enablerObj === undefined || enablerObj.categories === undefined) {
                 return { ...state, enablerName };
             }
             const { categories } = enablerObj;
             categories.forEach(categoryInfo => {
-                const category = data.find(o => o.text === categoryInfo.name);
+                const category = config.data.find(o => o.text === categoryInfo.name);
                 if (category !== undefined) {
                     category.indentation = categoryInfo.indentation;
                     if (categoryInfo.multiple !== undefined) {

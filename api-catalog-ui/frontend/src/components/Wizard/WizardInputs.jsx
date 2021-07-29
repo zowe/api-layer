@@ -76,6 +76,11 @@ class WizardInputs extends Component {
             let result = [];
             let index = 0;
             dataAsObject.content.forEach(c => {
+                result.push(
+                    <h5 className="categoryInnerDivider">
+                        {dataAsObject.text} #{index}:
+                    </h5>
+                );
                 result = result.concat(this.renderInputs(c, index));
                 index += 1;
             });
