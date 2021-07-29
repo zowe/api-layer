@@ -53,20 +53,6 @@ TODO the modules aren't exhaustive - add missing ones? Or note there are more?
 | zaas-client                              | APIML SDK - ZAAS Client            |
 | zlux-api-catalog                         | Library - Zlux Api Catalog plugin  |
 
-TODO reorder the headings
-
-## Pull Requests
-
-Consider the following when you create or respond to pull requests:
-
-- Every pull request must have associated issue in [api-layer repository](https://github.com/zowe/api-layer/issues/) and link to it
-- Pull request reviewers should be assigned to a squad team member.
-- Use a draft pull request for work in progress that you want to build on the CICD pipeline.
-- Anyone can comment on a pull request to request a delay on merging or to get questions answered.
-- If you split functionality into several pull requests, consider using a common naming prefix for logical grouping (Github issue number for example).
-- Review guidelines for [how to write the perfect pull request](https://github.com/blog/1943-how-to-write-the-perfect-pull-request)
-    and [good commits](https://chris.beams.io/posts/git-commit/). 
-
 ## General Guidelines
 
 The following list describes general conventions for contributing to api-layer:
@@ -82,17 +68,35 @@ The following list describes general conventions for contributing to api-layer:
 - Keep core services independent without cross dependencies.
 - Keep classes small, maintain Single Responsibility Principle.
 - Pull requests should include tests.
-- Code coverage for new code should be at least 80%. 
+- Code coverage for new code should be at least 80%.
 - Code coverage should not be lower than on master.
 - SonarCloud quality gate should be passed and no code smells, security hotspots and bugs should be added in pull requests.
 - If the pull request adds or changes functionality that requires an update of packaging or configuration, it needs to be tested on a test system installed from the Zowe PAX file.
 - Keep pull requests as small as possible. If functionality can be split into multiple pull requests which will not break the master after being merged separately, this will speed up the review process and give a better level of safety rather than merging a single pull request containing many lines of code.
 
-## Code Guidelines
+## Branch Naming Guidelines
 
-Indent code with 4 spaces. This is also documented via `.editorconfig`, which can be used to automatically format the code if you use an [EditorConfig](https://editorconfig.org/) extension for your editor of choice.
+There are two ways to name new branches to simplify orientation. One is used for work on Github issues and one is used for small contributions that don't deserve an issue.
 
-Lint rules are enforced through our [build process](#build-process-guidelines).
+GitHub Issues: `<team-tag>/<work-tag>/<name-tag>` an example would be: `rip/GH752/per_service_timeout_options`
+
+Small personal contributions: `private/<person-tag>/<name-tag>` an example would be: `private/jb892003/temporarily_disable_e2e_tests`
+
+- team-tag
+
+The team contributing on the Broadcom side for example is names Rest In aPi and so the `rip` is used. If there isn't a team involved, use your personal Github handle e.g. `balhar-jakub` or `jandadav`
+
+- work-tag
+
+Represents a codified and searchable reference to problem that the branch solves. For Github issues, you would use `GH` prefix and `Github issue number`.
+
+- person-tag
+
+Represents a unique identifier for specific person. The good candidate is the Github handle such as `balhar-jakub` or `jandadav`.
+
+- name-tag
+
+Please keep the name short and relevant.
 
 ## File Naming Guidelines
 
@@ -103,29 +107,31 @@ The following list describes the conventions for naming the source files:
 - Subpackage names are single lowercase words, named by feature. For example `security`,`message`,`config`.
 - Keep the hierarchy shallow.
 
-## Branch Naming Guidelines
+## Code Guidelines
 
-There are two ways to name new branches to simplify orientation. One is used for work on Github issues and one is used for small contributions that don't deserve an issue.  
+Indent code with 4 spaces. This is also documented via `.editorconfig`, which can be used to automatically format the code if you use an [EditorConfig](https://editorconfig.org/) extension for your editor of choice.
 
-GitHub Issues: `<team-tag>/<work-tag>/<name-tag>` an example would be: `rip/GH752/per_service_timeout_options`
+Lint rules are enforced through our [build process](#build-process-guidelines).
 
-Small personal contributions: `private/<person-tag>/<name-tag>` an example would be: `private/jb892003/temporarily_disable_e2e_tests` 
+## Testing Guidelines
 
- - team-tag
- 
-The team contributing on the Broadcom side for example is names Rest In aPi and so the `rip` is used. If there isn't a team involved, use your personal Github handle e.g. `balhar-jakub` or `jandadav`
+- Core team uses TDD practices.
+- All code in PRs should be covered with unit tests.
+- Add integration tests where needed. The integration tests are executed with [Github Actions](https://github.com/zowe/api-layer/actions) using the workflows defined in [.github/workflows](.github/workflows). Contact the API Layer squad if you need triage. The Mock zOSMF service is used for verifying integration with zOSMF.
+- Add UI end to end tests where needed. The end to end tests are executed with [Github Actions](https://github.com/zowe/api-layer/actions) using the workflows defined in [.github/workflows](.github/workflows). Contact API Layer squad if you need triage.
+- Use meaningful test method names. We use the `given_when_then` pattern.
+- Leverage `@Nested` annotation for test method grouping where possible. It makes the tests more organized and readable. The test method names are generally shorter.
+- Example of well written test: [CachingControllerTest.java](https://github.com/zowe/api-layer/blob/master/caching-service/src/test/java/org/zowe/apiml/caching/api/CachingControllerTest.java). It uses `@Nested` annotation to separate the test scenarios into groups, which are individually setup. The tests are short and clear and the method names clearly convey what is tested.
+- Some of our java unit tests are still written in JUnit4, since we didn’t fully migrate them to JUnit5 and we have a backward compatibility package. However, use JUnit5 for new tests.
 
- - work-tag
- 
-Represents a codified and searchable reference to problem that the branch solves. For Github issues, you would use `GH` prefix and `Github issue number`. 
+## Build Process Guidelines
 
- - person-tag
- 
-Represents a unique identifier for specific person. The good candidate is the Github handle such as `balhar-jakub` or `jandadav`.
+We use `gradle build` task to build a solution. The build executes the following:
+- Checkstyle lint
+- License check
+- Unit tests
 
- - name-tag
- 
-Please keep the name short and relevant.
+You can run [Integration Tests](integration-tests/README.md) locally before creating a pull request.
 
 ## Commit Message Structure Guideline
 
@@ -171,26 +177,18 @@ A commit body is free-form and MAY consist of any number of newline separated pa
  - Reviewed-by: (OPTIONAL) is a plus, but not necessary
  - Co-authored-by: (OPTIONAL) in case of more contributors engaged 
  - BREAKING CHANGE: (OPTIONAL) introduces a breaking API change (correlating with MAJOR in semantic versioning). A BREAKING CHANGE can be part of commits of any type. MUST be used with caution!
- 
-## Testing Guidelines
 
-- Core team uses TDD practices.
-- All code in PRs should be covered with unit tests.
-- Add integration tests where needed. The integration tests are executed with [Github Actions](https://github.com/zowe/api-layer/actions) using the workflows defined in [.github/workflows](.github/workflows). Contact the API Layer squad if you need triage. The Mock zOSMF service is used for verifying integration with zOSMF. 
-- Add UI end to end tests where needed. The end to end tests are executed with [Github Actions](https://github.com/zowe/api-layer/actions) using the workflows defined in [.github/workflows](.github/workflows). Contact API Layer squad if you need triage.
-- Use meaningful test method names. We use the `given_when_then` pattern.
-- Leverage `@Nested` annotation for test method grouping where possible. It makes the tests more organized and readable. The test method names are generally shorter.
-- Example of well written test: [CachingControllerTest.java](https://github.com/zowe/api-layer/blob/master/caching-service/src/test/java/org/zowe/apiml/caching/api/CachingControllerTest.java). It uses `@Nested` annotation to separate the test scenarios into groups, which are individually setup. The tests are short and clear and the method names clearly convey what is tested.
-- Some of our java unit tests are still written in JUnit4, since we didn’t fully migrate them to JUnit5 and we have a backward compatibility package. However, use JUnit5 for new tests.
+## Pull Requests
 
-## Build Process Guidelines
+Consider the following when you create or respond to pull requests:
 
-We use `gradle build` task to build a solution. The build executes the following:
-- Checkstyle lint
-- License check
-- Unit tests
-
-You can run [Integration Tests](integration-tests/README.md) locally before creating a pull request.
+- Every pull request must have associated issue in [api-layer repository](https://github.com/zowe/api-layer/issues/) and link to it
+- Pull request reviewers should be assigned to a squad team member.
+- Use a draft pull request for work in progress that you want to build on the CICD pipeline.
+- Anyone can comment on a pull request to request a delay on merging or to get questions answered.
+- If you split functionality into several pull requests, consider using a common naming prefix for logical grouping (Github issue number for example).
+- Review guidelines for [how to write the perfect pull request](https://github.com/blog/1943-how-to-write-the-perfect-pull-request)
+  and [good commits](https://chris.beams.io/posts/git-commit/).
 
 ## Documentation Guidelines
 
