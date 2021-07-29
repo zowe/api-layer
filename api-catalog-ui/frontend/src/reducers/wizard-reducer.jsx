@@ -48,7 +48,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
                     if (categoryInfo.multiple !== undefined) {
                         category.multiple = categoryInfo.multiple;
                     }
-                    if (category.multiple) {
+                    if (category.multiple && !Array.isArray(category.content)) {
                         const arr = [];
                         arr.push(category.content);
                         category.content = arr;
