@@ -68,6 +68,6 @@ describe('>>> Wizard navigation tests', () => {
                 changeWizardCategory={changeWizardCategory}
             />
         );
-        expect(wrapper.find('Tab').length).toEqual(2);
+        expect(wrapper.find('Tab').length).toEqual(3);
     });
 });
