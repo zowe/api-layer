@@ -9,19 +9,14 @@
  */
 package org.zowe.apiml.gateway.ws;
 
-import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.product.routing.RoutedServices;
-import org.zowe.apiml.product.routing.RoutedServicesUser;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
+import org.zowe.apiml.product.routing.*;
 
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -43,26 +38,26 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     private final Map<String, WebSocketRoutedSession> routedSessions;
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
     private final DiscoveryClient discovery;
-    private final SslContextFactory.Server jettySslContextFactory;
     private final WebSocketRoutedSessionFactory webSocketRoutedSessionFactory;
+    private final WebSocketClientFactory webSocketClientFactory;
     private static final String SEPARATOR = "/";
 
     @Autowired
-    public WebSocketProxyServerHandler(DiscoveryClient discovery, SslContextFactoryProvider jettySslContextFactoryProvider) {
+    public WebSocketProxyServerHandler(DiscoveryClient discovery, WebSocketClientFactory webSocketClientFactory) {
         this.discovery = discovery;
-        this.jettySslContextFactory = jettySslContextFactoryProvider.getSslFactory();
+        this.webSocketClientFactory = webSocketClientFactory;
         this.routedSessions = new ConcurrentHashMap<>();  // Default
         this.webSocketRoutedSessionFactory = new WebSocketRoutedSessionFactoryImpl();
-        log.debug("Creating WebSocketProxyServerHandler {} jettySslContextFactory={}", this, jettySslContextFactory);
+        log.debug("Creating WebSocketProxyServerHandler {} ", this);
     }
 
-    public WebSocketProxyServerHandler(DiscoveryClient discovery, SslContextFactoryProvider sslContextFactoryProvider,
+    public WebSocketProxyServerHandler(DiscoveryClient discovery, WebSocketClientFactory webSocketClientFactory,
                                        Map<String, WebSocketRoutedSession> routedSessions, WebSocketRoutedSessionFactory webSocketRoutedSessionFactory) {
         this.discovery = discovery;
-        this.jettySslContextFactory = sslContextFactoryProvider.getSslFactory();
+        this.webSocketClientFactory = webSocketClientFactory;
         this.routedSessions = routedSessions;
         this.webSocketRoutedSessionFactory = webSocketRoutedSessionFactory;
-        log.debug("Creating WebSocketProxyServerHandler {} jettySslContextFactory={}", this, jettySslContextFactory);
+        log.debug("Creating WebSocketProxyServerHandler {}", this);
     }
 
     public void addRoutedServices(String serviceId, RoutedServices routedServices) {
@@ -133,9 +128,9 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         String serviceUrl = service.getServiceUrl();
         String targetUrl = getTargetUrl(serviceUrl, serviceInstance, path);
 
-        log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, jettySslContextFactory, this));
+        log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, webSocketClientFactory, this));
         try {
-            WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, jettySslContextFactory);
+            WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
             routedSessions.put(webSocketSession.getId(), session);
         } catch (WebSocketProxyError e) {
             log.debug("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage());
@@ -146,7 +141,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     private ServiceInstance findServiceInstance(String serviceId) {
         List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
         if (!serviceInstances.isEmpty()) {
-            // TODO: This just a simple implementation that will be replaced by more sophisticated mechanism in future
+            // TODO: Is this implementation apropriate?
             return serviceInstances.get(0);
         }
         else {
