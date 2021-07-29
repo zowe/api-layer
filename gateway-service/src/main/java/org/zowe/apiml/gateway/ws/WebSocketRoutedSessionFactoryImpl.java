@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.ws;
 
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.web.socket.WebSocketSession;
 
 /**
@@ -17,7 +16,7 @@ import org.springframework.web.socket.WebSocketSession;
  */
 public class WebSocketRoutedSessionFactoryImpl implements WebSocketRoutedSessionFactory {
     @Override
-    public WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, SslContextFactory.Server sslContextFactory) {
-        return new WebSocketRoutedSession(webSocketSession, targetUrl, sslContextFactory);
+    public WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
+        return new WebSocketRoutedSession(webSocketSession, targetUrl, webSocketClientFactory);
     }
 }
