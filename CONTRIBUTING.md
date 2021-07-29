@@ -19,6 +19,8 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 
 ## Understanding Modules
 
+TODO the modules aren't exhaustive - add missing ones? Or note there are more?
+
 **Modules** are individual folders inside ‘api-layer` root folder. Refer to the below table for each module’s purpose.
 
 | Package Folder                           | Purpose                            |
@@ -51,6 +53,8 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | zaas-client                              | APIML SDK - ZAAS Client            |
 | zlux-api-catalog                         | Library - Zlux Api Catalog plugin  |
 
+TODO reorder the headings
+
 ## Pull Requests
 
 Consider the following when you create or respond to pull requests:
@@ -69,20 +73,20 @@ The following list describes general conventions for contributing to api-layer:
 
 - Communicate frequently (before pull request) with team member representatives for new design features.
 - Before implementing new functionality, reach out to squad members and discuss architecture and design.
-- Get in contact using Slack’s `zowe-api` channel, attend squad meetings or create an `Enhancement` issue on GitHub.
+- Get in contact using Slack’s `#zowe-api` channel, attend squad meetings or create an `Enhancement` issue on GitHub.
 - Reuse logging and error handling patterns already in place.
-- Document your code with appropriate Javadoc and create documentation on [docs-site](https://github.com/zowe/docs-site) if needed.
+- Document your code with appropriate Javadoc and inline comments.
+- Create user-facing documentation on [docs-site](https://github.com/zowe/docs-site) if needed.
 - Provide adequate logging to diagnose problems that happen at external customer sites.
 - Use sensible class, method, and variable names.
 - Keep core services independent without cross dependencies.
 - Keep classes small, maintain Single Responsibility Principle.
-- The pull request should include tests.
+- Pull requests should include tests.
 - Code coverage for new code should be at least 80%. 
 - Code coverage should not be lower than on master.
-SonarCloud quality gate should be passed and no code smells, security hotspots and bugs should be added.
-- If the pull request adds or changes functionality that requires update of packaging or configuration, it needs to be tested on a test system installed from the Zowe PAX file.
-- Scripts in [zowe-install](https://github.com/zowe/zowe-install-packaging) directory need to be updated.
-- Keep pull requests as small as possible. If a functionality can be split on multiple pull requests which will not break the master after being merged separately, this will speed up the review process and give a better level of safety rather than merging a single pull request containing many lines of code.
+- SonarCloud quality gate should be passed and no code smells, security hotspots and bugs should be added in pull requests.
+- If the pull request adds or changes functionality that requires an update of packaging or configuration, it needs to be tested on a test system installed from the Zowe PAX file.
+- Keep pull requests as small as possible. If functionality can be split into multiple pull requests which will not break the master after being merged separately, this will speed up the review process and give a better level of safety rather than merging a single pull request containing many lines of code.
 
 ## Code Guidelines
 
@@ -94,14 +98,14 @@ Lint rules are enforced through our [build process](#build-process-guidelines).
 
 The following list describes the conventions for naming the source files:
 
-Follow Java file, class and package naming conventions
-Master package should be `org.zowe.apiml`
-Subpackage names are single lowercase words, named by feature. For example `security`,`message`,`config`
-Keep the hierarchy shallow
+- Follow Java file, class and package naming conventions.
+- Master package should be `org.zowe.apiml`.
+- Subpackage names are single lowercase words, named by feature. For example `security`,`message`,`config`.
+- Keep the hierarchy shallow.
 
 ## Branch Naming Guidelines
 
-There are two ways to name new branches to simplify orientation. One is used for the work on the Github issues and one is used for small contributions that doesn't deserve opening of the issue.  
+There are two ways to name new branches to simplify orientation. One is used for work on Github issues and one is used for small contributions that don't deserve an issue.  
 
 GitHub Issues: `<team-tag>/<work-tag>/<name-tag>` an example would be: `rip/GH752/per_service_timeout_options`
 
@@ -143,7 +147,8 @@ Can also contains notes and hints. Should not be too long.
 
 Signed-off-by: John Doe <john.doe@zowe.org>
 ```
-###Type
+
+### Type
  - fix: patches a bug in your codebase (this correlates with PATCH in semantic versioning)
  - feat: introduces a new feature to the codebase (this correlates with MINOR in semantic versioning)
  - docs: affecting the documentation 
@@ -151,13 +156,17 @@ Signed-off-by: John Doe <john.doe@zowe.org>
  - chore: cleaning in general, update dependencies
 
 Type or scope appended with `!` has the same meaning as BREAKING CHANGE(explained in footer section). It introduces a breaking API change (correlating with MAJOR in semantic versioning). MUST be used with caution!
-###Scope
- Optional part of the message. Identifies a part of the codebase altered byt this commit. Examples could be: authentication, Discovery service, ...
-###Description
-A description MUST immediately follow the colon and space after the type/scope prefix. The description is a short summary of the code changes, e.g., fix: array parsing issue when multiple spaces were contained in string.
-###Body
+
+### Scope
+Optional part of the message. Identifies a part of the codebase altered byt this commit. Examples could be: authentication, Discovery service, ...
+
+### Description
+A description MUST immediately follow the colon and space after the type/scope prefix. The description is a short summary of the code changes, e.g., `fix: array parsing issue when multiple spaces were contained in string`.
+
+### Body
 A commit body is free-form and MAY consist of any number of newline separated paragraphs.
-###Footer
+
+### Footer
  - Signed-off-by: every commit needs to be signed by at least one author 
  - Reviewed-by: (OPTIONAL) is a plus, but not necessary
  - Co-authored-by: (OPTIONAL) in case of more contributors engaged 
@@ -166,9 +175,9 @@ A commit body is free-form and MAY consist of any number of newline separated pa
 ## Testing Guidelines
 
 - Core team uses TDD practices.
-- All code in PR should be covered with unit tests.
-- Add integration tests where needed. The integration tests are executed on the [Zowe build pipeline](https://wash.zowe.org:8443/job/API_Mediation/), and on our inhouse system as part of the build pipeline. Contact the API Layer squad if you need triage. The Mock zOSMF is used for verifying the integration with zOSMF. 
-- Add UI end to end tests where needed. The end to end tests are executed on [Zowe build pipeline](https://wash.zowe.org:8443/job/API_Mediation/) and on our inhouse system as part of the build pipeline. Contact API Layer squad if you need triage.
+- All code in PRs should be covered with unit tests.
+- Add integration tests where needed. The integration tests are executed with [Github Actions](https://github.com/zowe/api-layer/actions) using the workflows defined in [.github/workflows](.github/workflows). Contact the API Layer squad if you need triage. The Mock zOSMF service is used for verifying integration with zOSMF. 
+- Add UI end to end tests where needed. The end to end tests are executed with [Github Actions](https://github.com/zowe/api-layer/actions) using the workflows defined in [.github/workflows](.github/workflows). Contact API Layer squad if you need triage.
 - Use meaningful test method names. We use the `given_when_then` pattern.
 - Leverage `@Nested` annotation for test method grouping where possible. It makes the tests more organized and readable. The test method names are generally shorter.
 - Example of well written test: [CachingControllerTest.java](https://github.com/zowe/api-layer/blob/master/caching-service/src/test/java/org/zowe/apiml/caching/api/CachingControllerTest.java). It uses `@Nested` annotation to separate the test scenarios into groups, which are individually setup. The tests are short and clear and the method names clearly convey what is tested.
@@ -177,9 +186,9 @@ A commit body is free-form and MAY consist of any number of newline separated pa
 ## Build Process Guidelines
 
 We use `gradle build` task to build a solution. The build executes the following:
-Checkstyle lint
-License check
-Unit tests
+- Checkstyle lint
+- License check
+- Unit tests
 
 You can run [Integration Tests](integration-tests/README.md) locally before creating a pull request.
 
@@ -187,7 +196,7 @@ You can run [Integration Tests](integration-tests/README.md) locally before crea
 
 Open a pull request in the [docs-site repository](https://github.com/zowe/docs-site) to create documentation for your contribution.
 
-- Create end-user documentation for how to use your feature, functionality. This end-user documentation can be drafted collaboratively with the tech writer.
+- Create end-user documentation for how to use your feature, functionality. This end-user documentation can be drafted collaboratively with a tech writer.
 - Open an issue in [docs-site repository](https://github.com/zowe/docs-site) if you need assistance.
 - End-user documentation requires review and approval by a tech writer. Address all comments raised by the tech writer during review.
 - Include a readme.md file within the repository that contains information for developers that, at a minimum, includes an overview, how to build, and how to run tests, if applicable. For example, see [the passticket test programs](https://github.com/zowe/api-layer/blob/master/passticket/test-programs/README.md).
@@ -200,11 +209,11 @@ Methods and classes should have concise javadoc describing usage and purpose.
 
 ## Planning guidelines
 
-The new issues raised in the GitHub are triaged and sized weekly on one of the Squad meetings. There is an [Open Mainframe Project
+The new issues raised in the GitHub are triaged and sized weekly in the Wednesday Squad meetings. There is an [Open Mainframe Project
 Zowe calendar](https://lists.openmainframeproject.org/calendar) with the squad meetings.
 
 In order to get a better understanding for the complexity of different issues and to improve the quality and reliability of
-our planning we size the issues that squad takes responsibility for. The sizing is relative considering the complexity of a particular issue compared to the others.
+our planning we size issues that the squad takes responsibility for. The sizing is relative considering the complexity of a particular issue compared to the others.
 
 For sizing we use the Fibonacci sequence: 1,2,3,5,8,13 The higher the number the more complex the work involved or more uncertainty
 around how to implement the solution.  
@@ -212,9 +221,9 @@ around how to implement the solution.
 ### Examples of given size
 
 -   0.5 The smallest meaningful issue that delivers value on its own. An example: [Explore CodeQL for for Github Actions](https://github.com/zowe/api-layer/issues/1263)
--   1 Usually no collaboration within the squad is necessary and fix can be delivered mainly by one team member. An example: [Streamline Single Sign On Documentation](https://github.com/zowe/api-layer/issues/677) 
--   2 Ideal size of the story. It allows meaningful collaboration (i.e. to split the issue into separate tasks among multiple members). The issue is delivered within a Sprint. An example: [Add logout functionality to the ZAAS client](https://github.com/zowe/api-layer/issues/808) 
--   3 Good size of the story. It is posible to collaborate among multiple members. The fix to the issue is usually delivered within a Sprint. An example: [Alpha of client certificate using SAF API](https://github.com/zowe/api-layer/issues/758)
--   5 The problems start at this size. If possible split the issue into multiple smaller ones and focus namely on the value delivered (i.e. do the smaller issues still bring value if delivered separately?). Unless it is possible to collaborate on the issue among more members of the squad, it is possible that the issue won't fit into one sprint. An example: [Support the x509 client certificate authentication via x509](https://github.com/zowe/api-layer/issues/827)
+-   1 Usually no collaboration within the squad is necessary and the fix can be delivered mainly by one team member. An example: [Streamline Single Sign On Documentation](https://github.com/zowe/api-layer/issues/677) 
+-   2 Ideal size of a story. It allows meaningful collaboration (i.e. to split the issue into separate tasks among multiple members). The issue is delivered within a Sprint. An example: [Add logout functionality to the ZAAS client](https://github.com/zowe/api-layer/issues/808) 
+-   3 Good size of a story. It is possible to collaborate among multiple members. The fix to the issue is usually delivered within a Sprint. An example: [Alpha of client certificate using SAF API](https://github.com/zowe/api-layer/issues/758)
+-   5 Problems start at this size. If possible split the issue into multiple smaller ones and focus namely on the value delivered (i.e. do the smaller issues still bring value if delivered separately?). Unless it is possible to collaborate on the issue among more members of the squad, it is possible that the issue won't fit into one sprint. An example: [Support the x509 client certificate authentication via x509](https://github.com/zowe/api-layer/issues/827)
 -   8 Large issue. Unless there is a good way to split the issue or collaborate, the risk of not being able to deliver the issue within a sprint is quite large. Split to smaller issues if possible. An example: [Implement Caching Service](https://github.com/zowe/api-layer/issues/863)
 -   13 WARNING: Here be lions! We haven't used this size so far. If it occurs split the issue into smaller issues. 
