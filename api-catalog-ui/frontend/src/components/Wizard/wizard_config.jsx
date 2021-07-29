@@ -19,6 +19,14 @@ export const data = [
                 value: '',
                 question: 'The base URL of the service (the consistent part of the web address):',
             },
+            serviceIpAddress: {
+                value: '',
+                question: 'The service IP address (optional):',
+            },
+            preferIpAddress: {
+                value: '',
+                question: 'Set to true to advertise a service IP address instead of its hostname (optional):',
+            },
         },
         multiple: false,
     },
@@ -69,11 +77,29 @@ export const data = [
         multiple: false,
     },
     {
-        text: 'API info',
+        text: 'Authentication',
+        content: {
+            scheme: {
+                value: '',
+                question: 'Authentication (bypass, zoweJwt, httpBasicPassTicket, zosmf, x509, headers):',
+            },
+            applid: {
+                value: '',
+                question: 'A service APPLID (valid only for the httpBasicPassTicket authentication scheme ):',
+            },
+        },
+        multiple: false,
+    },
+    {
+        text: 'API Info',
         content: {
             apiId: {
                 value: '',
                 question: 'A unique identifier to the API in the API ML:',
+            },
+            version: {
+                value: '',
+                question: 'API version:',
             },
             gatewayUrl: {
                 value: '',
@@ -83,11 +109,15 @@ export const data = [
                 value: '',
                 question: 'The Http or Https address where the Swagger JSON document is available (optional):',
             },
+            documentationUrl: {
+                value: '',
+                question: 'Link to the external documentation (optional):',
+            },
         },
         multiple: false,
     },
     {
-        text: 'Catalog: Tile',
+        text: 'Catalog',
         content: {
             id: {
                 value: '',
@@ -164,7 +194,9 @@ export const enablerData = [
             { name: 'Basic info', indentation: false },
             { name: 'URL', indentation: false },
             { name: 'Routes', indentation: 'routes', multiple: true },
-            { name: 'Catalog: Tile', indentation: 'catalog/tiles' },
+            { name: 'Authentication', indentation: 'authentication', multiple: false },
+            { name: 'API Info', indentation: 'apiInfo', multiple: true },
+            { name: 'Catalog', indentation: 'catalog/tiles' },
             { name: 'SSL', indentation: 'ssl' },
         ],
     },
