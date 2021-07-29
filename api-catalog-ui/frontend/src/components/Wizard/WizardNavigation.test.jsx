@@ -11,6 +11,36 @@ import React from 'react';
 import * as enzyme from 'enzyme';
 import WizardNavigation from './WizardNavigation';
 describe('>>> Wizard navigation tests', () => {
+    it('should handle category change', () => {
+        const next = jest.fn();
+        const changeWizardCategory = jest.fn();
+        const wrapper = enzyme.shallow(
+            <WizardNavigation
+                selectedCategory={0}
+                inputData={[]}
+                nextWizardCategory={next}
+                changeWizardCategory={changeWizardCategory}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.handleChange(2);
+        expect(changeWizardCategory).toHaveBeenCalled();
+    });
+    it('should ignore certain events', () => {
+        const next = jest.fn();
+        const changeWizardCategory = jest.fn();
+        const wrapper = enzyme.shallow(
+            <WizardNavigation
+                selectedCategory={0}
+                inputData={[]}
+                nextWizardCategory={next}
+                changeWizardCategory={changeWizardCategory}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.handleChange('go');
+        expect(changeWizardCategory).toHaveBeenCalledTimes(0);
+    });
     it('should load the tabs', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();

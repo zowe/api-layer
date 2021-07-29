@@ -1,19 +1,30 @@
 import React, { Component } from 'react';
 import Tabs, { Tab } from 'mineral-ui/Tabs';
-import WizardInputs from './WizardInputs';
+import WizardInputsContainer from './WizardInputsContainer';
 
 class WizardNavigation extends Component {
+    constructor(props) {
+        super(props);
+        this.handleChange = this.handleChange.bind(this);
+    }
+
     loadTabs() {
         let index = 0;
         return this.props.inputData.map(category => {
             index += 1;
             return (
                 <Tab key={index} title={category.text}>
-                    <WizardInputs data={category} />
+                    <WizardInputsContainer data={category} />
                 </Tab>
             );
         });
     }
+
+    handleChange = event => {
+        if (typeof event === 'number') {
+            this.props.changeWizardCategory(event);
+        }
+    };
 
     render() {
         return (
@@ -22,7 +33,7 @@ class WizardNavigation extends Component {
                     id="wizard-navigation"
                     position="start"
                     selectedTabIndex={this.props.selectedCategory}
-                    onChange={this.props.changeWizardCategory}
+                    onChange={this.handleChange}
                     label="Categories"
                 >
                     {this.loadTabs()}
