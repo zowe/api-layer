@@ -1,6 +1,6 @@
 # API Mediation Layer
 
-[Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)
+[Build Status](https://github.com/zowe/api-layer/actions)
 
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=coverage)](https://sonarcloud.io/dashboard?id=zowe_api-layer)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=alert_status)](https://sonarcloud.io/dashboard?id=zowe_api-layer)
@@ -8,8 +8,9 @@
 The API Mediation Layer (API ML) provides a single point of access for mainframe service REST APIs. The API ML offers enterprise, cloud-like features such as high-availability, scalability, dynamic API discovery, consistent security, a single sign-on experience, and documentation. The API ML consists of three components: the Gateway, the Discovery Service, and the API Catalog. The API ML facilitates secure communication across loosely coupled microservices through the API Gateway. The Discovery Service enables you to determine the location and status of service instances running inside the API ML ecosystem. The API Catalog provides a user-friendly, easy-to-use interface to view all discovered services, their associated APIs, and Swagger documentation.
 
 **Notes:** 
-* For more information, see the API ML [Overview](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer).
+* For more general information for end-users, see the API ML [Overview](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer).
 * To learn more about changes to the API ML, consult the [CHANGELOG](CHANGELOG.md).
+* For developers, review the [developer documentation](./docs) and the [Contributor guidelines](#contributor-guidelines).
 
 ## Contents
 
@@ -66,7 +67,7 @@ The following tools are required to build and develop the API Mediation Layer:
    npm run api-layer
    ```
 
-Alternatively, to use Docker to use the api-layer, consult the [Docker README](docker/README.md).
+Alternatively, to use Docker to run the API ML, consult the [Docker README](docker/README.md).
 
 ## Security
 
@@ -99,20 +100,23 @@ For guidelines to onboard services, see [Zowe Docs#Onboarding Overview](https://
 
 ## More Information
 
-| To learn about:                       | Refer to:                                                                                                                                                                             |
-|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Core Service - API Catalog            | [Zowe Docs](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer)                                                                                                          |
-|       Core Service - API Catalog UI   | [README](api-catalog-ui/frontend/README.md), [Integration Test README](api-catalog-ui/frontend/src/integration-tests/README.md)       |
-| Core Service - Discovery Service      | [Zowe Docs](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer)                                                                                                          |
-| Core Service - Gateway Service        | [Zowe Docs](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer)                                                                                                          |
-| APIML SDK - Java Enabler              | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-plain-java-enabler.html)                                                                                                        |
-| APIML SDK - Spring Enabler            | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-spring-boot-enabler.html)                                                                                                       |
-| APIML SDK - Node.js Enabler           | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-nodejs-enabler.html)                                                                                                       |
-| APIML SDK - ZAAS Client               | [README](zaas-client/README.md)                                                                                                                                                         |
-| Sample Service - Java Enabler         | [README](onboarding-enabler-java-sample-app/README.md)                                                                                                                                  |
-|       Sample Service - Spring Enabler | [README](onboarding-enabler-spring-sample-app/README.md)                                                                                                                            |
-|       Sample Service - Micronaut Enabler | [README](onboarding-enabler-micronaut-sample-app/README.md)                                                                                                                            |
-|       Sample Service - NodeJS Enabler | [README](onboarding-enabler-nodejs-sample-app/README.md)                                                                                                                            |
+| To learn about:                       | Refer to:                                                                                                                              |
+|---------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| Core Service - API Catalog            | [Zowe Docs](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer)                                            |
+|       Core Service - API Catalog UI   | [README](api-catalog-ui/frontend/README.md)                                                                                            |
+| Core Service - Discovery Service      | [Zowe Docs](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer)                                            |
+| Core Service - Gateway Service        | [Zowe Docs](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer)                                            |
+| Core Service - Metrics Service        | [README](metrics-service/README.md)                                                                                                    |
+|       Core Service - Metrics Service UI | [README](metrics-service-ui/README.md)                                                                                               |
+| APIML SDK - Java Enabler              | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-plain-java-enabler)                                               |
+| APIML SDK - Micronaut Enabler         | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-micronaut-enabler)                                                |
+| APIML SDK - Node.js Enabler           | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-nodejs-enabler)                                                   |
+| APIML SDK - Spring Enabler            | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-spring-boot-enabler)                                              |
+| APIML SDK - ZAAS Client               | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-security/#zaas-client)                                      |
+| Sample Service - Java Enabler         | [README](onboarding-enabler-java-sample-app/README.md)                                                                                 |
+|       Sample Service - Spring Enabler | [README](onboarding-enabler-spring-sample-app/README.md)                                                                               |
+|       Sample Service - Micronaut Enabler | [README](onboarding-enabler-micronaut-sample-app/README.md)                                                                         |
+|       Sample Service - NodeJS Enabler | [README](onboarding-enabler-nodejs-sample-app/README.md)                                                                               |
 
 ## Contact Us
 
