@@ -11,6 +11,7 @@ import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
     NEXT_CATEGORY,
+    READY_YAML_OBJECT,
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
 } from '../constants/wizard-constants';
@@ -21,8 +22,8 @@ export const wizardReducerDefaultState = {
     enablerName: 'Static Onboarding',
     selectedCategory: 0,
     inputData: [],
+    yamlObject: {},
 };
-
 function compareVariables(category, categoryInfo) {
     if (categoryInfo.indentation !== undefined) {
         category.indentation = categoryInfo.indentation;
@@ -36,7 +37,6 @@ function compareVariables(category, categoryInfo) {
         category.content = arr;
     }
 }
-
 const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { data, enablerData }) => {
     if (action == null) {
         return state;
@@ -65,7 +65,6 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             });
             return { ...state, enablerName, inputData };
         }
-
         case INPUT_UPDATED: {
             const { category } = action.payload;
             const inputData = state.inputData.map(group => {
@@ -80,9 +79,10 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             return { ...state, selectedCategory: (state.selectedCategory + 1) % state.inputData.length };
         case CHANGE_CATEGORY:
             return { ...state, selectedCategory: action.payload.category };
+        case READY_YAML_OBJECT:
+            return { ...state, yamlObject: action.payload.yaml };
         default:
             return state;
     }
 };
-
 export default wizardReducer;
