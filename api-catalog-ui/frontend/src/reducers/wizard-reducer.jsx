@@ -23,6 +23,20 @@ export const wizardReducerDefaultState = {
     inputData: [],
 };
 
+function compareVariables(category, categoryInfo) {
+    if (categoryInfo.indentation !== undefined) {
+        category.indentation = categoryInfo.indentation;
+    }
+    if (categoryInfo.multiple !== undefined) {
+        category.multiple = categoryInfo.multiple;
+    }
+    if (category.multiple && !Array.isArray(category.content)) {
+        const arr = [];
+        arr.push(category.content);
+        category.content = arr;
+    }
+}
+
 const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { data, enablerData }) => {
     if (action == null) {
         return state;
@@ -43,18 +57,11 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             const { categories } = enablerObj;
             categories.forEach(categoryInfo => {
                 const category = config.data.find(o => o.text === categoryInfo.name);
-                if (category !== undefined) {
-                    category.indentation = categoryInfo.indentation;
-                    if (categoryInfo.multiple !== undefined) {
-                        category.multiple = categoryInfo.multiple;
-                    }
-                    if (category.multiple && !Array.isArray(category.content)) {
-                        const arr = [];
-                        arr.push(category.content);
-                        category.content = arr;
-                    }
-                    inputData.push(category);
+                if (category === undefined) {
+                    return;
                 }
+                compareVariables(category, categoryInfo);
+                inputData.push(category);
             });
             return { ...state, enablerName, inputData };
         }

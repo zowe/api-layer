@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 import React, { Component } from 'react';
 import { FormField } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
