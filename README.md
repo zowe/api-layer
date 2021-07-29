@@ -90,9 +90,7 @@ To add new functionality, follow the guidelines in [Contributing](CONTRIBUTING.m
 
 To set local environment properties for testing on your local machine including HTTPS setup, follow the guidelines in [Local Configuration](docs/local-configuration.md).
 
-If you use IntelliJ IDEA, see [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
-
-If you use Visual Studio Code, see [how to configure Visual Studio Code](docs/vscode-setup.md) to develop and debug local configurations.
+Review [IDE setup](docs/ide-setup.md) to see how to configure popular IDEs for API ML development.
 
 ## Onboarding Services
 

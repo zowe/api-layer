@@ -144,7 +144,7 @@ To turn on SSL/TLS protocol debugging:
 
 ### IntelliJ Idea setup
 
-If your editor of choice happens to be Idea and you want to use its 'Run Dashboard' refer to [Setup your Idea](./idea-setup.md).
+If your editor of choice happens to be Idea and you want to use its 'Run Dashboard' refer to [Intellij Idea Setup](ide-setup.md#intellij-idea-setup).
 
 ### Running multiple instances of Eureka locally
 
