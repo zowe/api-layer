@@ -19,9 +19,7 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 
 ## Understanding Modules
 
-TODO the modules aren't exhaustive - add missing ones? Or note there are more?
-
-**Modules** are individual folders inside ‘api-layer` root folder. Refer to the below table for each module’s purpose.
+**Modules** are individual folders inside ‘api-layer` root folder. Refer to the below table for the purpose of the more important modules.
 
 | Package Folder                           | Purpose                            |
 |------------------------------------------|------------------------------------|
@@ -38,15 +36,20 @@ TODO the modules aren't exhaustive - add missing ones? Or note there are more?
 | docker                                   | Tool - Dev Docker Container        |
 | docs                                     | Documentation                      |
 | gateway-service                          | Core Service - Gateway Service     |
-| mock-zosmf                               | Test - More zOSMF versions mock    |
-| onboarding-enabler-spring-sample-app  | Sample Service - Spring Enabler    |
-| onboarding-enabler-nodejs-sample-app     | Sample Service - Node.js Enabler   |
+| gradle                                   | Config - Project-wide Gradle tasks |
 | integration-tests                        | Test - Integration test            |
 | keystore                                 | Config - Local TLS config          |
+| metrics-service                          | Core Service - Metrics Service     |
+| metrics-service-ui                       | Core - Service - Metrics Service UI|
+| mock-zosmf                               | Test - More zOSMF versions mock    |
 | onboarding-enabler-java                  | APIML SDK - Java Enabler           |
 | onboarding-enabler-java-sample-app       | Sample Service - Java Enabler      |
-| onboarding-enabler-spring                | APIML SDK - Spring Enabler         |
+| onboarding-enabler-micronaut             | APIML SDK - Micronaut Enabler      |
+| onboarding-enabler-micronaut-sample-app  | Sample Service - Micronaut Enabler |
 | onboarding-enabler-nodejs                | APIML SDK - Node.js Enabler        |
+| onboarding-enabler-nodejs-sample-app     | Sample Service - Node.js Enabler   |
+| onboarding-enabler-spring                | APIML SDK - Spring Enabler         |
+| onboarding-enabler-spring-sample-app     | Sample Service - Spring Enabler    |
 | passticket                               | Test - Passticket test tools       |
 | scripts                                  | Tool - Test and Build scripts      |
 | security-service-client-spring           | Library - Security Client          |
