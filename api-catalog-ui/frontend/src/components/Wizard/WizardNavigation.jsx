@@ -7,12 +7,8 @@ class WizardNavigation extends Component {
         super(props);
         this.handleChange = this.handleChange.bind(this);
     }
-    handleChange = event => {
-        if (typeof event === 'number') {
-            this.props.changeWizardCategory(event);
-        }
-    };
-    loadTabs = () => {
+
+    loadTabs() {
         let index = 0;
         return this.props.inputData.map(category => {
             index += 1;
@@ -22,6 +18,12 @@ class WizardNavigation extends Component {
                 </Tab>
             );
         });
+    }
+
+    handleChange = event => {
+        if (typeof event === 'number') {
+            this.props.changeWizardCategory(event);
+        }
     };
 
     render() {
