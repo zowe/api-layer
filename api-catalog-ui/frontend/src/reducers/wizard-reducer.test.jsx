@@ -67,6 +67,32 @@ describe('>>> Wizard reducer tests', () => {
             });
     });
 
+    it('should handle SELECT_ENABLER without indentation', () => {
+        const dummyEnablerData = [{
+            text: 'Test Enabler',
+            categories: [{ name: 'Test Category' }]
+        }];
+
+        const dummyData = [{
+            text: 'Test Category',
+            content: {
+                myCategory: {
+                    value: 'dummy value',
+                    question: 'This is a dummy question',
+                }
+            }
+        }];
+
+        expect(wizardReducer({ inputData: [] }, {
+            type: SELECT_ENABLER,
+            payload: { enablerName: 'Test Enabler' },
+        }, { enablerData: dummyEnablerData, data: dummyData }))
+            .toEqual({
+                enablerName: 'Test Enabler',
+                inputData: dummyData
+            });
+    });
+
     it('should handle SELECT_ENABLER when the enabler allows multiple configs', () => {
         const dummyEnablerData = [{
             text: 'Test Enabler',
@@ -103,6 +129,7 @@ describe('>>> Wizard reducer tests', () => {
                 }],
             });
     });
+
 
     it('should handle default state in SELECT_ENABLER', () => {
         const enablerData = [{

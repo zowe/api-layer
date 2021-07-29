@@ -76,7 +76,7 @@ class WizardInputs extends Component {
             let index = 0;
             dataAsObject.content.forEach(c => {
                 result.push(
-                    <h5 className="categoryInnerDivider">
+                    <h5 key={`divider-${index}`} className="categoryInnerDivider">
                         {dataAsObject.text} #{index}:
                     </h5>
                 );
