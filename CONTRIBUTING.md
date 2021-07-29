@@ -65,7 +65,7 @@ The following list describes general conventions for contributing to api-layer:
 - Get in contact using Slack’s `#zowe-api` channel, attend squad meetings or create an `Enhancement` issue on GitHub.
 - Reuse logging and error handling patterns already in place.
 - Document your code with appropriate Javadoc and inline comments.
-- Create user-facing documentation on [docs-site](https://github.com/zowe/docs-site) if needed.
+- Create end-user documentation on [docs-site](https://github.com/zowe/docs-site) if needed.
 - Provide adequate logging to diagnose problems that happen at external customer sites.
 - Use sensible class, method, and variable names.
 - Keep core services independent without cross dependencies.
