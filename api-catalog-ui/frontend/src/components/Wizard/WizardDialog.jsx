@@ -32,7 +32,7 @@ export default class WizardDialog extends Component {
     };
     nextSave = () => {
         const { selectedCategory, inputData, nextWizardCategory } = this.props;
-        if (selectedCategory < inputData.length - 1) {
+        if (selectedCategory < inputData.length) {
             nextWizardCategory();
         } else {
             this.doneWizard();
@@ -56,7 +56,7 @@ export default class WizardDialog extends Component {
                                 Cancel
                             </Button>
                             <Button size="medium" onClick={this.nextSave}>
-                                {selectedCategory === inputData.length - 1 ? 'Save' : 'Next'}
+                                {selectedCategory === inputData.length ? 'Save' : 'Next'}
                             </Button>
                         </DialogActions>
                     </DialogFooter>

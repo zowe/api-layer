@@ -76,7 +76,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             return { ...state, inputData };
         }
         case NEXT_CATEGORY:
-            return { ...state, selectedCategory: (state.selectedCategory + 1) % state.inputData.length };
+            return { ...state, selectedCategory: state.selectedCategory + 1 };
         case CHANGE_CATEGORY:
             return { ...state, selectedCategory: action.payload.category };
         case READY_YAML_OBJECT:

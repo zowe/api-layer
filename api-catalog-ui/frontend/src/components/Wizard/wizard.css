@@ -27,13 +27,20 @@
 #wizard-navigation > div {
     max-height: 21em;
 }
+
 .yamlContainer {
     padding: 15px;
     border: 1px solid lightgray;
     border-radius: 10px;
     background-color: whitesmoke;
 }
-.yamlContainer code{
+
+.yamlContainer code {
     white-space: pre-wrap;
     font-size: 0.8em;
+}
+
+#copyButtonContainer {
+    position: absolute;
+    right: 40px;
 }
