@@ -1,7 +1,7 @@
 # Diagnostics
 
 The running services need to be diagnosed when there are problems. Spring Boot Actuator provides a lot of useful REST API endpoints to know more about the application state.
-The issue is that they should not be opened to public. The idea is to protect them with SAF resources on z/OS using ESM microservice. However, the ESM microservice is not used by API Mediation Layer code.
+The issue is that they should not be opened to public.
 
 The default configuration exposes just few endpoints that are safe. For local development a profile `diag` is turned on to enable all of them. 
 
