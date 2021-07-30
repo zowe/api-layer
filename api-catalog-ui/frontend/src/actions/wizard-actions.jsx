@@ -46,7 +46,7 @@ export function changeWizardCategory(num) {
         payload: { category: num },
     };
 }
-const insert = (parent, content) => {
+export const insert = (parent, content) => {
     const keys = Object.keys(content);
     keys.forEach(currKey => {
         if (parent[currKey] === undefined) {
@@ -56,7 +56,7 @@ const insert = (parent, content) => {
         }
     });
 };
-const addCategoryToYamlObject = (category, result) => {
+export const addCategoryToYamlObject = (category, result) => {
     let content = {};
     // load user's answer into content object
     if (!Array.isArray(category.content)) {

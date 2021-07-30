@@ -11,7 +11,7 @@
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
-    NEXT_CATEGORY,
+    NEXT_CATEGORY, READY_YAML_OBJECT,
     SELECT_ENABLER,
     TOGGLE_DISPLAY
 } from '../constants/wizard-constants';
@@ -233,6 +233,37 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [{}, {}], selectedCategory: 0 }, {
             type: CHANGE_CATEGORY,
             payload: { category: 1 },
+        })).toEqual(expectedState);
+    });
+
+    it('should handle READY_YAML_OBJECT', () => {
+        const expectedState = {
+            inputData: [{
+            text: 'TEST 2',
+            content: {
+                key: { value: '0', question: 'Why?' },
+            }
+        }],
+            yamlObject: [{
+                text: 'TEST 2',
+                content: {
+                    key: { value: '0', question: 'Why?' },
+                }
+            }],
+        };
+        expect(wizardReducer({ inputData: [{
+                text: 'TEST 2',
+                content: {
+                    key: { value: '0', question: 'Why?' },
+                }
+            }], yamlObject: [{}, {}] }, {
+            type: READY_YAML_OBJECT,
+            payload: { yaml: [{
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '0', question: 'Why?' },
+                    }
+                }], },
         })).toEqual(expectedState);
     });
 });
