@@ -82,7 +82,7 @@ describe('>>> WizardDialog tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 inputData={data}
-                selectedCategory={data.length - 1}
+                selectedCategory={data.length}
                 nextWizardCategory={jest.fn()}
                 createYamlObject={createYamlObject}
             />

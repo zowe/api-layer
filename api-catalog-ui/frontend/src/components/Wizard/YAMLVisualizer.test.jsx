@@ -30,10 +30,38 @@ describe('>>> YAML Visualizer tests', () => {
         expect(createYamlObject).toHaveBeenCalledWith(dummyData);
     });
 
+    it('should copy the right value to clipboard', () => {
+        const createYamlObject = jest.fn();
+        document.execCommand = jest.fn();
+        jest.spyOn(document, 'createRange').mockImplementation(() => ({ selectNodeContents: jest.fn() }));
+        jest.spyOn(window, 'getSelection').mockImplementation(() => ({
+            removeAllRanges: jest.fn(),
+            addRange: jest.fn(),
+        }));
+        const wrapper = enzyme.shallow(<YAMLVisualizer createYamlObject={createYamlObject} />);
+
+        const copyButton = wrapper.instance();
+        copyButton.copy();
+
+        expect(document.execCommand).toHaveBeenCalledWith('copy');
+    });
+
+    it('should copy the right value to clipboard with Clipboard API', () => {
+        Object.assign(navigator, {
+            clipboard: {
+                writeText: () => {},
+            },
+        });
+        jest.spyOn(navigator.clipboard, "writeText");
+        const wrapper = enzyme.shallow(<YAMLVisualizer createYamlObject={jest.fn()} />);
+        wrapper.instance().copy();
+        expect(navigator.clipboard.writeText).toHaveBeenCalled();
+    });
+
     it('should display YAML from props', () => {
         const wrapper = enzyme.shallow(
             <YAMLVisualizer createYamlObject={jest.fn()} yamlObject="test:yaml" />
         );
-        expect(wrapper.find('.yamlContainer').text()).toEqual('test:yaml\n');
+        expect(wrapper.find('.yamlContainer code').text()).toEqual('test:yaml\n');
     });
 });

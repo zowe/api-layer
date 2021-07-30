@@ -7,8 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import * as YAML from 'yaml';
-import * as log from 'loglevel';
 import React, { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
@@ -24,11 +22,10 @@ export default class WizardDialog extends Component {
         wizardToggleDisplay();
     };
     doneWizard = () => {
-        const { refreshedStaticApi, wizardToggleDisplay, createYamlObject, inputData, yamlObject } = this.props;
+        const { refreshedStaticApi, wizardToggleDisplay, createYamlObject, inputData } = this.props;
         wizardToggleDisplay();
         refreshedStaticApi();
         createYamlObject(inputData);
-        log.error(YAML.stringify(yamlObject));
     };
     nextSave = () => {
         const { selectedCategory, inputData, nextWizardCategory } = this.props;
