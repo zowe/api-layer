@@ -11,6 +11,7 @@ import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
     NEXT_CATEGORY,
+    REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
 } from '../constants/wizard-constants';
@@ -80,6 +81,17 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             return { ...state, selectedCategory: (state.selectedCategory + 1) % state.inputData.length };
         case CHANGE_CATEGORY:
             return { ...state, selectedCategory: action.payload.category };
+        case REMOVE_INDEX: {
+            const { index, text } = action.payload;
+            const newData = state.inputData.map(element => {
+                const newElement = { ...element };
+                if (newElement.text === text) {
+                    newElement.content = [...newElement.content].splice(parseInt(index), 1);
+                }
+                return newElement;
+            });
+            return { ...state, inputData: newData };
+        }
         default:
             return state;
     }

@@ -11,12 +11,14 @@ import React, { Component } from 'react';
 import { FormField } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
 import Button from 'mineral-ui/Button';
+import { IconDelete } from 'mineral-ui-icons';
 
 class WizardInputs extends Component {
     constructor(props) {
         super(props);
         this.handleInputChange = this.handleInputChange.bind(this);
         this.addFields = this.addFields.bind(this);
+        this.handleDelete = this.handleDelete.bind(this);
     }
 
     handleInputChange = event => {
@@ -60,6 +62,10 @@ class WizardInputs extends Component {
         this.props.updateWizardData(objectToChange);
     };
 
+    handleDelete(event) {
+        this.props.deleteCategoryConfig(event.target.name, this.props.data.text);
+    }
+
     loadInputs = () => {
         const dataAsObject = this.props.data;
         const { multiple } = this.props.data;
@@ -76,9 +82,21 @@ class WizardInputs extends Component {
             let index = 0;
             dataAsObject.content.forEach(c => {
                 result.push(
-                    <h5 key={`divider-${index}`} className="categoryInnerDivider">
-                        {dataAsObject.text} #{index}:
-                    </h5>
+                    <div key={`divider-${index}`} className="categoryConfigDivider">
+                        <h5 className="categoryInnerDivider">
+                            {dataAsObject.text} #{index}:
+                        </h5>
+                        {index === 0 ? null : (
+                            <Button
+                                variant="danger"
+                                minimal
+                                size="medium"
+                                iconStart={<IconDelete />}
+                                name={index}
+                                onClick={this.handleDelete}
+                            />
+                        )}
+                    </div>
                 );
                 result = result.concat(this.renderInputs(c, index));
                 index += 1;
@@ -87,6 +105,13 @@ class WizardInputs extends Component {
         }
         return this.renderInputs(dataAsObject.content, 1);
     };
+
+    loadButtons() {
+        if (this.props.data.multiple) {
+            return <Button onClick={this.addFields}>Add more fields</Button>;
+        }
+        return null;
+    }
 
     renderInputs = (content, index) => {
         const selectedData = Object.keys(content);
@@ -115,7 +140,7 @@ class WizardInputs extends Component {
         return (
             <div className="wizardForm">
                 {this.loadInputs()}
-                {this.props.data.multiple ? <Button onClick={this.addFields}>Add more fields</Button> : null}
+                {this.loadButtons()}
             </div>
         );
     }

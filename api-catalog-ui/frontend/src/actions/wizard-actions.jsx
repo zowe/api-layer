@@ -13,6 +13,7 @@ import {
     INPUT_UPDATED,
     NEXT_CATEGORY,
     CHANGE_CATEGORY,
+    REMOVE_INDEX,
 } from '../constants/wizard-constants';
 
 export function updateWizardData(category) {
@@ -47,5 +48,12 @@ export function changeWizardCategory(num) {
     return {
         type: CHANGE_CATEGORY,
         payload: { category: num },
+    };
+}
+
+export function deleteCategoryConfig(index, text) {
+    return {
+        type: REMOVE_INDEX,
+        payload: { index, text },
     };
 }
