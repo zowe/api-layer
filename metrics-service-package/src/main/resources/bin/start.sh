@@ -73,7 +73,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${METRICS_CODE} java -Xms16m -Xmx512m \
   -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
   -Dserver.ssl.trustStore="${TRUSTSTORE}" \
   -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
-  -Dserver.ssl.trustStorePassword=$"{KEYSTORE_PASSWORD}" \
+  -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -jar ${JAR_FILE} &
 pid=$!
