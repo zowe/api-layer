@@ -13,7 +13,7 @@
 }
 
 .wizardForm .entry {
-    margin-top: 12px;
+    margin-bottom: 12px;
 }
 
 .selector {
@@ -26,4 +26,11 @@
 
 #wizard-navigation > div {
     max-height: 21em;
+}
+
+.categoryConfigDivider{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
 }

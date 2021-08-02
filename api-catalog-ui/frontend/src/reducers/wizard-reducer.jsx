@@ -7,11 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
     NEXT_CATEGORY,
+    REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
 } from '../constants/wizard-constants';
@@ -24,7 +24,21 @@ export const wizardReducerDefaultState = {
     inputData: [],
 };
 
-const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
+function compareVariables(category, categoryInfo) {
+    if (categoryInfo.indentation !== undefined) {
+        category.indentation = categoryInfo.indentation;
+    }
+    if (categoryInfo.multiple !== undefined) {
+        category.multiple = categoryInfo.multiple;
+    }
+    if (category.multiple && !Array.isArray(category.content)) {
+        const arr = [];
+        arr.push(category.content);
+        category.content = arr;
+    }
+}
+
+const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { data, enablerData }) => {
     if (action == null) {
         return state;
     }
@@ -37,17 +51,18 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
         case SELECT_ENABLER: {
             const inputData = [];
             const { enablerName } = action.payload;
-            const enablerObj = enablerData.find(o => o.text === enablerName);
+            const enablerObj = config.enablerData.find(o => o.text === enablerName);
             if (enablerObj === undefined || enablerObj.categories === undefined) {
                 return { ...state, enablerName };
             }
             const { categories } = enablerObj;
             categories.forEach(categoryInfo => {
-                const category = data.find(o => o.text === categoryInfo.name);
-                if (category !== undefined) {
-                    category.indentation = categoryInfo.indentation;
-                    inputData.push(category);
+                const category = config.data.find(o => o.text === categoryInfo.name);
+                if (category === undefined) {
+                    return;
                 }
+                compareVariables(category, categoryInfo);
+                inputData.push(category);
             });
             return { ...state, enablerName, inputData };
         }
@@ -66,6 +81,19 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}) => {
             return { ...state, selectedCategory: (state.selectedCategory + 1) % state.inputData.length };
         case CHANGE_CATEGORY:
             return { ...state, selectedCategory: action.payload.category };
+        case REMOVE_INDEX: {
+            const { index, text } = action.payload;
+            const newData = state.inputData.map(element => {
+                const newElement = { ...element };
+                if (newElement.text === text) {
+                    const newArr = [...newElement.content];
+                    newArr.splice(parseInt(index), 1);
+                    newElement.content = newArr;
+                }
+                return newElement;
+            });
+            return { ...state, inputData: newData };
+        }
         default:
             return state;
     }

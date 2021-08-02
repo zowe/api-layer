@@ -7,58 +7,150 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/* eslint-disable no-undef */
+
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
-    NEXT_CATEGORY,
+    NEXT_CATEGORY, REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY
 } from '../constants/wizard-constants';
-import { data } from '../components/Wizard/wizard_config';
 import wizardReducer, { wizardReducerDefaultState } from './wizard-reducer';
+
 describe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
         expect(wizardReducer()).toEqual(wizardReducerDefaultState);
     });
-    it('should handle TOGGLE_DISPLAY true -> false', () => {
-        const expectedState = {
-            wizardIsOpen: true,
-        };
-        expect(wizardReducer({ wizardIsOpen: false }, { type: TOGGLE_DISPLAY, payload: null })).toEqual(expectedState);
+
+    it('should handle TOGGLE_DISPLAY true -> false & false -> true ', () => {
+        expect(wizardReducer({ wizardIsOpen: true }, {
+            type: TOGGLE_DISPLAY,
+            payload: null
+        })).toEqual({ wizardIsOpen: false });
+        expect(wizardReducer({ wizardIsOpen: false }, {
+            type: TOGGLE_DISPLAY,
+            payload: null
+        })).toEqual({ wizardIsOpen: true });
     });
-    it('should handle TOGGLE_DISPLAY false -> true', () => {
-        const expectedState = {
-            wizardIsOpen: false,
-        };
-        expect(wizardReducer({ wizardIsOpen: true }, { type: TOGGLE_DISPLAY, payload: null })).toEqual(expectedState);
-    });
+
     it('should handle DEFAULT', () => {
         const expectedState = {
             wizardIsOpen: true,
         };
         expect(wizardReducer({ wizardIsOpen: true }, { type: 'UNKNOWN', payload: null })).toEqual(expectedState);
-    });
-    it('should handle null action', () => {
-        const expectedState = {
-            wizardIsOpen: true,
-        };
         expect(wizardReducer({ wizardIsOpen: true }, null)).toEqual(expectedState);
     });
+
     it('should handle SELECT_ENABLER', () => {
-        const expectedData = data.filter(o => {
-            return !(o.text === 'API info' || o.text === 'Discovery Service URL');
-        });
+        const dummyEnablerData = [{
+            text: 'Test Enabler',
+            categories: [{ name: 'Test Category', indentation: false }]
+        }];
+
+        const dummyData = [{
+            text: 'Test Category',
+            content: {
+                myCategory: {
+                    value: 'dummy value',
+                    question: 'This is a dummy question',
+                }
+            }
+        }];
+
+        expect(wizardReducer({ inputData: [] }, {
+            type: SELECT_ENABLER,
+            payload: { enablerName: 'Test Enabler' },
+        }, { enablerData: dummyEnablerData, data: dummyData }))
+            .toEqual({
+                enablerName: 'Test Enabler',
+                inputData: dummyData
+            });
+    });
+
+    it('should handle SELECT_ENABLER without indentation', () => {
+        const dummyEnablerData = [{
+            text: 'Test Enabler',
+            categories: [{ name: 'Test Category' }]
+        }];
+
+        const dummyData = [{
+            text: 'Test Category',
+            content: {
+                myCategory: {
+                    value: 'dummy value',
+                    question: 'This is a dummy question',
+                }
+            }
+        }];
+
+        expect(wizardReducer({ inputData: [] }, {
+            type: SELECT_ENABLER,
+            payload: { enablerName: 'Test Enabler' },
+        }, { enablerData: dummyEnablerData, data: dummyData }))
+            .toEqual({
+                enablerName: 'Test Enabler',
+                inputData: dummyData
+            });
+    });
+
+    it('should handle SELECT_ENABLER when the enabler allows multiple configs', () => {
+        const dummyEnablerData = [{
+            text: 'Test Enabler',
+            categories: [{ name: 'Test Category', indentation: false, multiple: true }]
+        }];
+
+        const dummyData = [{
+            text: 'Test Category',
+            content: {
+                myCategory: {
+                    value: 'dummy value',
+                    question: 'This is a dummy question',
+                }
+            },
+            multiple: false,
+        }];
+
+        expect(wizardReducer({ inputData: [] }, {
+            type: SELECT_ENABLER,
+            payload: { enablerName: 'Test Enabler' },
+        }, { enablerData: dummyEnablerData, data: dummyData }))
+            .toEqual({
+                enablerName: 'Test Enabler',
+                inputData: [{
+                    text: 'Test Category',
+                    content: [{
+                        myCategory: {
+                            value: 'dummy value',
+                            question: 'This is a dummy question',
+                        }
+                    }],
+                    multiple: true,
+                    indentation: false,
+                }],
+            });
+    });
+
+
+    it('should handle default state in SELECT_ENABLER', () => {
+        const enablerData = [{
+            text: 'Test Enabler',
+            categories: [{ name: 'Wrong Category' }]
+        }];
+        const data = [{
+            text: 'Right Category',
+            content: {},
+        }];
         const expectedState = {
-            inputData: expectedData,
-            enablerName: 'Plain Java Enabler',
+            inputData: [],
+            enablerName: 'Test Enabler',
         };
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
-            payload: { enablerName: 'Plain Java Enabler' },
-        })).toEqual(expectedState);
+            payload: { enablerName: 'Test Enabler' },
+        }, { enablerData, data })).toEqual(expectedState);
     });
-    it('should handle default state in SELECT_ENABLER', () => {
+
+    it('should handle wrong category in SELECT_ENABLER', () => {
         const expectedState = {
             inputData: [],
             enablerName: 'Non-existent Enabler',
@@ -66,72 +158,62 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Non-existent Enabler' },
-        })).toEqual(expectedState);
+        }),).toEqual(expectedState);
     });
+
     it('should update inputData on INPUT_UPDATED', () => {
         const initialState = {
-            inputData: [
-                {
-                    text: 'TEST 2',
-                    content: {
-                        key: { value: '0', question: 'Why?' },
-                    }
-                },
-            ],
+            inputData: [{
+                text: 'TEST 2',
+                content: {
+                    key: { value: '0', question: 'Why?' },
+                }
+            }],
         };
         const expectedState = {
-            inputData: [
-                {
-                    text: 'TEST 2',
-                    content: {
-                        key: { value: '42', question: 'Why?' },
-                    }
-                },
-            ],
+            inputData: [{
+                text: 'TEST 2',
+                content: {
+                    key: { value: '42', question: 'Why?' },
+                }
+            }],
         };
         expect(wizardReducer(initialState, {
             type: INPUT_UPDATED,
             payload: {
                 category: {
                     text: 'TEST 2',
-                    content: {
-                        key: { value: '42', question: 'Why?' },
-                    }
+                    content: { key: { value: '42', question: 'Why?' } }
                 },
             },
         })).toEqual(expectedState);
     });
+
     it('should not update inputData on INPUT_UPDATED, if the "text" doesnt match', () => {
         const initialState = {
-            inputData: [
-                {
-                    text: 'TEST 2',
-                    content: {
-                        key: { value: '0', question: 'Why?' },
-                    }
-                },
-            ],
+            inputData: [{
+                text: 'TEST 2',
+                content: {
+                    key: { value: '0', question: 'Why?' },
+                }
+            }],
         };
         const expectedState = {
-            inputData: [
-                {
-                    text: 'TEST 2',
-                    content: {
-                        key: { value: '0', question: 'Why?' },
-                    }
-                },
-            ],
+            inputData: [{
+                text: 'TEST 2',
+                content: {
+                    key: { value: '0', question: 'Why?' },
+                }
+            }],
         };
         expect(wizardReducer(initialState, {
             type: INPUT_UPDATED,
             payload: {
-                category: {
-                    text: 'ABC',
-                    content: {}
-                },
+                category: { text: 'ABC', content: {} },
             },
         })).toEqual(expectedState);
     });
+
     it('should handle NEXT_CATEGORY', () => {
         const expectedState = {
             inputData: [{}, {}],
@@ -142,6 +224,7 @@ describe('>>> Wizard reducer tests', () => {
             payload: null,
         })).toEqual(expectedState);
     });
+
     it('should handle CHANGE_CATEGORY', () => {
         const expectedState = {
             inputData: [{}, {}],
@@ -152,4 +235,78 @@ describe('>>> Wizard reducer tests', () => {
             payload: { category: 1 },
         })).toEqual(expectedState);
     });
+
+    it('should handle REMOVE_INDEX', () => {
+        const expectedState = {
+            inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },
+                    {
+                        test:{
+                            value: '',
+                            question: 'Why?',
+                        },
+                    },
+                ],
+            },
+            ]
+        };
+        expect(wizardReducer({inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },
+                    {
+                        test:{
+                            value: '',
+                            question: 'Why?',
+                        },
+                    },
+                    {
+                        test:{
+                            value: '',
+                            question: 'Why?',
+                        },
+                    },
+                ],
+            }]}, {
+            type: REMOVE_INDEX,
+            payload: {index: 1, text: 'Category 1'},
+        })).toEqual(expectedState);
+    })
+
+    it('should handle REMOVE_INDEX when category doesn\'t match', () => {
+        const expectedState = {
+            inputData:[{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },]
+            },]
+        };
+        expect(wizardReducer({inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },
+                ],
+            }]}, {
+            type: REMOVE_INDEX,
+            payload: {index: 1, text: 'Category 2'},
+        })).toEqual(expectedState);
+    })
 });
