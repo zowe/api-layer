@@ -86,7 +86,9 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             const newData = state.inputData.map(element => {
                 const newElement = { ...element };
                 if (newElement.text === text) {
-                    newElement.content = [...newElement.content].splice(parseInt(index), 1);
+                    const newArr = [...newElement.content];
+                    newArr.splice(parseInt(index), 1);
+                    newElement.content = newArr;
                 }
                 return newElement;
             });

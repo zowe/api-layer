@@ -11,7 +11,7 @@
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
-    NEXT_CATEGORY,
+    NEXT_CATEGORY, REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY
 } from '../constants/wizard-constants';
@@ -235,4 +235,78 @@ describe('>>> Wizard reducer tests', () => {
             payload: { category: 1 },
         })).toEqual(expectedState);
     });
+
+    it('should handle REMOVE_INDEX', () => {
+        const expectedState = {
+            inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },
+                    {
+                        test:{
+                            value: '',
+                            question: 'Why?',
+                        },
+                    },
+                ],
+            },
+            ]
+        };
+        expect(wizardReducer({inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },
+                    {
+                        test:{
+                            value: '',
+                            question: 'Why?',
+                        },
+                    },
+                    {
+                        test:{
+                            value: '',
+                            question: 'Why?',
+                        },
+                    },
+                ],
+            }]}, {
+            type: REMOVE_INDEX,
+            payload: {index: 1, text: 'Category 1'},
+        })).toEqual(expectedState);
+    })
+
+    it('should handle REMOVE_INDEX when category doesn\'t match', () => {
+        const expectedState = {
+            inputData:[{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },]
+            },]
+        };
+        expect(wizardReducer({inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },
+                ],
+            }]}, {
+            type: REMOVE_INDEX,
+            payload: {index: 1, text: 'Category 2'},
+        })).toEqual(expectedState);
+    })
 });
