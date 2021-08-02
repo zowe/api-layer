@@ -91,6 +91,7 @@ ext {
         jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
         jackson_databind                   : "com.fasterxml.jackson.core:jackson-databind:${jacksonCoreVersion}",
         jackson_dataformat_yaml            : "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonDataformatYamlVersion}",
+        janino                             : "org.codehaus.janino:janino:3.1.6",
         javax_annotation                   : "javax.annotation:javax.annotation-api:${javaxAnnotationVersion}",
         javax_inject                       : "javax.inject:javax.inject:${javaxInjectVersion}",
         javax_servlet_api                  : "javax.servlet:javax.servlet-api:${javaxServletApiVersion}",
