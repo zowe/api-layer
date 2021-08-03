@@ -62,7 +62,7 @@ public class HttpConfig {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
-    @Value("${server.ssl.ciphers}")
+    @Value("${server.ssl.ciphers:.*}")
     private String[] ciphers;
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
