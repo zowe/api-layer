@@ -116,7 +116,7 @@ describe('>>> WizardInputs tests', () => {
         instance.addFields();
         expect(updateWizardData).toHaveBeenCalledWith({ ...dummyData, content: [dummyData.content[0],dummyData.content[0]] });
     });
-    it('should delete added input fieldsa', () => {
+    it('should delete added input fields', () => {
         const deleteCategoryConfig = jest.fn();
         const dummyData = {
             text: 'Dummy Data',

@@ -63,6 +63,10 @@ class WizardInputs extends Component {
         this.props.updateWizardData(objectToChange);
     };
 
+    handleDelete(event) {
+        this.props.deleteCategoryConfig(event.target.name, this.props.data.text);
+    }
+
     loadInputs = () => {
         const dataAsObject = this.props.data;
         const { multiple } = this.props.data;
@@ -102,13 +106,6 @@ class WizardInputs extends Component {
         }
         return this.renderInputs(dataAsObject.content, 1);
     };
-
-    loadButtons() {
-        if (this.props.data.multiple) {
-            return <Button onClick={this.addFields}>Add more fields</Button>;
-        }
-        return null;
-    }
 
     renderInputs = (content, index) => {
         const selectedData = Object.keys(content);
