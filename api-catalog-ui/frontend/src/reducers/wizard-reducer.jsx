@@ -7,11 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
     NEXT_CATEGORY,
     READY_YAML_OBJECT,
+    REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
 } from '../constants/wizard-constants';
@@ -37,6 +39,7 @@ function compareVariables(category, categoryInfo) {
         category.content = arr;
     }
 }
+
 const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { data, enablerData }) => {
     if (action == null) {
         return state;
@@ -65,6 +68,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             });
             return { ...state, enablerName, inputData };
         }
+
         case INPUT_UPDATED: {
             const { category } = action.payload;
             const inputData = state.inputData.map(group => {
@@ -81,8 +85,22 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             return { ...state, selectedCategory: action.payload.category };
         case READY_YAML_OBJECT:
             return { ...state, yamlObject: action.payload.yaml };
+        case REMOVE_INDEX: {
+            const { index, text } = action.payload;
+            const newData = state.inputData.map(element => {
+                const newElement = { ...element };
+                if (newElement.text === text) {
+                    const newArr = [...newElement.content];
+                    newArr.splice(parseInt(index), 1);
+                    newElement.content = newArr;
+                }
+                return newElement;
+            });
+            return { ...state, inputData: newData };
+        }
         default:
             return state;
     }
 };
+
 export default wizardReducer;

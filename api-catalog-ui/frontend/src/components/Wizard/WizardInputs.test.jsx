@@ -116,4 +116,27 @@ describe('>>> WizardInputs tests', () => {
         instance.addFields();
         expect(updateWizardData).toHaveBeenCalledWith({ ...dummyData, content: [dummyData.content[0],dummyData.content[0]] });
     });
+    it('should delete added input fieldsa', () => {
+        const deleteCategoryConfig = jest.fn();
+        const dummyData = {
+            text: 'Dummy Data',
+            content: [{
+                test: {
+                    value: '',
+                    question: '',
+                },
+                test2: {
+                    value: '',
+                    question: '',
+                },
+            }],
+            multiple: true,
+        };
+        const wrapper = enzyme.shallow(
+            <WizardInputs deleteCategoryConfig={deleteCategoryConfig} data={dummyData} />
+        );
+        const instance = wrapper.instance();
+        instance.handleDelete({target: { name: 'Dummy Data'}});
+        expect(deleteCategoryConfig).toHaveBeenCalled();
+    });
 });

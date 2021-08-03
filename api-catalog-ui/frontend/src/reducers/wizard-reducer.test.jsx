@@ -11,7 +11,9 @@
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
-    NEXT_CATEGORY, READY_YAML_OBJECT,
+    NEXT_CATEGORY,
+    READY_YAML_OBJECT,
+    REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY
 } from '../constants/wizard-constants';
@@ -66,6 +68,71 @@ describe('>>> Wizard reducer tests', () => {
                 inputData: dummyData
             });
     });
+
+    it('should handle SELECT_ENABLER without indentation', () => {
+        const dummyEnablerData = [{
+            text: 'Test Enabler',
+            categories: [{ name: 'Test Category' }]
+        }];
+
+        const dummyData = [{
+            text: 'Test Category',
+            content: {
+                myCategory: {
+                    value: 'dummy value',
+                    question: 'This is a dummy question',
+                }
+            }
+        }];
+
+        expect(wizardReducer({ inputData: [] }, {
+            type: SELECT_ENABLER,
+            payload: { enablerName: 'Test Enabler' },
+        }, { enablerData: dummyEnablerData, data: dummyData }))
+            .toEqual({
+                enablerName: 'Test Enabler',
+                inputData: dummyData
+            });
+    });
+
+    it('should handle SELECT_ENABLER when the enabler allows multiple configs', () => {
+        const dummyEnablerData = [{
+            text: 'Test Enabler',
+            categories: [{ name: 'Test Category', indentation: false, multiple: true }]
+        }];
+
+        const dummyData = [{
+            text: 'Test Category',
+            content: {
+                myCategory: {
+                    value: 'dummy value',
+                    question: 'This is a dummy question',
+                }
+            },
+            multiple: false,
+        }];
+
+        expect(wizardReducer({ inputData: [] }, {
+            type: SELECT_ENABLER,
+            payload: { enablerName: 'Test Enabler' },
+        }, { enablerData: dummyEnablerData, data: dummyData }))
+            .toEqual({
+                enablerName: 'Test Enabler',
+                inputData: [{
+                    text: 'Test Category',
+                    content: [{
+                        myCategory: {
+                            value: 'dummy value',
+                            question: 'This is a dummy question',
+                        }
+                    }],
+                    multiple: true,
+                    indentation: false,
+                }],
+            });
+    });
+
+
 
     it('should handle SELECT_ENABLER without indentation', () => {
         const dummyEnablerData = [{
@@ -266,4 +333,78 @@ describe('>>> Wizard reducer tests', () => {
                 }], },
         })).toEqual(expectedState);
     });
+
+    it('should handle REMOVE_INDEX', () => {
+        const expectedState = {
+            inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },
+                    {
+                        test:{
+                            value: '',
+                            question: 'Why?',
+                        },
+                    },
+                ],
+            },
+            ]
+        };
+        expect(wizardReducer({inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },
+                    {
+                        test:{
+                            value: '',
+                            question: 'Why?',
+                        },
+                    },
+                    {
+                        test:{
+                            value: '',
+                            question: 'Why?',
+                        },
+                    },
+                ],
+            }]}, {
+            type: REMOVE_INDEX,
+            payload: {index: 1, text: 'Category 1'},
+        })).toEqual(expectedState);
+    })
+
+    it('should handle REMOVE_INDEX when category doesn\'t match', () => {
+        const expectedState = {
+            inputData:[{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },]
+            },]
+        };
+        expect(wizardReducer({inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test:{
+                        value: '',
+                        question: 'Why?',
+                    },
+                },
+                ],
+            }]}, {
+            type: REMOVE_INDEX,
+            payload: {index: 1, text: 'Category 2'},
+        })).toEqual(expectedState);
+    })
 });

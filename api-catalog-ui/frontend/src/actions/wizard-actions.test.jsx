@@ -131,6 +131,13 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.changeWizardCategory(3)).toEqual(expectedAction);
     });
+    it('should remove element by index', () => {
+        const expectedAction = {
+            type: constants.REMOVE_INDEX,
+            payload: { index: 1, text: "Basic info" },
+        };
+        expect(actions.deleteCategoryConfig(1, "Basic info")).toEqual(expectedAction);
+    });
     it('should create an YAML object', () => {
         const expectedAction = {
             type: constants.READY_YAML_OBJECT,

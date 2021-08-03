@@ -14,6 +14,7 @@ import {
     NEXT_CATEGORY,
     CHANGE_CATEGORY,
     READY_YAML_OBJECT,
+    REMOVE_INDEX,
 } from '../constants/wizard-constants';
 
 export function updateWizardData(category) {
@@ -22,30 +23,35 @@ export function updateWizardData(category) {
         payload: { category },
     };
 }
+
 export function wizardToggleDisplay() {
     return {
         type: TOGGLE_DISPLAY,
         payload: null,
     };
 }
+
 export function selectEnabler(enablerName) {
     return {
         type: SELECT_ENABLER,
         payload: { enablerName },
     };
 }
+
 export function nextWizardCategory() {
     return {
         type: NEXT_CATEGORY,
         payload: null,
     };
 }
+
 export function changeWizardCategory(num) {
     return {
         type: CHANGE_CATEGORY,
         payload: { category: num },
     };
 }
+
 export const insert = (parent, content) => {
     const keys = Object.keys(content);
     keys.forEach(currKey => {
@@ -56,6 +62,7 @@ export const insert = (parent, content) => {
         }
     });
 };
+
 export const addCategoryToYamlObject = (category, result) => {
     let content = {};
     // load user's answer into content object
@@ -91,6 +98,7 @@ export const addCategoryToYamlObject = (category, result) => {
     // return result
     return result;
 };
+
 export function createYamlObject(inputData) {
     let result = {};
     inputData.forEach(category => {
@@ -99,5 +107,12 @@ export function createYamlObject(inputData) {
     return {
         type: READY_YAML_OBJECT,
         payload: { yaml: result },
+    };
+}
+
+export function deleteCategoryConfig(index, text) {
+    return {
+        type: REMOVE_INDEX,
+        payload: { index, text },
     };
 }

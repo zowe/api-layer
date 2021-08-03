@@ -44,3 +44,10 @@
     position: absolute;
     right: 40px;
 }
+
+.categoryConfigDivider{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+}
