@@ -32,10 +32,7 @@ class YAMLVisualizer extends Component {
             if (arr[0].length > 0) {
                 return (
                     <div key={index}>
-                        <span className="yamlKey">
-                            {arr[0]}
-                        </span>
-                        :{arr[1]}
+                        <span className="yamlKey">{arr[0]}</span>:{arr[1]}
                     </div>
                 );
             }
