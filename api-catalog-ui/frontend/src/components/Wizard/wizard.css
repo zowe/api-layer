@@ -51,3 +51,7 @@
     flex-direction: row;
     justify-content: space-between;
 }
+
+.yamlKey {
+    color: #1d5bbf;
+}

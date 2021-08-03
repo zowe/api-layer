@@ -23,6 +23,26 @@ class YAMLVisualizer extends Component {
         }
     };
 
+    renderYaml() {
+        const string = YAML.stringify(this.props.yamlObject);
+        let index = 0;
+        return string.split('\n').map(part => {
+            index += 1;
+            const arr = part.split(':');
+            if (arr[0].length > 0) {
+                return (
+                    <div key={index}>
+                        <span className="yamlKey">
+                            {arr[0]}
+                        </span>
+                        :{arr[1]}
+                    </div>
+                );
+            }
+            return null;
+        });
+    }
+
     render() {
         return (
             <div className="yamlContainer">
@@ -31,7 +51,7 @@ class YAMLVisualizer extends Component {
                         Copy
                     </Button>
                 </div>
-                <code>{YAML.stringify(this.props.yamlObject)}</code>
+                <code>{this.renderYaml()}</code>
             </div>
         );
     }

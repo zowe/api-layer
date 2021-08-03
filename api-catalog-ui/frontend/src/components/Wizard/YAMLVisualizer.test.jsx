@@ -62,6 +62,6 @@ describe('>>> YAML Visualizer tests', () => {
         const wrapper = enzyme.shallow(
             <YAMLVisualizer createYamlObject={jest.fn()} yamlObject="test:yaml" />
         );
-        expect(wrapper.find('.yamlContainer code').text()).toEqual('test:yaml\n');
+        expect(wrapper.find('.yamlContainer code').text()).toEqual('test:yaml');
     });
 });
