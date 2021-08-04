@@ -58,7 +58,6 @@
     "homepage": "https://github.com/zowe/api-layer#readme",
     "dependencies": {},
     "devDependencies": {
-        "concurrently": "6.0.0",
-        "yaml": "^1.10.2"
+        "concurrently": "6.0.0"
     }
 }
