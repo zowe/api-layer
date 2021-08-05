@@ -71,6 +71,7 @@ describe('>>> WizardDialog tests', () => {
     it('should close dialog and refresh static APIs on Save', () => {
         const wizardToggleDisplay = jest.fn();
         const refreshedStaticApi = jest.fn();
+        const createYamlObject = jest.fn();
         const wrapper = enzyme.shallow(
             <WizardDialog
                 tiles={null}
@@ -81,14 +82,16 @@ describe('>>> WizardDialog tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 inputData={data}
-                selectedCategory={data.length - 1}
+                selectedCategory={data.length}
                 nextWizardCategory={jest.fn()}
+                createYamlObject={createYamlObject}
             />
         );
         const instance = wrapper.instance();
         instance.nextSave();
         expect(wizardToggleDisplay).toHaveBeenCalled();
         expect(refreshedStaticApi).toHaveBeenCalled();
+        expect(createYamlObject).toHaveBeenCalled();
     });
     it('should invoke nextCategory on clicking "Next"', () => {
         const nextWizardCategory = jest.fn();

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Tabs, { Tab } from 'mineral-ui/Tabs';
 import WizardInputsContainer from './WizardInputsContainer';
+import YAMLVisualizerContainer from './YAMLVisualizerContainer';
 
 class WizardNavigation extends Component {
     constructor(props) {
@@ -8,9 +9,14 @@ class WizardNavigation extends Component {
         this.handleChange = this.handleChange.bind(this);
     }
 
-    loadTabs() {
+    handleChange = event => {
+        if (typeof event === 'number') {
+            this.props.changeWizardCategory(event);
+        }
+    };
+    loadTabs = () => {
         let index = 0;
-        return this.props.inputData.map(category => {
+        const categories = this.props.inputData.map(category => {
             index += 1;
             return (
                 <Tab key={index} title={category.text}>
@@ -18,12 +24,13 @@ class WizardNavigation extends Component {
                 </Tab>
             );
         });
-    }
-
-    handleChange = event => {
-        if (typeof event === 'number') {
-            this.props.changeWizardCategory(event);
-        }
+        const yamlTab = [];
+        yamlTab.push(
+            <Tab key={0} title="YAML result">
+                <YAMLVisualizerContainer />
+            </Tab>
+        );
+        return categories.concat(yamlTab);
     };
 
     render() {

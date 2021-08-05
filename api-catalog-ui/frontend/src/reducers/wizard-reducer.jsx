@@ -7,10 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
     NEXT_CATEGORY,
+    READY_YAML_OBJECT,
     REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
@@ -22,8 +24,8 @@ export const wizardReducerDefaultState = {
     enablerName: 'Static Onboarding',
     selectedCategory: 0,
     inputData: [],
+    yamlObject: {},
 };
-
 function compareVariables(category, categoryInfo) {
     if (categoryInfo.indentation !== undefined) {
         category.indentation = categoryInfo.indentation;
@@ -78,9 +80,11 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             return { ...state, inputData };
         }
         case NEXT_CATEGORY:
-            return { ...state, selectedCategory: (state.selectedCategory + 1) % state.inputData.length };
+            return { ...state, selectedCategory: state.selectedCategory + 1 };
         case CHANGE_CATEGORY:
             return { ...state, selectedCategory: action.payload.category };
+        case READY_YAML_OBJECT:
+            return { ...state, yamlObject: action.payload.yaml };
         case REMOVE_INDEX: {
             const { index, text } = action.payload;
             const newData = state.inputData.map(element => {

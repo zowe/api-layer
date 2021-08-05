@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import React, { Component } from 'react';
 import { FormField } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
@@ -106,13 +107,6 @@ class WizardInputs extends Component {
         return this.renderInputs(dataAsObject.content, 1);
     };
 
-    loadButtons() {
-        if (this.props.data.multiple) {
-            return <Button onClick={this.addFields}>Add more fields</Button>;
-        }
-        return null;
-    }
-
     renderInputs = (content, index) => {
         const selectedData = Object.keys(content);
         let key = 1;
@@ -140,7 +134,7 @@ class WizardInputs extends Component {
         return (
             <div className="wizardForm">
                 {this.loadInputs()}
-                {this.loadButtons()}
+                {this.props.data.multiple ? <Button onClick={this.addFields}>Add more fields</Button> : null}
             </div>
         );
     }

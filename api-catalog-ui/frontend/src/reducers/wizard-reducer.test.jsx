@@ -11,7 +11,9 @@
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
-    NEXT_CATEGORY, REMOVE_INDEX,
+    NEXT_CATEGORY,
+    READY_YAML_OBJECT,
+    REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY
 } from '../constants/wizard-constants';
@@ -66,6 +68,71 @@ describe('>>> Wizard reducer tests', () => {
                 inputData: dummyData
             });
     });
+
+    it('should handle SELECT_ENABLER without indentation', () => {
+        const dummyEnablerData = [{
+            text: 'Test Enabler',
+            categories: [{ name: 'Test Category' }]
+        }];
+
+        const dummyData = [{
+            text: 'Test Category',
+            content: {
+                myCategory: {
+                    value: 'dummy value',
+                    question: 'This is a dummy question',
+                }
+            }
+        }];
+
+        expect(wizardReducer({ inputData: [] }, {
+            type: SELECT_ENABLER,
+            payload: { enablerName: 'Test Enabler' },
+        }, { enablerData: dummyEnablerData, data: dummyData }))
+            .toEqual({
+                enablerName: 'Test Enabler',
+                inputData: dummyData
+            });
+    });
+
+    it('should handle SELECT_ENABLER when the enabler allows multiple configs', () => {
+        const dummyEnablerData = [{
+            text: 'Test Enabler',
+            categories: [{ name: 'Test Category', indentation: false, multiple: true }]
+        }];
+
+        const dummyData = [{
+            text: 'Test Category',
+            content: {
+                myCategory: {
+                    value: 'dummy value',
+                    question: 'This is a dummy question',
+                }
+            },
+            multiple: false,
+        }];
+
+        expect(wizardReducer({ inputData: [] }, {
+            type: SELECT_ENABLER,
+            payload: { enablerName: 'Test Enabler' },
+        }, { enablerData: dummyEnablerData, data: dummyData }))
+            .toEqual({
+                enablerName: 'Test Enabler',
+                inputData: [{
+                    text: 'Test Category',
+                    content: [{
+                        myCategory: {
+                            value: 'dummy value',
+                            question: 'This is a dummy question',
+                        }
+                    }],
+                    multiple: true,
+                    indentation: false,
+                }],
+            });
+    });
+
+
 
     it('should handle SELECT_ENABLER without indentation', () => {
         const dummyEnablerData = [{
@@ -233,6 +300,37 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [{}, {}], selectedCategory: 0 }, {
             type: CHANGE_CATEGORY,
             payload: { category: 1 },
+        })).toEqual(expectedState);
+    });
+
+    it('should handle READY_YAML_OBJECT', () => {
+        const expectedState = {
+            inputData: [{
+            text: 'TEST 2',
+            content: {
+                key: { value: '0', question: 'Why?' },
+            }
+        }],
+            yamlObject: [{
+                text: 'TEST 2',
+                content: {
+                    key: { value: '0', question: 'Why?' },
+                }
+            }],
+        };
+        expect(wizardReducer({ inputData: [{
+                text: 'TEST 2',
+                content: {
+                    key: { value: '0', question: 'Why?' },
+                }
+            }], yamlObject: [{}, {}] }, {
+            type: READY_YAML_OBJECT,
+            payload: { yaml: [{
+                    text: 'TEST 2',
+                    content: {
+                        key: { value: '0', question: 'Why?' },
+                    }
+                }], },
         })).toEqual(expectedState);
     });
 

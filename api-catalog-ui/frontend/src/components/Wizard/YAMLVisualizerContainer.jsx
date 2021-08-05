@@ -7,25 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import { connect } from 'react-redux';
-import WizardDialog from './WizardDialog';
-import { nextWizardCategory, wizardToggleDisplay, createYamlObject } from '../../actions/wizard-actions';
-import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
+import { createYamlObject } from '../../actions/wizard-actions';
+import YAMLVisualizer from './YAMLVisualizer';
 
 const mapStateToProps = state => ({
-    wizardIsOpen: state.wizardReducer.wizardIsOpen,
-    enablerName: state.wizardReducer.enablerName,
     inputData: state.wizardReducer.inputData,
-    selectedCategory: state.wizardReducer.selectedCategory,
     yamlObject: state.wizardReducer.yamlObject,
 });
+
 const mapDispatchToProps = {
-    wizardToggleDisplay,
-    refreshedStaticApi,
-    nextWizardCategory,
     createYamlObject,
 };
+
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(WizardDialog);
+)(YAMLVisualizer);

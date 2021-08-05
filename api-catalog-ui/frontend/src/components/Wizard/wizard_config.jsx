@@ -51,13 +51,13 @@ export const data = [
     {
         text: 'Discovery Service URL',
         content: {
-            discoveryService1: {
+            discoveryServiceHost: {
                 value: '',
-                question: 'An URL for the Discovery Service',
+                question: 'Discovery Service host:',
             },
-            discoveryService2: {
+            discoveryServicePort: {
                 value: '',
-                question: 'An URL for the Discovery Service',
+                question: 'Discovery Service port:',
             },
         },
         multiple: true,
@@ -193,6 +193,7 @@ export const enablerData = [
         categories: [
             { name: 'Basic info', indentation: false },
             { name: 'URL', indentation: false },
+            { name: 'Discovery Service', indentation: 'discoveryServiceUrls:', multiple: true },
             { name: 'Routes', indentation: 'routes', multiple: true },
             { name: 'Authentication', indentation: 'authentication', multiple: false },
             { name: 'API Info', indentation: 'apiInfo', multiple: true },
