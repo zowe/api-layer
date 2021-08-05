@@ -1,3 +1,5 @@
+import { defaultSpring } from './wizard_defaults';
+
 export const data = [
     {
         text: 'Basic info',
@@ -267,6 +269,7 @@ export const enablerData = [
             { name: 'Catalog', indentation: 'apiml/service/catalog/tiles' },
             { name: 'SSL', indentation: 'apiml/service/ssl' },
         ],
+        defaults: defaultSpring,
     },
     {
         text: 'Micronaut Enabler',

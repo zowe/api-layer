@@ -1,16 +1,17 @@
-export const default_spring = {
+// eslint-disable-next-line import/prefer-default-export
+export const defaultSpring = {
     'Scheme info': { scheme: 'https', contextPath: '/${apiml.service.serviceId}' },
     'IP address info': { baseUrl: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}' },
-    'URL': {
+    URL: {
         homePageRelativeUrl: '${apiml.service.contextPath}',
         statusPageRelativeUrl: '${apiml.service.contextPath}',
         healthCheckRelativeUrl: '${apiml.service.contextPath}',
     },
-    'Routes': {
-        serviceUrl: '${apiml.service.contextPath}'
+    Routes: {
+        serviceUrl: '${apiml.service.contextPath}',
     },
     'API Info': {
         swaggerUrl:
-            '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}'
+            '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
     },
 };
