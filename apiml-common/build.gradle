@@ -7,6 +7,7 @@ dependencies {
     compile libraries.apache_commons_lang3
     compile libraries.http_client
     compile libraries.http_core
+    compile libraries.janino
 
 
     compileOnly libraries.spring_boot_configuration_processor
