@@ -18,12 +18,17 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -174,7 +179,6 @@ public class HttpConfig {
         sslContextFactory.setKeyStoreType(keyStoreType);
         sslContextFactory.setCertAlias(keyAlias);
         sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$");
-        sslContextFactory.setIncludeCipherSuites(ciphers);
 
         if (StringUtils.isNotEmpty(trustStore)) {
             sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
