@@ -87,7 +87,7 @@
         "rimraf": "3.0.2",
         "source-map-explorer": "2.3.1",
         "start-server-and-test": "1.10.8",
-        "yaml": "^1.10.2"
+        "yaml": "1.10.2"
     },
     "jest": {
         "collectCoverageFrom": [

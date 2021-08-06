@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
@@ -25,7 +26,6 @@ export const wizardReducerDefaultState = {
     inputData: [],
     yamlObject: {},
 };
-
 function compareVariables(category, categoryInfo) {
     if (categoryInfo.indentation !== undefined) {
         category.indentation = categoryInfo.indentation;
