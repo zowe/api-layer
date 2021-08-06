@@ -37,7 +37,7 @@ fi
 
 if [[ -z ${LIBRARY_PATH} ]]
 then
-    LIBRARY_PATH="../common-java-lib/"
+    LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
 if [ ! -z ${ZWE_CACHING_SERVICE_VSAM_DATASET} ]

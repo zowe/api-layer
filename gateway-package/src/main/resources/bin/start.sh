@@ -36,7 +36,7 @@ fi
 
 if [[ -z ${LIBRARY_PATH} ]]
 then
-    LIBRARY_PATH="../common-java-lib/"
+    LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
 # API Mediation Layer Debug Mode
