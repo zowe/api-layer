@@ -40,7 +40,7 @@ function compareVariables(category, categoryInfo) {
     }
 }
 
-function addDefaultValues(content, defaultsArr) {
+export function addDefaultValues(content, defaultsArr) {
     const newContent = { ...content };
     defaultsArr.forEach(entry => {
         const key = entry[0];
@@ -52,7 +52,7 @@ function addDefaultValues(content, defaultsArr) {
     return newContent;
 }
 
-function setDefault(category, defaults) {
+export function setDefault(category, defaults) {
     if (defaults === undefined || defaults[category.text] === undefined) {
         return category;
     }

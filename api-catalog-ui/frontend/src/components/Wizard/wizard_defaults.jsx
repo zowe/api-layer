@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/prefer-default-export
 export const defaultSpring = {
+    Spring: { name: '${apiml.service.serviceId}' },
     'Scheme info': { scheme: 'https', contextPath: '/${apiml.service.serviceId}' },
     'IP address info': { baseUrl: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}' },
     URL: {

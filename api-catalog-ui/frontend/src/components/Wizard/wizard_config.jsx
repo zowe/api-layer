@@ -236,6 +236,16 @@ export const data = [
         },
         multiple: false,
     },
+    {
+        text: 'Spring',
+        content: {
+            name: {
+                value: '',
+                question: 'This parameter has to be the same as the service ID you are going to provide',
+            },
+        },
+        multiple: false,
+    },
 ];
 
 export const enablerData = [
@@ -257,6 +267,7 @@ export const enablerData = [
     {
         text: 'Spring Enabler',
         categories: [
+            { name: 'Spring', indentation: 'spring/application' },
             { name: 'Enable', indentation: 'apiml' },
             { name: 'Basic info', indentation: 'apiml/service' },
             { name: 'Scheme info', indentation: 'apiml/service' },
