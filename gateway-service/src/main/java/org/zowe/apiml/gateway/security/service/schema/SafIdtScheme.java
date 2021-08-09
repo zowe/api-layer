@@ -54,7 +54,7 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
                 String safIdt = safAuthenticationService.generateSafIdt(token);
 
                 // remove authentication part
-                context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, safIdt);
+                context.addZuulRequestHeader("X-SAF-Token", safIdt);
             });
         }
 

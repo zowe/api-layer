@@ -15,33 +15,30 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.message.BasicStatusLine;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.RepetitionInfo;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
-import org.zowe.apiml.security.common.login.LoginRequest;
 
 import java.io.IOException;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.constants.ApimlConstants.COOKIE_AUTH_NAME;
 
 /**
  * Verify that the behavior configured for the routing chooses for the same user the same service instance.
  */
 @AcceptanceTest
 class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
-
     @Autowired
     protected LoadBalancerCache cache;
 
@@ -67,7 +64,7 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
                     prepareApplications();
                 }
 
-                Cookie token = jwtToken();
+                Cookie token = securityRequests.validJwtToken();
 
                 applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
 
@@ -78,20 +75,6 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
                 assertThat(selectedInFirstCall.compareTo(selectedInSecondCall), is(0));
                 assertThat(selectedInFirstCall.compareTo(selectedInThirdCall), is(0));
             }
-        }
-
-        private Cookie jwtToken() {
-            LoginRequest loginRequest = new LoginRequest("user", "user");
-
-            return given()
-                .contentType(JSON)
-                .body(loginRequest)
-            .when()
-                .post(basePath + "/gateway/api/v1/auth/login")
-            .then()
-                .statusCode(is(SC_NO_CONTENT))
-                .extract()
-                .detailedCookie(COOKIE_AUTH_NAME);
         }
 
         private URI routeToService(Cookie token, int status) throws IOException {
