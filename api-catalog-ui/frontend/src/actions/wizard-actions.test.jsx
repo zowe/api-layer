@@ -96,6 +96,26 @@ describe('>>> Wizard actions tests', () => {
         expect(result).toEqual({ '0': { 'test': 'value 1' }, '1': { 'test': 'value 2' } });
 
     });
+    it('should add categories to the YAML object when content is an array without a key', () => {
+        const category = {
+            text: 'Category 1',
+            content: [
+                {
+                    test: { value: 'value 1' }
+                },
+                {
+                    test: { value: 'value 2' }
+                },
+            ],
+            multiple: false,
+            indentation: false,
+            noKey: true,
+        };
+        let result = {};
+        result = addCategoryToYamlObject(category, result);
+        expect(result).toEqual({ '0': 'value 1' , '1': 'value 2' });
+
+    });
     it('should add categories to the YAML object and handle indentation', () => {
         const category = {
             text: 'Category 1',

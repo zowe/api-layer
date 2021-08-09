@@ -58,10 +58,17 @@ describe('>>> YAML Visualizer tests', () => {
         expect(navigator.clipboard.writeText).toHaveBeenCalled();
     });
 
-    xit('should display YAML from props', () => {
+    it('should display YAML from props', () => {
         const wrapper = enzyme.shallow(
             <YAMLVisualizer createYamlObject={jest.fn()} yamlObject="test:yaml" />
         );
         expect(wrapper.find('.yamlContainer code').text()).toEqual('test:yaml');
+    });
+
+    it('should not display YAML from empty props', () => {
+        const wrapper = enzyme.shallow(
+            <YAMLVisualizer createYamlObject={jest.fn()} yamlObject=":" />
+        );
+        expect(wrapper.find('.yamlContainer code').text().length).toEqual(0);
     });
 });
