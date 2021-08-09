@@ -17,7 +17,8 @@ import {
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
 } from '../constants/wizard-constants';
-import { data, enablerData } from '../components/Wizard/wizard_config';
+import { categoryData } from '../components/Wizard/configs/wizard_categories';
+import { enablerData } from '../components/Wizard/configs/wizard_onboarding_methods';
 
 export const wizardReducerDefaultState = {
     wizardIsOpen: false,
@@ -26,6 +27,7 @@ export const wizardReducerDefaultState = {
     inputData: [],
     yamlObject: {},
 };
+
 function compareVariables(category, categoryInfo) {
     if (categoryInfo.indentation !== undefined) {
         category.indentation = categoryInfo.indentation;
@@ -67,7 +69,14 @@ export function setDefault(category, defaults) {
     return { ...category, content: result };
 }
 
-const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { data, enablerData }) => {
+const wizardReducer = (
+    state = wizardReducerDefaultState,
+    action = {},
+    config = {
+        data: categoryData,
+        enablerData,
+    }
+) => {
     if (action == null) {
         return state;
     }

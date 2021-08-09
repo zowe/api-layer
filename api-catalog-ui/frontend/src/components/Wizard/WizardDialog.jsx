@@ -11,7 +11,7 @@
 import React, { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
-import WizardNavigationContainer from './WizardNavigationContainer';
+import WizardNavigationContainer from './WizardComponents/WizardNavigationContainer';
 
 export default class WizardDialog extends Component {
     constructor(props) {

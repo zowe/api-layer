@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Tabs, { Tab } from 'mineral-ui/Tabs';
 import WizardInputsContainer from './WizardInputsContainer';
-import YAMLVisualizerContainer from './YAMLVisualizerContainer';
+import YAMLVisualizerContainer from '../YAML/YAMLVisualizerContainer';
 
 class WizardNavigation extends Component {
     constructor(props) {

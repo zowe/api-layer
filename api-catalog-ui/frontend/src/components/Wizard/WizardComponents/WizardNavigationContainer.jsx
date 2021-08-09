@@ -10,7 +10,7 @@
 
 import { connect } from 'react-redux';
 import WizardNavigation from './WizardNavigation';
-import { changeWizardCategory, nextWizardCategory } from '../../actions/wizard-actions';
+import { changeWizardCategory, nextWizardCategory } from '../../../actions/wizard-actions';
 
 const mapStateToProps = state => ({
     selectedCategory: state.wizardReducer.selectedCategory,

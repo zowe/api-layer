@@ -9,19 +9,17 @@
  */
 
 import { connect } from 'react-redux';
-import { createYamlObject } from '../../actions/wizard-actions';
-import YAMLVisualizer from './YAMLVisualizer';
+import { deleteCategoryConfig, updateWizardData } from '../../../actions/wizard-actions';
+import WizardInputs from './WizardInputs';
 
-const mapStateToProps = state => ({
-    inputData: state.wizardReducer.inputData,
-    yamlObject: state.wizardReducer.yamlObject,
-});
+const mapStateToProps = () => ({});
 
 const mapDispatchToProps = {
-    createYamlObject,
+    updateWizardData,
+    deleteCategoryConfig,
 };
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(YAMLVisualizer);
+)(WizardInputs);
