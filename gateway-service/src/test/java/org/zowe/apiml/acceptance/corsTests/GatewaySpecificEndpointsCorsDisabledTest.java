@@ -11,7 +11,6 @@ package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.annotation.DirtiesContext;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
 

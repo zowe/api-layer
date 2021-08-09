@@ -12,20 +12,20 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.SafAuthenticationService;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import java.util.Date;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
  * The scheme allowing for the safIdt authentication scheme.
- *
  */
 @Component
 @RequiredArgsConstructor
@@ -39,11 +39,17 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
-        return new SafIdtCommand();
+    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> tokenSupplier) {
+        // Same behavior as for the ZosmfScheme.
+        final QueryResponse queryResponse = tokenSupplier.get();
+        final Date expiration = queryResponse == null ? null : queryResponse.getExpiration();
+        final Long expirationTime = expiration == null ? null : expiration.getTime();
+        return new SafIdtCommand(expirationTime);
     }
 
+    @RequiredArgsConstructor
     public class SafIdtCommand extends AuthenticationCommand {
+        private final Long expireAt;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
@@ -51,17 +57,21 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
 
             Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
             jwtToken.ifPresent(token -> {
-                String safIdt = safAuthenticationService.generateSafIdt(token);
+                TokenAuthentication authentication = authenticationService.validateJwtToken(jwtToken.get());
+                if (authentication.isAuthenticated()) {
+                    String safIdt = safAuthenticationService.generateSafIdt(token);
 
-                // remove authentication part
-                context.addZuulRequestHeader("X-SAF-Token", safIdt);
+                    // remove authentication part
+                    context.addZuulRequestHeader("X-SAF-Token", safIdt);
+                }
             });
         }
 
         @Override
         public boolean isExpired() {
-            // Verify whether the JWT token is expired.
-            return false;
+            if (expireAt == null) return false;
+
+            return System.currentTimeMillis() > expireAt;
         }
 
         @Override

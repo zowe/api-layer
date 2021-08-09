@@ -10,7 +10,6 @@
 package org.zowe.apiml.acceptance;
 
 import io.restassured.http.Cookie;
-import io.restassured.response.ExtractableResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,6 +65,34 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
                 verify(mockClient, times(1)).execute(captor.capture());
 
                 assertHeaderWithValue(captor.getValue(), "X-SAF-Token", "validToken" + validJwtToken.getValue());
+            }
+        }
+    }
+
+    @Nested
+    class ThenNoTokenIsProvided {
+        @Nested
+        class WhenSafIdtRequestedByService {
+            @BeforeEach
+            void prepareService() throws IOException {
+                applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+
+                reset(mockClient);
+                mockValid200HttpResponse();
+            }
+
+            @Test
+            void givenInvalidJwtToken() throws IOException {
+                Cookie withInvalidToken = new Cookie.Builder("apimlAuthenticationToken=invalidValue").build();
+
+                given()
+                    .cookie(withInvalidToken)
+                .when()
+                    .get(basePath + serviceWithDefaultConfiguration.getPath())
+                .then()
+                    .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+
+                verify(mockClient, times(0)).execute(any());
             }
         }
     }
