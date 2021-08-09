@@ -58,7 +58,7 @@ describe('>>> YAML Visualizer tests', () => {
         expect(navigator.clipboard.writeText).toHaveBeenCalled();
     });
 
-    it('should display YAML from props', () => {
+    xit('should display YAML from props', () => {
         const wrapper = enzyme.shallow(
             <YAMLVisualizer createYamlObject={jest.fn()} yamlObject="test:yaml" />
         );
