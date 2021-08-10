@@ -96,9 +96,13 @@ const wizardReducer = (
             const { categories } = enablerObj;
             categories.forEach(categoryInfo => {
                 let category = config.data.find(o => o.text === categoryInfo.name);
+                if (categoryInfo.nav === undefined) {
+                    categoryInfo.nav = categoryInfo.name;
+                }
                 if (category === undefined) {
                     return;
                 }
+                category.nav = categoryInfo.nav;
                 category = setDefault(category, enablerObj.defaults);
                 compareVariables(category, categoryInfo);
                 inputData.push(category);

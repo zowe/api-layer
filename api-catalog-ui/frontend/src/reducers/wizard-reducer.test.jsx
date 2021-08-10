@@ -95,22 +95,16 @@ describe('>>> Wizard reducer tests', () => {
             });
     });
 
-    it('should handle SELECT_ENABLER when the enabler allows multiple configs', () => {
+    it('should handle SELECT_ENABLER with navs', () => {
         const dummyEnablerData = [{
             text: 'Test Enabler',
-            categories: [{ name: 'Test Category', indentation: false, multiple: true }]
+            categories: [{ name: 'CAT #0', nav: '#1' }, { name: 'CAT #1', nav: '#1' }]
         }];
 
-        const dummyData = [{
-            text: 'Test Category',
-            content: {
-                myCategory: {
-                    value: 'dummy value',
-                    question: 'This is a dummy question',
-                }
-            },
-            multiple: false,
-        }];
+        const dummyData = [
+            { text: 'CAT #0' },
+            { text: 'CAT #1' },
+        ];
 
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
@@ -118,45 +112,7 @@ describe('>>> Wizard reducer tests', () => {
         }, { enablerData: dummyEnablerData, data: dummyData }))
             .toEqual({
                 enablerName: 'Test Enabler',
-                inputData: [{
-                    text: 'Test Category',
-                    content: [{
-                        myCategory: {
-                            value: 'dummy value',
-                            question: 'This is a dummy question',
-                        }
-                    }],
-                    multiple: true,
-                    indentation: false,
-                }],
-            });
-    });
-
-
-
-    it('should handle SELECT_ENABLER without indentation', () => {
-        const dummyEnablerData = [{
-            text: 'Test Enabler',
-            categories: [{ name: 'Test Category' }]
-        }];
-
-        const dummyData = [{
-            text: 'Test Category',
-            content: {
-                myCategory: {
-                    value: 'dummy value',
-                    question: 'This is a dummy question',
-                }
-            }
-        }];
-
-        expect(wizardReducer({ inputData: [] }, {
-            type: SELECT_ENABLER,
-            payload: { enablerName: 'Test Enabler' },
-        }, { enablerData: dummyEnablerData, data: dummyData }))
-            .toEqual({
-                enablerName: 'Test Enabler',
-                inputData: dummyData
+                inputData: [ { text: 'CAT #0', nav: '#1' }, { text: 'CAT #1', nav: '#1' },]
             });
     });
 
@@ -185,6 +141,7 @@ describe('>>> Wizard reducer tests', () => {
                 enablerName: 'Test Enabler',
                 inputData: [{
                     text: 'Test Category',
+                    nav: 'Test Category',
                     content: [{
                         myCategory: {
                             value: 'dummy value',
@@ -196,7 +153,6 @@ describe('>>> Wizard reducer tests', () => {
                 }],
             });
     });
-
 
     it('should handle default state in SELECT_ENABLER', () => {
         const enablerData = [{
@@ -306,11 +262,11 @@ describe('>>> Wizard reducer tests', () => {
     it('should handle READY_YAML_OBJECT', () => {
         const expectedState = {
             inputData: [{
-            text: 'TEST 2',
-            content: {
-                key: { value: '0', question: 'Why?' },
-            }
-        }],
+                text: 'TEST 2',
+                content: {
+                    key: { value: '0', question: 'Why?' },
+                }
+            }],
             yamlObject: [{
                 text: 'TEST 2',
                 content: {
@@ -318,19 +274,23 @@ describe('>>> Wizard reducer tests', () => {
                 }
             }],
         };
-        expect(wizardReducer({ inputData: [{
+        expect(wizardReducer({
+            inputData: [{
                 text: 'TEST 2',
                 content: {
                     key: { value: '0', question: 'Why?' },
                 }
-            }], yamlObject: [{}, {}] }, {
+            }], yamlObject: [{}, {}]
+        }, {
             type: READY_YAML_OBJECT,
-            payload: { yaml: [{
+            payload: {
+                yaml: [{
                     text: 'TEST 2',
                     content: {
                         key: { value: '0', question: 'Why?' },
                     }
-                }], },
+                }],
+            },
         })).toEqual(expectedState);
     });
 
@@ -339,13 +299,13 @@ describe('>>> Wizard reducer tests', () => {
             inputData: [{
                 text: 'Category 1',
                 content: [{
-                    test:{
+                    test: {
                         value: '',
                         question: 'Why?',
                     },
                 },
                     {
-                        test:{
+                        test: {
                             value: '',
                             question: 'Why?',
                         },
@@ -354,83 +314,87 @@ describe('>>> Wizard reducer tests', () => {
             },
             ]
         };
-        expect(wizardReducer({inputData: [{
+        expect(wizardReducer({
+            inputData: [{
                 text: 'Category 1',
                 content: [{
-                    test:{
+                    test: {
                         value: '',
                         question: 'Why?',
                     },
                 },
                     {
-                        test:{
+                        test: {
                             value: '',
                             question: 'Why?',
                         },
                     },
                     {
-                        test:{
+                        test: {
                             value: '',
                             question: 'Why?',
                         },
                     },
                 ],
-            }]}, {
+            }]
+        }, {
             type: REMOVE_INDEX,
-            payload: {index: 1, text: 'Category 1'},
+            payload: { index: 1, text: 'Category 1' },
         })).toEqual(expectedState);
-    })
+    });
 
     it('should handle REMOVE_INDEX when category doesn\'t match', () => {
         const expectedState = {
-            inputData:[{
+            inputData: [{
                 text: 'Category 1',
                 content: [{
-                    test:{
+                    test: {
                         value: '',
                         question: 'Why?',
                     },
                 },]
             },]
         };
-        expect(wizardReducer({inputData: [{
+        expect(wizardReducer({
+            inputData: [{
                 text: 'Category 1',
                 content: [{
-                    test:{
+                    test: {
                         value: '',
                         question: 'Why?',
                     },
                 },
                 ],
-            }]}, {
+            }]
+        }, {
             type: REMOVE_INDEX,
-            payload: {index: 1, text: 'Category 2'},
+            payload: { index: 1, text: 'Category 2' },
         })).toEqual(expectedState);
-    })
+    });
 
     it('should add default values', () => {
         const content = {
-            test:{
+            test: {
                 value: '',
                 question: 'Why?',
             },
         };
-        const defaultsArr = [['test','val']];
+        const defaultsArr = [['test', 'val']];
         const newContent = addDefaultValues(content, defaultsArr);
-        expect(newContent).toEqual({test: {value: 'val', question: 'Why?',},});
-    })
+        expect(newContent).toEqual({ test: { value: 'val', question: 'Why?', }, });
+    });
 
-    it('should add default values correctly', () => {
+    it('should not add default values if key does not match', () => {
         const content = {
-            test:{
+            test: {
                 value: '',
                 question: 'Why?',
             },
         };
-        const defaultsArr = [['someKey','val']];
+        const defaultsArr = [['someKey', 'val']];
         const newContent = addDefaultValues(content, defaultsArr);
         expect(newContent).toEqual(content);
-    })
+    });
 
     it('should set the default value when content is an array', () => {
         const category = {
@@ -460,11 +424,11 @@ describe('>>> Wizard reducer tests', () => {
             }]
         };
         const defaults = {
-            'Category 1': {test: 'val1', test2: 'val2'},
+            'Category 1': { test: 'val1', test2: 'val2' },
         };
         const newCategory = setDefault(category, defaults);
         expect(newCategory).toEqual(expectedCategory);
-    })
+    });
 
     it('should set the default value when content is an object', () => {
         const category = {
@@ -486,9 +450,9 @@ describe('>>> Wizard reducer tests', () => {
             }
         };
         const defaults = {
-            'Category 1': {test: 'val1',},
+            'Category 1': { test: 'val1', },
         };
         const newCategory = setDefault(category, defaults);
         expect(newCategory).toEqual(expectedCategory);
-    })
+    });
 });

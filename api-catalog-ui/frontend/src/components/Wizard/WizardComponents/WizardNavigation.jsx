@@ -7,6 +7,7 @@ class WizardNavigation extends Component {
     constructor(props) {
         super(props);
         this.handleChange = this.handleChange.bind(this);
+        this.returnNavs = this.returnNavs.bind(this);
     }
 
     handleChange = event => {
@@ -14,13 +15,29 @@ class WizardNavigation extends Component {
             this.props.changeWizardCategory(event);
         }
     };
+
+    returnNavs() {
+        const navs = {};
+        let index = 0;
+        this.props.inputData.forEach(category => {
+            if (!Array.isArray(navs[category.nav])) {
+                navs[category.nav] = [];
+            }
+            navs[category.nav].push(<WizardInputsContainer key={`nav#${index}`} data={category} />);
+            index += 1;
+        });
+        return navs;
+    }
+
     loadTabs = () => {
         let index = 0;
-        const categories = this.props.inputData.map(category => {
+        const categories = Object.entries(this.returnNavs()).map(entry => {
+            const name = entry[0];
+            const categoryArr = entry[1];
             index += 1;
             return (
-                <Tab key={index} title={category.text}>
-                    <WizardInputsContainer data={category} />
+                <Tab key={index} title={name}>
+                    {categoryArr}
                 </Tab>
             );
         });

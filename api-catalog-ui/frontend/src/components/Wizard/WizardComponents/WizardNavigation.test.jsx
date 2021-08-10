@@ -47,6 +47,7 @@ describe('>>> Wizard navigation tests', () => {
         const dummyData = [
             {
                 text: 'Some Enabler',
+                nav: 'Nav #1',
                 categories: [
                     { name: 'Category 1', indentation: false },
                     { name: 'Category 2', indentation: false },
@@ -54,6 +55,7 @@ describe('>>> Wizard navigation tests', () => {
             },
             {
                 text: 'Other Enabler',
+                nav: 'Nav #1',
                 categories: [
                     { name: 'Category 1', indentation: false },
                     { name: 'Category 2', indentation: false },
@@ -68,6 +70,6 @@ describe('>>> Wizard navigation tests', () => {
                 changeWizardCategory={changeWizardCategory}
             />
         );
-        expect(wrapper.find('Tab').length).toEqual(3);
+        expect(wrapper.find('Tab').length).toEqual(2);
     });
 });
