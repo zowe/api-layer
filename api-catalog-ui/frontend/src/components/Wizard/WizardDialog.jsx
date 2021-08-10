@@ -42,9 +42,10 @@ export default class WizardDialog extends Component {
 
     render() {
         const { wizardIsOpen, enablerName, inputData, selectedCategory } = this.props;
+        const size = selectedCategory === inputData.length ? 'large' : 'medium';
         return (
             <div className="dialog">
-                <Dialog id="wizard-dialog" isOpen={wizardIsOpen} closeOnClickOutside={false}>
+                <Dialog id="wizard-dialog" isOpen={wizardIsOpen} size={size} closeOnClickOutside={false}>
                     <DialogHeader>
                         <DialogTitle>Onboard a New API Using {enablerName}</DialogTitle>
                     </DialogHeader>

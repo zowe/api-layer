@@ -17,7 +17,7 @@ import {
     SELECT_ENABLER,
     TOGGLE_DISPLAY
 } from '../constants/wizard-constants';
-import wizardReducer, { wizardReducerDefaultState } from './wizard-reducer';
+import wizardReducer, { addDefaultValues, setDefault, wizardReducerDefaultState } from './wizard-reducer';
 
 describe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
@@ -406,5 +406,89 @@ describe('>>> Wizard reducer tests', () => {
             type: REMOVE_INDEX,
             payload: {index: 1, text: 'Category 2'},
         })).toEqual(expectedState);
+    })
+
+    it('should add default values', () => {
+        const content = {
+            test:{
+                value: '',
+                question: 'Why?',
+            },
+        };
+        const defaultsArr = [['test','val']];
+        const newContent = addDefaultValues(content, defaultsArr);
+        expect(newContent).toEqual({test: {value: 'val', question: 'Why?',},});
+    })
+
+    it('should add default values correctly', () => {
+        const content = {
+            test:{
+                value: '',
+                question: 'Why?',
+            },
+        };
+        const defaultsArr = [['someKey','val']];
+        const newContent = addDefaultValues(content, defaultsArr);
+        expect(newContent).toEqual(content);
+    })
+
+    it('should set the default value when content is an array', () => {
+        const category = {
+            text: 'Category 1',
+            content: [{
+                test: {
+                    value: '',
+                    question: 'Why?',
+                },
+                test2: {
+                    value: '',
+                    question: 'Why not?',
+                },
+            }]
+        };
+        const expectedCategory = {
+            text: 'Category 1',
+            content: [{
+                test: {
+                    value: 'val1',
+                    question: 'Why?',
+                },
+                test2: {
+                    value: 'val2',
+                    question: 'Why not?',
+                },
+            }]
+        };
+        const defaults = {
+            'Category 1': {test: 'val1', test2: 'val2'},
+        };
+        const newCategory = setDefault(category, defaults);
+        expect(newCategory).toEqual(expectedCategory);
+    })
+
+    it('should set the default value when content is an object', () => {
+        const category = {
+            text: 'Category 1',
+            content: {
+                test: {
+                    value: '',
+                    question: 'Why?',
+                },
+            }
+        };
+        const expectedCategory = {
+            text: 'Category 1',
+            content: {
+                test: {
+                    value: 'val1',
+                    question: 'Why?',
+                },
+            }
+        };
+        const defaults = {
+            'Category 1': {test: 'val1',},
+        };
+        const newCategory = setDefault(category, defaults);
+        expect(newCategory).toEqual(expectedCategory);
     })
 });

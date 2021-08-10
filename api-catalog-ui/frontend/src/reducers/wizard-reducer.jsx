@@ -40,6 +40,33 @@ function compareVariables(category, categoryInfo) {
     }
 }
 
+export function addDefaultValues(content, defaultsArr) {
+    const newContent = { ...content };
+    defaultsArr.forEach(entry => {
+        const key = entry[0];
+        const defaultValue = entry[1];
+        if (newContent[key]) {
+            newContent[key].value = defaultValue;
+        }
+    });
+    return newContent;
+}
+
+export function setDefault(category, defaults) {
+    if (defaults === undefined || defaults[category.text] === undefined) {
+        return category;
+    }
+    let result;
+    const defaultsArr = Object.entries(defaults[category.text]);
+    if (Array.isArray(category.content)) {
+        result = [];
+        category.content.forEach(config => result.push(addDefaultValues(config, defaultsArr)));
+    } else {
+        result = addDefaultValues(category.content, defaultsArr);
+    }
+    return { ...category, content: result };
+}
+
 const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { data, enablerData }) => {
     if (action == null) {
         return state;
@@ -59,10 +86,11 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             }
             const { categories } = enablerObj;
             categories.forEach(categoryInfo => {
-                const category = config.data.find(o => o.text === categoryInfo.name);
+                let category = config.data.find(o => o.text === categoryInfo.name);
                 if (category === undefined) {
                     return;
                 }
+                category = setDefault(category, enablerObj.defaults);
                 compareVariables(category, categoryInfo);
                 inputData.push(category);
             });
