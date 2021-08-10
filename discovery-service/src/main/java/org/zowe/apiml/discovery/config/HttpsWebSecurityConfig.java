@@ -24,7 +24,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
-import org.zowe.apiml.filter.AttlsEnabledFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
@@ -84,7 +84,7 @@ public class HttpsWebSecurityConfig {
                 .and()
                 .httpBasic().realmName(DISCOVERY_REALM);
             if (isAttlsEnabled) {
-                http.addFilterBefore(new AttlsEnabledFilter(), CookieContentFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), CookieContentFilter.class);
             }
         }
     }
@@ -126,7 +126,7 @@ public class HttpsWebSecurityConfig {
                     .and().x509().userDetailsService(x509UserDetailsService());
                 if (isAttlsEnabled) {
                     http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                    http.addFilterBefore(new AttlsEnabledFilter(), AttlsFilter.class);
+                    http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
                 }
             } else {
                 http.authorizeRequests().anyRequest().permitAll();
@@ -165,7 +165,7 @@ public class HttpsWebSecurityConfig {
                     .x509().userDetailsService(x509UserDetailsService());
                 if (isAttlsEnabled) {
                     http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                    http.addFilterBefore(new AttlsEnabledFilter(), AttlsFilter.class);
+                    http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
                 }
             }
         }

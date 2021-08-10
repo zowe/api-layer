@@ -20,7 +20,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
-import org.zowe.apiml.filter.AttlsEnabledFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.filter.AttlsFilter;
 
 import java.util.Collections;
@@ -59,7 +59,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .x509().userDetailsService(x509UserDetailsService());
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                http.addFilterBefore(new AttlsEnabledFilter(), AttlsFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
             http.authorizeRequests().anyRequest().permitAll();

@@ -33,7 +33,7 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
-import org.zowe.apiml.filter.AttlsEnabledFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
@@ -403,7 +403,7 @@ public class NewSecurityConfiguration {
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
         if (isAttlsEnabled) {
             http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-            http.addFilterBefore(new AttlsEnabledFilter(), AttlsFilter.class);
+            http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
         return http
             .cors()

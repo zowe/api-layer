@@ -30,7 +30,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.zowe.apiml.filter.AttlsEnabledFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
@@ -108,7 +108,7 @@ public class SecurityConfiguration {
                         .userDetailsService(x509UserDetailsService())
                         .and()
                         .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
-                        .addFilterBefore(new AttlsEnabledFilter(), AttlsFilter.class);
+                        .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
                 } else {
                     http.x509()
                         .userDetailsService(x509UserDetailsService());
@@ -167,7 +167,7 @@ public class SecurityConfiguration {
                 .antMatchers("/application/health", "/application/info").permitAll()
                 .antMatchers("/application/**").authenticated();
             if (isAttlsEnabled) {
-                http.addFilterBefore(new AttlsEnabledFilter(), BasicContentFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), BasicContentFilter.class);
             }
 
         }

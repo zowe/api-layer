@@ -18,17 +18,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class AttlsEnabledFilter extends OncePerRequestFilter {
+public class SecureConnectionFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             if (InboundAttls.get() != null && InboundAttls.get().getStatConn() == StatConn.SECURE) {
                 filterChain.doFilter(request, response);
+            } else {
+                AttlsErrorHandler.handleError(response, "Inbound AT-TLS context is not initialized or connection is not secure." );
             }
         } catch (ContextIsNotInitializedException | UnknownEnumValueException | IoctlCallException e) {
             logger.error("Can't read from AT-TLS context", e);
             AttlsErrorHandler.handleError(response, "Connection is not secure. " + e.getMessage());
         }
+
     }
 }
