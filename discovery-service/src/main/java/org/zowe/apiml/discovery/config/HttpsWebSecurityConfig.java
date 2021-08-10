@@ -55,6 +55,7 @@ public class HttpsWebSecurityConfig {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
+
     /**
      * Filter chain for protecting endpoints with MF credentials (basic or token)
      */
@@ -82,7 +83,7 @@ public class HttpsWebSecurityConfig {
                 .antMatchers("/**").authenticated()
                 .and()
                 .httpBasic().realmName(DISCOVERY_REALM);
-            if (isAttlsEnabled){
+            if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsEnabledFilter(), AttlsFilter.class);
             }
         }
@@ -100,7 +101,6 @@ public class HttpsWebSecurityConfig {
 
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
-
 
 
         @Override
