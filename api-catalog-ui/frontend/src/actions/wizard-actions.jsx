@@ -73,13 +73,22 @@ export const addCategoryToYamlObject = (category, result) => {
     } else {
         content = [];
         let index = 0;
-        category.content.forEach(o => {
-            content[index] = {};
-            Object.keys(o).forEach(key => {
-                content[index][key] = category.content[index][key].value;
+        if (category.noKey) {
+            category.content.forEach(o => {
+                Object.keys(o).forEach(key => {
+                    content[index] = category.content[index][key].value;
+                });
+                index += 1;
             });
-            index += 1;
-        });
+        } else {
+            category.content.forEach(o => {
+                content[index] = {};
+                Object.keys(o).forEach(key => {
+                    content[index][key] = category.content[index][key].value;
+                });
+                index += 1;
+            });
+        }
     }
     // handle indentation, if any
     if (!category.indentation) {

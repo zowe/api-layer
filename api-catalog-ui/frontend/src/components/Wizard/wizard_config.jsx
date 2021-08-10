@@ -84,6 +84,17 @@ export const data = [
         multiple: false,
     },
     {
+        text: 'URL for Static',
+        content: {
+            instanceBaseUrls: {
+                value: '',
+                question: 'The base URL of the instance (the consistent part of the web address):',
+            },
+        },
+        multiple: false,
+        noKey: true,
+    },
+    {
         text: 'Discovery Service URL',
         content: {
             discoveryServiceHost: {
@@ -105,6 +116,20 @@ export const data = [
                 question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
             },
             serviceUrl: {
+                value: '',
+                question: 'A portion of the service instance URL path which replaces the gatewayUrl part:',
+            },
+        },
+        multiple: false,
+    },
+    {
+        text: 'Routes for Static',
+        content: {
+            gatewayUrl: {
+                value: '',
+                question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
+            },
+            serviceRelativeUrl: {
                 value: '',
                 question: 'A portion of the service instance URL path which replaces the gatewayUrl part:',
             },
@@ -246,6 +271,30 @@ export const data = [
         },
         multiple: false,
     },
+    {
+        text: 'Service Info',
+        content: {
+            catalogUiTileId: {
+                value: '',
+                question: 'A unique identifier for the API (max 40 characters, lowercase):',
+            },
+        },
+        multiple: false,
+    },
+    {
+        text: 'UI Tile info',
+        content: {
+            title: {
+                value: '',
+                question: 'The title of the product family of the API service:',
+            },
+            description: {
+                value: '',
+                question: 'A description of the API service product family:',
+            },
+        },
+        multiple: false,
+    },
 ];
 
 export const enablerData = [
@@ -290,6 +339,16 @@ export const enablerData = [
     },
     {
         text: 'Static Onboarding',
+        categories: [
+            { name: 'Basic info', indentation: 'services' },
+            { name: 'Service info', indentation: 'services' },
+            { name: 'URL for Static', indentation: 'services/instanceBaseUrls', multiple: true },
+            { name: 'URL', indentation: 'services' },
+            { name: 'Routes for Static', indentation: 'services/routes', multiple: true },
+            { name: 'Authentication', indentation: 'services/authentication' },
+            { name: 'API Info', indentation: 'services/apiInfo', multiple: true },
+            { name: 'UI Tile info', indentation: 'catalogUiTiles/static' },
+        ],
     },
     {
         text: 'Direct Call to Eureka',
