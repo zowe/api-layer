@@ -84,7 +84,7 @@ public class HttpsWebSecurityConfig {
                 .and()
                 .httpBasic().realmName(DISCOVERY_REALM);
             if (isAttlsEnabled) {
-                http.addFilterBefore(new AttlsEnabledFilter(), AttlsFilter.class);
+                http.addFilterBefore(new AttlsEnabledFilter(), CookieContentFilter.class);
             }
         }
     }
