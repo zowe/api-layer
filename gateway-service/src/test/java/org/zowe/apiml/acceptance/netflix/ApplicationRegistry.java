@@ -161,6 +161,7 @@ public class ApplicationRegistry {
         metadata.put("apiml.lb.cacheRecordExpirationTimeInHours", "8");
         metadata.put("apiml.corsEnabled", String.valueOf(corsEnabled));
         metadata.put("apiml.routes.gateway-url", "/");
+        metadata.put("apiml.authentication.scheme", "safIdt");
         return metadata;
     }
 
