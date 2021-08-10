@@ -22,10 +22,14 @@ import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
+
+import java.util.Properties;
 
 import javax.annotation.Nonnull;
 
@@ -59,5 +63,14 @@ public class GatewayApplication implements ApplicationListener<ApplicationReadyE
     public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
         new ServiceStartupEventHandler().onServiceStartup("Gateway Service",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
+    }
+
+    @Bean
+    public SimpleUrlHandlerMapping serverSentEventMapping() {
+        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
+        Properties urlProperties = new Properties();
+        urlProperties.put("/sse/**", "ServerSentEventProxyHandler");
+        mapping.setMappings(urlProperties);
+        return mapping;
     }
 }
