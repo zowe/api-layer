@@ -85,7 +85,6 @@ public class SecurityConfiguration {
         private boolean nonStrictVerifySslCertificatesOfServices;
 
 
-
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
@@ -167,7 +166,7 @@ public class SecurityConfiguration {
                 .antMatchers(APIDOC_ROUTES).authenticated()
                 .antMatchers("/application/health", "/application/info").permitAll()
                 .antMatchers("/application/**").authenticated();
-            if(isAttlsEnabled){
+            if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsEnabledFilter(), BasicContentFilter.class);
             }
 
