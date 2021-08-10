@@ -26,6 +26,7 @@ import java.util.function.Supplier;
 
 /**
  * The scheme allowing for the safIdt authentication scheme.
+ * It adds new header with the SAF IDT token in case of valid JWT provided.
  */
 @Component
 @RequiredArgsConstructor
@@ -61,7 +62,7 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
                 if (authentication.isAuthenticated()) {
                     String safIdt = safAuthenticationService.generateSafIdt(token);
 
-                    // remove authentication part
+                    // TODO: Verify whether authentication should be used.
                     context.addZuulRequestHeader("X-SAF-Token", safIdt);
                 }
             });
