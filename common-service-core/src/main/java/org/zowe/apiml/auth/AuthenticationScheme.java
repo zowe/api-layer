@@ -28,7 +28,10 @@ public enum AuthenticationScheme {
     ZOSMF("zosmf"),
 
     @JsonProperty("x509")
-    X509("x509");
+    X509("x509"),
+
+    @JsonProperty("safIdt")
+    SAF_IDT("safIdt");
 
     public final String scheme;
 
