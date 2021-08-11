@@ -1,3 +1,12 @@
+/**
+ * each new category:
+ * 1. must contain properties:
+ *  1.1. text - the name of the category
+ *  1.2. content - object containing sub-objects (each with a value and a question key)
+ * 2. can contain properties:
+ *  2.1. multiple - boolean, if true, allows for multiple sets of configuration
+ *  2.2. indentation - string, nests object like so: 'a/b' - { a:{ b:your_object } }
+ */
 // eslint-disable-next-line import/prefer-default-export
 export const categoryData = [
     {
@@ -16,7 +25,6 @@ export const categoryData = [
                 question: 'A concise description of the service:',
             },
         },
-        multiple: false,
     },
     {
         text: 'Prefer IP address',
@@ -26,7 +34,6 @@ export const categoryData = [
                 question: 'Set to true to advertise a service IP address instead of its hostname (optional):',
             },
         },
-        multiple: false,
     },
     {
         text: 'Scheme info',
@@ -48,7 +55,6 @@ export const categoryData = [
                 question: 'Context path:',
             },
         },
-        multiple: false,
     },
     {
         text: 'IP address info',
@@ -62,7 +68,6 @@ export const categoryData = [
                 question: 'The service IP address (optional):',
             },
         },
-        multiple: false,
     },
     {
         text: 'URL',
@@ -80,7 +85,6 @@ export const categoryData = [
                 question: 'The relative path to the health check endpoint of the service:',
             },
         },
-        multiple: false,
     },
     {
         text: 'Discovery Service URL',
@@ -108,7 +112,7 @@ export const categoryData = [
                 question: 'A portion of the service instance URL path which replaces the gatewayUrl part:',
             },
         },
-        multiple: false,
+        multiple: true,
     },
     {
         text: 'Authentication',
@@ -122,7 +126,6 @@ export const categoryData = [
                 question: 'A service APPLID (valid only for the httpBasicPassTicket authentication scheme ):',
             },
         },
-        multiple: false,
     },
     {
         text: 'API Info',
@@ -148,7 +151,6 @@ export const categoryData = [
                 question: 'Link to the external documentation (optional):',
             },
         },
-        multiple: false,
     },
     {
         text: 'Catalog',
@@ -170,7 +172,6 @@ export const categoryData = [
                 question: 'The semantic version of this API Catalog tile (increase when adding changes):',
             },
         },
-        multiple: false,
     },
     {
         text: 'SSL',
@@ -217,7 +218,6 @@ export const categoryData = [
                 question: 'Truststore type (the default value is PKCS12):',
             },
         },
-        multiple: false,
     },
     {
         text: 'Enable',
@@ -233,7 +233,6 @@ export const categoryData = [
                     'Decision if the service requests the API ML GW to receive encoded characters in the URL (true/false):',
             },
         },
-        multiple: false,
     },
     {
         text: 'Spring',
@@ -243,6 +242,5 @@ export const categoryData = [
                 question: 'This parameter has to be the same as the service ID you are going to provide',
             },
         },
-        multiple: false,
     },
 ];

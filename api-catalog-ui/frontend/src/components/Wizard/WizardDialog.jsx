@@ -31,6 +31,9 @@ export default class WizardDialog extends Component {
         createYamlObject(inputData);
     };
 
+    /**
+     * Displays either Next or Save, depending whether the user is at the last stage or not.
+     */
     nextSave = () => {
         const { selectedCategory, inputData, nextWizardCategory } = this.props;
         if (selectedCategory < inputData.length) {

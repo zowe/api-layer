@@ -8,6 +8,9 @@ class YAMLVisualizer extends Component {
         this.props.createYamlObject(this.props.inputData);
     }
 
+    /**
+     * copies YAML to clipboard
+     */
     copy = () => {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(YAML.stringify(this.props.yamlObject));
@@ -23,6 +26,10 @@ class YAMLVisualizer extends Component {
         }
     };
 
+    /**
+     * Uses yamlObject from props to create YAML text
+     * @returns {unknown[]} formatted YAML
+     */
     renderYaml() {
         const string = YAML.stringify(this.props.yamlObject);
         let index = 0;

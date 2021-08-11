@@ -22,6 +22,10 @@ class WizardInputs extends Component {
         this.handleDelete = this.handleDelete.bind(this);
     }
 
+    /**
+     * When users fills out an input the inputData object is updated with the new information
+     * @param event object containing input's name, value and its data-index attr.
+     */
     handleInputChange = event => {
         const { name, value } = event.target;
         let objectToChange = this.props.data;
@@ -45,6 +49,9 @@ class WizardInputs extends Component {
         }
     };
 
+    /**
+     * Adds another set of config if the category's multiple property is set to true
+     */
     addFields = () => {
         const myObject = this.props.data.content[0];
         const newObject = {};
@@ -67,6 +74,10 @@ class WizardInputs extends Component {
         this.props.deleteCategoryConfig(event.target.name, this.props.data.text);
     }
 
+    /**
+     * Wrapper for renderInputs, renderInputs() renders a single set, this function iterates over all sets(if multiple==true) and concatenates all arrays
+     * @returns {unknown[]} array of the input elements to be rendered or null if config was invalid
+     */
     loadInputs = () => {
         const dataAsObject = this.props.data;
         const { multiple } = this.props.data;
@@ -104,10 +115,15 @@ class WizardInputs extends Component {
             });
             return result;
         }
-        return this.renderInputs(dataAsObject.content, 1);
+        return this.renderInputs(dataAsObject.content);
     };
-
-    renderInputs = (content, index) => {
+    /**
+     * Dynamically creates input fields based on the content object of the category - accepts a single set
+     * @param content object containing all inputs and questions for given category
+     * @param index index of the given set - it multiple==false
+     * @returns {unknown[]} array of the inputs to be rendered
+     */
+    renderInputs = (content, index = 1) => {
         const selectedData = Object.keys(content);
         let key = 1;
         return selectedData.map(itemKey => {

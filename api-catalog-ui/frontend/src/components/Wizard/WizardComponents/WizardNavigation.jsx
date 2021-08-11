@@ -10,12 +10,20 @@ class WizardNavigation extends Component {
         this.returnNavs = this.returnNavs.bind(this);
     }
 
+    /**
+     * React on navTab click
+     * @param event number - indx of the tab to be switched to
+     */
     handleChange = event => {
         if (typeof event === 'number') {
             this.props.changeWizardCategory(event);
         }
     };
 
+    /**
+     * Handles frouping of multiple categories under a single navTab
+     * @returns {{}} object containing all the categories that should be under the specific tab grouped under a bigger object
+     */
     returnNavs() {
         const navs = {};
         let index = 0;
@@ -29,6 +37,10 @@ class WizardNavigation extends Component {
         return navs;
     }
 
+    /**
+     * Creates a tab for the category/categories
+     * @returns {unknown[]} a Tab to be rendered
+     */
     loadTabs = () => {
         let index = 0;
         const categories = Object.entries(this.returnNavs()).map(entry => {
