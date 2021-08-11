@@ -30,34 +30,6 @@ class YAMLVisualizer extends Component {
      * Uses yamlObject from props to create YAML text
      * @returns {unknown[]} formatted YAML
      */
-    renderYaml() {
-        const string = YAML.stringify(this.props.yamlObject);
-        let index = 0;
-        return string.split('\n').map(part => {
-            index += 1;
-            const arr = part.split(':');
-            if (arr.length === 1) {
-                return (
-                    <div key={index}>
-                        <span className="yamlKey">{}</span>
-                        {arr[0]}
-                    </div>
-                );
-            }
-            if (arr[0].length > 1) {
-                let value = arr[1];
-                arr.slice(2).forEach(el => {
-                    value += `:${el}`;
-                });
-                return (
-                    <div key={index}>
-                        <span className="yamlKey">{arr[0]}</span>:{value}
-                    </div>
-                );
-            }
-            return null;
-        });
-    }
 
     render() {
         return (
@@ -67,7 +39,7 @@ class YAMLVisualizer extends Component {
                         Copy
                     </Button>
                 </div>
-                <code>{this.renderYaml()}</code>
+                <code>{YAML.stringify(this.props.yamlObject)}</code>
             </div>
         );
     }

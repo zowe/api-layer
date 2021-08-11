@@ -10,7 +10,7 @@
 import React from 'react';
 import * as enzyme from 'enzyme';
 import WizardNavigation from './WizardNavigation';
-xdescribe('>>> Wizard navigation tests', () => {
+describe('>>> Wizard navigation tests', () => {
     it('should handle category change', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
@@ -44,6 +44,7 @@ xdescribe('>>> Wizard navigation tests', () => {
     it('should load the tabs', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
+        const setNumberOfTabs = jest.fn();
         const dummyData = [
             {
                 text: 'Some Enabler',
@@ -65,9 +66,11 @@ xdescribe('>>> Wizard navigation tests', () => {
         const wrapper = enzyme.shallow(
             <WizardNavigation
                 selectedCategory={0}
+                navTabAmount={0}
                 inputData={dummyData}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
+                setNumberOfTabs={setNumberOfTabs}
             />
         );
         expect(wrapper.find('Tab').length).toEqual(2);

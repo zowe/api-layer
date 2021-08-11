@@ -10,7 +10,7 @@
 
 import {
     CHANGE_CATEGORY,
-    INPUT_UPDATED,
+    INPUT_UPDATED, NAV_NUMBER,
     NEXT_CATEGORY,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
@@ -19,7 +19,7 @@ import {
 } from '../constants/wizard-constants';
 import wizardReducer, { addDefaultValues, setDefault, wizardReducerDefaultState } from './wizard-reducer';
 
-xdescribe('>>> Wizard reducer tests', () => {
+describe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
         expect(wizardReducer()).toEqual(wizardReducerDefaultState);
     });
@@ -59,13 +59,21 @@ xdescribe('>>> Wizard reducer tests', () => {
             }
         }];
 
-        expect(wizardReducer({ inputData: [] }, {
+        const expectedData = [{
+            ...dummyData[0],
+            indentation: false,
+            nav: "Test Category",
+        }];
+
+        expect(wizardReducer({ inputData: [], navTabAmount: 0 }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Test Enabler' },
         }, { enablerData: dummyEnablerData, data: dummyData }))
             .toEqual({
                 enablerName: 'Test Enabler',
-                inputData: dummyData
+                inputData: expectedData,
+                navTabAmount: 1,
+                selectedCategory: 0
             });
     });
 
@@ -85,13 +93,20 @@ xdescribe('>>> Wizard reducer tests', () => {
             }
         }];
 
+        const expectedData = [{
+            ...dummyData[0],
+            nav: "Test Category",
+        }];
+
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Test Enabler' },
         }, { enablerData: dummyEnablerData, data: dummyData }))
             .toEqual({
                 enablerName: 'Test Enabler',
-                inputData: dummyData
+                inputData: expectedData,
+                navTabAmount: 1,
+                selectedCategory: 0
             });
     });
 
@@ -112,7 +127,9 @@ xdescribe('>>> Wizard reducer tests', () => {
         }, { enablerData: dummyEnablerData, data: dummyData }))
             .toEqual({
                 enablerName: 'Test Enabler',
-                inputData: [ { text: 'CAT #0', nav: '#1' }, { text: 'CAT #1', nav: '#1' },]
+                inputData: [ { text: 'CAT #0', nav: '#1' }, { text: 'CAT #1', nav: '#1' },],
+                navTabAmount: 2,
+                selectedCategory: 0
             });
     });
 
@@ -151,6 +168,8 @@ xdescribe('>>> Wizard reducer tests', () => {
                     multiple: true,
                     indentation: false,
                 }],
+                navTabAmount: 1,
+                selectedCategory: 0
             });
     });
 
@@ -166,6 +185,8 @@ xdescribe('>>> Wizard reducer tests', () => {
         const expectedState = {
             inputData: [],
             enablerName: 'Test Enabler',
+            navTabAmount: 0,
+            selectedCategory: 0
         };
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
@@ -454,5 +475,32 @@ xdescribe('>>> Wizard reducer tests', () => {
         };
         const newCategory = setDefault(category, defaults);
         expect(newCategory).toEqual(expectedCategory);
+    });
+
+    it('should handle NAV_NUMBER', () => {
+        const expectedState = {
+            inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test: {
+                        value: 'val1',
+                        question: 'Why?',
+                    },
+                }],
+            }],
+            navTabAmount: 1,
+        };
+        expect(wizardReducer({ inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test: {
+                        value: 'val1',
+                        question: 'Why?',
+                    },
+                }],
+            }], navTabAmount: 0 }, {
+            type: NAV_NUMBER,
+            payload: { tabAmount: 1 },
+        })).toEqual(expectedState);
     });
 });
