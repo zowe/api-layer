@@ -9,20 +9,15 @@
  */
 package org.zowe.apiml.security.common.error;
 
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.security.common.token.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -69,12 +64,22 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         }
         else if (ex instanceof InvalidCertificateException) {
             handleInvalidCertificate(response, ex);
-        } else if (ex instanceof AuthenticationException) {
+        }
+        else if (ex instanceof ZosAuthenticationException) {
+            handleZosAuthenticationException(response, (ZosAuthenticationException) ex);
+        }
+        else if (ex instanceof AuthenticationException) {
             handleAuthenticationException(request, response, ex);
         }
         else {
             throw new ServletException(ex);
         }
+    }
+
+    private void handleZosAuthenticationException(HttpServletResponse response, ZosAuthenticationException ex) throws ServletException {
+        final ApiMessageView message = messageService.createMessage(ex.getPlatformError().errorMessage, ex.getMessage()).mapToView();
+        final HttpStatus status = ex.getPlatformError().responseCode;
+        writeErrorResponse(message, status, response);
     }
 
     // 400
