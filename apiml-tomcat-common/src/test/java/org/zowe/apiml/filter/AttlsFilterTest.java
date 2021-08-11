@@ -13,6 +13,7 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.zowe.commons.attls.ContextIsNotInitializedException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.mock;
 class AttlsFilterTest {
 
     @Test
-    void providedCertificateInCorrectFormat_thenPopulateRequest() throws CertificateException {
+    void providedCertificateInCorrectFormat_thenPopulateRequest() throws CertificateException, ContextIsNotInitializedException {
         AttlsFilter attlsFilter = new AttlsFilter();
         String certificate =
             "MIID8TCCAtmgAwIBAgIUVyBCWfHF/ZwZKVsBEpTNIBj9mQcwDQYJKoZIhvcNAQEL\n" +
