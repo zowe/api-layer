@@ -64,4 +64,11 @@ describe('>>> YAML Visualizer tests', () => {
         );
         expect(wrapper.find('.yamlContainer code').text()).toEqual('test:yaml');
     });
+
+    it('should not display YAML from empty props', () => {
+        const wrapper = enzyme.shallow(
+            <YAMLVisualizer createYamlObject={jest.fn()} yamlObject=":" />
+        );
+        expect(wrapper.find('.yamlContainer code').text().length).toEqual(0);
+    });
 });

@@ -34,6 +34,11 @@ else
     COMMON_LIB=${CMMN_LB}
 fi
 
+if [[ -z ${LIBRARY_PATH} ]]
+then
+    LIBRARY_PATH="../common-java-lib/bin/"
+fi
+
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
@@ -137,6 +142,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
+    -Djava.library.path=${LIBRARY_PATH} \
     -jar ${JAR_FILE} &
 pid=$!
 echo "pid=${pid}"

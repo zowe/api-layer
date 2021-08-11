@@ -33,6 +33,11 @@ then
 else
     COMMON_LIB=${CMMN_LB}
 fi
+
+if [[ -z ${LIBRARY_PATH} ]]
+then
+    LIBRARY_PATH="../common-java-lib/bin/"
+fi
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
@@ -95,6 +100,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
+    -Djava.library.path=${LIBRARY_PATH} \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

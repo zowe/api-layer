@@ -87,6 +87,17 @@ export const categoryData = [
         },
     },
     {
+        text: 'URL for Static',
+        content: {
+            instanceBaseUrls: {
+                value: '',
+                question: 'The base URL of the instance (the consistent part of the web address):',
+            },
+        },
+        multiple: false,
+        noKey: true,
+    },
+    {
         text: 'Discovery Service URL',
         content: {
             discoveryServiceHost: {
@@ -108,6 +119,20 @@ export const categoryData = [
                 question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
             },
             serviceUrl: {
+                value: '',
+                question: 'A portion of the service instance URL path which replaces the gatewayUrl part:',
+            },
+        },
+        multiple: true,
+    },
+    {
+        text: 'Routes for Static',
+        content: {
+            gatewayUrl: {
+                value: '',
+                question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
+            },
+            serviceRelativeUrl: {
                 value: '',
                 question: 'A portion of the service instance URL path which replaces the gatewayUrl part:',
             },

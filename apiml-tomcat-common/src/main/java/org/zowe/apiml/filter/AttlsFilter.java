@@ -32,14 +32,17 @@ public class AttlsFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
-                populateRequestWithCertificate(request, InboundAttls.getCertificate());
+                try {
+                    populateRequestWithCertificate(request, InboundAttls.getCertificate());
+                } finally {
+                    InboundAttls.clean();
+                }
             }
         } catch (Exception e) {
             logger.error("Not possible to get certificate from AT-TLS context", e);
             AttlsErrorHandler.handleError(response, "Exception reading certificate");
         }
         filterChain.doFilter(request, response);
-
     }
 
     public void populateRequestWithCertificate(HttpServletRequest request, byte[] rawCertificate) throws CertificateException {

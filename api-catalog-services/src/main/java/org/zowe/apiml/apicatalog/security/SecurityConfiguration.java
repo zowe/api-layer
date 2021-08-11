@@ -30,6 +30,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
@@ -67,6 +68,8 @@ public class SecurityConfiguration {
     private final GatewayTokenProvider gatewayTokenProvider;
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
@@ -80,9 +83,6 @@ public class SecurityConfiguration {
 
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
-
-        @Value("${server.attls.enabled:false}")
-        private boolean isAttlsEnabled;
 
 
         @Override
@@ -107,7 +107,8 @@ public class SecurityConfiguration {
                         .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) // filter out API ML certificate
                         .userDetailsService(x509UserDetailsService())
                         .and()
-                        .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                        .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
+                        .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
                 } else {
                     http.x509()
                         .userDetailsService(x509UserDetailsService());
@@ -165,6 +166,10 @@ public class SecurityConfiguration {
                 .antMatchers(APIDOC_ROUTES).authenticated()
                 .antMatchers("/application/health", "/application/info").permitAll()
                 .antMatchers("/application/**").authenticated();
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new SecureConnectionFilter(), BasicContentFilter.class);
+            }
+
         }
     }
 
