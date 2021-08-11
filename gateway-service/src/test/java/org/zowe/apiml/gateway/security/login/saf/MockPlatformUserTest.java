@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.gateway.security.login.saf;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
+import org.zowe.apiml.security.common.error.PlatformPwdErrno;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class MockPlatformUserTest {
 
@@ -39,7 +39,7 @@ class MockPlatformUserTest {
         class Fails {
             @Test
             void givenInValidCredentials_whenAuthenticate_thenReturnPlatformReturnedSuccessFalse() {
-                PlatformReturned platformReturned = PlatformReturned.builder().success(false).build();
+                PlatformReturned platformReturned = PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EACCES.errno).build();
                 assertEquals(platformReturned, mockPlatformUser.authenticate("USER", "invalidPassword"));
             }
         }
@@ -60,13 +60,13 @@ class MockPlatformUserTest {
         class Fails {
             @Test
             void givenInvalidCredentialsAndNewValidPassword_whenChangePassword_thenReturnPlatformReturnedSuccessFalse() {
-                PlatformReturned platformReturned = PlatformReturned.builder().success(false).build();
+                PlatformReturned platformReturned = PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EMVSPASSWORD.errno).build();
                 assertEquals(platformReturned, mockPlatformUser.changePassword("InvalidUser", "validPassword", "newPassword"));
             }
 
             @Test
             void givenValidCredentialsAndInvalidNewPassword_whenChangePassword_thenReturnPlatformReturnedSuccessFalse() {
-                PlatformReturned platformReturned = PlatformReturned.builder().success(false).build();
+                PlatformReturned platformReturned = PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EMVSPASSWORD.errno).build();
                 assertEquals(platformReturned, mockPlatformUser.changePassword("USER", "validPassword", "validPassword"));
             }
         }
