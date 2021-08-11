@@ -103,8 +103,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .cors().and()
             .csrf().disable()
             .headers()
-            .httpStrictTransportSecurity().disable()
-            .frameOptions().disable()
+            // .httpStrictTransportSecurity().disable()
+            // .frameOptions().disable()
             .and()
             .exceptionHandling().authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler())
 
