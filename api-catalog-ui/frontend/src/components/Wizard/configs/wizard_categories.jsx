@@ -102,14 +102,11 @@ export const categoryData = [
         content: {
             discoveryServiceHost: {
                 value: '',
-                question: 'Discovery Service host:',
-            },
-            discoveryServicePort: {
-                value: '',
-                question: 'Discovery Service port:',
+                question: 'Discovery Service URL:',
             },
         },
         multiple: true,
+        noKey: true,
     },
     {
         text: 'Routes',

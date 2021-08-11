@@ -10,16 +10,18 @@
 
 import { connect } from 'react-redux';
 import WizardNavigation from './WizardNavigation';
-import { changeWizardCategory, nextWizardCategory } from '../../../actions/wizard-actions';
+import { changeWizardCategory, nextWizardCategory, setNumberOfTabs } from '../../../actions/wizard-actions';
 
 const mapStateToProps = state => ({
     selectedCategory: state.wizardReducer.selectedCategory,
     inputData: state.wizardReducer.inputData,
+    navTabAmount: state.wizardReducer.navTabAmount,
 });
 
 const mapDispatchToProps = {
     nextWizardCategory,
     changeWizardCategory,
+    setNumberOfTabs,
 };
 
 export default connect(

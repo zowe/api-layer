@@ -45,9 +45,13 @@ class YAMLVisualizer extends Component {
                 );
             }
             if (arr[0].length > 1) {
+                let value = arr[1];
+                arr.slice(2).forEach(el => {
+                    value += `:${el}`;
+                });
                 return (
                     <div key={index}>
-                        <span className="yamlKey">{arr[0]}</span>:{arr[1]}
+                        <span className="yamlKey">{arr[0]}</span>:{value}
                     </div>
                 );
             }

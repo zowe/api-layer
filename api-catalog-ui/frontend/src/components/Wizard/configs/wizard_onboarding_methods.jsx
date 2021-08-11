@@ -12,7 +12,7 @@ export const enablerData = [
             { name: 'IP address info' },
             { name: 'Prefer IP address' },
             { name: 'URL' },
-            { name: 'Discovery Service URL', multiple: true },
+            { name: 'Discovery Service URL', indentation: 'discoveryServiceUrls', multiple: true },
             { name: 'Routes', indentation: 'routes' },
             { name: 'Authentication', indentation: 'authentication' },
             { name: 'API Info', indentation: 'apiInfo', multiple: true },
@@ -46,6 +46,16 @@ export const enablerData = [
     },
     {
         text: 'Static Onboarding',
+        categories: [
+            { name: 'Basic info', indentation: 'services' },
+            { name: 'Service info', indentation: 'services' },
+            { name: 'URL for Static', indentation: 'services/instanceBaseUrls', multiple: true },
+            { name: 'URL', indentation: 'services' },
+            { name: 'Routes for Static', indentation: 'services/routes', multiple: true },
+            { name: 'Authentication', indentation: 'services/authentication' },
+            { name: 'API Info', indentation: 'services/apiInfo', multiple: true },
+            { name: 'UI Tile info', indentation: 'catalogUiTiles/static' },
+        ],
     },
     {
         text: 'Direct Call to Eureka',

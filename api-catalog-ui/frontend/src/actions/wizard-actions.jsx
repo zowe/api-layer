@@ -15,6 +15,7 @@ import {
     CHANGE_CATEGORY,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
+    NAV_NUMBER,
 } from '../constants/wizard-constants';
 
 /**
@@ -162,5 +163,12 @@ export function deleteCategoryConfig(index, text) {
     return {
         type: REMOVE_INDEX,
         payload: { index, text },
+    };
+}
+
+export function setNumberOfTabs(num) {
+    return {
+        type: NAV_NUMBER,
+        payload: { tabAmount: num },
     };
 }

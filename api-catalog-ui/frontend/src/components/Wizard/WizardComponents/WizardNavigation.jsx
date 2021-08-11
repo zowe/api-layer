@@ -27,13 +27,18 @@ class WizardNavigation extends Component {
     returnNavs() {
         const navs = {};
         let index = 0;
+        let tabs = 0;
         this.props.inputData.forEach(category => {
             if (!Array.isArray(navs[category.nav])) {
                 navs[category.nav] = [];
+                tabs += 1;
             }
             navs[category.nav].push(<WizardInputsContainer key={`nav#${index}`} data={category} />);
             index += 1;
         });
+        if (tabs > 0) {
+            this.props.setNumberOfTabs(tabs);
+        }
         return navs;
     }
 

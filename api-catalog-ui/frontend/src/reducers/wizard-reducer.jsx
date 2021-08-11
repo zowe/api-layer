@@ -8,9 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import _ from 'lodash';
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
+    NAV_NUMBER,
     NEXT_CATEGORY,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
@@ -26,6 +28,7 @@ export const wizardReducerDefaultState = {
     selectedCategory: 0,
     inputData: [],
     yamlObject: {},
+    navTabAmount: 0,
 };
 
 function compareVariables(category, categoryInfo) {
@@ -102,12 +105,13 @@ const wizardReducer = (
                 if (category === undefined) {
                     return;
                 }
+                category = _.cloneDeep(category);
                 category.nav = categoryInfo.nav;
                 category = setDefault(category, enablerObj.defaults);
                 compareVariables(category, categoryInfo);
                 inputData.push(category);
             });
-            return { ...state, enablerName, inputData };
+            return { ...state, enablerName, inputData, selectedCategory: 0, navTabAmount: inputData.length };
         }
 
         case INPUT_UPDATED: {
@@ -139,6 +143,8 @@ const wizardReducer = (
             });
             return { ...state, inputData: newData };
         }
+        case NAV_NUMBER:
+            return { ...state, navTabAmount: action.payload.tabAmount };
         default:
             return state;
     }
