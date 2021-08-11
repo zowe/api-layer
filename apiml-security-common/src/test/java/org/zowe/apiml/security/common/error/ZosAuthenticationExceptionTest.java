@@ -8,13 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.security.login.saf;
+package org.zowe.apiml.security.common.error;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
-import org.zowe.apiml.security.common.error.PlatformPwdErrno;
-import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
