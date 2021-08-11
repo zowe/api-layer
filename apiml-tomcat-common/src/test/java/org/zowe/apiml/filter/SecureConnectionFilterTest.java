@@ -43,6 +43,7 @@ class SecureConnectionFilterTest {
             when(context.getStatConn()).thenReturn(StatConn.SECURE);
             filter.doFilterInternal(new MockHttpServletRequest(), response, chain);
             assertEquals(200, response.getStatus());
+            InboundAttls.dispose();
         }
     }
 
@@ -58,6 +59,7 @@ class SecureConnectionFilterTest {
             when(context.getStatConn()).thenReturn(StatConn.NOTSECURE);
             filter.doFilterInternal(new MockHttpServletRequest(), response, chain);
             assertEquals(500, response.getStatus());
+            InboundAttls.dispose();
         }
 
         @Test
