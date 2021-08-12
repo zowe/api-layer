@@ -168,28 +168,6 @@ public class HttpConfig {
         return publicKeyCertificatesBase64;
     }
 
-    @Bean
-    public SslContextFactory.Server jettySslContextFactory() {
-        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-        if (StringUtils.isNotEmpty(keyStore)) {
-            sslContextFactory.setKeyStorePath(SecurityUtils.replaceFourSlashes(keyStore));
-        }
-        sslContextFactory.setProtocol(protocol);
-        sslContextFactory.setKeyStorePassword(keyStorePassword == null ? null : String.valueOf(keyStorePassword));
-        sslContextFactory.setKeyStoreType(keyStoreType);
-        sslContextFactory.setCertAlias(keyAlias);
-        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$");
-        setTruststore(sslContextFactory);
-
-        log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
-
-        if (!verifySslCertificatesOfServices) {
-            sslContextFactory.setTrustAll(true);
-        }
-
-        return sslContextFactory;
-    }
-
     private void setTruststore(SslContextFactory sslContextFactory) {
         if (StringUtils.isNotEmpty(trustStore)) {
             sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
@@ -203,7 +181,7 @@ public class HttpConfig {
     public SslContextFactory.Client jettyClientSslContextFactory() {
         SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setProtocol(protocol);
-
+        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$");
         setTruststore(sslContextFactory);
         log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
         sslContextFactory.setHostnameVerifier(secureHostnameVerifier());
