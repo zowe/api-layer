@@ -7,6 +7,7 @@
         "@emotion/core": "10.1.1",
         "@emotion/is-prop-valid": "1.1.0",
         "@emotion/styled": "10.0.27",
+        "agentkeepalive": "4.1.4",
         "emotion-theming": "10.0.27",
         "eslint": "7.11.0",
         "eslint-config-airbnb": "16.1.0",
