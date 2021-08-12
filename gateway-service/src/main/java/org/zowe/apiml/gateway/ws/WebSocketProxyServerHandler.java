@@ -21,6 +21,7 @@ import org.zowe.apiml.product.routing.*;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +34,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Singleton
 @Slf4j
-public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser {
+public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser, SubProtocolCapable {
+
+    @Override
+    public List<String> getSubProtocols() {
+        return Arrays.asList("v12.stomp");
+    }
 
     private final Map<String, WebSocketRoutedSession> routedSessions;
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
@@ -132,6 +138,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         try {
             WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
             routedSessions.put(webSocketSession.getId(), session);
+
         } catch (WebSocketProxyError e) {
             log.debug("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage());
             webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
