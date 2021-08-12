@@ -31,7 +31,15 @@ export const wizardReducerDefaultState = {
     navTabAmount: 0,
 };
 
+/**
+ * Override multiple and indentation properties if the enabler asks to
+ * @param category category object
+ * @param categoryInfo enabler's category config
+ */
 function compareVariables(category, categoryInfo) {
+    if (categoryInfo.nav === undefined) {
+        categoryInfo.nav = categoryInfo.name;
+    }
     if (categoryInfo.indentation !== undefined) {
         category.indentation = categoryInfo.indentation;
     }
@@ -45,6 +53,12 @@ function compareVariables(category, categoryInfo) {
     }
 }
 
+/**
+ * For each value present in enabler's defaults add its predetermined value to the content of the correct category
+ * @param content content object
+ * @param defaultsArr array of [key, value] arrays
+ * @returns {*} new content object with updated values
+ */
 export function addDefaultValues(content, defaultsArr) {
     const newContent = { ...content };
     defaultsArr.forEach(entry => {
@@ -57,6 +71,12 @@ export function addDefaultValues(content, defaultsArr) {
     return newContent;
 }
 
+/**
+ * Checks for invalid configurations, also handles situations where the content is an array instead of an object
+ * @param category category object
+ * @param defaults defaults object; these are defined in wizard_defaults
+ * @returns {(*&{content: *[]})|*} new, updated category object
+ */
 export function setDefault(category, defaults) {
     if (defaults === undefined || defaults[category.text] === undefined) {
         return category;
@@ -72,14 +92,13 @@ export function setDefault(category, defaults) {
     return { ...category, content: result };
 }
 
-const wizardReducer = (
-    state = wizardReducerDefaultState,
-    action = {},
-    config = {
-        data: categoryData,
-        enablerData,
-    }
-) => {
+/**
+ * Reducer for the Wizard Dialog
+ * @param state state; contains all global variables for the wizrd reducer
+ * @param action when a component fires an action it's payload is unloaded here
+ * @param config additional configuration
+ */
+const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { categoryData, enablerData }) => {
     if (action == null) {
         return state;
     }
@@ -98,17 +117,14 @@ const wizardReducer = (
             }
             const { categories } = enablerObj;
             categories.forEach(categoryInfo => {
-                let category = config.data.find(o => o.text === categoryInfo.name);
-                if (categoryInfo.nav === undefined) {
-                    categoryInfo.nav = categoryInfo.name;
-                }
+                let category = config.categoryData.find(o => o.text === categoryInfo.name);
                 if (category === undefined) {
                     return;
                 }
                 category = _.cloneDeep(category);
-                category.nav = categoryInfo.nav;
                 category = setDefault(category, enablerObj.defaults);
                 compareVariables(category, categoryInfo);
+                category.nav = categoryInfo.nav;
                 inputData.push(category);
             });
             return { ...state, enablerName, inputData, selectedCategory: 0, navTabAmount: inputData.length };
