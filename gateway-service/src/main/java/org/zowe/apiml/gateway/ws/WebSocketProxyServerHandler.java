@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser, SubProtocolCapable {
 
-    @Value("${server.webSocket.supportedProtocols}")
+    @Value("${server.webSocket.supportedProtocols:-}")
     private List<String> subProtocols;
 
     @Override
