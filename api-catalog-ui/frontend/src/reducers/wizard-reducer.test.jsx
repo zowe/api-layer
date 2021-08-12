@@ -68,7 +68,7 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [], navTabAmount: 0 }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Test Enabler' },
-        }, { enablerData: dummyEnablerData, data: dummyData }))
+        }, { enablerData: dummyEnablerData, categoryData: dummyData }))
             .toEqual({
                 enablerName: 'Test Enabler',
                 inputData: expectedData,
@@ -101,7 +101,7 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Test Enabler' },
-        }, { enablerData: dummyEnablerData, data: dummyData }))
+        }, { enablerData: dummyEnablerData, categoryData: dummyData }))
             .toEqual({
                 enablerName: 'Test Enabler',
                 inputData: expectedData,
@@ -124,7 +124,7 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Test Enabler' },
-        }, { enablerData: dummyEnablerData, data: dummyData }))
+        }, { enablerData: dummyEnablerData, categoryData: dummyData }))
             .toEqual({
                 enablerName: 'Test Enabler',
                 inputData: [ { text: 'CAT #0', nav: '#1' }, { text: 'CAT #1', nav: '#1' },],
@@ -153,7 +153,7 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Test Enabler' },
-        }, { enablerData: dummyEnablerData, data: dummyData }))
+        }, { enablerData: dummyEnablerData, categoryData: dummyData }))
             .toEqual({
                 enablerName: 'Test Enabler',
                 inputData: [{
@@ -178,7 +178,7 @@ describe('>>> Wizard reducer tests', () => {
             text: 'Test Enabler',
             categories: [{ name: 'Wrong Category' }]
         }];
-        const data = [{
+        const categoryData = [{
             text: 'Right Category',
             content: {},
         }];
@@ -191,7 +191,7 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Test Enabler' },
-        }, { enablerData, data })).toEqual(expectedState);
+        }, { enablerData, categoryData })).toEqual(expectedState);
     });
 
     it('should handle wrong category in SELECT_ENABLER', () => {

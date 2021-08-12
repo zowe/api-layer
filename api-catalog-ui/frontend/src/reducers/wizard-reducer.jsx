@@ -57,7 +57,6 @@ function compareVariables(category, categoryInfo) {
  * For each value present in enabler's defaults add its predetermined value to the content of the correct category
  * @param content content object
  * @param defaultsArr array of [key, value] arrays
- * @returns {*} new content object with updated values
  */
 export function addDefaultValues(content, defaultsArr) {
     const newContent = { ...content };
@@ -75,7 +74,6 @@ export function addDefaultValues(content, defaultsArr) {
  * Checks for invalid configurations, also handles situations where the content is an array instead of an object
  * @param category category object
  * @param defaults defaults object; these are defined in wizard_defaults
- * @returns {(*&{content: *[]})|*} new, updated category object
  */
 export function setDefault(category, defaults) {
     if (defaults === undefined || defaults[category.text] === undefined) {
@@ -97,6 +95,7 @@ export function setDefault(category, defaults) {
  * @param state state; contains all global variables for the wizrd reducer
  * @param action when a component fires an action it's payload is unloaded here
  * @param config additional configuration
+ * @returns {any}
  */
 const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { categoryData, enablerData }) => {
     if (action == null) {
