@@ -190,13 +190,14 @@ public class HttpConfig {
         return sslContextFactory;
     }
 
-    private void setTruststore(SslContextFactory sslContextFactory){
+    private void setTruststore(SslContextFactory sslContextFactory) {
         if (StringUtils.isNotEmpty(trustStore)) {
             sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
             sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
         }
     }
+
     @Bean
     @Qualifier("jettyClientSslContextFactory")
     public SslContextFactory.Client jettyClientSslContextFactory() {

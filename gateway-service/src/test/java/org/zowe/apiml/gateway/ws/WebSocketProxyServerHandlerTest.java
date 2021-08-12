@@ -14,12 +14,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.web.socket.*;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -31,14 +35,12 @@ import static org.mockito.Mockito.*;
 class WebSocketProxyServerHandlerTest {
     private WebSocketProxyServerHandler underTest;
     private DiscoveryClient discoveryClient;
-    private SslContextFactoryProvider sslContextFactoryProvider;
     private WebSocketRoutedSessionFactory webSocketRoutedSessionFactory;
     private Map<String, WebSocketRoutedSession> routedSessions;
 
     @BeforeEach
     public void setup() {
         discoveryClient = mock(DiscoveryClient.class);
-        sslContextFactoryProvider = mock(SslContextFactoryProvider.class);
         routedSessions = new HashMap<>();
         webSocketRoutedSessionFactory = mock(WebSocketRoutedSessionFactory.class);
 
@@ -52,7 +54,7 @@ class WebSocketProxyServerHandlerTest {
 
     /**
      * Happy Path
-     *
+     * <p>
      * The Handler is properly created
      * Specified Route is added to the list
      * The connection is established
@@ -92,7 +94,7 @@ class WebSocketProxyServerHandlerTest {
 
     /**
      * Error Path
-     *
+     * <p>
      * The Handler is properly created
      * The connection is established
      * The URI doesn't contain all needed parts
@@ -111,7 +113,7 @@ class WebSocketProxyServerHandlerTest {
 
     /**
      * Error Path
-     *
+     * <p>
      * The Handler is properly created
      * The connection is established
      * The URI contains the service Id for which there is no service
@@ -130,7 +132,7 @@ class WebSocketProxyServerHandlerTest {
 
     /**
      * Error Path
-     *
+     * <p>
      * The Handler is properly created
      * Specified Route is added to the list
      * The connection is established
