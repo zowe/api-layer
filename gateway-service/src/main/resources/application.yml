@@ -111,6 +111,8 @@ server:
         trustStoreType: PKCS12
     maxConnectionsPerRoute: 100
     maxTotalConnections: 1000
+    webSocket:
+        supportedProtocols: v12.stomp,v11.stomp
 
 zuul:
     sslHostnameValidationEnabled: false

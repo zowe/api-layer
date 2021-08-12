@@ -11,12 +11,18 @@ package org.zowe.apiml.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.*;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.SubProtocolCapable;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
-import org.zowe.apiml.product.routing.*;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
+import org.zowe.apiml.product.routing.RoutedServicesUser;
 
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -33,7 +39,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Singleton
 @Slf4j
-public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser {
+public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser, SubProtocolCapable {
+
+    @Value("${server.webSocket.supportedProtocols:-}")
+    private List<String> subProtocols;
+
+    @Override
+    public List<String> getSubProtocols() {
+        return subProtocols;
+    }
 
     private final Map<String, WebSocketRoutedSession> routedSessions;
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
@@ -124,7 +138,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     private void openWebSocketConnection(RoutedService service, ServiceInstance serviceInstance, Object uri,
-            String path, WebSocketSession webSocketSession) throws IOException {
+                                         String path, WebSocketSession webSocketSession) throws IOException {
         String serviceUrl = service.getServiceUrl();
         String targetUrl = getTargetUrl(serviceUrl, serviceInstance, path);
 
@@ -132,6 +146,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         try {
             WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
             routedSessions.put(webSocketSession.getId(), session);
+
         } catch (WebSocketProxyError e) {
             log.debug("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage());
             webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
@@ -143,8 +158,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         if (!serviceInstances.isEmpty()) {
             // TODO: Is this implementation apropriate?
             return serviceInstances.get(0);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -161,15 +175,14 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
             }
 
             routedSessions.remove(session.getId());
-        }
-        catch (NullPointerException | IOException e) {
+        } catch (NullPointerException | IOException e) {
             log.debug("Error closing WebSocket connection: {}", e.getMessage(), e);
         }
     }
 
     @Override
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage)
-            throws Exception {
+        throws Exception {
         log.debug("handleMessage(session={},message={})", webSocketSession, webSocketMessage);
         WebSocketRoutedSession session = getRoutedSession(webSocketSession);
         if (session != null) {
