@@ -89,7 +89,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession webSocketSession) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession webSocketSession) throws IOException {
         String[] uriParts = getUriParts(webSocketSession);
         if (uriParts == null || uriParts.length != 5) {
             closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE, "Invalid URL format");
@@ -111,7 +111,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         routeToService(webSocketSession, serviceId, majorVersion, path);
     }
 
-    private void routeToService(WebSocketSession webSocketSession, String serviceId, String majorVersion, String path) throws Exception {
+    private void routeToService(WebSocketSession webSocketSession, String serviceId, String majorVersion, String path) throws IOException {
         RoutedServices routedServices = routedServicesMap.get(serviceId);
 
         if (routedServices == null) {
