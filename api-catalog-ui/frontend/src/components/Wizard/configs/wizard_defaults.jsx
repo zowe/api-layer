@@ -1,3 +1,6 @@
+/**
+ * Define default values for different enablers
+ */
 // eslint-disable-next-line import/prefer-default-export
 export const defaultSpring = {
     Spring: { name: '${apiml.service.serviceId}' },

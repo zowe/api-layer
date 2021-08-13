@@ -11,7 +11,7 @@
 import React, { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
-import WizardNavigationContainer from './WizardNavigationContainer';
+import WizardNavigationContainer from './WizardComponents/WizardNavigationContainer';
 
 export default class WizardDialog extends Component {
     constructor(props) {
@@ -31,6 +31,9 @@ export default class WizardDialog extends Component {
         createYamlObject(inputData);
     };
 
+    /**
+     * Displays either Next or Save, depending whether the user is at the last stage or not.
+     */
     nextSave = () => {
         const { selectedCategory, inputData, nextWizardCategory } = this.props;
         if (selectedCategory < inputData.length) {
@@ -41,8 +44,8 @@ export default class WizardDialog extends Component {
     };
 
     render() {
-        const { wizardIsOpen, enablerName, inputData, selectedCategory } = this.props;
-        const size = selectedCategory === inputData.length ? 'large' : 'medium';
+        const { wizardIsOpen, enablerName, inputData, selectedCategory, navTabAmount } = this.props;
+        const size = selectedCategory === navTabAmount ? 'large' : 'medium';
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} size={size} closeOnClickOutside={false}>

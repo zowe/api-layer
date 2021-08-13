@@ -9,19 +9,22 @@
  */
 
 import { connect } from 'react-redux';
-import { createYamlObject } from '../../actions/wizard-actions';
-import YAMLVisualizer from './YAMLVisualizer';
+import WizardNavigation from './WizardNavigation';
+import { changeWizardCategory, nextWizardCategory, setNumberOfTabs } from '../../../actions/wizard-actions';
 
 const mapStateToProps = state => ({
+    selectedCategory: state.wizardReducer.selectedCategory,
     inputData: state.wizardReducer.inputData,
-    yamlObject: state.wizardReducer.yamlObject,
+    navTabAmount: state.wizardReducer.navTabAmount,
 });
 
 const mapDispatchToProps = {
-    createYamlObject,
+    nextWizardCategory,
+    changeWizardCategory,
+    setNumberOfTabs,
 };
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(YAMLVisualizer);
+)(WizardNavigation);

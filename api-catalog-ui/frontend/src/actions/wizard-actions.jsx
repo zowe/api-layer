@@ -15,8 +15,13 @@ import {
     CHANGE_CATEGORY,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
+    NAV_NUMBER,
 } from '../constants/wizard-constants';
 
+/**
+ * Update the object containing user's input with any new input received
+ * @param category the entire object, but with already updated values
+ */
 export function updateWizardData(category) {
     return {
         type: INPUT_UPDATED,
@@ -24,6 +29,9 @@ export function updateWizardData(category) {
     };
 }
 
+/**
+ * Notify the reducer to change the value of wizardIsOpen
+ */
 export function wizardToggleDisplay() {
     return {
         type: TOGGLE_DISPLAY,
@@ -31,6 +39,10 @@ export function wizardToggleDisplay() {
     };
 }
 
+/**
+ * Notify which onboarding method the user has selected
+ * @param enablerName the type/name of the onboarding method
+ */
 export function selectEnabler(enablerName) {
     return {
         type: SELECT_ENABLER,
@@ -38,6 +50,9 @@ export function selectEnabler(enablerName) {
     };
 }
 
+/**
+ * Notifies the WizardNavigation component to move to the next nav.
+ */
 export function nextWizardCategory() {
     return {
         type: NEXT_CATEGORY,
@@ -45,6 +60,10 @@ export function nextWizardCategory() {
     };
 }
 
+/**
+ * Notifies the WizardNavigation component to move to a specific nav.
+ * @param num the index of the nav the user wants to move to.
+ */
 export function changeWizardCategory(num) {
     return {
         type: CHANGE_CATEGORY,
@@ -52,6 +71,11 @@ export function changeWizardCategory(num) {
     };
 }
 
+/**
+ * Insert an object in a parent object(if key already exists in parent, content is added, nothing is overwritten)
+ * @param parent parent object
+ * @param content object that should be inserted into parent
+ */
 export const insert = (parent, content) => {
     const keys = Object.keys(content);
     keys.forEach(currKey => {
@@ -63,7 +87,14 @@ export const insert = (parent, content) => {
     });
 };
 
-export const addCategoryToYamlObject = (category, result) => {
+/**
+ * Receives a single category and translates it to an object the yaml library can correctly convert to yaml
+ * @param category a category
+ * @param parent parent object which the yaml-ready category should be added to
+ * @returns result the updated parent
+ */
+export const addCategoryToYamlObject = (category, parent) => {
+    const result = { ...parent };
     let content = {};
     // load user's answer into content object
     if (!Array.isArray(category.content)) {
@@ -108,6 +139,10 @@ export const addCategoryToYamlObject = (category, result) => {
     return result;
 };
 
+/**
+ * Receives the array containing all of user's input divided into categories and calls addCategoryToYamlObject for each.
+ * @param inputData array with all categories (already filled by user)
+ */
 export function createYamlObject(inputData) {
     let result = {};
     inputData.forEach(category => {
@@ -119,9 +154,21 @@ export function createYamlObject(inputData) {
     };
 }
 
+/**
+ * Relates to categories that can have multiple sets - deletes a set with a given id.
+ * @param index index of the set to be deleted
+ * @param text name of the category the set should be deleted from
+ */
 export function deleteCategoryConfig(index, text) {
     return {
         type: REMOVE_INDEX,
         payload: { index, text },
+    };
+}
+
+export function setNumberOfTabs(num) {
+    return {
+        type: NAV_NUMBER,
+        payload: { tabAmount: num },
     };
 }

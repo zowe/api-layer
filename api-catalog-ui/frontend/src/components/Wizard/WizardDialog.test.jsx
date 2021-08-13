@@ -10,10 +10,10 @@
 import * as enzyme from 'enzyme';
 import React from 'react';
 import WizardDialog from './WizardDialog';
-import { data } from './wizard_config';
+import { categoryData } from './configs/wizard_categories';
 describe('>>> WizardDialog tests', () => {
     it('should render the dialog if store value is true', () => {
-        const wrapper = enzyme.shallow(<WizardDialog wizardToggleDisplay={jest.fn()} inputData={data} wizardIsOpen />);
+        const wrapper = enzyme.shallow(<WizardDialog wizardToggleDisplay={jest.fn()} inputData={categoryData} wizardIsOpen />);
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
     });
     it('should create 0 inputs if content is an empty object', () => {
@@ -61,7 +61,7 @@ describe('>>> WizardDialog tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
-                inputData={data}
+                inputData={categoryData}
             />
         );
         const instance = wrapper.instance();
@@ -81,8 +81,8 @@ describe('>>> WizardDialog tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
-                inputData={data}
-                selectedCategory={data.length}
+                inputData={categoryData}
+                selectedCategory={categoryData.length}
                 nextWizardCategory={jest.fn()}
                 createYamlObject={createYamlObject}
             />
@@ -104,7 +104,7 @@ describe('>>> WizardDialog tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
-                inputData={data}
+                inputData={categoryData}
                 selectedCategory={0}
                 nextWizardCategory={nextWizardCategory}
             />
