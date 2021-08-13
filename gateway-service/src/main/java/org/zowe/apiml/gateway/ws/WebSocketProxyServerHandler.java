@@ -92,9 +92,16 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     public void afterConnectionEstablished(WebSocketSession webSocketSession) throws Exception {
         String[] uriParts = getUriParts(webSocketSession);
         if (uriParts != null && uriParts.length == 5) {
-            String majorVersion = uriParts[2];
-            String serviceId = uriParts[3];
-            String path = uriParts[4];
+            String majorVersion, serviceId, path;
+            if(uriParts[1].equals("ws")) {
+                majorVersion = uriParts[2];
+                serviceId = uriParts[3];
+                path = uriParts[4];
+            } else {
+                majorVersion = uriParts[3];
+                serviceId = uriParts[1];
+                path = uriParts[4];
+            }
 
             RoutedServices routedServices = routedServicesMap.get(serviceId);
 

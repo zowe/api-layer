@@ -13,6 +13,8 @@ import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -43,8 +45,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     private final GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
     private static final int WAIT_TIMEOUT_MS = 10000;
-    private static final String UPPERCASE_URL = "/ws/v1/discoverableclient/uppercase";
-    private static final String HEADER_URL = "/ws/v1/discoverableclient/header";
 
     private static final WebSocketHttpHeaders VALID_AUTH_HEADERS = new WebSocketHttpHeaders();
     private static final WebSocketHttpHeaders INVALID_AUTH_HEADERS = new WebSocketHttpHeaders();
@@ -118,11 +118,12 @@ class WebSocketProxyTest implements TestWithStartedInstances {
             class WhenValid {
                 @Nested
                 class ReturnSuccess {
-                    @Test
-                    void message() throws Exception {
+                    @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#message {0}")
+                    @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+                    void message(String path) throws Exception {
                         final StringBuilder response = new StringBuilder();
 
-                        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), VALID_AUTH_HEADERS, response, 1);
+                        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path), VALID_AUTH_HEADERS, response, 1);
 
                         session.sendMessage(new TextMessage("hello world!"));
                         synchronized (response) {
@@ -133,12 +134,15 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                         session.close();
                     }
 
-                    @Test
-                    void headers() throws Exception {
+                    @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#headers {0}")
+                    @ValueSource(strings = {"/discoverableclient/ws/v1/header", "/ws/v1/discoverableclient/header"})
+                    void headers(String path) throws Exception {
                         final StringBuilder response = new StringBuilder();
-                        VALID_AUTH_HEADERS.add("X-Test", "value");
+                        if(!VALID_AUTH_HEADERS.containsKey("X-Test")) {
+                            VALID_AUTH_HEADERS.add("X-Test", "value");
+                        }
                         VALID_AUTH_HEADERS.add("Cookie", validToken);
-                        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(HEADER_URL), VALID_AUTH_HEADERS, response, 1);
+                        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path), VALID_AUTH_HEADERS, response, 1);
 
                         session.sendMessage(new TextMessage("gimme those headers"));
                         synchronized (response) {
@@ -154,10 +158,11 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
                 @Nested
                 class ReturnError {
-                    @Test
-                    void whenPathIsNotCorrect() throws Exception {
+                    @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#headers {0}")
+                    @ValueSource(strings = {"/discoverableclient/ws/v1/bad", "/ws/v1/discoverableclient/bad"})
+                    void whenPathIsNotCorrect(String path) throws Exception {
                         final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL + "bad"), VALID_AUTH_HEADERS, response, 1);
+                        appendingWebSocketSession(discoverableClientGatewayUrl(path), VALID_AUTH_HEADERS, response, 1);
 
                         synchronized (response) {
                             response.wait(WAIT_TIMEOUT_MS);
@@ -196,11 +201,12 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
             @Nested
             class WhenInvalid {
-                @Test
-                void returnError() throws Exception {
+                @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#message {0}")
+                @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+                void returnError(String path) throws Exception {
                     final StringBuilder response = new StringBuilder();
 
-                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), INVALID_AUTH_HEADERS, response, 1);
+                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path), INVALID_AUTH_HEADERS, response, 1);
 
                     session.sendMessage(new TextMessage("hello world!"));
                     synchronized (response) {
@@ -217,10 +223,11 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
     @Nested
     class WhenClosingSession {
-        @Test
-        void getCorrectResponse() throws Exception {
+        @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#message {0}")
+        @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+        void getCorrectResponse(String path) throws Exception {
             final StringBuilder response = new StringBuilder();
-            WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), VALID_AUTH_HEADERS, response, 2);
+            WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path), VALID_AUTH_HEADERS, response, 2);
 
             session.sendMessage(new TextMessage("bye"));
             synchronized (response) {
