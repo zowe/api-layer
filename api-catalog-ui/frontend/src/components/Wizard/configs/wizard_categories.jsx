@@ -1,6 +1,14 @@
-import { defaultSpring } from './wizard_defaults';
-
-export const data = [
+/**
+ * each new category:
+ * 1. must contain properties:
+ *  1.1. text - the name of the category
+ *  1.2. content - object containing sub-objects (each with a value and a question key)
+ * 2. can contain properties:
+ *  2.1. multiple - boolean, if true, allows for multiple sets of configuration
+ *  2.2. indentation - string, nests object like so: 'a/b' - { a:{ b:your_object } }
+ */
+// eslint-disable-next-line import/prefer-default-export
+export const categoryData = [
     {
         text: 'Basic info',
         content: {
@@ -17,7 +25,6 @@ export const data = [
                 question: 'A concise description of the service:',
             },
         },
-        multiple: false,
     },
     {
         text: 'Prefer IP address',
@@ -27,7 +34,6 @@ export const data = [
                 question: 'Set to true to advertise a service IP address instead of its hostname (optional):',
             },
         },
-        multiple: false,
     },
     {
         text: 'Scheme info',
@@ -49,7 +55,6 @@ export const data = [
                 question: 'Context path:',
             },
         },
-        multiple: false,
     },
     {
         text: 'IP address info',
@@ -63,7 +68,6 @@ export const data = [
                 question: 'The service IP address (optional):',
             },
         },
-        multiple: false,
     },
     {
         text: 'URL',
@@ -81,7 +85,6 @@ export const data = [
                 question: 'The relative path to the health check endpoint of the service:',
             },
         },
-        multiple: false,
     },
     {
         text: 'URL for Static',
@@ -99,14 +102,11 @@ export const data = [
         content: {
             discoveryServiceHost: {
                 value: '',
-                question: 'Discovery Service host:',
-            },
-            discoveryServicePort: {
-                value: '',
-                question: 'Discovery Service port:',
+                question: 'Discovery Service URL:',
             },
         },
         multiple: true,
+        noKey: true,
     },
     {
         text: 'Routes',
@@ -120,7 +120,7 @@ export const data = [
                 question: 'A portion of the service instance URL path which replaces the gatewayUrl part:',
             },
         },
-        multiple: false,
+        multiple: true,
     },
     {
         text: 'Routes for Static',
@@ -134,7 +134,7 @@ export const data = [
                 question: 'A portion of the service instance URL path which replaces the gatewayUrl part:',
             },
         },
-        multiple: false,
+        multiple: true,
     },
     {
         text: 'Authentication',
@@ -148,7 +148,6 @@ export const data = [
                 question: 'A service APPLID (valid only for the httpBasicPassTicket authentication scheme ):',
             },
         },
-        multiple: false,
     },
     {
         text: 'API Info',
@@ -174,7 +173,6 @@ export const data = [
                 question: 'Link to the external documentation (optional):',
             },
         },
-        multiple: false,
     },
     {
         text: 'Catalog',
@@ -196,7 +194,6 @@ export const data = [
                 question: 'The semantic version of this API Catalog tile (increase when adding changes):',
             },
         },
-        multiple: false,
     },
     {
         text: 'SSL',
@@ -243,7 +240,6 @@ export const data = [
                 question: 'Truststore type (the default value is PKCS12):',
             },
         },
-        multiple: false,
     },
     {
         text: 'Enable',
@@ -259,7 +255,6 @@ export const data = [
                     'Decision if the service requests the API ML GW to receive encoded characters in the URL (true/false):',
             },
         },
-        multiple: false,
     },
     {
         text: 'Spring',
@@ -269,88 +264,5 @@ export const data = [
                 question: 'This parameter has to be the same as the service ID you are going to provide',
             },
         },
-        multiple: false,
-    },
-    {
-        text: 'Service Info',
-        content: {
-            catalogUiTileId: {
-                value: '',
-                question: 'A unique identifier for the API (max 40 characters, lowercase):',
-            },
-        },
-        multiple: false,
-    },
-    {
-        text: 'UI Tile info',
-        content: {
-            title: {
-                value: '',
-                question: 'The title of the product family of the API service:',
-            },
-            description: {
-                value: '',
-                question: 'A description of the API service product family:',
-            },
-        },
-        multiple: false,
-    },
-];
-
-export const enablerData = [
-    {
-        text: 'Plain Java Enabler',
-        categories: [
-            { name: 'Basic info', indentation: false },
-            { name: 'IP address info', indentation: false },
-            { name: 'Prefer IP address', indentation: false },
-            { name: 'URL', indentation: false },
-            { name: 'Discovery Service URL', indentation: 'discoveryServiceUrls', multiple: true },
-            { name: 'Routes', indentation: 'routes', multiple: true },
-            { name: 'Authentication', indentation: 'authentication', multiple: false },
-            { name: 'API Info', indentation: 'apiInfo', multiple: true },
-            { name: 'Catalog', indentation: 'catalog/tiles' },
-            { name: 'SSL', indentation: 'ssl' },
-        ],
-    },
-    {
-        text: 'Spring Enabler',
-        categories: [
-            { name: 'Spring', indentation: 'spring/application' },
-            { name: 'Enable', indentation: 'apiml' },
-            { name: 'Basic info', indentation: 'apiml/service' },
-            { name: 'Scheme info', indentation: 'apiml/service' },
-            { name: 'IP address info', indentation: 'apiml/service' },
-            { name: 'URL', indentation: 'apiml/service' },
-            { name: 'Discovery Service URL', indentation: 'apiml/service/discoveryServiceUrls', multiple: true },
-            { name: 'Routes', indentation: 'apiml/service/routes', multiple: true },
-            { name: 'Authentication', indentation: 'apiml/service/authentication', multiple: false },
-            { name: 'API Info', indentation: 'apiml/service/apiInfo', multiple: true },
-            { name: 'Catalog', indentation: 'apiml/service/catalog/tiles' },
-            { name: 'SSL', indentation: 'apiml/service/ssl' },
-        ],
-        defaults: defaultSpring,
-    },
-    {
-        text: 'Micronaut Enabler',
-    },
-    {
-        text: 'Node JS Enabler',
-    },
-    {
-        text: 'Static Onboarding',
-        categories: [
-            { name: 'Basic info', indentation: 'services' },
-            { name: 'Service info', indentation: 'services' },
-            { name: 'URL for Static', indentation: 'services/instanceBaseUrls', multiple: true },
-            { name: 'URL', indentation: 'services' },
-            { name: 'Routes for Static', indentation: 'services/routes', multiple: true },
-            { name: 'Authentication', indentation: 'services/authentication' },
-            { name: 'API Info', indentation: 'services/apiInfo', multiple: true },
-            { name: 'UI Tile info', indentation: 'catalogUiTiles/static' },
-        ],
-    },
-    {
-        text: 'Direct Call to Eureka',
     },
 ];

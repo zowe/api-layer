@@ -8,16 +8,19 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import _ from 'lodash';
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
+    NAV_NUMBER,
     NEXT_CATEGORY,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
 } from '../constants/wizard-constants';
-import { data, enablerData } from '../components/Wizard/wizard_config';
+import { categoryData } from '../components/Wizard/configs/wizard_categories';
+import { enablerData } from '../components/Wizard/configs/wizard_onboarding_methods';
 
 export const wizardReducerDefaultState = {
     wizardIsOpen: false,
@@ -25,8 +28,18 @@ export const wizardReducerDefaultState = {
     selectedCategory: 0,
     inputData: [],
     yamlObject: {},
+    navTabAmount: 0,
 };
+
+/**
+ * Override multiple and indentation properties if the enabler asks to
+ * @param category category object
+ * @param categoryInfo enabler's category config
+ */
 function compareVariables(category, categoryInfo) {
+    if (categoryInfo.nav === undefined) {
+        categoryInfo.nav = categoryInfo.name;
+    }
     if (categoryInfo.indentation !== undefined) {
         category.indentation = categoryInfo.indentation;
     }
@@ -40,6 +53,11 @@ function compareVariables(category, categoryInfo) {
     }
 }
 
+/**
+ * For each value present in enabler's defaults add its predetermined value to the content of the correct category
+ * @param content content object
+ * @param defaultsArr array of [key, value] arrays
+ */
 export function addDefaultValues(content, defaultsArr) {
     const newContent = { ...content };
     defaultsArr.forEach(entry => {
@@ -52,6 +70,11 @@ export function addDefaultValues(content, defaultsArr) {
     return newContent;
 }
 
+/**
+ * Checks for invalid configurations, also handles situations where the content is an array instead of an object
+ * @param category category object
+ * @param defaults defaults object; these are defined in wizard_defaults
+ */
 export function setDefault(category, defaults) {
     if (defaults === undefined || defaults[category.text] === undefined) {
         return category;
@@ -67,7 +90,14 @@ export function setDefault(category, defaults) {
     return { ...category, content: result };
 }
 
-const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { data, enablerData }) => {
+/**
+ * Reducer for the Wizard Dialog
+ * @param state state; contains all global variables for the wizrd reducer
+ * @param action when a component fires an action its payload is unloaded here
+ * @param config additional configuration
+ * @returns {any}
+ */
+const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = { categoryData, enablerData }) => {
     if (action == null) {
         return state;
     }
@@ -86,15 +116,17 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             }
             const { categories } = enablerObj;
             categories.forEach(categoryInfo => {
-                let category = config.data.find(o => o.text === categoryInfo.name);
+                let category = config.categoryData.find(o => o.text === categoryInfo.name);
                 if (category === undefined) {
                     return;
                 }
+                category = _.cloneDeep(category);
                 category = setDefault(category, enablerObj.defaults);
                 compareVariables(category, categoryInfo);
+                category.nav = categoryInfo.nav;
                 inputData.push(category);
             });
-            return { ...state, enablerName, inputData };
+            return { ...state, enablerName, inputData, selectedCategory: 0, navTabAmount: inputData.length };
         }
 
         case INPUT_UPDATED: {
@@ -126,6 +158,8 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             });
             return { ...state, inputData: newData };
         }
+        case NAV_NUMBER:
+            return { ...state, navTabAmount: action.payload.tabAmount };
         default:
             return state;
     }

@@ -10,7 +10,7 @@
 /* eslint-disable no-undef */
 import * as constants from '../constants/wizard-constants';
 import * as actions from './wizard-actions';
-import { addCategoryToYamlObject, insert } from './wizard-actions';
+import { addCategoryToYamlObject, insert} from './wizard-actions';
 
 describe('>>> Wizard actions tests', () => {
     it('should get next category', () => {
@@ -172,4 +172,12 @@ describe('>>> Wizard actions tests', () => {
             indentation: false,
         }])).toEqual(expectedAction);
     });
+
+    it('should set the number of tabs', () => {
+        const expectedAction = {
+            type: constants.NAV_NUMBER,
+            payload: { tabAmount: 1 },
+        };
+        expect(actions.setNumberOfTabs(1)).toEqual(expectedAction);
+    })
 });

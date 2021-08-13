@@ -44,9 +44,11 @@ describe('>>> Wizard navigation tests', () => {
     it('should load the tabs', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
+        const setNumberOfTabs = jest.fn();
         const dummyData = [
             {
                 text: 'Some Enabler',
+                nav: 'Nav #1',
                 categories: [
                     { name: 'Category 1', indentation: false },
                     { name: 'Category 2', indentation: false },
@@ -54,6 +56,7 @@ describe('>>> Wizard navigation tests', () => {
             },
             {
                 text: 'Other Enabler',
+                nav: 'Nav #1',
                 categories: [
                     { name: 'Category 1', indentation: false },
                     { name: 'Category 2', indentation: false },
@@ -63,11 +66,13 @@ describe('>>> Wizard navigation tests', () => {
         const wrapper = enzyme.shallow(
             <WizardNavigation
                 selectedCategory={0}
+                navTabAmount={0}
                 inputData={dummyData}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
+                setNumberOfTabs={setNumberOfTabs}
             />
         );
-        expect(wrapper.find('Tab').length).toEqual(3);
+        expect(wrapper.find('Tab').length).toEqual(2);
     });
 });

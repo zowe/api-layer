@@ -9,7 +9,12 @@
  */
 import { connect } from 'react-redux';
 import WizardDialog from './WizardDialog';
-import { nextWizardCategory, wizardToggleDisplay, createYamlObject } from '../../actions/wizard-actions';
+import {
+    nextWizardCategory,
+    wizardToggleDisplay,
+    createYamlObject,
+    setNumberOfTabs,
+} from '../../actions/wizard-actions';
 import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 
 const mapStateToProps = state => ({
@@ -18,12 +23,14 @@ const mapStateToProps = state => ({
     inputData: state.wizardReducer.inputData,
     selectedCategory: state.wizardReducer.selectedCategory,
     yamlObject: state.wizardReducer.yamlObject,
+    navTabAmount: state.wizardReducer.navTabAmount,
 });
 const mapDispatchToProps = {
     wizardToggleDisplay,
     refreshedStaticApi,
     nextWizardCategory,
     createYamlObject,
+    setNumberOfTabs,
 };
 export default connect(
     mapStateToProps,
