@@ -89,36 +89,50 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession webSocketSession) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession webSocketSession) throws IOException {
         String[] uriParts = getUriParts(webSocketSession);
-        if (uriParts != null && uriParts.length == 5) {
-            String majorVersion = uriParts[2];
-            String serviceId = uriParts[3];
-            String path = uriParts[4];
-
-            RoutedServices routedServices = routedServicesMap.get(serviceId);
-
-            if (routedServices != null) {
-                RoutedService service = routedServices.findServiceByGatewayUrl("ws/" + majorVersion);
-                if (service == null) {
-                    closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
-                        String.format("Requested ws/%s url is not known by the gateway", majorVersion));
-                    return;
-                }
-
-                ServiceInstance serviceInstance = findServiceInstance(serviceId);
-                if (serviceInstance != null) {
-                    openWebSocketConnection(service, serviceInstance, serviceInstance, path, webSocketSession);
-                } else {
-                    closeWebSocket(webSocketSession, CloseStatus.SERVICE_RESTARTED,
-                        String.format("Requested service %s does not have available instance", serviceId));
-                }
-            } else {
-                closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
-                    String.format("Requested service %s is not known by the gateway", serviceId));
-            }
-        } else {
+        if (uriParts == null || uriParts.length != 5) {
             closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE, "Invalid URL format");
+            return;
+        }
+
+        String majorVersion;
+        String serviceId;
+        String path = uriParts[4];
+
+        if (uriParts[1].equals("ws")) {
+            majorVersion = uriParts[2];
+            serviceId = uriParts[3];
+        } else {
+            majorVersion = uriParts[3];
+            serviceId = uriParts[1];
+        }
+
+        routeToService(webSocketSession, serviceId, majorVersion, path);
+    }
+
+    private void routeToService(WebSocketSession webSocketSession, String serviceId, String majorVersion, String path) throws IOException {
+        RoutedServices routedServices = routedServicesMap.get(serviceId);
+
+        if (routedServices == null) {
+            closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
+                String.format("Requested service %s is not known by the gateway", serviceId));
+            return;
+        }
+
+        RoutedService service = routedServices.findServiceByGatewayUrl("ws/" + majorVersion);
+        if (service == null) {
+            closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
+                String.format("Requested ws/%s url is not known by the gateway", majorVersion));
+            return;
+        }
+
+        ServiceInstance serviceInstance = findServiceInstance(serviceId);
+        if (serviceInstance != null) {
+            openWebSocketConnection(service, serviceInstance, serviceInstance, path, webSocketSession);
+        } else {
+            closeWebSocket(webSocketSession, CloseStatus.SERVICE_RESTARTED,
+                String.format("Requested service %s does not have available instance", serviceId));
         }
     }
 
