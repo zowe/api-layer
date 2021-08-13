@@ -30,8 +30,8 @@ export const categoryData = [
         text: 'Prefer IP address',
         content: {
             preferIpAddress: {
-                value: '',
-                question: 'Set to true to advertise a service IP address instead of its hostname (optional):',
+                value: false,
+                question: 'Advertise service IP address instead of its hostname',
                 optional: true,
             },
         },
@@ -250,14 +250,12 @@ export const categoryData = [
         text: 'Enable',
         content: {
             enabled: {
-                value: '',
-                question:
-                    'Decision if the service should automatically register with API ML discovery service (true/false):',
+                value: false,
+                question: 'Service should automatically register with API ML discovery service',
             },
             enableUrlEncodedCharacters: {
-                value: '',
-                question:
-                    'Decision if the service requests the API ML GW to receive encoded characters in the URL (true/false):',
+                value: false,
+                question: 'Service requests the API ML GW to receive encoded characters in the URL',
             },
         },
     },

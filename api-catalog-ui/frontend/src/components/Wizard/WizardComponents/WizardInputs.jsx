@@ -9,7 +9,7 @@
  */
 
 import React, { Component } from 'react';
-import { FormField } from 'mineral-ui';
+import { Checkbox, FormField } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
 import Button from 'mineral-ui/Button';
 import { IconDelete } from 'mineral-ui-icons';
@@ -131,20 +131,39 @@ class WizardInputs extends Component {
             const { question, value } = content[itemKey];
             return (
                 <div className="entry" key={`${index}-${key}`}>
-                    <FormField
-                        input={TextInput}
-                        size="large"
-                        name={itemKey}
-                        onChange={this.handleInputChange}
-                        data-index={index}
-                        placeholder={itemKey}
-                        value={value}
-                        label={question}
-                    />
+                    {this.renderInputElement(itemKey, index, value, question)}
                 </div>
             );
         });
     };
+
+    renderInputElement(itemKey, index, value, question) {
+        if (typeof value === 'boolean') {
+            return (
+                <Checkbox
+                    className="wCheckBox"
+                    label={question}
+                    value={value}
+                    name={itemKey}
+                    data-index={index}
+                    labelPosition="start"
+                    justify
+                />
+            );
+        }
+        return (
+            <FormField
+                input={TextInput}
+                size="large"
+                name={itemKey}
+                onChange={this.handleInputChange}
+                data-index={index}
+                placeholder={itemKey}
+                value={value}
+                label={question}
+            />
+        );
+    }
 
     render() {
         return (
