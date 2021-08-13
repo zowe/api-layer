@@ -13,7 +13,7 @@ import {
     nextWizardCategory,
     wizardToggleDisplay,
     createYamlObject,
-    setNumberOfTabs,
+    checkFilledInput,
 } from '../../actions/wizard-actions';
 import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 
@@ -23,14 +23,15 @@ const mapStateToProps = state => ({
     inputData: state.wizardReducer.inputData,
     selectedCategory: state.wizardReducer.selectedCategory,
     yamlObject: state.wizardReducer.yamlObject,
-    navTabAmount: state.wizardReducer.navTabAmount,
+    navTabArray: state.wizardReducer.navTabArray,
+    unfilledInputFail: state.wizardReducer.unfilledInputFail,
 });
 const mapDispatchToProps = {
     wizardToggleDisplay,
     refreshedStaticApi,
     nextWizardCategory,
     createYamlObject,
-    setNumberOfTabs,
+    checkFilledInput,
 };
 export default connect(
     mapStateToProps,

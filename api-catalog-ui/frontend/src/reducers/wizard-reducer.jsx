@@ -11,8 +11,8 @@
 import _ from 'lodash';
 import {
     CHANGE_CATEGORY,
+    CHECK_INPUT,
     INPUT_UPDATED,
-    NAV_NUMBER,
     NEXT_CATEGORY,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
@@ -28,7 +28,8 @@ export const wizardReducerDefaultState = {
     selectedCategory: 0,
     inputData: [],
     yamlObject: {},
-    navTabAmount: 0,
+    navTabArray: [],
+    unfilledInputFail: false,
 };
 
 /**
@@ -90,6 +91,17 @@ export function setDefault(category, defaults) {
     return { ...category, content: result };
 }
 
+function checkInput(content) {
+    let empty = false;
+    const values = Object.values(content);
+    let index = 0;
+    while (!empty && index < values.length) {
+        empty = values[index].value.length === 0;
+        index += 1;
+    }
+    return empty;
+}
+
 /**
  * Reducer for the Wizard Dialog
  * @param state state; contains all global variables for the wizrd reducer
@@ -109,6 +121,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             };
         case SELECT_ENABLER: {
             const inputData = [];
+            const navCategories = [];
             const { enablerName } = action.payload;
             const enablerObj = config.enablerData.find(o => o.text === enablerName);
             if (enablerObj === undefined || enablerObj.categories === undefined) {
@@ -124,9 +137,12 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
                 category = setDefault(category, enablerObj.defaults);
                 compareVariables(category, categoryInfo);
                 category.nav = categoryInfo.nav;
+                if (!navCategories.includes(category.nav)) {
+                    navCategories.push(category.nav);
+                }
                 inputData.push(category);
             });
-            return { ...state, enablerName, inputData, selectedCategory: 0, navTabAmount: inputData.length };
+            return { ...state, enablerName, inputData, selectedCategory: 0, navTabArray: navCategories };
         }
 
         case INPUT_UPDATED: {
@@ -158,8 +174,22 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             });
             return { ...state, inputData: newData };
         }
-        case NAV_NUMBER:
-            return { ...state, navTabAmount: action.payload.tabAmount };
+        case CHECK_INPUT: {
+            const { navName } = action.payload;
+            let unfilled;
+            state.inputData.forEach(category => {
+                if (category.nav === navName) {
+                    if (!Array.isArray(category.content)) {
+                        unfilled = unfilled || checkInput(category.content);
+                    } else {
+                        category.content.forEach(categoryContentSet => {
+                            unfilled = unfilled || checkInput(categoryContentSet);
+                        });
+                    }
+                }
+            });
+            return { ...state, unfilledInputFail: unfilled };
+        }
         default:
             return state;
     }

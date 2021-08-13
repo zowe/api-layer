@@ -32,6 +32,7 @@ export const categoryData = [
             preferIpAddress: {
                 value: '',
                 question: 'Set to true to advertise a service IP address instead of its hostname (optional):',
+                optional: true,
             },
         },
     },
@@ -66,6 +67,7 @@ export const categoryData = [
             serviceIpAddress: {
                 value: '',
                 question: 'The service IP address (optional):',
+                optional: true,
             },
         },
     },
@@ -75,6 +77,7 @@ export const categoryData = [
             homePageRelativeUrl: {
                 value: '',
                 question: 'The relative path to the home page of the service (if it has one):',
+                optional: true,
             },
             statusPageRelativeUrl: {
                 value: '',
@@ -167,10 +170,12 @@ export const categoryData = [
             swaggerUrl: {
                 value: '',
                 question: 'The Http or Https address where the Swagger JSON document is available (optional):',
+                optional: true,
             },
             documentationUrl: {
                 value: '',
                 question: 'Link to the external documentation (optional):',
+                optional: true,
             },
         },
     },

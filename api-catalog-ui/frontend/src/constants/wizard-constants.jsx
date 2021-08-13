@@ -15,4 +15,4 @@ export const NEXT_CATEGORY = 'NEXT_CATEGORY';
 export const CHANGE_CATEGORY = 'CHANGE_CATEGORY';
 export const READY_YAML_OBJECT = 'READY_YAML_OBJECT';
 export const REMOVE_INDEX = 'REMOVE_INDEX';
-export const NAV_NUMBER = 'NAV_NUMBER';
+export const CHECK_INPUT = 'CHECK_INPUT';

@@ -10,18 +10,19 @@
 
 import { connect } from 'react-redux';
 import WizardNavigation from './WizardNavigation';
-import { changeWizardCategory, nextWizardCategory, setNumberOfTabs } from '../../../actions/wizard-actions';
+import { changeWizardCategory, checkFilledInput, nextWizardCategory } from '../../../actions/wizard-actions';
 
 const mapStateToProps = state => ({
     selectedCategory: state.wizardReducer.selectedCategory,
     inputData: state.wizardReducer.inputData,
-    navTabAmount: state.wizardReducer.navTabAmount,
+    navTabArray: state.wizardReducer.navTabArray,
+    unfilledInputFail: state.wizardReducer.unfilledInputFail,
 });
 
 const mapDispatchToProps = {
     nextWizardCategory,
     changeWizardCategory,
-    setNumberOfTabs,
+    checkFilledInput,
 };
 
 export default connect(

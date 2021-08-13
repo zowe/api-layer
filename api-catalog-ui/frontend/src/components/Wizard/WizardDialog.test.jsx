@@ -11,7 +11,7 @@ import * as enzyme from 'enzyme';
 import React from 'react';
 import WizardDialog from './WizardDialog';
 import { categoryData } from './configs/wizard_categories';
-describe('>>> WizardDialog tests', () => {
+xdescribe('>>> WizardDialog tests', () => {
     it('should render the dialog if store value is true', () => {
         const wrapper = enzyme.shallow(<WizardDialog wizardToggleDisplay={jest.fn()} inputData={categoryData} wizardIsOpen />);
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
