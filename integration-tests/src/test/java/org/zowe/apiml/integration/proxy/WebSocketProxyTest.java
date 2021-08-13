@@ -138,7 +138,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     @ValueSource(strings = {"/discoverableclient/ws/v1/header", "/ws/v1/discoverableclient/header"})
                     void headers(String path) throws Exception {
                         final StringBuilder response = new StringBuilder();
-                        if(!VALID_AUTH_HEADERS.containsKey("X-Test")) {
+                        if (!VALID_AUTH_HEADERS.containsKey("X-Test")) {
                             VALID_AUTH_HEADERS.add("X-Test", "value");
                         }
                         VALID_AUTH_HEADERS.add("Cookie", validToken);
