@@ -21,7 +21,7 @@ class WizardNavigation extends Component {
     };
 
     /**
-     * Handles frouping of multiple categories under a single navTab
+     * Handles grouping of multiple categories under a single navTab
      * @returns {{}} object containing all the categories that should be under the specific tab grouped under a bigger object
      */
     returnNavs() {

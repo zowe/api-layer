@@ -93,7 +93,7 @@ export function setDefault(category, defaults) {
 /**
  * Reducer for the Wizard Dialog
  * @param state state; contains all global variables for the wizrd reducer
- * @param action when a component fires an action it's payload is unloaded here
+ * @param action when a component fires an action its payload is unloaded here
  * @param config additional configuration
  * @returns {any}
  */
