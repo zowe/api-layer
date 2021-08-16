@@ -144,7 +144,8 @@ export const categoryData = [
         content: {
             scheme: {
                 value: '',
-                question: 'Authentication (bypass, zoweJwt, httpBasicPassTicket, zosmf, x509, headers):',
+                question: 'Authentication:',
+                options: ['bypass', 'zoweJwt', 'httpBasicPassTicket', 'zosmf', 'x509', 'headers'],
             },
             applid: {
                 value: '',

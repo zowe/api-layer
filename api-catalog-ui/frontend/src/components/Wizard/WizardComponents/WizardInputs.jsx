@@ -9,7 +9,7 @@
  */
 
 import React, { Component } from 'react';
-import { Checkbox, FormField } from 'mineral-ui';
+import { Checkbox, FormField, Select } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
 import Button from 'mineral-ui/Button';
 import { IconDelete } from 'mineral-ui-icons';
@@ -37,15 +37,26 @@ class WizardInputs extends Component {
             if (typeof prevValue === 'boolean') {
                 value = checked;
             }
-            const newContent = { ...objectToChange.content, [name]: { value, question } };
+            const newContent = {
+                ...objectToChange.content,
+                [name]: { ...objectToChange.content[name], value, question },
+            };
             this.updateDataWithNewContent(objectToChange, newContent);
         } else {
             const arrIndex = parseInt(event.target.getAttribute('data-index'));
             const { question } = objectToChange.content[arrIndex][name];
             const arr = [...objectToChange.content];
-            arr[arrIndex] = { ...arr[arrIndex], [name]: { question, value } };
+            arr[arrIndex] = { ...arr[arrIndex], [name]: { ...objectToChange.content[name], question, value } };
             this.updateDataWithNewContent(objectToChange, arr);
         }
+    };
+    /**
+     * Select's onChange event contains only the changed value, so we create a usable event ourselves
+     * @param entry each item's basic info - name value and index - we create event from that
+     */
+    handleSelect = entry => {
+        const { name, value, index } = entry;
+        this.handleInputChange({ target: { name, value, getAttribute: () => index } });
     };
 
     updateDataWithNewContent(objectToChange, arr) {
@@ -135,16 +146,17 @@ class WizardInputs extends Component {
         let key = 1;
         return selectedData.map(itemKey => {
             key += 1;
-            const { question, value, empty, optional } = content[itemKey];
+            const input = content[itemKey];
             return (
                 <div className="entry" key={`${index}-${key}`}>
-                    {this.renderInputElement(itemKey, index, value, question, empty, optional)}
+                    {this.renderInputElement(itemKey, index, input)}
                 </div>
             );
         });
     };
 
-    renderInputElement(itemKey, index, value, question, empty, optional) {
+    renderInputElement(itemKey, index, inputNode) {
+        const { question, value, empty, optional, options } = inputNode;
         if (typeof value === 'boolean') {
             return (
                 <Checkbox
@@ -156,6 +168,23 @@ class WizardInputs extends Component {
                     data-index={index}
                     labelPosition="start"
                     justify
+                />
+            );
+        }
+        if (Array.isArray(options)) {
+            return (
+                <FormField
+                    input={Select}
+                    size="large"
+                    placeholder={itemKey}
+                    selectedItem={{ text: value }}
+                    label={question}
+                    variant={empty ? 'danger' : undefined}
+                    caption={optional ? 'optional' : undefined}
+                    data={options.map(entry => ({
+                        text: entry,
+                        onClick: () => this.handleSelect({ name: itemKey, index, value: entry }),
+                    }))}
                 />
             );
         }
