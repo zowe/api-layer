@@ -10,7 +10,7 @@
 import React from 'react';
 import * as enzyme from 'enzyme';
 import WizardNavigation from './WizardNavigation';
-xdescribe('>>> Wizard navigation tests', () => {
+describe('>>> Wizard navigation tests', () => {
     it('should handle category change', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();

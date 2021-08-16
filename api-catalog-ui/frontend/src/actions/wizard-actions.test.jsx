@@ -12,7 +12,7 @@ import * as constants from '../constants/wizard-constants';
 import * as actions from './wizard-actions';
 import { addCategoryToYamlObject, insert} from './wizard-actions';
 
-xdescribe('>>> Wizard actions tests', () => {
+describe('>>> Wizard actions tests', () => {
     it('should get next category', () => {
         const expectedAction = {
             type: constants.NEXT_CATEGORY,
@@ -173,11 +173,12 @@ xdescribe('>>> Wizard actions tests', () => {
         }])).toEqual(expectedAction);
     });
 
-    it('should set the number of tabs', () => {
+    it('should check for filled input', () => {
         const expectedAction = {
-            type: constants.NAV_NUMBER,
-            payload: { tabAmount: 1 },
+            type: constants.CHECK_INPUT,
+            payload: { navName: 'Nav' },
         };
-        expect(actions.getAllTabs(1)).toEqual(expectedAction);
-    })
+        expect(actions.checkFilledInput('Nav')).toEqual(expectedAction);
+    });
+
 });

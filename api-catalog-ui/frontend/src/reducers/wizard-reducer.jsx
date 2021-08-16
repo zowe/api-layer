@@ -91,7 +91,7 @@ export function setDefault(category, defaults) {
     return { ...category, content: result };
 }
 
-function checkInput(content) {
+export function checkInput(content) {
     let empty = false;
     const values = Object.values(content);
     let index = 0;
