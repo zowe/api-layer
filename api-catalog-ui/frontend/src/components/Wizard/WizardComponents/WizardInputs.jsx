@@ -135,16 +135,16 @@ class WizardInputs extends Component {
         let key = 1;
         return selectedData.map(itemKey => {
             key += 1;
-            const { question, value } = content[itemKey];
+            const { question, value, empty, optional } = content[itemKey];
             return (
                 <div className="entry" key={`${index}-${key}`}>
-                    {this.renderInputElement(itemKey, index, value, question)}
+                    {this.renderInputElement(itemKey, index, value, question, empty, optional)}
                 </div>
             );
         });
     };
 
-    renderInputElement(itemKey, index, value, question) {
+    renderInputElement(itemKey, index, value, question, empty, optional) {
         if (typeof value === 'boolean') {
             return (
                 <Checkbox
@@ -169,6 +169,8 @@ class WizardInputs extends Component {
                 placeholder={itemKey}
                 value={value}
                 label={question}
+                variant={empty ? 'danger' : undefined}
+                caption={optional ? 'optional' : undefined}
             />
         );
     }

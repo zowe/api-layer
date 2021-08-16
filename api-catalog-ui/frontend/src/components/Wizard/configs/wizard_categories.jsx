@@ -66,7 +66,7 @@ export const categoryData = [
             },
             serviceIpAddress: {
                 value: '',
-                question: 'The service IP address (optional):',
+                question: 'The service IP address:',
                 optional: true,
             },
         },
@@ -76,7 +76,7 @@ export const categoryData = [
         content: {
             homePageRelativeUrl: {
                 value: '',
-                question: 'The relative path to the home page of the service (if it has one):',
+                question: 'The relative path to the home page of the service:',
                 optional: true,
             },
             statusPageRelativeUrl: {
@@ -169,12 +169,12 @@ export const categoryData = [
             },
             swaggerUrl: {
                 value: '',
-                question: 'The Http or Https address where the Swagger JSON document is available (optional):',
+                question: 'The Http or Https address where the Swagger JSON document is available:',
                 optional: true,
             },
             documentationUrl: {
                 value: '',
-                question: 'Link to the external documentation (optional):',
+                question: 'Link to the external documentation:',
                 optional: true,
             },
         },

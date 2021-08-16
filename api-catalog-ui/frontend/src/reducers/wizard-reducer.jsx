@@ -95,8 +95,15 @@ function checkInput(content) {
     let empty = false;
     const values = Object.values(content);
     let index = 0;
-    while (!empty && index < values.length) {
-        empty = values[index].value.length === 0;
+    while (index < values.length) {
+        if (!empty && values[index].optional === undefined) {
+            empty = values[index].value.length === 0;
+        }
+        if (values[index].optional === true) {
+            values[index].empty = false;
+        } else {
+            values[index].empty = values[index].value.length === 0;
+        }
         index += 1;
     }
     return empty;
