@@ -27,27 +27,34 @@ class WizardInputs extends Component {
      * @param event object containing input's name, value and its data-index attr.
      */
     handleInputChange = event => {
-        const { name, value } = event.target;
-        let objectToChange = this.props.data;
+        const { name, checked } = event.target;
+        let { value } = event.target;
+        const objectToChange = this.props.data;
         if (!objectToChange.multiple) {
             const { question } = objectToChange.content[name];
-            objectToChange = {
-                ...objectToChange,
-                content: { ...objectToChange.content, [name]: { value, question } },
-            };
-            this.props.updateWizardData(objectToChange);
+            const prevValue = objectToChange.content[name].value;
+            // if prevValues was a boolean then we are handling a checkbox
+            if (typeof prevValue === 'boolean') {
+                value = checked;
+            }
+            const newContent = { ...objectToChange.content, [name]: { value, question } };
+            this.updateDataWithNewContent(objectToChange, newContent);
         } else {
             const arrIndex = parseInt(event.target.getAttribute('data-index'));
             const { question } = objectToChange.content[arrIndex][name];
             const arr = [...objectToChange.content];
             arr[arrIndex] = { ...arr[arrIndex], [name]: { question, value } };
-            objectToChange = {
-                ...objectToChange,
-                content: arr,
-            };
-            this.props.updateWizardData(objectToChange);
+            this.updateDataWithNewContent(objectToChange, arr);
         }
     };
+
+    updateDataWithNewContent(objectToChange, arr) {
+        const result = {
+            ...objectToChange,
+            content: arr,
+        };
+        this.props.updateWizardData(result);
+    }
 
     /**
      * Adds another set of config if the category's multiple property is set to true
@@ -143,7 +150,8 @@ class WizardInputs extends Component {
                 <Checkbox
                     className="wCheckBox"
                     label={question}
-                    value={value}
+                    checked={value}
+                    onChange={this.handleInputChange}
                     name={itemKey}
                     data-index={index}
                     labelPosition="start"
