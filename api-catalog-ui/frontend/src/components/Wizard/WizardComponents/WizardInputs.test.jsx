@@ -16,12 +16,7 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Basic info',
-            content: {
-                testInput: {
-                    value: 'input',
-                    question: '',
-                },
-            },
+            content: { testInput: { value: 'input', question: '' } },
             multiple: false,
         };
         const wrapper = enzyme.shallow(
@@ -35,18 +30,9 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Basic info',
-            content: [{
-                testInput: {
-                    value: 'input',
-                    question: '',
-                },
-            },
-                {
-                    testInput: {
-                        value: 'input',
-                        question: '',
-                    },
-                },
+            content: [
+                { testInput: { value: 'input', question: '' } },
+                { testInput: { value: 'input', question: '' } },
             ],
             multiple: true,
         };
@@ -54,29 +40,51 @@ describe('>>> WizardInputs tests', () => {
             <WizardInputs updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        instance.handleInputChange({ target:  { value: 'test1', name: 'testInput', getAttribute: () => 1 }});
+        instance.handleInputChange({ target: { value: 'test1', name: 'testInput', getAttribute: () => 1 } });
         expect(updateWizardData).toHaveBeenCalled();
+    });
+    it('should handle booleans', () => {
+        const updateWizardData = jest.fn();
+        const dummyData = {
+            text: 'Basic info',
+            content: { testInput: { value: false, question: '' } },
+        };
+        const wrapper = enzyme.shallow(
+            <WizardInputs updateWizardData={updateWizardData} data={dummyData} />
+        );
+        const instance = wrapper.instance();
+        instance.handleInputChange({ target: { value: 'irrelevantValue', checked: true, name: 'testInput' } });
+        expect(updateWizardData).toHaveBeenCalledWith({
+            content: { testInput: { value: true, question: '' } },
+            text: 'Basic info',
+        });
+    });
+    it('should create events on select use', () => {
+        const updateWizardData = jest.fn();
+        const dummyData = {
+            text: 'Basic info',
+            content: {
+                testInput: { value: '', question: '', options: ['test'] },
+            },
+        };
+        const wrapper = enzyme.shallow(
+            <WizardInputs updateWizardData={updateWizardData} data={dummyData} />
+        );
+        const instance = wrapper.instance();
+        instance.handleSelect({ name: 'testInput', index: 1, value: 'test' });
+        expect(updateWizardData).toHaveBeenCalledWith({
+            content: { testInput: { value: 'test', question: '', options: ['test'] } },
+            text: 'Basic info',
+        });
     });
     it('should create 4 inputs based on data', () => {
         const dummyData = {
             text: 'Dummy Data',
             content: {
-                test: {
-                    value: '',
-                    question: '',
-                },
-                test2: {
-                    value: '',
-                    question: '',
-                },
-                test3: {
-                    value: '',
-                    question: '',
-                },
-                test4: {
-                    value: '',
-                    question: '',
-                },
+                test: { value: '', question: '', },
+                test2: { value: '', question: '', },
+                test3: { value: '', question: '', },
+                test4: { value: '', question: '', },
             },
             multiple: false,
         };
@@ -98,14 +106,8 @@ describe('>>> WizardInputs tests', () => {
         const dummyData = {
             text: 'Dummy Data',
             content: [{
-                test: {
-                    value: '',
-                    question: '',
-                },
-                test2: {
-                    value: '',
-                    question: '',
-                },
+                test: { value: '', question: '', },
+                test2: { value: '', question: '', },
             }],
             multiple: true,
         };
@@ -114,21 +116,18 @@ describe('>>> WizardInputs tests', () => {
         );
         const instance = wrapper.instance();
         instance.addFields();
-        expect(updateWizardData).toHaveBeenCalledWith({ ...dummyData, content: [dummyData.content[0],dummyData.content[0]] });
+        expect(updateWizardData).toHaveBeenCalledWith({
+            ...dummyData,
+            content: [dummyData.content[0], dummyData.content[0]]
+        });
     });
     it('should delete added input fields', () => {
         const deleteCategoryConfig = jest.fn();
         const dummyData = {
             text: 'Dummy Data',
             content: [{
-                test: {
-                    value: '',
-                    question: '',
-                },
-                test2: {
-                    value: '',
-                    question: '',
-                },
+                test: { value: '', question: '', },
+                test2: { value: '', question: '', },
             }],
             multiple: true,
         };
@@ -136,7 +135,7 @@ describe('>>> WizardInputs tests', () => {
             <WizardInputs deleteCategoryConfig={deleteCategoryConfig} data={dummyData} />
         );
         const instance = wrapper.instance();
-        instance.handleDelete({target: { name: 'Dummy Data'}});
+        instance.handleDelete({ target: { name: 'Dummy Data' } });
         expect(deleteCategoryConfig).toHaveBeenCalled();
     });
 });
