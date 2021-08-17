@@ -100,6 +100,9 @@ public class ConfigReader {
                     configuration.getApiCatalogServiceConfiguration().setUrl(System.getProperty("apicatalog.url", configuration.getApiCatalogServiceConfiguration().getUrl()));
                     configuration.getApiCatalogServiceConfiguration().setHost(System.getProperty("apicatalog.host", configuration.getApiCatalogServiceConfiguration().getHost()));
                     configuration.getApiCatalogServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("apicatalog.instances",  String.valueOf(configuration.getApiCatalogServiceConfiguration().getInstances()))));
+                    configuration.getApiCatalogServiceConfiguration().setScheme(System.getProperty("apicatalog.scheme", configuration.getApiCatalogServiceConfiguration().getScheme()));
+                    configuration.getApiCatalogServiceConfiguration().setPort(Integer.parseInt(System.getProperty("apicatalog.port",  String.valueOf(configuration.getApiCatalogServiceConfiguration().getPort()))));
+
                     configuration.getDiscoverableClientConfiguration().setApplId(System.getProperty("discoverableclient.applId", configuration.getDiscoverableClientConfiguration().getApplId()));
                     configuration.getDiscoverableClientConfiguration().setHost(System.getProperty("discoverableclient.host", configuration.getDiscoverableClientConfiguration().getHost()));
                     configuration.getDiscoverableClientConfiguration().setInstances(Integer.parseInt(System.getProperty("discoverableclient.instances", String.valueOf(configuration.getDiscoverableClientConfiguration().getInstances()))));

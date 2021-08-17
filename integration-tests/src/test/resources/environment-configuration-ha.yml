@@ -22,6 +22,7 @@ discoverableClientConfiguration:
     host: discoverable-client,discoverable-client-2
     instances: 2
 apiCatalogServiceConfiguration:
+    scheme: https
     url:
     host: api-catalog-services,api-catalog-services-2
     port: 10014

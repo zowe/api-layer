@@ -36,7 +36,7 @@ public class ApiCatalogRequests {
     private final String instance;
 
     public ApiCatalogRequests(String host) {
-        this(apiCatalogServiceConfiguration.getHost(), host, apiCatalogServiceConfiguration.getPort(), new Requests());
+        this(apiCatalogServiceConfiguration.getScheme(), host, apiCatalogServiceConfiguration.getPort(), new Requests());
     }
     public ApiCatalogRequests(String scheme, String host, int port, Requests requests) {
         this.requests = requests;

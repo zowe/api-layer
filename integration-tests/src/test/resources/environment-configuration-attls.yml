@@ -22,6 +22,7 @@ discoverableClientConfiguration:
     host: localhost
     instances: 1
 apiCatalogServiceConfiguration:
+    scheme: http
     url:
     host: localhost
     port: 10014
