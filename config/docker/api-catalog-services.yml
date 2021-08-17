@@ -16,6 +16,7 @@ server:
         keyStore: /docker/all-services.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
+        trustStore: /docker/all-services.truststore.p12
         clientAuth: want
 
 apiml:
