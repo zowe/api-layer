@@ -122,7 +122,8 @@ zuul:
     includeDebugHeader: false
     sensitiveHeaders: Expires,Date
     ignoredPatterns:
-        - /**/ws/**
+        - /ws/**
+        - /sse/**
     host:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
