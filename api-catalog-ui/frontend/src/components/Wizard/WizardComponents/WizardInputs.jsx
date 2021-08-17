@@ -31,7 +31,8 @@ class WizardInputs extends Component {
         let { value } = event.target;
         const objectToChange = this.props.data;
         if (!objectToChange.multiple) {
-            const { question } = objectToChange.content[name];
+            const { question, maxLength, lowercase } = objectToChange.content[name];
+            value = this.applyRestrictions(maxLength, value, lowercase);
             const prevValue = objectToChange.content[name].value;
             // if prevValues was a boolean then we are handling a checkbox
             if (typeof prevValue === 'boolean') {
@@ -44,12 +45,25 @@ class WizardInputs extends Component {
             this.updateDataWithNewContent(objectToChange, newContent);
         } else {
             const arrIndex = parseInt(event.target.getAttribute('data-index'));
-            const { question } = objectToChange.content[arrIndex][name];
+            const { question, maxLength, lowercase } = objectToChange.content[arrIndex][name];
+            value = this.applyRestrictions(maxLength, value, lowercase);
             const arr = [...objectToChange.content];
             arr[arrIndex] = { ...arr[arrIndex], [name]: { ...objectToChange.content[name], question, value } };
             this.updateDataWithNewContent(objectToChange, arr);
         }
     };
+
+    applyRestrictions(maxLength, value, lowercase) {
+        let result = value;
+        if (typeof maxLength === 'number' && parseInt(value.length) > maxLength) {
+            result = value.substring(0, maxLength);
+        }
+        if (lowercase) {
+            result = value.toLowerCase();
+        }
+        return result;
+    }
+
     /**
      * Select's onChange event contains only the changed value, so we create a usable event ourselves
      * @param entry each item's basic info - name value and index - we create event from that
@@ -59,10 +73,10 @@ class WizardInputs extends Component {
         this.handleInputChange({ target: { name, value, getAttribute: () => index } });
     };
 
-    updateDataWithNewContent(objectToChange, arr) {
+    updateDataWithNewContent(objectToChange, newC) {
         const result = {
             ...objectToChange,
-            content: arr,
+            content: newC,
         };
         this.props.updateWizardData(result);
     }
@@ -156,7 +170,22 @@ class WizardInputs extends Component {
     };
 
     renderInputElement(itemKey, index, inputNode) {
-        const { question, value, empty, optional, options } = inputNode;
+        const { question, value, empty, optional, options, maxLength, lowercase } = inputNode;
+        let caption = '';
+        if (optional) {
+            caption += 'Optional field; ';
+        }
+        if (lowercase) {
+            caption += 'Field must be lowercase; ';
+        }
+        if (typeof maxLength === 'number') {
+            caption += `Max length is ${maxLength} characters; `;
+        }
+        if (caption.length > 2) {
+            caption = caption.slice(0, -2);
+        } else {
+            caption = undefined;
+        }
         if (typeof value === 'boolean') {
             return (
                 <Checkbox
@@ -180,7 +209,7 @@ class WizardInputs extends Component {
                     selectedItem={{ text: value }}
                     label={question}
                     variant={empty ? 'danger' : undefined}
-                    caption={optional ? 'optional' : undefined}
+                    caption={caption}
                     data={options.map(entry => ({
                         text: entry,
                         onClick: () => this.handleSelect({ name: itemKey, index, value: entry }),
@@ -199,7 +228,7 @@ class WizardInputs extends Component {
                 value={value}
                 label={question}
                 variant={empty ? 'danger' : undefined}
-                caption={optional ? 'optional' : undefined}
+                caption={caption}
             />
         );
     }

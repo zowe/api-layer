@@ -14,7 +14,9 @@ export const categoryData = [
         content: {
             serviceId: {
                 value: '',
-                question: 'A unique identifier for the API (max 40 characters, lowercase):',
+                question: 'A unique identifier for the API:',
+                maxLength: 40,
+                lowercase: true,
             },
             title: {
                 value: '',
@@ -32,7 +34,6 @@ export const categoryData = [
             preferIpAddress: {
                 value: false,
                 question: 'Advertise service IP address instead of its hostname',
-                optional: true,
             },
         },
     },
@@ -40,8 +41,8 @@ export const categoryData = [
         text: 'Scheme info',
         content: {
             scheme: {
-                value: '',
-                question: 'Service scheme (https by default):',
+                value: 'https',
+                question: 'Service scheme:',
             },
             hostname: {
                 value: '',
@@ -143,7 +144,7 @@ export const categoryData = [
         text: 'Authentication',
         content: {
             scheme: {
-                value: '',
+                value: 'bypass',
                 question: 'Authentication:',
                 options: ['bypass', 'zoweJwt', 'httpBasicPassTicket', 'zosmf', 'x509', 'headers'],
             },
@@ -209,9 +210,8 @@ export const categoryData = [
                 question: 'Set this parameter to true in production environments:',
             },
             protocol: {
-                value: '',
-                question:
-                    'The TLS protocol version used by Zowe API ML Discovery Service (recommendation: use TLSv1.2):',
+                value: 'TLSv1.2',
+                question: 'The TLS protocol version used by Zowe API ML Discovery Service:',
             },
             keyAlias: {
                 value: '',
@@ -242,8 +242,8 @@ export const categoryData = [
                 question: 'The password used to unlock the truststore:',
             },
             trustStoreType: {
-                value: '',
-                question: 'Truststore type (the default value is PKCS12):',
+                value: 'PKCS12',
+                question: 'Truststore type:',
             },
         },
     },
