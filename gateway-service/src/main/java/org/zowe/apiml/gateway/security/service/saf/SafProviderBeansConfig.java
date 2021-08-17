@@ -15,13 +15,17 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 
 @Configuration
 @RequiredArgsConstructor
 public class SafProviderBeansConfig {
     @Bean
     @ConditionalOnProperty(name = "apiml.security.saf.provider", havingValue = "rest")
-    public SafIdtProvider restSafProvider(@Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
-        return new SafRestAuthenticationService(restTemplate);
+    public SafIdtProvider restSafProvider(
+        @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate,
+        AuthenticationService authenticationService
+    ) {
+        return new SafRestAuthenticationService(restTemplate, authenticationService);
     }
 }

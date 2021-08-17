@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.service.saf;
 
+import com.netflix.zuul.context.RequestContext;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 
 import java.util.Optional;
 
@@ -27,6 +30,7 @@ import java.util.Optional;
 @Slf4j
 public class SafRestAuthenticationService implements SafIdtProvider {
     private final RestTemplate restTemplate;
+    private final AuthenticationService authenticationService;
 
     @Value("${apiml.security.saf.urls.authenticate}")
     private String authenticationUrl;
@@ -35,15 +39,22 @@ public class SafRestAuthenticationService implements SafIdtProvider {
 
     @Override
     public Optional<String> generate(String username) {
-        // TODO: Use the JWT token
-        // TODO: Build properly the
+        final RequestContext context = RequestContext.getCurrentContext();
+        Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
+        if(!jwtToken.isPresent()) {
+            return Optional.empty();
+        }
 
         try {
-            ResponseEntity<String> re = restTemplate.exchange(authenticationUrl, HttpMethod.POST,
-                new HttpEntity<>(null), String.class);
+            Authentication authentication = new Authentication();
+            authentication.setJwt(jwtToken.get());
+            authentication.setUsername(username);
 
-            if (re.getStatusCode().is2xxSuccessful()) {
-                return Optional.ofNullable(re.getBody());
+            ResponseEntity<Token> re = restTemplate.exchange(authenticationUrl, HttpMethod.POST,
+                new HttpEntity<>(authentication, null), Token.class);
+
+            if (re.getStatusCode().is2xxSuccessful() && re.getBody() != null) {
+                return Optional.ofNullable(re.getBody().getJwt());
             } else {
                 return Optional.empty();
             }
@@ -55,12 +66,26 @@ public class SafRestAuthenticationService implements SafIdtProvider {
     @Override
     public boolean verify(String safToken) {
         try {
+            Token token = new Token();
+            token.setJwt(safToken);
+
             ResponseEntity<String> re = restTemplate.exchange(verifyUrl, HttpMethod.POST,
-                new HttpEntity<>(null), String.class);
+                new HttpEntity<>(token,null), String.class);
 
             return re.getStatusCode().is2xxSuccessful();
         } catch (HttpClientErrorException.Unauthorized e) {
             return false;
         }
+    }
+
+    @Data
+    public static class Token {
+        String jwt;
+    }
+
+    @Data
+    public static class Authentication {
+        String jwt;
+        String username;
     }
 }
