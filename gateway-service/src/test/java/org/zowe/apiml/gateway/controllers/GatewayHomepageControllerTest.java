@@ -115,7 +115,7 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenApiCatalogInstanceWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
-        discoveryReturnValidApiCatalog();
+        discoveryReturnValidApiCatalog(1);
         when(providers.isZosfmUsed()).thenReturn(true);
         when(providers.isZosmfAvailable()).thenReturn(false);
 
@@ -148,14 +148,29 @@ class GatewayHomepageControllerTest {
     }
 
     @Test
-    void givenApiCatalogInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenOneApiCatalogInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
         discoveryReturnValidZosmfAuthorizationInstance();
-        discoveryReturnValidApiCatalog();
+        discoveryReturnValidApiCatalog(1);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
+
         assertCatalogIsUpMessageShown(model.asMap());
+        assertThat(model.asMap(), hasEntry("catalogStatusText", "The API Catalog is running"));
+    }
+
+    @Test
+    void givenApiCatalogInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
+        discoveryReturnValidZosmfAuthorizationInstance();
+        discoveryReturnValidApiCatalog(2);
+
+        Model model = new ConcurrentModel();
+        gatewayHomepageController.home(model);
+
+
+        assertCatalogIsUpMessageShown(model.asMap());
+        assertThat(model.asMap(), hasEntry("catalogStatusText", "2 API Catalog instances are running"));
     }
 
     private void assertCatalogIsDownMessageShown(Map<String, Object> preparedModelView) {
@@ -167,7 +182,6 @@ class GatewayHomepageControllerTest {
 
     private void assertCatalogIsUpMessageShown(Map<String, Object> preparedModelView) {
         assertThat(preparedModelView, hasEntry("catalogIconName", "success"));
-        assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog is running"));
         assertThat(preparedModelView, hasEntry("catalogLinkEnabled", true));
         assertThat(preparedModelView, hasEntry("catalogLink", "/apicatalog/ui/v1"));
     }
@@ -180,15 +194,19 @@ class GatewayHomepageControllerTest {
         );
     }
 
-    private void discoveryReturnValidApiCatalog() {
+    private void discoveryReturnValidApiCatalog(int numberOfInstances) {
         Map<String, String> metadataMap = new HashMap<>();
         metadataMap.put("apiml.routes.ui-v1.gatewayUrl", "/ui/v1");
         metadataMap.put("apiml.routes.ui-v1.serviceUrl", "/apicatalog");
-        ServiceInstance apiCatalogServiceInstance = new DefaultServiceInstance("instanceId", "serviceId",
-            "host", 10000, true, metadataMap);
+        ArrayList<ServiceInstance> apiCatalogServiceInstances = new ArrayList<>();
+        for (int n = 0; n < numberOfInstances; n++) {
+            apiCatalogServiceInstances.add(
+                new DefaultServiceInstance("instanceId" + n, "serviceId",
+                    "host", 10000 + n, true, metadataMap)
+            );
+        }
 
-        when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(
-            Collections.singletonList(apiCatalogServiceInstance));
+        when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(apiCatalogServiceInstances);
     }
 
     @Test

@@ -1,3 +1,22 @@
+caching:
+    storage:
+        mode: inMemory
+        redis:
+            timeout: 60
+            masterNodeUri: default:heslo@localhost:6379
+            ssl:
+                enabled: true
+                keyStore: ${server.ssl.keyStore}
+                keyStorePassword: ${server.ssl.keyStorePassword}
+                trustStore: ${server.ssl.trustStore}
+                trustStorePassword: ${server.ssl.trustStorePassword}
+            sentinel:
+                masterInstance: redismaster
+                nodes:
+                    - sentinelpassword@localhost:26379
+                    - sentinelpassword@localhost:26380
+                    - sentinelpassword@localhost:26381
+
 logging:
     level:
         ROOT: WARN
@@ -145,7 +164,6 @@ spring:
     profiles: attls
 
 server:
-    port: 10006
     attls:
         enabled: true
     ssl:
@@ -154,7 +172,6 @@ server:
 apiml:
     service:
         scheme: http
-        discoveryServiceUrls: http://localhost:10001/eureka/
 
 eureka:
     instance:

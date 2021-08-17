@@ -149,6 +149,8 @@ management:
     endpoints:
         web:
             base-path: /application
+            exposure:
+                include: health,info
     health:
         defaults:
             enabled: false
@@ -216,6 +218,7 @@ eureka:
         secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
         metadata-map:
             apiml:
+                corsEnabled: true
                 apiInfo:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
@@ -227,4 +230,3 @@ apiml:
         scheme: http
         nonSecurePortEnabled: true
         securePortEnabled: false
-        discoveryServiceUrls: http://localhost:10001/eureka/

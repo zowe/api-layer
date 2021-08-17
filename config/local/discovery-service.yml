@@ -34,11 +34,4 @@ server:
         trustStoreType: PKCS12
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
----
-spring:
-    profiles: attls
-
-apiml:
-    discovery:
-        staticApiDefinitionsDirectories: config/local/api-defs-http
 

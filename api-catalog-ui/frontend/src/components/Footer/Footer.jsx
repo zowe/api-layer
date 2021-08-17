@@ -10,7 +10,7 @@ export default class Footer extends Component {
             return null;
         }
         return (
-            <footer>
+            <footer id="pageFooter">
                 <div className="left">
                     <img src={logo} alt="CA technologies, a Broadcom company" id="footerLogo" />
                     <p>

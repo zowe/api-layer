@@ -18,12 +18,17 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -61,6 +66,9 @@ public class HttpConfig {
 
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
+
+    @Value("${server.ssl.ciphers:.*}")
+    private String[] ciphers;
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
@@ -144,11 +152,8 @@ public class HttpConfig {
 
             factory.setSystemSslProperties();
 
-            if (isAttlsEnabled) {
-                publicKeyCertificatesBase64 = SecurityUtils.readApimlCertChainPemPublicKeys();
-            } else {
-                publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-            }
+            publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
+
         } catch (HttpsConfigError e) {
             System.exit(1); // NOSONAR
         } catch (Exception e) {
@@ -163,25 +168,23 @@ public class HttpConfig {
         return publicKeyCertificatesBase64;
     }
 
-    @Bean
-    public SslContextFactory.Server jettySslContextFactory() {
-        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-        if (StringUtils.isNotEmpty(keyStore)) {
-            sslContextFactory.setKeyStorePath(SecurityUtils.replaceFourSlashes(keyStore));
-        }
-        sslContextFactory.setProtocol(protocol);
-        sslContextFactory.setKeyStorePassword(keyStorePassword == null ? null : String.valueOf(keyStorePassword));
-        sslContextFactory.setKeyStoreType(keyStoreType);
-        sslContextFactory.setCertAlias(keyAlias);
-        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$");
-
+    private void setTruststore(SslContextFactory sslContextFactory) {
         if (StringUtils.isNotEmpty(trustStore)) {
             sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
             sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
         }
-        log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
+    }
 
+    @Bean
+    @Qualifier("jettyClientSslContextFactory")
+    public SslContextFactory.Client jettyClientSslContextFactory() {
+        SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
+        sslContextFactory.setProtocol(protocol);
+        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$");
+        setTruststore(sslContextFactory);
+        log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
+        sslContextFactory.setHostnameVerifier(secureHostnameVerifier());
         if (!verifySslCertificatesOfServices) {
             sslContextFactory.setTrustAll(true);
         }

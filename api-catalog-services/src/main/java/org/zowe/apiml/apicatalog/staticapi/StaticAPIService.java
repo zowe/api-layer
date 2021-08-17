@@ -10,6 +10,7 @@
 package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -20,10 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StaticAPIService {
 
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
@@ -43,11 +47,26 @@ public class StaticAPIService {
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
     public StaticAPIResponse refresh() {
-        String discoveryServiceUrl = getDiscoveryServiceUrl();
-        HttpEntity<?> entity = getHttpEntity(discoveryServiceUrl);
-        ResponseEntity<String> restResponse = restTemplate.exchange(discoveryServiceUrl,
-            HttpMethod.POST, entity, String.class);
-        return new StaticAPIResponse(restResponse.getStatusCode().value(), restResponse.getBody());
+        List<String> discoveryServiceUrls = getDiscoveryServiceUrls();
+        for (int i = 0; i < discoveryServiceUrls.size(); i++) {
+
+            String discoveryServiceUrl = discoveryServiceUrls.get(i);
+            HttpEntity<?> entity = getHttpEntity(discoveryServiceUrl);
+
+            try {
+                ResponseEntity<String> response = restTemplate.exchange(discoveryServiceUrl, HttpMethod.POST, entity, String.class);
+
+                // Return response if successful response or if none have been successful and this is the last URL to try
+                if (response.getStatusCode().is2xxSuccessful() || i == discoveryServiceUrls.size() - 1) {
+                    return new StaticAPIResponse(response.getStatusCode().value(), response.getBody());
+                }
+
+            } catch (Exception e) {
+                log.debug("Error refreshing static APIs from {}, error message: {}", discoveryServiceUrl, e.getMessage());
+            }
+        }
+
+        return new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
     }
 
     private HttpEntity<?> getHttpEntity(String discoveryServiceUrl) {
@@ -62,7 +81,13 @@ public class StaticAPIService {
         return new HttpEntity<>(null, httpHeaders);
     }
 
-    private String getDiscoveryServiceUrl() {
-        return discoveryConfigProperties.getLocations().replace("/eureka", "") + REFRESH_ENDPOINT;
+    private List<String> getDiscoveryServiceUrls() {
+        String[] discoveryServiceLocations = discoveryConfigProperties.getLocations();
+
+        List<String> discoveryServiceUrls = new ArrayList<>();
+        for (String location : discoveryServiceLocations) {
+            discoveryServiceUrls.add(location.replace("/eureka", "") + REFRESH_ENDPOINT);
+        }
+        return discoveryServiceUrls;
     }
 }

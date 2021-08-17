@@ -26,7 +26,7 @@ public interface AbstractAuthenticationScheme {
     /**
      * @return Scheme which is supported by this component
      */
-    public AuthenticationScheme getScheme();
+    AuthenticationScheme getScheme();
 
     /**
      * This method decorate the request for target service
@@ -34,14 +34,14 @@ public interface AbstractAuthenticationScheme {
      * @param authentication DTO describing details about authentication
      * @param token User's parsed (Zowe's) JWT token, evaluated only, if needed
      */
-    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token);
+    AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token);
 
     /**
      * Define implementation, which will be use in case no scheme is defined.
      *
      * @return true if this implementation is default, otherwise false
      */
-    public default boolean isDefault() {
+    default boolean isDefault() {
         return false;
     }
 

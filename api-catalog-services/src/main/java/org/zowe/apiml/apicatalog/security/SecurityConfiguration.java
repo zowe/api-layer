@@ -11,6 +11,7 @@ package org.zowe.apiml.apicatalog.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,18 +30,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.zowe.apiml.product.filter.AttlsFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.filter.ApimlX509Filter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
 import java.util.Collections;
+import java.util.Set;
 
 /**
  * Main configuration class of Spring web security for Api Catalog
@@ -61,6 +66,10 @@ public class SecurityConfiguration {
     private final HandlerInitializer handlerInitializer;
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
+    @Qualifier("publicKeyCertificatesBase64")
+    private final Set<String> publicKeyCertificatesBase64;
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
@@ -75,13 +84,12 @@ public class SecurityConfiguration {
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
 
-        @Value("${server.attls.enabled:false}")
-        private boolean isAttlsEnabled;
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
             auth.authenticationProvider(gatewayTokenProvider);
+            auth.authenticationProvider(new CertificateAuthenticationProvider());
         }
 
         @Override
@@ -94,15 +102,30 @@ public class SecurityConfiguration {
                 .antMatchers(APIDOC_ROUTES).authenticated();
 
             if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
-                http.x509().userDetailsService(x509UserDetailsService());
                 if (isAttlsEnabled) {
-                    http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                    http.x509()
+                        .x509AuthenticationFilter(apimlX509Filter(authenticationManager())) // filter out API ML certificate
+                        .userDetailsService(x509UserDetailsService())
+                        .and()
+                        .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
+                        .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+                } else {
+                    http.x509()
+                        .userDetailsService(x509UserDetailsService());
                 }
             }
         }
 
         private UserDetailsService x509UserDetailsService() {
             return username -> new User(username, "", Collections.emptyList());
+        }
+
+        private ApimlX509Filter apimlX509Filter(AuthenticationManager authenticationManager) {
+            ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
+            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            out.setNotCertificateForClientAuth(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            out.setAuthenticationManager(authenticationManager);
+            return out;
         }
     }
 
@@ -143,6 +166,10 @@ public class SecurityConfiguration {
                 .antMatchers(APIDOC_ROUTES).authenticated()
                 .antMatchers("/application/health", "/application/info", "/application/hystrix.stream").permitAll()
                 .antMatchers("/application/**").authenticated();
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new SecureConnectionFilter(), BasicContentFilter.class);
+            }
+
         }
     }
 

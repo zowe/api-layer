@@ -20,19 +20,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.filter.AttlsFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.Collections;
 
 @Configuration
@@ -69,6 +59,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .x509().userDetailsService(x509UserDetailsService());
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
             http.authorizeRequests().anyRequest().permitAll();
@@ -78,28 +69,5 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private UserDetailsService x509UserDetailsService() {
         return username -> new User("cachingUser", "", Collections.emptyList());
-    }
-
-    static class AttlsFilter extends OncePerRequestFilter {
-
-        @Override
-        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-            X509Certificate[] certificates = new X509Certificate[1];
-            String clientCert = request.getHeader("X-SSL-CERT");
-            if (clientCert != null) {
-                try {
-                    clientCert = URLDecoder.decode(clientCert, StandardCharsets.UTF_8.name());
-                    InputStream targetStream = new ByteArrayInputStream(clientCert.getBytes());
-                    certificates[0] = (X509Certificate) CertificateFactory
-                        .getInstance("X509")
-                        .generateCertificate(targetStream);
-                } catch (Exception e) {
-                    filterChain.doFilter(request, response);
-                }
-                request.setAttribute("javax.servlet.request.X509Certificate", certificates);
-            }
-            filterChain.doFilter(request, response);
-        }
-
     }
 }

@@ -34,6 +34,11 @@ else
     COMMON_LIB=${CMMN_LB}
 fi
 
+if [[ -z ${LIBRARY_PATH} ]]
+then
+    LIBRARY_PATH="../common-java-lib/bin/"
+fi
+
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
@@ -112,14 +117,14 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dserver.maxConnectionsPerRoute=${APIML_MAX_CONNECTIONS_PER_ROUTE:-10} \
     -Dserver.maxTotalConnections=${APIML_MAX_TOTAL_CONNECTIONS:-100} \
     -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true} \
-    -Dserver.ssl.keyStore=${KEYSTORE} \
-    -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
-    -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
-    -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
-    -Dserver.ssl.trustStore=${TRUSTSTORE} \
-    -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
-    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
+    -Dserver.ssl.keyStore="${KEYSTORE}" \
+    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE}" \
+    -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
+    -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.trustStore="${TRUSTSTORE}" \
+    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
+    -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Dserver.internal.enabled=${APIML_GATEWAY_INTERNAL_ENABLED:-false} \
     -Dserver.internal.ssl.enabled=${APIML_SSL_ENABLED:-true} \
     -Dserver.internal.port=${APIML_GATEWAY_INTERNAL_PORT:-10017} \
@@ -137,6 +142,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
+    -Djava.library.path=${LIBRARY_PATH} \
     -jar ${JAR_FILE} &
 pid=$!
 echo "pid=${pid}"

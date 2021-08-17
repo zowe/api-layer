@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 @CatalogTest
-class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
+class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
     private static final String GET_CONTAINER_BY_INVALID_ID_ENDPOINT = "/apicatalog/api/v1/containers/bad";
@@ -52,7 +52,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
     void setUp() {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String host = gatewayServiceConfiguration.getHost();
-        int port = gatewayServiceConfiguration.getRealPort();
+        int port = gatewayServiceConfiguration.getExternalPort();
         baseHost = host + ":" + port;
     }
 
@@ -97,7 +97,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances  {
     @Nested
     class ApiDoc {
         @Test
-        // Functional
+            // Functional
         void whenCatalogApiDoc_thenResponseOK() throws Exception {
             final HttpResponse response = getResponse(GET_API_CATALOG_API_DOC_ENDPOINT, HttpStatus.SC_OK);
 

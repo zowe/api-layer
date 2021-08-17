@@ -99,8 +99,7 @@ apiml:
                 gatewayAuthEndpoint: /api/v1/gateway/auth
                 corsEnabled: false
                 lb:
-                    instanceIdHeader: enabled
-            cluster: DISCOVERABLECLIENT
+                    type: headerRequest
 
 server:
     error:
@@ -180,13 +179,7 @@ spring:
 
 apiml:
     service:
-        discoveryServiceUrls: http://localhost:10001/eureka/
         scheme: http
-        customMetadata:
-            apiml:
-                enableUrlEncodedCharacters: true
-                gatewayPort: 10030
-                gatewayAuthEndpoint: /api/v1/gateway/auth
 
 server:
     ssl:

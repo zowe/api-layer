@@ -1,4 +1,47 @@
-# API Mediation Layer in a docker container
+# API Mediation Layer in container
+
+## Docker-compose
+
+Recommended setup for running API ML in the local setup. The API Mediation Layer containers are built using jib. 
+
+### Quick start
+
+**Follow these steps:**
+
+1. Build all containers for local usage:
+
+  ```sh
+   ./gradlew jibDockerBuild
+   ```
+
+2. Run the whole configuration via:
+
+  ```sh
+   docker compose -f docker/local-single/docker-compose.yml up
+   ```
+
+3. Access the API Gateway on the URL: https://localhost:10010/ and wait until all services are green. 
+
+### Quick start for HA
+
+1. Build all containers for local usage:
+
+  ```sh
+   ./gradlew jibDockerBuild
+   ```
+
+2. Run the whole configuration via:
+
+  ```sh
+   docker compose -f docker/ha-local/docker-compose.yml up
+   ```
+
+3. Access the API Gateway on the URL: https://localhost:10010/ and wait until all services are green. 
+
+
+## Single container
+
+**Deprecated**. Don't recommend to use anymore. 
 
 In the end there are three articles:
  - Start developing the API ML
@@ -13,7 +56,7 @@ There are two main reasons to use following Docker container:
 
 To use the prepared container you need to [install the Docker Engine](https://docs.docker.com/install/) on the machine, where you want to run it.
 
-## Verify onboarding of API
+### Verify onboarding of API
 
 Just for running:
 With volume for static configuration. 
@@ -32,7 +75,7 @@ localhost:10014
 
 To verify via 
 
-## For the development use
+### For the development use
 
 The main purpose of the development image is to help the new developer set up 
 their environment with as little pain as possible. The built image is available

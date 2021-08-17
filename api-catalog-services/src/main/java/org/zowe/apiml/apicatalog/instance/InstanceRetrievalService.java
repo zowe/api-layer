@@ -194,7 +194,7 @@ public class InstanceRetrievalService {
      * @return request information
      */
     private List<Pair<String, Pair<String, String>>> constructServiceInfoQueryRequest(String serviceId, boolean getDelta) {
-        String[] discoveryServiceUrls = discoveryConfigProperties.getLocations().split(",");
+        String[] discoveryServiceUrls = discoveryConfigProperties.getLocations();
         List<Pair<String, Pair<String, String>>> discoveryPairs = new ArrayList<>(discoveryServiceUrls.length);
         for (String discoveryUrl : discoveryServiceUrls) {
             String discoveryServiceLocatorUrl = discoveryUrl + APPS_ENDPOINT;

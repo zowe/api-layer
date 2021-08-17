@@ -10,35 +10,97 @@
 
 package org.zowe.apiml.gateway.sse;
 
+import reactor.core.publisher.Flux;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.ModelAndView;
-import org.zowe.apiml.product.routing.RoutedServices;
+import org.springframework.stereotype.Controller;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.cloud.client.ServiceInstance;
-import org.zowe.apiml.product.routing.RoutedServicesUser;
-import org.springframework.web.servlet.mvc.AbstractController;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+@Controller
 @Component("ServerSentEventProxyHandler")
-public class ServerSentEventProxyHandler extends AbstractController implements RoutedServicesUser {
+public class ServerSentEventProxyHandler {
 
-    private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
     private static final String SEPARATOR = "/";
     private final DiscoveryClient discovery;
+    private static SseEmitter emitter;
+    private Map<String, Flux<ServerSentEvent<String>>> sseEventStreams = new ConcurrentHashMap<>();
 
     @Autowired
     public ServerSentEventProxyHandler(DiscoveryClient discovery) {
         this.discovery = discovery;
+    }
+
+    @RequestMapping("/sse/**")
+    public SseEmitter getEmitter(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        emitter = new SseEmitter(-1L);
+        
+        String[] uriParts = getUriParts(request, response);
+        if (uriParts != null && uriParts.length >= 5) {
+            String majorVersion = uriParts[2];
+            String serviceId = uriParts[3];
+            String path = uriParts[4];
+            String params[] = Arrays.copyOfRange(uriParts, 5, uriParts.length);
+            ServiceInstance serviceInstance = findServiceInstance(serviceId);
+
+            if (serviceInstance == null) {
+                response.getWriter().print(String.format("Service '%s' could not be discovered", serviceId));
+                return null;
+            }
+
+            String targetUrl = getTargetUrl(serviceId, serviceInstance, path, params);
+            if (!sseEventStreams.containsKey(targetUrl)) {
+                addStream(targetUrl);
+            }
+            forwardEvents(sseEventStreams.get(targetUrl));
+        }
+        return emitter;
+    }
+
+    public void forwardEvents(Flux<ServerSentEvent<String>> stream) {
+        stream.subscribe(
+            (content) -> {
+                try {
+                    emitter.send(content.data());
+                } catch (IOException e) {
+                    System.out.println("Error encounter sending SSE event");
+                    e.printStackTrace();
+                    emitter.complete();
+                }
+            },
+            (error) -> {
+                System.out.println("Error receiving SSE");
+                System.out.println(error);
+                emitter.complete();
+            },
+            () -> {
+                emitter.complete();
+            });
+    }
+
+    private void addStream(String sseStreamUrl) {
+        WebClient client = WebClient.create(sseStreamUrl);
+        ParameterizedTypeReference<ServerSentEvent<String>> type
+        = new ParameterizedTypeReference<ServerSentEvent<String>>() {};
+        Flux<ServerSentEvent<String>> eventStream = client.get()
+        .retrieve()
+        .bodyToFlux(type);
+        sseEventStreams.put(sseStreamUrl, eventStream);
     }
 
     private String[] getUriParts(HttpServletRequest request, HttpServletResponse response) {
@@ -46,7 +108,7 @@ public class ServerSentEventProxyHandler extends AbstractController implements R
         Map<String, String[]> parameters = request.getParameterMap();
         String arr[] = null;
         if (uriPath != null) {
-            List<String> uriParts = new ArrayList<String>(Arrays.asList(uriPath.split("/", 6)));
+            List<String> uriParts = new ArrayList<String>(Arrays.asList(uriPath.split("/", 5)));
             Iterator<Map.Entry<String, String[]>> it = (parameters.entrySet()).iterator();
             while (it.hasNext()) {
                 Map.Entry<String, String[]> entry = (Map.Entry<String, String[]>)it.next();
@@ -55,28 +117,6 @@ public class ServerSentEventProxyHandler extends AbstractController implements R
             arr = uriParts.toArray(new String[uriParts.size()]);
         }
         return arr;
-    }
-
-    @Override
-    protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String[] uriParts = getUriParts(request, response);
-        if (uriParts != null && uriParts.length >= 5) {
-            String majorVersion = uriParts[3];
-            String serviceId = uriParts[4];
-            String path = uriParts[5];
-            String params[] = Arrays.copyOfRange(uriParts, 6, uriParts.length);
-            ServiceInstance serviceInstance = findServiceInstance(serviceId);
-            String targetUrl = getTargetUrl(serviceId, serviceInstance, path, params);
-            response.getWriter().print(targetUrl);
-        }
-        return null;
-    }
-
-
-    @Override
-    public void addRoutedServices(String serviceId, RoutedServices routedServices) {
-        // TODO Auto-generated method stub
-        routedServicesMap.put(serviceId, routedServices);
     }
 
     private ServiceInstance findServiceInstance(String serviceId) {

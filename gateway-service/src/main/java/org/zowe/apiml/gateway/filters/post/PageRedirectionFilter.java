@@ -13,6 +13,7 @@ import com.netflix.util.Pair;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
@@ -37,7 +38,8 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  */
 @RequiredArgsConstructor
 public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesUser {
-
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
     private static final int MAX_ENTRIES = 1000;
 
     private final DiscoveryClient discovery;
@@ -46,12 +48,12 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
 
     private final Map<String, String> routeTable = Collections.synchronizedMap(
-            new LinkedHashMap<String, String>(MAX_ENTRIES * 4 / 3 + 1, .75F, true) {
-                @Override
-                public boolean removeEldestEntry(Map.Entry eldest) {
-                    return size() > MAX_ENTRIES;
-                }
+        new LinkedHashMap<String, String>(MAX_ENTRIES * 4 / 3 + 1, .75F, true) {
+            @Override
+            public boolean removeEldestEntry(Map.Entry eldest) {
+                return size() > MAX_ENTRIES;
             }
+        }
     );
 
     /**
@@ -85,15 +87,16 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
         Optional<Pair<String, String>> locationHeader = context.getZuulResponseHeaders()
-                .stream()
-                .filter(stringPair -> LOCATION.equals(stringPair.first()))
-                .findFirst();
+            .stream()
+            .filter(stringPair -> LOCATION.equals(stringPair.first()))
+            .findFirst();
 
         if (locationHeader.isPresent()) {
             String location = locationHeader.get().second();
             //find matched url in cache
             String transformedUrl = foundUrlInTable(location);
             if (transformedUrl != null) {
+                transformedUrl = updateScheme(transformedUrl);
                 transformLocation(locationHeader.get(), transformedUrl);
             } else {
                 //find matched url in Discovery Service
@@ -101,6 +104,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
                 if (transformedUrlOp.isPresent()) {
                     transformedUrl = transformedUrlOp.get();
                     //Put matched url to cache
+                    transformedUrl = updateScheme(transformedUrl);
                     routeTable.put(location, transformedUrl);
                     transformLocation(locationHeader.get(), transformedUrl);
                 }
@@ -108,6 +112,15 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
         }
 
         return null;
+    }
+
+    private String updateScheme(String transformedUrl) {
+        if (isAttlsEnabled) {
+            return transformedUrl.replace("http://", "https://");
+        } else {
+            return transformedUrl;
+        }
+
     }
 
     /**

@@ -15,16 +15,17 @@ ext.javaLibraries = [
     'security-service-client-spring',
     'zaas-client',
     'discoverable-client',
-    'certificate-analyser'
+    'certificate-analyser',
+    'apiml-tomcat-common'
 ]
 
-ext.serviceJars = [ 'api-catalog-package', 'discovery-package', 'gateway-package', 'caching-service-package', 'metrics-service-package','apiml-common-lib-package' ]
+ext.serviceJars = ['api-catalog-package', 'discovery-package', 'gateway-package', 'caching-service-package', 'metrics-service-package', 'apiml-common-lib-package']
 
 ext.enablers = [ext.javaEnabler, ext.springBootEnabler, ext.micronautEnabler]
 ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
 
 ext.publishTasksList = projectsToPublish.collect {
-    it.equals(springBootEnabler) ? "publishEnablers" : ":" + it + ":publish"
+    ":" + it + ":publish"
 }
 
 configure(subprojects.findAll { it.name in projectsToPublish }) {
@@ -51,12 +52,7 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
             mavenJava(MavenPublication) {
                 groupId 'org.zowe.apiml.sdk'
                 version rootProject.version
-                if (project.name.equals(springBootEnabler)) {
-                    def enablerPrefix = project.hasProperty("enabler") ? project.getProperty("enabler") : "v2"
-                    artifactId "${project.name}-" + enablerPrefix + "-springboot-${springBootVersion}"
-                } else {
-                    artifactId "${project.name}"
-                }
+                artifactId "${project.name}"
 
                 from components.java
 
@@ -95,20 +91,4 @@ task publishSdkArtifacts {
     group 'Zowe Publishing'
     description 'Publish SDK libraries for main version of Spring Boot to Zowe Artifactory'
     dependsOn publishTasksList
-}
-
-task publishEnablerV1(type: Exec) {
-    def username  = project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
-    def password = project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
-
-    commandLine './gradlew', springBootEnabler + ':publish', '-Penabler=v1', '-Pzowe.deploy.username=' + username, '-Pzowe.deploy.password=' + password
-    mustRunAfter 'publishEnablerV2'
-}
-
-task publishEnablerV2 {
-    dependsOn springBootEnabler + ':publish'
-}
-
-task publishEnablers {
-    dependsOn 'publishEnablerV1', 'publishEnablerV2'
 }

@@ -1,4 +1,3 @@
-spring.profiles.include: diag
 logging:
     level:
         ROOT: TRACE
@@ -17,6 +16,8 @@ apiml:
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+    loadBalancer:
+        distribute: false
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
@@ -42,6 +43,8 @@ apiml:
             jwtKeyAlias: jwtSecret
 
 spring:
+    profiles:
+        include: diag
     application:
         name: ${apiml.service.id}
     cloud:
@@ -92,6 +95,7 @@ server:
         keyAlias: localhost
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+    max-http-header-size: 40000
 
 zuul:
     sslHostnameValidationEnabled: false

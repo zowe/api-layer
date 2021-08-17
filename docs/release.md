@@ -2,14 +2,14 @@
 
 ## Guidelines
 
-- Master build creates a new [_snapshot_](https://stackoverflow.com/questions/5901378/what-exactly-is-a-maven-snapshot-and-why-do-we-need-it) that is deployed to [libs-snapshot repository in Zowe Artifactory](https://zowe.jfrog.io/zowe/libs-snapshot/org/zowe/apiml/sdk/ ) automatically.
-- The patch releases are released weekly every Friday. The minor release is being release when the Zowe version goes GA
-- Artifacts are deployed to [lib-release repository](https://zowe.jfrog.io/zowe/libs-release/org/zowe/apiml/sdk/).
-- The versioning follows [semantic versioning](https://semver.org/):
+- Master build creates a new [_snapshot_](https://stackoverflow.com/questions/5901378/what-exactly-is-a-maven-snapshot-and-why-do-we-need-it) that is deployed to the [libs-snapshot repository in Zowe Artifactory](https://zowe.jfrog.io/zowe/libs-snapshot/org/zowe/apiml/sdk/ ) automatically.
+- Patch releases are made weekly every Friday. A minor release is made when a new Zowe version goes GA.
+- Artifacts are deployed to the [lib-release repository](https://zowe.jfrog.io/zowe/libs-release/org/zowe/apiml/sdk/).
+- The API ML follows [semantic versioning](https://semver.org/).
 - The API ML is a part of the Zowe PAX file that is packaged by builds of the [zowe-install-packaging](https://github.com/zowe/zowe-install-packaging/) repository.
 - When a new release is available for a release candidate, the [zowe-install-packaging/manifest.json.template file on the RC branch](https://github.com/zowe/zowe-install-packaging/blob/rc/manifest.json.template) needs to be updated so the `org.zowe.apiml.sdk.*` components have the proper version.
   - [Zowe Release Process](https://github.com/zowe/community/blob/master/Technical-Steering-Committee/release.md)
-- If you need to publish PR version of the API ML, use the specific release action and use the current snapshot version as new version and current released version with added PR as the current version {VERSION}-PR-{PR_NUMBER} and run from the branch for the PR you want to release. Example follows:
+- If you need to publish a PR version of the API ML, use the [specific release action](https://github.com/zowe/api-layer/actions/workflows/specific-release.yml) and use the current snapshot version as new version and the currently released version with an added PR as the current version {VERSION}-PR-{PR_NUMBER} and run from the branch for the PR you want to release. Example:
   - Current Version: 1.22.1-PR-1475
   - New Version: 1.22.2-SNAPSHOT
   - Branch: apiml/GH1456/specific_release
@@ -22,7 +22,7 @@
 
 ## Commands
 
-The commands are listed for reference. Use the GitHub Actions to execute them. The following commands are relevant only for Java artifacts. 
+The commands below are listed as a reference. Use GitHub Actions to execute them. The following commands are relevant only for Java artifacts. 
 
 ### Release SNAPSHOT artifacts
 
@@ -56,7 +56,7 @@ You can set properties in two ways:
 
 **Warning!** Do not commit property changes to the Git repository. This is confidential information.
 
-Properties are stored in GitHub Secrets
+Properties are stored in GitHub Secrets.
 
 ## Update changelog
 

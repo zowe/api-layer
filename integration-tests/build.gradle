@@ -176,7 +176,8 @@ task runAllIntegrationTestsNormal(type: Test) {
             'zOSMFAuthTest',
             'SAFAuthTest',
             'HATest',
-            'ChaoticHATest'
+            'ChaoticHATest',
+            'NotAttlsTest'
         )
 
     }
@@ -273,30 +274,6 @@ task runContainerTests(type: Test) {
             'AttlsTest',
             'RegistrationTest',
             'NodeEnablerTest',
-            'HATest',
-            'ChaoticHATest'
-        )
-    }
-}
-
-task runCITestsAttls(type: Test) {
-    group "Integration tests"
-    description ""
-
-    outputs.cacheIf { false }
-
-    systemProperties System.properties
-    systemProperty "environment.config", "-attls"
-    useJUnitPlatform {
-        excludeTags(
-            'StartupCheck',
-            'EnvironmentCheck',
-            'SlowTests',
-            'AdditionalLocalTest',
-            'MainframeDependentTests',
-            'SAFAuthTest',
-            'NotAttlsTest',
-            'RegistrationTest',
             'HATest',
             'ChaoticHATest'
         )
@@ -438,6 +415,22 @@ task runHATests(type: Test) {
     useJUnitPlatform {
         includeTags(
             'HATest'
+        )
+    }
+
+}
+
+task runLbHaTests(type: Test) {
+    group "Integration tests"
+    description "Run tests verifying Load balancing under High Availability"
+
+    outputs.cacheIf { false }
+
+    systemProperty "environment.ha", true
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'LbHaTest'
         )
     }
 

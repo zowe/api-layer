@@ -49,7 +49,7 @@ public class RestResponseHandler {
             throw new GatewayNotAvailableException(ErrorType.GATEWAY_NOT_AVAILABLE.getDefaultMessage(), exception);
         } else if (exception instanceof HttpServerErrorException) {
             HttpServerErrorException hseException = (HttpServerErrorException) exception;
-            if (hseException.getStatusCode().equals(HttpStatus.SERVICE_UNAVAILABLE)) {
+            if (hseException.getStatusCode().equals(HttpStatus.SERVICE_UNAVAILABLE) || hseException.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR)) {
                 throw new ServiceNotAccessibleException(ErrorType.SERVICE_UNAVAILABLE.getDefaultMessage(), exception);
             } else {
                 throw hseException;

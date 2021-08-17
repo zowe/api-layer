@@ -24,7 +24,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
-import org.zowe.apiml.product.filter.AttlsFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
@@ -52,6 +53,8 @@ public class HttpsWebSecurityConfig {
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     /**
      * Filter chain for protecting endpoints with MF credentials (basic or token)
@@ -77,10 +80,12 @@ public class HttpsWebSecurityConfig {
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
-                .antMatchers("/application/health", "/application/info", "/favicon.ico").permitAll()
                 .antMatchers("/**").authenticated()
                 .and()
                 .httpBasic().realmName(DISCOVERY_REALM);
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new SecureConnectionFilter(), CookieContentFilter.class);
+            }
         }
     }
 
@@ -97,8 +102,6 @@ public class HttpsWebSecurityConfig {
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
 
-        @Value("${server.attls.enabled:false}")
-        private boolean isAttlsEnabled;
 
         @Override
         public void configure(WebSecurity web) {
@@ -106,7 +109,10 @@ public class HttpsWebSecurityConfig {
                 "/eureka/css/**",
                 "/eureka/js/**",
                 "/eureka/fonts/**",
-                "/eureka/images/**"
+                "/eureka/images/**",
+                "/application/health",
+                "/application/info",
+                "/favicon.ico"
             };
             web.ignoring().antMatchers(noSecurityAntMatchers);
         }
@@ -120,6 +126,7 @@ public class HttpsWebSecurityConfig {
                     .and().x509().userDetailsService(x509UserDetailsService());
                 if (isAttlsEnabled) {
                     http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                    http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
                 }
             } else {
                 http.authorizeRequests().anyRequest().permitAll();
@@ -140,8 +147,6 @@ public class HttpsWebSecurityConfig {
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
 
-        @Value("${server.attls.enabled:false}")
-        private boolean isAttlsEnabled;
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
@@ -160,6 +165,7 @@ public class HttpsWebSecurityConfig {
                     .x509().userDetailsService(x509UserDetailsService());
                 if (isAttlsEnabled) {
                     http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                    http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
                 }
             }
         }

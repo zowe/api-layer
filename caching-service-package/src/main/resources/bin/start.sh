@@ -35,6 +35,11 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [[ -z ${LIBRARY_PATH} ]]
+then
+    LIBRARY_PATH="../common-java-lib/bin/"
+fi
+
 if [ ! -z ${ZWE_CACHING_SERVICE_VSAM_DATASET} ]
 then
     VSAM_FILE_NAME=//\'${ZWE_CACHING_SERVICE_VSAM_DATASET}\'
@@ -76,15 +81,16 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true}  \
-  -Dserver.ssl.keyStore=${KEYSTORE} \
-  -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
-  -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
-  -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-  -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
-  -Dserver.ssl.trustStore=${TRUSTSTORE} \
-  -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
-  -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
+  -Dserver.ssl.keyStore="${KEYSTORE}" \
+  -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE}" \
+  -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
+  -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
+  -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
+  -Dserver.ssl.trustStore="${TRUSTSTORE}" \
+  -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
+  -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+  -Djava.library.path=${LIBRARY_PATH} \
   -jar ${JAR_FILE} &
 pid=$!
 echo "pid=${pid}"

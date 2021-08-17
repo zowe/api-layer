@@ -8,11 +8,8 @@ gatewayServiceConfiguration:
     port: 10010
     internalPorts: 10017,10027
     externalPort: 10010
-    # for ATTLS external testing, there is proxy server for integration tests on external env, this is actual GW port to verify returned value
-    realPort: 10010
-    # for ATTLS external testing, there is proxy server for integration tests on external env, this is actual GW scheme to verify returned value
-    realScheme: https
     instances: 2
+    servicesEndpoint: gateway/api/v1/services
 discoveryServiceConfiguration:
     scheme: https
     user: user
@@ -22,6 +19,10 @@ discoveryServiceConfiguration:
     instances: 2
 discoverableClientConfiguration:
     applId: ZOWEAPPL
+apiCatalogServiceConfiguration:
+    url:
+cachingServiceConfiguration:
+    url:
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

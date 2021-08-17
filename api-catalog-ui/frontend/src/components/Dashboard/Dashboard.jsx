@@ -7,8 +7,18 @@ import Tile from '../Tile/Tile';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ErrorDialog from '../Error/ErrorDialog';
+import WizardContainer from '../Wizard/WizardContainer';
+import DialogDropdown from '../Wizard/DialogDropdown';
+import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 
 export default class Dashboard extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            WIP: true,
+        };
+    }
+
     componentDidMount() {
         const { fetchTilesStart, clearService } = this.props;
         clearService();
@@ -29,6 +39,11 @@ export default class Dashboard extends Component {
     refreshStaticApis = () => {
         const { refreshedStaticApi } = this.props;
         refreshedStaticApi();
+    };
+
+    toggleWizard = () => {
+        const { wizardToggleDisplay } = this.props;
+        wizardToggleDisplay();
     };
 
     render() {
@@ -52,9 +67,18 @@ export default class Dashboard extends Component {
 
         return (
             <div>
-                <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
-                    Refresh Static APIs
-                </Button>
+                <div id="dash-buttons">
+                    <DialogDropdown
+                        selectEnabler={this.props.selectEnabler}
+                        WIP={this.state.WIP}
+                        data={enablerData}
+                        toggleWizard={this.toggleWizard}
+                    />
+                    <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
+                        Refresh Static APIs
+                    </Button>
+                </div>
+                <WizardContainer />
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">

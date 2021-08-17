@@ -22,8 +22,8 @@ public class OpenApiUtil {
     private static final String HARDCODED_VERSION = "/v1";
     public static final String SEPARATOR = "/";
 
-    public static String getOpenApiLink(String serviceId, GatewayConfigProperties gatewayConfigProperties) {
-        String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname()
+    public static String getOpenApiLink(String serviceId, GatewayConfigProperties gatewayConfigProperties, String scheme) {
+        String link = scheme + "://" + gatewayConfigProperties.getHostname()
             + SEPARATOR + CoreService.API_CATALOG.getServiceId() + CATALOG_VERSION
             + CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
         return "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";
