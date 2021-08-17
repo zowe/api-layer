@@ -16,6 +16,7 @@ class WizardNavigation extends Component {
      */
     handleChange = event => {
         if (typeof event === 'number') {
+            this.props.checkFilledInput(Object.keys(this.props.navTabArray)[this.props.selectedCategory]);
             this.props.changeWizardCategory(event);
         }
     };
