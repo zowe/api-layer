@@ -15,7 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.SafAuthenticationService;
+import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
@@ -32,12 +32,12 @@ import static org.mockito.Mockito.when;
 class SafIdtSchemeTest {
     private SafIdtScheme underTest;
     private AuthenticationService authenticationService;
-    private SafAuthenticationService safAuthenticationService;
+    private SafRestAuthenticationService safAuthenticationService;
 
     @BeforeEach
     void setUp() {
         authenticationService = mock(AuthenticationService.class);
-        safAuthenticationService = mock(SafAuthenticationService.class);
+        safAuthenticationService = mock(SafRestAuthenticationService.class);
         underTest = new SafIdtScheme(authenticationService, safAuthenticationService);
     }
 
@@ -63,7 +63,7 @@ class SafIdtSchemeTest {
 
                 when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of("validJwtToken"));
                 when(authenticationService.validateJwtToken("validJwtToken")).thenReturn(authentication);
-                when(safAuthenticationService.generateSafIdt("validJwtToken")).thenReturn("validTokenValidJwtToken");
+                when(safAuthenticationService.generate("validJwtToken")).thenReturn(Optional.of("validTokenValidJwtToken"));
 
                 commandUnderTest.apply(info);
 

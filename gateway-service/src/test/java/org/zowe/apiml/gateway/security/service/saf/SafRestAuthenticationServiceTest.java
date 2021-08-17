@@ -7,16 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.service;
+package org.zowe.apiml.gateway.security.service.saf;
 
-import org.springframework.stereotype.Component;
+import org.junit.jupiter.api.Test;
 
-/**
- * Authentication service
- */
-@Component
-public class SafAuthenticationService {
-    public String generateSafIdt(String jwtToken) {
-        return "validToken" + jwtToken;
+public class SafRestAuthenticationServiceTest {
+    @Test
+    void test() {
+
     }
 }
