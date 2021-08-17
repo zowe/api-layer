@@ -17,7 +17,13 @@ import {
     SELECT_ENABLER,
     TOGGLE_DISPLAY
 } from '../constants/wizard-constants';
-import wizardReducer, { addDefaultValues, checkInput, setDefault, wizardReducerDefaultState } from './wizard-reducer';
+import wizardReducer, {
+    addDefaultValues,
+    checkInput,
+    emptyNav,
+    setDefault,
+    wizardReducerDefaultState
+} from './wizard-reducer';
 
 describe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
@@ -52,10 +58,7 @@ describe('>>> Wizard reducer tests', () => {
         const dummyData = [{
             text: 'Test Category',
             content: {
-                myCategory: {
-                    value: 'dummy value',
-                    question: 'This is a dummy question',
-                }
+                myCategory: { value: 'dummy value', question: 'This is a dummy question', }
             }
         }];
 
@@ -73,7 +76,7 @@ describe('>>> Wizard reducer tests', () => {
                 enablerName: 'Test Enabler',
                 inputData: expectedData,
                 selectedCategory: 0,
-                navTabArray: ["Test Category"]
+                navTabArray: [{name: "Test Category"}]
             });
     });
 
@@ -86,10 +89,7 @@ describe('>>> Wizard reducer tests', () => {
         const dummyData = [{
             text: 'Test Category',
             content: {
-                myCategory: {
-                    value: 'dummy value',
-                    question: 'This is a dummy question',
-                }
+                myCategory: { value: 'dummy value', question: 'This is a dummy question', }
             }
         }];
 
@@ -105,7 +105,7 @@ describe('>>> Wizard reducer tests', () => {
             .toEqual({
                 enablerName: 'Test Enabler',
                 inputData: expectedData,
-                navTabArray: ["Test Category"],
+                navTabArray: [{name: "Test Category"}],
                 selectedCategory: 0
             });
     });
@@ -128,7 +128,7 @@ describe('>>> Wizard reducer tests', () => {
             .toEqual({
                 enablerName: 'Test Enabler',
                 inputData: [ { text: 'CAT #0', nav: '#1' }, { text: 'CAT #1', nav: '#1' },],
-                navTabArray: ["#1"],
+                navTabArray: [{name:"#1"}],
                 selectedCategory: 0
             });
     });
@@ -142,10 +142,7 @@ describe('>>> Wizard reducer tests', () => {
         const dummyData = [{
             text: 'Test Category',
             content: {
-                myCategory: {
-                    value: 'dummy value',
-                    question: 'This is a dummy question',
-                }
+                myCategory: { value: 'dummy value', question: 'This is a dummy question', }
             },
             multiple: false,
         }];
@@ -160,15 +157,12 @@ describe('>>> Wizard reducer tests', () => {
                     text: 'Test Category',
                     nav: 'Test Category',
                     content: [{
-                        myCategory: {
-                            value: 'dummy value',
-                            question: 'This is a dummy question',
-                        }
+                        myCategory: { value: 'dummy value', question: 'This is a dummy question', }
                     }],
                     multiple: true,
                     indentation: false,
                 }],
-                navTabArray: ["Test Category"],
+                navTabArray: [{name:"Test Category"}],
                 selectedCategory: 0
             });
     });
@@ -319,18 +313,8 @@ describe('>>> Wizard reducer tests', () => {
         const expectedState = {
             inputData: [{
                 text: 'Category 1',
-                content: [{
-                    test: {
-                        value: '',
-                        question: 'Why?',
-                    },
-                },
-                    {
-                        test: {
-                            value: '',
-                            question: 'Why?',
-                        },
-                    },
+                content: [{ test: { value: '', question: 'Why?', }, },
+                    { test: { value: '', question: 'Why?', }, },
                 ],
             },
             ]
@@ -338,25 +322,9 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({
             inputData: [{
                 text: 'Category 1',
-                content: [{
-                    test: {
-                        value: '',
-                        question: 'Why?',
-                    },
-                },
-                    {
-                        test: {
-                            value: '',
-                            question: 'Why?',
-                        },
-                    },
-                    {
-                        test: {
-                            value: '',
-                            question: 'Why?',
-                        },
-                    },
-                ],
+                content: [{ test: { value: '', question: 'Why?', }, },
+                    { test: { value: '', question: 'Why?', }, },
+                    { test: { value: '', question: 'Why?', }, },],
             }]
         }, {
             type: REMOVE_INDEX,
@@ -369,10 +337,7 @@ describe('>>> Wizard reducer tests', () => {
             inputData: [{
                 text: 'Category 1',
                 content: [{
-                    test: {
-                        value: '',
-                        question: 'Why?',
-                    },
+                    test: { value: '', question: 'Why?', },
                 },]
             },]
         };
@@ -380,12 +345,8 @@ describe('>>> Wizard reducer tests', () => {
             inputData: [{
                 text: 'Category 1',
                 content: [{
-                    test: {
-                        value: '',
-                        question: 'Why?',
-                    },
-                },
-                ],
+                    test: { value: '', question: 'Why?', },
+                },],
             }]
         }, {
             type: REMOVE_INDEX,
@@ -398,28 +359,21 @@ describe('>>> Wizard reducer tests', () => {
             inputData: [{
                 text: 'Category 1',
                 content: [{
-                    test: {
-                        value: '',
-                        question: 'Why?',
-                        empty: true,
-                    },
+                    test: { value: '', question: 'Why?', empty: true, },
                 },],
                 nav: 'Nav',
             },],
-            unfilledInputFail: true,
+            navTabArray: [{name: 'Nav', emptyField: true}]
         };
         expect(wizardReducer({
             inputData: [{
                 text: 'Category 1',
                 content: [{
-                    test: {
-                        value: '',
-                        question: 'Why?',
-                    },
+                    test: { value: '', question: 'Why?', },
                 },],
                 nav: 'Nav',
             },],
-            unfilledInputFail: false,
+            navTabArray: [{name: 'Nav'}],
         }, {
             type: CHECK_INPUT,
             payload: { navName: 'Nav' },
@@ -431,28 +385,21 @@ describe('>>> Wizard reducer tests', () => {
             inputData: [{
                 text: 'Category 1',
                 content: {
-                    test: {
-                        value: '',
-                        question: 'Why?',
-                        empty: true,
-                    },
+                    test: { value: '', question: 'Why?', empty: true, },
                 },
                 nav: 'Nav',
             },],
-            unfilledInputFail: true,
+            navTabArray: [{name: 'Nav', emptyField: true}]
         };
         expect(wizardReducer({
             inputData: [{
                 text: 'Category 1',
                 content: {
-                    test: {
-                        value: '',
-                        question: 'Why?',
-                    },
+                    test: { value: '', question: 'Why?', },
                 },
                 nav: 'Nav',
             },],
-            unfilledInputFail: false,
+            navTabArray: [{name: 'Nav'}],
         }, {
             type: CHECK_INPUT,
             payload: { navName: 'Nav' },
@@ -464,10 +411,7 @@ describe('>>> Wizard reducer tests', () => {
             inputData: [{
                 text: 'Category 1',
                 content: {
-                    test: {
-                        value: '',
-                        question: 'Why?',
-                    },
+                    test: { value: '', question: 'Why?', },
                 },
                 nav: 'Nav',
             },],
@@ -476,14 +420,10 @@ describe('>>> Wizard reducer tests', () => {
             inputData: [{
                 text: 'Category 1',
                 content: {
-                    test: {
-                        value: '',
-                        question: 'Why?',
-                    },
+                    test: { value: '', question: 'Why?', },
                 },
                 nav: 'Nav',
             },],
-            unfilledInputFail: false,
         }, {
             type: CHECK_INPUT,
             payload: { navName: 'Something' },
@@ -492,10 +432,7 @@ describe('>>> Wizard reducer tests', () => {
 
     it('should add default values', () => {
         const content = {
-            test: {
-                value: '',
-                question: 'Why?',
-            },
+            test: { value: '', question: 'Why?', },
         };
         const defaultsArr = [['test', 'val']];
         const newContent = addDefaultValues(content, defaultsArr);
@@ -504,10 +441,7 @@ describe('>>> Wizard reducer tests', () => {
 
     it('should not add default values if key does not match', () => {
         const content = {
-            test: {
-                value: '',
-                question: 'Why?',
-            },
+            test: { value: '', question: 'Why?', },
         };
         const defaultsArr = [['someKey', 'val']];
         const newContent = addDefaultValues(content, defaultsArr);
@@ -518,27 +452,15 @@ describe('>>> Wizard reducer tests', () => {
         const category = {
             text: 'Category 1',
             content: [{
-                test: {
-                    value: '',
-                    question: 'Why?',
-                },
-                test2: {
-                    value: '',
-                    question: 'Why not?',
-                },
+                test: { value: '', question: 'Why?', },
+                test2: { value: '', question: 'Why not?', },
             }]
         };
         const expectedCategory = {
             text: 'Category 1',
             content: [{
-                test: {
-                    value: 'val1',
-                    question: 'Why?',
-                },
-                test2: {
-                    value: 'val2',
-                    question: 'Why not?',
-                },
+                test: { value: 'val1', question: 'Why?', },
+                test2: { value: 'val2', question: 'Why not?', },
             }]
         };
         const defaults = {
@@ -552,19 +474,13 @@ describe('>>> Wizard reducer tests', () => {
         const category = {
             text: 'Category 1',
             content: {
-                test: {
-                    value: '',
-                    question: 'Why?',
-                },
+                test: { value: '', question: 'Why?', },
             }
         };
         const expectedCategory = {
             text: 'Category 1',
             content: {
-                test: {
-                    value: 'val1',
-                    question: 'Why?',
-                },
+                test: { value: 'val1', question: 'Why?', },
             }
         };
         const defaults = {
@@ -576,10 +492,7 @@ describe('>>> Wizard reducer tests', () => {
 
     it('should check for empty input fields', () => {
         const content = {
-            test: {
-                value: '',
-                question: 'Why?',
-            },
+            test: { value: '', question: 'Why?', },
         }
         const result = checkInput(content);
         expect(result).toEqual(true);
@@ -587,13 +500,16 @@ describe('>>> Wizard reducer tests', () => {
 
     it('should handle empty input fields when optional', () => {
         const content = {
-            test: {
-                value: '',
-                question: 'Why?',
-                optional: true
-            },
+            test: { value: '', question: 'Why?', optional: true },
         }
         const result = checkInput(content);
         expect(result).toEqual(false);
+    })
+
+    it('should not alter the nav array if the nav name is not the same', () => {
+        const navArr = [{ name: 'Nav' }];
+        const navName = 'Not Nav';
+        const newArr = emptyNav(navArr, navName);
+        expect(newArr).toEqual(navArr);
     })
 });
