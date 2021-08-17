@@ -106,6 +106,7 @@ zuul:
     sensitiveHeaders: Expires,Date
     ignoredPatterns:
         - /ws/**
+        - /sse/**
     host:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
