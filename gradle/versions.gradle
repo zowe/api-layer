@@ -64,6 +64,7 @@ ext {
         spring_boot_starter_aop            : "org.springframework.boot:spring-boot-starter-aop:${springBootVersion}",
         spring_boot_starter_thymeleaf      : "org.springframework.boot:spring-boot-starter-thymeleaf:${springBootVersion}",
         spring_boot_starter_cache          : "org.springframework.boot:spring-boot-starter-cache:${springBootVersion}",
+        spring_boot_starter_webflux        : "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}",
 
         spring_cloud_hystrix_dashboard     : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix-dashboard:${springCloudVersion}",
         spring_cloud_starter_zuul          : "org.springframework.cloud:spring-cloud-starter-netflix-zuul:${springCloudVersion}",
