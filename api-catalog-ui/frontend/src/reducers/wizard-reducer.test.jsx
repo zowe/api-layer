@@ -25,7 +25,7 @@ import wizardReducer, {
     wizardReducerDefaultState
 } from './wizard-reducer';
 
-xdescribe('>>> Wizard reducer tests', () => {
+describe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
         expect(wizardReducer()).toEqual(wizardReducerDefaultState);
     });
@@ -76,7 +76,7 @@ xdescribe('>>> Wizard reducer tests', () => {
                 enablerName: 'Test Enabler',
                 inputData: expectedData,
                 selectedCategory: 0,
-                navTabArray: [{name: "Test Category"}]
+                navTabArray: { 'Test Category': {} }
             });
     });
 
@@ -105,7 +105,7 @@ xdescribe('>>> Wizard reducer tests', () => {
             .toEqual({
                 enablerName: 'Test Enabler',
                 inputData: expectedData,
-                navTabArray: [{name: "Test Category"}],
+                navTabArray: { 'Test Category': {} },
                 selectedCategory: 0
             });
     });
@@ -128,7 +128,7 @@ xdescribe('>>> Wizard reducer tests', () => {
             .toEqual({
                 enablerName: 'Test Enabler',
                 inputData: [ { text: 'CAT #0', nav: '#1' }, { text: 'CAT #1', nav: '#1' },],
-                navTabArray: [{name:"#1"}],
+                navTabArray: { '#1': {} },
                 selectedCategory: 0
             });
     });
@@ -162,7 +162,7 @@ xdescribe('>>> Wizard reducer tests', () => {
                     multiple: true,
                     indentation: false,
                 }],
-                navTabArray: [{name:"Test Category"}],
+                navTabArray: { 'Test Category': {} },
                 selectedCategory: 0
             });
     });
@@ -179,7 +179,7 @@ xdescribe('>>> Wizard reducer tests', () => {
         const expectedState = {
             inputData: [],
             enablerName: 'Test Enabler',
-            navTabArray: [],
+            navTabArray: {},
             selectedCategory: 0
         };
         expect(wizardReducer({ inputData: [] }, {
@@ -363,7 +363,7 @@ xdescribe('>>> Wizard reducer tests', () => {
                 },],
                 nav: 'Nav',
             },],
-            navTabArray: [{name: 'Nav', emptyField: true}]
+            navTabArray: { 'Nav': { emptyField: true } },
         };
         expect(wizardReducer({
             inputData: [{
@@ -373,7 +373,7 @@ xdescribe('>>> Wizard reducer tests', () => {
                 },],
                 nav: 'Nav',
             },],
-            navTabArray: [{name: 'Nav'}],
+            navTabArray: { 'Nav': {} },
         }, {
             type: CHECK_INPUT,
             payload: { navName: 'Nav' },
@@ -389,7 +389,7 @@ xdescribe('>>> Wizard reducer tests', () => {
                 },
                 nav: 'Nav',
             },],
-            navTabArray: [{name: 'Nav', emptyField: true}]
+            navTabArray: { 'Nav': { emptyField: true } },
         };
         expect(wizardReducer({
             inputData: [{
@@ -399,7 +399,7 @@ xdescribe('>>> Wizard reducer tests', () => {
                 },
                 nav: 'Nav',
             },],
-            navTabArray: [{name: 'Nav'}],
+            navTabArray: { 'Nav': {} },
         }, {
             type: CHECK_INPUT,
             payload: { navName: 'Nav' },

@@ -28,7 +28,7 @@ export const wizardReducerDefaultState = {
     selectedCategory: 0,
     inputData: [],
     yamlObject: {},
-    navTabArray: [],
+    navTabArray: {},
 };
 
 /**
@@ -108,13 +108,13 @@ export function checkInput(content) {
     return empty;
 }
 
-export function emptyNav(navArr, navName) {
-    navArr.forEach(nav => {
-        if (nav.name === navName) {
-            nav.emptyField = true;
+export function emptyNav(navsObject, navName) {
+    Object.entries(navsObject).forEach(nav => {
+        if (navName === nav[0]) {
+            navsObject[nav[0]] = { emptyField: true };
         }
     });
-    return navArr;
+    return navsObject;
 }
 
 /**
@@ -136,7 +136,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             };
         case SELECT_ENABLER: {
             const inputData = [];
-            const navCategories = [];
+            const navCategories = {};
             const { enablerName } = action.payload;
             const enablerObj = config.enablerData.find(o => o.text === enablerName);
             if (enablerObj === undefined || enablerObj.categories === undefined) {
@@ -152,8 +152,8 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
                 category = setDefault(category, enablerObj.defaults);
                 compareVariables(category, categoryInfo);
                 category.nav = categoryInfo.nav;
-                if (navCategories.filter(n => n.name === category.nav).length === 0) {
-                    navCategories.push({ name: category.nav });
+                if (!(category.nav in navCategories)) {
+                    navCategories[category.nav] = {};
                 }
                 inputData.push(category);
             });
