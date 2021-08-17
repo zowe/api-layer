@@ -21,4 +21,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DiscoverableClientConfiguration {
     private String applId;
+    private String host;
+    private int instances;
 }

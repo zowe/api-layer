@@ -19,8 +19,13 @@ discoveryServiceConfiguration:
     instances: 1
 discoverableClientConfiguration:
     applId: ZOWEAPPL
+    host: localhost
+    instances: 1
 apiCatalogServiceConfiguration:
     url:
+    host: localhost
+    port: 10014
+    instances: 1
 cachingServiceConfiguration:
     url:
 tlsConfiguration:
