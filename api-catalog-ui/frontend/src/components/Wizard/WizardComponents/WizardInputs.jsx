@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import * as log from 'loglevel';
 import React, { Component } from 'react';
 import { Checkbox, FormField, Select } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
@@ -53,6 +54,13 @@ class WizardInputs extends Component {
         }
     };
 
+    /**
+     * Apply any restrictions to the inputs
+     * @param maxLength maximum length of the string entered. Takes first maxLength chars if exceeded.
+     * @param value user's input
+     * @param lowercase force the input to be lowercase
+     * @returns {string} user's modified input
+     */
     applyRestrictions(maxLength, value, lowercase) {
         let result = value;
         if (typeof maxLength === 'number' && parseInt(value.length) > maxLength) {
@@ -73,6 +81,11 @@ class WizardInputs extends Component {
         this.handleInputChange({ target: { name, value, getAttribute: () => index } });
     };
 
+    /**
+     * Receives new content object/array and fires a redux action
+     * @param objectToChange old data
+     * @param newC new content object/array
+     */
     updateDataWithNewContent(objectToChange, newC) {
         const result = {
             ...objectToChange,
@@ -149,6 +162,19 @@ class WizardInputs extends Component {
         }
         return this.renderInputs(dataAsObject.content);
     };
+
+    dependenciesSatisfied(dependencies, content) {
+        let satisfied = true;
+        Object.entries(dependencies).forEach(entry => {
+            const [key, value] = entry;
+            if (content[key].value !== value) {
+                satisfied = false;
+            }
+            log.error({ entry, key, value, content, contentKey: content[key] });
+        });
+        return satisfied;
+    }
+
     /**
      * Dynamically creates input fields based on the content object of the category - accepts a single set
      * @param content object containing all inputs and questions for given category
@@ -159,8 +185,13 @@ class WizardInputs extends Component {
         const selectedData = Object.keys(content);
         let key = 1;
         return selectedData.map(itemKey => {
-            key += 1;
             const input = content[itemKey];
+            if (input.dependencies && !this.dependenciesSatisfied(input.dependencies, content)) {
+                input.show = false;
+                return null;
+            }
+            input.show = true;
+            key += 1;
             return (
                 <div className="entry" key={`${index}-${key}`}>
                     {this.renderInputElement(itemKey, index, input)}

@@ -151,6 +151,7 @@ export const categoryData = [
             applid: {
                 value: '',
                 question: 'A service APPLID (valid only for the httpBasicPassTicket authentication scheme ):',
+                dependencies: { scheme: 'httpBasicPassTicket' },
             },
         },
     },
