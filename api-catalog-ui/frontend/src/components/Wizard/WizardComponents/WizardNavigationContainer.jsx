@@ -16,7 +16,6 @@ const mapStateToProps = state => ({
     selectedCategory: state.wizardReducer.selectedCategory,
     inputData: state.wizardReducer.inputData,
     navTabArray: state.wizardReducer.navTabArray,
-    unfilledInputFail: state.wizardReducer.unfilledInputFail,
 });
 
 const mapDispatchToProps = {
