@@ -59,6 +59,7 @@ ext {
         spring_boot_starter_security       : "org.springframework.boot:spring-boot-starter-security:${springBootVersion}",
         spring_boot_starter_validation     : "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}",
         spring_boot_starter_web            : "org.springframework.boot:spring-boot-starter-web:${springBootVersion}",
+        spring_boot_starter_webflux        : "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}",
         spring_boot_starter_websocket      : "org.springframework.boot:spring-boot-starter-websocket:${springBootVersion}",
         spring_boot_starter_test           : "org.springframework.boot:spring-boot-starter-test:${springBootVersion}",
         spring_boot_starter_aop            : "org.springframework.boot:spring-boot-starter-aop:${springBootVersion}",
@@ -70,6 +71,7 @@ ext {
         spring_cloud_starter_eureka        : "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:${springCloudVersion}",
         spring_cloud_starter_ribbon        : "org.springframework.cloud:spring-cloud-starter-netflix-ribbon:${springCloudVersion}",
         spring_cloud_starter_hystrix       : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix:${springCloudVersion}",
+        spring_cloud_starter_turbine       : "org.springframework.cloud:spring-cloud-starter-netflix-turbine:${springCloudVersion}",
 
         spring_security_web                : "org.springframework.security:spring-security-web:${springSecurityVersion}",
         spring_security_config             : "org.springframework.security:spring-security-config:${springSecurityVersion}",
