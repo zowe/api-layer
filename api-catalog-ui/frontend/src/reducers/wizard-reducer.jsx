@@ -29,7 +29,6 @@ export const wizardReducerDefaultState = {
     inputData: [],
     yamlObject: {},
     navTabArray: [],
-    unfilledInputFail: false,
 };
 
 /**
@@ -109,6 +108,15 @@ export function checkInput(content) {
     return empty;
 }
 
+export function emptyNav(navArr, navName) {
+    navArr.forEach(nav => {
+        if (nav.name === navName) {
+            nav.emptyField = true;
+        }
+    });
+    return navArr;
+}
+
 /**
  * Reducer for the Wizard Dialog
  * @param state state; contains all global variables for the wizrd reducer
@@ -144,8 +152,8 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
                 category = setDefault(category, enablerObj.defaults);
                 compareVariables(category, categoryInfo);
                 category.nav = categoryInfo.nav;
-                if (!navCategories.includes(category.nav)) {
-                    navCategories.push(category.nav);
+                if (navCategories.filter(n => n.name === category.nav).length === 0) {
+                    navCategories.push({ name: category.nav });
                 }
                 inputData.push(category);
             });
@@ -184,18 +192,25 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
         case CHECK_INPUT: {
             const { navName } = action.payload;
             let unfilled;
+            let navArr = state.navTabArray;
             state.inputData.forEach(category => {
                 if (category.nav === navName) {
                     if (!Array.isArray(category.content)) {
                         unfilled = unfilled || checkInput(category.content);
+                        if (unfilled) {
+                            navArr = emptyNav(navArr, navName);
+                        }
                     } else {
                         category.content.forEach(categoryContentSet => {
                             unfilled = unfilled || checkInput(categoryContentSet);
+                            if (unfilled) {
+                                navArr = emptyNav(navArr, navName);
+                            }
                         });
                     }
                 }
             });
-            return { ...state, unfilledInputFail: unfilled };
+            return { ...state, navTabArray: navArr };
         }
         default:
             return state;
