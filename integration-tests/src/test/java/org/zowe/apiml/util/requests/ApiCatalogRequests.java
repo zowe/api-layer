@@ -53,7 +53,7 @@ public class ApiCatalogRequests {
         try {
             log.info("ApiCatalogRequests#isUp Instance: {}", instance);
 
-            ReadContext healthResponse = requests.getJson(getApiCatalogUriWithPath(Endpoints.HEALTH));
+            ReadContext healthResponse = requests.getJson(getApiCatalogUriWithPath("/apicatalog" + Endpoints.HEALTH));
             String health = healthResponse.read("$.status");
 
             return health.equals("UP");
