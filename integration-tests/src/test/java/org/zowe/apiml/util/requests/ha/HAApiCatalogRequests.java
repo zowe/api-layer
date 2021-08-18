@@ -18,6 +18,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 
+/**
+ * Basically wrapper around the requests to multiple instances. Understand the context of the multiple API Catalog services
+ * and provide methods to check the amount of instances, their health and the capability to shutdown them
+ */
 @Slf4j
 public class HAApiCatalogRequests {
     public List<ApiCatalogRequests> apiCatalogServices = new ArrayList<>();
@@ -30,6 +34,9 @@ public class HAApiCatalogRequests {
         log.info("Created HAApiCatalogRequests");
     }
 
+    /**
+     * Return the number of instances.
+     */
     public int existing() {
         return apiCatalogServices.size();
     }
@@ -38,6 +45,9 @@ public class HAApiCatalogRequests {
         return apiCatalogServices.get(instance).isUp();
     }
 
+    /**
+     * Check whether all the instances are UP.
+     */
     public boolean up() {
         AtomicBoolean allUp = new AtomicBoolean(true);
 
