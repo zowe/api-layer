@@ -49,7 +49,11 @@ class WizardNavigation extends Component {
             const categoryArr = entry[1];
             index += 1;
             return (
-                <Tab key={index} title={name}>
+                <Tab
+                    key={index}
+                    title={name}
+                    className={this.props.navTabArray[name].emptyField ? 'problematicTab' : undefined}
+                >
                     {categoryArr}
                 </Tab>
             );

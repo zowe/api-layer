@@ -142,7 +142,19 @@ describe('>>> Wizard actions tests', () => {
         let result = { test2: 'test 2' };
         result = addCategoryToYamlObject(category, result);
         expect(result).toEqual({  test: 'yaml' , test2: 'test 2' });
-
+    });
+    it('should not add categories to the YAML object if they are not shown', () => {
+        const category = {
+            text: 'Category 1',
+            content: {
+                test: { value: 'yaml', show: false}
+            },
+            multiple: false,
+            indentation: '/',
+        };
+        let result = { test2: 'test 2' };
+        result = addCategoryToYamlObject(category, result);
+        expect(result).toEqual({ test2: 'test 2' });
     });
     it('should change the category', () => {
         const expectedAction = {

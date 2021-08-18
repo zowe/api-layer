@@ -55,7 +55,7 @@ describe('>>> WizardInputs tests', () => {
         const instance = wrapper.instance();
         instance.handleInputChange({ target: { value: 'irrelevantValue', checked: true, name: 'testInput' } });
         expect(updateWizardData).toHaveBeenCalledWith({
-            content: { testInput: { value: true, question: '' } },
+            content: { testInput: { value: true, question: '', show: true } },
             text: 'Basic info',
         });
     });
@@ -73,7 +73,7 @@ describe('>>> WizardInputs tests', () => {
         const instance = wrapper.instance();
         instance.handleSelect({ name: 'testInput', index: 1, value: 'test' });
         expect(updateWizardData).toHaveBeenCalledWith({
-            content: { testInput: { value: 'test', question: '', options: ['test'] } },
+            content: { testInput: { value: 'test', question: '', options: ['test'], show: true  } },
             text: 'Basic info',
         });
     });
@@ -106,8 +106,8 @@ describe('>>> WizardInputs tests', () => {
         const dummyData = {
             text: 'Dummy Data',
             content: [{
-                test: { value: '', question: '', },
-                test2: { value: '', question: '', },
+                test: { value: '', question: '' , show: true },
+                test2: { value: '', question: '', show: true  },
             }],
             multiple: true,
         };
@@ -116,10 +116,7 @@ describe('>>> WizardInputs tests', () => {
         );
         const instance = wrapper.instance();
         instance.addFields();
-        expect(updateWizardData).toHaveBeenCalledWith({
-            ...dummyData,
-            content: [dummyData.content[0], dummyData.content[0]]
-        });
+        expect(updateWizardData).toHaveBeenCalled();
     });
     it('should delete added input fields', () => {
         const deleteCategoryConfig = jest.fn();
@@ -138,4 +135,36 @@ describe('>>> WizardInputs tests', () => {
         instance.handleDelete({ target: { name: 'Dummy Data' } });
         expect(deleteCategoryConfig).toHaveBeenCalled();
     });
+    it('should restrict values to lowercase and the allowed length', () => {
+        const wrapper = enzyme.shallow(
+            <WizardInputs data={[]} />
+        )
+        const instance = wrapper.instance();
+        const result = instance.applyRestrictions(5, 'SoMEthinG', true);
+        expect(result).toEqual('somet');
+    })
+    it('should handle dependencies', () => {
+        const dummyData = [{
+            text: 'Category',
+            content: {
+                test: {
+                    value: '',
+                    question: 'Why?',
+                    dependencies: { scheme: 'someScheme' },
+                    show: true,
+                },
+                scheme: {
+                    value: '',
+                    question: 'Why not?',
+                    options: ['someScheme', 'otherScheme'],
+                },
+            },
+        }];
+        const wrapper = enzyme.shallow(
+            <WizardInputs data={dummyData} />
+        )
+        const instance = wrapper.instance();
+        const result = instance.dependenciesSatisfied({scheme: 'someScheme'}, dummyData[0].content);
+        expect(result).toEqual(false);
+    })
 });

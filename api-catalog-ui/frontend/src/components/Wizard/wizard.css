@@ -63,3 +63,7 @@ label.wCheckBox {
 label.wCheckBox span:last-child {
     color: #58606e;
 }
+
+.problematicTab {
+    box-shadow: inset -2px 0 red;
+}

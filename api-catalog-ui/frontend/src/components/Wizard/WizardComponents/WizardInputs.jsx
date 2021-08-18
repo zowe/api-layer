@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import * as log from 'loglevel';
 import React, { Component } from 'react';
 import { Checkbox, FormField, Select } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
@@ -67,7 +66,7 @@ class WizardInputs extends Component {
             result = value.substring(0, maxLength);
         }
         if (lowercase) {
-            result = value.toLowerCase();
+            result = result.toLowerCase();
         }
         return result;
     }
@@ -170,7 +169,6 @@ class WizardInputs extends Component {
             if (content[key].value !== value) {
                 satisfied = false;
             }
-            log.error({ entry, key, value, content, contentKey: content[key] });
         });
         return satisfied;
     }
