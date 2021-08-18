@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
+import * as log from 'loglevel';
 import React, { Component } from 'react';
 import { Checkbox, FormField, Select } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
@@ -115,7 +115,18 @@ class WizardInputs extends Component {
     };
 
     handleDelete(event) {
-        this.props.deleteCategoryConfig(event.target.name, this.props.data.text);
+        let filledField = false;
+        this.props.checkFilledInput(this.props.data.nav);
+        Object.entries(this.props.data.content[event.target.name]).forEach(field => {
+            if (!field[1].empty && !filledField) {
+                filledField = true;
+            }
+        });
+        if (!filledField) {
+            this.props.deleteCategoryConfig(event.target.name, this.props.data.text);
+        } else {
+            log.error('Deleting a non-empty set');
+        }
     }
 
     /**

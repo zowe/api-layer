@@ -406,6 +406,58 @@ describe('>>> Wizard reducer tests', () => {
         })).toEqual(expectedState);
     })
 
+    it('should handle CHECK_INPUT when all fields are filled', () => {
+        const expectedState = {
+            inputData: [{
+                text: 'Category 1',
+                content: {
+                    test: { value: 'val', question: 'Why?', empty: false },
+                },
+                nav: 'Nav',
+            },],
+            navTabArray: { 'Nav': {} },
+        };
+        expect(wizardReducer({
+            inputData: [{
+                text: 'Category 1',
+                content: {
+                    test: { value: 'val', question: 'Why?', },
+                },
+                nav: 'Nav',
+            },],
+            navTabArray: { 'Nav': {} },
+        }, {
+            type: CHECK_INPUT,
+            payload: { navName: 'Nav' },
+        })).toEqual(expectedState);
+    })
+
+    it('should handle CHECK_INPUT when all fields are filled and content is an array', () => {
+        const expectedState = {
+            inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test: { value: 'val', question: 'Why?', empty: false },
+                },],
+                nav: 'Nav',
+            },],
+            navTabArray: { 'Nav': {} },
+        };
+        expect(wizardReducer({
+            inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test: { value: 'val', question: 'Why?', },
+                },],
+                nav: 'Nav',
+            },],
+            navTabArray: { 'Nav': {} },
+        }, {
+            type: CHECK_INPUT,
+            payload: { navName: 'Nav' },
+        })).toEqual(expectedState);
+    })
+
     it ('should handle CHECK_INPUT when nav name is not the same', () => {
         const expectedState = {
             inputData: [{

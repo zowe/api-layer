@@ -202,6 +202,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
                         }
                     } else {
                         category.content.forEach(categoryContentSet => {
+                            checkInput(categoryContentSet);
                             unfilled = unfilled || checkInput(categoryContentSet);
                             if (unfilled) {
                                 navArr = emptyNav(navArr, navName);

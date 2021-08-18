@@ -118,22 +118,29 @@ describe('>>> WizardInputs tests', () => {
         instance.addFields();
         expect(updateWizardData).toHaveBeenCalled();
     });
-    it('should delete added input fields', () => {
+    it('should delete empty added input fields', () => {
         const deleteCategoryConfig = jest.fn();
+        const checkFilledInput = jest.fn();
         const dummyData = {
             text: 'Dummy Data',
             content: [{
-                test: { value: '', question: '', },
-                test2: { value: '', question: '', },
-            }],
+                test: { value: '', question: 'Why?', empty: true, },
+                test2: { value: '', question: 'When?', empty: true, },
+            },
+                {
+                    test: { value: 'val', question: 'Why?', empty: false, },
+                    test2: { value: 'val2', question: 'When?', empty: false, },
+                }],
             multiple: true,
         };
         const wrapper = enzyme.shallow(
-            <WizardInputs deleteCategoryConfig={deleteCategoryConfig} data={dummyData} />
+            <WizardInputs deleteCategoryConfig={deleteCategoryConfig} checkFilledInput={checkFilledInput} data={dummyData} />
         );
         const instance = wrapper.instance();
-        instance.handleDelete({ target: { name: 'Dummy Data' } });
-        expect(deleteCategoryConfig).toHaveBeenCalled();
+        instance.handleDelete({ target: { name: 0 } });
+        instance.handleDelete({ target: { name: 1 } });
+        expect(checkFilledInput).toHaveBeenCalledTimes(2);
+        expect(deleteCategoryConfig).toHaveBeenCalledTimes(1);
     });
     it('should restrict values to lowercase and the allowed length', () => {
         const wrapper = enzyme.shallow(
