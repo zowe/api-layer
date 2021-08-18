@@ -13,4 +13,5 @@ public class Apps {
     public static final String GATEWAY = "GATEWAY";
     public static final String DISCOVERY = "DISCOVERY";
     public static final String DISCOVERABLE_CLIENT = "DISCOVERABLECLIENT";
+    public static final String API_CATALOG = "APICATALOG";
 }
