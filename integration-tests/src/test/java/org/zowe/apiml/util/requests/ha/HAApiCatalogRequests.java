@@ -41,12 +41,18 @@ public class HAApiCatalogRequests {
         return apiCatalogServices.size();
     }
 
+    /**
+     * Check whether a specific instance is UP.
+     * @param instance the specific instance
+     * @return true if UP
+     */
     public boolean up(int instance) {
         return apiCatalogServices.get(instance).isUp();
     }
 
     /**
      * Check whether all the instances are UP.
+     * @return true if UP
      */
     public boolean up() {
         AtomicBoolean allUp = new AtomicBoolean(true);
@@ -59,10 +65,17 @@ public class HAApiCatalogRequests {
         return allUp.get();
     }
 
+    /**
+     * Shutdown a specific instance of the service.
+     * @param instance the specific instance
+     */
     public void shutdown(int instance) {
         apiCatalogServices.get(instance).shutdown();
     }
 
+    /**
+     * Shutdown all the instances of the service.
+     */
     public void shutdown() {
         apiCatalogServices.parallelStream()
             .forEach(ApiCatalogRequests::shutdown);
