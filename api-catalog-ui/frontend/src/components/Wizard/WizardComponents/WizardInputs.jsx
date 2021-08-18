@@ -166,7 +166,7 @@ class WizardInputs extends Component {
         let satisfied = true;
         Object.entries(dependencies).forEach(entry => {
             const [key, value] = entry;
-            if (content[key].value !== value) {
+            if (typeof content[key] === 'undefined' || content[key].value !== value) {
                 satisfied = false;
             }
         });
@@ -198,6 +198,13 @@ class WizardInputs extends Component {
         });
     };
 
+    /**
+     * Renders a single input field/checkbox/select (based on the item's possible values)
+     * @param itemKey name of the input item
+     * @param index index of the set
+     * @param inputNode input's settings
+     * @returns {JSX.Element} returns the input element
+     */
     renderInputElement(itemKey, index, inputNode) {
         const { question, value, empty, optional, options, maxLength, lowercase } = inputNode;
         let caption = '';
