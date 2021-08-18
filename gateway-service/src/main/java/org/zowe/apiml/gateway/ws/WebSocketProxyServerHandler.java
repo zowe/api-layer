@@ -11,12 +11,18 @@ package org.zowe.apiml.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.*;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.SubProtocolCapable;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
-import org.zowe.apiml.product.routing.*;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
+import org.zowe.apiml.product.routing.RoutedServicesUser;
 
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -33,7 +39,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Singleton
 @Slf4j
-public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser {
+public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser, SubProtocolCapable {
+
+    @Value("${server.webSocket.supportedProtocols:-}")
+    private List<String> subProtocols;
+
+    @Override
+    public List<String> getSubProtocols() {
+        return subProtocols;
+    }
 
     private final Map<String, WebSocketRoutedSession> routedSessions;
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
@@ -75,36 +89,50 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession webSocketSession) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession webSocketSession) throws IOException {
         String[] uriParts = getUriParts(webSocketSession);
-        if (uriParts != null && uriParts.length == 5) {
-            String majorVersion = uriParts[2];
-            String serviceId = uriParts[3];
-            String path = uriParts[4];
-
-            RoutedServices routedServices = routedServicesMap.get(serviceId);
-
-            if (routedServices != null) {
-                RoutedService service = routedServices.findServiceByGatewayUrl("ws/" + majorVersion);
-                if (service == null) {
-                    closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
-                        String.format("Requested ws/%s url is not known by the gateway", majorVersion));
-                    return;
-                }
-
-                ServiceInstance serviceInstance = findServiceInstance(serviceId);
-                if (serviceInstance != null) {
-                    openWebSocketConnection(service, serviceInstance, serviceInstance, path, webSocketSession);
-                } else {
-                    closeWebSocket(webSocketSession, CloseStatus.SERVICE_RESTARTED,
-                        String.format("Requested service %s does not have available instance", serviceId));
-                }
-            } else {
-                closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
-                    String.format("Requested service %s is not known by the gateway", serviceId));
-            }
-        } else {
+        if (uriParts == null || uriParts.length != 5) {
             closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE, "Invalid URL format");
+            return;
+        }
+
+        String majorVersion;
+        String serviceId;
+        String path = uriParts[4];
+
+        if (uriParts[1].equals("ws")) {
+            majorVersion = uriParts[2];
+            serviceId = uriParts[3];
+        } else {
+            majorVersion = uriParts[3];
+            serviceId = uriParts[1];
+        }
+
+        routeToService(webSocketSession, serviceId, majorVersion, path);
+    }
+
+    private void routeToService(WebSocketSession webSocketSession, String serviceId, String majorVersion, String path) throws IOException {
+        RoutedServices routedServices = routedServicesMap.get(serviceId);
+
+        if (routedServices == null) {
+            closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
+                String.format("Requested service %s is not known by the gateway", serviceId));
+            return;
+        }
+
+        RoutedService service = routedServices.findServiceByGatewayUrl("ws/" + majorVersion);
+        if (service == null) {
+            closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
+                String.format("Requested ws/%s url is not known by the gateway", majorVersion));
+            return;
+        }
+
+        ServiceInstance serviceInstance = findServiceInstance(serviceId);
+        if (serviceInstance != null) {
+            openWebSocketConnection(service, serviceInstance, serviceInstance, path, webSocketSession);
+        } else {
+            closeWebSocket(webSocketSession, CloseStatus.SERVICE_RESTARTED,
+                String.format("Requested service %s does not have available instance", serviceId));
         }
     }
 
@@ -124,7 +152,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     private void openWebSocketConnection(RoutedService service, ServiceInstance serviceInstance, Object uri,
-            String path, WebSocketSession webSocketSession) throws IOException {
+                                         String path, WebSocketSession webSocketSession) throws IOException {
         String serviceUrl = service.getServiceUrl();
         String targetUrl = getTargetUrl(serviceUrl, serviceInstance, path);
 
@@ -132,6 +160,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         try {
             WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
             routedSessions.put(webSocketSession.getId(), session);
+
         } catch (WebSocketProxyError e) {
             log.debug("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage());
             webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
@@ -143,8 +172,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         if (!serviceInstances.isEmpty()) {
             // TODO: Is this implementation apropriate?
             return serviceInstances.get(0);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -161,15 +189,14 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
             }
 
             routedSessions.remove(session.getId());
-        }
-        catch (NullPointerException | IOException e) {
+        } catch (NullPointerException | IOException e) {
             log.debug("Error closing WebSocket connection: {}", e.getMessage(), e);
         }
     }
 
     @Override
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage)
-            throws Exception {
+        throws Exception {
         log.debug("handleMessage(session={},message={})", webSocketSession, webSocketMessage);
         WebSocketRoutedSession session = getRoutedSession(webSocketSession);
         if (session != null) {

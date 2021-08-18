@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.login.saf;
 
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
+import org.zowe.apiml.security.common.error.PlatformPwdErrno;
 
 public class MockPlatformUser implements PlatformUser {
     public static final String VALID_USERID = "USER";
@@ -23,7 +24,7 @@ public class MockPlatformUser implements PlatformUser {
             return null;
         }
         else {
-            return PlatformReturned.builder().success(false).build();
+            return PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EACCES.errno).build();
         }
     }
 
@@ -32,7 +33,7 @@ public class MockPlatformUser implements PlatformUser {
         if (userid.equalsIgnoreCase(VALID_USERID) && password.equalsIgnoreCase(VALID_PASSWORD) && !newPassword.equalsIgnoreCase(password)) {
             return null;
         } else {
-            return PlatformReturned.builder().success(false).build();
+            return PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EMVSPASSWORD.errno).build();
         }
     }
 }

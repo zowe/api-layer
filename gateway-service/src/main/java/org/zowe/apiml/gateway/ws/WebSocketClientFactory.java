@@ -21,7 +21,7 @@ import javax.annotation.PreDestroy;
 
 /**
  * Factory for provisioning web socket client
- *
+ * <p>
  * Manages the client lifecycle
  */
 @Component
@@ -30,11 +30,11 @@ public class WebSocketClientFactory {
 
     private final JettyWebSocketClient client;
 
-    public WebSocketClientFactory(SslContextFactoryProvider sslContextFactoryProvider) {
-        SslContextFactory.Server jettySslContextFactory = sslContextFactoryProvider.getSslFactory();
-        log.debug("Creating Jetty WebSocket client, with SslFactory: {} and SslContextFactoryProvider: {}",
-            jettySslContextFactory, sslContextFactoryProvider);
-        client = new JettyWebSocketClient(new WebSocketClient(new HttpClient(jettySslContextFactory)));
+    public WebSocketClientFactory(SslContextFactory.Client jettyClientSslContextFactory) {
+
+        log.debug("Creating Jetty WebSocket client, with SslFactory: {}",
+            jettyClientSslContextFactory);
+        client = new JettyWebSocketClient(new WebSocketClient(new HttpClient(jettyClientSslContextFactory)));
         client.start();
     }
 
