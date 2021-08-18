@@ -133,10 +133,13 @@ management:
         web:
             base-path: /application
             exposure:
-                include: hystrix.stream, health, info, routes
+                include: hystrix.stream, health, info, routes, shutdown
     health:
         defaults:
             enabled: false
+    endpoint:
+        shutdown:
+            enabled: true
 
 hystrix:
     dashboard:
@@ -153,6 +156,9 @@ management:
             base-path: /application
             exposure:
                 include: "*"
+    endpoint:
+        shutdown:
+            enabled: true
 
 ---
 spring:
