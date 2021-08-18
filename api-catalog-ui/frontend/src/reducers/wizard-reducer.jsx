@@ -108,10 +108,10 @@ export function checkInput(content) {
     return empty;
 }
 
-export function emptyNav(navsObject, navName) {
+export function emptyNav(navsObject, navName, unfilled) {
     Object.entries(navsObject).forEach(nav => {
         if (navName === nav[0]) {
-            navsObject[nav[0]] = { emptyField: true };
+            navsObject[nav[0]] = { emptyField: unfilled };
         }
     });
     return navsObject;
@@ -196,17 +196,12 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             state.inputData.forEach(category => {
                 if (category.nav === navName) {
                     if (!Array.isArray(category.content)) {
-                        unfilled = unfilled || checkInput(category.content);
-                        if (unfilled) {
-                            navArr = emptyNav(navArr, navName);
-                        }
+                        unfilled = checkInput(category.content) || unfilled;
+                        navArr = emptyNav(navArr, navName, unfilled);
                     } else {
                         category.content.forEach(categoryContentSet => {
-                            checkInput(categoryContentSet);
-                            unfilled = unfilled || checkInput(categoryContentSet);
-                            if (unfilled) {
-                                navArr = emptyNav(navArr, navName);
-                            }
+                            unfilled = checkInput(categoryContentSet) || unfilled;
+                            navArr = emptyNav(navArr, navName, unfilled);
                         });
                     }
                 }
