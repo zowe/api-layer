@@ -75,18 +75,26 @@ mkdir -p "${BASE_DIR}/${WORK_DIR}"
 echo ">>>>> build package"
 cd "${REPO_ROOT_DIR}"
 
-./bootstrap_gradlew.sh # TODO need?
 ./gradlew packageApiGateway
-if [ ! -f "${REPO_ROOT_DIR}/gateway-service-package/build/distributions/gateway-package-null.zip" ]; then # TODO get rid of the null
+if [ ! -f "${REPO_ROOT_DIR}/gateway-package/build/distributions/gateway-package-null.zip" ]; then
   echo "Error: failed to build gateway-package-null.zip."
   exit 3
 fi
 
+./gradlew packageCommonLib
+if [ ! -f "${REPO_ROOT_DIR}/apiml-common-lib-package/build/distributions/apiml-common-lib-package-null.zip" ]; then
+  echo "Error: failed to build apiml-common-lib-package-null.zip."
+  exit 3
+fi
 ###############################
 echo ">>>>> prepare basic files"
 cd "${BASE_DIR}/${WORK_DIR}"
-unzip "${REPO_ROOT_DIR}/gateway-package/build/distributions/gateway-package.zip"
+unzip "${REPO_ROOT_DIR}/gateway-package/build/distributions/gateway-package-null.zip"
 chmod +x bin/*
+mkdir "apiml-common-lib"
+cd "apiml-common-lib"
+unzip "${REPO_ROOT_DIR}/apiml-common-lib-package/build/distributions/apiml-common-lib-package-null.zip"
+
 cd "${REPO_ROOT_DIR}"
 cp README.md "${BASE_DIR}/${WORK_DIR}"
 cp LICENSE "${BASE_DIR}/${WORK_DIR}"

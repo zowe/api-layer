@@ -25,6 +25,7 @@
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
+LAUNCH_COMPONENT="bin" # TODO fix
 JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]
@@ -146,3 +147,4 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -jar ${JAR_FILE} &
 pid=$!
 echo "pid=${pid}"
+while true; do sleep 1000; done
