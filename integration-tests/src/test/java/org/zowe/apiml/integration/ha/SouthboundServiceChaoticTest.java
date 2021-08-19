@@ -48,6 +48,19 @@ public class SouthboundServiceChaoticTest {
 //                JsonResponse result2 = haGatewayRequests.route(0, Endpoints.DISCOVERABLE_GREET);
 //                assertThat(result.getStatus(), is(SC_OK));
 //                assertThat(result2.getStatus(), is(SC_OK));
+                haDiscoverableClientRequests.shutdown(0);
+                routeToDiscoverableClient();
+            }
+
+            @Test
+            void routeViaGatewayToTheOtherInstance2() {
+                assumeTrue(haDiscoverableClientRequests.existing() > 1);
+//                haDiscoverableClientRequests.shutdown(0);
+                routeToDiscoverableClient();
+//                JsonResponse result = haGatewayRequests.route(1, Endpoints.DISCOVERABLE_GREET);
+//                JsonResponse result2 = haGatewayRequests.route(0, Endpoints.DISCOVERABLE_GREET);
+//                assertThat(result.getStatus(), is(SC_OK));
+//                assertThat(result2.getStatus(), is(SC_OK));
                 haDiscoverableClientRequests.shutdown(1);
                 routeToDiscoverableClient();
             }

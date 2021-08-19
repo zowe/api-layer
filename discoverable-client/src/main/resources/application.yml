@@ -136,7 +136,7 @@ management:
                 include: hystrix.stream, health, info, routes, shutdown
     health:
         defaults:
-            enabled: false
+            enabled: true
     endpoint:
         shutdown:
             enabled: true

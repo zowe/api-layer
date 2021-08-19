@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.integration.ha;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.HATest;
@@ -39,8 +38,7 @@ public class SouthboundServiceMultipleInstancesTest {
         @Nested
         class WhenSendingRequest {
 
-            // actuator health endpoint is currently not working properly
-            @Disabled
+            @Test
             void discoverableClientInstancesAreUp() {
                 assumeTrue(haDiscoverableClientRequests.existing() > 1);
 
