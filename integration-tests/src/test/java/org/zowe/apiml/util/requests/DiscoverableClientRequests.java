@@ -73,7 +73,7 @@ public class DiscoverableClientRequests {
             given()
                 .contentType(JSON)
                 .when()
-                .post(getDiscoverableClientUriWithPath(Endpoints.SHUTDOWN))
+                .post(getDiscoverableClientUriWithPath("/discoverableclient" + Endpoints.SHUTDOWN))
                 .then()
                 .statusCode(is(SC_OK));
         } catch (Exception e) {
