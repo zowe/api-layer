@@ -21,6 +21,7 @@ import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Verify behaviour of the Discoverable Client under chaotic testing
@@ -38,7 +39,9 @@ public class SouthboundServiceChaoticTest {
         class whenOneDiscoverableClientIsNotAvailable {
             @Test
             void routeViaGatewayToTheOtherInstance() {
-                haDiscoverableClientRequests.shutdown(0);
+                assumeTrue(haDiscoverableClientRequests.existing() > 1);
+//                haDiscoverableClientRequests.shutdown(0);
+                haDiscoverableClientRequests.shutdown(1);
                 JsonResponse result = haGatewayRequests.route(0, Endpoints.DISCOVERABLE_GREET);
                 assertThat(result.getStatus(), is(SC_OK));
             }
