@@ -18,6 +18,8 @@ import org.zowe.apiml.util.requests.JsonResponse;
 import org.zowe.apiml.util.requests.ha.HADiscoverableClientRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
+import java.util.List;
+
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -41,14 +43,19 @@ public class SouthboundServiceChaoticTest {
             void routeViaGatewayToTheOtherInstance() {
                 assumeTrue(haDiscoverableClientRequests.existing() > 1);
 //                haDiscoverableClientRequests.shutdown(0);
-                routeToDiscoverableClient();
-                haDiscoverableClientRequests.shutdown(1);
-                routeToDiscoverableClient();
+//                routeToDiscoverableClient();
+                JsonResponse result = haGatewayRequests.route(1, Endpoints.DISCOVERABLE_GREET);
+                JsonResponse result2 = haGatewayRequests.route(0, Endpoints.DISCOVERABLE_GREET);
+                assertThat(result.getStatus(), is(SC_OK));
+                assertThat(result2.getStatus(), is(SC_OK));
+//                haDiscoverableClientRequests.shutdown(1);
+//                routeToDiscoverableClient();
             }
 
             private void routeToDiscoverableClient() {
-                JsonResponse result = haGatewayRequests.route(1, Endpoints.DISCOVERABLE_GREET);
-                assertThat(result.getStatus(), is(SC_OK));
+                List<JsonResponse> responses = haGatewayRequests.route(Endpoints.DISCOVERABLE_GREET);
+                for (JsonResponse response : responses)
+                assertThat(response.getStatus(), is(SC_OK));
             }
         }
     }
