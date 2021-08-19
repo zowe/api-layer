@@ -41,8 +41,13 @@ public class SouthboundServiceChaoticTest {
             void routeViaGatewayToTheOtherInstance() {
                 assumeTrue(haDiscoverableClientRequests.existing() > 1);
 //                haDiscoverableClientRequests.shutdown(0);
+                routeToDiscoverableClient();
                 haDiscoverableClientRequests.shutdown(1);
-                JsonResponse result = haGatewayRequests.route(0, Endpoints.DISCOVERABLE_GREET);
+                routeToDiscoverableClient();
+            }
+
+            private void routeToDiscoverableClient() {
+                JsonResponse result = haGatewayRequests.route(1, Endpoints.DISCOVERABLE_GREET);
                 assertThat(result.getStatus(), is(SC_OK));
             }
         }
