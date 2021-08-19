@@ -164,7 +164,8 @@ management:
 spring:
     profiles: dev
     profiles.include:
-        diag
+        - debug
+        - diag
 
 logging:
     level:
