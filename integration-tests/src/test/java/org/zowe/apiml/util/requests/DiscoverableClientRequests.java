@@ -72,7 +72,6 @@ public class DiscoverableClientRequests {
         try {
             given()
                 .contentType(JSON)
-                .auth().basic(credentials.getUser(), credentials.getPassword())
                 .when()
                 .post(getDiscoverableClientUriWithPath(Endpoints.SHUTDOWN))
                 .then()
