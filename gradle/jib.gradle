@@ -1,7 +1,9 @@
 def setJib(componentName, debugPort) {
     def imageTag = project.hasProperty("zowe.docker.tag") ? project.getProperty("zowe.docker.tag"): "latest"
     def imageName =  project.hasProperty("zowe.docker.container") ? "${project.getProperty("zowe.docker.container")}${componentName}:${imageTag}" : "ghcr.io/zowe/${componentName}:${imageTag}"
+    def baseImage = project.hasProperty("zowe.docker.baseImage") ? "${project.getProperty("zowe.docker.baseImage")}" : "latest-ubuntu"
 
+    jib.from.image = "zowe-docker-release.jfrog.io/ompzowe/base-jdk:${baseImage}"
     jib.to.image = imageName
     jib.to.auth.username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
     jib.to.auth.password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
