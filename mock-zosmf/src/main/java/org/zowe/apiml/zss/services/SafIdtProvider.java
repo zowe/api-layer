@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.zss.model.Authentication;
 import org.zowe.apiml.zss.model.Token;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +21,14 @@ import java.util.UUID;
 @Service
 public class SafIdtProvider {
     private Map<String, String> providedTokens;
+
+    public SafIdtProvider() {
+        providedTokens = new HashMap<>();
+    }
+
+    public SafIdtProvider(Map<String, String> providedTokens) {
+        this.providedTokens = providedTokens;
+    }
 
     public Optional<Token> authenticate(
         Authentication authentication
@@ -38,6 +47,6 @@ public class SafIdtProvider {
         String safToken = token.getJwt();
         String username = safToken.split(";")[0];
 
-        return providedTokens.containsKey(username) && providedTokens.get(username).equals("sasfToken");
+        return providedTokens.containsKey(username) && providedTokens.get(username).equals(safToken);
     }
 }

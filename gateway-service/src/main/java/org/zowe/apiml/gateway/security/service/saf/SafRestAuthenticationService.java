@@ -65,11 +65,12 @@ public class SafRestAuthenticationService implements SafIdtProvider {
 
             ResponseEntity<Token> re = restTemplate.postForEntity(URI.create(authenticationUrl), authentication, Token.class);
 
-            if (re.getStatusCode().is2xxSuccessful() && re.getBody() != null) {
-                return Optional.ofNullable(re.getBody().getJwt());
-            } else {
+            if (!re.getStatusCode().is2xxSuccessful() || re.getBody() == null) {
                 return Optional.empty();
             }
+
+            Token responseBody = re.getBody();
+            return Optional.of(responseBody.getJwt());
         } catch (HttpClientErrorException.Unauthorized e) {
             return Optional.empty();
         }

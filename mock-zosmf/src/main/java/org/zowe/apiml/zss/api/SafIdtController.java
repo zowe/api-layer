@@ -38,7 +38,7 @@ public class SafIdtController {
      * - 201 - Valid SAF IDT token.
      */
     @PostMapping(value = "/zss/saf/authenticate")
-    public ResponseEntity<?> authenticate(
+    public ResponseEntity<Token> authenticate(
         @RequestBody Authentication authentication
     ) {
         if (StringUtils.isEmpty(authentication.getJwt()) || StringUtils.isEmpty(authentication.getUsername())) {
@@ -47,11 +47,12 @@ public class SafIdtController {
 
         Optional<Token> token = provider.authenticate(authentication);
 
-        if (token.isPresent()) {
-            return new ResponseEntity<>(token.get(), HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+        return token
+            .map(value ->
+                new ResponseEntity<>(value, HttpStatus.CREATED))
+            .orElseGet(
+                () -> new ResponseEntity<>(HttpStatus.UNAUTHORIZED)
+            );
     }
 
     /**
@@ -64,7 +65,7 @@ public class SafIdtController {
      * - 200 - The token is valid
      */
     @PostMapping(value = "/zss/saf/verify")
-    public ResponseEntity<?> verify(
+    public ResponseEntity<Token> verify(
         @RequestBody Token token
     ) {
         if (StringUtils.isEmpty(token.getJwt())) {
