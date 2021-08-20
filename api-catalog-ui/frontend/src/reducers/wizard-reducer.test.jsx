@@ -15,7 +15,7 @@ import {
     READY_YAML_OBJECT,
     REMOVE_INDEX,
     SELECT_ENABLER,
-    TOGGLE_DISPLAY
+    TOGGLE_DISPLAY, VALIDATE_INPUT
 } from '../constants/wizard-constants';
 import wizardReducer, {
     addDefaultValues,
@@ -23,7 +23,7 @@ import wizardReducer, {
     wizardReducerDefaultState
 } from './wizard-reducer';
 
-xdescribe('>>> Wizard reducer tests', () => {
+describe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
         expect(wizardReducer()).toEqual(wizardReducerDefaultState);
     });
@@ -74,7 +74,11 @@ xdescribe('>>> Wizard reducer tests', () => {
                 enablerName: 'Test Enabler',
                 inputData: expectedData,
                 selectedCategory: 0,
-                navTabArray: { 'Test Category': {} }
+                navsObj: { 'Test Category': {
+                    'Test Category' : [[]],
+                        silent: true,
+                        warn: false,
+                    } }
             });
     });
 
@@ -103,7 +107,11 @@ xdescribe('>>> Wizard reducer tests', () => {
             .toEqual({
                 enablerName: 'Test Enabler',
                 inputData: expectedData,
-                navTabArray: { 'Test Category': {} },
+                navsObj: { 'Test Category': {
+                        'Test Category' : [[]],
+                        silent: true,
+                        warn: false,
+                    } },
                 selectedCategory: 0
             });
     });
@@ -126,7 +134,12 @@ xdescribe('>>> Wizard reducer tests', () => {
             .toEqual({
                 enablerName: 'Test Enabler',
                 inputData: [ { text: 'CAT #0', nav: '#1' }, { text: 'CAT #1', nav: '#1' },],
-                navTabArray: { '#1': {} },
+                navsObj: { '#1': {
+                        'CAT #0' : [[]],
+                        'CAT #1' : [[]],
+                        silent: true,
+                        warn: false,
+                    } },
                 selectedCategory: 0
             });
     });
@@ -160,7 +173,11 @@ xdescribe('>>> Wizard reducer tests', () => {
                     multiple: true,
                     indentation: false,
                 }],
-                navTabArray: { 'Test Category': {} },
+                navsObj: { 'Test Category': {
+                        'Test Category' : [[]],
+                        silent: true,
+                        warn: false,
+                    } },
                 selectedCategory: 0
             });
     });
@@ -177,7 +194,7 @@ xdescribe('>>> Wizard reducer tests', () => {
         const expectedState = {
             inputData: [],
             enablerName: 'Test Enabler',
-            navTabArray: {},
+            navsObj: {},
             selectedCategory: 0
         };
         expect(wizardReducer({ inputData: [] }, {
@@ -352,111 +369,141 @@ xdescribe('>>> Wizard reducer tests', () => {
         })).toEqual(expectedState);
     });
 
-    it ('should handle CHECK_INPUT when content is an array', () => {
+    it ('should handle VALIDATE_INPUT when content is an array', () => {
         const expectedState = {
             inputData: [{
                 text: 'Category 1',
                 content: [{
+                    test: { value: '', question: 'Why?' },
+                },],
+                nav: 'Nav',
+            },],
+            navsObj: { 'Nav': {
+                    'Category 1' : [[]],
+                    silent: true,
+                    warn: false,
+                } },
+        };
+        expect(wizardReducer({
+            inputData: [{
+                text: 'Category 1',
+                content: [{
+                    test: { value: '', question: 'Why?', },
+                },],
+                nav: 'Nav',
+            },],
+            navsObj: { 'Nav': {
+                    'Category 1' : [[]],
+                    silent: true,
+                    warn: false,
+                } },
+        }, {
+            type: VALIDATE_INPUT,
+            payload: { navName: 'Nav', silent: true },
+        })).toEqual(expectedState);
+    })
+
+    it ('should handle VALIDATE_INPUT when content is not an array', () => {
+        const expectedState = {
+            inputData: [{
+                text: 'Category 1',
+                content: {
+                    test: { value: '', question: 'Why?', empty: true },
+                },
+                nav: 'Nav',
+            },],
+            navsObj: { 'Nav': {
+                    'Category 1' : [["test"]],
+                    silent: false,
+                    warn: true,
+                } },
+        };
+        expect(wizardReducer({
+            inputData: [{
+                text: 'Category 1',
+                content: {
+                    test: { value: '', question: 'Why?', },
+                },
+                nav: 'Nav',
+            },],
+            navsObj: { 'Nav': {
+                    'Category 1' : [[]],
+                    silent: true,
+                    warn: false,
+                } },
+        }, {
+            type: VALIDATE_INPUT,
+            payload: { navName: 'Nav', silent: false },
+        })).toEqual(expectedState);
+    })
+
+    it ('should handle VALIDATE_INPUT when nav name is not the same', () => {
+        const expectedState = {
+            inputData: [{
+                text: 'Category 1',
+                content: {
                     test: { value: '', question: 'Why?', empty: true, },
-                },],
-                nav: 'Nav',
-            },],
-            navTabArray: { 'Nav': { emptyField: true } },
-        };
-        expect(wizardReducer({
-            inputData: [{
-                text: 'Category 1',
-                content: [{
-                    test: { value: '', question: 'Why?', },
-                },],
-                nav: 'Nav',
-            },],
-            navTabArray: { 'Nav': {} },
-        }, {
-            type: CHECK_INPUT,
-            payload: { navName: 'Nav' },
-        })).toEqual(expectedState);
-    })
-
-    it ('should handle CHECK_INPUT when content is not an array', () => {
-        const expectedState = {
-            inputData: [{
-                text: 'Category 1',
-                content: {
-                    test: { value: '', question: 'Why?', empty: true, },
+                    test2: { value: '', question: 'Why?', optional: true, },
                 },
                 nav: 'Nav',
-            },],
-            navTabArray: { 'Nav': { emptyField: true } },
+            },
+                {
+                    text: 'Category 2',
+                    content: {
+                        test: { value: '', question: 'Why?', },
+                    },
+                    nav: 'Nav1',
+                },
+            ],
+            navsObj: {
+                'Nav': {
+                    'Category 1': [['test']],
+                    silent: false,
+                    warn: true,
+                },
+                'Nav1': {
+                    'Category 2': [[]],
+                    silent: true,
+                    warn: false,
+                },
+
+            },
         };
         expect(wizardReducer({
             inputData: [{
                 text: 'Category 1',
                 content: {
-                    test: { value: '', question: 'Why?', },
+                    test: { value: '', question: 'Why?' },
+                    test2: { value: '', question: 'Why?', optional: true, },
                 },
                 nav: 'Nav',
-            },],
-            navTabArray: { 'Nav': {} },
-        }, {
-            type: CHECK_INPUT,
-            payload: { navName: 'Nav' },
-        })).toEqual(expectedState);
-    })
-
-    it('should handle CHECK_INPUT when all fields are filled', () => {
-        const expectedState = {
-            inputData: [{
-                text: 'Category 1',
-                content: {
-                    test: { value: 'val', question: 'Why?', empty: false },
-                },
-                nav: 'Nav',
-            },],
-            navTabArray: { 'Nav': {} },
-        };
-        expect(wizardReducer({
-            inputData: [{
-                text: 'Category 1',
-                content: {
-                    test: { value: 'val', question: 'Why?', },
-                },
-                nav: 'Nav',
-            },],
-            navTabArray: { 'Nav': {} },
-        }, {
-            type: CHECK_INPUT,
-            payload: { navName: 'Nav' },
-        })).toEqual(expectedState);
-    })
-
-    it('should handle CHECK_INPUT when all fields are filled and content is an array', () => {
-        const expectedState = {
-            inputData: [{
-                text: 'Category 1',
-                content: [{
-                    test: { value: 'val', question: 'Why?', empty: false },
+            },
+                {
+                    text: 'Category 2',
+                    content: {
+                        test: { value: '', question: 'Why?', },
+                    },
+                    nav: 'Nav1',
                 },],
-                nav: 'Nav',
-            },],
-            navTabArray: { 'Nav': {} },
-        };
-        expect(wizardReducer({
-            inputData: [{
-                text: 'Category 1',
-                content: [{
-                    test: { value: 'val', question: 'Why?', },
-                },],
-                nav: 'Nav',
-            },],
-            navTabArray: { 'Nav': {} },
+            navsObj: {
+                'Nav': {
+                    'Category 1': [[]],
+                    silent: true,
+                    warn: false,
+                },
+                'Nav1': {
+                    'Category 2': [[]],
+                    silent: true,
+                    warn: false,
+                },
+            }
         }, {
-            type: CHECK_INPUT,
-            payload: { navName: 'Nav' },
+            type: VALIDATE_INPUT,
+            payload: { navName: 'Nav', silent: false },
         })).toEqual(expectedState);
     })
 
-    it ('should handle CHECK_INPUT when nav name is not the same', () => {
+    it('should handle VALIDATE_INPUT when the passed navName does not exist', () => {
         const expectedState = {
             inputData: [{
                 text: 'Category 1',
@@ -465,6 +512,11 @@ xdescribe('>>> Wizard reducer tests', () => {
                 },
                 nav: 'Nav',
             },],
+            navsObj: { 'Nav': {
+                    'Category 1' : [[]],
+                    silent: true,
+                    warn: false,
+                } },
         };
         expect(wizardReducer({
             inputData: [{
@@ -474,9 +526,14 @@ xdescribe('>>> Wizard reducer tests', () => {
                 },
                 nav: 'Nav',
             },],
+            navsObj: { 'Nav': {
+                    'Category 1' : [[]],
+                    silent: true,
+                    warn: false,
+                } },
         }, {
-            type: CHECK_INPUT,
-            payload: { navName: 'Something' },
+            type: VALIDATE_INPUT,
+            payload: { navName: 'Nav1', silent: false },
         })).toEqual(expectedState);
     })
 
@@ -539,27 +596,4 @@ xdescribe('>>> Wizard reducer tests', () => {
         const newCategory = setDefault(category, defaults);
         expect(newCategory).toEqual(expectedCategory);
     });
-
-    it('should check for empty input fields', () => {
-        const content = {
-            test: { value: '', question: 'Why?', },
-        }
-        const result = emptyFieldsForCategory(content);
-        expect(result).toEqual(true);
-    })
-
-    it('should handle empty input fields when optional', () => {
-        const content = {
-            test: { value: '', question: 'Why?', optional: true },
-        }
-        const result = emptyFieldsForCategory(content);
-        expect(result).toEqual(false);
-    })
-
-    it('should not alter the nav array if the nav name is not the same', () => {
-        const navArr = [{ name: 'Nav' }];
-        const navName = 'Not Nav';
-        const newArr = emptyNav(navArr, navName);
-        expect(newArr).toEqual(navArr);
-    })
 });

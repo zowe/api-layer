@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import * as log from 'loglevel';
 import _ from 'lodash';
 import {
     CHANGE_CATEGORY,
@@ -107,7 +106,6 @@ function emptyFieldsOfContent(content, silent) {
             }
         }
     });
-    log.error({ emptyFieldsArr, content });
     return emptyFieldsArr;
 }
 
@@ -133,7 +131,7 @@ export function findEmptyFieldsOfCategory(content, silent) {
 /**
  * Reducer for the Wizard Dialog
  * @param state state; contains all global variables for the wizrd reducer
- * @param action when a component fires an action it's payload is unloaded here
+ * @param action when a component fires an action its payload is unloaded here
  * @param config additional configuration
  * @returns {any}
  */
@@ -207,6 +205,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
         case VALIDATE_INPUT: {
             const { navName, silent } = action.payload;
             const newObj = { ...state.navsObj };
+            if (newObj[navName] === undefined) return state;
             state.inputData.forEach(category => {
                 if (category.nav === navName) {
                     newObj[category.nav][category.text] = findEmptyFieldsOfCategory(category.content, silent);
@@ -223,7 +222,6 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
                 }
             });
             newObj[navName].warn = numOfEmptyFields > 0;
-            log.error(newObj);
             return { ...state, navsObj: newObj };
         }
         default:
