@@ -70,10 +70,10 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             }
 
             Token responseBody = re.getBody();
-            if(responseBody == null) {
+            if (responseBody == null) {
                 return Optional.empty();
             }
-            
+
             return Optional.of(responseBody.getJwt());
         } catch (HttpClientErrorException.Unauthorized e) {
             return Optional.empty();
