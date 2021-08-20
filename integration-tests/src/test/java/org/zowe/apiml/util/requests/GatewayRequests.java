@@ -117,7 +117,7 @@ public class GatewayRequests {
         }
     }
 
-    private URI getGatewayUriWithPath(String path) throws URISyntaxException {
+    public URI getGatewayUriWithPath(String path) throws URISyntaxException {
         return new URIBuilder()
             .setScheme(scheme)
             .setHost(host)

@@ -14,7 +14,6 @@ import com.jayway.jsonpath.ReadContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.Credentials;
 import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
 
 import java.net.URI;
@@ -29,7 +28,6 @@ import static org.hamcrest.core.Is.is;
 public class DiscoverableClientRequests {
 
     private static final DiscoverableClientConfiguration discoverableClientConfiguration =  ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
-    private static final Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
 
     private final Requests requests;
     private final String scheme;
