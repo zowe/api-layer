@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.integration.ha;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,8 +22,6 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.ChaoticHATest;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.categories.WebsocketTest;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.requests.ha.HADiscoverableClientRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
@@ -38,11 +35,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@TestsNotMeantForZowe
-@WebsocketTest
+/**
+ * Verify behaviour of the Websocket under HA and chaotic testing
+ */
 @ChaoticHATest
-@Slf4j
-class WebSocketMultipleInstancesTest implements TestWithStartedInstances {
+class WebSocketChaoticTest implements TestWithStartedInstances {
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests("wss");
     private final HADiscoverableClientRequests haDiscoverableClientRequests = new HADiscoverableClientRequests();
     private static final int WAIT_TIMEOUT_MS = 10000;
@@ -99,12 +96,6 @@ class WebSocketMultipleInstancesTest implements TestWithStartedInstances {
         return client.doHandshake(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
     }
 
-    private WebSocketSession appendingWebSocketSession(String url, StringBuilder response, int countToNotify)
-        throws Exception {
-        return appendingWebSocketSession(url, null, response, countToNotify);
-    }
-
-
     @Nested
     class WhenRoutingSessionGivenHA {
         @Nested
@@ -120,8 +111,6 @@ class WebSocketMultipleInstancesTest implements TestWithStartedInstances {
 
                     //shutdown one instance of DC to check whether the message can reach out the other instance
                     haDiscoverableClientRequests.shutdown(0);
-                    log.info("Websocket Session URL: {}", session.getUri());
-                    log.info("Websocket Session Address: {}", session.getLocalAddress());
                     session.sendMessage(new TextMessage("hello world!"));
                     synchronized (response) {
                         response.wait(WAIT_TIMEOUT_MS);
@@ -137,6 +126,29 @@ class WebSocketMultipleInstancesTest implements TestWithStartedInstances {
                     final StringBuilder response = new StringBuilder();
 
                     // Create websocket session using the second instance of Gateway
+                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 1), VALID_AUTH_HEADERS, response, 1);
+
+                    session.sendMessage(new TextMessage("hello world 2!"));
+                    synchronized (response) {
+                        response.wait(WAIT_TIMEOUT_MS);
+                    }
+
+                    assertEquals("HELLO WORLD 2!", response.toString());
+                    session.close();
+                }
+            }
+
+            @Nested
+            class WhenAGatewayInstanceIsOff {
+
+                @ParameterizedTest(name = "WhenRoutingSessionGivenHA.OpeningASession.WhenAGatewayInstanceIsOff#newSessionCanBeCreated {0}")
+                @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+                void newSessionCanBeCreated(String path) throws Exception {
+                    final StringBuilder response = new StringBuilder();
+
+                    // take of an instance of Gateway
+                    haGatewayRequests.shutdown(0);
+                    // Create websocket session using the second alive instance of Gateway
                     WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 1), VALID_AUTH_HEADERS, response, 1);
 
                     session.sendMessage(new TextMessage("hello world 2!"));
