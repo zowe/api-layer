@@ -24,16 +24,14 @@ import static org.hamcrest.CoreMatchers.is;
 
 public class SafIdtProviderTest {
     private SafIdtProvider underTest;
-    private Map<String, String> tokens;
-
-    @BeforeEach
-    void setUp() {
-        tokens = new HashMap<>();
-        underTest = new SafIdtProvider(tokens);
-    }
 
     @Nested
     class WhenAuthenticating {
+        @BeforeEach
+        void setUp() {
+            underTest = new SafIdtProvider();
+        }
+
         @Nested
         class GivenAuthenticationWithUsername {
             @Test
@@ -50,6 +48,14 @@ public class SafIdtProviderTest {
 
     @Nested
     class WhenVerifying {
+        private Map<String, String> tokens;
+
+        @BeforeEach
+        void setUp() {
+            tokens = new HashMap<>();
+            underTest = new SafIdtProvider(tokens);
+        }
+
         @Nested
         class GivenExistingToken {
             @Test

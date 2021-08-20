@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-public class SafIdtControllerTest {
+class SafIdtControllerTest {
     private MockMvc mockMvc;
 
     @Mock
@@ -46,6 +46,15 @@ public class SafIdtControllerTest {
     void whenCallAuthenticateEndpointWithoutPayload_thenReturnBadRequest() throws Exception {
         mockMvc
             .perform(post("/zss/saf/authenticate"))
+            .andExpect(status().is(SC_BAD_REQUEST));
+    }
+
+    @Test
+    void whenCallAuthenticateEndpointWithWrongPayload_thenReturnBadRequest() throws Exception {
+        mockMvc
+            .perform(post("/zss/saf/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\": \"\", \"jwt\": \"\"}"))
             .andExpect(status().is(SC_BAD_REQUEST));
     }
 
@@ -68,6 +77,15 @@ public class SafIdtControllerTest {
     void whenCallVerifyEndpointWithoutPayload_thenReturnBadRequest() throws Exception {
         mockMvc
             .perform(post("/zss/saf/verify"))
+            .andExpect(status().is(SC_BAD_REQUEST));
+    }
+
+    @Test
+    void whenCallVerifyEndpointWithWrongPayload_thenReturnBadRequest() throws Exception {
+        mockMvc
+            .perform(post("/zss/saf/verify")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"jwt\": \"\"}"))
             .andExpect(status().is(SC_BAD_REQUEST));
     }
 
