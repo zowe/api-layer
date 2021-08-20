@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.integration.ha;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestsNotMeantForZowe
 @WebsocketTest
 @ChaoticHATest
+@Slf4j
 class WebSocketMultipleInstancesTest implements TestWithStartedInstances {
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests("wss");
     private final HADiscoverableClientRequests haDiscoverableClientRequests = new HADiscoverableClientRequests();
@@ -118,7 +120,8 @@ class WebSocketMultipleInstancesTest implements TestWithStartedInstances {
 
                     //shutdown one instance of DC to check whether the message can reach out the other instance
                     haDiscoverableClientRequests.shutdown(0);
-
+                    log.info("Websocket Session URL: {}", session.getUri());
+                    log.info("Websocket Session Address: {}", session.getLocalAddress());
                     session.sendMessage(new TextMessage("hello world!"));
                     synchronized (response) {
                         response.wait(WAIT_TIMEOUT_MS);
