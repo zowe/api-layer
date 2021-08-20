@@ -187,10 +187,10 @@ describe('>>> Wizard actions tests', () => {
 
     it('should check for filled input', () => {
         const expectedAction = {
-            type: constants.CHECK_INPUT,
-            payload: { navName: 'Nav' },
+            type: constants.VALIDATE_INPUT,
+            payload: { navName: 'Nav', silent: true },
         };
-        expect(actions.checkFilledInput('Nav')).toEqual(expectedAction);
+        expect(actions.validateInput('Nav', true)).toEqual(expectedAction);
     });
 
 });

@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import * as log from 'loglevel';
+import { IconError } from 'mineral-ui-icons';
 import Tabs, { Tab } from 'mineral-ui/Tabs';
 import WizardInputsContainer from './WizardInputsContainer';
 import YAMLVisualizerContainer from '../YAML/YAMLVisualizerContainer';
@@ -12,17 +14,26 @@ class WizardNavigation extends Component {
 
     /**
      * React on navTab click
-     * @param event number - indx of the tab to be switched to
+     * @param event number - index of the tab to be switched to
      */
     handleChange = event => {
         if (typeof event === 'number') {
-            this.props.checkFilledInput(Object.keys(this.props.navTabArray)[this.props.selectedCategory]);
+            const navNamesArr = Object.keys(this.props.navsObj);
+            if (this.props.selectedCategory < navNamesArr.length) {
+                this.props.validateInput(navNamesArr[this.props.selectedCategory], false);
+            }
+            if (event === navNamesArr.length) {
+                navNamesArr.forEach(navName => {
+                    log.error(navName);
+                    this.props.validateInput(navName, false);
+                });
+            }
             this.props.changeWizardCategory(event);
         }
     };
 
     /**
-     * Handles frouping of multiple categories under a single navTab
+     * Handles grouping of multiple categories under a single navTab
      * @returns {{}} object containing all the categories that should be under the specific tab grouped under a bigger object
      */
     returnNavs() {
@@ -49,11 +60,7 @@ class WizardNavigation extends Component {
             const categoryArr = entry[1];
             index += 1;
             return (
-                <Tab
-                    key={index}
-                    title={name}
-                    className={this.props.navTabArray[name].emptyField ? 'problematicTab' : undefined}
-                >
+                <Tab key={index} title={name} icon={this.props.navsObj[name].warn ? <IconError /> : undefined}>
                     {categoryArr}
                 </Tab>
             );

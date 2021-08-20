@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import * as log from 'loglevel';
 import React, { Component } from 'react';
 import { Checkbox, FormField, Select } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
@@ -17,6 +16,7 @@ import { IconDelete } from 'mineral-ui-icons';
 class WizardInputs extends Component {
     constructor(props) {
         super(props);
+        this.state = {};
         this.handleInputChange = this.handleInputChange.bind(this);
         this.addFields = this.addFields.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
@@ -43,7 +43,7 @@ class WizardInputs extends Component {
             }
             const newContent = {
                 ...objectToChange.content,
-                [name]: { ...objectToChange.content[name], value, question },
+                [name]: { ...objectToChange.content[name], value, question, interactedWith: true },
             };
             this.updateDataWithNewContent(objectToChange, newContent);
         } else {
@@ -54,9 +54,13 @@ class WizardInputs extends Component {
                 objectToChange.content[arrIndex][name].empty = false;
             }
             const arr = [...objectToChange.content];
-            arr[arrIndex] = { ...arr[arrIndex], [name]: { ...objectToChange.content[name], question, value } };
+            arr[arrIndex] = {
+                ...arr[arrIndex],
+                [name]: { ...objectToChange.content[name], question, value, interactedWith: true },
+            };
             this.updateDataWithNewContent(objectToChange, arr);
         }
+        this.props.validateInput(objectToChange.nav, true);
     };
 
     /**
@@ -121,17 +125,12 @@ class WizardInputs extends Component {
     };
 
     handleDelete(event) {
-        let filledField = false;
-        this.props.checkFilledInput(this.props.data.nav);
-        Object.entries(this.props.data.content[event.target.name]).forEach(field => {
-            if (!field[1].empty && !filledField) {
-                filledField = true;
-            }
-        });
-        if (!filledField) {
+        this.props.validateInput(this.props.data.nav, true);
+        if (!this.state[`delBtn${event.target.name}`]) {
+            this.setState({ [`delBtn${event.target.name}`]: true });
+        } else if (this.state[`delBtn${event.target.name}`]) {
             this.props.deleteCategoryConfig(event.target.name, this.props.data.text);
-        } else {
-            log.error('Deleting a non-empty set');
+            this.setState({ [`delBtn${event.target.name}`]: false });
         }
     }
 
@@ -154,6 +153,9 @@ class WizardInputs extends Component {
             let result = [];
             let index = 0;
             dataAsObject.content.forEach(c => {
+                if (index !== 0 && typeof this.state[`delBtn${index}`] === 'undefined') {
+                    this.setState({ [`delBtn${index}`]: false });
+                }
                 result.push(
                     <div key={`divider-${index}`} className="categoryConfigDivider">
                         <h5 className="categoryInnerDivider">
@@ -164,10 +166,12 @@ class WizardInputs extends Component {
                                 variant="danger"
                                 minimal
                                 size="medium"
-                                iconStart={<IconDelete />}
+                                iconStart={!this.state[`delBtn${index}`] ? <IconDelete /> : undefined}
                                 name={index}
                                 onClick={this.handleDelete}
-                            />
+                            >
+                                {this.state[`delBtn${index}`] ? 'Confirm' : null}
+                            </Button>
                         )}
                     </div>
                 );

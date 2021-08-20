@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import {
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
@@ -15,7 +16,7 @@ import {
     CHANGE_CATEGORY,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
-    CHECK_INPUT,
+    VALIDATE_INPUT,
 } from '../constants/wizard-constants';
 
 /**
@@ -168,9 +169,14 @@ export function deleteCategoryConfig(index, text) {
     };
 }
 
-export function checkFilledInput(navName) {
+/**
+ * Validate input of a nav
+ * @param navName name of the nav to be checked
+ * @param silent respect/override interactedWith
+ */
+export function validateInput(navName, silent) {
     return {
-        type: CHECK_INPUT,
-        payload: { navName },
+        type: VALIDATE_INPUT,
+        payload: { navName, silent },
     };
 }
