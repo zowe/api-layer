@@ -94,6 +94,7 @@ chmod +x bin/*
 mkdir "apiml-common-lib"
 cd "apiml-common-lib"
 unzip "${REPO_ROOT_DIR}/apiml-common-lib-package/build/distributions/apiml-common-lib-package-null.zip"
+chmod +x bin/*
 
 cd "${REPO_ROOT_DIR}"
 cp README.md "${BASE_DIR}/${WORK_DIR}"

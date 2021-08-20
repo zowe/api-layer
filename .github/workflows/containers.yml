@@ -9,9 +9,6 @@ on:
 jobs:
     BuildWithoutJibTest:
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                images: [api-catalog-services, ]
         steps:
             -   uses: actions/checkout@v2
                 with:

@@ -90,17 +90,6 @@ export LIBPATH="$LIBPATH":
 
 GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
-    -Xms32m -Xmx256m \
-    ${QUICK_START} \
-    -Dibm.serversocket.recover=true \
-    -Dfile.encoding=UTF-8 \
-    -Djava.io.tmpdir=/tmp \
-    -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
-    -Dspring.profiles.include=$LOG_LEVEL \
-    -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
-    -Dapiml.service.port=${GATEWAY_PORT} \
-    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
     -Dapiml.service.allowEncodedSlashes=${APIML_ALLOW_ENCODED_SLASHES} \
     -Dapiml.service.corsEnabled=${APIML_CORS_ENABLED} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID} \
@@ -142,7 +131,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.authorization.resourceNamePrefix=${RESOURCE_NAME_PREFIX:-APIML.} \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${GATEWAY_LOADER_PATH} \
+    -Dloader.path=$CMMN_LB \
     -Djava.library.path=${LIBRARY_PATH} \
     -jar ${JAR_FILE} &
 pid=$!
