@@ -45,18 +45,12 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
     private static final int WAIT_TIMEOUT_MS = 10000;
 
     private static final WebSocketHttpHeaders VALID_AUTH_HEADERS = new WebSocketHttpHeaders();
-    private static final WebSocketHttpHeaders INVALID_AUTH_HEADERS = new WebSocketHttpHeaders();
 
     @BeforeAll
     static void setup() {
         String plainCred = "user:pass";
         String base64cred = Base64.getEncoder().encodeToString(plainCred.getBytes());
         VALID_AUTH_HEADERS.add("Authorization", "Basic " + base64cred);
-
-        String invalidPlainCred = "user:invalidPass";
-        String invalidBase64cred = Base64.getEncoder().encodeToString(invalidPlainCred.getBytes());
-        INVALID_AUTH_HEADERS.add("Authorization", "Basic " + invalidBase64cred);
-
     }
 
     private TextWebSocketHandler appendResponseHandler(StringBuilder target, int countToNotify) {
@@ -109,7 +103,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
 
                     WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 0), VALID_AUTH_HEADERS, response, 1);
 
-                    //shutdown one instance of DC to check whether the message can reach out the other instance
+                    // shutdown one instance of DC to check whether the message can reach out the other instance
                     haDiscoverableClientRequests.shutdown(0);
                     session.sendMessage(new TextMessage("hello world!"));
                     synchronized (response) {
@@ -125,7 +119,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                 void newSessionCanBeCreated(String path) throws Exception {
                     final StringBuilder response = new StringBuilder();
 
-                    // Create websocket session using the second instance of Gateway
+                    // create websocket session using the second instance of Gateway
                     WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 1), VALID_AUTH_HEADERS, response, 1);
 
                     session.sendMessage(new TextMessage("hello world 2!"));
@@ -146,9 +140,9 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                 void newSessionCanBeCreated(String path) throws Exception {
                     final StringBuilder response = new StringBuilder();
 
-                    // take of an instance of Gateway
+                    // take off an instance of Gateway
                     haGatewayRequests.shutdown(0);
-                    // Create websocket session using the second alive instance of Gateway
+                    // create websocket session using the second alive instance of Gateway
                     WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 1), VALID_AUTH_HEADERS, response, 1);
 
                     session.sendMessage(new TextMessage("hello world 2!"));
