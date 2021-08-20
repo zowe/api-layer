@@ -47,7 +47,7 @@ public class GatewayRequests {
         this(gatewayServiceConfiguration.getScheme(), host, Integer.parseInt(port), new Requests());
     }
 
-    public GatewayRequests(String host, String port, String scheme) {
+    public GatewayRequests(String scheme, String host, String port) {
         this(scheme, host, Integer.parseInt(port), new Requests());
     }
 
