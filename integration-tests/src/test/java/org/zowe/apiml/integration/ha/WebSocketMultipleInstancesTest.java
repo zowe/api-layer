@@ -11,7 +11,6 @@ package org.zowe.apiml.integration.ha;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.web.socket.CloseStatus;
@@ -37,7 +36,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestsNotMeantForZowe
 @WebsocketTest
@@ -49,8 +47,6 @@ class WebSocketMultipleInstancesTest implements TestWithStartedInstances {
 
     private static final WebSocketHttpHeaders VALID_AUTH_HEADERS = new WebSocketHttpHeaders();
     private static final WebSocketHttpHeaders INVALID_AUTH_HEADERS = new WebSocketHttpHeaders();
-    private static final String validToken = "apimlAuthenticationToken=tokenValue";
-
 
     @BeforeAll
     static void setup() {
@@ -110,132 +106,46 @@ class WebSocketMultipleInstancesTest implements TestWithStartedInstances {
     @Nested
     class WhenRoutingSessionGivenHA {
         @Nested
-        class Authentication {
+        class OpeningASession {
             @Nested
-            class WhenValid {
-                @Nested
-                class ReturnSuccess {
-                    @ParameterizedTest(name = "WhenRoutingSessionGivenHA.Authentication.WhenValid.ReturnSuccess#message {0}")
-                    @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
-                    void message(String path) throws Exception {
-                        final StringBuilder response = new StringBuilder();
-
-                        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 0), VALID_AUTH_HEADERS, response, 1);
-                        //shutdown one instance of DC
-                        haDiscoverableClientRequests.shutdown(0);
-
-                        session.sendMessage(new TextMessage("hello world!"));
-                        synchronized (response) {
-                            response.wait(WAIT_TIMEOUT_MS);
-                        }
-
-                        assertEquals("HELLO WORLD!", response.toString());
-                        session.close();
-                    }
-
-                    @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#headers {0}")
-                    @ValueSource(strings = {"/discoverableclient/ws/v1/header", "/ws/v1/discoverableclient/header"})
-                    void headers(String path) throws Exception {
-                        final StringBuilder response = new StringBuilder();
-                        if (!VALID_AUTH_HEADERS.containsKey("X-Test")) {
-                            VALID_AUTH_HEADERS.add("X-Test", "value");
-                        }
-                        VALID_AUTH_HEADERS.add("Cookie", validToken);
-                        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 0), VALID_AUTH_HEADERS, response, 1);
-
-                        session.sendMessage(new TextMessage("gimme those headers"));
-                        synchronized (response) {
-                            response.wait(WAIT_TIMEOUT_MS);
-                        }
-
-                        assertTrue(response.toString().contains("x-test:\"value\""));
-                        assertTrue(response.toString().contains(validToken));
-                        session.sendMessage(new TextMessage("bye"));
-                        session.close();
-                    }
-                }
-
-                @Nested
-                class ReturnError {
-                    @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#headers {0}")
-                    @ValueSource(strings = {"/discoverableclient/ws/v1/bad", "/ws/v1/discoverableclient/bad"})
-                    void whenPathIsNotCorrect(String path) throws Exception {
-                        final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl(path, 0), VALID_AUTH_HEADERS, response, 1);
-
-                        synchronized (response) {
-                            response.wait(WAIT_TIMEOUT_MS);
-                        }
-
-                        System.out.println("Response: " + response.toString());
-                        assertEquals(0, response.toString().indexOf("CloseStatus[code=1003,"));
-                    }
-
-                    @Test
-                    void whenServiceIsNotCorrect() throws Exception {
-                        final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl("/ws/v1/wrong-service/uppercase", 0), VALID_AUTH_HEADERS, response, 1);
-
-                        synchronized (response) {
-                            response.wait(WAIT_TIMEOUT_MS);
-                        }
-
-                        assertEquals("CloseStatus[code=1003, reason=Requested service wrong-service is not known by the gateway]",
-                            response.toString());
-                    }
-
-                    @Test
-                    void whenUrlFormatIsNotCorrect() throws Exception {
-                        final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong", 0), response, 1);
-
-                        synchronized (response) {
-                            response.wait(WAIT_TIMEOUT_MS);
-                        }
-
-                        assertEquals("CloseStatus[code=1003, reason=Invalid URL format]", response.toString());
-                    }
-                }
-            }
-
-            @Nested
-            class WhenInvalid {
-                @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#message {0}")
+            class WhenAnInstanceIsOff {
+                @ParameterizedTest(name = "WhenRoutingSessionGivenHA.OpeningASession.WhenAnInstanceIsOff#propagateTheSessionToTheAliveInstance {0}")
                 @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
-                void returnError(String path) throws Exception {
+                void propagateTheSessionToTheAliveInstance(String path) throws Exception {
                     final StringBuilder response = new StringBuilder();
 
-                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 0), INVALID_AUTH_HEADERS, response, 1);
+                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 0), VALID_AUTH_HEADERS, response, 1);
+
+                    //shutdown one instance of DC to check whether the message can reach out the other instance
+                    haDiscoverableClientRequests.shutdown(0);
 
                     session.sendMessage(new TextMessage("hello world!"));
                     synchronized (response) {
                         response.wait(WAIT_TIMEOUT_MS);
                     }
 
-                    assertEquals("CloseStatus[code=1003, reason=Invalid login credentials]", response.toString());
+                    assertEquals("HELLO WORLD!", response.toString());
+                    session.close();
+                }
+
+                @ParameterizedTest(name = "WhenRoutingSessionGivenHA.OpeningASession.WhenAnInstanceIsOff#newSessionCanBeCreated {0}")
+                @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+                void newSessionCanBeCreated(String path) throws Exception {
+                    final StringBuilder response = new StringBuilder();
+
+                    // Create websocket session using the second instance of Gateway
+                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 1), VALID_AUTH_HEADERS, response, 1);
+
+                    session.sendMessage(new TextMessage("hello world 2!"));
+                    synchronized (response) {
+                        response.wait(WAIT_TIMEOUT_MS);
+                    }
+
+                    assertEquals("HELLO WORLD 2!", response.toString());
                     session.close();
                 }
             }
         }
-
     }
-
-    @Nested
-    class WhenClosingSession {
-        @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#message {0}")
-        @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
-        void getCorrectResponse(String path) throws Exception {
-            final StringBuilder response = new StringBuilder();
-            WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 0), VALID_AUTH_HEADERS, response, 2);
-
-            session.sendMessage(new TextMessage("bye"));
-            synchronized (response) {
-                response.wait(WAIT_TIMEOUT_MS);
-            }
-
-            assertEquals("BYECloseStatus[code=1000, reason=null]", response.toString());
-        }
-    }
-
 
 }
