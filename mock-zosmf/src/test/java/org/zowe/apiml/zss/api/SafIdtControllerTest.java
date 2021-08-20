@@ -74,6 +74,15 @@ class SafIdtControllerTest {
     }
 
     @Test
+    void whenCallAuthenticateEndpointWithInvalidToken_thenReturnUnauthorized() throws Exception {
+        mockMvc
+            .perform(post("/zss/saf/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\": \"validUser\", \"jwt\": \"invalidToken\"}"))
+            .andExpect(status().is(SC_UNAUTHORIZED));
+    }
+
+    @Test
     void whenCallVerifyEndpointWithoutPayload_thenReturnBadRequest() throws Exception {
         mockMvc
             .perform(post("/zss/saf/verify"))
@@ -98,5 +107,16 @@ class SafIdtControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"jwt\": \"safJwt\"}"))
             .andExpect(status().is(SC_OK));
+    }
+
+    @Test
+    void whenCallVerifyEndpointWithInvalidToken_thenReturnUnauthorized() throws Exception {
+        when(safProvider.verify(any())).thenReturn(false);
+
+        mockMvc
+            .perform(post("/zss/saf/verify")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"jwt\": \"invalid\"}"))
+            .andExpect(status().is(SC_UNAUTHORIZED));
     }
 }
