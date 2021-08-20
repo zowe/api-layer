@@ -161,18 +161,7 @@ class WizardInputs extends Component {
                         <h5 className="categoryInnerDivider">
                             {dataAsObject.text} #{index}:
                         </h5>
-                        {index === 0 ? null : (
-                            <Button
-                                variant="danger"
-                                minimal
-                                size="medium"
-                                iconStart={!this.state[`delBtn${index}`] ? <IconDelete /> : undefined}
-                                name={index}
-                                onClick={this.handleDelete}
-                            >
-                                {this.state[`delBtn${index}`] ? 'Confirm' : null}
-                            </Button>
-                        )}
+                        {this.renderDeleteButton(index)}
                     </div>
                 );
                 result = result.concat(this.renderInputs(c, index));
@@ -183,6 +172,12 @@ class WizardInputs extends Component {
         return this.renderInputs(dataAsObject.content);
     };
 
+    /**
+     * Makes sure all inputs the given field depends on have the correct values
+     * @param dependencies array of dependencies for the field
+     * @param content content of the category
+     * @returns {boolean} true if all dependencies are ok.
+     */
     dependenciesSatisfied(dependencies, content) {
         let satisfied = true;
         Object.entries(dependencies).forEach(entry => {
@@ -192,6 +187,27 @@ class WizardInputs extends Component {
             }
         });
         return satisfied;
+    }
+
+    /**
+     * Allow user to delete set, unless it's the first one.
+     * @param index index of the set
+     * @returns {JSX.Element|null} null or the Button for set deletion
+     */
+    renderDeleteButton(index) {
+        if (index === 0) return null;
+        return (
+            <Button
+                variant="danger"
+                minimal
+                size="medium"
+                iconStart={!this.state[`delBtn${index}`] ? <IconDelete /> : undefined}
+                name={index}
+                onClick={this.handleDelete}
+            >
+                {this.state[`delBtn${index}`] ? 'Confirm' : null}
+            </Button>
+        );
     }
 
     /**
@@ -243,6 +259,7 @@ class WizardInputs extends Component {
         } else {
             caption = undefined;
         }
+        const variant = empty ? 'danger' : undefined;
         if (typeof value === 'boolean') {
             return (
                 <Checkbox
@@ -265,7 +282,7 @@ class WizardInputs extends Component {
                     placeholder={itemKey}
                     selectedItem={{ text: value }}
                     label={question}
-                    variant={empty ? 'danger' : undefined}
+                    variant={variant}
                     caption={caption}
                     data={options.map(entry => ({
                         text: entry,
@@ -284,7 +301,7 @@ class WizardInputs extends Component {
                 placeholder={itemKey}
                 value={value}
                 label={question}
-                variant={empty ? 'danger' : undefined}
+                variant={variant}
                 caption={caption}
             />
         );
