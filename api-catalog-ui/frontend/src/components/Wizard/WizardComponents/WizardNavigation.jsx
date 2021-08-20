@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import * as log from 'loglevel';
 import { IconError } from 'mineral-ui-icons';
 import Tabs, { Tab } from 'mineral-ui/Tabs';
 import WizardInputsContainer from './WizardInputsContainer';
@@ -24,7 +23,6 @@ class WizardNavigation extends Component {
             }
             if (event === navNamesArr.length) {
                 navNamesArr.forEach(navName => {
-                    log.error(navName);
                     this.props.validateInput(navName, false);
                 });
             }

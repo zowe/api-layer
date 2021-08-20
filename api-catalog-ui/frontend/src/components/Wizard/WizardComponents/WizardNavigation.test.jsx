@@ -10,25 +10,63 @@
 import React from 'react';
 import * as enzyme from 'enzyme';
 import WizardNavigation from './WizardNavigation';
-xdescribe('>>> Wizard navigation tests', () => {
+import { IconError } from 'mineral-ui-icons';
+
+describe('>>> Wizard navigation tests', () => {
     it('should handle category change', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
-        const checkFilledInput = jest.fn();
+        const validateInput = jest.fn();
         const wrapper = enzyme.shallow(
             <WizardNavigation
                 selectedCategory={0}
                 inputData={[]}
-                navTabArray={{}}
+                navsObj={{ 'Nav1': {} }}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
-                checkFilledInput={checkFilledInput}
+                validateInput={validateInput}
             />
         );
         const instance = wrapper.instance();
         instance.handleChange(2);
         expect(changeWizardCategory).toHaveBeenCalled();
-        expect(checkFilledInput).toHaveBeenCalled();
+        expect(validateInput).toHaveBeenCalled();
+    });
+    it('should validate all tabs on YAML tab click', () => {
+        const next = jest.fn();
+        const changeWizardCategory = jest.fn();
+        const validateInput = jest.fn();
+        const wrapper = enzyme.shallow(
+            <WizardNavigation
+                selectedCategory={0}
+                inputData={[]}
+                navsObj={{ 'Nav1': {}, 'Nav2': {} }}
+                nextWizardCategory={next}
+                changeWizardCategory={changeWizardCategory}
+                validateInput={validateInput}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.handleChange(2);
+        expect(validateInput).toHaveBeenCalledTimes(3);
+    });
+    it('should validate all tabs on YAML tab click', () => {
+        const next = jest.fn();
+        const changeWizardCategory = jest.fn();
+        const validateInput = jest.fn();
+        const wrapper = enzyme.shallow(
+            <WizardNavigation
+                selectedCategory={3}
+                inputData={[]}
+                navsObj={{ 'Nav1': {}, 'Nav2': {} }}
+                nextWizardCategory={next}
+                changeWizardCategory={changeWizardCategory}
+                validateInput={validateInput}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.handleChange(1);
+        expect(validateInput).toHaveBeenCalledTimes(0);
     });
     it('should ignore certain events', () => {
         const next = jest.fn();
@@ -48,7 +86,7 @@ xdescribe('>>> Wizard navigation tests', () => {
     it('should load the tabs', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
-        const checkFilledInput = jest.fn()
+        const checkFilledInput = jest.fn();
         const dummyData = [
             {
                 text: 'Some Enabler',
@@ -71,7 +109,7 @@ xdescribe('>>> Wizard navigation tests', () => {
             <WizardNavigation
                 selectedCategory={0}
                 inputData={dummyData}
-                navTabArray={{'Nav #1': {}}}
+                navsObj={{ 'Nav #1': {} }}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 checkFilledInput={checkFilledInput}
@@ -84,7 +122,7 @@ xdescribe('>>> Wizard navigation tests', () => {
     it('should add a class name for the problematic tabs', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
-        const checkFilledInput = jest.fn()
+        const checkFilledInput = jest.fn();
         const dummyData = [
             {
                 text: 'Category 1',
@@ -98,40 +136,13 @@ xdescribe('>>> Wizard navigation tests', () => {
             <WizardNavigation
                 selectedCategory={0}
                 inputData={dummyData}
-                navTabArray={{'Nav #1': {}}}
+                navsObj={{ 'Nav #1': { warn: true } }}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 checkFilledInput={checkFilledInput}
 
             />
         );
-        expect(wrapper.find('.problematicTab').length).toEqual(0);
-    })
-
-    it('should add a class name for the problematic tabs', () => {
-        const next = jest.fn();
-        const changeWizardCategory = jest.fn();
-        const checkFilledInput = jest.fn()
-        const dummyData = [
-            {
-                text: 'Category 1',
-                content: [{
-                    test: { value: '', question: 'Why?', },
-                },],
-                nav: 'Nav #1',
-            },
-        ];
-        const wrapper = enzyme.shallow(
-            <WizardNavigation
-                selectedCategory={0}
-                inputData={dummyData}
-                navTabArray={{'Nav #1': {emptyField: true}}}
-                nextWizardCategory={next}
-                changeWizardCategory={changeWizardCategory}
-                checkFilledInput={checkFilledInput}
-
-            />
-        );
-        expect(wrapper.find('.problematicTab').length).toEqual(1);
-    })
+        expect(wrapper.instance().loadTabs()[0].props.icon).toEqual(<IconError />);
+    });
 });

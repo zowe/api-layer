@@ -128,7 +128,7 @@ class WizardInputs extends Component {
         this.props.validateInput(this.props.data.nav, true);
         if (!this.state[`delBtn${event.target.name}`]) {
             this.setState({ [`delBtn${event.target.name}`]: true });
-        } else if (this.state[`delBtn${event.target.name}`]) {
+        } else {
             this.props.deleteCategoryConfig(event.target.name, this.props.data.text);
             this.setState({ [`delBtn${event.target.name}`]: false });
         }
