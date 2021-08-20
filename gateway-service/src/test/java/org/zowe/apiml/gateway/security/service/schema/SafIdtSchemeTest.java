@@ -58,12 +58,13 @@ class SafIdtSchemeTest {
             void givenAuthenticatedJwtToken() {
                 InstanceInfo info = mock(InstanceInfo.class);
 
-                TokenAuthentication authentication = new TokenAuthentication("validJwtToken");
+                String validUsername = "hg679853";
+                TokenAuthentication authentication = new TokenAuthentication(validUsername, "validJwtToken");
                 authentication.setAuthenticated(true);
 
                 when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of("validJwtToken"));
                 when(authenticationService.validateJwtToken("validJwtToken")).thenReturn(authentication);
-                when(safAuthenticationService.generate("validJwtToken")).thenReturn(Optional.of("validTokenValidJwtToken"));
+                when(safAuthenticationService.generate(validUsername)).thenReturn(Optional.of("validTokenValidJwtToken"));
 
                 commandUnderTest.apply(info);
 

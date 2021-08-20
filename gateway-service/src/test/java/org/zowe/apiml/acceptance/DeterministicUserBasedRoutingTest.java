@@ -54,8 +54,6 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
         @Nested
         class WhenCallingToServiceMultipleTimes {
 
-            boolean initialized = false;
-
             @RepeatedTest(10)
             void thenCallTheSameInstance(RepetitionInfo repetitionInfo) throws IOException {
 

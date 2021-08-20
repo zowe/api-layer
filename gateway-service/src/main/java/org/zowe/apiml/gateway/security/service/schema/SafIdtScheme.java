@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class SafIdtScheme implements AbstractAuthenticationScheme {
     private final AuthenticationService authenticationService;
-    private final SafRestAuthenticationService safAuthenticationService;
+    private final SafIdtProvider safIdtProvider;
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -61,7 +61,7 @@ public class SafIdtScheme implements AbstractAuthenticationScheme {
                 TokenAuthentication authentication = authenticationService.validateJwtToken(jwtToken.get());
                 if (authentication.isAuthenticated()) {
                     // Get principal from the token?
-                    Optional<String> safIdt = safAuthenticationService.generate(authentication.getPrincipal());
+                    Optional<String> safIdt = safIdtProvider.generate(authentication.getPrincipal());
 
                     safIdt.ifPresent(safToken -> context.addZuulRequestHeader("X-SAF-Token", safToken));
                 }

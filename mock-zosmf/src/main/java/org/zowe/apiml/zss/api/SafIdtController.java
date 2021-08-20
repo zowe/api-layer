@@ -33,11 +33,11 @@ public class SafIdtController {
      * @param authentication Authentication information to verify that the user is properly authenticated and so the
      *                       token should be issued.
      * @return Appropriate response code
-     *   - 401 - Not authenticated
-     *   - 400 - The required information wasn't provided
-     *   - 201 - Valid SAF IDT token.
+     * - 401 - Not authenticated
+     * - 400 - The required information wasn't provided
+     * - 201 - Valid SAF IDT token.
      */
-    @PostMapping(value="/zss/saf/authenticate")
+    @PostMapping(value = "/zss/saf/authenticate")
     public ResponseEntity<?> authenticate(
         @RequestBody Authentication authentication
     ) {
@@ -59,11 +59,11 @@ public class SafIdtController {
      *
      * @param token Token to verify
      * @return Appropriate response code
-     *   - 401 - The token is invalid
-     *   - 400 - The required information wasn't provided
-     *   - 200 - The token is valid
+     * - 401 - The token is invalid
+     * - 400 - The required information wasn't provided
+     * - 200 - The token is valid
      */
-    @PostMapping(value="/zss/saf/verify")
+    @PostMapping(value = "/zss/saf/verify")
     public ResponseEntity<?> verify(
         @RequestBody Token token
     ) {

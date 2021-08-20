@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.security.service.saf;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +22,7 @@ public class SafProviderBeansConfig {
     @Bean
     @ConditionalOnProperty(name = "apiml.security.saf.provider", havingValue = "rest")
     public SafIdtProvider restSafProvider(
-        @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate,
+        RestTemplate restTemplate,
         AuthenticationService authenticationService
     ) {
         return new SafRestAuthenticationService(restTemplate, authenticationService);

@@ -14,17 +14,25 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import java.net.URI;
 import java.util.Optional;
 
+import static org.springframework.util.StringUtils.isEmpty;
+
 /**
- * Authentication provider implementation for the SafIdt Tokens.
+ * Authentication provider implementation for the SafIdt Tokens that gets and verifies the tokens across the Restfull
+ * interface
+ * <p>
+ * To work properly the implementation requires two urls:
+ * <p>
+ * - apiml.security.saf.urls.authenticate - URL to generate token
+ * - apiml.security.saf.urls.verify - URL to verify the validity of the token
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -33,15 +41,20 @@ public class SafRestAuthenticationService implements SafIdtProvider {
     private final AuthenticationService authenticationService;
 
     @Value("${apiml.security.saf.urls.authenticate}")
-    private String authenticationUrl;
+    String authenticationUrl;
     @Value("${apiml.security.saf.urls.verify}")
-    private String verifyUrl;
+    String verifyUrl;
 
     @Override
     public Optional<String> generate(String username) {
         final RequestContext context = RequestContext.getCurrentContext();
         Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
-        if(!jwtToken.isPresent()) {
+        if (!jwtToken.isPresent()) {
+            return Optional.empty();
+        }
+
+        TokenAuthentication tokenAuthentication = authenticationService.validateJwtToken(jwtToken.get());
+        if (!tokenAuthentication.isAuthenticated()) {
             return Optional.empty();
         }
 
@@ -50,8 +63,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             authentication.setJwt(jwtToken.get());
             authentication.setUsername(username);
 
-            ResponseEntity<Token> re = restTemplate.exchange(authenticationUrl, HttpMethod.POST,
-                new HttpEntity<>(authentication, null), Token.class);
+            ResponseEntity<Token> re = restTemplate.postForEntity(URI.create(authenticationUrl), authentication, Token.class);
 
             if (re.getStatusCode().is2xxSuccessful() && re.getBody() != null) {
                 return Optional.ofNullable(re.getBody().getJwt());
@@ -65,12 +77,15 @@ public class SafRestAuthenticationService implements SafIdtProvider {
 
     @Override
     public boolean verify(String safToken) {
+        if (isEmpty(safToken)) {
+            return false;
+        }
+
         try {
             Token token = new Token();
             token.setJwt(safToken);
 
-            ResponseEntity<String> re = restTemplate.exchange(verifyUrl, HttpMethod.POST,
-                new HttpEntity<>(token,null), String.class);
+            ResponseEntity<String> re = restTemplate.postForEntity(URI.create(verifyUrl), token, String.class);
 
             return re.getStatusCode().is2xxSuccessful();
         } catch (HttpClientErrorException.Unauthorized e) {
