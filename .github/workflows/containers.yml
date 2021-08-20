@@ -1103,7 +1103,7 @@ jobs:
                     rm -f ~/.gradle/caches/modules-2/gc.properties
                     rm -rf ~/.gradle/caches/build-cache-1
 
-    CITestsWebSocketHA:
+    CITestsWebSocketChaoticHA:
         needs: PublishContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
@@ -1176,9 +1176,9 @@ jobs:
                     restore-keys: |
                         ${{ runner.OS }}-node001-
 
-            -   name: Run WebSocket HA Tests
+            -   name: Run WebSocket Chaotic HA Tests
                 run: >
-                    ./gradlew :integration-tests:runHATests --tests org.zowe.apiml.integration.ha.WebSocketMultipleInstancesTest
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketMultipleInstancesTest
                     --info --scan -Denvironment.config=-ha -Denvironment.offPlatform=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -1189,7 +1189,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsWebSocketHA
+                    name: CITestsWebSocketChaoticHA
                     path: |
                         integration-tests/build/reports/**
             -   name: Cleanup Gradle Cache

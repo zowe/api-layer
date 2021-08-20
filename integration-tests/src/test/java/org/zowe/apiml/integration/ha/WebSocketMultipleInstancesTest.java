@@ -22,7 +22,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.HATest;
+import org.zowe.apiml.util.categories.ChaoticHATest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.categories.WebsocketTest;
 import org.zowe.apiml.util.http.HttpClientUtils;
@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestsNotMeantForZowe
 @WebsocketTest
-@HATest
+@ChaoticHATest
 class WebSocketMultipleInstancesTest implements TestWithStartedInstances {
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests("wss");
     private final HADiscoverableClientRequests haDiscoverableClientRequests = new HADiscoverableClientRequests();
