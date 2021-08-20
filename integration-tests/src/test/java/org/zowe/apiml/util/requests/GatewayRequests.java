@@ -47,6 +47,10 @@ public class GatewayRequests {
         this(gatewayServiceConfiguration.getScheme(), host, Integer.parseInt(port), new Requests());
     }
 
+    public GatewayRequests(String host, String port, String scheme) {
+        this(scheme, host, Integer.parseInt(port), new Requests());
+    }
+
     public GatewayRequests(String scheme, String host, int port, Requests requests) {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 

@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @WebsocketTest
 @HATest
 class WebSocketMultipleInstancesTest implements TestWithStartedInstances {
-    private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
+    private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests("wss");
     private final HADiscoverableClientRequests haDiscoverableClientRequests = new HADiscoverableClientRequests();
     private static final int WAIT_TIMEOUT_MS = 10000;
 

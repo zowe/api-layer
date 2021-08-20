@@ -36,6 +36,19 @@ public class HAGatewayRequests {
         log.info("Created HAGatewayRequests");
     }
 
+    public HAGatewayRequests(String scheme) {
+        String[] gatewayHosts = environmentConfiguration().getGatewayServiceConfiguration().getHost().split(",");
+        String[] internalPorts = environmentConfiguration().getGatewayServiceConfiguration().getInternalPorts().split(",");
+        for (int i = 0; i < gatewayHosts.length; i++) {
+            String host = gatewayHosts[i];
+            String internalPort = internalPorts[i];
+
+            gatewayServices.add(new GatewayRequests(scheme, host, internalPort));
+        }
+
+        log.info("Created HAGatewayRequests");
+    }
+
     public int existing() {
         return gatewayServices.size();
     }
