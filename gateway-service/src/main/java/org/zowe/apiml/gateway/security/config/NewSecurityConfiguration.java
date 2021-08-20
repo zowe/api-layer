@@ -176,7 +176,7 @@ public class NewSecurityConfiguration {
     }
 
     /**
-     * Query and Ticket endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
+     * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
      * Query endpoint does not require certificate to be present in RequestContext. It verifies JWT token.
      */
     @Configuration
@@ -216,7 +216,7 @@ public class NewSecurityConfiguration {
     }
 
     /**
-     * Query and Ticket endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
+     * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
      * Ticket endpoint does require certificate to be present in RequestContext. It verifies the JWT token.
      */
 
@@ -267,6 +267,7 @@ public class NewSecurityConfiguration {
      */
     @Configuration
     @RequiredArgsConstructor
+    @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true", matchIfMissing = false)
     @Order(6)
     class Refresh extends WebSecurityConfigurerAdapter {
 
