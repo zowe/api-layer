@@ -42,6 +42,11 @@ apiml:
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
             jwtKeyAlias: jwtSecret
+        saf:
+            provider: rest
+            urls:
+                authenticate: https://localhost:10013/zss/saf/authenticate
+                verify: https://localhost:10013/zss/saf/verify
 
 spring:
     profiles:

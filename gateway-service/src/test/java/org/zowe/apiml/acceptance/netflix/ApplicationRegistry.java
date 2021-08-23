@@ -49,6 +49,10 @@ public class ApplicationRegistry {
         addApplication(service, addTimeout, corsEnabled, multipleInstances, "headerRequest");
     }
 
+    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances, String loadBalancerStrategy) {
+        addApplication(service, addTimeout, corsEnabled, multipleInstances, loadBalancerStrategy, false);
+    }
+
     /**
      * Add new route to a service.
      *
@@ -58,7 +62,7 @@ public class ApplicationRegistry {
      * @param loadBalancerStrategy What strategy should be applied by LoadBalancer. E.g use header, base the
      *                             authentication on the user and so on.
      */
-    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances, String loadBalancerStrategy) {
+    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances, String loadBalancerStrategy, boolean safIdt) {
         String id = service.getId();
         String locationPattern = service.getLocationPattern();
         String serviceRoute = service.getServiceRoute();
@@ -66,7 +70,7 @@ public class ApplicationRegistry {
         Applications applications = new Applications();
         Application withMetadata = new Application(id);
 
-        Map<String, String> metadata = createMetadata(addTimeout, corsEnabled, loadBalancerStrategy);
+        Map<String, String> metadata = createMetadata(addTimeout, corsEnabled, loadBalancerStrategy, safIdt);
 
         withMetadata.addInstance(getStandardInstance(metadata, id, id));
         if (multipleInstances) {
@@ -149,7 +153,7 @@ public class ApplicationRegistry {
             .build();
     }
 
-    private Map<String, String> createMetadata(boolean addRibbonConfig, boolean corsEnabled, String loadBalancerStrategy) {
+    private Map<String, String> createMetadata(boolean addRibbonConfig, boolean corsEnabled, String loadBalancerStrategy, boolean safIdt) {
         Map<String, String> metadata = new HashMap<>();
         if (addRibbonConfig) {
             metadata.put("apiml.connectTimeout", "5000");
@@ -161,7 +165,9 @@ public class ApplicationRegistry {
         metadata.put("apiml.lb.cacheRecordExpirationTimeInHours", "8");
         metadata.put("apiml.corsEnabled", String.valueOf(corsEnabled));
         metadata.put("apiml.routes.gateway-url", "/");
-        metadata.put("apiml.authentication.scheme", "safIdt");
+        if (safIdt) {
+            metadata.put("apiml.authentication.scheme", "safIdt");
+        }
         return metadata;
     }
 
