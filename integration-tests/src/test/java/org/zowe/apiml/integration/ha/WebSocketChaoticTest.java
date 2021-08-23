@@ -99,7 +99,9 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                     WebSocketSession session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 0, path), VALID_AUTH_HEADERS, response, 1);
 
                     // shutdown one instance of DC to check whether the message can reach out the other instance
-                    haDiscoverableClientRequests.shutdown(0);
+                    if (path.equals("/discoverableclient/ws/v1/uppercase")) {
+                        haDiscoverableClientRequests.shutdown(0);
+                    }
                     session.sendMessage(new TextMessage("hello world!"));
                     synchronized (response) {
                         response.wait(WAIT_TIMEOUT_MS);
@@ -135,7 +137,9 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                         final StringBuilder response = new StringBuilder();
                         HAGatewayRequests haGatewayRequests = new HAGatewayRequests("https");
                         // take off an instance of Gateway
-                        haGatewayRequests.shutdown(0);
+                        if (path.equals("/discoverableclient/ws/v1/uppercase")) {
+                            haGatewayRequests.shutdown(0);
+                        }
                         // create websocket session using the second alive instance of Gateway
                         WebSocketSession session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 1, path), VALID_AUTH_HEADERS, response, 1);
 
