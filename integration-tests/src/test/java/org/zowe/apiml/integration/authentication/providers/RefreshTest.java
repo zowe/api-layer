@@ -42,7 +42,6 @@ public class RefreshTest implements TestWithStartedInstances {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-    public static final URI LOGIN_URL = HttpRequestUtils.getUriFromGateway(authConfigurationProperties.getGatewayLoginEndpoint());
     public static final URI REFRESH_URL = HttpRequestUtils.getUriFromGateway(authConfigurationProperties.getGatewayRefreshEndpointNewFormat());
 
     @BeforeAll
@@ -80,7 +79,7 @@ public class RefreshTest implements TestWithStartedInstances {
     }
 
     @Nested
-    class givenLegalAccessModes {
+    class GivenLegalAccessModes {
         @Test
         void whenJwtTokenPostedCanBeRefreshedAndOldCookieInvalidated() {
 

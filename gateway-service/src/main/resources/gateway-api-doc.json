@@ -171,8 +171,8 @@
         "/auth/refresh": {
             "post": {
                 "tags": ["Security"],
-                "summary": "Refresh authentication token for a fresh one token.",
-                "description": "**Note:** This endpoint is disabled by default.\n\nUse the `/refresh` API to request a new JWT authentication token for the user associated with provided token.\n\nThis endpoint is protect by a client certificate.\n\n**HTTP Headers:**\n\nThe ticket request requires the token in one of the following formats:  \n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n  \n*Header example:* Authorization: Bearer *token*",
+                "summary": "Refresh authentication token.",
+                "description": "**Note:** This endpoint is disabled by default.\n\nUse the `/refresh` API to request a new JWT authentication token for the user associated with provided token.\nThe old token is invalidated and new token is issued with refreshed expiration time.\n\nThis endpoint is protect by a client certificate.\n\n**HTTP Headers:**\n\nThe ticket request requires the token in one of the following formats:  \n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n  \n*Header example:* Authorization: Bearer *token*",
                 "operationId": "RefreshTokenUsingPOST",
                 "security": [
                     {
