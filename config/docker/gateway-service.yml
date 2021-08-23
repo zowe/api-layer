@@ -3,6 +3,7 @@ apiml:
         hostname: gateway-service
         discoveryServiceUrls: https://discovery-service:10011/eureka/
     security:
+        allowTokenRefresh: true
         auth:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
