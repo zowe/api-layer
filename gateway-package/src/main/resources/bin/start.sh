@@ -25,7 +25,6 @@
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
-LAUNCH_COMPONENT="bin" # TODO fix
 JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]
@@ -90,6 +89,17 @@ export LIBPATH="$LIBPATH":
 
 GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
+    -Xms32m -Xmx256m \
+    ${QUICK_START} \
+    -Dibm.serversocket.recover=true \
+    -Dfile.encoding=UTF-8 \
+    -Djava.io.tmpdir=/tmp \
+    -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
+    -Dspring.profiles.include=$LOG_LEVEL \
+    -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
+    -Dapiml.service.port=${GATEWAY_PORT} \
+    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
+    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
     -Dapiml.service.allowEncodedSlashes=${APIML_ALLOW_ENCODED_SLASHES} \
     -Dapiml.service.corsEnabled=${APIML_CORS_ENABLED} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID} \
@@ -131,9 +141,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.authorization.resourceNamePrefix=${RESOURCE_NAME_PREFIX:-APIML.} \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=$CMMN_LB \
+    -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBRARY_PATH} \
-    -jar ${JAR_FILE} &
-pid=$!
-echo "pid=${pid}"
-while true; do sleep 1000; done
+    -jar ${JAR_FILE}
