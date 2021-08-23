@@ -144,10 +144,10 @@ describe('>>> Wizard reducer tests', () => {
             });
     });
 
-    it('should handle SELECT_ENABLER when the enabler allows multiple configs', () => {
+    it('should handle SELECT_ENABLER when the enabler allows multiple configs and it has to be in an array', () => {
         const dummyEnablerData = [{
             text: 'Test Enabler',
-            categories: [{ name: 'Test Category', indentation: false, multiple: true }]
+            categories: [{ name: 'Test Category', indentation: false, multiple: true, inArr: true }]
         }];
 
         const dummyData = [{
@@ -172,6 +172,7 @@ describe('>>> Wizard reducer tests', () => {
                     }],
                     multiple: true,
                     indentation: false,
+                    inArr: true,
                 }],
                 navsObj: { 'Test Category': {
                         'Test Category' : [[]],
@@ -293,32 +294,24 @@ describe('>>> Wizard reducer tests', () => {
         const expectedState = {
             inputData: [{
                 text: 'TEST 2',
-                content: {
-                    key: { value: '0', question: 'Why?' },
-                }
+                content: { key: { value: '0', question: 'Why?' }, },
             }],
             yamlObject: [{
                 text: 'TEST 2',
-                content: {
-                    key: { value: '0', question: 'Why?' },
-                }
+                content: { key: { value: '0', question: 'Why?' }, },
             }],
         };
         expect(wizardReducer({
             inputData: [{
                 text: 'TEST 2',
-                content: {
-                    key: { value: '0', question: 'Why?' },
-                }
+                content: { key: { value: '0', question: 'Why?' }, },
             }], yamlObject: [{}, {}]
         }, {
             type: READY_YAML_OBJECT,
             payload: {
                 yaml: [{
                     text: 'TEST 2',
-                    content: {
-                        key: { value: '0', question: 'Why?' },
-                    }
+                    content: { key: { value: '0', question: 'Why?' }, },
                 }],
             },
         })).toEqual(expectedState);

@@ -95,7 +95,7 @@ export const insert = (parent, content) => {
  * @param indentation the predefined indentation of the category
  * @returns result the updated indentation
  */
-function handleIndentationDependency(inputData, indentationDependency, indentation) {
+export function handleIndentationDependency(inputData, indentationDependency, indentation) {
     let result = indentation;
     inputData.forEach(category => {
         if (Array.isArray(category.content)) {
