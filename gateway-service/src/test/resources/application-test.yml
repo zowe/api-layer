@@ -32,6 +32,7 @@ apiml:
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
         filterChainConfiguration: new
+        allowTokenRefresh: true
         ssl:
             verifySslCertificatesOfServices: true
         auth:
