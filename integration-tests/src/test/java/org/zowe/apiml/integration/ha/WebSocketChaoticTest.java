@@ -9,9 +9,7 @@
  */
 package org.zowe.apiml.integration.ha;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.web.socket.CloseStatus;
@@ -38,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Verify behaviour of the Websocket under HA and chaotic testing
  */
 @ChaoticHATest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class WebSocketChaoticTest implements TestWithStartedInstances {
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests("wss");
     private final HADiscoverableClientRequests haDiscoverableClientRequests = new HADiscoverableClientRequests();
