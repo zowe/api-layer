@@ -88,6 +88,13 @@ export const insert = (parent, content) => {
     });
 };
 
+/**
+ * Adds the value of
+ * @param inputData inputData array with all categories (already filled by user)
+ * @param indentationDependency the name of the input on which it depends
+ * @param indentation the predefined indentation of the category
+ * @returns result the updated indentation
+ */
 function handleIndentationDependency(inputData, indentationDependency, indentation) {
     let result = indentation;
     inputData.forEach(category => {
@@ -176,12 +183,27 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
  */
 export function createYamlObject(inputData) {
     let result = {};
+    const arr = [];
     inputData.forEach(category => {
-        result = addCategoryToYamlObject(category, result, inputData);
+        if (category.inArr) {
+            result = addCategoryToYamlObject(category, result, inputData);
+        }
+    });
+    if (Object.keys(result).length > 0) {
+        arr.push(result);
+    }
+    let finalResult;
+    if (arr.length > 0) {
+        finalResult = { services: arr };
+    }
+    inputData.forEach(cat => {
+        if (cat.inArr === undefined) {
+            finalResult = addCategoryToYamlObject(cat, finalResult, inputData);
+        }
     });
     return {
         type: READY_YAML_OBJECT,
-        payload: { yaml: result },
+        payload: { yaml: finalResult },
     };
 }
 

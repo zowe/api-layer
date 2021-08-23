@@ -291,7 +291,6 @@ export const categoryData = [
                 question: 'The detailed description of the API Catalog UI dashboard tile:',
             },
         },
-        indentation: 'catalogUiTiles',
         indentationDependency: 'catalogUiTileId',
     },
 ];

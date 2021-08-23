@@ -45,6 +45,9 @@ function compareVariables(category, categoryInfo) {
     if (categoryInfo.multiple !== undefined) {
         category.multiple = categoryInfo.multiple;
     }
+    if (categoryInfo.inArr !== undefined) {
+        category.inArr = categoryInfo.inArr;
+    }
     if (category.multiple && !Array.isArray(category.content)) {
         const arr = [];
         arr.push(category.content);
