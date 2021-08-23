@@ -55,7 +55,7 @@ public class RefreshTest implements TestWithStartedInstances {
     }
 
     @Nested
-    class GivenIllegalAccessModes{
+    class GivenIllegalAccessModes {
         @Test
         void noClientCertificateGivesForbidden() {
 
