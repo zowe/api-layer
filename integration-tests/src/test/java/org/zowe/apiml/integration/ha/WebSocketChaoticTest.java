@@ -11,6 +11,7 @@ package org.zowe.apiml.integration.ha;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.web.socket.CloseStatus;
@@ -19,7 +20,6 @@ import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.ChaoticHATest;
 import org.zowe.apiml.util.http.HttpClientUtils;
@@ -27,7 +27,6 @@ import org.zowe.apiml.util.requests.ha.HADiscoverableClientRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -78,15 +77,10 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
         };
     }
 
-    private String discoverableClientGatewayUrl(String gatewayUrl, int index) throws URISyntaxException {
-        return haGatewayRequests.gatewayServices.get(index).getGatewayUriWithPath(gatewayUrl).toString();
-    }
-
-    private WebSocketSession appendingWebSocketSession(String url, WebSocketHttpHeaders headers, StringBuilder response, int countToNotify)
+    private WebSocketSession appendingWebSocketSession(URI uri, WebSocketHttpHeaders headers, StringBuilder response, int countToNotify)
         throws Exception {
         StandardWebSocketClient client = new StandardWebSocketClient();
         client.getUserProperties().put(SSL_CONTEXT_PROPERTY, HttpClientUtils.ignoreSslContext());
-        URI uri = UriComponentsBuilder.fromUriString(url).build().encode().toUri();
         return client.doHandshake(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
     }
 
@@ -98,10 +92,11 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
             class WhenAnInstanceIsOff {
                 @ParameterizedTest(name = "WhenRoutingSessionGivenHA.OpeningASession.WhenAnInstanceIsOff#propagateTheSessionToTheAliveInstance {0}")
                 @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+                @Order(1)
                 void propagateTheSessionToTheAliveInstance(String path) throws Exception {
                     final StringBuilder response = new StringBuilder();
 
-                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 0), VALID_AUTH_HEADERS, response, 1);
+                    WebSocketSession session = appendingWebSocketSession(haGatewayRequests.getGatewayUrl( 0, path), VALID_AUTH_HEADERS, response, 1);
 
                     // shutdown one instance of DC to check whether the message can reach out the other instance
                     haDiscoverableClientRequests.shutdown(0);
@@ -116,11 +111,12 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
 
                 @ParameterizedTest(name = "WhenRoutingSessionGivenHA.OpeningASession.WhenAnInstanceIsOff#newSessionCanBeCreated {0}")
                 @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+                @Order(2)
                 void newSessionCanBeCreated(String path) throws Exception {
                     final StringBuilder response = new StringBuilder();
 
                     // create websocket session using the second instance of Gateway
-                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 1), VALID_AUTH_HEADERS, response, 1);
+                    WebSocketSession session = appendingWebSocketSession(haGatewayRequests.getGatewayUrl( 1, path), VALID_AUTH_HEADERS, response, 1);
 
                     session.sendMessage(new TextMessage("hello world 2!"));
                     synchronized (response) {
@@ -137,13 +133,14 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
 
                 @ParameterizedTest(name = "WhenRoutingSessionGivenHA.OpeningASession.WhenAGatewayInstanceIsOff#newSessionCanBeCreated {0}")
                 @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+                @Order(3)
                 void newSessionCanBeCreated(String path) throws Exception {
                     final StringBuilder response = new StringBuilder();
 
                     // take off an instance of Gateway
                     haGatewayRequests.shutdown(0);
                     // create websocket session using the second alive instance of Gateway
-                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path, 1), VALID_AUTH_HEADERS, response, 1);
+                    WebSocketSession session = appendingWebSocketSession(haGatewayRequests.getGatewayUrl( 1, path), VALID_AUTH_HEADERS, response, 1);
 
                     session.sendMessage(new TextMessage("hello world 2!"));
                     synchronized (response) {
