@@ -55,4 +55,10 @@ apiml:
     service:
         scheme: http
         discoveryServiceUrls: http://localhost:10011/eureka/
+    security:
+        saf:
+            urls:
+                authenticate: http://localhost:10013/zss/saf/authenticate
+                verify: http://localhost:10013/zss/saf/verify
+
 
