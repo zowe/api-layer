@@ -88,13 +88,38 @@ export const insert = (parent, content) => {
     });
 };
 
+function handleIndentationDependency(inputData, indentationDependency, indentation) {
+    let result = indentation;
+    inputData.forEach(category => {
+        if (Array.isArray(category.content)) {
+            category.content.forEach(inpt => {
+                Object.keys(inpt).forEach(k => {
+                    if (k === indentationDependency) {
+                        result = result.concat('/', inpt[k].value);
+                        return result;
+                    }
+                });
+            });
+        } else {
+            Object.keys(category.content).forEach(k => {
+                if (k === indentationDependency) {
+                    result = result.concat('/', category.content[k].value);
+                    return result;
+                }
+            });
+        }
+    });
+    return result;
+}
+
 /**
  * Receives a single category and translates it to an object the yaml library can correctly convert to yaml
  * @param category a category
  * @param parent parent object which the yaml-ready category should be added to
+ * @param inputData array with all categories (already filled by user)
  * @returns result the updated parent
  */
-export const addCategoryToYamlObject = (category, parent) => {
+export const addCategoryToYamlObject = (category, parent, inputData) => {
     const result = { ...parent };
     let content = {};
     // load user's answer into content object
@@ -128,7 +153,10 @@ export const addCategoryToYamlObject = (category, parent) => {
     if (!category.indentation) {
         insert(result, content);
     } else {
-        const indent = category.indentation;
+        let indent = category.indentation;
+        if (category.indentationDependency !== undefined) {
+            indent = handleIndentationDependency(inputData, category.indentationDependency, category.indentation);
+        }
         const arr = indent.split('/');
         arr.reverse().forEach(key => {
             if (key.length > 0)
@@ -149,7 +177,7 @@ export const addCategoryToYamlObject = (category, parent) => {
 export function createYamlObject(inputData) {
     let result = {};
     inputData.forEach(category => {
-        result = addCategoryToYamlObject(category, result);
+        result = addCategoryToYamlObject(category, result, inputData);
     });
     return {
         type: READY_YAML_OBJECT,

@@ -47,14 +47,15 @@ export const enablerData = [
     {
         text: 'Static Onboarding',
         categories: [
-            { name: 'Basic info', indentation: 'services' },
-            { name: 'Service info', indentation: 'services' },
-            { name: 'URL for Static', indentation: 'services/instanceBaseUrls', multiple: true },
-            { name: 'URL', indentation: 'services' },
+            { name: 'Basic info', indentation: 'services', nav: 'Basics' },
+            { name: 'Catalog info', indentation: 'services', nav: 'Basics' },
+            { name: 'Service info', indentation: 'services', nav: 'Basics' },
+            { name: 'URL for Static', indentation: 'services/instanceBaseUrls', multiple: true, nav: 'URL' },
+            { name: 'URL', indentation: 'services', nav: 'URL' },
             { name: 'Routes for Static', indentation: 'services/routes', multiple: true },
             { name: 'Authentication', indentation: 'services/authentication' },
             { name: 'API Info', indentation: 'services/apiInfo', multiple: true },
-            { name: 'UI Tile info', indentation: 'catalogUiTiles/static' },
+            { name: 'Catalog UI Tiles' },
         ],
     },
     {
