@@ -88,6 +88,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
         @Nested
         class OpeningASession {
             @Nested
+            @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
             class WhenAnInstanceIsOff {
                 @ParameterizedTest(name = "WhenRoutingSessionGivenHA.OpeningASession.WhenAnInstanceIsOff#propagateTheSessionToTheAliveInstance {0}")
                 @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
