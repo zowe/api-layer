@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ChaoticHATest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class WebSocketChaoticTest implements TestWithStartedInstances {
-    private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests("wss");
+    private final HAGatewayRequests gatewaysWsRequests = new HAGatewayRequests("wss");
     private final HADiscoverableClientRequests haDiscoverableClientRequests = new HADiscoverableClientRequests();
     private static final int WAIT_TIMEOUT_MS = 10000;
 
@@ -95,7 +95,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                 void propagateTheSessionToTheAliveInstance(String path) throws Exception {
                     final StringBuilder response = new StringBuilder();
 
-                    WebSocketSession session = appendingWebSocketSession(haGatewayRequests.getGatewayUrl( 0, path), VALID_AUTH_HEADERS, response, 1);
+                    WebSocketSession session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 0, path), VALID_AUTH_HEADERS, response, 1);
 
                     // shutdown one instance of DC to check whether the message can reach out the other instance
                     haDiscoverableClientRequests.shutdown(0);
@@ -115,7 +115,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                     final StringBuilder response = new StringBuilder();
 
                     // create websocket session using the second instance of Gateway
-                    WebSocketSession session = appendingWebSocketSession(haGatewayRequests.getGatewayUrl( 1, path), VALID_AUTH_HEADERS, response, 1);
+                    WebSocketSession session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 1, path), VALID_AUTH_HEADERS, response, 1);
 
                     session.sendMessage(new TextMessage("hello world 2!"));
                     synchronized (response) {
@@ -135,11 +135,11 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                 @Order(3)
                 void newSessionCanBeCreated(String path) throws Exception {
                     final StringBuilder response = new StringBuilder();
-
+                    HAGatewayRequests haGatewayRequests = new HAGatewayRequests("https");
                     // take off an instance of Gateway
                     haGatewayRequests.shutdown(0);
                     // create websocket session using the second alive instance of Gateway
-                    WebSocketSession session = appendingWebSocketSession(haGatewayRequests.getGatewayUrl( 1, path), VALID_AUTH_HEADERS, response, 1);
+                    WebSocketSession session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 1, path), VALID_AUTH_HEADERS, response, 1);
 
                     session.sendMessage(new TextMessage("hello world 2!"));
                     synchronized (response) {
