@@ -23,7 +23,7 @@ import { enablerData } from '../components/Wizard/configs/wizard_onboarding_meth
 
 export const wizardReducerDefaultState = {
     wizardIsOpen: false,
-    enablerName: 'Static Onboarding',
+    enablerName: '',
     selectedCategory: 0,
     inputData: [],
     yamlObject: {},
@@ -45,7 +45,7 @@ function compareVariables(category, categoryInfo) {
     if (categoryInfo.multiple !== undefined) {
         category.multiple = categoryInfo.multiple;
     }
-    if (category.multiple && !Array.isArray(category.content)) {
+    if (!Array.isArray(category.content) && category.content !== undefined) {
         const arr = [];
         arr.push(category.content);
         category.content = arr;
@@ -78,14 +78,9 @@ export function setDefault(category, defaults) {
     if (defaults === undefined || defaults[category.text] === undefined) {
         return category;
     }
-    let result;
+    const result = [];
     const defaultsArr = Object.entries(defaults[category.text]);
-    if (Array.isArray(category.content)) {
-        result = [];
-        category.content.forEach(config => result.push(addDefaultValues(config, defaultsArr)));
-    } else {
-        result = addDefaultValues(category.content, defaultsArr);
-    }
+    category.content.forEach(config => result.push(addDefaultValues(config, defaultsArr)));
     return { ...category, content: result };
 }
 
@@ -118,13 +113,9 @@ function emptyFieldsOfContent(content, silent) {
  */
 export function findEmptyFieldsOfCategory(content, silent) {
     const result = [];
-    if (Array.isArray(content)) {
-        content.forEach(cont => {
-            result.push(emptyFieldsOfContent(cont, silent));
-        });
-    } else {
-        result.push(emptyFieldsOfContent(content, silent));
-    }
+    content.forEach(cont => {
+        result.push(emptyFieldsOfContent(cont, silent));
+    });
     return result;
 }
 
@@ -160,8 +151,8 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
                     return;
                 }
                 category = _.cloneDeep(category);
-                category = setDefault(category, enablerObj.defaults);
                 compareVariables(category, categoryInfo);
+                category = setDefault(category, enablerObj.defaults);
                 category.nav = categoryInfo.nav;
                 if (!(category.nav in navCategories)) {
                     navCategories[category.nav] = { [category.text]: [[]], silent: true, warn: false };

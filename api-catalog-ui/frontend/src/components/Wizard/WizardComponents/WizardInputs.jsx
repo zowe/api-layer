@@ -30,36 +30,25 @@ class WizardInputs extends Component {
         const { name, checked } = event.target;
         let { value } = event.target;
         const objectToChange = this.props.data;
-        if (!objectToChange.multiple) {
-            const { question, maxLength, lowercase } = objectToChange.content[name];
-            value = this.applyRestrictions(maxLength, value, lowercase);
-            if (value.length > 0) {
-                objectToChange.content[name].empty = false;
-            }
-            const prevValue = objectToChange.content[name].value;
-            // if prevValues was a boolean then we are handling a checkbox
-            if (typeof prevValue === 'boolean') {
-                value = checked;
-            }
-            const newContent = {
-                ...objectToChange.content,
-                [name]: { ...objectToChange.content[name], value, question, interactedWith: true },
-            };
-            this.updateDataWithNewContent(objectToChange, newContent);
+        const arrIndex = parseInt(event.target.getAttribute('data-index'));
+        const { question, maxLength, lowercase } = objectToChange.content[arrIndex][name];
+        const prevValue = objectToChange.content[arrIndex][name].value;
+        // if prevValues was a boolean then we are handling a checkbox
+        if (typeof prevValue === 'boolean') {
+            value = checked;
         } else {
-            const arrIndex = parseInt(event.target.getAttribute('data-index'));
-            const { question, maxLength, lowercase } = objectToChange.content[arrIndex][name];
             value = this.applyRestrictions(maxLength, value, lowercase);
             if (value.length > 0) {
                 objectToChange.content[arrIndex][name].empty = false;
             }
-            const arr = [...objectToChange.content];
-            arr[arrIndex] = {
-                ...arr[arrIndex],
-                [name]: { ...objectToChange.content[name], question, value, interactedWith: true },
-            };
-            this.updateDataWithNewContent(objectToChange, arr);
         }
+        const arr = [...objectToChange.content];
+        arr[arrIndex] = {
+            ...arr[arrIndex],
+            [name]: { ...objectToChange.content[arrIndex][name], question, value, interactedWith: true },
+        };
+        this.updateDataWithNewContent(objectToChange, arr);
+
         this.props.validateInput(objectToChange.nav, true);
     };
 
@@ -110,7 +99,8 @@ class WizardInputs extends Component {
         const myObject = this.props.data.content[0];
         const newObject = {};
         Object.keys(myObject).forEach(key => {
-            newObject[key] = {};
+            newObject[key] = { ...myObject[key] };
+            newObject[key].interactedWith = false;
             newObject[key].value = '';
             newObject[key].question = myObject[key].question;
         });
@@ -149,27 +139,22 @@ class WizardInputs extends Component {
         ) {
             return null;
         }
-        if (multiple) {
-            let result = [];
-            let index = 0;
-            dataAsObject.content.forEach(c => {
-                if (index !== 0 && typeof this.state[`delBtn${index}`] === 'undefined') {
-                    this.setState({ [`delBtn${index}`]: false });
-                }
-                result.push(
-                    <div key={`divider-${index}`} className="categoryConfigDivider">
-                        <h5 className="categoryInnerDivider">
-                            {dataAsObject.text} #{index}:
-                        </h5>
-                        {this.renderDeleteButton(index)}
-                    </div>
-                );
-                result = result.concat(this.renderInputs(c, index));
-                index += 1;
-            });
-            return result;
-        }
-        return this.renderInputs(dataAsObject.content);
+        let result = [];
+        let index = 0;
+        dataAsObject.content.forEach(c => {
+            if (index !== 0 && typeof this.state[`delBtn${index}`] === 'undefined') {
+                this.setState({ [`delBtn${index}`]: false });
+            }
+            result.push(
+                <div key={`divider-${index}`} className="categoryConfigDivider">
+                    <h5 className="categoryInnerDivider">{index === 0 ? null : `${dataAsObject.text} #${index}:`}</h5>
+                    {this.renderDeleteButton(index, multiple)}
+                </div>
+            );
+            result = result.concat(this.renderInputs(c, index));
+            index += 1;
+        });
+        return result;
     };
 
     /**
@@ -192,10 +177,11 @@ class WizardInputs extends Component {
     /**
      * Allow user to delete set, unless it's the first one.
      * @param index index of the set
+     * @param multiple boolean holding info whether the set is one of many
      * @returns {JSX.Element|null} null or the Button for set deletion
      */
-    renderDeleteButton(index) {
-        if (index === 0) return null;
+    renderDeleteButton(index, multiple) {
+        if (index === 0 || !multiple) return null;
         return (
             <Button
                 variant="danger"
@@ -216,9 +202,9 @@ class WizardInputs extends Component {
      * @param index index of the given set - it multiple==false
      * @returns {unknown[]} array of the inputs to be rendered
      */
-    renderInputs = (content, index = 1) => {
+    renderInputs = (content, index = 0) => {
         const selectedData = Object.keys(content);
-        let key = 1;
+        let key = -1;
         return selectedData.map(itemKey => {
             const input = content[itemKey];
             if (input.dependencies && !this.dependenciesSatisfied(input.dependencies, content)) {
