@@ -84,6 +84,36 @@ jobs:
                     build-arg-list: ZOWE_BASE_IMAGE=latest-ubuntu
                 timeout-minutes: 10
 
+    define-ubuntu-manifest:
+        needs:
+            - build-ubuntu-amd64
+            - build-ubuntu-s390x
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+
+            -   uses: actions/setup-java@v2
+                with:
+                    distribution: 'adopt'
+                    java-version: '8'
+
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    registry-password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    release: false
+                    base-directory: ./containers
+                    image-name: gateway-service
+                    linux-distro: ubuntu
+
+            -   uses: zowe-actions/shared-actions/docker-manifest@main
+                with:
+                    linux-distro: ubuntu
+                    cpu-arch-list: "amd64 s390x"
+                timeout-minutes: 2
+
     build-ubi-amd64:
         runs-on: ubuntu-latest
         steps:
@@ -113,6 +143,36 @@ jobs:
                 with:
                     build-arg-list: ZOWE_BASE_IMAGE=latest-ubi
                 timeout-minutes: 5
+
+    define-ubi-manifest:
+        needs:
+            - build-ubi-amd64
+            - build-ubi-s390x
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+
+            -   uses: actions/setup-java@v2
+                with:
+                    distribution: 'adopt'
+                    java-version: '8'
+
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    registry-password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    release: false
+                    base-directory: ./containers
+                    image-name: gateway-service
+                    linux-distro: ubi
+
+            -   uses: zowe-actions/shared-actions/docker-manifest@main
+                with:
+                    linux-distro: ubi
+                    cpu-arch-list: "amd64 s390x"
+                timeout-minutes: 2
 
     PublishContainers:
         runs-on: ubuntu-latest
