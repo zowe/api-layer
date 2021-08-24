@@ -45,13 +45,21 @@
     right: 40px;
 }
 
-.categoryConfigDivider{
+.categoryConfigDivider {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
     justify-content: space-between;
 }
 
-.yamlKey {
-    color: #1d5bbf;
+.wizardForm label {
+    font-weight: normal;
+}
+
+label.wCheckBox {
+    font-weight: 600;
+}
+
+label.wCheckBox span:last-child {
+    color: #58606e;
 }

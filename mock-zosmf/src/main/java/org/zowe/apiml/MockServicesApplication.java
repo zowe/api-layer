@@ -7,16 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.client;
+package org.zowe.apiml;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MockZosmfApplication {
+public class MockServicesApplication {
 
     public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(MockZosmfApplication.class);
+        SpringApplication app = new SpringApplication(MockServicesApplication.class);
         app.setLogStartupInfo(false);
         app.run(args);
     }

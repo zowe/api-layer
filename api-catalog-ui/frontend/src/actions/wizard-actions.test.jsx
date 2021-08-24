@@ -142,7 +142,19 @@ describe('>>> Wizard actions tests', () => {
         let result = { test2: 'test 2' };
         result = addCategoryToYamlObject(category, result);
         expect(result).toEqual({  test: 'yaml' , test2: 'test 2' });
-
+    });
+    it('should not add categories to the YAML object if they are not shown', () => {
+        const category = {
+            text: 'Category 1',
+            content: {
+                test: { value: 'yaml', show: false}
+            },
+            multiple: false,
+            indentation: '/',
+        };
+        let result = { test2: 'test 2' };
+        result = addCategoryToYamlObject(category, result);
+        expect(result).toEqual({ test2: 'test 2' });
     });
     it('should change the category', () => {
         const expectedAction = {
@@ -173,11 +185,12 @@ describe('>>> Wizard actions tests', () => {
         }])).toEqual(expectedAction);
     });
 
-    it('should set the number of tabs', () => {
+    it('should check for filled input', () => {
         const expectedAction = {
-            type: constants.NAV_NUMBER,
-            payload: { tabAmount: 1 },
+            type: constants.VALIDATE_INPUT,
+            payload: { navName: 'Nav', silent: true },
         };
-        expect(actions.setNumberOfTabs(1)).toEqual(expectedAction);
-    })
+        expect(actions.validateInput('Nav', true)).toEqual(expectedAction);
+    });
+
 });

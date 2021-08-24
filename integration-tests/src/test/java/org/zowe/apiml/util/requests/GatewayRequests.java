@@ -24,6 +24,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
+import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 @Slf4j
@@ -38,8 +39,16 @@ public class GatewayRequests {
 
     private final String instance;
 
+    public GatewayRequests() {
+        this(gatewayServiceConfiguration.getHost(), gatewayServiceConfiguration.getInternalPorts());
+    }
+
     public GatewayRequests(String host, String port) {
         this(gatewayServiceConfiguration.getScheme(), host, Integer.parseInt(port), new Requests());
+    }
+
+    public GatewayRequests(String scheme, String host, String port) {
+        this(scheme, host, Integer.parseInt(port), new Requests());
     }
 
     public GatewayRequests(String scheme, String host, int port, Requests requests) {
@@ -97,7 +106,22 @@ public class GatewayRequests {
         }
     }
 
-    private URI getGatewayUriWithPath(String path) throws URISyntaxException {
+    public JsonResponse authenticatedRoute(String path) {
+        try {
+            log.info("GatewayRequests#authenticatedRoute - {} Instance: {}", path, instance);
+
+            String jwt = gatewayToken();
+            log.info("GatewayRequests#authenticatedRoute - {} Token: {}", path, jwt);
+
+            return requests.getJsonResponse(getGatewayUriWithPath(path), jwt);
+        } catch (URISyntaxException e) {
+            log.info("GatewayRequests#route - {}", path, e);
+
+            throw new RuntimeException("Incorrect URI");
+        }
+    }
+
+    public URI getGatewayUriWithPath(String path) throws URISyntaxException {
         return new URIBuilder()
             .setScheme(scheme)
             .setHost(host)

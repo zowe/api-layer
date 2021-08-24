@@ -7,16 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.service;
+package org.zowe.apiml.zss.model;
 
-import org.springframework.stereotype.Component;
+import lombok.Data;
 
-/**
- * Authentication service
- */
-@Component
-public class SafAuthenticationService {
-    public String generateSafIdt(String jwtToken) {
-        return "validToken" + jwtToken;
-    }
+@Data
+public class Authentication {
+    private String jwt;
+    private String username;
 }
