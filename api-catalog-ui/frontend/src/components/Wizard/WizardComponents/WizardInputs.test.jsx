@@ -117,15 +117,22 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Basic info',
-            content: { testInput: { value: false, question: '' } },
+            content: [{ testInput: { value: false, question: '' } }],
         };
         const wrapper = enzyme.shallow(
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        instance.handleInputChange({ target: { value: 'irrelevantValue', checked: true, name: 'testInput' } });
+        instance.handleInputChange({
+            target: {
+                value: 'irrelevantValue',
+                checked: true,
+                name: 'testInput',
+                getAttribute: () => 0,
+            }
+        });
         expect(updateWizardData).toHaveBeenCalledWith({
-            content: { testInput: { value: true, question: '', show: true, interactedWith: true, empty: false } },
+            content: [{ testInput: { value: true, question: '', show: true, interactedWith: true } }],
             text: 'Basic info',
         });
     });
@@ -133,17 +140,17 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Basic info',
-            content: {
+            content: [{
                 testInput: { value: '', question: '', options: ['test'] },
-            },
+            }],
         };
         const wrapper = enzyme.shallow(
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        instance.handleSelect({ name: 'testInput', index: 1, value: 'test' });
+        instance.handleSelect({ name: 'testInput', index: 0, value: 'test' });
         expect(updateWizardData).toHaveBeenCalledWith({
-            content: {
+            content: [{
                 testInput: {
                     value: 'test',
                     question: '',
@@ -152,7 +159,7 @@ describe('>>> WizardInputs tests', () => {
                     show: true,
                     empty: false,
                 }
-            },
+            }],
             text: 'Basic info',
         });
     });
@@ -160,17 +167,17 @@ describe('>>> WizardInputs tests', () => {
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Basic info',
-            content: {
+            content: [{
                 testInput: { value: '', question: '', options: ['test'] },
-            },
+            }],
         };
         const wrapper = enzyme.shallow(
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        instance.handleSelect({ name: 'testInput', index: 1, value: '' });
+        instance.handleSelect({ name: 'testInput', index: 0, value: '' });
         expect(updateWizardData).toHaveBeenCalledWith({
-            content: { testInput: { value: '', question: '', options: ['test'], show: true, interactedWith: true } },
+            content: [{ testInput: { value: '', question: '', options: ['test'], show: true, interactedWith: true } }],
             text: 'Basic info',
         });
     });
@@ -180,7 +187,7 @@ describe('>>> WizardInputs tests', () => {
             text: 'Basic info',
             content: [{
                 testInput: { value: '', question: '', options: ['test'] },
-            },],
+            }],
             multiple: true,
         };
         const wrapper = enzyme.shallow(
@@ -189,7 +196,7 @@ describe('>>> WizardInputs tests', () => {
         const instance = wrapper.instance();
         instance.handleSelect({ name: 'testInput', index: 0, value: '' });
         expect(updateWizardData).toHaveBeenCalledWith({
-            content: [{ testInput: { value: '', question: '', interactedWith: true } },],
+            content: [{ testInput: { value: '', question: '', interactedWith: true, options: ['test'], show: true } }],
             text: 'Basic info',
             multiple: true,
         });
