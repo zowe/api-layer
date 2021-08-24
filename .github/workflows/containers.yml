@@ -7,7 +7,7 @@ on:
         branches: [ master ]
 
 jobs:
-    BuildWithoutJibTest:
+    build-ubuntu-amd64:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v2
