@@ -28,4 +28,10 @@ The supported APARs are:
 
 Multiple APARs can be set in `zosmf.appliedApars`. Conflicting functionality will result in only one functionality mocked, but it is not guaranteed which will be mocked. 
 
+# ZSS Mock
 
+The service contains package zss that covers functionality we expect from ZSS to allow us integration testing in the off platform development.
+
+## Configuration properties
+
+There is no configuration for this part at the moment

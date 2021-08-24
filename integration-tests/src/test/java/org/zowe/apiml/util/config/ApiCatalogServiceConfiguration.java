@@ -17,5 +17,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ApiCatalogServiceConfiguration {
+    private String scheme;
     private String url;
+    private String host;
+    private int port;
+    private int instances;
 }
