@@ -7,17 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 import _ from 'lodash';
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
-    NAV_NUMBER,
     NEXT_CATEGORY,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
+    VALIDATE_INPUT,
 } from '../constants/wizard-constants';
 import { categoryData } from '../components/Wizard/configs/wizard_categories';
 import { enablerData } from '../components/Wizard/configs/wizard_onboarding_methods';
@@ -28,7 +27,7 @@ export const wizardReducerDefaultState = {
     selectedCategory: 0,
     inputData: [],
     yamlObject: {},
-    navTabAmount: 0,
+    navsObj: {},
 };
 
 /**
@@ -91,6 +90,45 @@ export function setDefault(category, defaults) {
 }
 
 /**
+ * Extracted method from findEmptyFieldsOfCategory, assumes content is an object
+ * @param content content of the category to be checked
+ * @param silent respect/override interactedWith
+ * @returns {*[]} array of names of empty fields
+ */
+function emptyFieldsOfContent(content, silent) {
+    const emptyFieldsArr = [];
+    Object.entries(content).forEach(entry => {
+        const [key, objValue] = entry;
+        if (objValue.value.length === 0 && objValue.optional !== true && objValue.show !== false) {
+            if (!silent || objValue.interactedWith) {
+                objValue.empty = true;
+                emptyFieldsArr.push(key);
+            }
+        }
+    });
+    return emptyFieldsArr;
+}
+
+/**
+ * Find all empty fields of given category and return their names in array.
+ * If multiple sets are allowed, each item inside the main array is array for the given set (their indices match).
+ * @param content content of the category to be checked
+ * @param silent respect/override interactedWith
+ * @returns {*[]} array of arrays of names of empty fields
+ */
+export function findEmptyFieldsOfCategory(content, silent) {
+    const result = [];
+    if (Array.isArray(content)) {
+        content.forEach(cont => {
+            result.push(emptyFieldsOfContent(cont, silent));
+        });
+    } else {
+        result.push(emptyFieldsOfContent(content, silent));
+    }
+    return result;
+}
+
+/**
  * Reducer for the Wizard Dialog
  * @param state state; contains all global variables for the wizrd reducer
  * @param action when a component fires an action its payload is unloaded here
@@ -109,6 +147,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             };
         case SELECT_ENABLER: {
             const inputData = [];
+            const navCategories = {};
             const { enablerName } = action.payload;
             const enablerObj = config.enablerData.find(o => o.text === enablerName);
             if (enablerObj === undefined || enablerObj.categories === undefined) {
@@ -124,9 +163,14 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
                 category = setDefault(category, enablerObj.defaults);
                 compareVariables(category, categoryInfo);
                 category.nav = categoryInfo.nav;
+                if (!(category.nav in navCategories)) {
+                    navCategories[category.nav] = { [category.text]: [[]], silent: true, warn: false };
+                } else {
+                    navCategories[category.nav][category.text] = [[]];
+                }
                 inputData.push(category);
             });
-            return { ...state, enablerName, inputData, selectedCategory: 0, navTabAmount: inputData.length };
+            return { ...state, enablerName, inputData, selectedCategory: 0, navsObj: navCategories };
         }
 
         case INPUT_UPDATED: {
@@ -158,8 +202,28 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             });
             return { ...state, inputData: newData };
         }
-        case NAV_NUMBER:
-            return { ...state, navTabAmount: action.payload.tabAmount };
+        case VALIDATE_INPUT: {
+            const { navName, silent } = action.payload;
+            const newObj = { ...state.navsObj };
+            if (newObj[navName] === undefined) return state;
+            state.inputData.forEach(category => {
+                if (category.nav === navName) {
+                    newObj[category.nav][category.text] = findEmptyFieldsOfCategory(category.content, silent);
+                }
+            });
+            newObj[navName].silent = silent;
+            let numOfEmptyFields = 0;
+            Object.values(newObj[navName]).forEach(val => {
+                if (Array.isArray(val)) {
+                    // category
+                    val.forEach(setArr => {
+                        numOfEmptyFields += setArr.length;
+                    });
+                }
+            });
+            newObj[navName].warn = numOfEmptyFields > 0;
+            return { ...state, navsObj: newObj };
+        }
         default:
             return state;
     }

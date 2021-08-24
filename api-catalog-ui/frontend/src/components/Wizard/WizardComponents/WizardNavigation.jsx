@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { IconError } from 'mineral-ui-icons';
 import Tabs, { Tab } from 'mineral-ui/Tabs';
 import WizardInputsContainer from './WizardInputsContainer';
 import YAMLVisualizerContainer from '../YAML/YAMLVisualizerContainer';
@@ -12,10 +13,19 @@ class WizardNavigation extends Component {
 
     /**
      * React on navTab click
-     * @param event number - indx of the tab to be switched to
+     * @param event number - index of the tab to be switched to
      */
     handleChange = event => {
         if (typeof event === 'number') {
+            const navNamesArr = Object.keys(this.props.navsObj);
+            if (this.props.selectedCategory < navNamesArr.length) {
+                this.props.validateInput(navNamesArr[this.props.selectedCategory], false);
+            }
+            if (event === navNamesArr.length) {
+                navNamesArr.forEach(navName => {
+                    this.props.validateInput(navName, false);
+                });
+            }
             this.props.changeWizardCategory(event);
         }
     };
@@ -27,18 +37,13 @@ class WizardNavigation extends Component {
     returnNavs() {
         const navs = {};
         let index = 0;
-        let tabs = 0;
         this.props.inputData.forEach(category => {
             if (!Array.isArray(navs[category.nav])) {
                 navs[category.nav] = [];
-                tabs += 1;
             }
             navs[category.nav].push(<WizardInputsContainer key={`nav#${index}`} data={category} />);
             index += 1;
         });
-        if (tabs > 0) {
-            this.props.setNumberOfTabs(tabs);
-        }
         return navs;
     }
 
@@ -53,7 +58,7 @@ class WizardNavigation extends Component {
             const categoryArr = entry[1];
             index += 1;
             return (
-                <Tab key={index} title={name}>
+                <Tab key={index} title={name} icon={this.props.navsObj[name].warn ? <IconError /> : undefined}>
                     {categoryArr}
                 </Tab>
             );

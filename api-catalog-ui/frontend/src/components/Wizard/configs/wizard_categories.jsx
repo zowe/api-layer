@@ -14,7 +14,9 @@ export const categoryData = [
         content: {
             serviceId: {
                 value: '',
-                question: 'A unique identifier for the API (max 40 characters, lowercase):',
+                question: 'A unique identifier for the API:',
+                maxLength: 40,
+                lowercase: true,
             },
             title: {
                 value: '',
@@ -30,8 +32,8 @@ export const categoryData = [
         text: 'Prefer IP address',
         content: {
             preferIpAddress: {
-                value: '',
-                question: 'Set to true to advertise a service IP address instead of its hostname (optional):',
+                value: false,
+                question: 'Advertise service IP address instead of its hostname',
             },
         },
     },
@@ -39,8 +41,8 @@ export const categoryData = [
         text: 'Scheme info',
         content: {
             scheme: {
-                value: '',
-                question: 'Service scheme (https by default):',
+                value: 'https',
+                question: 'Service scheme:',
             },
             hostname: {
                 value: '',
@@ -65,7 +67,8 @@ export const categoryData = [
             },
             serviceIpAddress: {
                 value: '',
-                question: 'The service IP address (optional):',
+                question: 'The service IP address:',
+                optional: true,
             },
         },
     },
@@ -74,7 +77,8 @@ export const categoryData = [
         content: {
             homePageRelativeUrl: {
                 value: '',
-                question: 'The relative path to the home page of the service (if it has one):',
+                question: 'The relative path to the home page of the service:',
+                optional: true,
             },
             statusPageRelativeUrl: {
                 value: '',
@@ -140,12 +144,14 @@ export const categoryData = [
         text: 'Authentication',
         content: {
             scheme: {
-                value: '',
-                question: 'Authentication (bypass, zoweJwt, httpBasicPassTicket, zosmf, x509, headers):',
+                value: 'bypass',
+                question: 'Authentication:',
+                options: ['bypass', 'zoweJwt', 'httpBasicPassTicket', 'zosmf', 'x509', 'headers'],
             },
             applid: {
                 value: '',
                 question: 'A service APPLID (valid only for the httpBasicPassTicket authentication scheme ):',
+                dependencies: { scheme: 'httpBasicPassTicket' },
             },
         },
     },
@@ -166,11 +172,13 @@ export const categoryData = [
             },
             swaggerUrl: {
                 value: '',
-                question: 'The Http or Https address where the Swagger JSON document is available (optional):',
+                question: 'The Http or Https address where the Swagger JSON document is available:',
+                optional: true,
             },
             documentationUrl: {
                 value: '',
-                question: 'Link to the external documentation (optional):',
+                question: 'Link to the external documentation:',
+                optional: true,
             },
         },
     },
@@ -203,9 +211,8 @@ export const categoryData = [
                 question: 'Set this parameter to true in production environments:',
             },
             protocol: {
-                value: '',
-                question:
-                    'The TLS protocol version used by Zowe API ML Discovery Service (recommendation: use TLSv1.2):',
+                value: 'TLSv1.2',
+                question: 'The TLS protocol version used by Zowe API ML Discovery Service:',
             },
             keyAlias: {
                 value: '',
@@ -236,8 +243,8 @@ export const categoryData = [
                 question: 'The password used to unlock the truststore:',
             },
             trustStoreType: {
-                value: '',
-                question: 'Truststore type (the default value is PKCS12):',
+                value: 'PKCS12',
+                question: 'Truststore type:',
             },
         },
     },
@@ -245,14 +252,12 @@ export const categoryData = [
         text: 'Enable',
         content: {
             enabled: {
-                value: '',
-                question:
-                    'Decision if the service should automatically register with API ML discovery service (true/false):',
+                value: false,
+                question: 'Service should automatically register with API ML discovery service',
             },
             enableUrlEncodedCharacters: {
-                value: '',
-                question:
-                    'Decision if the service requests the API ML GW to receive encoded characters in the URL (true/false):',
+                value: false,
+                question: 'Service requests the API ML GW to receive encoded characters in the URL',
             },
         },
     },
