@@ -31,8 +31,8 @@ import static org.hamcrest.core.Is.is;
 @AcceptanceTest
 public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
 
-    private final static String USERNAME = "USER"; //ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = "validPassword"; //ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String USERNAME = "USER";
+    private final static String PASSWORD = "validPassword";
 
     private RestAssuredConfig restAssuredConfig;
 
@@ -45,6 +45,7 @@ public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
     }
 
     @Nested
+    @SuppressWarnings("squid:S2699") // sonar doesn't identify the restAssured assertions
     class GivenIllegalAccessModes {
         @Test
         void noClientCertificateGivesForbidden() {
