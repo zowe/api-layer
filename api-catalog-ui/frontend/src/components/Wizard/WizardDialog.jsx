@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import * as YAML from 'yaml';
 import React, { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
@@ -25,18 +26,16 @@ export default class WizardDialog extends Component {
     };
 
     doneWizard = () => {
-        const { refreshedStaticApi, wizardToggleDisplay, createYamlObject, inputData } = this.props;
-        wizardToggleDisplay();
-        refreshedStaticApi();
-        createYamlObject(inputData);
+        const { sendYAML } = this.props;
+        sendYAML(YAML.stringify(this.props.yamlObject));
     };
 
     /**
      * Displays either Next or Save, depending whether the user is at the last stage or not.
      */
     nextSave = () => {
-        const { selectedCategory, inputData, navsObj, nextWizardCategory, validateInput } = this.props;
-        if (selectedCategory < inputData.length) {
+        const { selectedCategory, navsObj, nextWizardCategory, validateInput } = this.props;
+        if (selectedCategory < Object.keys(navsObj).length) {
             validateInput(Object.keys(navsObj)[selectedCategory], false);
             nextWizardCategory();
         } else {
@@ -45,7 +44,7 @@ export default class WizardDialog extends Component {
     };
 
     render() {
-        const { wizardIsOpen, enablerName, inputData, selectedCategory, navsObj } = this.props;
+        const { wizardIsOpen, enablerName, selectedCategory, navsObj } = this.props;
         const size = selectedCategory === Object.keys(navsObj).length ? 'large' : 'medium';
         return (
             <div className="dialog">
@@ -63,7 +62,7 @@ export default class WizardDialog extends Component {
                                 Cancel
                             </Button>
                             <Button size="medium" onClick={this.nextSave}>
-                                {selectedCategory === inputData.length ? 'Save' : 'Next'}
+                                {selectedCategory === Object.keys(navsObj).length ? 'Save' : 'Next'}
                             </Button>
                         </DialogActions>
                     </DialogFooter>

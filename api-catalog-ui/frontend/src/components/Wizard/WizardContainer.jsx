@@ -11,11 +11,11 @@ import { connect } from 'react-redux';
 import WizardDialog from './WizardDialog';
 import { nextWizardCategory, wizardToggleDisplay, createYamlObject, validateInput } from '../../actions/wizard-actions';
 import { refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
+import { sendYAML } from '../../actions/wizard-fetch-actions';
 
 const mapStateToProps = state => ({
     wizardIsOpen: state.wizardReducer.wizardIsOpen,
     enablerName: state.wizardReducer.enablerName,
-    inputData: state.wizardReducer.inputData,
     selectedCategory: state.wizardReducer.selectedCategory,
     yamlObject: state.wizardReducer.yamlObject,
     navsObj: state.wizardReducer.navsObj,
@@ -26,6 +26,7 @@ const mapDispatchToProps = {
     nextWizardCategory,
     createYamlObject,
     validateInput,
+    sendYAML,
 };
 export default connect(
     mapStateToProps,
