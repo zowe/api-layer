@@ -14,7 +14,6 @@ import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
 import org.junit.jupiter.api.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -24,8 +23,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
@@ -51,31 +49,6 @@ public class RefreshTest implements TestWithStartedInstances {
     @BeforeEach
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
-    }
-
-    @Nested
-    class GivenIllegalAccessModes {
-        @Test
-        void noClientCertificateGivesForbidden() {
-
-            given().config(SslContext.tlsWithoutCert)
-                .when()
-                .post(REFRESH_URL)
-                .then()
-                .statusCode(is(SC_FORBIDDEN));
-        }
-        @Test
-        void clientCertificateWithoutTokenGivesUnauthorized() {
-            LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
-
-            given().config(SslContext.clientCertApiml)
-                .when()
-                .contentType(JSON)
-                .body(loginRequest)
-                .post(REFRESH_URL)
-                .then()
-                .statusCode(is(SC_UNAUTHORIZED));
-        }
     }
 
     @Nested
