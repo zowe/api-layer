@@ -218,7 +218,7 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.createYamlObject([{
             text: 'Category 1',
-            content: { test: { value: 'yaml' } },
+            content: [{ test: { value: 'yaml' } }],
             multiple: false,
             indentation: false,
             inArr: true,
