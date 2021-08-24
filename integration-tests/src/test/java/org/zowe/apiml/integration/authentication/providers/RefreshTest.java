@@ -11,23 +11,22 @@
 package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
-import io.restassured.http.Cookie;
 import org.junit.jupiter.api.*;
+import org.springframework.http.HttpMethod;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
+import org.zowe.apiml.util.requests.GatewayRequests;
+import org.zowe.apiml.util.requests.RequestParams;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
-import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
@@ -38,42 +37,36 @@ public class RefreshTest implements TestWithStartedInstances {
 
     public static final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
 
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     public static final URI REFRESH_URL = HttpRequestUtils.getUriFromGateway(authConfigurationProperties.getGatewayRefreshEndpointNewFormat());
+    private final GatewayRequests requests = new GatewayRequests(
+        ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost(),
+        String.valueOf(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort()));
 
     @BeforeAll
     public static void init() throws Exception {
         SslContext.prepareSslAuthentication();
-    }
-    @BeforeEach
-    public void setUp() {
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     @Nested
     class GivenLegalAccessModes {
+
         @Test
-        void whenJwtTokenPostedCanBeRefreshedAndOldCookieInvalidated() {
+        void whenJwtTokenPostedCanBeRefreshedAndOldCookieInvalidated() throws URISyntaxException {
 
-            String cookie = gatewayToken();
+            String gatewayToken = gatewayToken();
+            RequestParams params = RequestParams.builder()
+                .method(HttpMethod.POST)
+                .uri(requests.getGatewayUriWithPath(authConfigurationProperties.getGatewayRefreshEndpointNewFormat()))
+                .authentication(gatewayToken).build();
 
-            Cookie refreshedCookie = given().config(SslContext.clientCertApiml)
-                .cookie(COOKIE_NAME, cookie)
-                .when()
-                .post(REFRESH_URL)
-                .then()
-                .statusCode(is(SC_NO_CONTENT))
-                .header("Set-Cookie", containsString("SameSite=Strict"))
-                .cookie(COOKIE_NAME, not(isEmptyString()))
-                .extract().detailedCookie(COOKIE_NAME);
 
-            assertThat(refreshedCookie.getValue(), is(not(cookie)));
-            assertValidAuthToken(refreshedCookie);
+            requests.route(params).then().statusCode(204).cookie(COOKIE_NAME, allOf(
+                not(gatewayToken), not(isEmptyOrNullString())
+            ));
 
-            assertIfLogged(refreshedCookie.getValue(), true);
-            assertIfLogged(cookie, false);
-
+            assertIfLogged(gatewayToken, false);
         }
 
     }

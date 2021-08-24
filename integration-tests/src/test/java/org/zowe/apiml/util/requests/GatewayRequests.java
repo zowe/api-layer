@@ -11,11 +11,10 @@ package org.zowe.apiml.util.requests;
 
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.Credentials;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -102,6 +101,11 @@ public class GatewayRequests {
         }
     }
 
+    public Response route(RequestParams params) {
+        AuthenticatedRequest request = new AuthenticatedRequest();
+        return request.execute(params);
+    }
+
     public JsonResponse authenticatedRoute(String path) {
         try {
             log.info("GatewayRequests#authenticatedRoute - {} Instance: {}", path, instance);
@@ -117,7 +121,7 @@ public class GatewayRequests {
         }
     }
 
-    private URI getGatewayUriWithPath(String path) throws URISyntaxException {
+    public URI getGatewayUriWithPath(String path) throws URISyntaxException {
         return new URIBuilder()
             .setScheme(scheme)
             .setHost(host)
