@@ -144,6 +144,40 @@ jobs:
                     build-arg-list: ZOWE_BASE_IMAGE=latest-ubi
                 timeout-minutes: 5
 
+    build-ubi-s390x:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+
+            -   uses: actions/setup-java@v2
+                with:
+                    distribution: 'adopt'
+                    java-version: '8'
+
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    registry-password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    release: false
+                    base-directory: ./containers
+                    image-name: gateway-service
+                    linux-distro: ubi
+                    cpu-arch: s390x
+
+            -   uses: zowe-actions/shared-actions/docker-build-zlinux@main
+                with:
+                    zlinux-host: ${{ secrets.ZLINUX_HOST }}
+                    zlinux-ssh-user: ${{ secrets.ZLINUX_SSH_USER }}
+                    zlinux-ssh-key: ${{ secrets.ZLINUX_SSH_KEY }}
+                    zlinux-ssh-passphrase: ${{ secrets.ZLINUX_SSH_PASSPHRASE }}
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
+                    redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
+                    build-arg-list: ZOWE_BASE_IMAGE=latest-ubi
+                timeout-minutes: 10
+
     define-ubi-manifest:
         needs:
             - build-ubi-amd64
