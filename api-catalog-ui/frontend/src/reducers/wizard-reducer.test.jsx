@@ -379,13 +379,7 @@ describe('>>> Wizard reducer tests', () => {
 
     it('should handle VALIDATE_INPUT when content is an array', () => {
         const expectedState = {
-            inputData: [{
-                text: 'Category 1',
-                content: [{
-                    test: { value: '', question: 'Why?' },
-                },],
-                nav: 'Nav',
-            },],
+            inputData: [{ text: 'Category 1', content: [{ test: { value: '', question: 'Why?' } }], nav: 'Nav' }],
             navsObj: {
                 'Nav': {
                     'Category 1': [[]],
@@ -395,13 +389,7 @@ describe('>>> Wizard reducer tests', () => {
             },
         };
         expect(wizardReducer({
-            inputData: [{
-                text: 'Category 1',
-                content: [{
-                    test: { value: '', question: 'Why?', },
-                },],
-                nav: 'Nav',
-            },],
+            inputData: [{ text: 'Category 1', content: [{ test: { value: '', question: 'Why?' } }], nav: 'Nav' }],
             navsObj: {
                 'Nav': {
                     'Category 1': [[]],
