@@ -270,4 +270,27 @@ export const categoryData = [
             },
         },
     },
+    {
+        text: 'Catalog info',
+        content: {
+            catalogUiTileId: {
+                value: '',
+                question: 'The id of the catalog tile:',
+            },
+        },
+    },
+    {
+        text: 'Catalog UI Tiles',
+        content: {
+            title: {
+                value: '',
+                question: 'The title of the API services product family:',
+            },
+            description: {
+                value: '',
+                question: 'The detailed description of the API Catalog UI dashboard tile:',
+            },
+        },
+        indentationDependency: 'catalogUiTileId',
+    },
 ];
