@@ -20,7 +20,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DiscoverableClientConfiguration {
+    private String scheme;
     private String applId;
     private String host;
+    private int port;
     private int instances;
 }

@@ -47,6 +47,10 @@ public class GatewayRequests {
         this(gatewayServiceConfiguration.getScheme(), host, Integer.parseInt(port), new Requests());
     }
 
+    public GatewayRequests(String scheme, String host, String port) {
+        this(scheme, host, Integer.parseInt(port), new Requests());
+    }
+
     public GatewayRequests(String scheme, String host, int port, Requests requests) {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
@@ -117,7 +121,7 @@ public class GatewayRequests {
         }
     }
 
-    private URI getGatewayUriWithPath(String path) throws URISyntaxException {
+    public URI getGatewayUriWithPath(String path) throws URISyntaxException {
         return new URIBuilder()
             .setScheme(scheme)
             .setHost(host)
