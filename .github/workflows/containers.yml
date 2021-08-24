@@ -67,8 +67,8 @@ jobs:
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
-                    registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
-                    registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
+                    registry-user: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    registry-password: ${{ secrets.ARTIFACTORY_PASSWORD }}
                     release: false
                     base-directory: ./containers
                     image-name: gateway-service
@@ -83,6 +83,36 @@ jobs:
                     zlinux-ssh-passphrase: ${{ secrets.ZLINUX_SSH_PASSPHRASE }}
                     build-arg-list: ZOWE_BASE_IMAGE=latest-ubuntu
                 timeout-minutes: 10
+
+    build-ubi-amd64:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+
+            -   uses: actions/setup-java@v2
+                with:
+                    distribution: 'adopt'
+                    java-version: '8'
+
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    registry-password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    release: false
+                    base-directory: ./containers
+                    image-name: gateway-service
+                    linux-distro: ubi
+                    cpu-arch: amd64
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
+                    redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
+
+            -   uses: zowe-actions/shared-actions/docker-build-local@main
+                with:
+                    build-arg-list: ZOWE_BASE_IMAGE=latest-ubi
+                timeout-minutes: 5
 
     PublishContainers:
         runs-on: ubuntu-latest
