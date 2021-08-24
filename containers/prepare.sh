@@ -47,16 +47,15 @@ fi
 BASE_DIR=$(cd $(dirname $0);pwd)
 REPO_ROOT_DIR=$(cd $(dirname $0)/../;pwd)
 WORK_DIR=tmp
-
 ###############################
+
 echo ">>>>> prepare basic files"
 cd "${REPO_ROOT_DIR}"
 package_version=$(cat gradle.properties | grep version= | awk -F= '{print $2}')
 package_release=$(echo "${package_version}" | awk -F. '{print $1;}')
 echo "    version: ${package_version}"
-
 ###############################
-# copy Dockerfile
+
 echo ">>>>> copy Dockerfile to ${linux_distro}/${cpu_arch}/Dockerfile"
 cd "${BASE_DIR}"
 mkdir -p "${linux_distro}/${cpu_arch}"
@@ -65,35 +64,40 @@ if [ ! -f Dockerfile ]; then
   exit 2
 fi
 cat Dockerfile | sed -e "s#version=\"0\.0\.0\"#version=\"${package_version}\"#" -e "s#release=\"0\"#release=\"${package_release}\"#" > "${linux_distro}/${cpu_arch}/Dockerfile"
-
 ###############################
+
 echo ">>>>> clean up folder"
 rm -fr "${BASE_DIR}/${WORK_DIR}"
 mkdir -p "${BASE_DIR}/${WORK_DIR}"
-
 ###############################
+
 echo ">>>>> build package"
 cd "${REPO_ROOT_DIR}"
 
 ./gradlew packageApiGateway
-if [ ! -f "${REPO_ROOT_DIR}/gateway-package/build/distributions/gateway-package-null.zip" ]; then
-  echo "Error: failed to build gateway-package-null.zip."
+GATEWAY_PACKAGE="gateway-package.zip"
+if [ ! -f "${REPO_ROOT_DIR}/gateway-package/build/distributions/${GATEWAY_PACKAGE}" ]; then
+  echo "Error: failed to build ${GATEWAY_PACKAGE}."
   exit 3
 fi
 
 ./gradlew packageCommonLib
-if [ ! -f "${REPO_ROOT_DIR}/apiml-common-lib-package/build/distributions/apiml-common-lib-package-null.zip" ]; then
-  echo "Error: failed to build apiml-common-lib-package-null.zip."
+COMMON_LIB_PACKAGE="apiml-common-lib-package.zip"
+if [ ! -f "${REPO_ROOT_DIR}/apiml-common-lib-package/build/distributions/${COMMON_LIB_PACKAGE}" ]; then
+  echo "Error: failed to build ${COMMON_LIB_PACKAGE}."
   exit 3
 fi
 ###############################
+
 echo ">>>>> prepare basic files"
+
 cd "${BASE_DIR}/${WORK_DIR}"
-unzip "${REPO_ROOT_DIR}/gateway-package/build/distributions/gateway-package-null.zip"
+unzip "${REPO_ROOT_DIR}/gateway-package/build/distributions/${GATEWAY_PACKAGE}"
 chmod +x bin/*
+
 mkdir "apiml-common-lib"
 cd "apiml-common-lib"
-unzip "${REPO_ROOT_DIR}/apiml-common-lib-package/build/distributions/apiml-common-lib-package-null.zip"
+unzip "${REPO_ROOT_DIR}/apiml-common-lib-package/build/distributions/${COMMON_LIB_PACKAGE}"
 chmod +x bin/*
 
 cd "${REPO_ROOT_DIR}"
@@ -101,10 +105,11 @@ cp README.md "${BASE_DIR}/${WORK_DIR}"
 cp LICENSE "${BASE_DIR}/${WORK_DIR}"
 
 ###############################
+
 # copy to target context
 echo ">>>>> copy to target build context"
 cp -r "${BASE_DIR}/${WORK_DIR}" "${BASE_DIR}/${linux_distro}/${cpu_arch}/component"
 
 ###############################
-# done
+
 echo ">>>>> all done"
