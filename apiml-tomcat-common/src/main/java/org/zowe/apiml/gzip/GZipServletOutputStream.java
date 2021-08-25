@@ -55,6 +55,7 @@ public class GZipServletOutputStream extends ServletOutputStream {
 
     @Override
     public void setWriteListener(WriteListener listener) {
+//        writer is never used in this case
     }
 
 

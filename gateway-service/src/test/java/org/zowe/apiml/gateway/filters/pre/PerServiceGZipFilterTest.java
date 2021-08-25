@@ -21,10 +21,7 @@ import org.zowe.apiml.gzip.GZipResponseWrapper;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -114,8 +111,17 @@ class PerServiceGZipFilterTest {
                 assertNotEquals(GZipResponseWrapper.class, response1.getClass());
             });
         }
-
     }
 
+    @Test
+    void whenNoInstancesAvailable_thenDoNotWrapResponse() throws ServletException, IOException {
+        request.setRequestURI("/api/v1/" + SERVICE_WITHOUT_COMPRESSION);
+        filter = new PerServiceGZipFilter(discoveryClient);
+        when(discoveryClient.getInstances(SERVICE_WITHOUT_COMPRESSION)).thenReturn(new ArrayList<>());
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        filter.doFilterInternal(request, response, (request, response1) -> {
+            assertNotEquals(GZipResponseWrapper.class, response1.getClass());
+        });
+    }
 
 }

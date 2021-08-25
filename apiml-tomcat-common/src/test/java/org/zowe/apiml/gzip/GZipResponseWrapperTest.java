@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.gzip;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -98,22 +100,44 @@ class GZipResponseWrapperTest {
         assertThrows(IllegalStateException.class, wrapper::getOutputStream);
     }
 
-    @Test
-    void flushNotNullStream() throws IOException {
-        GZIPOutputStream gZipOutputStream = mock(GZIPOutputStream.class);
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        GZipResponseWrapper responseWrapper = new GZipResponseWrapper(response, gZipOutputStream);
-        responseWrapper.flushBuffer();
-        verify(gZipOutputStream, times(1)).flush();
+    @Nested
+    class Cleanup {
+        GZIPOutputStream gZipOutputStream = null;
+        MockHttpServletResponse response = null;
+        GZipResponseWrapper responseWrapper = null;
+
+        @BeforeEach
+        void setup() {
+            gZipOutputStream = mock(GZIPOutputStream.class);
+            response = new MockHttpServletResponse();
+            responseWrapper = new GZipResponseWrapper(response, gZipOutputStream);
+        }
+
+        @Test
+        void flushNotNullStream() throws IOException {
+            responseWrapper.flushBuffer();
+            verify(gZipOutputStream, times(1)).flush();
+        }
+
+        @Test
+        void whenWriterIsRequested_flushNewlyCreatedBuffer() throws IOException {
+            responseWrapper.getWriter();
+            responseWrapper.flushBuffer();
+            verify(gZipOutputStream, times(0)).flush();
+        }
+
+        @Test
+        void closeNotNullStream() throws IOException {
+            responseWrapper.close();
+            verify(gZipOutputStream, times(1)).close();
+        }
+
+        @Test
+        void whenWriterIsRequested_closeNewlyCreatedBuffer() throws IOException {
+            responseWrapper.getWriter();
+            responseWrapper.close();
+            verify(gZipOutputStream, times(0)).flush();
+        }
     }
 
-    @Test
-    void whenWriterIsRequested_flushNewlyCreatedBuffer() throws IOException {
-        GZIPOutputStream gZipOutputStream = mock(GZIPOutputStream.class);
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        GZipResponseWrapper responseWrapper = new GZipResponseWrapper(response, gZipOutputStream);
-        responseWrapper.getWriter();
-        responseWrapper.flushBuffer();
-        verify(gZipOutputStream, times(0)).flush();
-    }
 }
