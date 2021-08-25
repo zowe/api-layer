@@ -11,12 +11,12 @@ jobs:
     build-amd64:
         strategy:
             matrix:
-                os: [ubuntu, ubi]
+                os: [ ubuntu, ubi ]
                 include:
-                    - os: ubuntu
-                      BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
-                    - os: ubi
-                      BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
+                    -   os: ubuntu
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
+                    -   os: ubi
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
 
         runs-on: ubuntu-latest
         steps:
@@ -72,11 +72,12 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                os: [ubuntu, ubi]
-                    - os: ubuntu
-                      BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
-                    - os: ubi
-                      BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
+                os: [ ubuntu, ubi ]
+                include:
+                    -   os: ubuntu
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
+                    -   os: ubi
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
         steps:
             -   uses: actions/checkout@v2
                 with:
@@ -138,7 +139,7 @@ jobs:
             - build-s390x
         strategy:
             matrix:
-                os: [ubuntu, ubi]
+                os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v2
