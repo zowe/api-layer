@@ -142,7 +142,7 @@ describe('>>> Wizard actions tests', () => {
     it('should add categories to the YAML object and handle indentation', () => {
         const category = {
             text: 'Category 1',
-            content: { test: { value: 'yaml' } },
+            content: [{ test: { value: 'yaml' } }],
             multiple: false,
             indentation: 'category1',
             indentationDependency: 'test2',
@@ -150,7 +150,7 @@ describe('>>> Wizard actions tests', () => {
         const inputData = [
             {
                 text: 'Category 2',
-                content: { test2: { value: 'val' } },
+                content: [{ test2: { value: 'val' } }],
             },
         ];
         let result = { test3: 'test 3' };
@@ -230,7 +230,7 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.createYamlObject([{
             text: 'Category 1',
-            content: { test: { value: 'yaml' } },
+            content: [{ test: { value: 'yaml' } }],
             multiple: false,
             indentation: false,
             inArr: true,

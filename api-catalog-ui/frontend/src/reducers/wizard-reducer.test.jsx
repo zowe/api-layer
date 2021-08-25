@@ -19,7 +19,7 @@ import {
     VALIDATE_INPUT,
 } from '../constants/wizard-constants';
 import wizardReducer, {
-    addDefaultValues,
+    addDefaultValues, compareVariables,
     setDefault,
     wizardReducerDefaultState
 } from './wizard-reducer';
@@ -182,11 +182,7 @@ describe('>>> Wizard reducer tests', () => {
                     inArr: true,
                 }],
                 navsObj: {
-                    'Test Category': {
-                        'Test Category': [[]],
-                        silent: true,
-                        warn: false,
-                    }
+                    'Test Category': { 'Test Category': [[]], silent: true, warn: false, }
                 },
                 selectedCategory: 0
             });
@@ -201,12 +197,7 @@ describe('>>> Wizard reducer tests', () => {
             text: 'Right Category',
             content: {},
         }];
-        const expectedState = {
-            inputData: [],
-            enablerName: 'Test Enabler',
-            navsObj: {},
-            selectedCategory: 0
-        };
+        const expectedState = { inputData: [], enablerName: 'Test Enabler', navsObj: {}, selectedCategory: 0 };
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
             payload: { enablerName: 'Test Enabler' },
@@ -228,17 +219,13 @@ describe('>>> Wizard reducer tests', () => {
         const initialState = {
             inputData: [{
                 text: 'TEST 2',
-                content: {
-                    key: { value: '0', question: 'Why?' },
-                }
+                content: { key: { value: '0', question: 'Why?' }, }
             }],
         };
         const expectedState = {
             inputData: [{
                 text: 'TEST 2',
-                content: {
-                    key: { value: '42', question: 'Why?' },
-                }
+                content: { key: { value: '42', question: 'Why?' }, }
             }],
         };
         expect(wizardReducer(initialState, {
@@ -385,11 +372,7 @@ describe('>>> Wizard reducer tests', () => {
         expect(wizardReducer({
             inputData: [{ text: 'Category 1', content: [{ test: { value: '', question: 'Why?' } }], nav: 'Nav' }],
             navsObj: {
-                'Nav': {
-                    'Category 1': [[]],
-                    silent: true,
-                    warn: false,
-                }
+                'Nav': { 'Category 1': [[]], silent: true, warn: false, }
             },
         }, {
             type: VALIDATE_INPUT,
@@ -401,17 +384,11 @@ describe('>>> Wizard reducer tests', () => {
         const expectedState = {
             inputData: [{
                 text: 'Category 1',
-                content: [{
-                    test: { value: '', question: 'Why?', empty: true },
-                }],
+                content: [{ test: { value: '', question: 'Why?', empty: true }, }],
                 nav: 'Nav',
             },],
             navsObj: {
-                'Nav': {
-                    'Category 1': [['test']],
-                    silent: false,
-                    warn: true,
-                }
+                'Nav': { 'Category 1': [['test']], silent: false, warn: true, }
             },
         };
         expect(wizardReducer({
@@ -582,15 +559,11 @@ describe('>>> Wizard reducer tests', () => {
     it('should set the default value when content is an object', () => {
         const category = {
             text: 'Category 1',
-            content: [{
-                test: { value: '', question: 'Why?', },
-            }]
+            content: [{ test: { value: '', question: 'Why?', }, }]
         };
         const expectedCategory = {
             text: 'Category 1',
-            content: [{
-                test: { value: 'val1', question: 'Why?', },
-            }]
+            content: [{ test: { value: 'val1', question: 'Why?', }, }]
         };
         const defaults = {
             'Category 1': { test: 'val1', },
@@ -598,4 +571,14 @@ describe('>>> Wizard reducer tests', () => {
         const newCategory = setDefault(category, defaults);
         expect(newCategory).toEqual(expectedCategory);
     });
+
+    it('should put category content in an array', () => {
+        const category = {
+            text: 'Category 1',
+            content: { test: { value: '', question: 'Why?', }, },
+        };
+        const categoryInfo = {name: 'Category 1'};
+        compareVariables(category, categoryInfo);
+        expect(category.content).toEqual([{ test: { value: '', question: 'Why?', }, }]);
+    })
 });
