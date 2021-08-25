@@ -3,6 +3,7 @@ apiml:
         hostname: gateway-service
         discoveryServiceUrls: https://discovery-service:10011/eureka/
     security:
+        allowTokenRefresh: true
         auth:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
@@ -12,6 +13,10 @@ apiml:
             verifySslCertificatesOfServices: true
         x509:
             enabled: true
+        saf:
+            urls:
+                authenticate: https://mock-zosmf:10013/zss/saf/authenticate
+                verify: https://mock-zosmf:10013/zss/saf/verify
     banner: console
 
 eureka:

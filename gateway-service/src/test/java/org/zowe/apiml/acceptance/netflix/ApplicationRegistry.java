@@ -46,7 +46,11 @@ public class ApplicationRegistry {
      * @param addTimeout Whether the custom metadata should be provided for given service.
      */
     public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances, boolean compressionEnabled) {
-        addApplication(service, addTimeout, corsEnabled, multipleInstances, "headerRequest", compressionEnabled);
+        addApplication(service, addTimeout, corsEnabled, multipleInstances, "headerRequest", compressionEnabled, false);
+    }
+
+    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances, String loadBalancerStrategy) {
+        addApplication(service, addTimeout, corsEnabled, multipleInstances, loadBalancerStrategy, false, false);
     }
 
     /**
@@ -58,7 +62,7 @@ public class ApplicationRegistry {
      * @param loadBalancerStrategy What strategy should be applied by LoadBalancer. E.g use header, base the
      *                             authentication on the user and so on.
      */
-    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances, String loadBalancerStrategy, boolean compressionEnabled) {
+    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled, boolean multipleInstances, String loadBalancerStrategy, boolean compressionEnabled, boolean safIdt) {
         String id = service.getId();
         String locationPattern = service.getLocationPattern();
         String serviceRoute = service.getServiceRoute();
@@ -66,7 +70,7 @@ public class ApplicationRegistry {
         Applications applications = new Applications();
         Application withMetadata = new Application(id);
 
-        Map<String, String> metadata = createMetadata(addTimeout, corsEnabled, loadBalancerStrategy, compressionEnabled);
+        Map<String, String> metadata = createMetadata(addTimeout, corsEnabled, loadBalancerStrategy, safIdt, compressionEnabled);
 
         withMetadata.addInstance(getStandardInstance(metadata, id, id));
         if (multipleInstances) {
@@ -149,7 +153,7 @@ public class ApplicationRegistry {
             .build();
     }
 
-    private Map<String, String> createMetadata(boolean addRibbonConfig, boolean corsEnabled, String loadBalancerStrategy, boolean compressionEnabled) {
+    private Map<String, String> createMetadata(boolean addRibbonConfig, boolean corsEnabled, String loadBalancerStrategy, boolean safIdt, boolean compressionEnabled) {
         Map<String, String> metadata = new HashMap<>();
         if (addRibbonConfig) {
             metadata.put("apiml.connectTimeout", "5000");
@@ -161,6 +165,9 @@ public class ApplicationRegistry {
         metadata.put("apiml.lb.cacheRecordExpirationTimeInHours", "8");
         metadata.put("apiml.corsEnabled", String.valueOf(corsEnabled));
         metadata.put("apiml.routes.gateway-url", "/");
+        if (safIdt) {
+            metadata.put("apiml.authentication.scheme", "safIdt");
+        }
         metadata.put("apiml.authentication.scheme", "safIdt");
         metadata.put("apiml.response.compress",String.valueOf(compressionEnabled));
         return metadata;
