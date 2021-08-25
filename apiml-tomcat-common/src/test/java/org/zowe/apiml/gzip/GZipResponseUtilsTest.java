@@ -43,8 +43,8 @@ class GZipResponseUtilsTest {
     }
 
     @Test
-    void whenContentShouldIsEmpty_thenReturnTrue() {
-        byte[] bytes = new byte[]{};
+    void whenGZippedBodyIsEmpty_thenReturnTrue() {
+        byte[] bytes = new byte[20];
         assertTrue(GZipResponseUtils.shouldGzippedBodyBeZero(bytes));
     }
 }
