@@ -208,7 +208,7 @@ jobs:
                     cpu-arch-list: "amd64 s390x"
                 timeout-minutes: 2
 
-    PublishContainers:
+    PublishJibContainers:
         runs-on: ubuntu-latest
         timeout-minutes: 6
 
@@ -249,7 +249,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITests:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -313,7 +313,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsRegistration:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -377,7 +377,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsZosmfRsu2012:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -444,7 +444,7 @@ jobs:
 
 
     CITestsZosmfWithoutJwt:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -511,7 +511,7 @@ jobs:
 
 
     CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -577,7 +577,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsInternalPort:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -641,7 +641,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWithRedis:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -727,7 +727,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWithRedisWithoutSslVerification:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -815,7 +815,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsHA:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
@@ -913,7 +913,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     HALoadBalancing:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
@@ -1028,7 +1028,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsDiscoveryChaoticHA:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
@@ -1119,7 +1119,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsGatewayChaoticHA:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
@@ -1210,7 +1210,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsDicoverableClientChaoticHA:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
@@ -1305,7 +1305,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWebSocketChaoticHA:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
