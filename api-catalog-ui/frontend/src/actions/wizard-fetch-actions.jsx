@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import { TOGGLE_DISPLAY } from '../constants/wizard-constants';
 
-function sendYAMLSuccess() {
+export function sendYAMLSuccess() {
     toast.success('Automatic onboarding successful!', {
         closeOnClick: true,
         autoClose: 2000,
