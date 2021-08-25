@@ -45,8 +45,8 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
     public void prepareApplications() {
         cache.getLocalCache().clear();
         applicationRegistry.clearApplications();
-        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, "authentication");
-        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, "authentication");
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, "authentication", false, false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, "authentication", false, false);
     }
 
     @Nested
