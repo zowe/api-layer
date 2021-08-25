@@ -26,6 +26,8 @@ import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Locale;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -70,8 +72,10 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);
         Mockito.when(response.getStatusLine()).thenReturn(new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, ""));
         Mockito.when(response.getAllHeaders()).thenReturn(headers);
+        Mockito.when(response.getEntity()).thenReturn(new HttpEntityImpl("Hello worlds!".getBytes()));
         Mockito.when(mockClient.execute(any())).thenReturn(response);
     }
+
 
     protected void mockUnavailableHttpResponseWithEntity(int statusCode) throws IOException {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);
@@ -83,3 +87,58 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         Mockito.when(mockClient.execute(any())).thenReturn(response);
     }
 }
+
+    class HttpEntityImpl implements HttpEntity {
+
+        byte [] bytes;
+
+        public HttpEntityImpl(byte[] bytes) {
+            this.bytes = bytes;
+        }
+
+        @Override
+        public boolean isRepeatable() {
+            return false;
+        }
+
+        @Override
+        public boolean isChunked() {
+            return false;
+        }
+
+        @Override
+        public long getContentLength() {
+            return bytes.length;
+        }
+
+        @Override
+        public Header getContentType() {
+            return null;
+        }
+
+        @Override
+        public Header getContentEncoding() {
+            return null;
+        }
+
+        @Override
+        public InputStream getContent() throws IOException, UnsupportedOperationException {
+            InputStream is = new ByteArrayInputStream(bytes);
+            return is;
+        }
+
+        @Override
+        public void writeTo(OutputStream outStream) throws IOException {
+
+        }
+
+        @Override
+        public boolean isStreaming() {
+            return false;
+        }
+
+        @Override
+        public void consumeContent() throws IOException {
+
+        }
+    }
