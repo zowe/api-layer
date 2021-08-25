@@ -6,6 +6,9 @@ on:
     pull_request:
         branches: [ master ]
 
+env:
+    IMAGE_BASE_DIR: ./containers
+
 jobs:
 
     build-amd64:
@@ -54,7 +57,7 @@ jobs:
                     registry-user: ${{ secrets.ARTIFACTORY_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_PASSWORD }}
                     release: false
-                    base-directory: ./containers
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}
                     image-name: gateway-service
                     linux-distro: ${{ matrix.os }}
                     cpu-arch: amd64
@@ -115,7 +118,7 @@ jobs:
                     registry-user: ${{ secrets.ARTIFACTORY_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_PASSWORD }}
                     release: false
-                    base-directory: ./containers
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}
                     image-name: gateway-service
                     linux-distro: ${{ matrix.os }}
                     cpu-arch: s390x
@@ -154,10 +157,10 @@ jobs:
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
-                    registry-user: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    registry-password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
+                    registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
                     release: false
-                    base-directory: ./containers
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}
                     image-name: gateway-service
                     linux-distro: ${{ matrix.os }}
 
