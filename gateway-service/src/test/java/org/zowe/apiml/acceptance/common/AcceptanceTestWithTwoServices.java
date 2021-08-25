@@ -51,8 +51,8 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @BeforeEach
     public void prepareApplications() {
         applicationRegistry.clearApplications();
-        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, false, false);
-        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, true, false);
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, false, false, false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, true, false, true);
     }
 
     protected void mockValid200HttpResponse() throws IOException {

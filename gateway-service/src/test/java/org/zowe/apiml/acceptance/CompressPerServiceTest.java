@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.acceptance;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
@@ -33,5 +34,18 @@ public class CompressPerServiceTest extends AcceptanceTestWithTwoServices {
             .then()
             .statusCode(is(SC_OK))
             .header("Content-Encoding", is("gzip"));
+    }
+
+    @Test
+    void givenServiceDoesntAcceptsCompression_thenResponseIsNotCompressed() throws IOException {
+        mockValid200HttpResponse();
+        applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+        discoveryClient.createRefreshCacheEvent();
+        given()
+            .when()
+            .get(basePath + serviceWithCustomConfiguration.getPath())
+            .then()
+            .statusCode(is(SC_OK))
+            .header("Content-Encoding", Matchers.nullValue());
     }
 }
