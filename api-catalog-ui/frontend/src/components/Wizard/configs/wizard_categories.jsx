@@ -207,7 +207,7 @@ export const categoryData = [
         text: 'SSL',
         content: {
             verifySslCertificatesOfServices: {
-                value: '',
+                value: false,
                 question: 'Set this parameter to true in production environments:',
             },
             protocol: {

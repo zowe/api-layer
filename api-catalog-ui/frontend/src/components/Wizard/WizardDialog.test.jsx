@@ -15,7 +15,8 @@ import { categoryData } from './configs/wizard_categories';
 describe('>>> WizardDialog tests', () => {
     it('should render the dialog if store value is true', () => {
         const wrapper = enzyme.shallow(
-            <WizardDialog wizardToggleDisplay={jest.fn()} inputData={categoryData} navsObj={{ 'Tab 1': {} }} wizardIsOpen />
+            <WizardDialog wizardToggleDisplay={jest.fn()} inputData={categoryData} navsObj={{ 'Tab 1': {} }}
+                          wizardIsOpen />
         );
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
     });
@@ -82,9 +83,7 @@ describe('>>> WizardDialog tests', () => {
         expect(wizardToggleDisplay).toHaveBeenCalled();
     });
     it('should close dialog and refresh static APIs on Save', () => {
-        const wizardToggleDisplay = jest.fn();
-        const refreshedStaticApi = jest.fn();
-        const createYamlObject = jest.fn();
+        const sendYAML = jest.fn();
         const dummyData = [
             {
                 text: 'Basic info',
@@ -93,25 +92,15 @@ describe('>>> WizardDialog tests', () => {
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog
-                tiles={null}
-                fetchTilesStart={jest.fn()}
-                wizardToggleDisplay={wizardToggleDisplay}
-                refreshedStaticApi={refreshedStaticApi}
-                fetchTilesStop={jest.fn()}
-                clearService={jest.fn()}
-                clear={jest.fn()}
                 inputData={dummyData}
                 selectedCategory={dummyData.length}
                 navsObj={{ 'Basic info': {} }}
-                nextWizardCategory={jest.fn()}
-                createYamlObject={createYamlObject}
+                sendYAML={sendYAML}
             />
         );
         const instance = wrapper.instance();
         instance.nextSave();
-        expect(wizardToggleDisplay).toHaveBeenCalled();
-        expect(refreshedStaticApi).toHaveBeenCalled();
-        expect(createYamlObject).toHaveBeenCalled();
+        expect(sendYAML).toHaveBeenCalled();
     });
     it('should invoke nextCategory on clicking "Next"', () => {
         const nextWizardCategory = jest.fn();

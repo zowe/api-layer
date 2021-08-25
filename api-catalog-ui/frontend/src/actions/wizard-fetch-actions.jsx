@@ -11,8 +11,8 @@ function sendYAMLSuccess() {
     };
 }
 
-function sendYAMLError() {
-    toast.error('The automatic onboarding was unsuccessful..', {
+export function sendYAMLError(error) {
+    toast.error(error, {
         closeOnClick: true,
         autoClose: 2000,
     });
@@ -31,9 +31,9 @@ export function sendYAML(body) {
                 if (status === 201) {
                     dispatch(sendYAMLSuccess());
                 } else {
-                    dispatch(sendYAMLError());
+                    dispatch(sendYAMLError('The automatic onboarding was unsuccessful..'));
                 }
             })
-            .catch(() => dispatch(sendYAMLError()));
+            .catch(() => dispatch(sendYAMLError('The automatic onboarding was unsuccessful..')));
     };
 }

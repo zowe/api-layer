@@ -26,8 +26,34 @@ export default class WizardDialog extends Component {
     };
 
     doneWizard = () => {
-        const { sendYAML } = this.props;
-        sendYAML(YAML.stringify(this.props.yamlObject));
+        const { sendYAML, navsObj, sendYAMLError } = this.props;
+
+        /**
+         * Check that all mandatory fields are filled.
+         * @param navs navsObj contains information about all unfilled fields in each nav tab.
+         * @returns {boolean} true if no mandatory fields are empty
+         */
+        const presenceIsSufficient = navs => {
+            let sufficient = true;
+            Object.keys(navs).forEach(nav => {
+                Object.keys(navs[nav]).forEach(category => {
+                    if (Array.isArray(navs[nav][category])) {
+                        navs[nav][category].forEach(set => {
+                            if (set.length > 0) {
+                                sufficient = false;
+                            }
+                        });
+                    }
+                });
+            });
+            return sufficient;
+        };
+
+        if (presenceIsSufficient(navsObj)) {
+            sendYAML(YAML.stringify(this.props.yamlObject));
+        } else {
+            sendYAMLError('Fill all mandatory fields first!');
+        }
     };
 
     /**
