@@ -21,7 +21,7 @@ describe('>>> WizardDialog tests', () => {
     });
     it('should create 0 inputs if content is an empty object', () => {
         const dummyData = [
-            { text: 'Basic info', content: {}, },
+            { text: 'Basic info', content: [], },
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog wizardToggleDisplay={jest.fn()} inputData={dummyData} navsObj={{ 'Basic info': {} }}

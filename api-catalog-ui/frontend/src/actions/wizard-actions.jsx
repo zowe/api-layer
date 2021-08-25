@@ -130,10 +130,11 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
     const result = { ...parent };
     let content = {};
     // load user's answer into content object
-    if (!Array.isArray(category.content)) {
-        Object.keys(category.content).forEach(key => {
-            if (category.content[key].show !== false) {
-                content[key] = category.content[key].value;
+    if (!category.multiple) {
+        Object.keys(category.content[0]).forEach(key => {
+            if (category.content[0][key].show !== false) {
+                if (category.content[key].show !== false) {
+                content[key] = category.content[0][key].value;
             }
         });
     } else {

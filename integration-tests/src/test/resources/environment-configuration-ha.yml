@@ -19,8 +19,16 @@ discoveryServiceConfiguration:
     instances: 2
 discoverableClientConfiguration:
     applId: ZOWEAPPL
+    scheme: https
+    port: 10012
+    host: discoverable-client,discoverable-client-2
+    instances: 2
 apiCatalogServiceConfiguration:
+    scheme: https
     url:
+    host: api-catalog-services,api-catalog-services-2
+    port: 10014
+    instances: 2
 cachingServiceConfiguration:
     url:
 tlsConfiguration:

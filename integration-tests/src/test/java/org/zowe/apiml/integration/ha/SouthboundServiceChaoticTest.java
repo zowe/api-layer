@@ -12,12 +12,11 @@ package org.zowe.apiml.integration.ha;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.categories.HATest;
+import org.zowe.apiml.util.categories.ChaoticHATest;
 import org.zowe.apiml.util.requests.Endpoints;
 import org.zowe.apiml.util.requests.JsonResponse;
+import org.zowe.apiml.util.requests.ha.HADiscoverableClientRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
-
-import java.util.List;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,24 +24,25 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
- * Verify that a southbound service can route through multiples Gateway instances
+ * Verify behaviour of the Discoverable Client under chaotic testing
+ * Test case: take down one of the DC instances and check whether the GW can route to the other alive DC instance
  */
-@HATest
-public class SouthboundServicesRoutingTest {
+@ChaoticHATest
+public class SouthboundServiceChaoticTest {
+
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
+    private final HADiscoverableClientRequests haDiscoverableClientRequests = new HADiscoverableClientRequests();
 
     @Nested
     class GivenHASetUp {
         @Nested
-        class WhenCallingDiscoverableClient {
+        class whenOneDiscoverableClientIsNotAvailable {
             @Test
-            void routeThroughEveryInstance() {
-                assumeTrue(haGatewayRequests.existing() > 1);
-
-                List<JsonResponse> responses = haGatewayRequests.route(Endpoints.DISCOVERABLE_GREET);
-                for (JsonResponse response : responses) {
-                    assertThat(response.getStatus(), is(SC_OK));
-                }
+            void routeViaGatewayToTheOtherInstance() {
+                assumeTrue(haDiscoverableClientRequests.existing() > 1);
+                haDiscoverableClientRequests.shutdown(0);
+                JsonResponse result = haGatewayRequests.route(0, Endpoints.DISCOVERABLE_GREET);
+                assertThat(result.getStatus(), is(SC_OK));
             }
         }
     }

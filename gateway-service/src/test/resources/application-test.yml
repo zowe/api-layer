@@ -32,6 +32,7 @@ apiml:
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
         filterChainConfiguration: new
+        allowTokenRefresh: true
         ssl:
             verifySslCertificatesOfServices: true
         auth:
@@ -43,6 +44,11 @@ apiml:
             jwtKeyAlias: jwtSecret
         zosmf:
             useJwtToken: true # if true and z/OSMF returns JWT token use it, otherwise create Zowe JWT token with LTPA token from z/OSMF, default is true
+        saf:
+            provider: rest
+            urls:
+                authenticate: https://localhost:10013/zss/saf/authenticate
+                verify: https://localhost:10013/zss/saf/verify
 
 spring:
     application:
