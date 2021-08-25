@@ -19,6 +19,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class GZipResponseWrapperTest {
 
@@ -62,10 +63,10 @@ class GZipResponseWrapperTest {
 
         MockHttpServletResponse response = new MockHttpServletResponse();
         GZipResponseWrapper responseWrapper = new GZipResponseWrapper(response, gZipOutputStream);
-        byte [] originalBytes = xml.getBytes();
+        byte[] originalBytes = xml.getBytes();
         responseWrapper.getOutputStream().write(originalBytes);
         responseWrapper.getOutputStream().close();
-        byte [] compressed  = arrayOutputStream.toByteArray();
+        byte[] compressed = arrayOutputStream.toByteArray();
         int compressLength = compressed.length;
         assertTrue(compressLength < originalBytes.length);
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressed);
@@ -73,11 +74,28 @@ class GZipResponseWrapperTest {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
         String line;
         String output = "";
-        while((line = bufferedReader.readLine()) != null){
+        while ((line = bufferedReader.readLine()) != null) {
             output += line + "\n";
         }
         output = output.substring(0, output.length() - 1);
         inputStream.close();
-        assertEquals(xml,output);
+        assertEquals(xml, output);
     }
+
+    @Test
+    void whenRequestPrintWriter_thenTheSameInstanceIsReturned() throws IOException {
+        GZIPOutputStream outputStream = mock(GZIPOutputStream.class);
+        GZipResponseWrapper wrapper = new GZipResponseWrapper(new MockHttpServletResponse(), outputStream);
+        PrintWriter writer = wrapper.getWriter();
+        assertEquals(writer, wrapper.getWriter());
+    }
+
+    @Test
+    void whenPrintWriterAlreadyCreated_thenThrowExceptionWhenOutputStreamIsRequested() throws IOException {
+        GZIPOutputStream outputStream = mock(GZIPOutputStream.class);
+        GZipResponseWrapper wrapper = new GZipResponseWrapper(new MockHttpServletResponse(), outputStream);
+        wrapper.getWriter();
+        assertThrows(IllegalStateException.class, wrapper::getOutputStream);
+    }
+
 }

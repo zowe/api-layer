@@ -31,22 +31,23 @@ import java.util.zip.GZIPOutputStream;
 public class PerServiceGZipFilter extends OncePerRequestFilter {
 
     private final DiscoveryClient discoveryClient;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(requiresCompression(request)){
+        if (requiresCompression(request)) {
             final ByteArrayOutputStream compressed = new ByteArrayOutputStream();
             final GZIPOutputStream compressedStream = new GZIPOutputStream(compressed);
 
-            final GZipResponseWrapper gzipWrapper = new GZipResponseWrapper(response,compressedStream);
+            final GZipResponseWrapper gzipWrapper = new GZipResponseWrapper(response, compressedStream);
             gzipWrapper.setDisableFlushBuffer(true);
-            filterChain.doFilter(request,gzipWrapper);
+            filterChain.doFilter(request, gzipWrapper);
             gzipWrapper.flush();
             compressedStream.close();
-            if(response.isCommitted()){
+            if (response.isCommitted()) {
                 return;
             }
 
-            switch (gzipWrapper.getStatus()){
+            switch (gzipWrapper.getStatus()) {
                 case HttpServletResponse.SC_NO_CONTENT:
                 case HttpServletResponse.SC_RESET_CONTENT:
                 case HttpServletResponse.SC_NOT_MODIFIED:
@@ -54,8 +55,8 @@ public class PerServiceGZipFilter extends OncePerRequestFilter {
                 default:
             }
             byte[] compressedBytes = compressed.toByteArray();
-            boolean shouldGzippedBodyBeZero = GZipResponseUtils.shouldGzippedBodyBeZero(compressedBytes, request);
-            boolean shouldBodyBeZero = GZipResponseUtils.shouldBodyBeZero(request, gzipWrapper.getStatus());
+            boolean shouldGzippedBodyBeZero = GZipResponseUtils.shouldGzippedBodyBeZero(compressedBytes);
+            boolean shouldBodyBeZero = GZipResponseUtils.shouldBodyBeZero(gzipWrapper.getStatus());
             if (shouldGzippedBodyBeZero || shouldBodyBeZero) {
                 // No reason to add GZIP headers or write body if no content was written or status code specifies no
                 // content
@@ -71,20 +72,21 @@ public class PerServiceGZipFilter extends OncePerRequestFilter {
             response.getOutputStream().write(compressedBytes);
 
         } else {
-            filterChain.doFilter(request,response);
+            filterChain.doFilter(request, response);
         }
 
     }
 
+
     private boolean requiresCompression(HttpServletRequest request) {
         String[] uriParts = request.getRequestURI().split("/");
         List<ServiceInstance> instances;
-        if("api".equals(uriParts[1]) || "ui".equals(uriParts[1])){
+        if ("api".equals(uriParts[1]) || "ui".equals(uriParts[1])) {
             instances = discoveryClient.getInstances(uriParts[3]);
         } else {
             instances = discoveryClient.getInstances(uriParts[1]);
         }
-        if(instances == null || instances.isEmpty()) {
+        if (instances == null || instances.isEmpty()) {
             return false;
         }
         return "true".equals(instances.get(0).getMetadata().get("apiml.response.compress"));

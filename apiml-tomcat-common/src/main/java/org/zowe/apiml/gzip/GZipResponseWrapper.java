@@ -23,6 +23,7 @@ public class GZipResponseWrapper extends HttpServletResponseWrapper {
     private GZipServletOutputStream gzipOutputStream;
     private PrintWriter printWriter = null;
     private boolean disableFlushBuffer = false;
+
     /**
      * Constructs a response adaptor wrapping the given response.
      *
@@ -54,8 +55,6 @@ public class GZipResponseWrapper extends HttpServletResponseWrapper {
      */
     @Override
     public void flushBuffer() throws IOException {
-
-        //PrintWriter.flush() does not throw exception
         if (this.printWriter != null) {
             this.printWriter.flush();
         }
@@ -75,7 +74,7 @@ public class GZipResponseWrapper extends HttpServletResponseWrapper {
     }
 
     @Override
-    public ServletOutputStream getOutputStream() throws IOException {
+    public ServletOutputStream getOutputStream() {
         if (this.printWriter != null) {
             throw new IllegalStateException(
                 "PrintWriter obtained already - cannot get OutputStream");
