@@ -38,7 +38,6 @@ public class ServerSentEventProxyHandler {
 
     private static final String SEPARATOR = "/";
     private final DiscoveryClient discovery;
-    private static SseEmitter emitter;
     private Map<String, Flux<ServerSentEvent<String>>> sseEventStreams = new ConcurrentHashMap<>();
 
     @Autowired
@@ -48,7 +47,7 @@ public class ServerSentEventProxyHandler {
 
     @GetMapping("/**/sse/**")
     public SseEmitter getEmitter(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        emitter = new SseEmitter(-1L);
+        SseEmitter emitter = new SseEmitter(-1L);
         
         String[] uriParts = getUriParts(request);
         if (uriParts != null && uriParts.length >= 5) {
@@ -66,12 +65,12 @@ public class ServerSentEventProxyHandler {
             if (!sseEventStreams.containsKey(targetUrl)) {
                 addStream(targetUrl);
             }
-            forwardEvents(sseEventStreams.get(targetUrl));
+            forwardEvents(sseEventStreams.get(targetUrl), emitter);
         }
         return emitter;
     }
 
-    public void forwardEvents(Flux<ServerSentEvent<String>> stream) {
+    public void forwardEvents(Flux<ServerSentEvent<String>> stream, SseEmitter emitter) {
         stream.subscribe(
             content -> {
                 try {
