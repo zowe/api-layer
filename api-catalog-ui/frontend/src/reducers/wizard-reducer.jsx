@@ -23,7 +23,7 @@ import { enablerData } from '../components/Wizard/configs/wizard_onboarding_meth
 
 export const wizardReducerDefaultState = {
     wizardIsOpen: false,
-    enablerName: 'Static Onboarding',
+    enablerName: '',
     selectedCategory: 0,
     inputData: [],
     yamlObject: {},
@@ -45,7 +45,7 @@ function compareVariables(category, categoryInfo) {
     if (categoryInfo.multiple !== undefined) {
         category.multiple = categoryInfo.multiple;
     }
-    if (category.multiple && !Array.isArray(category.content)) {
+    if (!Array.isArray(category.content) && category.content !== undefined) {
         const arr = [];
         arr.push(category.content);
         category.content = arr;
@@ -78,14 +78,9 @@ export function setDefault(category, defaults) {
     if (defaults === undefined || defaults[category.text] === undefined) {
         return category;
     }
-    let result;
+    const result = [];
     const defaultsArr = Object.entries(defaults[category.text]);
-    if (Array.isArray(category.content)) {
-        result = [];
-        category.content.forEach(config => result.push(addDefaultValues(config, defaultsArr)));
-    } else {
-        result = addDefaultValues(category.content, defaultsArr);
-    }
+    category.content.forEach(config => result.push(addDefaultValues(config, defaultsArr)));
     return { ...category, content: result };
 }
 
@@ -118,14 +113,68 @@ function emptyFieldsOfContent(content, silent) {
  */
 export function findEmptyFieldsOfCategory(content, silent) {
     const result = [];
-    if (Array.isArray(content)) {
-        content.forEach(cont => {
-            result.push(emptyFieldsOfContent(cont, silent));
-        });
-    } else {
-        result.push(emptyFieldsOfContent(content, silent));
-    }
+    content.forEach(cont => {
+        result.push(emptyFieldsOfContent(cont, silent));
+    });
     return result;
+}
+
+/**
+ * Load categories according to the enabler needs
+ * @param enablerObj enabler config
+ * @param config category & enabler data
+ * @returns {any} inputData and navCategories wrapped in an object
+ */
+function loadCategories(enablerObj, config) {
+    const inputData = [];
+    const navCategories = {};
+    const { categories } = enablerObj;
+    categories.forEach(categoryInfo => {
+        let category = config.categoryData.find(o => o.text === categoryInfo.name);
+        if (category === undefined) {
+            return;
+        }
+        category = _.cloneDeep(category);
+        compareVariables(category, categoryInfo);
+        category = setDefault(category, enablerObj.defaults);
+        category.nav = categoryInfo.nav;
+        if (!(category.nav in navCategories)) {
+            navCategories[category.nav] = { [category.text]: [[]], silent: true, warn: false };
+        } else {
+            navCategories[category.nav][category.text] = [[]];
+        }
+        inputData.push(category);
+    });
+    return { inputData, navCategories };
+}
+
+/**
+ * Make sure all mandatory fields of the given nav are filled.
+ * @param inputData contains user's input
+ * @param navName name of the selected nav
+ * @param navsObj contains info about the missing fields in different navs
+ * @param silent respect/override interactedWith
+ * @returns {*} updated navsObj
+ */
+function checkPresence(inputData, navName, navsObj, silent) {
+    const newObj = { ...navsObj };
+    inputData.forEach(category => {
+        if (category.nav === navName) {
+            newObj[category.nav][category.text] = findEmptyFieldsOfCategory(category.content, silent);
+        }
+    });
+    newObj[navName].silent = silent;
+    let numOfEmptyFields = 0;
+    Object.values(newObj[navName]).forEach(val => {
+        if (Array.isArray(val)) {
+            // category
+            val.forEach(setArr => {
+                numOfEmptyFields += setArr.length;
+            });
+        }
+    });
+    newObj[navName].warn = numOfEmptyFields > 0;
+    return newObj;
 }
 
 /**
@@ -146,33 +195,14 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
                 wizardIsOpen: !state.wizardIsOpen,
             };
         case SELECT_ENABLER: {
-            const inputData = [];
-            const navCategories = {};
             const { enablerName } = action.payload;
             const enablerObj = config.enablerData.find(o => o.text === enablerName);
             if (enablerObj === undefined || enablerObj.categories === undefined) {
                 return { ...state, enablerName };
             }
-            const { categories } = enablerObj;
-            categories.forEach(categoryInfo => {
-                let category = config.categoryData.find(o => o.text === categoryInfo.name);
-                if (category === undefined) {
-                    return;
-                }
-                category = _.cloneDeep(category);
-                category = setDefault(category, enablerObj.defaults);
-                compareVariables(category, categoryInfo);
-                category.nav = categoryInfo.nav;
-                if (!(category.nav in navCategories)) {
-                    navCategories[category.nav] = { [category.text]: [[]], silent: true, warn: false };
-                } else {
-                    navCategories[category.nav][category.text] = [[]];
-                }
-                inputData.push(category);
-            });
+            const { inputData, navCategories } = loadCategories(enablerObj, config);
             return { ...state, enablerName, inputData, selectedCategory: 0, navsObj: navCategories };
         }
-
         case INPUT_UPDATED: {
             const { category } = action.payload;
             const inputData = state.inputData.map(group => {
@@ -204,25 +234,9 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
         }
         case VALIDATE_INPUT: {
             const { navName, silent } = action.payload;
-            const newObj = { ...state.navsObj };
-            if (newObj[navName] === undefined) return state;
-            state.inputData.forEach(category => {
-                if (category.nav === navName) {
-                    newObj[category.nav][category.text] = findEmptyFieldsOfCategory(category.content, silent);
-                }
-            });
-            newObj[navName].silent = silent;
-            let numOfEmptyFields = 0;
-            Object.values(newObj[navName]).forEach(val => {
-                if (Array.isArray(val)) {
-                    // category
-                    val.forEach(setArr => {
-                        numOfEmptyFields += setArr.length;
-                    });
-                }
-            });
-            newObj[navName].warn = numOfEmptyFields > 0;
-            return { ...state, navsObj: newObj };
+            if (state.navsObj[navName] === undefined) return state;
+            const navsObj = checkPresence(state.inputData, navName, state.navsObj, silent);
+            return { ...state, navsObj };
         }
         default:
             return state;
