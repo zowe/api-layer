@@ -26,6 +26,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
+/**
+ * This filter will wrap the response object in GZipResponseWrapper for future compression. Once the response is
+ * retrieved from service, it will be written to the GZipOutputStream. It will also add the Content-Encoding header.
+ */
 @Component
 @RequiredArgsConstructor
 public class PerServiceGZipFilter extends OncePerRequestFilter {
