@@ -11,36 +11,24 @@
 package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.*;
-import org.springframework.http.HttpMethod;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.*;
-import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.SAFAuthTest;
+import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.SslContext;
-import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.requests.GatewayRequests;
-import org.zowe.apiml.util.requests.RequestParams;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.core.IsNot.not;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.util.SecurityUtils.assertIfLogged;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 @GeneralAuthenticationTest
 @SAFAuthTest
 @zOSMFAuthTest
 public class RefreshTest implements TestWithStartedInstances {
-
-    public static final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
-
-    public static final URI REFRESH_URL = HttpRequestUtils.getUriFromGateway(authConfigurationProperties.getGatewayRefreshEndpointNewFormat());
-    private final GatewayRequests requests = new GatewayRequests(
-        ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost(),
-        String.valueOf(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort()));
+    private final GatewayRequests requests = new GatewayRequests();
 
     @BeforeAll
     public static void init() throws Exception {
@@ -53,20 +41,13 @@ public class RefreshTest implements TestWithStartedInstances {
     class GivenLegalAccessModes {
 
         @Test
-        void whenJwtTokenPostedCanBeRefreshedAndOldCookieInvalidated() throws URISyntaxException {
+        void whenJwtTokenPostedCanBeRefreshedAndOldCookieInvalidated() {
+            String validToken = requests.login();
+            // The SSL context provides needed certificate to verify the claim
+            String newToken = requests.refresh(validToken);
 
-            String gatewayToken = gatewayToken();
-            RequestParams params = RequestParams.builder()
-                .method(HttpMethod.POST)
-                .uri(requests.getGatewayUriWithPath(authConfigurationProperties.getGatewayRefreshEndpointNewFormat()))
-                .authentication(gatewayToken).build();
-
-
-            requests.route(params).then().statusCode(204).cookie(COOKIE_NAME, allOf(
-                not(gatewayToken), not(isEmptyOrNullString())
-            ));
-
-            assertIfLogged(gatewayToken, false);
+            assertIfLogged(validToken, false);
+            assertIfLogged(newToken, true);
         }
 
     }

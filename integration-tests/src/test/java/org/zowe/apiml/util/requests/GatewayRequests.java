@@ -11,25 +11,30 @@ package org.zowe.apiml.util.requests;
 
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.RestAssured;
-import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.Credentials;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
-import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.hamcrest.core.IsNot.not;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 @Slf4j
 public class GatewayRequests {
     private static final GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private static final Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
+    private static final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
 
     private final Requests requests;
     private final String scheme;
@@ -89,6 +94,31 @@ public class GatewayRequests {
         }
     }
 
+    public String login() {
+        log.info("GatewayRequest#login Default credentials");
+
+        return gatewayToken();
+    }
+
+    public String refresh(String token) {
+        try {
+            log.info("GatewayRequests#refresh Token to be refreshed: {}", token);
+
+            return given()
+                .cookie(COOKIE_NAME, token)
+            .when()
+                .post(getGatewayUriWithPath(authConfigurationProperties.getGatewayRefreshEndpointNewFormat()))
+            .then()
+                .statusCode(is(SC_NO_CONTENT))
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
+                .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
+        } catch (URISyntaxException e) {
+            log.info("GatewayRequests#refresh", e);
+
+            throw new RuntimeException("Incorrect URI");
+        }
+    }
+
     public JsonResponse route(String path) {
         try {
             log.info("GatewayRequests#route - {} Instance: {}", path, instance);
@@ -99,11 +129,6 @@ public class GatewayRequests {
 
             throw new RuntimeException("Incorrect URI");
         }
-    }
-
-    public Response route(RequestParams params) {
-        AuthenticatedRequest request = new AuthenticatedRequest();
-        return request.execute(params);
     }
 
     public JsonResponse authenticatedRoute(String path) {
@@ -121,7 +146,7 @@ public class GatewayRequests {
         }
     }
 
-    public URI getGatewayUriWithPath(String path) throws URISyntaxException {
+    private URI getGatewayUriWithPath(String path) throws URISyntaxException {
         return new URIBuilder()
             .setScheme(scheme)
             .setHost(host)
