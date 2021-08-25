@@ -56,9 +56,9 @@ public class ApplicationRegistry {
     /**
      * Add new route to a service.
      *
-     * @param service    Details of the service to be registered in the Gateway
-     * @param addTimeout Whether the custom metadata should be provided for given service.
-     * @param corsEnabled Whether the custom metadata should contain cors related behavior.
+     * @param service              Details of the service to be registered in the Gateway
+     * @param addTimeout           Whether the custom metadata should be provided for given service.
+     * @param corsEnabled          Whether the custom metadata should contain cors related behavior.
      * @param loadBalancerStrategy What strategy should be applied by LoadBalancer. E.g use header, base the
      *                             authentication on the user and so on.
      */
@@ -168,8 +168,7 @@ public class ApplicationRegistry {
         if (safIdt) {
             metadata.put("apiml.authentication.scheme", "safIdt");
         }
-        metadata.put("apiml.authentication.scheme", "safIdt");
-        metadata.put("apiml.response.compress",String.valueOf(compressionEnabled));
+        metadata.put("apiml.response.compress", String.valueOf(compressionEnabled));
         return metadata;
     }
 

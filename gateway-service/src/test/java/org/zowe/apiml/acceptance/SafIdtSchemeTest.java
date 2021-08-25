@@ -62,8 +62,8 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
             @BeforeEach
             void prepareService() throws IOException {
                 applicationRegistry.clearApplications();
-                applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, "authentication", true);
-                applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, "authentication", true);
+                applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, "authentication", false, true);
+                applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, "authentication", false, true);
                 applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
 
                 reset(mockClient);
@@ -84,9 +84,9 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
 
                 given()
                     .cookie(validJwtToken)
-                .when()
+                    .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
-                .then()
+                    .then()
                     .statusCode(is(HttpStatus.SC_OK));
 
                 ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
@@ -115,9 +115,9 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
 
                 given()
                     .cookie(withInvalidToken)
-                .when()
+                    .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
-                .then()
+                    .then()
                     .statusCode(is(HttpStatus.SC_OK));
 
                 verify(mockTemplate, times(0)).postForEntity(any(), any(), any());
