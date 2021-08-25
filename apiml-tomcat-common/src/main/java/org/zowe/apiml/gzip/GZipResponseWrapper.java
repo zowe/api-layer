@@ -30,15 +30,12 @@ public class GZipResponseWrapper extends HttpServletResponseWrapper {
      * @param response The response to be wrapped
      * @throws IllegalArgumentException if the response is null
      */
-    public GZipResponseWrapper(HttpServletResponse response, GZIPOutputStream stream) throws IOException {
+    public GZipResponseWrapper(HttpServletResponse response, GZIPOutputStream stream) {
         super(response);
         gzipOutputStream = new GZipServletOutputStream(stream);
     }
 
     public void close() throws IOException {
-
-        //PrintWriter.close does not throw exceptions. Thus, the call does not need
-        //be inside a try-catch block.
         if (this.printWriter != null) {
             this.printWriter.close();
         }
@@ -55,13 +52,7 @@ public class GZipResponseWrapper extends HttpServletResponseWrapper {
      */
     @Override
     public void flushBuffer() throws IOException {
-        if (this.printWriter != null) {
-            this.printWriter.flush();
-        }
-
-        if (this.gzipOutputStream != null) {
-            this.gzipOutputStream.flush();
-        }
+        flush();
 
         // doing this might leads to response already committed exception
         // when the PageInfo has not yet built but the buffer already flushed
@@ -70,6 +61,19 @@ public class GZipResponseWrapper extends HttpServletResponseWrapper {
         // disableFlushBuffer for that purpose is 'true' by default
         if (!disableFlushBuffer) {
             super.flushBuffer();
+        }
+    }
+
+    /**
+     * Flushes all the streams for this response.
+     */
+    public void flush() throws IOException {
+        if (printWriter != null) {
+            printWriter.flush();
+        }
+
+        if (gzipOutputStream != null) {
+            gzipOutputStream.flush();
         }
     }
 
@@ -103,18 +107,6 @@ public class GZipResponseWrapper extends HttpServletResponseWrapper {
         //does not match content length of unzipped content.
     }
 
-    /**
-     * Flushes all the streams for this response.
-     */
-    public void flush() throws IOException {
-        if (printWriter != null) {
-            printWriter.flush();
-        }
-
-        if (gzipOutputStream != null) {
-            gzipOutputStream.flush();
-        }
-    }
 
     /**
      * Set if the wrapped reponse's buffer flushing should be disabled.

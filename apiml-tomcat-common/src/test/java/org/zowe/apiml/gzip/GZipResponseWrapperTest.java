@@ -19,7 +19,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 class GZipResponseWrapperTest {
 
@@ -98,4 +98,22 @@ class GZipResponseWrapperTest {
         assertThrows(IllegalStateException.class, wrapper::getOutputStream);
     }
 
+    @Test
+    void flushNotNullStream() throws IOException {
+        GZIPOutputStream gZipOutputStream = mock(GZIPOutputStream.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        GZipResponseWrapper responseWrapper = new GZipResponseWrapper(response, gZipOutputStream);
+        responseWrapper.flushBuffer();
+        verify(gZipOutputStream, times(1)).flush();
+    }
+
+    @Test
+    void whenWriterIsRequested_flushNewlyCreatedBuffer() throws IOException {
+        GZIPOutputStream gZipOutputStream = mock(GZIPOutputStream.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        GZipResponseWrapper responseWrapper = new GZipResponseWrapper(response, gZipOutputStream);
+        responseWrapper.getWriter();
+        responseWrapper.flushBuffer();
+        verify(gZipOutputStream, times(0)).flush();
+    }
 }

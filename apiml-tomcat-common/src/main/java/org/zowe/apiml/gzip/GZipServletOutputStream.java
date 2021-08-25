@@ -17,7 +17,6 @@ import java.io.OutputStream;
 public class GZipServletOutputStream extends ServletOutputStream {
 
     private OutputStream gzipOutputStream;
-    private WriteListener listener;
 
     public GZipServletOutputStream(OutputStream outputStream) {
         super();
@@ -35,12 +34,12 @@ public class GZipServletOutputStream extends ServletOutputStream {
     }
 
     @Override
-    public void write(byte b[]) throws IOException {
+    public void write(byte[] b) throws IOException {
         this.gzipOutputStream.write(b);
     }
 
     @Override
-    public void write(byte b[], int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
         this.gzipOutputStream.write(b, off, len);
     }
 
@@ -56,6 +55,7 @@ public class GZipServletOutputStream extends ServletOutputStream {
 
     @Override
     public void setWriteListener(WriteListener listener) {
-        this.listener = listener;
     }
+
+
 }
