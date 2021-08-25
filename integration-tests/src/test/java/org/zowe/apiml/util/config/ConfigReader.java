@@ -48,7 +48,7 @@ public class ConfigReader {
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", 10010, 10017, 1, "10010", "gateway/api/v1/services");
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
-                        DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("ZOWEAPPL", "localhost", 1);
+                        DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("https", "ZOWEAPPL", "localhost", 10012, 1);
 
                         TlsConfiguration tlsConfiguration = TlsConfiguration.builder()
                             .keyAlias("localhost")
@@ -106,6 +106,9 @@ public class ConfigReader {
                     configuration.getDiscoverableClientConfiguration().setApplId(System.getProperty("discoverableclient.applId", configuration.getDiscoverableClientConfiguration().getApplId()));
                     configuration.getDiscoverableClientConfiguration().setHost(System.getProperty("discoverableclient.host", configuration.getDiscoverableClientConfiguration().getHost()));
                     configuration.getDiscoverableClientConfiguration().setInstances(Integer.parseInt(System.getProperty("discoverableclient.instances", String.valueOf(configuration.getDiscoverableClientConfiguration().getInstances()))));
+                    configuration.getDiscoverableClientConfiguration().setScheme(System.getProperty("discoverableclient.scheme", configuration.getDiscoverableClientConfiguration().getScheme()));
+                    configuration.getDiscoverableClientConfiguration().setPort(Integer.parseInt(System.getProperty("discoverableclient.port",  String.valueOf(configuration.getDiscoverableClientConfiguration().getPort()))));
+
                     configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
 
                     setZosmfConfigurationFromSystemProperties(configuration);

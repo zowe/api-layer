@@ -66,9 +66,9 @@ describe('>>> Wizard actions tests', () => {
     it('should add categories to the YAML object when content is not an array', () => {
         const category = {
             text: 'Category 1',
-            content: {
+            content: [{
                 test: { value: 'yaml' }
-            },
+            }],
             multiple: false,
             indentation: false,
         };
@@ -88,7 +88,7 @@ describe('>>> Wizard actions tests', () => {
                     test: { value: 'value 2' }
                 },
             ],
-            multiple: false,
+            multiple: true,
             indentation: false,
         };
         let result = {};
@@ -107,7 +107,7 @@ describe('>>> Wizard actions tests', () => {
                     test: { value: 'value 2' }
                 },
             ],
-            multiple: false,
+            multiple: true,
             indentation: false,
             noKey: true,
         };
@@ -119,9 +119,9 @@ describe('>>> Wizard actions tests', () => {
     it('should add categories to the YAML object and handle indentation', () => {
         const category = {
             text: 'Category 1',
-            content: {
+            content: [{
                 test: { value: 'yaml' }
-            },
+            }],
             multiple: false,
             indentation: 'category1',
         };
@@ -133,16 +133,28 @@ describe('>>> Wizard actions tests', () => {
     it('should add categories to the YAML object and handle empty indentation', () => {
         const category = {
             text: 'Category 1',
-            content: {
+            content: [{
                 test: { value: 'yaml' }
-            },
+            }],
             multiple: false,
             indentation: '/',
         };
         let result = { test2: 'test 2' };
         result = addCategoryToYamlObject(category, result);
         expect(result).toEqual({  test: 'yaml' , test2: 'test 2' });
-
+    });
+    it('should not add categories to the YAML object if they are not shown', () => {
+        const category = {
+            text: 'Category 1',
+            content: [{
+                test: { value: 'yaml', show: false}
+            }],
+            multiple: false,
+            indentation: '/',
+        };
+        let result = { test2: 'test 2' };
+        result = addCategoryToYamlObject(category, result);
+        expect(result).toEqual({ test2: 'test 2' });
     });
     it('should change the category', () => {
         const expectedAction = {
@@ -165,19 +177,20 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.createYamlObject([{
             text: 'Category 1',
-            content: {
+            content: [{
                 test: { value: 'yaml' }
-            },
+            }],
             multiple: false,
             indentation: false,
         }])).toEqual(expectedAction);
     });
 
-    it('should set the number of tabs', () => {
+    it('should check for filled input', () => {
         const expectedAction = {
-            type: constants.NAV_NUMBER,
-            payload: { tabAmount: 1 },
+            type: constants.VALIDATE_INPUT,
+            payload: { navName: 'Nav', silent: true },
         };
-        expect(actions.setNumberOfTabs(1)).toEqual(expectedAction);
-    })
+        expect(actions.validateInput('Nav', true)).toEqual(expectedAction);
+    });
+
 });

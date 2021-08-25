@@ -18,6 +18,8 @@ discoveryServiceConfiguration:
     port: 10011
     instances: 1
 discoverableClientConfiguration:
+    scheme: https
+    port: 10012
     applId: ZOWEAPPL
     host: discoverable-client
     instances: 1

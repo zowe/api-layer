@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.util.requests.GatewayRequests;
 import org.zowe.apiml.util.requests.JsonResponse;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,13 +26,17 @@ public class HAGatewayRequests {
     public List<GatewayRequests> gatewayServices = new ArrayList<>();
 
     public HAGatewayRequests() {
+        this("https");
+    }
+
+    public HAGatewayRequests(String scheme) {
         String[] gatewayHosts = environmentConfiguration().getGatewayServiceConfiguration().getHost().split(",");
         String[] internalPorts = environmentConfiguration().getGatewayServiceConfiguration().getInternalPorts().split(",");
         for (int i = 0; i < gatewayHosts.length; i++) {
             String host = gatewayHosts[i];
             String internalPort = internalPorts[i];
 
-            gatewayServices.add(new GatewayRequests(host, internalPort));
+            gatewayServices.add(new GatewayRequests(scheme, host, internalPort));
         }
 
         log.info("Created HAGatewayRequests");
@@ -77,5 +83,9 @@ public class HAGatewayRequests {
         });
 
         return responses;
+    }
+
+    public URI getGatewayUrl(int instance, String path) throws URISyntaxException {
+        return gatewayServices.get(instance).getGatewayUriWithPath(path);
     }
 }

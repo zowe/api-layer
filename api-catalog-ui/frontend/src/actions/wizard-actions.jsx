@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import {
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
@@ -15,7 +16,7 @@ import {
     CHANGE_CATEGORY,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
-    NAV_NUMBER,
+    VALIDATE_INPUT,
 } from '../constants/wizard-constants';
 
 /**
@@ -97,9 +98,11 @@ export const addCategoryToYamlObject = (category, parent) => {
     const result = { ...parent };
     let content = {};
     // load user's answer into content object
-    if (!Array.isArray(category.content)) {
-        Object.keys(category.content).forEach(key => {
-            content[key] = category.content[key].value;
+    if (!category.multiple) {
+        Object.keys(category.content[0]).forEach(key => {
+            if (category.content[0][key].show !== false) {
+                content[key] = category.content[0][key].value;
+            }
         });
     } else {
         content = [];
@@ -166,9 +169,14 @@ export function deleteCategoryConfig(index, text) {
     };
 }
 
-export function setNumberOfTabs(num) {
+/**
+ * Validate input of a nav
+ * @param navName name of the nav to be checked
+ * @param silent respect/override interactedWith
+ */
+export function validateInput(navName, silent) {
     return {
-        type: NAV_NUMBER,
-        payload: { tabAmount: num },
+        type: VALIDATE_INPUT,
+        payload: { navName, silent },
     };
 }
