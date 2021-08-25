@@ -19,3 +19,19 @@ export const defaultSpring = {
             '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
     },
 };
+export const defaultNode = {
+    'API Info shorter': {
+        gatewayUrl: '${routes.gatewayUrl}',
+    },
+    Instance: {
+        app: '${serviceId}',
+        vipAddress: '${serviceId}',
+        homePageUrl: '${homePageRelativeUrl}',
+        secureVipAddress: '${serviceId}',
+    },
+    Metadata: {
+        'apiml.routes.api_v1.gatewayUrl': '${routes.gatewayUrl}',
+        'apiml.routes.api_v1.serviceUrl': '${routes.serviceUrl}',
+        'apiml.apiInfo.0.gatewayUrl': '${routes.gatewayUrl}',
+    },
+};
