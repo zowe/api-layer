@@ -13,9 +13,12 @@ import com.jayway.jsonpath.ReadContext;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @RequiredArgsConstructor
 public class JsonResponse {
     final int status;
     final ReadContext json;
+    final Map<String, String> cookies;
 }
