@@ -27,10 +27,7 @@ export function sendYAML(yamlText) {
     return dispatch => {
         fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ yaml: yamlText }),
+            body: yamlText,
         })
             .then(res => {
                 const { status } = res;
