@@ -119,6 +119,19 @@ export function handleIndentationDependency(inputData, indentationDependency, in
     return result;
 }
 
+function handleArrayIndentation(arrIndent, content) {
+    let index = 0;
+    const finalContent = [];
+    content.forEach(set => {
+        finalContent[index] = { [arrIndent]: {} };
+        Object.keys(set).forEach(key => {
+            finalContent[index][arrIndent][key] = content[index][key].value;
+        });
+        index += 1;
+    });
+    return finalContent;
+}
+
 /**
  * Receives a single category and translates it to an object the yaml library can correctly convert to yaml
  * @param category a category
@@ -152,6 +165,9 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
                 Object.keys(o).forEach(key => {
                     content[index][key] = category.content[index][key].value;
                 });
+                if (category.arrIndent !== undefined) {
+                    content = handleArrayIndentation(category.arrIndent, category.content);
+                }
                 index += 1;
             });
         }
