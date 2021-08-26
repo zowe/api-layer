@@ -572,13 +572,14 @@ describe('>>> Wizard reducer tests', () => {
         expect(newCategory).toEqual(expectedCategory);
     });
 
-    it('should put category content in an array', () => {
+    it('should put category content in an array and set array indentation', () => {
         const category = {
             text: 'Category 1',
             content: { test: { value: '', question: 'Why?', }, },
         };
-        const categoryInfo = {name: 'Category 1'};
+        const categoryInfo = {name: 'Category 1', arrIndent: 'indent'};
         compareVariables(category, categoryInfo);
         expect(category.content).toEqual([{ test: { value: '', question: 'Why?', }, }]);
+        expect(category.arrIndent).toEqual('indent');
     })
 });

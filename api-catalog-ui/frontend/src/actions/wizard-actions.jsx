@@ -119,7 +119,7 @@ export function handleIndentationDependency(inputData, indentationDependency, in
     return result;
 }
 
-function handleArrayIndentation(arrIndent, content) {
+export function handleArrayIndentation(arrIndent, content) {
     let index = 0;
     const finalContent = [];
     content.forEach(set => {
