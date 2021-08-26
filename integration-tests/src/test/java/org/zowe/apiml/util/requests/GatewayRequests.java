@@ -13,6 +13,7 @@ import com.jayway.jsonpath.ReadContext;
 import io.restassured.RestAssured;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.Credentials;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -22,15 +23,18 @@ import java.net.URISyntaxException;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
-import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.hamcrest.core.IsNot.not;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 @Slf4j
 public class GatewayRequests {
     private static final GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private static final Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
+    private static final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
 
     private final Requests requests;
     private final String scheme;
@@ -91,6 +95,31 @@ public class GatewayRequests {
             log.info("GatewayRequests#isUP", e);
 
             return false;
+        }
+    }
+
+    public String login() {
+        log.info("GatewayRequest#login Default credentials");
+
+        return gatewayToken();
+    }
+
+    public String refresh(String token) {
+        try {
+            log.info("GatewayRequests#refresh Token to be refreshed: {}", token);
+
+            return given()
+                .cookie(COOKIE_NAME, token)
+            .when()
+                .post(getGatewayUriWithPath(authConfigurationProperties.getGatewayRefreshEndpointNewFormat()))
+            .then()
+                .statusCode(is(SC_NO_CONTENT))
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
+                .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
+        } catch (URISyntaxException e) {
+            log.info("GatewayRequests#refresh", e);
+
+            throw new RuntimeException("Incorrect URI");
         }
     }
 

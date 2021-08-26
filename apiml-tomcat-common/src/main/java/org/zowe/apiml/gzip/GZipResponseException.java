@@ -7,18 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.util.requests;
+package org.zowe.apiml.gzip;
 
-import com.jayway.jsonpath.ReadContext;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+public class GZipResponseException extends RuntimeException {
 
-import java.util.Map;
-
-@Data
-@RequiredArgsConstructor
-public class JsonResponse {
-    final int status;
-    final ReadContext json;
-    final Map<String, String> cookies;
+    public GZipResponseException(String message) {
+        super(message);
+    }
 }
