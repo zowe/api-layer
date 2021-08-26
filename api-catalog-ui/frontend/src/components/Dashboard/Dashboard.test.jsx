@@ -24,6 +24,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
+                assertAuthorization={jest.fn()}
             />
         );
         let button = wrapper.find('#refresh-api-button');
@@ -40,6 +41,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clear={jest.fn()}
                 fetchTilesFailed={jest.fn()}
+                assertAuthorization={jest.fn()}
             />
         );
         expect(
@@ -60,6 +62,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clear={jest.fn()}
                 fetchTilesFailed={jest.fn()}
+                assertAuthorization={jest.fn()}
             />
         );
         expect(
@@ -81,6 +84,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={fetchTilesStop}
                 clearService={jest.fn()}
                 clear={clear}
+                assertAuthorization={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -99,6 +103,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
+                assertAuthorization={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -117,6 +122,7 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 inputData={categoryData}
+                assertAuthorization={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -134,6 +140,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
+                assertAuthorization={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -172,6 +179,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
+                assertAuthorization={jest.fn()}
             />
         );
         const tile = dashboard.find('Tile');

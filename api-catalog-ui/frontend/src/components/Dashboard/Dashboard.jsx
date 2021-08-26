@@ -12,15 +12,9 @@ import DialogDropdown from '../Wizard/DialogDropdown';
 import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 
 export default class Dashboard extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            WIP: true,
-        };
-    }
-
     componentDidMount() {
-        const { fetchTilesStart, clearService } = this.props;
+        const { fetchTilesStart, clearService, assertAuthorization } = this.props;
+        assertAuthorization();
         clearService();
         fetchTilesStart();
     }
@@ -56,6 +50,7 @@ export default class Dashboard extends Component {
             fetchTilesStop,
             refreshedStaticApisError,
             clearError,
+            wizardIsVisible,
         } = this.props;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
@@ -70,7 +65,7 @@ export default class Dashboard extends Component {
                 <div id="dash-buttons">
                     <DialogDropdown
                         selectEnabler={this.props.selectEnabler}
-                        WIP={this.state.WIP}
+                        visible={wizardIsVisible}
                         data={enablerData}
                         toggleWizard={this.toggleWizard}
                     />

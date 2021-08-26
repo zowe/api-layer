@@ -17,11 +17,13 @@ import {
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
     VALIDATE_INPUT,
+    WIZARD_VISIBILITY_TOGGLE,
 } from '../constants/wizard-constants';
 import { categoryData } from '../components/Wizard/configs/wizard_categories';
 import { enablerData } from '../components/Wizard/configs/wizard_onboarding_methods';
 
 export const wizardReducerDefaultState = {
+    wizardIsVisible: false,
     wizardIsOpen: false,
     enablerName: '',
     selectedCategory: 0,
@@ -192,6 +194,11 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
         return state;
     }
     switch (action.type) {
+        case WIZARD_VISIBILITY_TOGGLE:
+            return {
+                ...state,
+                wizardIsVisible: action.payload.state,
+            };
         case TOGGLE_DISPLAY:
             return {
                 ...state,

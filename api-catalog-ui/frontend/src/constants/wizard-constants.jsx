@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+export const WIZARD_VISIBILITY_TOGGLE = 'WIZARD_VISIBILITY_TOGGLE';
 export const INPUT_UPDATED = 'INPUT_UPDATED';
 export const TOGGLE_DISPLAY = 'TOGGLE_DISPLAY';
 export const SELECT_ENABLER = 'SELECT_ENABLER';

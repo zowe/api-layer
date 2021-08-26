@@ -6,13 +6,13 @@ describe('>>> Wizard actions tests', () => {
         const expectedAction = {
             type: 'IGNORE',
         };
-        expect(actions.sendYAMLError()).toEqual(expectedAction);
+        expect(actions.notifyError()).toEqual(expectedAction);
     });
 
     it('should close on YAML success', () => {
         const expectedAction = {
             type: constants.TOGGLE_DISPLAY,
         };
-        expect(actions.sendYAMLSuccess()).toEqual(expectedAction);
+        expect(actions.notifySuccess()).toEqual(expectedAction);
     });
 });

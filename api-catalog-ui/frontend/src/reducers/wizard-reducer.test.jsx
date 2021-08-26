@@ -15,7 +15,7 @@ import {
     READY_YAML_OBJECT,
     REMOVE_INDEX,
     SELECT_ENABLER,
-    TOGGLE_DISPLAY, VALIDATE_INPUT
+    TOGGLE_DISPLAY, VALIDATE_INPUT, WIZARD_VISIBILITY_TOGGLE
 } from '../constants/wizard-constants';
 import wizardReducer, {
     addDefaultValues,
@@ -26,6 +26,17 @@ import wizardReducer, {
 describe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
         expect(wizardReducer()).toEqual(wizardReducerDefaultState);
+    });
+
+    it('should handle WIZARD_VISIBILITY_TOGGLE true -> false & false -> true ', () => {
+        expect(wizardReducer({ wizardIsVisible: false }, {
+            type: WIZARD_VISIBILITY_TOGGLE,
+            payload: { state: true }
+        })).toEqual({ wizardIsVisible: true });
+        expect(wizardReducer({ wizardIsVisible: true }, {
+            type: WIZARD_VISIBILITY_TOGGLE,
+            payload: { state: false }
+        })).toEqual({ wizardIsVisible: false });
     });
 
     it('should handle TOGGLE_DISPLAY true -> false & false -> true ', () => {
