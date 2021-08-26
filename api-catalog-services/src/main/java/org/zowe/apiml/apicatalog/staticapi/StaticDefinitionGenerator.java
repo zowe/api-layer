@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.apicatalog.staticapi;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Allows the generation and the override of the .yml
  */
 @Service
+@Slf4j
 public class StaticDefinitionGenerator {
 
     // TODO use the correct api-defs folder
@@ -40,9 +42,8 @@ public class StaticDefinitionGenerator {
     public StaticAPIResponse generateFile(String file) throws IOException {
 
         String serviceId = StringUtils.substringBetween(file, "serviceId: ", "\\n");
+        file = formatFile(file);
         fileName.set(LOCATION + serviceId + ".yml");
-        file = file.replace("\\n", System.lineSeparator());
-        file = file.substring(1, file.length() - 1);
 
         checkIfFileExists(serviceId);
         String message = "The static definition file has been created by the user! Its location is: %s";
@@ -51,17 +52,24 @@ public class StaticDefinitionGenerator {
 
     public StaticAPIResponse overrideFile(String file) throws IOException {
         String serviceId = StringUtils.substringBetween(file, "serviceId: ", "\\n");
+        file = formatFile(file);
         fileName.set(LOCATION + serviceId + ".yml");
-        file = file.replace("\\n", System.lineSeparator());
-        file = file.substring(1, file.length() - 1);
         String message = "The static definition file %s has been overwritten by the user!";
         return writeFileAndSendResponse(file, fileName, String.format(message, fileName));
+    }
+
+    private String formatFile(String file) {
+        file = file.replace("\\n", System.lineSeparator());
+        file = file.substring(1, file.length() - 1);
+        return file;
     }
 
     private StaticAPIResponse writeFileAndSendResponse(String file, AtomicReference<String> fileName, String message) throws IOException {
         try(FileOutputStream fos = new FileOutputStream(fileName.get())) {
             fos.write(file.getBytes(StandardCharsets.UTF_8));
             fos.close();
+
+            log.debug(message);
             return new StaticAPIResponse(201, message);
         } catch (IOException e) {
             apimlLog.log("org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed",  e.getMessage());
