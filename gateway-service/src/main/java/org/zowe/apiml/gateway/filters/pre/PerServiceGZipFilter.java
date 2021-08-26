@@ -85,7 +85,13 @@ public class PerServiceGZipFilter extends OncePerRequestFilter {
     private boolean requiresCompression(HttpServletRequest request) {
         String[] uriParts = request.getRequestURI().split("/");
         List<ServiceInstance> instances;
+        if (uriParts.length < 2) {
+            return false;
+        }
         if ("api".equals(uriParts[1]) || "ui".equals(uriParts[1])) {
+            if (uriParts.length < 4) {
+                return false;
+            }
             instances = discoveryClient.getInstances(uriParts[3]);
         } else {
             instances = discoveryClient.getInstances(uriParts[1]);
