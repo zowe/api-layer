@@ -1,4 +1,4 @@
-import { defaultNode, defaultSpring } from './wizard_defaults';
+import { defaultMicronaut, defaultNode, defaultSpring } from './wizard_defaults';
 
 /**
  * Define which categories each enabler needs. Properties indentation and multiple can be used here as well.(override)
@@ -94,6 +94,7 @@ export const enablerData = [
                 nav: 'Micronaut management',
             },
         ],
+        defaults: defaultMicronaut,
     },
     {
         text: 'Node JS Enabler',
