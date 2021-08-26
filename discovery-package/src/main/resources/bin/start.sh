@@ -60,6 +60,9 @@ fi
 if [ `uname` = "OS/390" ]; then
     QUICK_START=-Xquickstart
 fi
+
+EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -82,21 +85,21 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Dapiml.discovery.password=password \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
-    -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
-    -Dapiml.service.port=${DISCOVERY_PORT} \
-    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
-    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
+    -Dapiml.service.hostname=${EXPLORER_HOST} \
+    -Dapiml.service.port=${DISCOVERY_PORT:-7553} \
+    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
     -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true} \
     -Dserver.ssl.keyStore="${KEYSTORE}" \
-    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE}" \
+    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE:-PKCS12}" \
     -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
     -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
     -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
     -Dserver.ssl.trustStore="${TRUSTSTORE}" \
-    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
+    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
     -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
@@ -104,3 +107,5 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"
+
+wait %1

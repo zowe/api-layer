@@ -14,7 +14,7 @@ jobs:
     build-amd64:
         strategy:
             matrix:
-                service: [ gateway-service ]
+                service: [ gateway-service, discovery-service ]
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
@@ -59,7 +59,7 @@ jobs:
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
                     release: false
                     base-directory: ${{ env.IMAGE_BASE_DIR }}
-                    image-name: gateway-service
+                    image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
                     cpu-arch: amd64
                     # Used only for UBI
