@@ -106,7 +106,7 @@ describe('>>> Wizard actions tests', () => {
         const inputData = [
             {
                 text: 'Category 1',
-                content: { test: { value: '', question: 'Why', }, },
+                content: [{ test: { value: '', question: 'Why', }, }],
             },
             {
                 text: 'Category 2',
@@ -114,24 +114,6 @@ describe('>>> Wizard actions tests', () => {
                     test3: { value: 'smth', question: 'Why not?', },
                     test2: { value: 'val', question: 'Why not?', },
                 }],
-            },
-        ];
-        const indentation = 'indent';
-        const indentationDepenedency = 'test2';
-        const result = handleIndentationDependency(inputData, indentationDepenedency, indentation);
-        expect(result).toEqual('indent/val');
-    })
-    it('should handle indentation dependencies when content is not an array', () => {
-        const inputData = [
-            {
-                text: 'Category 1',
-                content: { test: { value: '', question: 'Why', }, },
-            },
-            {
-                text: 'Category 2',
-                content: {
-                    test2: { value: 'val', question: 'Why not?', },
-                },
             },
         ];
         const indentation = 'indent';
