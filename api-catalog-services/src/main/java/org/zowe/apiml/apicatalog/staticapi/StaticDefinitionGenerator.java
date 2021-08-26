@@ -65,7 +65,7 @@ public class StaticDefinitionGenerator {
     }
 
     private StaticAPIResponse writeFileAndSendResponse(String file, AtomicReference<String> fileName, String message) throws IOException {
-        try(FileOutputStream fos = new FileOutputStream(fileName.get())) {
+        try (FileOutputStream fos = new FileOutputStream(fileName.get())) {
             fos.write(file.getBytes(StandardCharsets.UTF_8));
             fos.close();
 
