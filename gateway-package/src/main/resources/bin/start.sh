@@ -75,6 +75,9 @@ else
     GATEWAY_LOADER_PATH=${COMMON_LIB}
 fi
 
+EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
+GATEWAY_SERVICE_PORT=${GATEWAY_PORT:-7554}
+
 echo "Setting loader path: "${GATEWAY_LOADER_PATH}
 
 LIBPATH="$LIBPATH":"/lib"
@@ -96,34 +99,34 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Djava.io.tmpdir=/tmp \
     -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
     -Dspring.profiles.include=$LOG_LEVEL \
-    -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
-    -Dapiml.service.port=${GATEWAY_PORT} \
-    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
-    -Dapiml.service.allowEncodedSlashes=${APIML_ALLOW_ENCODED_SLASHES} \
-    -Dapiml.service.corsEnabled=${APIML_CORS_ENABLED} \
-    -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID} \
+    -Dapiml.service.hostname=${EXPLORER_HOST} \
+    -Dapiml.service.port=${GATEWAY_SERVICE_PORT} \
+    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_PORT:-7553}/eureka/"} \
+    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
+    -Dapiml.service.allowEncodedSlashes=${APIML_ALLOW_ENCODED_SLASHES:-true} \
+    -Dapiml.service.corsEnabled=${APIML_CORS_ENABLED:-false} \
+    -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID:-apicatalog} \
     -Dapiml.cache.storage.location=${WORKSPACE_DIR}/api-mediation/ \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
-    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
-    -Dapiml.gateway.timeoutMillis=${APIML_GATEWAY_TIMEOUT_MILLIS} \
+    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+    -Dapiml.gateway.timeoutMillis=${APIML_GATEWAY_TIMEOUT_MILLIS:-600000} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.auth.zosmf.serviceId=${APIML_ZOSMF_ID:-zosmf} \
-    -Dapiml.security.auth.provider=${APIML_SECURITY_AUTH_PROVIDER} \
+    -Dapiml.security.auth.provider=${APIML_SECURITY_AUTH_PROVIDER:-zosmf} \
     -Dapiml.security.auth.jwtKeyAlias=${PKCS11_TOKEN_LABEL:-jwtsecret} \
     -Dapiml.zoweManifest=${ZOWE_MANIFEST} \
     -Dserver.address=0.0.0.0 \
-    -Dserver.maxConnectionsPerRoute=${APIML_MAX_CONNECTIONS_PER_ROUTE:-10} \
-    -Dserver.maxTotalConnections=${APIML_MAX_TOTAL_CONNECTIONS:-100} \
+    -Dserver.maxConnectionsPerRoute=${APIML_MAX_CONNECTIONS_PER_ROUTE:-100} \
+    -Dserver.maxTotalConnections=${APIML_MAX_TOTAL_CONNECTIONS:-1000} \
     -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true} \
     -Dserver.ssl.keyStore="${KEYSTORE}" \
-    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE}" \
+    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE:-PKCS12}" \
     -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
     -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
     -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
     -Dserver.ssl.trustStore="${TRUSTSTORE}" \
-    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
+    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
     -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Dserver.internal.enabled=${APIML_GATEWAY_INTERNAL_ENABLED:-false} \
     -Dserver.internal.ssl.enabled=${APIML_SSL_ENABLED:-true} \
@@ -132,17 +135,20 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dserver.internal.ssl.keyStore=${APIML_GATEWAY_INTERNAL_SSL_KEYSTORE:-keystore/localhost/localhost-multi.keystore.p12} \
     -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE:-auto} \
     -Dapiml.security.x509.enabled=${APIML_SECURITY_X509_ENABLED:-false} \
-    -Dapiml.security.x509.externalMapperUrl=${APIML_GATEWAY_EXTERNAL_MAPPER} \
+    -Dapiml.security.x509.externalMapperUrl=${APIML_GATEWAY_EXTERNAL_MAPPER:-"https://${EXPLORER_HOST}:${GATEWAY_SERVICE_PORT}/zss/api/v1/certificate/x509/map"} \
     -Dapiml.security.x509.externalMapperUser=${APIML_GATEWAY_MAPPER_USER:-ZWESVUSR} \
     -Dapiml.security.authorization.provider=${APIML_SECURITY_AUTHORIZATION_PROVIDER:-} \
     -Dapiml.security.authorization.endpoint.enabled=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_ENABLED:-false} \
-    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL} \
+    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL:-"https://${EXPLORER_HOST}:${GATEWAY_SERVICE_PORT}/zss/api/v1/saf-auth"} \
     -Dapiml.security.authorization.resourceClass=${RESOURCE_CLASS:-ZOWE} \
     -Dapiml.security.authorization.resourceNamePrefix=${RESOURCE_NAME_PREFIX:-APIML.} \
-    -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
+    -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID:-IZUDFLT} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBRARY_PATH} \
     -jar ${JAR_FILE} &
+
 pid=$!
 echo "pid=${pid}"
+
+wait %1
