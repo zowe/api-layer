@@ -99,23 +99,14 @@ export function handleIndentationDependency(inputData, indentationDependency, in
     let result = indentation;
     if (indentationDependency !== undefined) {
         inputData.forEach(category => {
-            if (Array.isArray(category.content)) {
-                category.content.forEach(inpt => {
-                    Object.keys(inpt).forEach(k => {
-                        if (k === indentationDependency) {
-                            result = result.concat('/', inpt[k].value);
-                            return result;
-                        }
-                    });
-                });
-            } else {
-                Object.keys(category.content).forEach(k => {
+            category.content.forEach(inpt => {
+                Object.keys(inpt).forEach(k => {
                     if (k === indentationDependency) {
-                        result = result.concat('/', category.content[k].value);
+                        result = result.concat('/', inpt[k].value);
                         return result;
                     }
                 });
-            }
+            });
         });
     }
     return result;
