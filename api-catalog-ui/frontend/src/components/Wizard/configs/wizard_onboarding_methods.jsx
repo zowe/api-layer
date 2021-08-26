@@ -110,7 +110,7 @@ export const enablerData = [
             { name: 'Catalog', indentation: 'catalogUiTile' },
             { name: 'Instance', indentation: 'instance', nav: 'Instance' },
             { name: 'Instance port', indentation: 'instance/port', nav: 'Instance ports' },
-            { name: 'Instance securityport', indentation: 'instance/securePort', nav: 'Instance ports' },
+            { name: 'Instance security port', indentation: 'instance/securePort', nav: 'Instance ports' },
             { name: 'Data center info', indentation: 'instance/dataCenterInfo', nav: 'Instance info' },
             { name: 'Metadata', indentation: 'instance/metadata', nav: 'Instance metadata' },
             { name: 'SSL for Node', indentation: 'ssl', nav: 'SSL' },
