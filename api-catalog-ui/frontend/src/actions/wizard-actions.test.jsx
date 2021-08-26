@@ -230,7 +230,7 @@ describe('>>> Wizard actions tests', () => {
         expect(actions.validateInput('Nav', true)).toEqual(expectedAction);
     });
     it('should add indentation before wrapping in an array', () => {
-        const content = [{ test: { value: '', question: 'Why' }}];
+        const content = [{ test: ''}];
         const arrIndent = 'indent';
         const result = handleArrayIndentation(arrIndent,content);
         expect(result).toEqual([{indent: {test: ''}}]);
