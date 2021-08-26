@@ -20,15 +20,39 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
+/**
+ * Controller to handle the request issued from the UI to generate
+ * a static definition file from the Wizard interface
+ */
 @RestController
 @RequestMapping("/static-api")
 @RequiredArgsConstructor
 public class StaticDefinitionController {
     private final StaticDefinitionGenerator staticDefinitionGenerator;
 
+    /**
+     * Retrieve the yaml from the request and store it in the file
+     *
+     * @param payload  the request payload
+     * @return the response entity
+     */
     @PostMapping(value = "/generate", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> generateStaticDef(@RequestBody String payload) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.generateFile(payload);
+        return ResponseEntity
+            .status(staticAPIResponse.getStatusCode())
+            .body(staticAPIResponse.getBody());
+    }
+
+    /**
+     * Overwrite the file already created
+     *
+     * @param payload  the request payload
+     * @return the response entity
+     */
+    @PostMapping(value = "/override", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> overrideStaticDef(@RequestBody String payload) throws IOException {
+        StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.overrideFile(payload);
         return ResponseEntity
             .status(staticAPIResponse.getStatusCode())
             .body(staticAPIResponse.getBody());
