@@ -62,6 +62,7 @@ if [ `uname` = "OS/390" ]; then
 fi
 
 EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
+DISCOVERY_SERVICE_PORT=${DISCOVERY_PORT:-7553}
 
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
@@ -83,10 +84,10 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Dserver.address=0.0.0.0 \
     -Dapiml.discovery.userid=eureka \
     -Dapiml.discovery.password=password \
-    -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
+    -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_SERVICE_PORT}/eureka/"} \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
     -Dapiml.service.hostname=${EXPLORER_HOST} \
-    -Dapiml.service.port=${DISCOVERY_PORT:-7553} \
+    -Dapiml.service.port=${DISCOVERY_SERVICE_PORT} \
     -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
     -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
