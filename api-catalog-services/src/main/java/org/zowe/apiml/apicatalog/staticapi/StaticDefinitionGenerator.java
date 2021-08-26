@@ -10,38 +10,52 @@
 
 package org.zowe.apiml.apicatalog.staticapi;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class StaticDefinitionGenerator {
+
+    // TODO use the correct api-defs folder
     private String LOCATION = "./";
 
-    public void generateFile(String file) throws IOException {
-        // TODO read service id
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
+
+    public StaticAPIResponse generateFile(String file) throws IOException {
+
         AtomicReference<String> fileName = new AtomicReference<>("");
-        Pattern pattern = Pattern.compile("serviceId:(.*?)\\n");
-        Matcher matcher = pattern.matcher(file);
-        while (matcher.find()) {
-            System.out.println(matcher.group(1));
-            fileName.set(matcher.group(1));
-            fileName.set(LOCATION + matcher.group(1) + ".yml");
+        String serviceId = StringUtils.substringBetween(file, "serviceId: ", "\\n");
+        fileName.set(LOCATION + serviceId + ".yml");
+        file = file.replace("\\n", System.lineSeparator());
+        file = file.substring(1, file.length() - 1);
 
-        }
-        System.out.println(file);
+        checkIfFileExists(serviceId);
 
-
-        try(FileOutputStream fos = new FileOutputStream(String.valueOf(fileName))) {
+        try(FileOutputStream fos = new FileOutputStream(fileName.get())) {
             fos.write(file.getBytes(StandardCharsets.UTF_8));
+            fos.close();
+            return new StaticAPIResponse(201, String.format("The static definition file has been created! Its location is: %s", LOCATION));
+        } catch (IOException e) {
+            apimlLog.log("org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed",  e.getMessage());
+            throw new IOException(e);
         }
+    }
 
+    private void checkIfFileExists(String serviceId) throws FileAlreadyExistsException {
+        File outFile = new File(LOCATION + serviceId + ".yml");
+        if (outFile.exists()) {
+            throw new FileAlreadyExistsException(String.format("The static definition file %s already exists!", LOCATION));
+        }
     }
 
 }

@@ -11,7 +11,6 @@
 package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,22 +19,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/static-api")
 @RequiredArgsConstructor
-@Slf4j
-public class StaticOnboardingDefinitionController {
+public class StaticDefinitionController {
     private final StaticDefinitionGenerator staticDefinitionGenerator;
 
     @PostMapping(value = "/generate", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> generateStaticDef(@RequestBody String payload) {
-        try {
-            staticDefinitionGenerator.generateFile(payload);
-        } catch (IOException e) {
-            log.error("Couldn't generate the file!");
-        }
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> generateStaticDef(@RequestBody String payload) throws IOException {
+        StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.generateFile(payload);
+        return ResponseEntity
+            .status(staticAPIResponse.getStatusCode())
+            .body(staticAPIResponse.getBody());
     }
 }
