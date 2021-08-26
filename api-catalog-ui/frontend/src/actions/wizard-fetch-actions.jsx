@@ -22,10 +22,16 @@ export function sendYAMLError(error) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export function sendYAML(body) {
-    const url = 'https://ece6cddf-5813-42b0-a436-26707651e5df.mock.pstmn.io/post-test';
+export function sendYAML(yamlText) {
+    const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/autoOnboard`;
     return dispatch => {
-        fetch(url, { method: 'POST', body })
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ yaml: yamlText }),
+        })
             .then(res => {
                 const { status } = res;
                 if (status === 201) {
