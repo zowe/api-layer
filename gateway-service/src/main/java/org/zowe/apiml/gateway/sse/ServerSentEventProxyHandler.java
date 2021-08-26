@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.sse;
 
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,6 +25,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Controller
 @Component("ServerSentEventProxyHandler")
 public class ServerSentEventProxyHandler {
@@ -76,14 +79,14 @@ public class ServerSentEventProxyHandler {
                 try {
                     emitter.send(content.data());
                 } catch (IOException error) {
-                    System.err.println("Error encounter sending SSE event");
-                    System.err.println(error);
+                    log.error("Error encounter sending SSE event");
+                    log.error(error.getMessage());
                     emitter.complete();
                 }
             },
             error -> {
-                System.err.println("Error receiving SSE");
-                System.err.println(error);
+                log.error("Error receiving SSE");
+                log.error(error.getMessage());
                 emitter.complete();
             },
             () -> emitter.complete());
@@ -104,7 +107,7 @@ public class ServerSentEventProxyHandler {
         Map<String, String[]> parameters = request.getParameterMap();
         String[] arr = null;
         if (uriPath != null) {
-            List<String> uriParts = new ArrayList<String>(Arrays.asList(uriPath.split("/", 5)));
+            List<String> uriParts = new ArrayList<>(Arrays.asList(uriPath.split("/", 5)));
             Iterator<Map.Entry<String, String[]>> it = (parameters.entrySet()).iterator();
             while (it.hasNext()) {
                 Map.Entry<String, String[]> entry = it.next();
