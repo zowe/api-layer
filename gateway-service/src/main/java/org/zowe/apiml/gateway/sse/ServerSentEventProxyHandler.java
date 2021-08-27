@@ -89,7 +89,7 @@ public class ServerSentEventProxyHandler {
                 log.error(error.getMessage());
                 emitter.complete();
             },
-            () -> emitter.complete());
+            emitter::complete);
     }
 
     private void addStream(String sseStreamUrl) {
