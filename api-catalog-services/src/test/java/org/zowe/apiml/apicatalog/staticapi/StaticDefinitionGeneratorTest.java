@@ -33,17 +33,11 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class StaticDefinitionGeneratorTest {
-    private static final String STATIC_DEF_GENERATE_ENDPOINT = "static-api/generate";
-    private static final String STATIC_DEF_OVERRIDE_ENDPOINT = "static-api/override";
     private static final String ACTUATOR_ENV = "application/env";
 
     private static final String DISCOVERY_LOCATION = "https://localhost:60004/eureka/";
-    private static final String DISCOVERY_LOCATION_2 = "https://localhost:60005/eureka/";
     private static final String DISCOVERY_URL = "https://localhost:60004/";
-    private static final String DISCOVERY_URL_2 = "https://localhost:60005/";
 
-    private static final String DISCOVERY_LOCATION_HTTP = "http://localhost:60004/eureka/";
-    private static final String DISCOVERY_URL_HTTP = "http://localhost:60004/";
 
     @InjectMocks
     private StaticDefinitionGenerator staticDefinitionGenerator;
@@ -62,9 +56,23 @@ class StaticDefinitionGeneratorTest {
             TokenAuthentication authentication = new TokenAuthentication("token");
             authentication.setAuthenticated(true);
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
-            mockRestTemplateExchange(DISCOVERY_URL, new ResponseEntity<>(HttpStatus.OK), ACTUATOR_ENV);
             assertThrows(IOException.class, () ->
                 staticDefinitionGenerator.generateFile("services: \\n  "));
+        }
+
+        @Test
+        void givenValidRequest_thenSuccess() throws IOException {
+            when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION});
+            TokenAuthentication authentication = new TokenAuthentication("token");
+            authentication.setAuthenticated(true);
+            SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
+            mockRestTemplateExchange(DISCOVERY_URL, new ResponseEntity<>("{ \"apiml.discovery.staticApiDefinitionsDirectories\": {\n" +
+                "                    \"value\": \"config/local/api-defs\",\n" +
+                "                    \"origin\": \"URL [file:config/local/discovery-service.yml]:9:42\"\n }" +
+                "                },", HttpStatus.OK), ACTUATOR_ENV);
+            Exception exception = assertThrows(IOException.class, () ->
+                staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n "));
+            assertEquals("java.io.FileNotFoundException: ./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
         }
     }
 
@@ -77,7 +85,6 @@ class StaticDefinitionGeneratorTest {
             TokenAuthentication authentication = new TokenAuthentication("token");
             authentication.setAuthenticated(true);
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
-            mockRestTemplateExchange(DISCOVERY_URL, new ResponseEntity<>(HttpStatus.OK), ACTUATOR_ENV);
             assertThrows(IOException.class, () ->
                 staticDefinitionGenerator.overrideFile("services: \\n  "));
         }
@@ -94,9 +101,14 @@ class StaticDefinitionGeneratorTest {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Accept", "application/json");
+        String token;
         if (isHttp) {
-            String basicToken = "Basic " + Base64.getEncoder().encodeToString("null:null".getBytes());
-            httpHeaders.add("Authorization", basicToken);
+            token = "Basic " + Base64.getEncoder().encodeToString("null:null".getBytes());
+            httpHeaders.add("Authorization", token);
+        }
+        else {
+            token = "apimlAuthenticationToken=token";
+            httpHeaders.add("Cookie", token);
         }
 
         return new HttpEntity<>(null, httpHeaders);
