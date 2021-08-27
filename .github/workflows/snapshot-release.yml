@@ -61,6 +61,7 @@ jobs:
     build-amd64:
         strategy:
             matrix:
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
@@ -104,8 +105,8 @@ jobs:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
                     release: true
-                    base-directory: ./containers
-                    image-name: gateway-service
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
+                    image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
                     cpu-arch: amd64
                     # Used only for UBI
@@ -122,6 +123,7 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
@@ -165,8 +167,8 @@ jobs:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
                     release: true
-                    base-directory: ./containers
-                    image-name: gateway-service
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
+                    image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
                     cpu-arch: s390x
 
@@ -189,6 +191,7 @@ jobs:
             - build-s390x
         strategy:
             matrix:
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         steps:
@@ -207,8 +210,8 @@ jobs:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
                     release: true
-                    base-directory: ./containers
-                    image-name: gateway-service
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
+                    image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
 
             -   uses: zowe-actions/shared-actions/docker-manifest@main
