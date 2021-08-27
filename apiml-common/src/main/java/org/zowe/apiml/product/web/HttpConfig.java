@@ -181,7 +181,6 @@ public class HttpConfig {
     public SslContextFactory.Client jettyClientSslContextFactory() {
         SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setProtocol(protocol);
-        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$", "^TLS_RSA_.*$");
         setTruststore(sslContextFactory);
         log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
         sslContextFactory.setHostnameVerifier(secureHostnameVerifier());
