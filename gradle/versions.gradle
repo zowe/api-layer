@@ -27,6 +27,7 @@ ext {
     jettyWebSocketClientVersion = '9.4.43.v20210629'
     jjwtVersion = '0.11.2'
     jsonPathVersion = '2.6.0'
+    jsonSmartVersion = '2.4.7!!'
     jsonUnitVersion = '1.25.1'
     jsonVersion = '20180813'
     jsoupVersion = '1.8.3'
@@ -107,6 +108,7 @@ ext {
         jetty_websocket_api                : "org.eclipse.jetty.websocket:websocket-api:${jettyWebSocketClientVersion}",
         jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
         jetty_websocket_common             : "org.eclipse.jetty.websocket:websocket-common:${jettyWebSocketClientVersion}",
+        json_smart                         : "net.minidev:json-smart:${jsonSmartVersion}",
         jjwt                               : "io.jsonwebtoken:jjwt-api:${jjwtVersion}",
         jjwt_impl                          : "io.jsonwebtoken:jjwt-impl:${jjwtVersion}",
         jjwt_jackson                       : "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}",

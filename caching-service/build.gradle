@@ -73,6 +73,7 @@ dependencies {
     annotationProcessor libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
     testCompile libraries.hamcrest
 }
 

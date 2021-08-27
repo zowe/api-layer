@@ -17,6 +17,7 @@ dependencies {
 
     testCompile libraries.javax_servlet_api
     testCompile libraries.spring_boot_starter_test
+    testCompile libraries.json_smart
 
     testCompile libraries.lombok
     annotationProcessor libraries.lombok

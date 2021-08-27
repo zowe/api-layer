@@ -45,6 +45,7 @@ dependencies {
     annotationProcessor libraries.lombok
 
     testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testCompile libraries.json_smart
 }
 
 
