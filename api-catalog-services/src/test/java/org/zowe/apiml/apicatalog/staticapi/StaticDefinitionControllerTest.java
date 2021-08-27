@@ -43,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class StaticDefinitionControllerTest {
 
     private static final String STATIC_DEF_GENERATE_ENDPOINT = "/static-api/generate";
+    private static final String STATIC_DEF_OVERRIDE_ENDPOINT = "/static-api/override";
 
     @Autowired
     private MockMvc mockMvc;
@@ -116,6 +117,20 @@ class StaticDefinitionControllerTest {
                 );
 
                 mockMvc.perform(post(STATIC_DEF_GENERATE_ENDPOINT).content(payload))
+                    .andExpect(status().is2xxSuccessful());
+            }
+        }
+
+        @Nested
+        class whenCallStaticOverrideAPI {
+            @Test
+            void thenResponseIs201() throws Exception {
+                String payload = "\"services:\\n  - serviceId: service\\n    title: a\\n    description: description\\n    instanceBaseUrls:\\n      - a\\n   routes:\\n ";
+                when(staticDefinitionGenerator.overrideFile(payload)).thenReturn(
+                    new StaticAPIResponse(201, "This is body")
+                );
+
+                mockMvc.perform(post(STATIC_DEF_OVERRIDE_ENDPOINT).content(payload))
                     .andExpect(status().is2xxSuccessful());
             }
         }
