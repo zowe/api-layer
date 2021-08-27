@@ -25,7 +25,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
 @TestsNotMeantForZowe
-public class ServerSentEventsProxyText {
+public class ServerSentEventsProxyTest {
 
     @BeforeAll
     public static void beforeClass() {
@@ -35,17 +35,16 @@ public class ServerSentEventsProxyText {
     @Nested
     class WhenRoutingSession {
         @ParameterizedTest(name = "WhenRoutingSession.thenReturnEvents#message {0}")
-        @ValueSource(strings = {"/discoverableclient/sse/v1/events", "/sse/v1/discoverableclient/events"})
+        @ValueSource(strings = {"/sse/v1/discoverableclient/events", "/discoverableclient/sse/v1/events"})
         void thenReturnEvents(String path) {
             URI uri = HttpRequestUtils.getUriFromGateway(path);
-
             given()
                 .when()
                 .get(uri)
                 .then()
                 .statusCode(is(HttpStatus.SC_OK))
-                .content(is("data:event"))
-                .header("Content-Type", "text/event-stream");
+                .header("Content-Type", "text/event-stream")
+                .body(is("data:event"));
         }
 
         // incorrect route
