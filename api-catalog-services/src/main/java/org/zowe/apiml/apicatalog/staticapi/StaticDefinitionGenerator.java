@@ -133,6 +133,7 @@ public class StaticDefinitionGenerator {
                     String location = jsonNode.findValue("apiml.discovery.staticApiDefinitionsDirectories").findValue("value").toString();
                     if (location == null || location.isEmpty()) {
                         log.debug("apiml.discovery.staticApiDefinitionsDirectories parameter is not defined");
+                        throw new IOException("No location defined for the static definition.");
                     }
                     return location.replace("\"", "");
                 }
