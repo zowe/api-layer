@@ -41,7 +41,7 @@ public class ServerSentEventProxyHandler {
 
     private static final String SEPARATOR = "/";
     private final DiscoveryClient discovery;
-    private Map<String, Flux<ServerSentEvent<String>>> sseEventStreams = new ConcurrentHashMap<>();
+    private final Map<String, Flux<ServerSentEvent<String>>> sseEventStreams = new ConcurrentHashMap<>();
 
     @Autowired
     public ServerSentEventProxyHandler(DiscoveryClient discovery) {
@@ -51,7 +51,7 @@ public class ServerSentEventProxyHandler {
     @GetMapping("/**/sse/**")
     public SseEmitter getEmitter(HttpServletRequest request, HttpServletResponse response) throws IOException {
         SseEmitter emitter = new SseEmitter(-1L);
-        
+
         String[] uriParts = getUriParts(request);
         if (uriParts != null && uriParts.length >= 5) {
             String serviceId = uriParts[3];
@@ -108,9 +108,7 @@ public class ServerSentEventProxyHandler {
         String[] arr = null;
         if (uriPath != null) {
             List<String> uriParts = new ArrayList<>(Arrays.asList(uriPath.split("/", 5)));
-            Iterator<Map.Entry<String, String[]>> it = (parameters.entrySet()).iterator();
-            while (it.hasNext()) {
-                Map.Entry<String, String[]> entry = it.next();
+            for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
                 uriParts.add(entry.getKey() + "=" + entry.getValue()[0]);
             }
             arr = uriParts.toArray(new String[uriParts.size()]);
