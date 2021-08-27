@@ -57,6 +57,10 @@ dependencies {
     implementation libraries.zowe_attls
     implementation libraries.spring_cloud_starter_hystrix
     implementation libraries.spring_cloud_hystrix_dashboard
+    implementation libraries.spring_security_web
+    implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_crypto
 
     implementation libraries.bootstrap
     implementation libraries.jquery

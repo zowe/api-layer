@@ -64,6 +64,9 @@ dependencies {
     implementation libraries.spring_boot_starter_aop
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_crypto
+
     implementation libraries.swagger3_core
     implementation libraries.swagger3_parser
     implementation libraries.jackson_core

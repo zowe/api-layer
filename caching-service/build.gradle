@@ -63,6 +63,9 @@ dependencies {
     implementation libraries.spring_boot_starter_aop
     implementation libraries.lettuce
     implementation libraries.tomcat_embed_core
+    implementation libraries.spring_security_web
+    implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
 
     implementation libraries.gson
     compileOnly libraries.lombok

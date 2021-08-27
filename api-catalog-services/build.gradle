@@ -48,7 +48,7 @@ gitProperties {
 
 configurations.all {
     resolutionStrategy {
-        force (libraries.jetty_websocket_client)
+        force (libraries.jetty_websocket_client, libraries.spring_security_web, libraries.spring_security_config)
     }
 }
 
@@ -80,6 +80,10 @@ dependencies {
     implementation libraries.jetty_websocket_api
     implementation libraries.jetty_websocket_client
     implementation libraries.jetty_websocket_common
+    implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_crypto
+    implementation libraries.spring_security_web
 
     implementation libraries.springFox
 
