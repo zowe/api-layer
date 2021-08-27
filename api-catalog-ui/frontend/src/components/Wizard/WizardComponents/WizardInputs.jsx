@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { Component } from 'react';
-import { Checkbox, FormField, Select } from 'mineral-ui';
+import { Checkbox, FormField, Select, Tooltip } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
 import Button from 'mineral-ui/Button';
 import { IconDelete } from 'mineral-ui-icons';
@@ -31,7 +31,7 @@ class WizardInputs extends Component {
         let { value } = event.target;
         const objectToChange = this.props.data;
         const arrIndex = parseInt(event.target.getAttribute('data-index'));
-        const { question, maxLength, lowercase } = objectToChange.content[arrIndex][name];
+        const { question, maxLength, lowercase, regexRestriction, validUrl } = objectToChange.content[arrIndex][name];
         const prevValue = objectToChange.content[arrIndex][name].value;
         // if prevValues was a boolean then we are handling a checkbox
         if (typeof prevValue === 'boolean') {
@@ -41,6 +41,7 @@ class WizardInputs extends Component {
             if (value.length > 0) {
                 objectToChange.content[arrIndex][name].empty = false;
             }
+            objectToChange.content[arrIndex][name].problem = this.checkRestrictions(value, regexRestriction, validUrl);
         }
         const arr = [...objectToChange.content];
         arr[arrIndex] = {
@@ -48,9 +49,36 @@ class WizardInputs extends Component {
             [name]: { ...objectToChange.content[arrIndex][name], question, value, interactedWith: true },
         };
         this.updateDataWithNewContent(objectToChange, arr);
-
         this.props.validateInput(objectToChange.nav, true);
     };
+
+    /**
+     * Check the non-applicable restrictions
+     * @param value user's input
+     * @param regexRestriction restriction in regex expression
+     * @param validUrl whether the value should be a valid URL
+     * @returns {boolean} true if there's a problem
+     */
+    checkRestrictions(value, regexRestriction, validUrl) {
+        let problem = false;
+        if (regexRestriction !== undefined) {
+            const restriction = new RegExp(regexRestriction);
+            if (!restriction.test(value)) {
+                problem = true;
+            }
+        }
+        if (validUrl) {
+            try {
+                // eslint-disable-next-line
+                const url = new URL(value);
+                problem = problem || false;
+                return problem;
+            } catch {
+                return true;
+            }
+        }
+        return problem;
+    }
 
     /**
      * Apply any restrictions to the inputs
@@ -231,7 +259,7 @@ class WizardInputs extends Component {
      * @returns {JSX.Element} returns the input element
      */
     renderInputElement(itemKey, index, inputNode) {
-        const { question, value, empty, optional, options, maxLength, lowercase } = inputNode;
+        const { question, value, empty, optional, options, maxLength, lowercase, tooltip, problem } = inputNode;
         let caption = '';
         if (optional) {
             caption += 'Optional field; ';
@@ -247,7 +275,8 @@ class WizardInputs extends Component {
         } else {
             caption = undefined;
         }
-        const variant = empty ? 'danger' : undefined;
+        const error = empty || problem;
+        const variant = error ? 'danger' : undefined;
         if (typeof value === 'boolean') {
             return (
                 <Checkbox
@@ -265,6 +294,7 @@ class WizardInputs extends Component {
         if (Array.isArray(options)) {
             return (
                 <FormField
+                    className="formField"
                     input={Select}
                     size="large"
                     placeholder={itemKey}
@@ -279,19 +309,28 @@ class WizardInputs extends Component {
                 />
             );
         }
+        let disableTooltip = false;
+        let finalTooltip = tooltip;
+        if (tooltip === undefined) {
+            disableTooltip = true;
+            finalTooltip = 'filler';
+        }
         return (
-            <FormField
-                input={TextInput}
-                size="large"
-                name={itemKey}
-                onChange={this.handleInputChange}
-                data-index={index}
-                placeholder={itemKey}
-                value={value}
-                label={question}
-                variant={variant}
-                caption={caption}
-            />
+            <Tooltip className="wizardTooltip" content={finalTooltip} disabled={disableTooltip}>
+                <FormField
+                    className="wizardFormFields"
+                    input={TextInput}
+                    size="large"
+                    name={itemKey}
+                    onChange={this.handleInputChange}
+                    data-index={index}
+                    placeholder={itemKey}
+                    value={value}
+                    label={question}
+                    variant={variant}
+                    caption={caption}
+                />
+            </Tooltip>
         );
     }
 

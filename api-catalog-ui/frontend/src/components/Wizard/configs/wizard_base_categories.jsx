@@ -30,6 +30,7 @@ export const baseCategories = [
             baseUrl: {
                 value: '',
                 question: 'The base URL of the service (the consistent part of the web address):',
+                validUrl: true,
             },
         },
     },
@@ -70,6 +71,7 @@ export const baseCategories = [
                 value: '',
                 question: 'The service IP address:',
                 optional: true,
+                regexRestriction: '^([0-9]+)\\.([0-9]+)\\.([0-9]+)\\.([0-9]+)',
             },
         },
     },
@@ -80,14 +82,17 @@ export const baseCategories = [
                 value: '',
                 question: 'The relative path to the home page of the service:',
                 optional: true,
+                validUrl: true,
             },
             statusPageRelativeUrl: {
                 value: '',
                 question: 'The relative path to the status page of the service:',
+                validUrl: true,
             },
             healthCheckRelativeUrl: {
                 value: '',
                 question: 'The relative path to the health check endpoint of the service:',
+                validUrl: true,
             },
         },
     },
@@ -108,6 +113,7 @@ export const baseCategories = [
             gatewayUrl: {
                 value: '',
                 question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
+                regexRestriction: '^(api\\/v[0-9])',
             },
             serviceUrl: {
                 value: '',
@@ -141,10 +147,13 @@ export const baseCategories = [
             version: {
                 value: '',
                 question: 'API version:',
+                tooltip: 'API version',
+                regexRestriction: '^([0-9]+)\\.([0-9]+)\\.([0-9]+)',
             },
             gatewayUrl: {
                 value: '',
                 question: 'The base path at the API Gateway where the API is available:',
+                regexRestriction: '^(api\\/v[0-9])',
             },
             swaggerUrl: {
                 value: '',
