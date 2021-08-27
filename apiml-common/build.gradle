@@ -8,6 +8,7 @@ dependencies {
     compile libraries.http_client
     compile libraries.http_core
     compile libraries.janino
+    compile libraries.xstream
 
 
     compileOnly libraries.spring_boot_configuration_processor

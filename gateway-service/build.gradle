@@ -66,6 +66,7 @@ dependencies {
     implementation libraries.spring_security_config
     implementation libraries.spring_security_core
     implementation libraries.spring_security_crypto
+    implementation libraries.xstream
 
     implementation libraries.swagger3_core
     implementation libraries.swagger3_parser

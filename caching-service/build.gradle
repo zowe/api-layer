@@ -66,6 +66,7 @@ dependencies {
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
     implementation libraries.spring_security_core
+    implementation libraries.xstream
 
     implementation libraries.gson
     compileOnly libraries.lombok

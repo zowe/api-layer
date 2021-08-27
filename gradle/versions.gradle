@@ -4,6 +4,7 @@ ext {
     springSecurityVersion = '5.3.11.RELEASE!!'
     springRetryVersion = '1.2.4.RELEASE'
 
+    attlsVersion = '1.21.3'
     awaitilityVersion = '3.0.0'
     bootstrapVersion = '4.3.1'
     commonsLang3Version = '3.7'
@@ -50,7 +51,8 @@ ext {
     swaggerJerseyJaxrsVersion = '1.5.10'
     tomcatVersion = '9.0.50'
     velocityVersion = '2.0'
-    attlsVersion = '1.21.3'
+    xstreamVersion = '1.4.18!!'
+
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
         spring_boot_configuration_processor: "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}",
@@ -136,6 +138,7 @@ ext {
         swagger3_parser                    : "io.swagger.parser.v3:swagger-parser-v3:${swagger3ParserVersion}",
         tomcat_coyote                      : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
         tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+        xstream                            : "com.thoughtworks.xstream:xstream:${xstreamVersion}",
 
         // Sample apps only
         jersey_container_servlet_core      : "org.glassfish.jersey.containers:jersey-container-servlet-core:${jerseyVersion}",

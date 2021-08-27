@@ -58,6 +58,7 @@ dependencies {
     implementation libraries.spring_security_core
     implementation libraries.spring_security_crypto
     implementation libraries.gson
+    implementation libraries.xstream
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 

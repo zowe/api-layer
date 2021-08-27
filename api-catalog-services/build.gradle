@@ -84,6 +84,7 @@ dependencies {
     implementation libraries.spring_security_core
     implementation libraries.spring_security_crypto
     implementation libraries.spring_security_web
+    implementation libraries.xstream
 
     implementation libraries.springFox
 
