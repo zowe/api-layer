@@ -67,14 +67,9 @@ public class ServerSentEventProxyHandler {
             if (!sseEventStreams.containsKey(targetUrl)) {
                 addStream(targetUrl);
             }
-            forwardEvents(sseEventStreams.get(targetUrl), emitter);
+            sseEventStreams.get(targetUrl).subscribe(consumer(emitter), error(emitter), emitter::complete);
         }
         return emitter;
-    }
-
-    // package protected for unit testing
-    void forwardEvents(Flux<ServerSentEvent<String>> stream, SseEmitter emitter) {
-        stream.subscribe(consumer(emitter), error(emitter), emitter::complete);
     }
 
     // package protected for unit testing

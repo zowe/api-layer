@@ -14,16 +14,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import reactor.core.publisher.Flux;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -85,9 +81,8 @@ class ServerSentEventProxyHandlerTest {
         }
 
         @Test
-        void givenService_thenForwardEvents() throws IOException {
+        void givenService_thenUtilizeConsumers() throws IOException {
             ServerSentEventProxyHandler spy = Mockito.spy(underTest);
-            doNothing().when(spy).forwardEvents(any(), any());
             mockUriParts("/uri/with/at/least/five/parts", new HashMap<>());
 
             List<ServiceInstance> serviceInstances = new ArrayList<>();
@@ -95,7 +90,8 @@ class ServerSentEventProxyHandlerTest {
             when(mockDiscoveryClient.getInstances(anyString())).thenReturn(serviceInstances);
 
             SseEmitter result = spy.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
-            verify(spy).forwardEvents(any(), any());
+            verify(spy).consumer(any());
+            verify(spy).error(any());
             assertThat(result, is(not(nullValue())));
         }
 
@@ -106,7 +102,7 @@ class ServerSentEventProxyHandlerTest {
     }
 
     @Nested
-    class whenUseConsumer {
+    class whenUseConsumers {
         @Test
         void givenContent_thenEmitData() throws IOException {
             SseEmitter mockEmitter = mock(SseEmitter.class);
