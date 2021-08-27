@@ -17,6 +17,7 @@ import {
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
     VALIDATE_INPUT,
+    WIZARD_VISIBILITY_TOGGLE
 } from '../constants/wizard-constants';
 import wizardReducer, {
     addDefaultValues,

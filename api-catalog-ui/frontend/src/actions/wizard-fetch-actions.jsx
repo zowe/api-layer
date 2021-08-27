@@ -49,9 +49,20 @@ export function toggleWizardVisibility(state) {
 }
 
 export function assertAuthorization() {
-    const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/gateway/check`;
+    const url = `${process.env.REACT_APP_GATEWAY_URL}/gateway/auth/check`;
+    const body = {
+        resourceClass: 'ZOWE',
+        resourceName: 'APIML.SERVICES',
+        accessLevel: 'READ',
+    };
     return dispatch => {
-        fetch(url)
+        fetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            method: 'POST',
+            body: JSON.stringify(body),
+        })
             .then(res => {
                 const { status } = res;
                 if (status === 204) {
