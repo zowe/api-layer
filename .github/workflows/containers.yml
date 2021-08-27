@@ -14,7 +14,7 @@ jobs:
     build-amd64:
         strategy:
             matrix:
-                service: [ gateway-service, discovery-service ]
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
