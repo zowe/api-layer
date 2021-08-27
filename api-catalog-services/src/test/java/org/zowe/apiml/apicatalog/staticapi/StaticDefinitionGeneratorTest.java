@@ -38,6 +38,8 @@ class StaticDefinitionGeneratorTest {
     private static final String DISCOVERY_LOCATION = "https://localhost:60004/eureka/";
     private static final String DISCOVERY_URL = "https://localhost:60004/";
 
+    private static final String DISCOVERY_LOCATION_HTTP = "http://localhost:60004/eureka/";
+    private static final String DISCOVERY_URL_HTTP = "http://localhost:60004/";
 
     @InjectMocks
     private StaticDefinitionGenerator staticDefinitionGenerator;
@@ -61,7 +63,7 @@ class StaticDefinitionGeneratorTest {
         }
 
         @Test
-        void givenValidRequest_thenSuccess() throws IOException {
+        void givenValidRequest_thenThrowExceptionWithCorrectPath() {
             when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION});
             TokenAuthentication authentication = new TokenAuthentication("token");
             authentication.setAuthenticated(true);
@@ -74,7 +76,24 @@ class StaticDefinitionGeneratorTest {
                 staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n "));
             assertEquals("java.io.FileNotFoundException: ./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
         }
+
+        @Test
+        void givenHttpValidRequest_thenThrowExceptionWithCorrectPath() {
+            when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION_HTTP});
+            TokenAuthentication authentication = new TokenAuthentication("token");
+            authentication.setAuthenticated(true);
+            SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
+            mockRestTemplateExchange(DISCOVERY_URL_HTTP, new ResponseEntity<>("{ \"apiml.discovery.staticApiDefinitionsDirectories\": {\n" +
+                "                    \"value\": \"config/local/api-defs\",\n" +
+                "                    \"origin\": \"URL [file:config/local/discovery-service.yml]:9:42\"\n }" +
+                "                },", HttpStatus.OK), ACTUATOR_ENV);
+            Exception exception = assertThrows(IOException.class, () ->
+                staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n "));
+            assertEquals("java.io.FileNotFoundException: ./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
+        }
+
     }
+
 
     @Nested
     class WhenStaticDefinitionOverrideResponse {
