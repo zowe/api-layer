@@ -58,6 +58,8 @@ apiml:
                 service-url: ${apiml.service.contextPath}/api/v2
             -   gateway-url: "ws/v1"
                 service-url: ${apiml.service.contextPath}/ws
+            -   gateway-url: "sse/v1"
+                service-url: ${apiml.service.contextPath}/sse
         apiInfo:
             -   apiId: zowe.apiml.discoverableclient
                 version: 1.0.0
