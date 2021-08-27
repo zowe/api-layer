@@ -167,6 +167,53 @@
                 }
             }
         },
+
+        "/auth/refresh": {
+            "post": {
+                "tags": ["Security"],
+                "summary": "Refresh authentication token.",
+                "description": "**Note:** This endpoint is disabled by default.\n\nUse the `/refresh` API to request a new JWT authentication token for the user associated with provided token.\nThe old token is invalidated and new token is issued with refreshed expiration time.\n\nThis endpoint is protect by a client certificate.\n\n**HTTP Headers:**\n\nThe ticket request requires the token in one of the following formats:  \n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n  \n*Header example:* Authorization: Bearer *token*",
+                "operationId": "RefreshTokenUsingPOST",
+                "security": [
+                    {
+                        "CookieAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Authenticated",
+                        "headers": {
+                            "Set-Cookie": {
+                                "description": "Cookie named apimlAuthenticationToken contains authentication token.",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Zowe token is not provided, is invalid or is expired."
+                    },
+                    "403": {
+                        "description": "A client certificate is not provided or is expired."
+                    },
+                    "404": {
+                        "description": "Not Found. The endpoint is not enabled or not propperly configured"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Process of refreshing token has failed unexpectedly."
+                    }
+                }
+            }
+        },
+
+
         "/auth/logout": {
             "post": {
                 "tags": ["Security"],
@@ -333,7 +380,7 @@
                 "tags": ["Services"],
                 "summary": "Returns detailed information about the requested service",
                 "description": "Use this endpoint to obtain detailed information about the service, its APIs, and its instances. This endpoint is protected by the `APIML.SERVICES` resource in the `ZOWE` class. At least `READ` access is required.",
-                "operationId": "servicesUsingGET",
+                "operationId": "servicesUsingGETSpecific",
                 "parameters": [
                     {
                         "in": "path",

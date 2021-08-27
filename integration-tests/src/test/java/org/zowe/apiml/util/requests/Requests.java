@@ -18,9 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 
 import java.net.URI;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
+import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 
 @Slf4j
 public class Requests {
@@ -39,15 +41,21 @@ public class Requests {
     }
 
     public JsonResponse getJsonResponse(URI uri) {
+        return getJsonResponse(uri, "");
+    }
+
+    public JsonResponse getJsonResponse(URI uri, String authentication) {
         ExtractableResponse<Response> response = given()
             .accept(ContentType.JSON)
+            .cookie(COOKIE_NAME, authentication)
         .when()
             .get(uri)
-            .then().extract();
+        .then().extract();
 
         String responseText = response.body().asString();
+        Map<String, String> cookies = response.cookies();
         ReadContext context = JsonPath.parse(responseText);
         log.info("Response: {}, Response Code: {}", responseText, response.statusCode());
-        return new JsonResponse(response.statusCode(), context);
+        return new JsonResponse(response.statusCode(), context, cookies);
     }
 }

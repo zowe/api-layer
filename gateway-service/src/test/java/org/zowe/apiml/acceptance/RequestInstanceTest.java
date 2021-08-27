@@ -31,8 +31,8 @@ public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
     @BeforeEach
     public void prepareApplications() {
         applicationRegistry.clearApplications();
-        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false);
-        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true);
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, false);
     }
 
     @Nested

@@ -33,21 +33,17 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
-import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.filter.AttlsFilter;
-import org.zowe.apiml.gateway.controllers.AuthController;
-import org.zowe.apiml.gateway.controllers.CacheServiceController;
+import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.gateway.controllers.*;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
-import org.zowe.apiml.gateway.security.query.QueryFilter;
-import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
-import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
+import org.zowe.apiml.gateway.security.query.*;
+import org.zowe.apiml.gateway.security.refresh.SuccessfulRefreshHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
-import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.config.*;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.filter.ApimlX509Filter;
@@ -86,6 +82,7 @@ public class NewSecurityConfiguration {
     private final HandlerInitializer handlerInitializer;
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final SuccessfulTicketHandler successfulTicketHandler;
+    private final SuccessfulRefreshHandler successfulRefreshHandler;
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
     private final X509AuthenticationProvider x509AuthenticationProvider;
@@ -178,7 +175,7 @@ public class NewSecurityConfiguration {
     }
 
     /**
-     * Query and Ticket endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
+     * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
      * Query endpoint does not require certificate to be present in RequestContext. It verifies JWT token.
      */
     @Configuration
@@ -218,7 +215,7 @@ public class NewSecurityConfiguration {
     }
 
     /**
-     * Query and Ticket endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
+     * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
      * Ticket endpoint does require certificate to be present in RequestContext. It verifies the JWT token.
      */
 
@@ -254,6 +251,52 @@ public class NewSecurityConfiguration {
             return new QueryFilter(
                 ticketEndpoint,
                 successfulTicketHandler,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                authenticationService,
+                HttpMethod.POST,
+                true,
+                authenticationManager);
+        }
+    }
+
+    /**
+     * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate.
+     * Refresh endpoint does require certificate to be present in RequestContext. It verifies the JWT token and based
+     * on valid token and client certificate issues a new valid token
+     */
+    @Configuration
+    @RequiredArgsConstructor
+    @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true", matchIfMissing = false)
+    @Order(6)
+    class Refresh extends WebSecurityConfigurerAdapter {
+
+        private final AuthenticationProvider tokenAuthenticationProvider;
+
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) {
+            auth.authenticationProvider(tokenAuthenticationProvider); // for authenticating Tokens
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            baseConfigure(http.requestMatchers().antMatchers(
+                authConfigurationProperties.getGatewayRefreshEndpointNewFormat(),
+                authConfigurationProperties.getGatewayRefreshEndpointOldFormat()
+            ).and()).authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .logout().disable() // logout filter in this chain not needed
+                .x509() //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
+                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+                .userDetailsService(new SimpleUserDetailService())
+                .and()
+                .addFilterBefore(refreshFilter("/**", authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+        }
+
+        private QueryFilter refreshFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
+            return new QueryFilter(
+                ticketEndpoint,
+                successfulRefreshHandler,
                 handlerInitializer.getAuthenticationFailureHandler(),
                 authenticationService,
                 HttpMethod.POST,
@@ -301,6 +344,7 @@ public class NewSecurityConfiguration {
 
         private final String[] protectedEndpoints = {
             "/application",
+            SafResourceAccessController.FULL_CONTEXT_PATH,
             ServicesInfoController.SERVICES_URL
         };
 
@@ -315,6 +359,7 @@ public class NewSecurityConfiguration {
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers()
                 .antMatchers("/application/**")
+                .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
                 .antMatchers(ServicesInfoController.SERVICES_URL + "/**").and()
             ).authorizeRequests()
                 .anyRequest().authenticated()
@@ -330,9 +375,9 @@ public class NewSecurityConfiguration {
                     .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                     .userDetailsService(new SimpleUserDetailService());
             }
-            http.
+            http
                 // place the following filters before the x509 filter
-                    addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
         }
 

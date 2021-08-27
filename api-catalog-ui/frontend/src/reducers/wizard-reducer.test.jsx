@@ -15,7 +15,8 @@ import {
     READY_YAML_OBJECT,
     REMOVE_INDEX,
     SELECT_ENABLER,
-    TOGGLE_DISPLAY, VALIDATE_INPUT, WIZARD_VISIBILITY_TOGGLE
+    TOGGLE_DISPLAY,
+    VALIDATE_INPUT,
 } from '../constants/wizard-constants';
 import wizardReducer, {
     addDefaultValues,

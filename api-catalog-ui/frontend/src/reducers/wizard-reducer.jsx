@@ -183,6 +183,99 @@ function checkPresence(inputData, navName, navsObj, silent) {
 }
 
 /**
+ * Extracted method from findEmptyFieldsOfCategory, assumes content is an object
+ * @param content content of the category to be checked
+ * @param silent respect/override interactedWith
+ * @returns {*[]} array of names of empty fields
+ */
+function emptyFieldsOfContent(content, silent) {
+    const emptyFieldsArr = [];
+    Object.entries(content).forEach(entry => {
+        const [key, objValue] = entry;
+        if (objValue.value.length === 0 && objValue.optional !== true && objValue.show !== false) {
+            if (!silent || objValue.interactedWith) {
+                objValue.empty = true;
+                emptyFieldsArr.push(key);
+            }
+        }
+    });
+    return emptyFieldsArr;
+}
+
+/**
+ * Find all empty fields of given category and return their names in array.
+ * If multiple sets are allowed, each item inside the main array is array for the given set (their indices match).
+ * @param content content of the category to be checked
+ * @param silent respect/override interactedWith
+ * @returns {*[]} array of arrays of names of empty fields
+ */
+export function findEmptyFieldsOfCategory(content, silent) {
+    const result = [];
+    content.forEach(cont => {
+        result.push(emptyFieldsOfContent(cont, silent));
+    });
+    return result;
+}
+
+/**
+ * Load categories according to the enabler needs
+ * @param enablerObj enabler config
+ * @param config category & enabler data
+ * @returns {any} inputData and navCategories wrapped in an object
+ */
+function loadCategories(enablerObj, config) {
+    const inputData = [];
+    const navCategories = {};
+    const { categories } = enablerObj;
+    categories.forEach(categoryInfo => {
+        let category = config.categoryData.find(o => o.text === categoryInfo.name);
+        if (category === undefined) {
+            return;
+        }
+        category = _.cloneDeep(category);
+        compareVariables(category, categoryInfo);
+        category = setDefault(category, enablerObj.defaults);
+        category.nav = categoryInfo.nav;
+        if (!(category.nav in navCategories)) {
+            navCategories[category.nav] = { [category.text]: [[]], silent: true, warn: false };
+        } else {
+            navCategories[category.nav][category.text] = [[]];
+        }
+        inputData.push(category);
+    });
+    return { inputData, navCategories };
+}
+
+/**
+ * Make sure all mandatory fields of the given nav are filled.
+ * @param inputData contains user's input
+ * @param navName name of the selected nav
+ * @param navsObj contains info about the missing fields in different navs
+ * @param silent respect/override interactedWith
+ * @returns {*} updated navsObj
+ */
+function checkPresence(inputData, navName, navsObj, silent) {
+    const newObj = { ...navsObj };
+    inputData.forEach(category => {
+        if (category.nav === navName) {
+            newObj[category.nav][category.text] = findEmptyFieldsOfCategory(category.content, silent);
+        }
+    });
+    newObj[navName].silent = silent;
+    let numOfEmptyFields = 0;
+    Object.values(newObj[navName]).forEach(val => {
+        if (Array.isArray(val)) {
+            // category
+            val.forEach(setArr => {
+                numOfEmptyFields += setArr.length;
+            });
+        }
+    });
+    newObj[navName].warn = numOfEmptyFields > 0;
+    return newObj;
+}
+
+/**
  * Reducer for the Wizard Dialog
  * @param state state; contains all global variables for the wizrd reducer
  * @param action when a component fires an action its payload is unloaded here

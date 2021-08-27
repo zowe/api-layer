@@ -7,16 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.service;
+package org.zowe.apiml.gzip;
 
-import org.springframework.stereotype.Component;
+public class GZipResponseException extends RuntimeException {
 
-/**
- * Authentication service
- */
-@Component
-public class SafAuthenticationService {
-    public String generateSafIdt(String jwtToken) {
-        return "validToken" + jwtToken;
+    public GZipResponseException(String message) {
+        super(message);
     }
 }

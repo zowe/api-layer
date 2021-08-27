@@ -16,8 +16,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
 
 import java.io.IOException;
 
@@ -32,6 +37,17 @@ import static org.mockito.Mockito.*;
  */
 @AcceptanceTest
 class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
+    @Autowired
+    protected SafRestAuthenticationService safRestAuthenticationService;
+
+    private RestTemplate mockTemplate;
+
+    @BeforeEach
+    void prepareTemplate() {
+        mockTemplate = mock(RestTemplate.class);
+        ReflectionTestUtils.setField(safRestAuthenticationService, "restTemplate", mockTemplate);
+    }
+
     @Nested
     class GivenValidJwtToken {
         Cookie validJwtToken;
@@ -45,6 +61,9 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
         class WhenSafIdtRequestedByService {
             @BeforeEach
             void prepareService() throws IOException {
+                applicationRegistry.clearApplications();
+                applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, "authentication", false, true);
+                applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, "authentication", false, true);
                 applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
 
                 reset(mockClient);
@@ -54,17 +73,26 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
             // Valid token is provided within the headers.
             @Test
             void thenValidTokenIsProvided() throws IOException {
+                String resultSafToken = "resultSafToken";
+
+                ResponseEntity<Object> response = mock(ResponseEntity.class);
+                when(mockTemplate.postForEntity(any(), any(), any())).thenReturn(response);
+                when(response.getStatusCode()).thenReturn(org.springframework.http.HttpStatus.CREATED);
+                SafRestAuthenticationService.Token responseBody = new SafRestAuthenticationService.Token();
+                responseBody.setJwt(resultSafToken);
+                when(response.getBody()).thenReturn(responseBody);
+
                 given()
                     .cookie(validJwtToken)
-                .when()
+                    .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
-                .then()
+                    .then()
                     .statusCode(is(HttpStatus.SC_OK));
 
                 ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
                 verify(mockClient, times(1)).execute(captor.capture());
 
-                assertHeaderWithValue(captor.getValue(), "X-SAF-Token", "validToken" + validJwtToken.getValue());
+                assertHeaderWithValue(captor.getValue(), "X-SAF-Token", resultSafToken);
             }
         }
     }
@@ -82,17 +110,17 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
             }
 
             @Test
-            void givenInvalidJwtToken() throws IOException {
+            void givenInvalidJwtToken() {
                 Cookie withInvalidToken = new Cookie.Builder("apimlAuthenticationToken=invalidValue").build();
 
                 given()
                     .cookie(withInvalidToken)
-                .when()
+                    .when()
                     .get(basePath + serviceWithDefaultConfiguration.getPath())
-                .then()
-                    .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+                    .then()
+                    .statusCode(is(HttpStatus.SC_OK));
 
-                verify(mockClient, times(0)).execute(any());
+                verify(mockTemplate, times(0)).postForEntity(any(), any(), any());
             }
         }
     }
