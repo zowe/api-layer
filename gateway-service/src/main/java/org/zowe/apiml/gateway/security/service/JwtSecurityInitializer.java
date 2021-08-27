@@ -35,6 +35,7 @@ import java.security.Key;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
 
@@ -59,6 +60,9 @@ public class JwtSecurityInitializer {
 
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
+
+    @Value("${apiml.security.jwtInitializerTimeout:5}")
+    private int timeout;
 
     private SignatureAlgorithm signatureAlgorithm;
     private Key jwtSecret;
@@ -116,7 +120,7 @@ public class JwtSecurityInitializer {
         new Thread(() -> {
             try {
                 await()
-                    .atMost(Duration.FIVE_MINUTES)
+                    .atMost(new Duration(timeout, TimeUnit.MINUTES))
                     .with()
                     .pollInterval(Duration.ONE_MINUTE)
                     .until(zosmfListener::isZosmfReady);
