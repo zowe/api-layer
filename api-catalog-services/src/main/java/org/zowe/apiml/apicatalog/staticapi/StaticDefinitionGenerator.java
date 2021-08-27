@@ -12,16 +12,12 @@ package org.zowe.apiml.apicatalog.staticapi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
@@ -33,8 +29,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -45,12 +39,9 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor
-public class StaticDefinitionGenerator {
+public class StaticDefinitionGenerator extends StaticAPIService {
 
     private static final String ENV_ENDPOINT = "application/env";
-
-    private final DiscoveryConfigProperties discoveryConfigProperties;
 
     private AtomicReference<String> fileName = new AtomicReference<>("");
 
@@ -60,14 +51,16 @@ public class StaticDefinitionGenerator {
     @Value("${apiml.discovery.password:password}")
     private String eurekaPassword;
 
-    @Qualifier("restTemplateWithKeystore")
-    private final RestTemplate restTemplate;
-
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
+
+    public StaticDefinitionGenerator(RestTemplate restTemplate, DiscoveryConfigProperties discoveryConfigProperties) {
+        super(restTemplate, discoveryConfigProperties);
+    }
+
 
     public StaticAPIResponse generateFile(String file) throws IOException {
         String location = retrieveStaticDefLocation();
@@ -117,13 +110,13 @@ public class StaticDefinitionGenerator {
     }
 
     private String retrieveStaticDefLocation() {
-        List<String> discoveryServiceUrls = getDiscoveryServiceUrls();
+        List<String> discoveryServiceUrls = getDiscoveryServiceUrls(ENV_ENDPOINT);
         for (int i = 0; i < discoveryServiceUrls.size(); i++) {
 
             String discoveryServiceUrl = discoveryServiceUrls.get(i);
-            HttpEntity<?> entity = getHttpEntity(discoveryServiceUrl);
+            HttpEntity<?> entity = getHttpEntity(discoveryServiceUrl, true);
             try {
-                ResponseEntity<String> response = restTemplate.exchange(discoveryServiceUrl, HttpMethod.GET, entity, String.class);
+                ResponseEntity<String> response = super.getRestTemplate().exchange(discoveryServiceUrl, HttpMethod.GET, entity, String.class);
 
                 // Return response if successful response or if none have been successful and this is the last URL to try
                 if (response.getStatusCode().is2xxSuccessful() || i == discoveryServiceUrls.size() - 1) {
@@ -144,32 +137,6 @@ public class StaticDefinitionGenerator {
             }
         }
         return null;
-    }
-
-    private HttpEntity<?> getHttpEntity(String discoveryServiceUrl) {
-        boolean isHttp = discoveryServiceUrl.startsWith("http://");
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Accept", "application/json");
-        String token;
-        if (isHttp && !isAttlsEnabled) {
-            token = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
-            httpHeaders.add("Authorization", token);
-        } else {
-            token = "apimlAuthenticationToken=" + SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-            httpHeaders.add("Cookie", token);
-        }
-
-        return new HttpEntity<>(null, httpHeaders);
-    }
-
-    private List<String> getDiscoveryServiceUrls() {
-        String[] discoveryServiceLocations = discoveryConfigProperties.getLocations();
-
-        List<String> discoveryServiceUrls = new ArrayList<>();
-        for (String location : discoveryServiceLocations) {
-            discoveryServiceUrls.add(location.replace("/eureka", "") + ENV_ENDPOINT);
-        }
-        return discoveryServiceUrls;
     }
 
 }

@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.staticapi;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
@@ -28,6 +30,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Getter
 public class StaticAPIService {
 
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
@@ -47,11 +50,11 @@ public class StaticAPIService {
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
     public StaticAPIResponse refresh() {
-        List<String> discoveryServiceUrls = getDiscoveryServiceUrls();
+        List<String> discoveryServiceUrls = getDiscoveryServiceUrls(REFRESH_ENDPOINT);
         for (int i = 0; i < discoveryServiceUrls.size(); i++) {
 
             String discoveryServiceUrl = discoveryServiceUrls.get(i);
-            HttpEntity<?> entity = getHttpEntity(discoveryServiceUrl);
+            HttpEntity<?> entity = getHttpEntity(discoveryServiceUrl, false);
 
             try {
                 ResponseEntity<String> response = restTemplate.exchange(discoveryServiceUrl, HttpMethod.POST, entity, String.class);
@@ -69,24 +72,28 @@ public class StaticAPIService {
         return new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
     }
 
-    private HttpEntity<?> getHttpEntity(String discoveryServiceUrl) {
+    protected HttpEntity<?> getHttpEntity(String discoveryServiceUrl, boolean isProtected) {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Accept", "application/json");
+        String token;
         if (isHttp && !isAttlsEnabled) {
-            String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
-            httpHeaders.add("Authorization", basicToken);
+            token = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
+            httpHeaders.add("Authorization", token);
+        } else if (isProtected) {
+            token = "apimlAuthenticationToken=" + SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
+            httpHeaders.add("Cookie", token);
         }
 
         return new HttpEntity<>(null, httpHeaders);
     }
 
-    private List<String> getDiscoveryServiceUrls() {
+    protected List<String> getDiscoveryServiceUrls(String path) {
         String[] discoveryServiceLocations = discoveryConfigProperties.getLocations();
 
         List<String> discoveryServiceUrls = new ArrayList<>();
         for (String location : discoveryServiceLocations) {
-            discoveryServiceUrls.add(location.replace("/eureka", "") + REFRESH_ENDPOINT);
+            discoveryServiceUrls.add(location.replace("/eureka", "") + path);
         }
         return discoveryServiceUrls;
     }
