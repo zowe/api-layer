@@ -74,7 +74,7 @@ class StaticDefinitionGeneratorTest {
                 "                },", HttpStatus.OK), ACTUATOR_ENV);
             Exception exception = assertThrows(IOException.class, () ->
                 staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n "));
-            assertEquals("java.io.FileNotFoundException: ./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
+            assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
         }
 
         @Test
@@ -89,7 +89,7 @@ class StaticDefinitionGeneratorTest {
                 "                },", HttpStatus.OK), ACTUATOR_ENV);
             Exception exception = assertThrows(IOException.class, () ->
                 staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n "));
-            assertEquals("java.io.FileNotFoundException: ./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
+            assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
         }
 
     }

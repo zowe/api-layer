@@ -96,9 +96,6 @@ public class StaticDefinitionGenerator extends StaticAPIService {
 
             log.debug(message);
             return new StaticAPIResponse(201, message);
-        } catch (IOException e) {
-            apimlLog.log("org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed",  e.getMessage());
-            throw new IOException(e);
         }
     }
 
@@ -132,7 +129,7 @@ public class StaticDefinitionGenerator extends StaticAPIService {
                 }
 
             } catch (Exception e) {
-                log.debug("Error retrieving the static definition location from the endpoint {}, error message: {}", discoveryServiceUrl, e.getMessage());
+                apimlLog.log("org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed", e.getMessage());
                 return null;
             }
         }
