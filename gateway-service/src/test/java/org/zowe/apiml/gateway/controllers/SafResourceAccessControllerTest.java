@@ -10,8 +10,7 @@
 
 package org.zowe.apiml.gateway.controllers;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,8 +22,7 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import static javax.servlet.http.HttpServletResponse.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -60,14 +58,27 @@ class SafResourceAccessControllerTest {
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
-    @Test
-    void validRequestReturnsNoContent() throws Exception {
-        doReturn(true).when(safResourceAccessVerifying).hasSafResourceAccess(any(), any(), any(), any());
-        mockMvc.perform(
+    @Nested
+    class givenValidRequest {
+        @Test
+        void returnsNoContent() throws Exception {
+            doReturn(true).when(safResourceAccessVerifying).hasSafResourceAccess(any(), any(), any(), any());
+            mockMvc.perform(
                 post(SafResourceAccessController.FULL_CONTEXT_PATH)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .content(validRequestBody)
             ).andExpect(status().is(SC_NO_CONTENT));
+        }
+
+        @Test
+        void returnsUnauthorizedWhenResourceAccessNotPresent() throws Exception {
+            doReturn(false).when(safResourceAccessVerifying).hasSafResourceAccess(any(), any(), any(), any());
+            mockMvc.perform(
+                post(SafResourceAccessController.FULL_CONTEXT_PATH)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .content(validRequestBody)
+            ).andExpect(status().is(SC_UNAUTHORIZED));
+        }
     }
 
     @Test
