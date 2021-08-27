@@ -6,8 +6,171 @@ on:
     pull_request:
         branches: [ master ]
 
+env:
+    IMAGE_BASE_DIR: ./containers
+
 jobs:
-    PublishContainers:
+
+    build-amd64:
+        strategy:
+            matrix:
+                os: [ ubuntu, ubi ]
+                include:
+                    -   os: ubuntu
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
+                    -   os: ubi
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
+
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+
+            -   uses: zowe-actions/shared-actions/envvars-global@main
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
+                    registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
+                    release: false
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}
+                    image-name: gateway-service
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch: amd64
+                    # Used only for UBI
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
+                    redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
+
+            -   uses: zowe-actions/shared-actions/docker-build-local@main
+                with:
+                    build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
+                timeout-minutes: 5
+
+    build-s390x:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                os: [ ubuntu, ubi ]
+                include:
+                    -   os: ubuntu
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
+                    -   os: ubi
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+
+            -   uses: zowe-actions/shared-actions/envvars-global@main
+
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
+                    registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
+                    release: false
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}
+                    image-name: gateway-service
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch: s390x
+
+            -   uses: zowe-actions/shared-actions/docker-build-zlinux@main
+                with:
+                    zlinux-host: ${{ secrets.ZLINUX_HOST }}
+                    zlinux-ssh-user: ${{ secrets.ZLINUX_SSH_USER }}
+                    zlinux-ssh-key: ${{ secrets.ZLINUX_SSH_KEY }}
+                    zlinux-ssh-passphrase: ${{ secrets.ZLINUX_SSH_PASSPHRASE }}
+                    build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
+                    ### Only for UBI
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
+                    redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
+                timeout-minutes: 10
+
+    define-manifests:
+        needs:
+            - build-amd64
+            - build-s390x
+        strategy:
+            matrix:
+                os: [ ubuntu, ubi ]
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
+                    registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
+                    release: false
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}
+                    image-name: gateway-service
+                    linux-distro: ${{ matrix.os }}
+
+            -   uses: zowe-actions/shared-actions/docker-manifest@main
+                with:
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch-list: "amd64 s390x"
+                timeout-minutes: 2
+
+    PublishJibContainers:
         runs-on: ubuntu-latest
         timeout-minutes: 6
 
@@ -48,7 +211,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITests:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -112,7 +275,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsRegistration:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -176,7 +339,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsZosmfRsu2012:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -243,7 +406,7 @@ jobs:
 
 
     CITestsZosmfWithoutJwt:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -310,7 +473,7 @@ jobs:
 
 
     CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -376,7 +539,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsInternalPort:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -440,7 +603,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWithRedis:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -526,7 +689,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWithRedisWithoutSslVerification:
-        needs: PublishContainers
+        needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
         timeout-minutes: 6
@@ -614,7 +777,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsHA:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
@@ -712,7 +875,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     HALoadBalancing:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
@@ -827,7 +990,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsDiscoveryChaoticHA:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
@@ -918,7 +1081,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsGatewayChaoticHA:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
@@ -1009,7 +1172,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsDicoverableClientChaoticHA:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6
@@ -1104,7 +1267,7 @@ jobs:
                     rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsWebSocketChaoticHA:
-        needs: PublishContainers
+        needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 6

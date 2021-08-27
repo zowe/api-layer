@@ -35,8 +35,7 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
-import org.zowe.apiml.gateway.controllers.AuthController;
-import org.zowe.apiml.gateway.controllers.CacheServiceController;
+import org.zowe.apiml.gateway.controllers.*;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.*;
@@ -345,6 +344,7 @@ public class NewSecurityConfiguration {
 
         private final String[] protectedEndpoints = {
             "/application",
+            SafResourceAccessController.FULL_CONTEXT_PATH,
             ServicesInfoController.SERVICES_URL
         };
 
@@ -359,6 +359,7 @@ public class NewSecurityConfiguration {
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers()
                 .antMatchers("/application/**")
+                .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
                 .antMatchers(ServicesInfoController.SERVICES_URL + "/**").and()
             ).authorizeRequests()
                 .anyRequest().authenticated()
@@ -374,9 +375,9 @@ public class NewSecurityConfiguration {
                     .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                     .userDetailsService(new SimpleUserDetailService());
             }
-            http.
+            http
                 // place the following filters before the x509 filter
-                    addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                .addFilterBefore(basicFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
         }
 
