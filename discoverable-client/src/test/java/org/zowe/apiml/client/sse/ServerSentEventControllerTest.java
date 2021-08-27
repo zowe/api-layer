@@ -27,7 +27,7 @@ class ServerSentEventControllerTest {
 
     @Test
     void whenCallEventEndpoint_thenGetServerSentEvents() throws Exception {
-        this.mockMvc.perform(get("/sse/v1/events"))
+        this.mockMvc.perform(get("/events"))
             .andExpect(status().isOk());
     }
 }

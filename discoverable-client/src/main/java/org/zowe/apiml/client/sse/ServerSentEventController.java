@@ -19,7 +19,7 @@ import reactor.core.publisher.Flux;
 import java.time.Duration;
 
 @RestController
-@RequestMapping("/sse/v1")
+@RequestMapping("/")
 public class ServerSentEventController {
     @GetMapping("/events")
     public Flux<ServerSentEvent<String>> streamEvents() {
