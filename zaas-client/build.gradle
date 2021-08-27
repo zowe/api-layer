@@ -2,7 +2,7 @@ dependencies {
     annotationProcessor libraries.lombok
 
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.11'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.4'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     compile libraries.spring_boot_starter_web
