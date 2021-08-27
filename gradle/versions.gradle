@@ -10,7 +10,7 @@ ext {
     commonsLang3Version = '3.7'
     commonsTextVersion = '1.9'
     ehCacheVersion = '2.10.9.2'
-    eurekaClientVersion = '1.10.15'
+    eurekaClientVersion = '1.10.16'
     gradleGitPropertiesVersion = '2.2.4' // Used in classpath dependencies
     gradleNodeVersion = '3.0.1' // Used in classpath dependencies
     gsonVersion = '2.8.7'
