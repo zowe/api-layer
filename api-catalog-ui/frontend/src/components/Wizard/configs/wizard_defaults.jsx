@@ -44,16 +44,16 @@ export const defaultMicronaut = {
         'context-path': '/${apiml.service.serviceId}',
     },
     'Micronaut SSL key-store': {
-        password: '${apiml.service.ssl[0].keyPassword}',
+        password: '${apiml.service.ssl[0].keyPassword}', // NOSONAR
         type: '${apiml.service.ssl[0].keyStoreType}',
         path: 'file:${apiml.service.ssl[0].keyStore}',
     },
     'Micronaut SSL key': {
         alias: '${apiml.service.ssl[0].keyAlias}',
-        password: '${apiml.service.ssl[0].keyPassword}',
+        password: '${apiml.service.ssl[0].keyPassword}', // NOSONAR
     },
     'Micronaut SSL trust-store': {
-        password: '${apiml.service.ssl[0].trustStorePassword}',
+        password: '${apiml.service.ssl[0].trustStorePassword}', // NOSONAR
         path: 'file:${apiml.service.ssl[0].trustStore}',
         type: '${apiml.service.ssl[0].trustStoreType}',
     },
