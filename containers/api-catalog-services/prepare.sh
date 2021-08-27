@@ -39,9 +39,14 @@ prepareVersioning
 copyDockerfileToInternalStructure $linux_distro $cpu_arch
 cleanUpWorkingFolder
 
-caching_package="caching-service-package"
-buildPackage $caching_package "packageCachingService"
-preparePackage $caching_package
+api_catalog_package="api-catalog-package"
+apiml_common_package="apiml-common-lib-package"
+
+buildPackage $api_catalog_package "packageApiCatalog"
+buildPackage $apiml_common_package "packageCommonLib"
+
+preparePackage $api_catalog_package
+preparePackage $apiml_common_package "apiml-common-lib"
 prepareBasicFiles
 
 copyToBuildContext $linux_distro $cpu_arch

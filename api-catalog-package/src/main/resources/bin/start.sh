@@ -51,6 +51,8 @@ then
     LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
 fi
 
+EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
+
 if [ `uname` = "OS/390" ]; then
     QUICK_START=-Xquickstart
 fi
@@ -72,12 +74,12 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
     -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
-    -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
-    -Dapiml.service.port=${CATALOG_PORT} \
-    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
-    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
-    -Dapiml.service.gatewayHostname=${ZOWE_EXPLORER_HOST} \
+    -Dapiml.service.hostname=${EXPLORER_HOST} \
+    -Dapiml.service.port=${CATALOG_PORT:-7552} \
+    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_PORT:-7553}/eureka/"} \
+    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
+    -Dapiml.service.gatewayHostname=${EXPLORER_HOST} \
     -Dapiml.service.eurekaUserId=eureka \
     -Dapiml.service.eurekaPassword=password \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
@@ -87,16 +89,18 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true}  \
     -Dserver.ssl.keyStore="${KEYSTORE}" \
-    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE}" \
+    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE:-PKCS12}" \
     -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
     -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
     -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
     -Dserver.ssl.trustStore="${TRUSTSTORE}" \
-    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
+    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
     -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -Djava.library.path=${LIBRARY_PATH} \
-    -jar "${JAR_FILE}" &
+    -jar "${JAR_FILE}"
 pid=$!
 echo "pid=${pid}"
+
+wait %1

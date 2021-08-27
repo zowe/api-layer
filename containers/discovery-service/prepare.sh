@@ -39,13 +39,13 @@ prepareVersioning
 copyDockerfileToInternalStructure $linux_distro $cpu_arch
 cleanUpWorkingFolder
 
-gateway_package="discovery-package"
+discovery_package="discovery-package"
 apiml_common_package="apiml-common-lib-package"
 
-buildPackage $gateway_package "packageDiscovery"
+buildPackage $discovery_package "packageDiscovery"
 buildPackage $apiml_common_package "packageCommonLib"
 
-preparePackage $gateway_package
+preparePackage $discovery_package
 preparePackage $apiml_common_package "apiml-common-lib"
 prepareBasicFiles
 

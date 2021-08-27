@@ -21,8 +21,8 @@ LABEL name="API Gateway" \
       vendor="Zowe" \
       version="0.0.0" \
       release="0" \
-      summary="API Mediation Layer Caching Service" \
-      description="Caching service to cache state of Zowe components."
+      summary="API Mediation Layer API Catalog Service" \
+      description="API Catalog service to display service details and API documentation for discovered API services."
 
 ##################################
 # switch context
@@ -36,5 +36,5 @@ COPY --chown=zowe:zowe component/LICENSE /licenses
 
 ##################################
 # start command
-EXPOSE 7555
+EXPOSE 7552
 ENTRYPOINT [ "bin/start.sh" ]
