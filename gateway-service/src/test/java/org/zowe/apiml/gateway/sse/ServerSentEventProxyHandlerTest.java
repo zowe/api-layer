@@ -13,12 +13,17 @@ package org.zowe.apiml.gateway.sse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.publisher.Flux;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,7 +41,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 class ServerSentEventProxyHandlerTest {
     private ServerSentEventProxyHandler underTest;
     private DiscoveryClient mockDiscoveryClient;
@@ -97,6 +103,23 @@ class ServerSentEventProxyHandlerTest {
         void givenSameUrl_thenStillForwardEvents() throws IOException {
             // ...
         }
+    }
+
+    @Nested
+    class whenUseConsumer {
+        @Test
+        void givenContent_thenEmitData() throws IOException {
+            SseEmitter mockEmitter = mock(SseEmitter.class);
+            Consumer<ServerSentEvent<String>> result = underTest.consumer(mockEmitter);
+
+            ServerSentEvent<String> event = ServerSentEvent.builder("event").build();
+            result.accept(event);
+            verify(mockEmitter, times(1)).send(anyString());
+        }
+
+        // test IO exception when try and emit data...
+
+        // test error consumer...
     }
 
     private void mockUriParts(String uri, Map<String, String[]> parameters) {

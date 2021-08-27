@@ -11,28 +11,27 @@
 package org.zowe.apiml.gateway.sse;
 
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.publisher.Flux;
 
-
-import java.util.Map;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.ArrayList;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 @Slf4j
 @Controller
@@ -73,32 +72,41 @@ public class ServerSentEventProxyHandler {
         return emitter;
     }
 
-    public void forwardEvents(Flux<ServerSentEvent<String>> stream, SseEmitter emitter) {
-        stream.subscribe(
-            content -> {
-                try {
-                    emitter.send(content.data());
-                } catch (IOException error) {
-                    log.error("Error encounter sending SSE event");
-                    log.error(error.getMessage());
-                    emitter.complete();
-                }
-            },
-            error -> {
-                log.error("Error receiving SSE");
+    // package protected for unit testing
+    void forwardEvents(Flux<ServerSentEvent<String>> stream, SseEmitter emitter) {
+        stream.subscribe(consumer(emitter), error(emitter), emitter::complete);
+    }
+
+    // package protected for unit testing
+    Consumer<ServerSentEvent<String>> consumer(SseEmitter emitter) {
+        return content -> {
+            try {
+                emitter.send(content.data());
+            } catch (IOException error) {
+                log.error("Error encounter sending SSE event");
                 log.error(error.getMessage());
                 emitter.complete();
-            },
-            emitter::complete);
+            }
+        };
+    }
+
+    // package protected for unit testing
+    Consumer<Throwable> error(SseEmitter emitter) {
+        return error -> {
+            log.error("Error receiving SSE");
+            log.error(error.getMessage());
+            emitter.complete();
+        };
     }
 
     private void addStream(String sseStreamUrl) {
         WebClient client = WebClient.create(sseStreamUrl);
         ParameterizedTypeReference<ServerSentEvent<String>> type
-        = new ParameterizedTypeReference<ServerSentEvent<String>>() {};
+            = new ParameterizedTypeReference<ServerSentEvent<String>>() {
+        };
         Flux<ServerSentEvent<String>> eventStream = client.get()
-        .retrieve()
-        .bodyToFlux(type);
+            .retrieve()
+            .bodyToFlux(type);
         sseEventStreams.put(sseStreamUrl, eventStream);
     }
 
