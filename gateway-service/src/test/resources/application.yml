@@ -30,6 +30,7 @@ apiml:
     security:
         filterChainConfiguration: new
         allowTokenRefresh: true
+        jwtInitializerTimeout: 5
         ssl:
             verifySslCertificatesOfServices: true
         x509:

@@ -93,6 +93,13 @@ messages:
       reason: "The service is not available. It might be removed by the Circuit Breaker or by requesting specific instance that is not available"
       action: "Try the request later or remove the request for specific instance."
 
+    - key: org.zowe.apiml.security.unauthorized
+      number: ZWEAG711
+      type: ERROR
+      text: "The principal '%s' is missing queried authorization."
+      reason: "The principal does not have the queried access to resource name within resource class."
+      action: "No action needed."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic
