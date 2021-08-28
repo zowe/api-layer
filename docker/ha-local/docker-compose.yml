@@ -2,10 +2,14 @@ version: "1.0"
 services:
     api-catalog-services:
         image: ghcr.io/zowe/api-catalog-services:latest
+    volumes:
+        - ../../config/docker/api-defs:/usr/local/etc/config/api-defs
     api-catalog-services-2:
         image: ghcr.io/zowe/api-catalog-services:latest
         environment:
             - APIML_SERVICE_HOSTNAME=api-catalog-services-2
+        volumes:
+            - ../../config/docker/api-defs:/usr/local/etc/config/api-defs
     caching-service:
         image: ghcr.io/zowe/caching-service:latest
     discoverable-client:

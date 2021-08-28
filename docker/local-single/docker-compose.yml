@@ -4,6 +4,8 @@ services:
         image: ghcr.io/zowe/api-catalog-services:latest
         ports:
             - "10014:10014"
+        volumes:
+            - ../../config/docker/api-defs:/usr/local/etc/config/api-defs
     caching-service:
         image: ghcr.io/zowe/caching-service:latest
         ports:

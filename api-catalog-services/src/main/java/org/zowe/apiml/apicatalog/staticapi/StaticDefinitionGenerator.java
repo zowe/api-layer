@@ -10,38 +10,29 @@
 
 package org.zowe.apiml.apicatalog.staticapi;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 /**
  * Service to handle the creation of the static definition file
- * Allows the generation and the override of the .yml. Retrieves the static definition location from the Discovery env
+ * Allows the generation and the override of the .yml. Retrieves the static definition location from the System env
  * variables and stores the file there.
  */
 @Service
 @Slf4j
 public class StaticDefinitionGenerator extends StaticAPIService {
-
-    private static final String ENV_ENDPOINT = "application/env";
 
     private AtomicReference<String> fileName = new AtomicReference<>("");
 
@@ -54,17 +45,18 @@ public class StaticDefinitionGenerator extends StaticAPIService {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
-
     public StaticDefinitionGenerator(RestTemplate restTemplate, DiscoveryConfigProperties discoveryConfigProperties) {
         super(restTemplate, discoveryConfigProperties);
     }
 
 
     public StaticAPIResponse generateFile(String file) throws IOException {
-        String location = retrieveStaticDefLocation();
         String serviceId = StringUtils.substringBetween(file, "serviceId: ", "\\n");
+        if (!serviceIdIsValid(serviceId)) {
+            log.debug("The service ID {} has not valid format", serviceId);
+            return new StaticAPIResponse(400, "The service ID format is not valid.");
+        }
+        String location = retrieveStaticDefLocation();
         file = formatFile(file);
         String absoluteFilePath = String.format("./%s/%s.yml", location, serviceId);
         fileName.set(absoluteFilePath);
@@ -75,8 +67,12 @@ public class StaticDefinitionGenerator extends StaticAPIService {
     }
 
     public StaticAPIResponse overrideFile(String file) throws IOException {
-        String location = retrieveStaticDefLocation();
         String serviceId = StringUtils.substringBetween(file, "serviceId: ", "\\n");
+        if (!serviceIdIsValid(serviceId)) {
+            log.debug("The service ID {} has not valid format", serviceId);
+            return new StaticAPIResponse(400, "The service ID format is not valid.");
+        }
+        String location = retrieveStaticDefLocation();
         file = formatFile(file);
         String absoluteFilePath = String.format("./%s/%s.yml", location, serviceId);
         fileName.set(absoluteFilePath);
@@ -106,34 +102,31 @@ public class StaticDefinitionGenerator extends StaticAPIService {
         }
     }
 
+    /**
+     * Retrieve the static definition location from the System environments. If no property is set,
+     * the default value is used (local environment)
+     * @return the static definition location
+     */
     private String retrieveStaticDefLocation() {
-        List<String> discoveryServiceUrls = getDiscoveryServiceUrls(ENV_ENDPOINT);
-        for (int i = 0; i < discoveryServiceUrls.size(); i++) {
-
-            String discoveryServiceUrl = discoveryServiceUrls.get(i);
-            HttpEntity<?> entity = getHttpEntity(discoveryServiceUrl, true);
-            try {
-                ResponseEntity<String> response = super.getRestTemplate().exchange(discoveryServiceUrl, HttpMethod.GET, entity, String.class);
-
-                // Return response if successful response or if none have been successful and this is the last URL to try
-                if (response.getStatusCode().is2xxSuccessful() || i == discoveryServiceUrls.size() - 1) {
-                    ObjectMapper mapper = new ObjectMapper();
-                    JsonNode jsonNode;
-                    jsonNode = mapper.readTree(response.getBody());
-                    String location = jsonNode.findValue("apiml.discovery.staticApiDefinitionsDirectories").findValue("value").toString();
-                    if (location == null || location.isEmpty()) {
-                        log.debug("apiml.discovery.staticApiDefinitionsDirectories parameter is not defined");
-                        throw new IOException("No location defined for the static definition.");
-                    }
-                    return location.replace("\"", "");
-                }
-
-            } catch (Exception e) {
-                apimlLog.log("org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed", e.getMessage());
-                return null;
-            }
-        }
-        return null;
+        String location = System.getProperty("apiml.discovery.staticApiDefinitionsDirectories", "config/local/api-defs");
+        log.debug(String.format("The value of apiml.discovery.staticApiDefinitionsDirectories is: %s", location));
+        return location;
     }
 
+    /**
+     * Validate the service ID
+     * @param serviceId the service ID
+     * @return true if valid
+     */
+    private boolean serviceIdIsValid(String serviceId) {
+        if (serviceId != null && !serviceId.isEmpty()) {
+            Pattern p = Pattern.compile("^[A-Za-z][A-Za-z0-9-]*$");
+            if (p.matcher(serviceId).find() && serviceId.length() < 16) {
+                return true;
+            }
+            return false;
+        }
+        return false;
+        }
 }
+
