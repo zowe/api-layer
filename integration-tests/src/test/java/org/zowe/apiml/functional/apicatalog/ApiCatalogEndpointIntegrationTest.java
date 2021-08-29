@@ -218,7 +218,8 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         // Then
         assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
         log.info("The response is:");
-        log.info(response.getEntity().toString());
+        log.info(response.getEntity().getContent().toString());
+        log.info(EntityUtils.toString(response.getEntity()));
 
         return response;
     }
