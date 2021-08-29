@@ -174,7 +174,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
             // When
             final String jsonResponse = EntityUtils.toString(response.getEntity());
-            log.info("Response" + jsonResponse);
+            log.info("jsonResponse" + jsonResponse);
             JSONArray errors = JsonPath.parse(jsonResponse).read("$.errors");
 
             assertEquals("[]", errors.toString());

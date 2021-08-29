@@ -6,6 +6,8 @@ services:
             - "10014:10014"
         volumes:
             - ../../config/docker/api-defs:/usr/local/etc/config/api-defs
+        environment:
+            - APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES=../../config/docker/api-defs
     caching-service:
         image: ghcr.io/zowe/caching-service:latest
         ports:
