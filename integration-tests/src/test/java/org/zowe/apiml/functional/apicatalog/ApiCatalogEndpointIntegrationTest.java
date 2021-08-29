@@ -11,6 +11,7 @@ package org.zowe.apiml.functional.apicatalog;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -40,6 +41,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 @CatalogTest
+@Slf4j
 class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
@@ -163,19 +165,20 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
         @Test
         void whenCallStaticDefinitionGenerate_thenResponse201() throws IOException {
+            String location = "./" + System.getProperty("apiml.discovery.staticApiDefinitionsDirectories");
+            log.info("apiml.discovery.staticApiDefinitionsDirectories" + location);
+
             String json = "\"services:\\n  - serviceId: service-1\\n   description: desc\\n     instanceBaseUrls:\\n     routes:\\n      - gatewayUrl: a\\n";
 
             final HttpResponse response = getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, HttpStatus.SC_CREATED, json);
 
             // When
             final String jsonResponse = EntityUtils.toString(response.getEntity());
-
+            log.info("Response" + jsonResponse);
             JSONArray errors = JsonPath.parse(jsonResponse).read("$.errors");
 
             assertEquals("[]", errors.toString());
 
-            String location = "./" + System.getProperty("apiml.discovery.staticApiDefinitionsDirectories");
-            System.out.println("apiml.discovery.staticApiDefinitionsDirectories" + location);
             File staticDef = new File(location + "/service-1.yml");
             staticDef.delete();
         }
