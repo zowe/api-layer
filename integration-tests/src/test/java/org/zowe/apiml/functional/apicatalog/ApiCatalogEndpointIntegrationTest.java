@@ -175,12 +175,12 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
             assertEquals("[]", errors.toString());
 
             String location = "./" + System.getProperty("apiml.discovery.staticApiDefinitionsDirectories");
+            System.out.println("apiml.discovery.staticApiDefinitionsDirectories" + location);
             File staticDef = new File(location + "/service-1.yml");
             staticDef.delete();
         }
 
     }
-
 
 
     // Execute the endpoint and check the response for a return code
@@ -198,7 +198,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         return response;
     }
 
-    // Execute the refresh static apis endpoint and check the response for a return code
+    // Execute the static apis endpoints and check the response for a return code
     private HttpResponse getStaticApiResponse(String endpoint, int returnCode, String body) throws IOException {
         URI uri = HttpRequestUtils.getUriFromGateway(endpoint);
         HttpPost request = new HttpPost(uri);
