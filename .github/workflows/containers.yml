@@ -384,6 +384,8 @@ jobs:
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - ../../config/docker/api-defs:/usr/local/etc/config/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:

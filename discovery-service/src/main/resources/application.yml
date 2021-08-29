@@ -80,7 +80,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,shutdown,env
+                include: health,info,shutdown
     health:
         defaults:
             enabled: false
@@ -129,7 +129,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers,shutdown,env
+                include: health,info,loggers,shutdown
     endpoint:
         shutdown:
             enabled: true
