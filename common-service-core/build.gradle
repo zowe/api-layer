@@ -14,6 +14,7 @@ dependencies {
 
     compile libraries.apache_commons_lang3
     compile libraries.apache_commons_text
+    compile libraries.xstream
 
     compile libraries.jsr305
 
@@ -27,6 +28,7 @@ dependencies {
 
     testCompile(libraries.spring_boot_starter_cache)
     testCompile(libraries.spring_boot_starter_test)
+    testCompile libraries.json_smart
     testCompile(libraries.eh_cache)
     testCompile(libraries.jackson_core)
     testCompile(libraries.jackson_databind)
