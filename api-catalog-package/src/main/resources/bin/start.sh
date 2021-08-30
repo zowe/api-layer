@@ -55,7 +55,7 @@ EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
 
 if [[ -z "${GATEWAY_HOST}" ]]
 then
-    GATEWAY_HOST=EXPLORER_HOST
+    GATEWAY_HOST=${EXPLORER_HOST}
 fi
 
 if [ `uname` = "OS/390" ]; then
