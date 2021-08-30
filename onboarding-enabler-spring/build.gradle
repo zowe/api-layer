@@ -30,6 +30,7 @@ dependencies {
     compileOnly libraries.javax_inject
 
     testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testCompile libraries.json_smart
     testCompile libraries.mockito_core
 
     annotationProcessor libraries.spring_boot_configuration_processor
