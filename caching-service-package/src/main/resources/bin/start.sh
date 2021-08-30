@@ -76,8 +76,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${GATEWAY_PORT:-7554} \
   -Dapiml.service.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
-  -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY} \
-  -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE} \
+  -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY:-reject} \
+  -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE:-10000} \
   -Dcaching.storage.mode=${ZWE_CACHING_SERVICE_PERSISTENT:-inMemory} \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
   -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
@@ -98,4 +98,3 @@ pid=$!
 echo "pid=${pid}"
 
 wait %1
-while true do sleep 1000 done
