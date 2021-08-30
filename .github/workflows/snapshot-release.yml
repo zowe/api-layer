@@ -6,6 +6,9 @@ on:
     push:
         branches: [ master ]
 
+env:
+    IMAGE_BASE_DIR: ./containers
+
 jobs:
     build:
 

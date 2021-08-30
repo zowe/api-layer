@@ -12,6 +12,9 @@ on:
                 required: true
                 default: 'patch'
 
+env:
+    IMAGE_BASE_DIR: ./containers
+
 jobs:
     build:
 
