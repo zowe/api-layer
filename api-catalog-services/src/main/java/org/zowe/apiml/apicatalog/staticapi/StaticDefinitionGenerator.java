@@ -108,7 +108,14 @@ public class StaticDefinitionGenerator extends StaticAPIService {
      * @return the static definition location
      */
     private String retrieveStaticDefLocation() {
-        String location = System.getProperty("apiml.discovery.staticApiDefinitionsDirectories", "config/local/api-defs");
+        String location;
+        String key = "apiml.discovery.staticApiDefinitionsDirectories";
+        if (System.getenv(key) == null || System.getenv(key).isEmpty()) {
+            location = System.getProperty(key, "config/local/api-defs");
+        } else {
+            location = System.getenv(key);
+        }
+
         log.debug(String.format("The value of apiml.discovery.staticApiDefinitionsDirectories is: %s", location));
         return location;
     }

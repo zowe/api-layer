@@ -164,8 +164,13 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
         @Test
         void whenCallStaticDefinitionGenerate_thenResponse201() throws IOException {
-            String location = System.getProperty("apiml.discovery.staticApiDefinitionsDirectories", "config/local/api-defs");
-            log.info("apiml.discovery.staticApiDefinitionsDirectories" + location);
+            String location;
+            if (System.getenv("apiml.discovery.staticApiDefinitionsDirectories") == null) {
+                location = "config/local/api-defs";
+            } else {
+                location = System.getenv("apiml.discovery.staticApiDefinitionsDirectories");
+            }
+            log.info("apiml.discovery.staticApiDefinitionsDirectories: " + location);
 
             String json = "services:\n  - serviceId: test-service-1\\n    title: \n    description: \n   instanceBaseUrls:\n   description: \n";
 
