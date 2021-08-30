@@ -59,7 +59,7 @@ dependencies {
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_security
     implementation libraries.spring_boot_starter_actuator
-    implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.8.RELEASE')  {
+    implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE')  {
         exclude group: "javax.servlet", module: "servlet-api"
     }
     implementation libraries.jackson_dataformat_yaml
@@ -70,6 +70,11 @@ dependencies {
     implementation libraries.jetty_websocket_api
     implementation libraries.jetty_websocket_client
     implementation libraries.jetty_websocket_common
+    implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_crypto
+    implementation libraries.spring_security_web
+    implementation libraries.xstream
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
@@ -81,6 +86,7 @@ dependencies {
     testAnnotationProcessor libraries.lombok
 
     testCompile libraries.spring_boot_starter_test
+    testCompile libraries.json_smart
     testCompile libraries.awaitility
 }
 
