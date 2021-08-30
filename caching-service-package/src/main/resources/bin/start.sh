@@ -98,3 +98,4 @@ pid=$!
 echo "pid=${pid}"
 
 wait %1
+while true do sleep 1000 done
