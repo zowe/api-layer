@@ -53,6 +53,11 @@ fi
 
 EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
 
+if [[ -z "${GATEWAY_HOST}" ]]
+then
+    GATEWAY_HOST=EXPLORER_HOST
+fi
+
 if [ `uname` = "OS/390" ]; then
     QUICK_START=-Xquickstart
 fi
@@ -79,7 +84,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_PORT:-7553}/eureka/"} \
     -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
     -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
-    -Dapiml.service.gatewayHostname=${EXPLORER_HOST} \
+    -Dapiml.service.gatewayHostname=${GATEWAY_HOST} \
     -Dapiml.service.eurekaUserId=eureka \
     -Dapiml.service.eurekaPassword=password \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \

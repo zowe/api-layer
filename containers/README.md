@@ -82,6 +82,7 @@ Image `zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:latest` should 
 - `LAUNCH_COMPONENT`: set to `bin`.
 - `CMMN_LB`: set to `apiml-common-lib/bin/api-layer-lite-lib-all.jar`
 - `WORKSPACE_DIR`: set to `/component`
+- `GATEAY_HOST`: the host of the API Gateway
 
 Review the [API Catalog package start script](../api-catalog-package/src/main/resources/bin/start.sh) to see other environment variables that can be set.
 
@@ -100,6 +101,7 @@ docker run -it --rm -p 7552:7552 \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
     -e LAUNCH_COMPONENT=bin \
     -e WORKSPACE_DIR=/component \
+    -e GATEWAY_HOST=gateway.com \
     zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:latest
 ```
 
