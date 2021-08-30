@@ -50,7 +50,6 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v2";
     private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
     private static final String STATIC_DEFINITION_GENERATE_ENDPOINT = "/apicatalog/api/v1/static-api/generate";
-    private static final String STATIC_DEFINITION_OVERRIDE_ENDPOINT = "/apicatalog/api/v1/static-api/override";
 
     private String baseHost;
 
@@ -165,25 +164,29 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
         @Test
         void whenCallStaticDefinitionGenerate_thenResponse201() throws IOException {
-            String location = "./" + System.getProperty("apiml.discovery.staticApiDefinitionsDirectories");
+            String location = System.getProperty("apiml.discovery.staticApiDefinitionsDirectories", "config/local/api-defs");
             log.info("apiml.discovery.staticApiDefinitionsDirectories" + location);
 
-            String json = "\"services:\\n  - serviceId: service-1\\n   description: desc\\n     instanceBaseUrls:\\n     routes:\\n      - gatewayUrl: a\\n";
+            String json = "services:\n  - serviceId: test-service-1\\n    title: \n    description: \n   instanceBaseUrls:\n   description: \n";
 
             final HttpResponse response = getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, HttpStatus.SC_CREATED, json);
 
             // When
             final String jsonResponse = EntityUtils.toString(response.getEntity());
-            JSONArray errors = JsonPath.parse(jsonResponse).read("$.errors");
 
-            assertEquals("[]", errors.toString());
+            assertEquals("The static definition file has been created by the user! Its location is: ./config/local/api-defs/test-service-1.yml", jsonResponse);
 
-            File staticDef = new File(location + "/service-1.yml");
-            staticDef.delete();
+            File staticDef = new File("../" + location + "/test-service-1.yml");
+
+            // Delete the created test file
+            if (staticDef.delete()) {
+                log.info(staticDef.getName() + " has been deleted");
+            } else {
+                log.info("Failed to delete the file!");
+            }
         }
 
     }
-
 
     // Execute the endpoint and check the response for a return code
     private HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
@@ -217,9 +220,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
         // Then
         assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
-        log.info("The response is:");
-        log.info(response.getEntity().getContent().toString());
-        log.info(EntityUtils.toString(response.getEntity()));
+
 
         return response;
     }
