@@ -67,14 +67,14 @@ jobs:
                     redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
 
             -   name: Build amd64
-                if: matrix.arch == amd64
+                if: matrix.arch == "amd64"
                 uses: zowe-actions/shared-actions/docker-build-local@main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
                 timeout-minutes: 5
 
             -   name: Build s390x
-                if: matrix.arch == s390x
+                if: matrix.arch == "s390x"
                 uses: zowe-actions/shared-actions/docker-build-zlinux@main
                 with:
                     zlinux-host: ${{ secrets.ZLINUX_HOST }}
