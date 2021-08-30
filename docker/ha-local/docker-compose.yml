@@ -2,8 +2,8 @@ version: "1.0"
 services:
     api-catalog-services:
         image: ghcr.io/zowe/api-catalog-services:latest
-    volumes:
-        - ../../config/docker/api-defs:/usr/local/etc/config/api-defs
+        volumes:
+            - ../../config/docker/api-defs:/usr/local/etc/config/api-defs
     environment:
         - APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES=../../config/docker/api-defs
     api-catalog-services-2:
