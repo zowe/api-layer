@@ -16,7 +16,7 @@ FROM zowe-docker-release.jfrog.io/ompzowe/base-jdk:${ZOWE_BASE_IMAGE} AS builder
 
 ##################################
 # labels
-LABEL name="API Gateway" \
+LABEL name="API Catalog" \
       maintainer="carson.cook@ibm.com" \
       vendor="Zowe" \
       version="0.0.0" \
