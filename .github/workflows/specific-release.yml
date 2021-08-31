@@ -11,6 +11,9 @@ on:
                 description: 'The version that should be used as a new one after the release.'
                 required: true
 
+env:
+    IMAGE_BASE_DIR: ./containers
+
 jobs:
     build:
 
@@ -98,6 +101,7 @@ jobs:
         strategy:
             matrix:
                 arch: [ amd64, s390x ]
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
@@ -140,9 +144,9 @@ jobs:
                 with:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
-                    release: false
-                    base-directory: ${{ env.IMAGE_BASE_DIR }}
-                    image-name: gateway-service
+                    release: true
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
+                    image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
                     cpu-arch: ${{ matrix.arch }}
                     # Used only for UBI
@@ -177,6 +181,7 @@ jobs:
             - build-containers
         strategy:
             matrix:
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         steps:
@@ -194,9 +199,9 @@ jobs:
                 with:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
-                    release: false
-                    base-directory: ${{ env.IMAGE_BASE_DIR }}
-                    image-name: gateway-service
+                    release: true
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
+                    image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
 
             -   uses: zowe-actions/shared-actions/docker-manifest@main
