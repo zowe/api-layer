@@ -165,10 +165,10 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         @Test
         void whenCallStaticDefinitionGenerate_thenResponse201() throws IOException {
             String location;
-            if (System.getenv("apiml.discovery.staticApiDefinitionsDirectories") == null) {
+            if (System.getenv("APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES") == null) {
                 location = "config/local/api-defs";
             } else {
-                location = System.getenv("apiml.discovery.staticApiDefinitionsDirectories");
+                location = System.getenv("APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES");
             }
             log.info("apiml.discovery.staticApiDefinitionsDirectories: " + location);
 
@@ -214,6 +214,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         HttpPost request = new HttpPost(uri);
         request.addHeader("Accept", "application/json");
         if (body != null) {
+            request.addHeader("Service-Id", "test-service-1");
             StringEntity entity = new StringEntity(body);
             request.setEntity(entity);
         }
