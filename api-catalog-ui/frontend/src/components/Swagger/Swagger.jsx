@@ -3,6 +3,19 @@ import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 
+function transformSwaggerToCurrentHost(swagger) {
+    swagger.host = window.location.host;
+
+    if (swagger.servers !== null && swagger.servers !== undefined) {
+        for (let i = 0; i < swagger.servers.length; i += 1) {
+            const url = `${window.location.protocol}//${window.location.host}/${swagger.servers[i].url}`;
+            swagger.servers[i].url = url;
+        }
+    }
+
+    return swagger;
+}
+
 export default class SwaggerUI extends Component {
     componentDidMount() {
         this.retrieveSwagger();
@@ -62,15 +75,7 @@ export default class SwaggerUI extends Component {
                 selectedService.apiDoc !== undefined &&
                 selectedService.apiDoc.length !== 0
             ) {
-                const swagger = JSON.parse(selectedService.apiDoc);
-                swagger.host = window.location.host;
-
-                if (swagger.servers !== null && swagger.servers !== undefined) {
-                    for (let i = 0; i < swagger.servers.length; i += 1) {
-                        const url = `${window.location.protocol}//${window.location.host}/${swagger.servers[i].url}`;
-                        swagger.servers[i].url = url;
-                    }
-                }
+                const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
 
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
@@ -88,6 +93,12 @@ export default class SwaggerUI extends Component {
                     url,
                     presets: [presets.apis],
                     plugins: [this.customPlugins],
+                    responseInterceptor: res => {
+                        // response.text field is used to render the swagger
+                        const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
+                        res.text = JSON.stringify(swagger);
+                        return res;
+                    },
                 });
             }
         } catch (e) {
