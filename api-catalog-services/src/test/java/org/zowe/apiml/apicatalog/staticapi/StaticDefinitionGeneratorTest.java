@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.staticapi;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
@@ -34,12 +36,17 @@ class StaticDefinitionGeneratorTest {
     @Nested
     class WhenStaticDefinitionGenerationResponse {
 
+        @BeforeEach
+        void setUp() {
+            ReflectionTestUtils.setField(staticDefinitionGenerator,"staticApiDefinitionsDirectories","config/local/api-defs");
+        }
+
         @Test
         void givenRequestWithInvalidServiceId_thenThrow400() throws IOException {
             TokenAuthentication authentication = new TokenAuthentication("token");
             authentication.setAuthenticated(true);
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
-            StaticAPIResponse actualResponse = staticDefinitionGenerator.generateFile("services: \\n  ");
+            StaticAPIResponse actualResponse = staticDefinitionGenerator.generateFile("services: \\n  ", "");
             StaticAPIResponse expectedResponse = new StaticAPIResponse(400, "The service ID format is not valid.");
             assertEquals(expectedResponse, actualResponse);
         }
@@ -50,7 +57,7 @@ class StaticDefinitionGeneratorTest {
             authentication.setAuthenticated(true);
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
             Exception exception = assertThrows(IOException.class, () ->
-                staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n "));
+                staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n ", "service"));
             assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
         }
 
@@ -60,7 +67,7 @@ class StaticDefinitionGeneratorTest {
             authentication.setAuthenticated(true);
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
             Exception exception = assertThrows(IOException.class, () ->
-                staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n "));
+                staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n ", "service"));
             assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
         }
 
@@ -75,7 +82,7 @@ class StaticDefinitionGeneratorTest {
             TokenAuthentication authentication = new TokenAuthentication("token");
             authentication.setAuthenticated(true);
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
-            StaticAPIResponse actualResponse = staticDefinitionGenerator.overrideFile("services: \\n  ");
+            StaticAPIResponse actualResponse = staticDefinitionGenerator.overrideFile("services: \\n  ", "");
             StaticAPIResponse expectedResponse = new StaticAPIResponse(400, "The service ID format is not valid.");
             assertEquals(expectedResponse, actualResponse);
         }

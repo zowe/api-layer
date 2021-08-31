@@ -57,11 +57,11 @@ class StaticDefinitionControllerTest {
         class whenCallStaticGenerationAPI {
             @Test
             void thenResponseShouldBe500WithSpecificMessage() throws Exception {
-                when(staticDefinitionGenerator.generateFile("services")).thenThrow(
+                when(staticDefinitionGenerator.generateFile("services", "test")).thenThrow(
                     new IOException("Exception")
                 );
 
-                mockMvc.perform(post(STATIC_DEF_GENERATE_ENDPOINT).content("services"))
+                mockMvc.perform(post(STATIC_DEF_GENERATE_ENDPOINT).header("Service-Id", "test").content("services"))
                     .andExpect(jsonPath("$.messages", hasSize(1)))
                     .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
                     .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAC709E"))
@@ -90,11 +90,11 @@ class StaticDefinitionControllerTest {
         class whenCallStaticGenerationAPI {
             @Test
             void thenResponseShouldBe409WithSpecificMessage() throws Exception {
-                when(staticDefinitionGenerator.generateFile("invalid")).thenThrow(
+                when(staticDefinitionGenerator.generateFile("invalid", "test")).thenThrow(
                     new FileAlreadyExistsException("Exception")
                 );
 
-                mockMvc.perform(post(STATIC_DEF_GENERATE_ENDPOINT).content("invalid"))
+                mockMvc.perform(post(STATIC_DEF_GENERATE_ENDPOINT).header("Service-Id", "test").content("invalid"))
                     .andExpect(jsonPath("$.messages", hasSize(1)))
                     .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
                     .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAC709E"))
@@ -112,11 +112,11 @@ class StaticDefinitionControllerTest {
             @Test
             void thenResponseIs201() throws Exception {
                 String payload = "\"services:\\n  - serviceId: service\\n    title: a\\n    description: description\\n    instanceBaseUrls:\\n      - a\\n   routes:\\n ";
-                when(staticDefinitionGenerator.generateFile(payload)).thenReturn(
+                when(staticDefinitionGenerator.generateFile(payload, "service")).thenReturn(
                     new StaticAPIResponse(201, "This is body")
                 );
 
-                mockMvc.perform(post(STATIC_DEF_GENERATE_ENDPOINT).content(payload))
+                mockMvc.perform(post(STATIC_DEF_GENERATE_ENDPOINT).content(payload).header("Service-Id", "service"))
                     .andExpect(status().is2xxSuccessful());
             }
         }
@@ -126,11 +126,11 @@ class StaticDefinitionControllerTest {
             @Test
             void thenResponseIs201() throws Exception {
                 String payload = "\"services:\\n  - serviceId: service\\n    title: a\\n    description: description\\n    instanceBaseUrls:\\n      - a\\n   routes:\\n ";
-                when(staticDefinitionGenerator.overrideFile(payload)).thenReturn(
+                when(staticDefinitionGenerator.overrideFile(payload, "service")).thenReturn(
                     new StaticAPIResponse(201, "This is body")
                 );
 
-                mockMvc.perform(post(STATIC_DEF_OVERRIDE_ENDPOINT).content(payload))
+                mockMvc.perform(post(STATIC_DEF_OVERRIDE_ENDPOINT).content(payload).header("Service-Id", "service"))
                     .andExpect(status().is2xxSuccessful());
             }
         }

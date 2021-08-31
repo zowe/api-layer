@@ -11,7 +11,6 @@
 package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -26,9 +25,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 /**
- * Service to handle the creation of the static definition file
- * Allows the generation and the override of the .yml. Retrieves the static definition location from the System env
- * variables and stores the file there.
+ * Service to handle the creation of the static definition file.
+ * Allows the generation and the override of the .yml.
+ * Retrieves the static definition location and stores the file there.
  */
 @Service
 @Slf4j
@@ -45,13 +44,15 @@ public class StaticDefinitionGenerator extends StaticAPIService {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
+    @Value("${apiml.discovery.staticApiDefinitionsDirectories:config/local/api-defs}")
+    private String staticApiDefinitionsDirectories;
+
     public StaticDefinitionGenerator(RestTemplate restTemplate, DiscoveryConfigProperties discoveryConfigProperties) {
         super(restTemplate, discoveryConfigProperties);
     }
 
 
-    public StaticAPIResponse generateFile(String file) throws IOException {
-        String serviceId = StringUtils.substringBetween(file, "serviceId: ", "\\n");
+    public StaticAPIResponse generateFile(String file, String serviceId) throws IOException {
         if (!serviceIdIsValid(serviceId)) {
             log.debug("The service ID {} has not valid format", serviceId);
             return new StaticAPIResponse(400, "The service ID format is not valid.");
@@ -66,8 +67,7 @@ public class StaticDefinitionGenerator extends StaticAPIService {
         return writeFileAndSendResponse(file, fileName, String.format(message, fileName));
     }
 
-    public StaticAPIResponse overrideFile(String file) throws IOException {
-        String serviceId = StringUtils.substringBetween(file, "serviceId: ", "\\n");
+    public StaticAPIResponse overrideFile(String file, String serviceId) throws IOException {
         if (!serviceIdIsValid(serviceId)) {
             log.debug("The service ID {} has not valid format", serviceId);
             return new StaticAPIResponse(400, "The service ID format is not valid.");
@@ -103,21 +103,13 @@ public class StaticDefinitionGenerator extends StaticAPIService {
     }
 
     /**
-     * Retrieve the static definition location from the System environments. If no property is set,
+     * Retrieve the static definition location either from the System environments or configuration. If no property is set,
      * the default value is used (local environment)
      * @return the static definition location
      */
     private String retrieveStaticDefLocation() {
-        String location;
-        String key = "apiml.discovery.staticApiDefinitionsDirectories";
-        if (System.getenv(key) == null || System.getenv(key).isEmpty()) {
-            location = System.getProperty(key, "config/local/api-defs");
-        } else {
-            location = System.getenv(key);
-        }
-
-        log.debug(String.format("The value of apiml.discovery.staticApiDefinitionsDirectories is: %s", location));
-        return location;
+        log.debug(String.format("The value of apiml.discovery.staticApiDefinitionsDirectories is: %s", staticApiDefinitionsDirectories));
+        return staticApiDefinitionsDirectories;
     }
 
     /**

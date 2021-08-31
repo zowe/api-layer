@@ -13,10 +13,7 @@ package org.zowe.apiml.apicatalog.staticapi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -37,8 +34,8 @@ public class StaticDefinitionController {
      * @return the response entity
      */
     @PostMapping(value = "/generate", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> generateStaticDef(@RequestBody String payload) throws IOException {
-        StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.generateFile(payload);
+    public ResponseEntity<String> generateStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
+        StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.generateFile(payload, serviceId);
         return ResponseEntity
             .status(staticAPIResponse.getStatusCode())
             .body(staticAPIResponse.getBody());
@@ -51,8 +48,8 @@ public class StaticDefinitionController {
      * @return the response entity
      */
     @PostMapping(value = "/override", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> overrideStaticDef(@RequestBody String payload) throws IOException {
-        StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.overrideFile(payload);
+    public ResponseEntity<String> overrideStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
+        StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.overrideFile(payload, serviceId);
         return ResponseEntity
             .status(staticAPIResponse.getStatusCode())
             .body(staticAPIResponse.getBody());
