@@ -63,6 +63,15 @@ export default class SwaggerUI extends Component {
                 selectedService.apiDoc.length !== 0
             ) {
                 const swagger = JSON.parse(selectedService.apiDoc);
+                swagger.host = window.location.host;
+
+                if (swagger.servers !== null && swagger.servers !== undefined) {
+                    for (let i = 0; i < swagger.servers.length; i += 1) {
+                        const url = `${window.location.protocol}//${window.location.host}/${swagger.servers[i].url}`;
+                        swagger.servers[i].url = url;
+                    }
+                }
+
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
                     spec: swagger,
