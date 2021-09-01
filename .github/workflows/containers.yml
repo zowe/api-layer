@@ -57,9 +57,7 @@ jobs:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
                 volumes:
-                    - /api-layer/config/docker/api-defs:/usr/local/etc/config/api-defs
-                env:
-                    APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: /usr/local/etc/config/api-defs
+                    - /api-layer/config/docker/api-defs:/config/local/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
@@ -389,9 +387,7 @@ jobs:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
                 volumes:
-                    - /api-layer/config/docker/api-defs:/usr/local/etc/config/api-defs
-                env:
-                    APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: config/docker/api-defs
+                    - /api-layer/config/docker/api-defs:/config/local/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
