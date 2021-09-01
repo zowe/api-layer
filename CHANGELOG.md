@@ -2,6 +2,50 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `1.24.4 (2021-09-01)`
+
+* Feature:  SAF resource access check controller (#1734) ([680f4b9](https://github.com/zowe/api-layer/commit/680f4b9)), closes [#1734](https://github.com/zowe/api-layer/issues/1734)
+* Feature:  Wizard configuration (#1722) ([43fb382](https://github.com/zowe/api-layer/commit/43fb382)), closes [#1722](https://github.com/zowe/api-layer/issues/1722)
+* Feature:  compress response if service wants to (#1728) ([85b5948](https://github.com/zowe/api-layer/commit/85b5948)), closes [#1728](https://github.com/zowe/api-layer/issues/1728)
+* Feature:  Introduce rest provider for SAF tokens (#1714) ([047c54e](https://github.com/zowe/api-layer/commit/047c54e)), closes [#1714](https://github.com/zowe/api-layer/issues/1714)
+* Feature:  Refresh endpoint for prolonging valid JWT token (#1719) ([f918916](https://github.com/zowe/api-layer/commit/f918916)), closes [#1719](https://github.com/zowe/api-layer/issues/1719)
+* Feature:  Wizard data validation (#1708) ([641cc32](https://github.com/zowe/api-layer/commit/641cc32)), closes [#1708](https://github.com/zowe/api-layer/issues/1708)
+* Feature:  introduce error codes for saf authentication (#1692) ([89ac5a2](https://github.com/zowe/api-layer/commit/89ac5a2)), closes [#1692](https://github.com/zowe/api-layer/issues/1692)
+* Feature:  path to a native java library (#1677) ([af2f120](https://github.com/zowe/api-layer/commit/af2f120)), closes [#1677](https://github.com/zowe/api-layer/issues/1677)
+* Feature:  Spring Enabler configuration (#1680) ([ab79765](https://github.com/zowe/api-layer/commit/ab79765)), closes [#1680](https://github.com/zowe/api-layer/issues/1680)
+* Feature:  Support SAF IDT as authentication scheme (#1688) ([26a84c0](https://github.com/zowe/api-layer/commit/26a84c0)), closes [#1688](https://github.com/zowe/api-layer/issues/1688)
+* Feature:  Wizard Static Onboarding (#1686) ([b254fc8](https://github.com/zowe/api-layer/commit/b254fc8)), closes [#1686](https://github.com/zowe/api-layer/issues/1686)
+* Feature:  Conditional full debug logging for apiml common (#1662) ([81bc46f](https://github.com/zowe/api-layer/commit/81bc46f)), closes [#1662](https://github.com/zowe/api-layer/issues/1662)
+* Feature:  Wizard categories allow multiple configs (#1657) ([c8ad5a4](https://github.com/zowe/api-layer/commit/c8ad5a4)), closes [#1657](https://github.com/zowe/api-layer/issues/1657)
+* Feature:  Wizard YAML generation (#1673) ([a59d821](https://github.com/zowe/api-layer/commit/a59d821)), closes [#1673](https://github.com/zowe/api-layer/issues/1673)
+* Feature:  AT-TLS aware API ML  (#1621) ([be26a9a](https://github.com/zowe/api-layer/commit/be26a9a)), closes [#1621](https://github.com/zowe/api-layer/issues/1621)
+* Feature:  Wizard UI improvements  (#1644) ([3bf32a9](https://github.com/zowe/api-layer/commit/3bf32a9)), closes [#1644](https://github.com/zowe/api-layer/issues/1644)
+* Feature:  Boilerplate for YAML wizard (#1595) ([6c7b36e](https://github.com/zowe/api-layer/commit/6c7b36e)), closes [#1595](https://github.com/zowe/api-layer/issues/1595) [#1577](https://github.com/zowe/api-layer/issues/1577) [#1581](https://github.com/zowe/api-layer/issues/1581) [#1585](https://github.com/zowe/api-layer/issues/1585) [#1582](https://github.com/zowe/api-layer/issues/1582) [#1579](https://github.com/zowe/api-layer/issues/1579) [#1587](https://github.com/zowe/api-layer/issues/1587) [#1591](https://github.com/zowe/api-layer/issues/1591) [#1576](https://github.com/zowe/api-layer/issues/1576) [#1594](https://github.com/zowe/api-layer/issues/1594)
+* Feature:  Distributed authentication load balancing (#1602) ([4e7d993](https://github.com/zowe/api-layer/commit/4e7d993)), closes [#1602](https://github.com/zowe/api-layer/issues/1602)
+* Feature:  Onboarding Wizard handles different enablers (#1611) ([239f786](https://github.com/zowe/api-layer/commit/239f786)), closes [#1611](https://github.com/zowe/api-layer/issues/1611)
+* Feature:  YAML Wizard Dialog dynamic input rendering (#1604) ([93d1733](https://github.com/zowe/api-layer/commit/93d1733)), closes [#1604](https://github.com/zowe/api-layer/issues/1604) [#1595](https://github.com/zowe/api-layer/issues/1595) [#1577](https://github.com/zowe/api-layer/issues/1577) [#1581](https://github.com/zowe/api-layer/issues/1581) [#1585](https://github.com/zowe/api-layer/issues/1585) [#1582](https://github.com/zowe/api-layer/issues/1582) [#1579](https://github.com/zowe/api-layer/issues/1579) [#1587](https://github.com/zowe/api-layer/issues/1587) [#1591](https://github.com/zowe/api-layer/issues/1591) [#1576](https://github.com/zowe/api-layer/issues/1576) [#1594](https://github.com/zowe/api-layer/issues/1594)
+
+
+* Bugfix:  configurable timeout to verify the zOSMF availability (#1738) ([82fa3bf](https://github.com/zowe/api-layer/commit/82fa3bf)), closes [#1738](https://github.com/zowe/api-layer/issues/1738)
+* Bugfix:  exclude tls_rsa ciphers (#1737) ([df013bf](https://github.com/zowe/api-layer/commit/df013bf)), closes [#1737](https://github.com/zowe/api-layer/issues/1737)
+* Bugfix:  hide logmessages with no value (#1744) ([50cff16](https://github.com/zowe/api-layer/commit/50cff16)), closes [#1744](https://github.com/zowe/api-layer/issues/1744)
+* Bugfix:  check for correct URI pattern (#1732) ([b7ae93f](https://github.com/zowe/api-layer/commit/b7ae93f)), closes [#1732](https://github.com/zowe/api-layer/issues/1732)
+* Bugfix:  add agentkeepalive because of failing build (#1698) ([7f6db61](https://github.com/zowe/api-layer/commit/7f6db61)), closes [#1698](https://github.com/zowe/api-layer/issues/1698)
+* Bugfix:  add stomp v1.2 as supported protocol (#1697) ([d1057e0](https://github.com/zowe/api-layer/commit/d1057e0)), closes [#1697](https://github.com/zowe/api-layer/issues/1697)
+* Bugfix:  Correctly handle ws connections for new path pattern (#1701) ([2db9a7e](https://github.com/zowe/api-layer/commit/2db9a7e)), closes [#1701](https://github.com/zowe/api-layer/issues/1701)
+* Bugfix:  do not include ciphers (#1678) ([b2abb4f](https://github.com/zowe/api-layer/commit/b2abb4f)), closes [#1678](https://github.com/zowe/api-layer/issues/1678)
+* Bugfix:  prevent API ML run with unsecure connection (#1689) ([2139218](https://github.com/zowe/api-layer/commit/2139218)), closes [#1689](https://github.com/zowe/api-layer/issues/1689)
+* Bugfix:  udpate npm in actions (#1699) ([ddc0788](https://github.com/zowe/api-layer/commit/ddc0788)), closes [#1699](https://github.com/zowe/api-layer/issues/1699)
+* Bugfix:  Accommodating keystore parameters with spaces (#1676) ([a784d26](https://github.com/zowe/api-layer/commit/a784d26)), closes [#1676](https://github.com/zowe/api-layer/issues/1676)
+* Bugfix:  configure WebSocket cipher suites (#1672) ([5206e37](https://github.com/zowe/api-layer/commit/5206e37)), closes [#1672](https://github.com/zowe/api-layer/issues/1672)
+* Bugfix:  Discovery health and info endpoints auth and enablement (#1612) ([b52d076](https://github.com/zowe/api-layer/commit/b52d076)), closes [#1612](https://github.com/zowe/api-layer/issues/1612)
+* Bugfix:  http in swagger url (#1646) ([3b35a10](https://github.com/zowe/api-layer/commit/3b35a10)), closes [#1646](https://github.com/zowe/api-layer/issues/1646)
+* Bugfix:  Input hotfix. (#1647) ([b83ec3e](https://github.com/zowe/api-layer/commit/b83ec3e)), closes [#1647](https://github.com/zowe/api-layer/issues/1647)
+* Bugfix:  Load balancer remote cache bugs (#1636) ([129b33c](https://github.com/zowe/api-layer/commit/129b33c)), closes [#1636](https://github.com/zowe/api-layer/issues/1636)
+* Bugfix:  QueryTest typo in class name (#1634) ([a040847](https://github.com/zowe/api-layer/commit/a040847)), closes [#1634](https://github.com/zowe/api-layer/issues/1634)
+* Bugfix:  Reuse jetty client (#1658) ([11d575a](https://github.com/zowe/api-layer/commit/11d575a)), closes [#1658](https://github.com/zowe/api-layer/issues/1658)
+* Bugfix:  Publish spring onboarding enabler in format consistent with other projects (#1608) ([dac35b1](https://github.com/zowe/api-layer/commit/dac35b1)), closes [#1608](https://github.com/zowe/api-layer/issues/1608)
+
 ## `1.23.0 (2021-07-26)`
 
 * Feature:  Authentication based server-side load balancing. A service can now configure itself with the Authentication based load balancing scheme whereby a user is directed to the same instance of a service for a given period of time (#1576) ([4ad382e](https://github.com/zowe/api-layer/commit/4ad382e)), closes [#1576](https://github.com/zowe/api-layer/issues/1576).
