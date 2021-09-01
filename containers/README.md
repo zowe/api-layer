@@ -15,7 +15,6 @@ Image `zowe-docker-release.jfrog.io/ompzowe/gateway-service:latest` should be ab
 - `KEY_ALIAS`: certificate alias stored in keystore.
 - `KEYSTORE_PASSWORD`: password of your keystore and truststore.
 - `TRUSTSTORE`: path to truststore.
-- `LAUNCH_COMPONENT`: set to `bin`.
 - `CMMN_LB`: set to `apiml-common-lib/bin/api-layer-lite-lib-all.jar`
 - `WORKSPACE_DIR`: set to `/component`
 
@@ -34,7 +33,6 @@ docker run -it --rm -p 7554:7554 \
     -e KEYSTORE_PASSWORD=password \
     -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
-    -e LAUNCH_COMPONENT=bin \
     -e WORKSPACE_DIR=/component \
     zowe-docker-release.jfrog.io/ompzowe/gateway-service:latest
 ```
@@ -47,7 +45,6 @@ Image `zowe-docker-release.jfrog.io/ompzowe/discovery-service:latest` should be 
 - `KEY_ALIAS`: certificate alias stored in keystore.
 - `KEYSTORE_PASSWORD`: password of your keystore and truststore.
 - `TRUSTSTORE`: path to truststore.
-- `LAUNCH_COMPONENT`: set to `bin`.
 - `CMMN_LB`: set to `apiml-common-lib/bin/api-layer-lite-lib-all.jar`
 - `WORKSPACE_DIR`: set to `/component`
 
@@ -66,7 +63,6 @@ docker run -it --rm -p 7553:7553 \
     -e KEYSTORE_PASSWORD=password \
     -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
-    -e LAUNCH_COMPONENT=bin \
     -e WORKSPACE_DIR=/component \
     zowe-docker-release.jfrog.io/ompzowe/discovery-service:latest
 ```
@@ -79,7 +75,6 @@ Image `zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:latest` should 
 - `KEY_ALIAS`: certificate alias stored in keystore.
 - `KEYSTORE_PASSWORD`: password of your keystore and truststore.
 - `TRUSTSTORE`: path to truststore.
-- `LAUNCH_COMPONENT`: set to `bin`.
 - `CMMN_LB`: set to `apiml-common-lib/bin/api-layer-lite-lib-all.jar`
 - `WORKSPACE_DIR`: set to `/component`
 - `GATEAY_HOST`: the host of the API Gateway
@@ -99,7 +94,6 @@ docker run -it --rm -p 7552:7552 \
     -e KEYSTORE_PASSWORD=password \
     -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
-    -e LAUNCH_COMPONENT=bin \
     -e WORKSPACE_DIR=/component \
     -e GATEWAY_HOST=gateway.com \
     zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:latest
@@ -113,7 +107,6 @@ Image `zowe-docker-release.jfrog.io/ompzowe/caching-service:latest` should be ab
 - `KEY_ALIAS`: certificate alias stored in keystore.
 - `KEYSTORE_PASSWORD`: password of your keystore and truststore.
 - `TRUSTSTORE`: path to truststore.
-- `LAUNCH_COMPONENT`: set to `bin`.
 - `WORKSPACE_DIR`: set to `/component`
 
 Review the [Caching service package start script](../caching-service-package/src/main/resources/bin/start.sh) to see other environment variables that can be set.
@@ -130,7 +123,6 @@ docker run -it --rm -p 7554:7554 \
     -e KEY_ALIAS=localhost \
     -e KEYSTORE_PASSWORD=password \
     -e TRUSTSTORE=/home/zowe/keystore/localhost/localhost.truststore.p12 \
-    -e LAUNCH_COMPONENT=bin \
     -e WORKSPACE_DIR=/component \
     zowe-docker-release.jfrog.io/ompzowe/caching-service:latest
 ```
