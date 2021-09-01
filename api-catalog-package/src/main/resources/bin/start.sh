@@ -25,6 +25,12 @@
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
+if [[ -z "${LAUNCH_COMPONENT}" ]]
+then
+  # component should be started from component home directory
+  LAUNCH_COMPONENT=$(pwd)/bin
+fi
+
 JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
 # script assumes it's in the catalog component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]

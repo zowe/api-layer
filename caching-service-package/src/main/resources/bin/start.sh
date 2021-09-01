@@ -25,6 +25,12 @@
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
+if [[ -z "${LAUNCH_COMPONENT}" ]]
+then
+  # component should be started from component home directory
+  LAUNCH_COMPONENT=$(pwd)/bin
+fi
+
 JAR_FILE="${LAUNCH_COMPONENT}/caching-service.jar"
 
 # API Mediation Layer Debug Mode
