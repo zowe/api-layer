@@ -16,6 +16,7 @@ import {
     REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
+    UPDATE_SERVICE_ID,
     VALIDATE_INPUT,
     WIZARD_VISIBILITY_TOGGLE,
 } from '../constants/wizard-constants';
@@ -30,6 +31,7 @@ export const wizardReducerDefaultState = {
     inputData: [],
     yamlObject: {},
     navsObj: {},
+    serviceId: '',
 };
 
 /**
@@ -247,6 +249,9 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             if (state.navsObj[navName] === undefined) return state;
             const navsObj = checkPresence(state.inputData, navName, state.navsObj, silent);
             return { ...state, navsObj };
+        }
+        case UPDATE_SERVICE_ID: {
+            return { ...state, serviceId: action.payload.value };
         }
         default:
             return state;

@@ -17,6 +17,7 @@ import {
     READY_YAML_OBJECT,
     REMOVE_INDEX,
     VALIDATE_INPUT,
+    UPDATE_SERVICE_ID,
 } from '../constants/wizard-constants';
 
 /**
@@ -228,5 +229,16 @@ export function validateInput(navName, silent) {
     return {
         type: VALIDATE_INPUT,
         payload: { navName, silent },
+    };
+}
+
+/**
+ * Store serviceId's value, because it's needed for saving staatic definitons
+ * @param value value of serviceId
+ */
+export function updateServiceId(value) {
+    return {
+        type: UPDATE_SERVICE_ID,
+        payload: { value },
     };
 }

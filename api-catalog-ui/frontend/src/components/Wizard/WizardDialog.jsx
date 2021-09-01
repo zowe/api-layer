@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 import * as YAML from 'yaml';
 import React, { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
@@ -26,7 +25,7 @@ export default class WizardDialog extends Component {
     };
 
     doneWizard = () => {
-        const { sendYAML, navsObj, sendYAMLError } = this.props;
+        const { sendYAML, navsObj, notifyError, yamlObject, serviceId } = this.props;
 
         /**
          * Check that all mandatory fields are filled.
@@ -50,9 +49,9 @@ export default class WizardDialog extends Component {
         };
 
         if (presenceIsSufficient(navsObj)) {
-            sendYAML(YAML.stringify(this.props.yamlObject));
+            sendYAML(YAML.stringify(yamlObject), serviceId);
         } else {
-            sendYAMLError('Fill all mandatory fields first!');
+            notifyError('Fill all mandatory fields first!');
         }
     };
 

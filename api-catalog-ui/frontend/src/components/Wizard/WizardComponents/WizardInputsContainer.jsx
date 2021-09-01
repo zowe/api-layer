@@ -9,7 +9,12 @@
  */
 
 import { connect } from 'react-redux';
-import { deleteCategoryConfig, updateWizardData, validateInput } from '../../../actions/wizard-actions';
+import {
+    deleteCategoryConfig,
+    updateWizardData,
+    validateInput,
+    updateServiceId,
+} from '../../../actions/wizard-actions';
 import WizardInputs from './WizardInputs';
 
 const mapStateToProps = () => ({});
@@ -18,6 +23,7 @@ const mapDispatchToProps = {
     updateWizardData,
     deleteCategoryConfig,
     validateInput,
+    updateServiceId,
 };
 
 export default connect(

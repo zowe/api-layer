@@ -5,6 +5,7 @@ describe('>>> Wizard actions tests', () => {
     it('should do nothing on YAML error', () => {
         const expectedAction = {
             type: 'IGNORE',
+            payload: null,
         };
         expect(actions.notifyError()).toEqual(expectedAction);
     });

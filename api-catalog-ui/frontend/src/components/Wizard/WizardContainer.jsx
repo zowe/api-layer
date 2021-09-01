@@ -19,6 +19,7 @@ const mapStateToProps = state => ({
     selectedCategory: state.wizardReducer.selectedCategory,
     yamlObject: state.wizardReducer.yamlObject,
     navsObj: state.wizardReducer.navsObj,
+    serviceId: state.wizardReducer.serviceId,
 });
 const mapDispatchToProps = {
     wizardToggleDisplay,
@@ -27,7 +28,7 @@ const mapDispatchToProps = {
     createYamlObject,
     validateInput,
     sendYAML,
-    sendYAMLError: notifyError,
+    notifyError,
 };
 export default connect(
     mapStateToProps,

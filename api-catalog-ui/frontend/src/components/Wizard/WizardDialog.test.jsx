@@ -146,7 +146,7 @@ describe('>>> WizardDialog tests', () => {
         expect(sendYAML).toHaveBeenCalled();
     });
     it('should throw err on clicking "Next" if presence is insufficient', () => {
-        const sendYAMLError = jest.fn();
+        const notifyError = jest.fn();
         const dummyData = [
             {
                 text: 'Basic info',
@@ -158,11 +158,11 @@ describe('>>> WizardDialog tests', () => {
                 inputData={dummyData}
                 selectedCategory={1}
                 navsObj={{ Basics: { 'Basic info': [['key']], silent: true } }}
-                sendYAMLError={sendYAMLError}
+                notifyError={notifyError}
             />
         );
         const instance = wrapper.instance();
         instance.nextSave();
-        expect(sendYAMLError).toHaveBeenCalled();
+        expect(notifyError).toHaveBeenCalled();
     });
 });

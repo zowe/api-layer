@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify';
-import { TOGGLE_DISPLAY, WIZARD_VISIBILITY_TOGGLE } from '../constants/wizard-constants';
+import { OVERRIDE_DEF, TOGGLE_DISPLAY, WIZARD_VISIBILITY_TOGGLE } from '../constants/wizard-constants';
 
 export function notifySuccess() {
     toast.success('Automatic onboarding successful!', {
@@ -18,21 +18,33 @@ export function notifyError(error) {
     });
     return {
         type: 'IGNORE',
+        payload: null,
     };
 }
 
-// eslint-disable-next-line import/prefer-default-export
-export function sendYAML(yamlText) {
-    const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/autoOnboard`;
+export function confirmStaticDefOverride() {
+    return {
+        type: OVERRIDE_DEF,
+        payload: null,
+    };
+}
+
+export function sendYAML(yamlText, serviceId) {
+    const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/generate`;
     return dispatch => {
         fetch(url, {
             method: 'POST',
+            headers: {
+                'Service-Id': serviceId,
+            },
             body: yamlText,
         })
             .then(res => {
                 const { status } = res;
                 if (status === 201) {
                     dispatch(notifySuccess());
+                } else if (status === 409) {
+                    dispatch(confirmStaticDefOverride());
                 } else {
                     dispatch(notifyError('The automatic onboarding was unsuccessful..'));
                 }
@@ -48,6 +60,10 @@ export function toggleWizardVisibility(state) {
     };
 }
 
+/**
+ * Assert logged user has authorization to save static definitions
+ * @returns {(function(*): void)|*}
+ */
 export function assertAuthorization() {
     const url = `${process.env.REACT_APP_GATEWAY_URL}/gateway/auth/check`;
     const body = {
