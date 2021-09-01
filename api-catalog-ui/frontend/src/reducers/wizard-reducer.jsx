@@ -35,7 +35,7 @@ export const wizardReducerDefaultState = {
  * @param category category object
  * @param categoryInfo enabler's category config
  */
-function compareVariables(category, categoryInfo) {
+export function compareVariables(category, categoryInfo) {
     if (categoryInfo.nav === undefined) {
         categoryInfo.nav = categoryInfo.name;
     }
@@ -44,6 +44,9 @@ function compareVariables(category, categoryInfo) {
     }
     if (categoryInfo.multiple !== undefined) {
         category.multiple = categoryInfo.multiple;
+    }
+    if (categoryInfo.inArr !== undefined) {
+        category.inArr = categoryInfo.inArr;
     }
     if (!Array.isArray(category.content) && category.content !== undefined) {
         const arr = [];
