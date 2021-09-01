@@ -21,10 +21,7 @@ describe('>>> WizardDialog tests', () => {
     });
     it('should create 0 inputs if content is an empty object', () => {
         const dummyData = [
-            {
-                text: 'Basic info',
-                content: {},
-            },
+            { text: 'Basic info', content: [], },
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog wizardToggleDisplay={jest.fn()} inputData={dummyData} navsObj={{ 'Basic info': {} }}
@@ -81,16 +78,58 @@ describe('>>> WizardDialog tests', () => {
         instance.closeWizard();
         expect(wizardToggleDisplay).toHaveBeenCalled();
     });
-    it('should close dialog and refresh static APIs on Save', () => {
+    it('should check all input on accessing the YAML tab', () => {
+        const validateInput = jest.fn();
+        const nextWizardCategory = jest.fn();
+        const dummyData = [{ text: 'Basic info', content: null, }, { text: 'IP info', content: null, }];
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                inputData={dummyData}
+                selectedCategory={dummyData.length-1}
+                navsObj={{ 'Basic info': {}, 'IP info': {} }}
+                validateInput={validateInput}
+                nextWizardCategory={nextWizardCategory}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.nextSave();
+        expect(nextWizardCategory).toHaveBeenCalled();
+        expect(validateInput).toHaveBeenCalledTimes(3);
+        expect(wrapper.find({ size: 'medium' })).toExist();
+    });
+    it('should not validate all input when not accessing the YAML tab', () => {
+        const validateInput = jest.fn();
+        const nextWizardCategory = jest.fn();
+        const dummyData = [{ text: 'Basic info', content: null, }, { text: 'IP info', content: null, }];
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                inputData={dummyData}
+                selectedCategory={0}
+                navsObj={{ 'Basic info': {}, 'IP info': {} }}
+                validateInput={validateInput}
+                nextWizardCategory={nextWizardCategory}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.nextSave();
+        expect(nextWizardCategory).toHaveBeenCalled();
+        expect(validateInput).toHaveBeenCalledTimes(1);
+    });
+    it('should refresh API and close wizard on Done', () => {
         const wizardToggleDisplay = jest.fn();
         const refreshedStaticApi = jest.fn();
         const createYamlObject = jest.fn();
-        const dummyData = [
-            {
-                text: 'Basic info',
-                content: null,
-            },
-        ];
+        const dummyData = [{ text: 'Basic info', content: null, },];
         const wrapper = enzyme.shallow(
             <WizardDialog
                 tiles={null}
@@ -101,7 +140,7 @@ describe('>>> WizardDialog tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 inputData={dummyData}
-                selectedCategory={dummyData.length}
+                selectedCategory={1}
                 navsObj={{ 'Basic info': {} }}
                 nextWizardCategory={jest.fn()}
                 createYamlObject={createYamlObject}
@@ -109,18 +148,16 @@ describe('>>> WizardDialog tests', () => {
         );
         const instance = wrapper.instance();
         instance.nextSave();
+        expect(createYamlObject).toHaveBeenCalled();
         expect(wizardToggleDisplay).toHaveBeenCalled();
         expect(refreshedStaticApi).toHaveBeenCalled();
-        expect(createYamlObject).toHaveBeenCalled();
-    });
+        expect(wrapper.find({ size: 'large' })).toExist();
+    })
     it('should invoke nextCategory on clicking "Next"', () => {
         const nextWizardCategory = jest.fn();
         const validateInput = jest.fn();
         const dummyData = [
-            {
-                text: 'Basic info',
-                content: null,
-            },
+            { text: 'Basic info', content: null, },
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog

@@ -35,17 +35,23 @@ export default class WizardDialog extends Component {
      * Displays either Next or Save, depending whether the user is at the last stage or not.
      */
     nextSave = () => {
-        const { selectedCategory, inputData, navsObj, nextWizardCategory, validateInput } = this.props;
-        if (selectedCategory < inputData.length) {
+        const { selectedCategory, navsObj, nextWizardCategory, validateInput } = this.props;
+        if (selectedCategory < Object.keys(navsObj).length) {
             validateInput(Object.keys(navsObj)[selectedCategory], false);
             nextWizardCategory();
+            if (selectedCategory === Object.keys(navsObj).length - 1) {
+                const navNamesArr = Object.keys(this.props.navsObj);
+                navNamesArr.forEach(navName => {
+                    this.props.validateInput(navName, false);
+                });
+            }
         } else {
             this.doneWizard();
         }
     };
 
     render() {
-        const { wizardIsOpen, enablerName, inputData, selectedCategory, navsObj } = this.props;
+        const { wizardIsOpen, enablerName, selectedCategory, navsObj } = this.props;
         const size = selectedCategory === Object.keys(navsObj).length ? 'large' : 'medium';
         return (
             <div className="dialog">
@@ -63,7 +69,7 @@ export default class WizardDialog extends Component {
                                 Cancel
                             </Button>
                             <Button size="medium" onClick={this.nextSave}>
-                                {selectedCategory === inputData.length ? 'Save' : 'Next'}
+                                {selectedCategory === Object.keys(navsObj).length ? 'Done' : 'Next'}
                             </Button>
                         </DialogActions>
                     </DialogFooter>
