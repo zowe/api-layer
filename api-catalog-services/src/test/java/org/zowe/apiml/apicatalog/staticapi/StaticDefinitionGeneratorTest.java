@@ -77,6 +77,11 @@ class StaticDefinitionGeneratorTest {
     @Nested
     class WhenStaticDefinitionOverrideResponse {
 
+        @BeforeEach
+        void setUp() {
+            ReflectionTestUtils.setField(staticDefinitionGenerator,"staticApiDefinitionsDirectories","config/local/api-defs");
+        }
+
         @Test
         void givenInvalidRequest_thenThrowException() throws IOException {
             TokenAuthentication authentication = new TokenAuthentication("token");
@@ -85,6 +90,16 @@ class StaticDefinitionGeneratorTest {
             StaticAPIResponse actualResponse = staticDefinitionGenerator.overrideFile("services: \\n  ", "");
             StaticAPIResponse expectedResponse = new StaticAPIResponse(400, "The service ID format is not valid.");
             assertEquals(expectedResponse, actualResponse);
+        }
+
+        @Test
+        void givenInvalidRequest_thenThrowExceptionWithCorrectPath() {
+            TokenAuthentication authentication = new TokenAuthentication("token");
+            authentication.setAuthenticated(true);
+            SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
+            Exception exception = assertThrows(IOException.class, () ->
+                staticDefinitionGenerator.overrideFile("services: \\n serviceId: service\\n ", "service"));
+            assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
         }
     }
 
