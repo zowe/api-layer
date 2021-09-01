@@ -72,7 +72,7 @@ public class StaticAPIService {
         return new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
     }
 
-    protected HttpEntity<?> getHttpEntity(String discoveryServiceUrl, boolean isProtected) {
+    protected HttpEntity<Object> getHttpEntity(String discoveryServiceUrl, boolean isProtected) {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Accept", "application/json");

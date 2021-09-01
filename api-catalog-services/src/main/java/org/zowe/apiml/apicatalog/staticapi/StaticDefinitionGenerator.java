@@ -13,8 +13,6 @@ package org.zowe.apiml.apicatalog.staticapi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,7 +29,7 @@ import java.util.regex.Pattern;
  */
 @Service
 @Slf4j
-public class StaticDefinitionGenerator extends StaticAPIService {
+public class StaticDefinitionGenerator {
 
     private AtomicReference<String> fileName = new AtomicReference<>("");
 
@@ -46,11 +44,6 @@ public class StaticDefinitionGenerator extends StaticAPIService {
 
     @Value("${apiml.discovery.staticApiDefinitionsDirectories:config/local/api-defs}")
     private String staticApiDefinitionsDirectories;
-
-    public StaticDefinitionGenerator(RestTemplate restTemplate, DiscoveryConfigProperties discoveryConfigProperties) {
-        super(restTemplate, discoveryConfigProperties);
-    }
-
 
     public StaticAPIResponse generateFile(String file, String serviceId) throws IOException {
         if (!serviceIdIsValid(serviceId)) {
@@ -124,7 +117,6 @@ public class StaticDefinitionGenerator extends StaticAPIService {
             if (p.matcher(serviceId).find() && serviceId.length() < 16) {
                 return true;
             }
-            return false;
         }
         return false;
         }
