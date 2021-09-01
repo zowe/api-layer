@@ -179,7 +179,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
             // When
             final String jsonResponse = EntityUtils.toString(response.getEntity());
 
-            assertEquals("The static definition file has been created by the user! Its location is: .//usr/local/etc/config/api-defs/test-service-1.yml", jsonResponse);
+            assertEquals("The static definition file has been created by the user! Its location is: ./config/local/api-defs/test-service-1.yml", jsonResponse);
 
             File staticDef = new File("../" + location + "/test-service-1.yml");
 
