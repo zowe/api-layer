@@ -255,8 +255,6 @@ class WizardInputs extends Component {
                     onChange={this.handleInputChange}
                     name={itemKey}
                     data-index={index}
-                    labelPosition="start"
-                    justify
                 />
             );
         }
