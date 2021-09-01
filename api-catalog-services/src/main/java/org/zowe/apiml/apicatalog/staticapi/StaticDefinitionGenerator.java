@@ -104,12 +104,13 @@ public class StaticDefinitionGenerator extends StaticAPIService {
 
     /**
      * Retrieve the static definition location either from the System environments or configuration. If no property is set,
-     * the default value is used (local environment)
+     * the default value is used (local environment). The static definition is stored inside the first defined directory.
      * @return the static definition location
      */
     private String retrieveStaticDefLocation() {
         log.debug(String.format("The value of apiml.discovery.staticApiDefinitionsDirectories is: %s", staticApiDefinitionsDirectories));
-        return staticApiDefinitionsDirectories;
+        String[] directories = staticApiDefinitionsDirectories.split(";");
+        return directories[0];
     }
 
     /**
