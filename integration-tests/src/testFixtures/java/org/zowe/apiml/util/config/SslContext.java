@@ -64,7 +64,7 @@ public class SslContext {
 
             SSLContext sslContext2 = SSLContextBuilder
                 .create()
-                .loadKeyMaterial(ResourceUtils.getFile(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore()),
+                .loadKeyMaterial(ResourceUtils.getFile(providedCconfigurer.getKeystore()),
                     providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword())
                 .loadTrustMaterial(null, trustStrategy)
                 .build();

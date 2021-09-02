@@ -44,7 +44,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
     static void setupClients() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
 
-        SslContext.prepareSslAuthentication(SslContextConfigurer.integrationTests());
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
     }
 
     @Nested

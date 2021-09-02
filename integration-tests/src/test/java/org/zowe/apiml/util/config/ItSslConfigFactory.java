@@ -10,29 +10,15 @@
 
 package org.zowe.apiml.util.config;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
+public class ItSslConfigFactory {
 
-@Getter
-@EqualsAndHashCode
-public class SslContextConfigurer {
-
-    private final char[] keystorePassword;
-    private final String keystoreLocalhostJks;
-    private final X509HostnameVerifier hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
     private static SslContextConfigurer integrationTestInstance = null;
-
-    public SslContextConfigurer(char[] keystorePassword, String keystore_client_cert) {
-        this.keystorePassword = keystorePassword;
-        this.keystoreLocalhostJks = keystore_client_cert;
-    }
 
     public static synchronized SslContextConfigurer integrationTests() {
         if (integrationTestInstance == null) {
             integrationTestInstance = new SslContextConfigurer(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword(),
-                ConfigReader.environmentConfiguration().getTlsConfiguration().getClientKeystore());
+                ConfigReader.environmentConfiguration().getTlsConfiguration().getClientKeystore(),
+                ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore());
         }
         return integrationTestInstance;
     }

@@ -17,8 +17,8 @@ import org.zowe.apiml.util.KeyValue;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
-import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -48,7 +48,7 @@ class CachingStorageTest implements TestWithStartedInstances {
 
     @BeforeAll
     static void setup() throws Exception {
-        SslContext.prepareSslAuthentication(SslContextConfigurer.integrationTests());
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
         RestAssured.useRelaxedHTTPSValidation();
     }
 

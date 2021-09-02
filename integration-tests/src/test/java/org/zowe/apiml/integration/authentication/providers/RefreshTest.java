@@ -14,8 +14,8 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
-import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.util.requests.GatewayRequests;
 
 import static org.zowe.apiml.util.SecurityUtils.assertIfLogged;
@@ -29,7 +29,7 @@ public class RefreshTest implements TestWithStartedInstances {
 
     @BeforeAll
     public static void init() throws Exception {
-        SslContext.prepareSslAuthentication(SslContextConfigurer.integrationTests());
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         RestAssured.useRelaxedHTTPSValidation();
     }

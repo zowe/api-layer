@@ -61,7 +61,7 @@ class ApiCatalogAuthenticationTest {
     @BeforeAll
     static void setUp() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
-        SslContext.prepareSslAuthentication(SslContextConfigurer.integrationTests());
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
 
         List<DiscoveryUtils.InstanceInfo> apiCatalogInstances = DiscoveryUtils.getInstances(CATALOG_SERVICE_ID);
         if (StringUtils.isEmpty(apiCatalogServiceUrl)) {

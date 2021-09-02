@@ -75,7 +75,7 @@ class LoginTest implements TestWithStartedInstances {
 
     @BeforeAll
     public static void init() throws Exception {
-        SslContext.prepareSslAuthentication(SslContextConfigurer.integrationTests());
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
     }
 
     @BeforeEach

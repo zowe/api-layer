@@ -26,7 +26,7 @@ public abstract class DiscoveryFunctionalTest {
     protected String hostname;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 

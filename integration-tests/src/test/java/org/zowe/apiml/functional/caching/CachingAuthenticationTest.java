@@ -46,7 +46,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
     @BeforeAll
     static void setup() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
-        SslContext.prepareSslAuthentication(SslContextConfigurer.integrationTests());
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
     }
 
     @BeforeEach

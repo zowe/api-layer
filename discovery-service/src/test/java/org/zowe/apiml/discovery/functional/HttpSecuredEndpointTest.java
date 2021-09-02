@@ -27,7 +27,7 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
     private String eurekaPassword;
 
     @Test
-    void UiIsSecuredWithConfiguredBasicAuth() {
+    void uiIsSecuredWithConfiguredBasicAuth() {
         given()
             .get(getDiscoveryUriWithPath("/"))
             .then()

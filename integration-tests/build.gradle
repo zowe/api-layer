@@ -9,7 +9,10 @@ buildscript {
     }
 }
 
-apply plugin: 'com.adarshr.test-logger'
+plugins {
+    id "com.adarshr.test-logger" version "3.0.0"
+    id "java-test-fixtures"
+}
 
 repositories {
     mavenCentral()
@@ -43,6 +46,13 @@ dependencies {
     testCompile libraries.nimbusJoseJwt
     runtime libraries.jjwt_impl
     runtime libraries.jjwt_jackson
+
+    testFixturesImplementation(project(':apiml-security-common'))
+    testFixturesImplementation libraries.rest_assured
+    testFixturesImplementation libraries.lombok
+    testFixturesImplementation libraries.http_client
+
+    testFixturesAnnotationProcessor libraries.lombok
 }
 
 jar {

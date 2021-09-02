@@ -89,6 +89,7 @@ dependencies {
     testCompile libraries.json_smart
     testCompile libraries.awaitility
     testImplementation libraries.rest_assured
+    testImplementation(testFixtures(project(":integration-tests")))
 }
 
 
