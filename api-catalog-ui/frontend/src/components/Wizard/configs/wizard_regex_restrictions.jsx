@@ -1,0 +1,6 @@
+// eslint-disable-next-line import/prefer-default-export
+export const wizRegex = {
+    gatewayUrl: '^(api\\/v\\d+)$',
+    version: '^(\\d+)\\.(\\d+)\\.(\\d+)',
+    alphanumeric: '^[a-z]+$',
+};

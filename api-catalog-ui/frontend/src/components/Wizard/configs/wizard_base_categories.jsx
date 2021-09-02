@@ -1,3 +1,5 @@
+import { wizRegex } from './wizard_regex_restrictions';
+
 // eslint-disable-next-line import/prefer-default-export
 export const baseCategories = [
     {
@@ -71,7 +73,7 @@ export const baseCategories = [
                 value: '',
                 question: 'The service IP address:',
                 optional: true,
-                regexRestriction: '^([0-9]+)\\.([0-9]+)\\.([0-9]+)\\.([0-9]+)',
+                regexRestriction: [wizRegex.version],
             },
         },
     },
@@ -113,7 +115,7 @@ export const baseCategories = [
             gatewayUrl: {
                 value: '',
                 question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
-                regexRestriction: '^(api\\/v[0-9])',
+                regexRestriction: [wizRegex.gatewayUrl],
             },
             serviceUrl: {
                 value: '',
@@ -148,12 +150,12 @@ export const baseCategories = [
                 value: '',
                 question: 'API version:',
                 tooltip: 'API version',
-                regexRestriction: '^([0-9]+)\\.([0-9]+)\\.([0-9]+)',
+                regexRestriction: [wizRegex.version],
             },
             gatewayUrl: {
                 value: '',
                 question: 'The base path at the API Gateway where the API is available:',
-                regexRestriction: '^(api\\/v[0-9])',
+                regexRestriction: [wizRegex.gatewayUrl],
             },
             swaggerUrl: {
                 value: '',

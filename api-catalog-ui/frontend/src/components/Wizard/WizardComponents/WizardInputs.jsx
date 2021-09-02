@@ -62,10 +62,12 @@ class WizardInputs extends Component {
     checkRestrictions(value, regexRestriction, validUrl) {
         let problem = false;
         if (regexRestriction !== undefined) {
-            const restriction = new RegExp(regexRestriction);
-            if (!restriction.test(value)) {
-                problem = true;
-            }
+            regexRestriction.forEach(regex => {
+                const restriction = new RegExp(regex);
+                if (!restriction.test(value)) {
+                    problem = true;
+                }
+            });
         }
         if (validUrl) {
             try {

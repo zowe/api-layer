@@ -138,9 +138,11 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
     let content = {};
     // load user's answer into content object
     if (!category.multiple) {
-        Object.keys(category.content[0]).forEach(key => {
-            if (category.content[0][key].show !== false) {
-                content[key] = category.content[0][key].value;
+        const contentElement = category.content[0];
+        Object.keys(contentElement).forEach(key => {
+            const valueObj = contentElement[key];
+            if (valueObj.show !== false && (valueObj.value !== '' || valueObj.optional !== true)) {
+                content[key] = contentElement[key].value;
             }
         });
     } else {
@@ -149,7 +151,10 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
         if (category.noKey) {
             category.content.forEach(o => {
                 Object.keys(o).forEach(key => {
-                    content[index] = category.content[index][key].value;
+                    const valueObj = category.content[index][key];
+                    if (valueObj.show !== false && (valueObj.value !== '' || valueObj.optional !== true)) {
+                        content[index] = category.content[index][key].value;
+                    }
                 });
                 index += 1;
             });
@@ -157,7 +162,10 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
             category.content.forEach(o => {
                 content[index] = {};
                 Object.keys(o).forEach(key => {
-                    content[index][key] = category.content[index][key].value;
+                    const valueObj = category.content[index][key];
+                    if (valueObj.show !== false && (valueObj.value !== '' || valueObj.optional !== true)) {
+                        content[index][key] = category.content[index][key].value;
+                    }
                 });
                 content = handleArrayIndentation(category.arrIndent, content);
                 index += 1;
