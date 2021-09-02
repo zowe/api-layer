@@ -11,14 +11,11 @@
 package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
-import org.zowe.apiml.util.categories.SAFAuthTest;
-import org.zowe.apiml.util.categories.zOSMFAuthTest;
+import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.util.requests.GatewayRequests;
 
 import static org.zowe.apiml.util.SecurityUtils.assertIfLogged;
@@ -32,7 +29,7 @@ public class RefreshTest implements TestWithStartedInstances {
 
     @BeforeAll
     public static void init() throws Exception {
-        SslContext.prepareSslAuthentication();
+        SslContext.prepareSslAuthentication(SslContextConfigurer.integrationTests());
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         RestAssured.useRelaxedHTTPSValidation();
     }

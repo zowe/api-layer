@@ -29,4 +29,12 @@ public abstract class DiscoveryFunctionalTest {
     void setUp() {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
+
+    protected String getProtocol() {
+        return "http";
+    }
+
+    protected String getDiscoveryUriWithPath(String path) {
+        return String.format("%s://%s:%d", getProtocol(), hostname, port) + path;
+    }
 }

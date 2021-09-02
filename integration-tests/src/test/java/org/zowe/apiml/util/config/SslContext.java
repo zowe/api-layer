@@ -14,9 +14,7 @@ import io.restassured.config.SSLConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.ssl.PrivateKeyDetails;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
+import org.apache.http.ssl.*;
 import org.springframework.util.ResourceUtils;
 
 import javax.net.ssl.SSLContext;
@@ -24,17 +22,13 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.Socket;
 import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
+import java.security.cert.*;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class SslContext {
-
-    public static final char[] KEYSTORE_PASSWORD = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword();
-    public static final String KEYSTORE_LOCALHOST_TEST_JKS = ConfigReader.environmentConfiguration().getTlsConfiguration().getClientKeystore();
 
     public static RestAssuredConfig clientCertValid;
     public static RestAssuredConfig clientCertApiml;
@@ -43,19 +37,25 @@ public class SslContext {
     public static RestAssuredConfig selfSignedUntrusted;
     public static RestAssuredConfig tlsWithoutCert;
     private static AtomicBoolean isInitialized = new AtomicBoolean(false);
+    private static AtomicReference<SslContextConfigurer> configurer = new AtomicReference<>();
 
-    public synchronized static void prepareSslAuthentication() throws Exception {
-        TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
+    public synchronized static void prepareSslAuthentication(SslContextConfigurer providedCconfigurer) throws Exception {
 
-        X509HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER : SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
+        if (configurer.get() != null && !configurer.get().equals(providedCconfigurer)) {
+            throw new IllegalStateException("You cannot initialize this class twice with different configuration");
+        }
+
         if (!isInitialized.get()) {
+            configurer.set(providedCconfigurer);
+            X509HostnameVerifier hostnameVerifier = providedCconfigurer.getHostnameVerifier();
+
             log.info("SSLContext is constructing. This should happen only once.");
             TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
 
             SSLContext sslContext = SSLContextBuilder
                 .create()
-                .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
-                    KEYSTORE_PASSWORD, KEYSTORE_PASSWORD,
+                .loadKeyMaterial(ResourceUtils.getFile(providedCconfigurer.getKeystoreLocalhostJks()),
+                    providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword(),
                     (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apimtst")
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
@@ -65,7 +65,7 @@ public class SslContext {
             SSLContext sslContext2 = SSLContextBuilder
                 .create()
                 .loadKeyMaterial(ResourceUtils.getFile(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore()),
-                    KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
+                    providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword())
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
             clientCertApiml = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext2, hostnameVerifier)));
@@ -77,8 +77,8 @@ public class SslContext {
             tlsWithoutCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3, hostnameVerifier)));
             SSLContext sslContext4 = SSLContextBuilder
                 .create()
-                .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
-                    KEYSTORE_PASSWORD, KEYSTORE_PASSWORD,
+                .loadKeyMaterial(ResourceUtils.getFile(providedCconfigurer.getKeystoreLocalhostJks()),
+                    providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword(),
                     (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "unknownuser")
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
@@ -86,8 +86,8 @@ public class SslContext {
 
             SSLContext sslContext5 = SSLContextBuilder
                 .create()
-                .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
-                    KEYSTORE_PASSWORD, KEYSTORE_PASSWORD,
+                .loadKeyMaterial(ResourceUtils.getFile(providedCconfigurer.getKeystoreLocalhostJks()),
+                    providedCconfigurer.getKeystorePassword(), providedCconfigurer.getKeystorePassword(),
                     (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "user")
                 .loadTrustMaterial(null, trustStrategy)
                 .build();

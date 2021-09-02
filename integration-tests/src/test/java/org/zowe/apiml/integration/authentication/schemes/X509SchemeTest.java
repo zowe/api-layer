@@ -10,13 +10,12 @@
 package org.zowe.apiml.integration.authentication.schemes;
 
 import io.restassured.http.Header;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.X509Test;
 import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -37,7 +36,7 @@ class X509SchemeTest implements TestWithStartedInstances {
 
     @BeforeAll
     static void init() throws Exception {
-        SslContext.prepareSslAuthentication();
+        SslContext.prepareSslAuthentication(SslContextConfigurer.integrationTests());
         URL = HttpRequestUtils.getUriFromGateway(X509_ENDPOINT);
     }
 

@@ -29,12 +29,12 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
     @Test
     void UiIsSecuredWithConfiguredBasicAuth() {
         given()
-            .get(String.format("http://%s:%d/", hostname, port))
+            .get(getDiscoveryUriWithPath("/"))
             .then()
             .statusCode(HttpStatus.UNAUTHORIZED.value());
 
         given().auth().basic(eurekaUserid, eurekaPassword)
-            .get(String.format("http://%s:%d/", hostname, port))
+            .get(getDiscoveryUriWithPath("/"))
             .then()
             .statusCode(HttpStatus.OK.value());
     }
