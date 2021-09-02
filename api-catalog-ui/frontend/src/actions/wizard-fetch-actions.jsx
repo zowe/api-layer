@@ -22,6 +22,9 @@ export function notifyError(error) {
     };
 }
 
+/**
+ * Toggle confirmation dialog
+ */
 export function confirmStaticDefOverride() {
     return {
         type: OVERRIDE_DEF,
@@ -29,8 +32,14 @@ export function confirmStaticDefOverride() {
     };
 }
 
-export function sendYAML(yamlText, serviceId) {
-    const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/generate`;
+/**
+ * Communicates with the backend, to either save or override a YAML static definition.
+ * @param yamlText valid YAML config
+ * @param serviceId serviceId of the API
+ * @param endpoint specifies whether to override or save the definition
+ */
+function yamlEndpointConnect(yamlText, serviceId, endpoint) {
+    const url = `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/${endpoint}`;
     return dispatch => {
         fetch(url, {
             method: 'POST',
@@ -89,4 +98,22 @@ export function assertAuthorization() {
             })
             .catch(() => dispatch(notifyError('Error while trying to establish authorization level..')));
     };
+}
+
+/**
+ * Send request to override a static def with a certain serviceId
+ * @param yamlText valid YAML config
+ * @param serviceId serviceId of the API
+ */
+export function overrideStaticDef(yamlText, serviceId) {
+    return yamlEndpointConnect(yamlText, serviceId, 'override');
+}
+
+/**
+ *  Send request to save a static def with a certain serviceId
+ * @param yamlText valid YAML config
+ * @param serviceId serviceId of the API
+ */
+export function sendYAML(yamlText, serviceId) {
+    return yamlEndpointConnect(yamlText, serviceId, 'generate');
 }

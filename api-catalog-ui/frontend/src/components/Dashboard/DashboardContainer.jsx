@@ -22,7 +22,7 @@ const mapStateToProps = state => ({
     isLoading: loadingSelector(state),
     refreshedStaticApisError: state.refreshStaticApisReducer.error,
     refreshTimestamp: state.refreshStaticApisReducer.refreshTimestamp,
-    wizardIsVisible: state.wizardReducer.wizardIsVisible,
+    userCanAutoOnboard: state.wizardReducer.userCanAutoOnboard,
 });
 
 const mapDispatchToProps = {

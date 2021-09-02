@@ -19,12 +19,13 @@ import {
     UPDATE_SERVICE_ID,
     VALIDATE_INPUT,
     WIZARD_VISIBILITY_TOGGLE,
+    OVERRIDE_DEF,
 } from '../constants/wizard-constants';
 import { categoryData } from '../components/Wizard/configs/wizard_categories';
 import { enablerData } from '../components/Wizard/configs/wizard_onboarding_methods';
 
 export const wizardReducerDefaultState = {
-    wizardIsVisible: false,
+    userCanAutoOnboard: false,
     wizardIsOpen: false,
     enablerName: '',
     selectedCategory: 0,
@@ -32,6 +33,7 @@ export const wizardReducerDefaultState = {
     yamlObject: {},
     navsObj: {},
     serviceId: '',
+    confirmDialog: false,
 };
 
 /**
@@ -199,7 +201,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
         case WIZARD_VISIBILITY_TOGGLE:
             return {
                 ...state,
-                wizardIsVisible: action.payload.state,
+                userCanAutoOnboard: action.payload.state,
             };
         case TOGGLE_DISPLAY:
             return {
@@ -252,6 +254,9 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
         }
         case UPDATE_SERVICE_ID: {
             return { ...state, serviceId: action.payload.value };
+        }
+        case OVERRIDE_DEF: {
+            return { ...state, confirmDialog: !state.confirmDialog, wizardIsOpen: !state.wizardIsOpen };
         }
         default:
             return state;

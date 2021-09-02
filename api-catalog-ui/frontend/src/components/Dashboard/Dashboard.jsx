@@ -10,6 +10,7 @@ import ErrorDialog from '../Error/ErrorDialog';
 import WizardContainer from '../Wizard/WizardContainer';
 import DialogDropdown from '../Wizard/DialogDropdown';
 import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
+import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 
 export default class Dashboard extends Component {
     componentDidMount() {
@@ -50,7 +51,7 @@ export default class Dashboard extends Component {
             fetchTilesStop,
             refreshedStaticApisError,
             clearError,
-            wizardIsVisible,
+            userCanAutoOnboard,
         } = this.props;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
@@ -65,7 +66,7 @@ export default class Dashboard extends Component {
                 <div id="dash-buttons">
                     <DialogDropdown
                         selectEnabler={this.props.selectEnabler}
-                        visible={wizardIsVisible}
+                        visible={userCanAutoOnboard}
                         data={enablerData}
                         toggleWizard={this.toggleWizard}
                     />
@@ -74,6 +75,7 @@ export default class Dashboard extends Component {
                     </Button>
                 </div>
                 <WizardContainer />
+                <ConfirmDialogContainer />
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">

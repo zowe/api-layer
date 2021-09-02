@@ -31,14 +31,14 @@ describe('>>> Wizard reducer tests', () => {
     });
 
     it('should handle WIZARD_VISIBILITY_TOGGLE true -> false & false -> true ', () => {
-        expect(wizardReducer({ wizardIsVisible: false }, {
+        expect(wizardReducer({ userCanAutoOnboard: false }, {
             type: WIZARD_VISIBILITY_TOGGLE,
             payload: { state: true }
-        })).toEqual({ wizardIsVisible: true });
-        expect(wizardReducer({ wizardIsVisible: true }, {
+        })).toEqual({ userCanAutoOnboard: true });
+        expect(wizardReducer({ userCanAutoOnboard: true }, {
             type: WIZARD_VISIBILITY_TOGGLE,
             payload: { state: false }
-        })).toEqual({ wizardIsVisible: false });
+        })).toEqual({ userCanAutoOnboard: false });
     });
 
     it('should handle TOGGLE_DISPLAY true -> false & false -> true ', () => {
