@@ -88,6 +88,7 @@ dependencies {
     testCompile libraries.spring_boot_starter_test
     testCompile libraries.json_smart
     testCompile libraries.awaitility
+    testImplementation libraries.rest_assured
 }
 
 
