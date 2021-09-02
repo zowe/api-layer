@@ -15,6 +15,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
@@ -53,9 +54,9 @@ public class ServerSentEventsProxyTest {
 
     @Nested
     class WhenRoutingSession {
-        @ParameterizedTest(name = "WhenRoutingSession.thenReturnEvents#message {0}")
-        @ValueSource(strings = {"/sse/v1/discoverableclient/events"/*, "/discoverableclient/sse/v1/events"*/})
-        void givenSsePaths_thenReturnEvents(String path) {
+        @ParameterizedTest(name = "WhenRoutingSession.givenValidSsePaths_thenReturnEvents#message {0}")
+        @ValueSource(strings = {"/sse/v1/discoverableclient/events", "/discoverableclient/sse/v1/events"})
+        void givenValidSsePaths_thenReturnEvents(String path) {
             FluxExchangeResult<String> fluxResult = webTestClient
                 .get()
                 .uri(path)
@@ -66,10 +67,33 @@ public class ServerSentEventsProxyTest {
                 .returnResult(String.class);
 
             StepVerifier.create(fluxResult.getResponseBody())
-                .expectNext("event")
+                .expectNext("event") // expected value after 'data:' in the stream
                 .expectNext("event")
                 .thenCancel()
                 .verify(Duration.ofSeconds(3));
+        }
+
+        @Nested
+        class GivenIncorrectPath_thenReturnError {
+            @ParameterizedTest(name = "WhenRoutingSession.GivenIncorrectPath_thenReturnError.givenInvalidServiceId#message {0}")
+            @ValueSource(strings = {"/sse/v1/bad/events", "/bad/sse/v1/events"})
+            void givenInvalidServiceId() {
+
+            }
+
+            @ParameterizedTest(name = "WhenRoutingSession.GivenIncorrectPath_thenReturnError.givenInvalidVersion#message {0}")
+            @ValueSource(strings = {"/sse/bad/discoverableclient/events", "/discoverableclient/sse/bad/events"})
+            void givenInvalidVersion() {
+
+            }
+        }
+
+        @Nested
+        class GivenMultipleConnections {
+            @Test
+            void thenReturnProperEventsToBoth() {
+
+            }
         }
     }
 }
