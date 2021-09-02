@@ -23,8 +23,11 @@ dependencies {
     testCompile libraries.json_path
     testCompile libraries.spring_boot_starter_websocket
     testCompile libraries.spring_boot_starter_actuator
+    testCompile libraries.spring_boot_starter_webflux
+    testCompile libraries.spring_web_test_client
     testCompile libraries.json
     testCompile libraries.jjwt
+    testCompile libraries.reactorTest
     testCompile(project(':apiml-security-common'))
     testCompile(project(':zaas-client'))
 

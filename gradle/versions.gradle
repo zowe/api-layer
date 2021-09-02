@@ -3,6 +3,7 @@ ext {
     springCloudVersion = '2.2.9.RELEASE'
     springSecurityVersion = '5.3.10.RELEASE'
     springRetryVersion = '1.2.4.RELEASE'
+    springWebTestClientVersion = '4.4.0'
 
     awaitilityVersion = '3.0.0'
     bootstrapVersion = '4.3.1'
@@ -39,6 +40,7 @@ ext {
     netflixServoVersion = '0.12.28'
     nimbusJoseJwtVersion = '8.21.1'
     openApiDiffVersion = '2.0.0-beta.10'
+    reactorTestVersion = '3.4.9'
     restAssuredVersion = '3.0.7'
     slf4jVersion = '1.7.31'
     snakeyamlVersion = '1.27'
@@ -76,6 +78,7 @@ ext {
         spring_security_config             : "org.springframework.security:spring-security-config:${springSecurityVersion}",
 
         spring_retry                       : "org.springframework.retry:spring-retry:${springRetryVersion}",
+        spring_web_test_client             : "io.rest-assured:spring-web-test-client:${springWebTestClientVersion}",
 
         apache_commons_lang3               : "org.apache.commons:commons-lang3:${commonsLang3Version}",
         apache_commons_text                : "org.apache.commons:commons-text:${commonsTextVersion}",
@@ -123,6 +126,7 @@ ext {
         netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
         nimbusJoseJwt                      : "com.nimbusds:nimbus-jose-jwt:${nimbusJoseJwtVersion}",
         openapidiff                        : "org.openapitools.openapidiff:openapi-diff-core:${openApiDiffVersion}",
+        reactorTest                        : "io.projectreactor:reactor-test:${reactorTestVersion}",
         rest_assured                       : "io.rest-assured:rest-assured:${restAssuredVersion}",
         slf4j_api                          : "org.slf4j:slf4j-api:${slf4jVersion}",
         snakeyaml                          : "org.yaml:snakeyaml:${snakeyamlVersion}",
