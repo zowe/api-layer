@@ -229,7 +229,7 @@ describe('>>> WizardInputs tests', () => {
         const result = instance.renderInputs(dummyData.content,);
         expect(result[0]).not.toEqual(null);
     });
-    xit('should correctly generate captions for all restrictions', () => {
+    it('should correctly generate captions for all restrictions', () => {
         const dummyData = {
             text: 'Category',
             content: [{
@@ -240,8 +240,8 @@ describe('>>> WizardInputs tests', () => {
             <WizardInputs data={dummyData} />
         );
         const instance = wrapper.instance();
-        const a = instance.renderInputElement('test', 0, dummyData.content[0].test);
-        expect(a.props.caption).toEqual('Optional field; Field must be lowercase; Max length is 40 characters');
+        instance.renderInputElement('test', 0, dummyData.content[0].test);
+        expect(wrapper.find('FormField').props().caption).toEqual('Optional field; Field must be lowercase; Max length is 40 characters');
     });
     it('should handle select\'s onCLick', () => {
         const updateWizardData = jest.fn();
@@ -273,4 +273,48 @@ describe('>>> WizardInputs tests', () => {
         a.props.data[1].onClick();
         expect(updateWizardData).toHaveBeenCalledWith(expectedData);
     });
+    it('should check for regex restrictions', () => {
+        const updateWizardData = jest.fn();
+        const dummyData = {};
+        const wrapper = enzyme.shallow(
+            <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
+        );
+        const instance = wrapper.instance();
+        const result = instance.checkRestrictions('hey', ['^[a-z]+$'], false);
+        expect(result).toEqual(false);
+    });
+    it('should check for URL restrictions', () => {
+        const updateWizardData = jest.fn();
+        const dummyData = {};
+        const wrapper = enzyme.shallow(
+            <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
+        );
+        const instance = wrapper.instance();
+        const result = instance.checkRestrictions('http://www.example.com/index.html', undefined, true);
+        expect(result).toEqual(false);
+    });
+    it('should check for restrictions correctly', () => {
+        const updateWizardData = jest.fn();
+        const dummyData = {};
+        const wrapper = enzyme.shallow(
+            <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
+        );
+        const instance = wrapper.instance();
+        const result = instance.checkRestrictions('hEy9', ['^[a-z]+$'], true);
+        expect(result).toEqual(true);
+    })
+    it('should handle tooltip', () => {
+        const dummyData = {
+            text: 'Category',
+            content: [{
+                test: { value: '', question: 'Why?', optional: true, maxLength: 40, lowercase: true, empty: true, problem: false, tooltip: 'hey' },
+            }],
+        };
+        const wrapper = enzyme.shallow(
+            <WizardInputs data={dummyData} />
+        );
+        const instance = wrapper.instance();
+        instance.renderInputElement('test', 0, dummyData.content[0].test);
+        expect(wrapper.find('Tooltip').props().content).toEqual('hey');
+    })
 });
