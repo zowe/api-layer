@@ -5,12 +5,12 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 ## `1.24.4 (2021-09-01)`
 
 * Feature:  SAF resource access check controller (#1734) ([680f4b9](https://github.com/zowe/api-layer/commit/680f4b9)), closes [#1734](https://github.com/zowe/api-layer/issues/1734)
-* Feature:  compress response if service wants to (#1728) ([85b5948](https://github.com/zowe/api-layer/commit/85b5948)), closes [#1728](https://github.com/zowe/api-layer/issues/1728)
-* Feature:  Introduce rest provider for SAF IDT tokens (#1714) ([047c54e](https://github.com/zowe/api-layer/commit/047c54e)), closes [#1714](https://github.com/zowe/api-layer/issues/1714)
+* Feature:  Compress response if service wants to (#1728) ([85b5948](https://github.com/zowe/api-layer/commit/85b5948)), closes [#1728](https://github.com/zowe/api-layer/issues/1728)
+* Feature:  Introduce REST provider for SAF IDT tokens (#1714) ([047c54e](https://github.com/zowe/api-layer/commit/047c54e)), closes [#1714](https://github.com/zowe/api-layer/issues/1714)
 * Feature:  Refresh endpoint for prolonging valid JWT token (#1719) ([f918916](https://github.com/zowe/api-layer/commit/f918916)), closes [#1719](https://github.com/zowe/api-layer/issues/1719)
-* Feature:  introduce error codes for saf authentication (#1692) ([89ac5a2](https://github.com/zowe/api-layer/commit/89ac5a2)), closes [#1692](https://github.com/zowe/api-layer/issues/1692)
+* Feature:  introduce error codes for SAF authentication (#1692) ([89ac5a2](https://github.com/zowe/api-layer/commit/89ac5a2)), closes [#1692](https://github.com/zowe/api-layer/issues/1692)
 * Feature:  Support SAF IDT as authentication scheme (#1688) ([26a84c0](https://github.com/zowe/api-layer/commit/26a84c0)), closes [#1688](https://github.com/zowe/api-layer/issues/1688)
-* Feature:  Conditional full debug logging for Api Mediation layer (#1662) ([81bc46f](https://github.com/zowe/api-layer/commit/81bc46f)), closes [#1662](https://github.com/zowe/api-layer/issues/1662)
+* Feature:  Conditional full debug logging for API Mediation Layer (#1662) ([81bc46f](https://github.com/zowe/api-layer/commit/81bc46f)), closes [#1662](https://github.com/zowe/api-layer/issues/1662)
 * Feature:  AT-TLS aware API Mediation Layer  (#1621) ([be26a9a](https://github.com/zowe/api-layer/commit/be26a9a)), closes [#1621](https://github.com/zowe/api-layer/issues/1621)
 * Feature:  Distributed authentication based load balancing (#1602) ([4e7d993](https://github.com/zowe/api-layer/commit/4e7d993)), closes [#1602](https://github.com/zowe/api-layer/issues/1602)
 * Feature:  Add support for stomp v1.2 websocket protocol (#1697) ([d1057e0](https://github.com/zowe/api-layer/commit/d1057e0)), closes [#1697](https://github.com/zowe/api-layer/issues/1697)
