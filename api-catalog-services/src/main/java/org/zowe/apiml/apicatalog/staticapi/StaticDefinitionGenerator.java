@@ -75,7 +75,7 @@ public class StaticDefinitionGenerator {
 
     private String formatFile(String file) {
         file = file.replace("\\n", System.lineSeparator());
-        file = file.substring(1, file.length() - 1);
+//        file = file.substring(1, file.length() - 1);
         return file;
     }
 
