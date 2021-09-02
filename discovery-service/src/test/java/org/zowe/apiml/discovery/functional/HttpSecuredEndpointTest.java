@@ -52,10 +52,27 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
             .statusCode(HttpStatus.OK.value());
     }
 
+    @Test
+    void testApplicationInfoEndpoints_whenProvidedNothing() throws Exception {
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath("/application/info"))
+            .then()
+            .statusCode(is(org.apache.http.HttpStatus.SC_OK));
+    }
+
+    @Test
+    void testApplicationHealthEndpoints_whenProvidedNothing() throws Exception {
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath("/application/health"))
+            .then()
+            .statusCode(is(org.apache.http.HttpStatus.SC_OK));
+    }
+
     @ParameterizedTest(name = "givenATTLS_testApplicationBeansEndpoints_Get {index} {0} ")
     @ValueSource(strings = {"/application/beans", "/"})
     void givenATTLS_testApplicationBeansEndpoints_Get(String path) throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
         given()
             .when()
             .get(getDiscoveryUriWithPath(path))
@@ -66,7 +83,6 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
 
     @Test
     void verifyHttpHeadersOnUi() {
-        RestAssured.useRelaxedHTTPSValidation();
         Map<String, String> expectedHeaders = new HashMap<>();
         expectedHeaders.put("X-Content-Type-Options", "nosniff");
         expectedHeaders.put("X-XSS-Protection", "1; mode=block");
@@ -92,7 +108,6 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
 
     @Test
     void verifyHttpHeadersOnApi() {
-        RestAssured.useRelaxedHTTPSValidation();
         Map<String, String> expectedHeaders = new HashMap<>();
         expectedHeaders.put("X-Content-Type-Options", "nosniff");
         expectedHeaders.put("X-XSS-Protection", "1; mode=block");

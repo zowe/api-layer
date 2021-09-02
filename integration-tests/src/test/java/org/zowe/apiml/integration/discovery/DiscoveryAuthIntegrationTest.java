@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.functional.discovery;
+package org.zowe.apiml.integration.discovery;
 
 import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
@@ -27,10 +27,11 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
 /**
- * This test suite must be run with HTTPS on and Certificate validation ON for Discovery service
+ * This test suite must be run with HTTPS profile
+ * Verifies integration of Discovery service with ZAAS
  */
 @DiscoveryServiceTest
-class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
+class DiscoveryAuthIntegrationTest implements TestWithStartedInstances {
 
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private final static String COOKIE = "apimlAuthenticationToken";
@@ -39,7 +40,6 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
     private String password;
     private String host;
     private int port;
-
 
     @BeforeEach
     void setUp() {
@@ -51,21 +51,8 @@ class EurekaInstancesIntegrationTest implements TestWithStartedInstances {
         port = discoveryServiceConfiguration.getPort();
     }
 
-
-    @ParameterizedTest(name = "testApplicationInfoEndpoints_Auth {index} {0} ")
-    @ValueSource(strings = {"/application/info", "/discovery/api/v1/staticApi", "/"})
-    void testApplicationInfoEndpoints_Auth(String path) throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .auth().basic(username, password)
-            .when()
-            .get(getDiscoveryUriWithPath(path))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-
     @ParameterizedTest(name = "testApplicationInfoEndpoints_Cookie {index} {0} ")
-    @ValueSource(strings = {"/application/info", "/discovery/api/v1/staticApi", "/"})
+    @ValueSource(strings = {"/discovery/api/v1/staticApi", "/"})
     void testApplicationInfoEndpoints_Cookie(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
