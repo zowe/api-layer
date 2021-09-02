@@ -77,13 +77,13 @@ public class ServerSentEventsProxyTest {
         class GivenIncorrectPath_thenReturnError {
             @ParameterizedTest(name = "WhenRoutingSession.GivenIncorrectPath_thenReturnError.givenInvalidServiceId#message {0}")
             @ValueSource(strings = {"/sse/v1/bad/events", "/bad/sse/v1/events"})
-            void givenInvalidServiceId() {
+            void givenInvalidServiceId(String path) {
 
             }
 
             @ParameterizedTest(name = "WhenRoutingSession.GivenIncorrectPath_thenReturnError.givenInvalidVersion#message {0}")
             @ValueSource(strings = {"/sse/bad/discoverableclient/events", "/discoverableclient/sse/bad/events"})
-            void givenInvalidVersion() {
+            void givenInvalidVersion(String path) {
 
             }
         }
