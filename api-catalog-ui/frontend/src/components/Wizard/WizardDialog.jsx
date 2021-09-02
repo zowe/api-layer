@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
+import * as log from 'loglevel';
 import React, { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
@@ -47,6 +47,8 @@ export default class WizardDialog extends Component {
     render() {
         const { wizardIsOpen, enablerName, inputData, selectedCategory, navsObj } = this.props;
         const size = selectedCategory === Object.keys(navsObj).length ? 'large' : 'medium';
+        const disable = !(selectedCategory === inputData.length);
+        log.error(disable);
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} size={size} closeOnClickOutside={false}>
@@ -62,8 +64,8 @@ export default class WizardDialog extends Component {
                             <Button size="medium" onClick={this.closeWizard}>
                                 Cancel
                             </Button>
-                            <Button size="medium" onClick={this.nextSave}>
-                                {selectedCategory === inputData.length ? 'Save' : 'Next'}
+                            <Button size="medium" onClick={this.nextSave} disabled={disable}>
+                                Done
                             </Button>
                         </DialogActions>
                     </DialogFooter>
