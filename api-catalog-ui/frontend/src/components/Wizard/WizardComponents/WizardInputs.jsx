@@ -101,7 +101,9 @@ class WizardInputs extends Component {
         Object.keys(myObject).forEach(key => {
             newObject[key] = { ...myObject[key] };
             newObject[key].interactedWith = false;
-            newObject[key].value = '';
+            if (typeof newObject[key].value !== 'boolean') {
+                newObject[key].value = '';
+            }
             newObject[key].question = myObject[key].question;
         });
         const contentCopy = [...this.props.data.content];
