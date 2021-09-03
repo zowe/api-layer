@@ -4,8 +4,8 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `1.24.4 (2021-09-01)`
 
-* Feature:  SAF resource access check controller (#1734) ([680f4b9](https://github.com/zowe/api-layer/commit/680f4b9)), closes [#1734](https://github.com/zowe/api-layer/issues/1734)
-* Feature:  Compress response if service wants to (#1728) ([85b5948](https://github.com/zowe/api-layer/commit/85b5948)), closes [#1728](https://github.com/zowe/api-layer/issues/1728)
+* Feature:  SAF resource access controller that allows authorized user to query his SAF resource access levels (#1734) ([680f4b9](https://github.com/zowe/api-layer/commit/680f4b9)), closes [#1734](https://github.com/zowe/api-layer/issues/1734)
+* Feature:  Compress routed response with GZIP based on routed service's preference (#1728) ([85b5948](https://github.com/zowe/api-layer/commit/85b5948)), closes [#1728](https://github.com/zowe/api-layer/issues/1728)
 * Feature:  Introduce REST provider for SAF IDT tokens (#1714) ([047c54e](https://github.com/zowe/api-layer/commit/047c54e)), closes [#1714](https://github.com/zowe/api-layer/issues/1714)
 * Feature:  Refresh endpoint for prolonging valid JWT token (#1719) ([f918916](https://github.com/zowe/api-layer/commit/f918916)), closes [#1719](https://github.com/zowe/api-layer/issues/1719)
 * Feature:  introduce error codes for SAF authentication (#1692) ([89ac5a2](https://github.com/zowe/api-layer/commit/89ac5a2)), closes [#1692](https://github.com/zowe/api-layer/issues/1692)
