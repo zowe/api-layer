@@ -10,7 +10,7 @@
 /* eslint-disable no-undef */
 import * as constants from '../constants/wizard-constants';
 import * as actions from './wizard-actions';
-import { addCategoryToYamlObject, handleIndentationDependency, insert } from './wizard-actions';
+import { addCategoryToYamlObject, handleArrayIndentation, handleIndentationDependency, insert } from './wizard-actions';
 
 describe('>>> Wizard actions tests', () => {
     it('should get next category', () => {

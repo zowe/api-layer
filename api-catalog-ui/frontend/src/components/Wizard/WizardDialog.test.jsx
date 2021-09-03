@@ -144,16 +144,14 @@ describe('>>> WizardDialog tests', () => {
                 selectedCategory={1}
                 navsObj={{ 'Basic info': {} }}
                 nextWizardCategory={jest.fn()}
+                sendYAML={jest.fn()}
                 createYamlObject={createYamlObject}
             />
         );
         const instance = wrapper.instance();
         instance.nextSave();
-        expect(createYamlObject).toHaveBeenCalled();
-        expect(wizardToggleDisplay).toHaveBeenCalled();
-        expect(refreshedStaticApi).toHaveBeenCalled();
         expect(wrapper.find({ size: 'large' })).toExist();
-    })
+    });
     it('should invoke nextCategory on clicking "Next"', () => {
         const nextWizardCategory = jest.fn();
         const validateInput = jest.fn();
