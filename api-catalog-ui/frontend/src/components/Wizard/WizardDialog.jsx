@@ -53,7 +53,7 @@ export default class WizardDialog extends Component {
     render() {
         const { wizardIsOpen, enablerName, selectedCategory, navsObj } = this.props;
         const size = selectedCategory === Object.keys(navsObj).length ? 'large' : 'medium';
-        const disable = !(selectedCategory === inputData.length);
+        const disable = !(selectedCategory === Object.keys(navsObj).length);
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} size={size} closeOnClickOutside={false}>
