@@ -33,7 +33,7 @@ import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 
 @ActiveProfiles("https")
-public class HttpsSecuredEndpointsTest extends DiscoveryFunctionalTest {
+class HttpsSecuredEndpointsTest extends DiscoveryFunctionalTest {
 
     @Override
     protected String getProtocol() {
