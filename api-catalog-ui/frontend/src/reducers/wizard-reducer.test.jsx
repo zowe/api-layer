@@ -19,9 +19,10 @@ import {
     VALIDATE_INPUT,
 } from '../constants/wizard-constants';
 import wizardReducer, {
-    addDefaultValues, compareVariables,
+    addDefaultValues,
+    compareVariables,
     setDefault,
-    wizardReducerDefaultState
+    wizardReducerDefaultState,
 } from './wizard-reducer';
 
 describe('>>> Wizard reducer tests', () => {

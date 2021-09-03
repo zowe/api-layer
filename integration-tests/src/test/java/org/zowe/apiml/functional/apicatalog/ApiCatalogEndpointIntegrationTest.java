@@ -11,11 +11,13 @@ package org.zowe.apiml.functional.apicatalog;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -29,6 +31,7 @@ import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.http.HttpSecurityUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -38,6 +41,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 @CatalogTest
+@Slf4j
 class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
@@ -45,6 +49,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v1";
     private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v2";
     private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
+    private static final String STATIC_DEFINITION_GENERATE_ENDPOINT = "/apicatalog/api/v1/static-api/generate";
 
     private String baseHost;
 
@@ -142,17 +147,50 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         }
     }
 
-    // Functional
-    @Test
-    void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
-        final HttpResponse response = getStaticApiRefreshResponse(REFRESH_STATIC_APIS_ENDPOINT, HttpStatus.SC_OK);
+    @Nested
+    class StaticApis {
+        // Functional
+        @Test
+        void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
+            final HttpResponse response = getStaticApiResponse(REFRESH_STATIC_APIS_ENDPOINT, HttpStatus.SC_OK, null);
 
-        // When
-        final String jsonResponse = EntityUtils.toString(response.getEntity());
+            // When
+            final String jsonResponse = EntityUtils.toString(response.getEntity());
 
-        JSONArray errors = JsonPath.parse(jsonResponse).read("$.errors");
+            JSONArray errors = JsonPath.parse(jsonResponse).read("$.errors");
 
-        assertEquals("[]", errors.toString());
+            assertEquals("[]", errors.toString());
+        }
+
+        @Test
+        void whenCallStaticDefinitionGenerate_thenResponse201() throws IOException {
+            String location;
+            if (System.getenv("APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES") == null) {
+                location = "config/local/api-defs";
+            } else {
+                location = System.getenv("APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES");
+            }
+            log.info("apiml.discovery.staticApiDefinitionsDirectories: " + location);
+
+            String json = "services:\n  - serviceId: test-service-1\\n    title: \n    description: \n   instanceBaseUrls:\n   description: \n";
+
+            final HttpResponse response = getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, HttpStatus.SC_CREATED, json);
+
+            // When
+            final String jsonResponse = EntityUtils.toString(response.getEntity());
+
+            assertEquals("The static definition file has been created by the user! Its location is: .//usr/local/etc/config/api-defs/test-service-1.yml", jsonResponse);
+
+            File staticDef = new File("../" + location + "/test-service-1.yml");
+
+            // Delete the created test file
+            if (staticDef.delete()) {
+                log.info(staticDef.getName() + " has been deleted");
+            } else {
+                log.info("Failed to delete the file!");
+            }
+        }
+
     }
 
     // Execute the endpoint and check the response for a return code
@@ -170,12 +208,16 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         return response;
     }
 
-    // Execute the refresh static apis endpoint and check the response for a return code
-    private HttpResponse getStaticApiRefreshResponse(String endpoint, int returnCode) throws IOException {
+    // Execute the static apis endpoints and check the response for a return code
+    private HttpResponse getStaticApiResponse(String endpoint, int returnCode, String body) throws IOException {
         URI uri = HttpRequestUtils.getUriFromGateway(endpoint);
         HttpPost request = new HttpPost(uri);
         request.addHeader("Accept", "application/json");
-
+        if (body != null) {
+            request.addHeader("Service-Id", "test-service-1");
+            StringEntity entity = new StringEntity(body);
+            request.setEntity(entity);
+        }
         String cookie = HttpSecurityUtils.getCookieForGateway();
         HttpSecurityUtils.addCookie(request, cookie);
 
@@ -184,6 +226,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
         // Then
         assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
+
 
         return response;
     }

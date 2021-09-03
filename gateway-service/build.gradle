@@ -64,6 +64,11 @@ dependencies {
     implementation libraries.spring_boot_starter_aop
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_crypto
+    implementation libraries.xstream
+    implementation libraries.json_smart
+
     implementation libraries.swagger3_core
     implementation libraries.swagger3_parser
     implementation libraries.jackson_core
@@ -91,6 +96,7 @@ dependencies {
     implementation libraries.springFox
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
+    testCompile libraries.json_smart
     testRuntime libraries.http_client
     testCompile libraries.rest_assured
     testCompile libraries.javax_inject

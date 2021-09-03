@@ -25,6 +25,12 @@
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
+if [[ -z "${LAUNCH_COMPONENT}" ]]
+then
+  # component should be started from component home directory
+  LAUNCH_COMPONENT=$(pwd)/bin
+fi
+
 JAR_FILE="${LAUNCH_COMPONENT}/caching-service.jar"
 
 # API Mediation Layer Debug Mode
@@ -44,6 +50,8 @@ if [ ! -z ${ZWE_CACHING_SERVICE_VSAM_DATASET} ]
 then
     VSAM_FILE_NAME=//\'${ZWE_CACHING_SERVICE_VSAM_DATASET}\'
 fi
+
+EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
 
 if [ `uname` = "OS/390" ]
 then
@@ -67,30 +75,32 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Djava.io.tmpdir=/tmp \
   -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
   -Dspring.profiles.include=$LOG_LEVEL \
-  -Dapiml.service.port=${ZWE_CACHING_SERVICE_PORT} \
-  -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
-  -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-  -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
-  -Dapiml.service.customMetadata.apiml.gatewayPort=${GATEWAY_PORT} \
+  -Dapiml.service.port=${ZWE_CACHING_SERVICE_PORT:-7555} \
+  -Dapiml.service.hostname=${EXPLORER_HOST} \
+  -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_PORT:-7553}/eureka/"} \
+  -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+  -Dapiml.service.customMetadata.apiml.gatewayPort=${GATEWAY_PORT:-7554} \
   -Dapiml.service.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
-  -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY} \
-  -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE} \
+  -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY:-reject} \
+  -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE:-10000} \
   -Dcaching.storage.mode=${ZWE_CACHING_SERVICE_PERSISTENT:-inMemory} \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
-  -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
+  -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true}  \
   -Dserver.ssl.keyStore="${KEYSTORE}" \
-  -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE}" \
+  -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE:-PKCS12}" \
   -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
   -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
   -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
   -Dserver.ssl.trustStore="${TRUSTSTORE}" \
-  -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
+  -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
   -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -Djava.library.path=${LIBRARY_PATH} \
-  -jar ${JAR_FILE} &
+  -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"
+
+wait %1
