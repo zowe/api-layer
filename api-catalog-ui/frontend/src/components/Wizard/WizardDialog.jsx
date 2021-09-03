@@ -63,6 +63,12 @@ export default class WizardDialog extends Component {
         if (selectedCategory < Object.keys(navsObj).length) {
             validateInput(Object.keys(navsObj)[selectedCategory], false);
             nextWizardCategory();
+            if (selectedCategory === Object.keys(navsObj).length - 1) {
+                const navNamesArr = Object.keys(this.props.navsObj);
+                navNamesArr.forEach(navName => {
+                    this.props.validateInput(navName, false);
+                });
+            }
         } else {
             this.doneWizard();
         }
@@ -87,7 +93,7 @@ export default class WizardDialog extends Component {
                                 Cancel
                             </Button>
                             <Button size="medium" onClick={this.nextSave}>
-                                {selectedCategory === Object.keys(navsObj).length ? 'Save' : 'Next'}
+                                {selectedCategory === Object.keys(navsObj).length ? 'Done' : 'Next'}
                             </Button>
                         </DialogActions>
                     </DialogFooter>

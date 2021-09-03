@@ -1,5 +1,3 @@
-serviceId: hwexpress
-title: Hello World express REST API
 eureka:
   ssl: true
   host: localhost
@@ -11,25 +9,6 @@ eureka:
   registryFetchInterval: 5
 
 
-description: Hello World REST API Service implemented in Express and Node.js
-baseUrl: https://localhost:10020/hwexpress
-homePageRelativeUrl: https://localhost:10020/
-statusPageRelativeUrl: https://localhost:10020/info
-healthCheckRelativeUrl: https://localhost:10020/status
-discoveryServiceUrls:
-  - https://localhost:10011/eureka
-routes:
-  - gatewayUrl: api/v1
-    serviceRelativeUrl: /api/v1
-apiInfo:
-  - apiId: org.zowe.hwexpress
-    gatewayUrl: "api/v1"
-    swaggerUrl: https://localhost:10020/swagger.json
-catalogUiTile:
-  id: cademoapps
-  title: Sample API Mediation Layer Applications
-  description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
-  version: 1.0.0
 instance:
   app: hwexpress
   vipAddress: hwexpress

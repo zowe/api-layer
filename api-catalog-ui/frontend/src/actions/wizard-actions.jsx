@@ -98,8 +98,8 @@ export const insert = (parent, content) => {
  */
 export function handleIndentationDependency(inputData, indentationDependency, indentation) {
     let result = indentation;
-    inputData.forEach(category => {
-        if (Array.isArray(category.content)) {
+    if (indentationDependency !== undefined) {
+        inputData.forEach(category => {
             category.content.forEach(inpt => {
                 Object.keys(inpt).forEach(k => {
                     if (k === indentationDependency) {
@@ -108,16 +108,23 @@ export function handleIndentationDependency(inputData, indentationDependency, in
                     }
                 });
             });
-        } else {
-            Object.keys(category.content).forEach(k => {
-                if (k === indentationDependency) {
-                    result = result.concat('/', category.content[k].value);
-                    return result;
-                }
-            });
-        }
-    });
+        });
+    }
     return result;
+}
+
+export function handleArrayIndentation(arrIndent, content) {
+    let finalContent = [];
+    if (arrIndent !== undefined) {
+        let index = 0;
+        content.forEach(set => {
+            finalContent[index] = { [arrIndent]: set };
+            index += 1;
+        });
+    } else {
+        finalContent = content;
+    }
+    return finalContent;
 }
 
 /**
@@ -153,6 +160,7 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
                 Object.keys(o).forEach(key => {
                     content[index][key] = category.content[index][key].value;
                 });
+                content = handleArrayIndentation(category.arrIndent, content);
                 index += 1;
             });
         }
@@ -161,7 +169,7 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
     if (!category.indentation) {
         insert(result, content);
     } else {
-        let indent = category.indentation;
+        let indent = handleIndentationDependency(inputData, category.indentationDependency, category.indentation);
         if (category.indentationDependency !== undefined) {
             indent = handleIndentationDependency(inputData, category.indentationDependency, category.indentation);
         }
