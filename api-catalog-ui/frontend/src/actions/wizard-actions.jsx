@@ -89,12 +89,51 @@ export const insert = (parent, content) => {
 };
 
 /**
+ * Adds the value of
+ * @param inputData inputData array with all categories (already filled by user)
+ * @param indentationDependency the name of the input on which it depends
+ * @param indentation the predefined indentation of the category
+ * @returns result the updated indentation
+ */
+export function handleIndentationDependency(inputData, indentationDependency, indentation) {
+    let result = indentation;
+    if (indentationDependency !== undefined) {
+        inputData.forEach(category => {
+            category.content.forEach(inpt => {
+                Object.keys(inpt).forEach(k => {
+                    if (k === indentationDependency) {
+                        result = result.concat('/', inpt[k].value);
+                        return result;
+                    }
+                });
+            });
+        });
+    }
+    return result;
+}
+
+export function handleArrayIndentation(arrIndent, content) {
+    let finalContent = [];
+    if (arrIndent !== undefined) {
+        let index = 0;
+        content.forEach(set => {
+            finalContent[index] = { [arrIndent]: set };
+            index += 1;
+        });
+    } else {
+        finalContent = content;
+    }
+    return finalContent;
+}
+
+/**
  * Receives a single category and translates it to an object the yaml library can correctly convert to yaml
  * @param category a category
  * @param parent parent object which the yaml-ready category should be added to
+ * @param inputData array with all categories (already filled by user)
  * @returns result the updated parent
  */
-export const addCategoryToYamlObject = (category, parent) => {
+export const addCategoryToYamlObject = (category, parent, inputData) => {
     const result = { ...parent };
     let content = {};
     // load user's answer into content object
@@ -120,6 +159,7 @@ export const addCategoryToYamlObject = (category, parent) => {
                 Object.keys(o).forEach(key => {
                     content[index][key] = category.content[index][key].value;
                 });
+                content = handleArrayIndentation(category.arrIndent, content);
                 index += 1;
             });
         }
@@ -128,7 +168,7 @@ export const addCategoryToYamlObject = (category, parent) => {
     if (!category.indentation) {
         insert(result, content);
     } else {
-        const indent = category.indentation;
+        const indent = handleIndentationDependency(inputData, category.indentationDependency, category.indentation);
         const arr = indent.split('/');
         arr.reverse().forEach(key => {
             if (key.length > 0)
@@ -148,12 +188,27 @@ export const addCategoryToYamlObject = (category, parent) => {
  */
 export function createYamlObject(inputData) {
     let result = {};
+    const arr = [];
     inputData.forEach(category => {
-        result = addCategoryToYamlObject(category, result);
+        if (category.inArr) {
+            result = addCategoryToYamlObject(category, result, inputData);
+        }
+    });
+    if (Object.keys(result).length > 0) {
+        arr.push(result);
+    }
+    let finalResult;
+    if (arr.length > 0) {
+        finalResult = { services: arr };
+    }
+    inputData.forEach(cat => {
+        if (cat.inArr === undefined) {
+            finalResult = addCategoryToYamlObject(cat, finalResult, inputData);
+        }
     });
     return {
         type: READY_YAML_OBJECT,
-        payload: { yaml: result },
+        payload: { yaml: finalResult },
     };
 }
 

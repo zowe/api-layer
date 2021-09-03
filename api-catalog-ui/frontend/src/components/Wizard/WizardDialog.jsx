@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import * as log from 'loglevel';
+
 import React, { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
@@ -35,20 +35,25 @@ export default class WizardDialog extends Component {
      * Displays either Next or Save, depending whether the user is at the last stage or not.
      */
     nextSave = () => {
-        const { selectedCategory, inputData, navsObj, nextWizardCategory, validateInput } = this.props;
-        if (selectedCategory < inputData.length) {
+        const { selectedCategory, navsObj, nextWizardCategory, validateInput } = this.props;
+        if (selectedCategory < Object.keys(navsObj).length) {
             validateInput(Object.keys(navsObj)[selectedCategory], false);
             nextWizardCategory();
+            if (selectedCategory === Object.keys(navsObj).length - 1) {
+                const navNamesArr = Object.keys(this.props.navsObj);
+                navNamesArr.forEach(navName => {
+                    this.props.validateInput(navName, false);
+                });
+            }
         } else {
             this.doneWizard();
         }
     };
 
     render() {
-        const { wizardIsOpen, enablerName, inputData, selectedCategory, navsObj } = this.props;
+        const { wizardIsOpen, enablerName, selectedCategory, navsObj } = this.props;
         const size = selectedCategory === Object.keys(navsObj).length ? 'large' : 'medium';
         const disable = !(selectedCategory === inputData.length);
-        log.error(disable);
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} size={size} closeOnClickOutside={false}>
