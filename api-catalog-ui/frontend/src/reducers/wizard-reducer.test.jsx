@@ -11,11 +11,11 @@
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
-    NEXT_CATEGORY,
+    NEXT_CATEGORY, OVERRIDE_DEF,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
     SELECT_ENABLER,
-    TOGGLE_DISPLAY,
+    TOGGLE_DISPLAY, UPDATE_SERVICE_ID,
     VALIDATE_INPUT,
     WIZARD_VISIBILITY_TOGGLE
 } from '../constants/wizard-constants';
@@ -550,6 +550,23 @@ describe('>>> Wizard reducer tests', () => {
             payload: { navName: 'Nav1', silent: false },
         })).toEqual(expectedState);
     });
+
+    it('should update the service ID', () => {
+        const expectedState = { serviceId: 'newId'};
+        expect(wizardReducer({ serviceId: 'hey' }, {
+            type: UPDATE_SERVICE_ID,
+            payload: {
+                value: 'newId',
+            },
+        })).toEqual(expectedState);
+    })
+
+    it('should override static definition', () => {
+        const expectedState = { confirmDialog: true, wizardIsOpen: false};
+        expect(wizardReducer({ confirmDialog: false, wizardIsOpen: true }, {
+            type: OVERRIDE_DEF,
+        })).toEqual(expectedState);
+    })
 
     it('should add default values', () => {
         const content = {

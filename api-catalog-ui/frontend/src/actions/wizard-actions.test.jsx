@@ -231,5 +231,11 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.validateInput('Nav', true)).toEqual(expectedAction);
     });
-
+    it('should update service ID', () => {
+        const expectedAction = {
+            type: constants.UPDATE_SERVICE_ID,
+            payload: { value: 'hey' },
+        };
+        expect(actions.updateServiceId('hey')).toEqual(expectedAction);
+    });
 });
