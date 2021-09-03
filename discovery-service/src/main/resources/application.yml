@@ -105,6 +105,12 @@ server:
         keyStoreType: PKCS12
         trustStoreType: PKCS12
         trustStoreRequired: true
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
 
 eureka:
     instance:
