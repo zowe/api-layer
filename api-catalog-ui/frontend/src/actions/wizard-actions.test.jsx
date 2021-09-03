@@ -10,7 +10,7 @@
 /* eslint-disable no-undef */
 import * as constants from '../constants/wizard-constants';
 import * as actions from './wizard-actions';
-import { addCategoryToYamlObject, handleIndentationDependency, insert } from './wizard-actions';
+import { addCategoryToYamlObject, handleArrayIndentation, handleIndentationDependency, insert } from './wizard-actions';
 
 describe('>>> Wizard actions tests', () => {
     it('should get next category', () => {
@@ -106,7 +106,7 @@ describe('>>> Wizard actions tests', () => {
         const inputData = [
             {
                 text: 'Category 1',
-                content: { test: { value: '', question: 'Why', }, },
+                content: [{ test: { value: '', question: 'Why', }, }],
             },
             {
                 text: 'Category 2',
@@ -121,31 +121,14 @@ describe('>>> Wizard actions tests', () => {
         const result = handleIndentationDependency(inputData, indentationDepenedency, indentation);
         expect(result).toEqual('indent/val');
     })
-    it('should handle indentation dependencies when content is not an array', () => {
-        const inputData = [
-            {
-                text: 'Category 1',
-                content: { test: { value: '', question: 'Why', }, },
-            },
-            {
-                text: 'Category 2',
-                content: {
-                    test2: { value: 'val', question: 'Why not?', },
-                },
-            },
-        ];
-        const indentation = 'indent';
-        const indentationDepenedency = 'test2';
-        const result = handleIndentationDependency(inputData, indentationDepenedency, indentation);
-        expect(result).toEqual('indent/val');
-    })
     it('should add categories to the YAML object and handle indentation', () => {
         const category = {
             text: 'Category 1',
             content: [{ test: { value: 'yaml' } }],
-            multiple: false,
+            multiple: true,
             indentation: 'category1',
             indentationDependency: 'test2',
+            arrIndent: 'indent',
         };
         const inputData = [
             {
@@ -155,7 +138,7 @@ describe('>>> Wizard actions tests', () => {
         ];
         let result = { test3: 'test 3' };
         result = addCategoryToYamlObject(category, result, inputData);
-        expect(result).toEqual({ category1: { val: { test: 'yaml' } }, test3: 'test 3' });
+        expect(result).toEqual({ category1: { val: [{indent: { test: 'yaml'} }] }, test3: 'test 3' });
     });
     it('should add categories to the YAML object and handle empty indentation', () => {
         const category = {
@@ -173,28 +156,13 @@ describe('>>> Wizard actions tests', () => {
     it('should not add categories to the YAML object if they are not shown', () => {
         const category = {
             text: 'Category 1',
-            content: [{
-                test: { value: 'yaml', show: false}
-            }],
+            content: [{ test: { value: 'yaml', show: false} }],
             multiple: false,
             indentation: '/',
         };
         let result = { test2: 'test 2' };
         result = addCategoryToYamlObject(category, result);
         expect(result).toEqual({ test2: 'test 2' });});
-    it('should not add categories to the YAML object if they are not shown', () => {
-        const category = {
-            text: 'Category 1',
-            content: [{
-                test: { value: 'yaml', show: false}
-            }],
-            multiple: false,
-            indentation: '/',
-        };
-        let result = { test2: 'test 2' };
-        result = addCategoryToYamlObject(category, result);
-        expect(result).toEqual({ test2: 'test 2' });
-    });
     it('should change the category', () => {
         const expectedAction = {
             type: constants.CHANGE_CATEGORY,
@@ -243,5 +211,10 @@ describe('>>> Wizard actions tests', () => {
         };
         expect(actions.validateInput('Nav', true)).toEqual(expectedAction);
     });
-
+    it('should add indentation before wrapping in an array', () => {
+        const content = [{ test: ''}];
+        const arrIndent = 'indent';
+        const result = handleArrayIndentation(arrIndent,content);
+        expect(result).toEqual([{indent: {test: ''}}]);
+    })
 });

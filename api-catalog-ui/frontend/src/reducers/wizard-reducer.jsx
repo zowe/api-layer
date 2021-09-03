@@ -48,6 +48,9 @@ export function compareVariables(category, categoryInfo) {
     if (categoryInfo.inArr !== undefined) {
         category.inArr = categoryInfo.inArr;
     }
+    if (categoryInfo.arrIndent !== undefined) {
+        category.arrIndent = categoryInfo.arrIndent;
+    }
     if (!Array.isArray(category.content) && category.content !== undefined) {
         const arr = [];
         arr.push(category.content);

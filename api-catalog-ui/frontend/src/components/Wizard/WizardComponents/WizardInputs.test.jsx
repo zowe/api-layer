@@ -242,6 +242,23 @@ describe('>>> WizardInputs tests', () => {
         instance.addFields();
         expect(updateWizardData).toHaveBeenCalled();
     });
+    it('should add more fields when value is boolean', () => {
+        const updateWizardData = jest.fn();
+        const dummyData = {
+            text: 'Dummy Data',
+            content: [{
+                test: { value: true, question: '', show: true },
+                test2: { value: '', question: '', show: true },
+            }],
+            multiple: true,
+        };
+        const wrapper = enzyme.shallow(
+            <WizardInputs updateWizardData={updateWizardData} data={dummyData} />
+        );
+        const instance = wrapper.instance();
+        instance.addFields();
+        expect(updateWizardData).toHaveBeenCalled();
+    });
     it('should delete added input fields', () => {
         const deleteCategoryConfig = jest.fn();
         const validateInput = jest.fn();
