@@ -19,14 +19,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -47,7 +44,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
     static void setupClients() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
 
-        SslContext.prepareSslAuthentication();
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
     }
 
     @Nested
