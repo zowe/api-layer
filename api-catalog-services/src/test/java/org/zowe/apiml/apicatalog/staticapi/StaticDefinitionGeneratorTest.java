@@ -9,9 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.staticapi;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -24,7 +22,8 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -56,9 +55,8 @@ class StaticDefinitionGeneratorTest {
             TokenAuthentication authentication = new TokenAuthentication("token");
             authentication.setAuthenticated(true);
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
-            Exception exception = assertThrows(IOException.class, () ->
+            assertThrows(IOException.class, () ->
                 staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n ", "service"));
-            assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
         }
 
         @Test
@@ -66,9 +64,8 @@ class StaticDefinitionGeneratorTest {
             TokenAuthentication authentication = new TokenAuthentication("token");
             authentication.setAuthenticated(true);
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
-            Exception exception = assertThrows(IOException.class, () ->
+            assertThrows(IOException.class, () ->
                 staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n ", "service"));
-            assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
         }
 
     }
@@ -99,7 +96,6 @@ class StaticDefinitionGeneratorTest {
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
             Exception exception = assertThrows(IOException.class, () ->
                 staticDefinitionGenerator.overrideFile("services: \\n serviceId: service\\n ", "service"));
-            assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
         }
     }
 

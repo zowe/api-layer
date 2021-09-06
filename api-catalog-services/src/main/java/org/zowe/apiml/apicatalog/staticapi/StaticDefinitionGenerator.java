@@ -14,9 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -52,7 +50,7 @@ public class StaticDefinitionGenerator {
         }
         String location = retrieveStaticDefLocation();
         file = formatFile(file);
-        String absoluteFilePath = String.format("./%s/%s.yml", location, serviceId);
+        String absoluteFilePath = String.format("%s/%s.yml", location, serviceId);
         fileName.set(absoluteFilePath);
 
         checkIfFileExists(absoluteFilePath);
@@ -67,7 +65,7 @@ public class StaticDefinitionGenerator {
         }
         String location = retrieveStaticDefLocation();
         file = formatFile(file);
-        String absoluteFilePath = String.format("./%s/%s.yml", location, serviceId);
+        String absoluteFilePath = String.format("%s/%s.yml", location, serviceId);
         fileName.set(absoluteFilePath);
         String message = "The static definition file %s has been overwritten by the user!";
         return writeFileAndSendResponse(file, fileName, String.format(message, fileName));
