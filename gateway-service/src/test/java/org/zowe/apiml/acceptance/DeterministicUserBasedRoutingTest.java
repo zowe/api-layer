@@ -36,6 +36,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * Verify that the behavior configured for the routing chooses for the same user the same service instance.
+ *
  */
 @AcceptanceTest
 class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
