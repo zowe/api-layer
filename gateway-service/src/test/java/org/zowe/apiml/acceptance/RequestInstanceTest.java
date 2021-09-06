@@ -16,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerConstants;
 
 import java.io.IOException;
@@ -31,8 +32,8 @@ public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
     @BeforeEach
     public void prepareApplications() {
         applicationRegistry.clearApplications();
-        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, false);
-        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, false);
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(),false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance(),true);
     }
 
     @Nested
