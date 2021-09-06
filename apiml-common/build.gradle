@@ -8,6 +8,7 @@ dependencies {
     compile libraries.http_client
     compile libraries.http_core
     compile libraries.janino
+    compile libraries.xstream
 
 
     compileOnly libraries.spring_boot_configuration_processor
@@ -16,6 +17,7 @@ dependencies {
 
     testCompile libraries.javax_servlet_api
     testCompile libraries.spring_boot_starter_test
+    testCompile libraries.json_smart
 
     testCompile libraries.lombok
     annotationProcessor libraries.lombok

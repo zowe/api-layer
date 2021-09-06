@@ -99,15 +99,7 @@ export const enablerData = [
     {
         text: 'Node JS Enabler',
         categories: [
-            { name: 'Basic info', nav: 'Basics' },
             { name: 'Eureka', indentation: 'eureka', nav: 'Basics' },
-            { name: 'Description', nav: 'Basics' },
-            { name: 'Base URL', nav: 'URL' },
-            { name: 'URL', nav: 'URL' },
-            { name: 'Discovery Service URL', indentation: 'discoveryServiceUrls', multiple: true },
-            { name: 'Routes for Static & Node', indentation: 'routes', multiple: true },
-            { name: 'API Info for Node', indentation: 'apiInfo', multiple: true },
-            { name: 'Catalog', indentation: 'catalogUiTile' },
             { name: 'Instance', indentation: 'instance', nav: 'Instance' },
             { name: 'Instance port', indentation: 'instance/port', nav: 'Instance ports' },
             { name: 'Instance security port', indentation: 'instance/securePort', nav: 'Instance ports' },

@@ -12,18 +12,14 @@ package org.zowe.apiml.functional.apicatalog;
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.util.List;
@@ -65,7 +61,7 @@ class ApiCatalogAuthenticationTest {
     @BeforeAll
     static void setUp() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
-        SslContext.prepareSslAuthentication();
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
 
         List<DiscoveryUtils.InstanceInfo> apiCatalogInstances = DiscoveryUtils.getInstances(CATALOG_SERVICE_ID);
         if (StringUtils.isEmpty(apiCatalogServiceUrl)) {

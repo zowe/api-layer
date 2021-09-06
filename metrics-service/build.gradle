@@ -55,13 +55,17 @@ dependencies {
     implementation libraries.spring_cloud_starter_eureka
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_crypto
     implementation libraries.gson
+    implementation libraries.xstream
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
     testCompile libraries.lombok
     testAnnotationProcessor libraries.lombok
     testCompile libraries.spring_boot_starter_test
+    testCompile libraries.json_smart
 }
 
 def uiModule = "${project(':metrics-service-ui').projectDir}"

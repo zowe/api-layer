@@ -57,6 +57,7 @@ apiml:
         filterChainConfiguration: new
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         allowTokenRefresh: false
+        jwtInitializerTimeout: 5
         auth:
             provider: zosmf
             jwtKeyAlias: jwtsecret

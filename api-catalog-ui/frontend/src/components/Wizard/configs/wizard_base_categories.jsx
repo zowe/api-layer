@@ -196,7 +196,7 @@ export const baseCategories = [
         content: {
             verifySslCertificatesOfServices: {
                 value: false,
-                question: 'Set this parameter to true in production environments:',
+                question: 'Verify SSL certificates of services:',
             },
             protocol: {
                 value: 'TLSv1.2',

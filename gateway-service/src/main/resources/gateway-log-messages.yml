@@ -93,6 +93,13 @@ messages:
       reason: "The service is not available. It might be removed by the Circuit Breaker or by requesting specific instance that is not available"
       action: "Try the request later or remove the request for specific instance."
 
+    - key: org.zowe.apiml.security.unauthorized
+      number: ZWEAG711
+      type: ERROR
+      text: "The principal '%s' is missing queried authorization."
+      reason: "The principal does not have the queried access to resource name within resource class."
+      action: "No action needed."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic
@@ -156,7 +163,7 @@ messages:
       type: ERROR
       text: "z/OSMF instance '%s' not found or incorrectly configured. Gateway is shutting down."
       reason: "The Gateway could not find the z/OSMF instance from the Discovery Service or it could not communicate with the provided z/OSMF instance."
-      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that the API Mediation Layer can communicate with provided z/OSMF instance."
+      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that the API Mediation Layer can communicate with provided z/OSMF instance. The default timeout is 5 minutes. On slower system, add APIML_SECURITY_JWTINITIALIZERTIMEOUT=... variable and value in minutes into Zowe's configuration to override this value."
 
     - key: org.zowe.apiml.security.zosmfDomainIsEmpty
       number: ZWEAG109
