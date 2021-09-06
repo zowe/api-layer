@@ -89,11 +89,13 @@ export const baseCategories = [
             statusPageRelativeUrl: {
                 value: '',
                 question: 'The relative path to the status page of the service:',
+                optional: true,
                 regexRestriction: [wizRegex.validRelativeUrl],
             },
             healthCheckRelativeUrl: {
                 value: '',
                 question: 'The relative path to the health check endpoint of the service:',
+                optional: true,
                 regexRestriction: [wizRegex.validRelativeUrl],
             },
         },
@@ -116,6 +118,7 @@ export const baseCategories = [
             gatewayUrl: {
                 value: '',
                 question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
+                tooltip: 'Format: api/vX, Example: api/v1',
                 regexRestriction: [wizRegex.gatewayUrl],
             },
             serviceUrl: {
@@ -156,6 +159,7 @@ export const baseCategories = [
             gatewayUrl: {
                 value: '',
                 question: 'The base path at the API Gateway where the API is available:',
+                tooltip: 'Format: api/vX, Example: api/v1',
                 regexRestriction: [wizRegex.gatewayUrl],
             },
             swaggerUrl: {

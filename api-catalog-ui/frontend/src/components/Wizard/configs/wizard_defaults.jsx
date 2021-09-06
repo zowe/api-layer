@@ -20,6 +20,11 @@ export const defaultSpring = {
     },
 };
 export const defaultNode = {
+    Eureka: {
+        maxRetries: 30,
+        requestRetryDelay: 1000,
+        registryFetchInterval: 5,
+    },
     'API Info shorter': {
         gatewayUrl: '${routes.gatewayUrl}',
     },

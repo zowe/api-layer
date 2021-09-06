@@ -45,7 +45,7 @@ export const enablerData = [
     {
         text: 'Micronaut Enabler',
         categories: [
-            // { name: 'Prefer IP address', indentation: 'apiml/service', nav: 'Basics' },
+            { name: 'Prefer IP address', indentation: 'apiml/service', nav: 'Basics' },
             { name: 'Basic info', indentation: 'apiml/service', nav: 'Basics' },
             { name: 'Description', indentation: 'apiml/service', nav: 'Basics' },
             { name: 'Discovery Service URL', indentation: 'apiml/service', nav: 'Scheme Info' },
@@ -124,7 +124,7 @@ export const enablerData = [
                 inArr: true,
             },
             { name: 'URL', nav: 'URL', inArr: true },
-            { name: 'Routes for Static & Node', indentation: 'routes', multiple: true, inArr: true },
+            { name: 'Routes for Static & Node', nav: 'Routes', indentation: 'routes', multiple: true, inArr: true },
             { name: 'Authentication', indentation: 'authentication', inArr: true },
             { name: 'API Info', indentation: 'apiInfo', multiple: true, inArr: true },
             { name: 'Catalog UI Tiles', indentation: 'catalogUiTiles' },

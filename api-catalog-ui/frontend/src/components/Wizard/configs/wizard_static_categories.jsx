@@ -1,3 +1,5 @@
+import { wizRegex } from './wizard_regex_restrictions';
+
 // eslint-disable-next-line import/prefer-default-export
 export const staticSpecificCategories = [
     {
@@ -31,6 +33,7 @@ export const staticSpecificCategories = [
             catalogUiTileId: {
                 value: '',
                 question: 'The id of the catalog tile:',
+                regexRestriction: [wizRegex.noWhiteSpaces],
             },
         },
     },
