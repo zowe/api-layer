@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { IconError } from 'mineral-ui-icons';
 import Tabs, { Tab } from 'mineral-ui/Tabs';
+import { IconDanger } from 'mineral-ui-icons';
 import WizardInputsContainer from './WizardInputsContainer';
 import YAMLVisualizerContainer from '../YAML/YAMLVisualizerContainer';
 
@@ -57,8 +57,14 @@ class WizardNavigation extends Component {
             const name = entry[0];
             const categoryArr = entry[1];
             index += 1;
+            const done = !this.props.navsObj[name].silent && !this.props.navsObj[name].warn;
             return (
-                <Tab key={index} title={name} icon={this.props.navsObj[name].warn ? <IconError /> : undefined}>
+                <Tab
+                    className={done ? 'readyTab' : undefined}
+                    key={index}
+                    title={name}
+                    icon={this.props.navsObj[name].warn ? <IconDanger style={{ color: 'red' }} /> : undefined}
+                >
                     {categoryArr}
                 </Tab>
             );
