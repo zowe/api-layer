@@ -55,6 +55,12 @@ public class MetadataBuilder {
         return this;
     }
 
+    public MetadataBuilder withCompressionPath(String compressionPath) {
+        metadata.put("apiml.response.compressRoutes", compressionPath);
+
+        return this;
+    }
+
     public Map<String, String> build() {
         return metadata;
     }
