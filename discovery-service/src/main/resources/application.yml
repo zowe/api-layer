@@ -135,7 +135,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers,shutdown
+                include: "*"
     endpoint:
         shutdown:
             enabled: true

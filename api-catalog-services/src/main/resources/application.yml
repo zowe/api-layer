@@ -166,7 +166,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers
+                include: "*"
 
 logging:
     level:
