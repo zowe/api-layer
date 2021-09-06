@@ -66,9 +66,10 @@ export default class Dashboard extends Component {
                 <div id="dash-buttons">
                     <DialogDropdown
                         selectEnabler={this.props.selectEnabler}
-                        visible={userCanAutoOnboard}
+                        userCanAutoOnboard={userCanAutoOnboard}
                         data={enablerData}
                         toggleWizard={this.toggleWizard}
+                        visible
                     />
                     <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
                         Refresh Static APIs

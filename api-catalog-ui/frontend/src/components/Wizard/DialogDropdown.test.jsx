@@ -51,6 +51,7 @@ describe('>>> DialogDropdown tests', () => {
         ];
         const wrapper = enzyme.shallow(
             <DialogDropdown
+                userCanAutoOnboard={true}
                 WIP={true}
                 data={dummyData}
                 toggleWizard={testFunc}
