@@ -25,7 +25,7 @@ export default class WizardDialog extends Component {
     };
 
     doneWizard = () => {
-        const { sendYAML, navsObj, notifyError, yamlObject, serviceId } = this.props;
+        const { sendYAML, navsObj, notifyError, yamlObject, serviceId, enablerName } = this.props;
 
         /**
          * Check that all mandatory fields are filled.
@@ -47,8 +47,9 @@ export default class WizardDialog extends Component {
             });
             return sufficient;
         };
-
-        if (presenceIsSufficient(navsObj)) {
+        if (enablerName !== 'Static Onboarding') {
+            this.closeWizard();
+        } else if (presenceIsSufficient(navsObj)) {
             sendYAML(YAML.stringify(yamlObject), serviceId);
         } else {
             notifyError('Fill all mandatory fields first!');

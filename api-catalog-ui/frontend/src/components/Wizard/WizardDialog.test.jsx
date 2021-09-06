@@ -182,6 +182,7 @@ describe('>>> WizardDialog tests', () => {
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog
+                enablerName={'Static Onboarding'}
                 inputData={dummyData}
                 selectedCategory={1}
                 navsObj={{ Basics: { 'Basic info': [[]] } }}
@@ -202,6 +203,7 @@ describe('>>> WizardDialog tests', () => {
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog
+                enablerName={'Static Onboarding'}
                 inputData={dummyData}
                 selectedCategory={1}
                 navsObj={{ Basics: { 'Basic info': [['key']], silent: true } }}
