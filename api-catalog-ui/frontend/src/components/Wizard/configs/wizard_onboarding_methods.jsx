@@ -18,7 +18,7 @@ export const enablerData = [
             { name: 'Routes', indentation: 'routes' },
             { name: 'Authentication', indentation: 'authentication' },
             { name: 'API Info', indentation: 'apiInfo', multiple: true },
-            { name: 'Catalog', indentation: 'catalog/tiles' },
+            { name: 'Catalog', indentation: 'catalog/tile' },
             { name: 'SSL', indentation: 'ssl' },
         ],
     },

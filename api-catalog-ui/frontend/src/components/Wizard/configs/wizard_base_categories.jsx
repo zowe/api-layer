@@ -84,17 +84,17 @@ export const baseCategories = [
                 value: '',
                 question: 'The relative path to the home page of the service:',
                 optional: true,
-                validUrl: true,
+                regexRestriction: [wizRegex.validRelativeUrl],
             },
             statusPageRelativeUrl: {
                 value: '',
                 question: 'The relative path to the status page of the service:',
-                validUrl: true,
+                regexRestriction: [wizRegex.validRelativeUrl],
             },
             healthCheckRelativeUrl: {
                 value: '',
                 question: 'The relative path to the health check endpoint of the service:',
-                validUrl: true,
+                regexRestriction: [wizRegex.validRelativeUrl],
             },
         },
     },
@@ -104,6 +104,7 @@ export const baseCategories = [
             discoveryServiceUrls: {
                 value: '',
                 question: 'Discovery Service URL:',
+                validUrl: true,
             },
         },
         multiple: false,
@@ -194,7 +195,7 @@ export const baseCategories = [
         text: 'SSL',
         content: {
             verifySslCertificatesOfServices: {
-                value: '',
+                value: false,
                 question: 'Set this parameter to true in production environments:',
             },
             protocol: {
@@ -208,6 +209,7 @@ export const baseCategories = [
             keyPassword: {
                 value: '',
                 question: 'The password associated with the private key:',
+                type: 'password',
             },
             keyStore: {
                 value: '',
@@ -216,10 +218,12 @@ export const baseCategories = [
             keyStorePassword: {
                 value: '',
                 question: 'The password used to unlock the keystore:',
+                type: 'password',
             },
             keyStoreType: {
-                value: '',
+                value: 'PKCS12',
                 question: 'Type of the keystore:',
+                options: ['PKCS12', 'JKS', 'JCERACFKS'],
             },
             trustStore: {
                 value: '',
@@ -228,6 +232,7 @@ export const baseCategories = [
             trustStorePassword: {
                 value: '',
                 question: 'The password used to unlock the truststore:',
+                type: 'password',
             },
             trustStoreType: {
                 value: 'PKCS12',

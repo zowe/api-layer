@@ -69,7 +69,6 @@ describe('>>> Wizard actions tests', () => {
         let result = { test2: 'test 2' };
         result = addCategoryToYamlObject(category, result);
         expect(result).toEqual({ test: 'yaml', test2: 'test 2' });
-
     });
     it('should add categories to the YAML object when content is an array', () => {
         const category = {
@@ -162,7 +161,40 @@ describe('>>> Wizard actions tests', () => {
         };
         let result = { test2: 'test 2' };
         result = addCategoryToYamlObject(category, result);
-        expect(result).toEqual({ test2: 'test 2' });});
+        expect(result).toEqual({ test2: 'test 2' });
+    });
+    it('should not add empty optional values', () => {
+        const category = {
+            text: 'Category 1',
+            content: [{ test: { value: '', show: true, optional: true} }],
+            multiple: false,
+            indentation: '/',
+        };
+        let result = {};
+        result = addCategoryToYamlObject(category, result);
+        expect(result).toEqual({});});
+    it('should not add multiple empty optional keyless values', () => {
+        const category = {
+            text: 'Category 1',
+            content: [{ test: { value: '', show: true, optional: true,} }],
+            multiple: true,
+            indentation: '/',
+            noKey: true,
+        };
+        let result = {};
+        result = addCategoryToYamlObject(category, result);
+        expect(result).toEqual({});});
+    it('should not add multiple empty optional values', () => {
+        const category = {
+            text: 'Category 1',
+            content: [
+                { test: { value: '', show: true, optional: true,} },
+            ],
+            multiple: true,
+        };
+        let result = {};
+        result = addCategoryToYamlObject(category, result);
+        expect(result).toEqual({0: {}});});
     it('should change the category', () => {
         const expectedAction = {
             type: constants.CHANGE_CATEGORY,

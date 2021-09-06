@@ -71,8 +71,8 @@ class WizardInputs extends Component {
         }
         if (validUrl) {
             try {
-                // eslint-disable-next-line
-                const url = new URL(value);
+                // eslint-disable-next-line no-new
+                new URL(value);
                 problem = problem || false;
                 return problem;
             } catch {
@@ -261,7 +261,7 @@ class WizardInputs extends Component {
      * @returns {JSX.Element} returns the input element
      */
     renderInputElement(itemKey, index, inputNode) {
-        const { question, value, empty, optional, options, maxLength, lowercase, tooltip, problem } = inputNode;
+        const { question, value, empty, optional, options, maxLength, lowercase, tooltip, problem, type } = inputNode;
         let caption = '';
         if (optional) {
             caption += 'Optional field; ';
@@ -320,6 +320,7 @@ class WizardInputs extends Component {
         return (
             <Tooltip className="wizardTooltip" content={finalTooltip} disabled={disableTooltip}>
                 <FormField
+                    type={type}
                     className="wizardFormFields"
                     input={TextInput}
                     size="large"

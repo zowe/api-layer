@@ -3,4 +3,5 @@ export const wizRegex = {
     gatewayUrl: '^(api\\/v\\d+)$',
     version: '^(\\d+)\\.(\\d+)\\.(\\d+)',
     alphanumeric: '^[a-z]+$',
+    validRelativeUrl: '^(?!www\\.|(?:http|ftp)s?://|[A-Za-z]:\\\\|//).*',
 };

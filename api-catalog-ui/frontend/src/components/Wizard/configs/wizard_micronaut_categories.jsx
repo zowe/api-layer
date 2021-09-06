@@ -43,6 +43,7 @@ export const micronautSpecificCategories = [
                 value: '',
                 question: 'The password associated with the private key:',
                 dependencies: { enabled: true },
+                type: 'password',
             },
             keyStore: {
                 value: '',
@@ -53,6 +54,7 @@ export const micronautSpecificCategories = [
                 value: '',
                 question: 'The password used to unlock the keystore:',
                 dependencies: { enabled: true },
+                type: 'password',
             },
             keyStoreType: {
                 value: '',
@@ -68,6 +70,7 @@ export const micronautSpecificCategories = [
                 value: '',
                 question: 'The password used to unlock the truststore:',
                 dependencies: { enabled: true },
+                type: 'password',
             },
             trustStoreType: {
                 value: 'PKCS12',
@@ -148,6 +151,7 @@ export const micronautSpecificCategories = [
             password: {
                 value: '',
                 question: 'The password used to unlock the truststore:',
+                type: 'password',
             },
             path: {
                 value: '',
