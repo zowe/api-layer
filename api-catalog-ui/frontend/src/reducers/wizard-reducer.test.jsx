@@ -519,18 +519,18 @@ describe('>>> Wizard reducer tests', () => {
 
     it('should add default values', () => {
         const content = {
-            test: { value: '', question: 'Why?', },
+            test: { value: '', question: 'Why?' },
         };
-        const defaultsArr = [['test', 'val']];
+        const defaultsArr = [['test', { value: 'val', hide: false }]];
         const newContent = addDefaultValues(content, defaultsArr);
-        expect(newContent).toEqual({ test: { value: 'val', question: 'Why?', }, });
+        expect(newContent).toEqual({ test: { value: 'val', question: 'Why?', hide: false }, });
     });
 
     it('should not add default values if key does not match', () => {
         const content = {
             test: { value: '', question: 'Why?', },
         };
-        const defaultsArr = [['someKey', 'val']];
+        const defaultsArr = [['someKey', { value: 'val' }]];
         const newContent = addDefaultValues(content, defaultsArr);
         expect(newContent).toEqual(content);
     });
@@ -551,7 +551,7 @@ describe('>>> Wizard reducer tests', () => {
             }]
         };
         const defaults = {
-            'Category 1': { test: 'val1', test2: 'val2' },
+            'Category 1': { test: { value: 'val1' }, test2: { value: 'val2' } },
         };
         const newCategory = setDefault(category, defaults);
         expect(newCategory).toEqual(expectedCategory);
@@ -567,7 +567,7 @@ describe('>>> Wizard reducer tests', () => {
             content: [{ test: { value: 'val1', question: 'Why?', }, }]
         };
         const defaults = {
-            'Category 1': { test: 'val1', },
+            'Category 1': { test: { value: 'val1' }, },
         };
         const newCategory = setDefault(category, defaults);
         expect(newCategory).toEqual(expectedCategory);

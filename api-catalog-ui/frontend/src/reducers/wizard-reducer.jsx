@@ -67,9 +67,12 @@ export function addDefaultValues(content, defaultsArr) {
     const newContent = { ...content };
     defaultsArr.forEach(entry => {
         const key = entry[0];
-        const defaultValue = entry[1];
+        const defaultValueObj = entry[1];
         if (newContent[key]) {
-            newContent[key].value = defaultValue;
+            newContent[key].value = defaultValueObj.value;
+            if (defaultValueObj.hide !== undefined) {
+                newContent[key].hide = defaultValueObj.hide;
+            }
         }
     });
     return newContent;

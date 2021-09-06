@@ -241,6 +241,7 @@ export const baseCategories = [
             trustStoreType: {
                 value: 'PKCS12',
                 question: 'Truststore type:',
+                options: ['PKCS12', 'JKS', 'JCERACFKS'],
             },
         },
     },

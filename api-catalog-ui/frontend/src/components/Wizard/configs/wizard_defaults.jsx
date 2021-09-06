@@ -3,82 +3,87 @@
  */
 // eslint-disable-next-line import/prefer-default-export
 export const defaultSpring = {
-    Spring: { name: '${apiml.service.serviceId}' },
-    'Scheme info': { scheme: 'https', contextPath: '/${apiml.service.serviceId}' },
-    'IP address info': { baseUrl: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}' },
+    Spring: { name: { value: '${apiml.service.serviceId}', hide: true } },
+    'Scheme info': { scheme: { value: 'https' }, contextPath: { value: '/${apiml.service.serviceId}' } },
+    'IP address info': {
+        baseUrl: { value: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}' },
+    },
     URL: {
-        homePageRelativeUrl: '${apiml.service.contextPath}',
-        statusPageRelativeUrl: '${apiml.service.contextPath}',
-        healthCheckRelativeUrl: '${apiml.service.contextPath}',
+        homePageRelativeUrl: { value: '${apiml.service.contextPath}/' },
+        statusPageRelativeUrl: { value: '${apiml.service.contextPath}/' },
+        healthCheckRelativeUrl: { value: '${apiml.service.contextPath}/' },
     },
     Routes: {
-        serviceUrl: '${apiml.service.contextPath}',
+        serviceUrl: { value: '${apiml.service.contextPath}', hide: true },
     },
     'API Info': {
-        swaggerUrl:
-            '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
+        swaggerUrl: {
+            value:
+                '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
+            hide: true,
+        },
     },
 };
 export const defaultNode = {
     Eureka: {
-        maxRetries: 30,
-        requestRetryDelay: 1000,
-        registryFetchInterval: 5,
+        maxRetries: { value: 30, hide: true },
+        requestRetryDelay: { value: 1000, hide: true },
+        registryFetchInterval: { value: 5, hide: true },
     },
     'API Info shorter': {
-        gatewayUrl: '${routes.gatewayUrl}',
+        gatewayUrl: { value: '${routes.gatewayUrl}' },
     },
     Instance: {
-        app: '${serviceId}',
-        vipAddress: '${serviceId}',
-        homePageUrl: '${homePageRelativeUrl}',
-        secureVipAddress: '${serviceId}',
+        app: { value: '${serviceId}' },
+        vipAddress: { value: '${serviceId}' },
+        homePageUrl: { value: '${homePageRelativeUrl}' },
+        secureVipAddress: { value: '${serviceId}' },
     },
     Metadata: {
-        'apiml.routes.api_v1.gatewayUrl': '${routes.gatewayUrl}',
-        'apiml.routes.api_v1.serviceUrl': '${routes.serviceUrl}',
-        'apiml.apiInfo.0.gatewayUrl': '${routes.gatewayUrl}',
+        'apiml.routes.api_v1.gatewayUrl': { value: '${routes.gatewayUrl}' },
+        'apiml.routes.api_v1.serviceUrl': { value: '${routes.serviceUrl}' },
+        'apiml.apiInfo.0.gatewayUrl': { value: '${routes.gatewayUrl}' },
     },
 };
 export const defaultMicronaut = {
     Micronaut: {
-        name: '${apiml.service.serviceId}',
+        name: { value: '${apiml.service.serviceId}' },
     },
     'Micronaut ports': {
-        port: '${apiml.service.port}',
-        'context-path': '/${apiml.service.serviceId}',
+        port: { value: '${apiml.service.port}' },
+        'context-path': { value: '/${apiml.service.serviceId}' },
     },
     'Micronaut SSL key-store': {
-        password: '${apiml.service.ssl[0].keyPassword}',
-        type: '${apiml.service.ssl[0].keyStoreType}',
-        path: 'file:${apiml.service.ssl[0].keyStore}',
+        password: { value: '${apiml.service.ssl[0].keyPassword}' },
+        type: { value: '${apiml.service.ssl[0].keyStoreType}' },
+        path: { value: 'file:${apiml.service.ssl[0].keyStore}' },
     },
     'Micronaut SSL key': {
-        alias: '${apiml.service.ssl[0].keyAlias}',
-        password: '${apiml.service.ssl[0].keyPassword}',
+        alias: { value: '${apiml.service.ssl[0].keyAlias}' },
+        password: { value: '${apiml.service.ssl[0].keyPassword}' },
     },
     'Micronaut SSL trust-store': {
-        password: '${apiml.service.ssl[0].trustStorePassword}',
-        path: 'file:${apiml.service.ssl[0].trustStore}',
-        type: '${apiml.service.ssl[0].trustStoreType}',
+        password: { value: '${apiml.service.ssl[0].trustStorePassword}' },
+        path: { value: 'file:${apiml.service.ssl[0].trustStore}' },
+        type: { value: '${apiml.service.ssl[0].trustStoreType}' },
     },
     'Micronaut config': {
-        port: '${apiml.service.port}',
-        ciphers: '${apiml.service.ssl[0].ciphers}',
-        protocol: '${apiml.service.ssl[0].protocol}',
+        port: { value: '${apiml.service.port}' },
+        ciphers: { value: '${apiml.service.ssl[0].ciphers}' },
+        protocol: { value: '${apiml.service.ssl[0].protocol}' },
     },
     'Base URL': {
-        baseUrl: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}',
+        baseUrl: { value: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}' },
     },
     'Scheme info': {
-        contextPath: '/${apiml.service.serviceId}',
+        contextPath: { value: '/${apiml.service.serviceId}' },
     },
     URL: {
-        homePageRelativeUrl: '${apiml.service.contextPath}',
-        statusPageRelativeUrl: '${apiml.service.contextPath}',
-        healthCheckRelativeUrl: '${apiml.service.contextPath}',
+        homePageRelativeUrl: { value: '${apiml.service.contextPath}' },
+        statusPageRelativeUrl: { value: '${apiml.service.contextPath}' },
+        healthCheckRelativeUrl: { value: '${apiml.service.contextPath}' },
     },
     'API Info for Micronaut': {
-        gatewayUrl: '${apiml.service.routes.gatewayUrl}',
+        gatewayUrl: { value: '${apiml.service.routes.gatewayUrl}' },
     },
 };
