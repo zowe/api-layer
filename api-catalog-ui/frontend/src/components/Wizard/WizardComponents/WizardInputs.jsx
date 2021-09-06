@@ -245,6 +245,7 @@ class WizardInputs extends Component {
             }
             input.show = true;
             key += 1;
+            if (input.hide) return null;
             return (
                 <div className="entry" key={`${index}-${key}`}>
                     {this.renderInputElement(itemKey, index, input)}

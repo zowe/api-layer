@@ -92,15 +92,24 @@ describe('>>> WizardInputs tests', () => {
         const instance = wrapper.instance();
         instance.handleSelect({ name: 'testInput', index: 0, value: '' });
         expect(updateWizardData).toHaveBeenCalledWith({
-            content: [{ testInput: { value: '', question: '', options: ['test'], show: true, interactedWith: true, problem: false, } }],
+            content: [{
+                testInput: {
+                    value: '',
+                    question: '',
+                    options: ['test'],
+                    show: true,
+                    interactedWith: true,
+                    problem: false,
+                }
+            }],
             text: 'Basic info',
         });
     });
-    it('should create 4 inputs based on data', () => {
+    it('should create 3 inputs based on data and visibility', () => {
         const dummyData = {
             text: 'Dummy Data',
             content: [{
-                test: { value: '', question: '', },
+                test: { value: '', question: '', hide: true },
                 test2: { value: '', question: '', },
                 test3: { value: '', question: '', },
                 test4: { value: '', question: '', },
@@ -110,7 +119,7 @@ describe('>>> WizardInputs tests', () => {
         const wrapper = enzyme.shallow(
             <WizardInputs updateWizardData={jest.fn()} data={dummyData} />
         );
-        expect(wrapper.find('FormField').length).toEqual(4);
+        expect(wrapper.find('FormField').length).toEqual(3);
     });
     it('should not load', () => {
         const updateWizardData = jest.fn();
@@ -233,7 +242,15 @@ describe('>>> WizardInputs tests', () => {
         const dummyData = {
             text: 'Category',
             content: [{
-                test: { value: '', question: 'Why?', optional: true, maxLength: 40, lowercase: true, empty: true, problem: false },
+                test: {
+                    value: '',
+                    question: 'Why?',
+                    optional: true,
+                    maxLength: 40,
+                    lowercase: true,
+                    empty: true,
+                    problem: false
+                },
             }],
         };
         const wrapper = enzyme.shallow(
@@ -302,12 +319,21 @@ describe('>>> WizardInputs tests', () => {
         const instance = wrapper.instance();
         const result = instance.checkRestrictions('hEy9', ['^[a-z]+$'], true);
         expect(result).toEqual(true);
-    })
+    });
     it('should handle tooltip', () => {
         const dummyData = {
             text: 'Category',
             content: [{
-                test: { value: '', question: 'Why?', optional: true, maxLength: 40, lowercase: true, empty: true, problem: false, tooltip: 'hey' },
+                test: {
+                    value: '',
+                    question: 'Why?',
+                    optional: true,
+                    maxLength: 40,
+                    lowercase: true,
+                    empty: true,
+                    problem: false,
+                    tooltip: 'hey'
+                },
             }],
         };
         const wrapper = enzyme.shallow(
@@ -316,5 +342,5 @@ describe('>>> WizardInputs tests', () => {
         const instance = wrapper.instance();
         instance.renderInputElement('test', 0, dummyData.content[0].test);
         expect(wrapper.find('Tooltip').props().content).toEqual('hey');
-    })
+    });
 });
