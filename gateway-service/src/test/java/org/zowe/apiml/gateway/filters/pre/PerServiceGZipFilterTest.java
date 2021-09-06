@@ -122,7 +122,7 @@ class PerServiceGZipFilterTest {
                 @BeforeEach
                 void setup() {
                     request.setRequestURI("/api/v1/" + SERVICE_WITH_COMPRESSION + "/compressed");
-                    metadata.put("apiml.response.compressRoutes", "/**/compressed,/api/v1/" + SERVICE_WITH_COMPRESSION + "/comp2ress");
+                    metadata.put("apiml.response.compressRoutes", "/**/compressed,/api/v1/,**/" + SERVICE_WITH_COMPRESSION + "/comp2ress");
 
                     when(discoveryClient.getInstances(SERVICE_WITH_COMPRESSION)).thenReturn(instances);
                     filter = new PerServiceGZipFilter(discoveryClient);
