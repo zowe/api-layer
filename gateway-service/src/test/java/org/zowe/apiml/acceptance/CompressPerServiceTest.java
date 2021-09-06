@@ -49,9 +49,9 @@ public class CompressPerServiceTest extends AcceptanceTestWithTwoServices {
             void prepareServices() {
                 // Make sure customConfiguration service has custom metadata for this set.
                 applicationRegistry.clearApplications();
-                MetadataBuilder customBuilder = MetadataBuilder.customInstance();
-                customBuilder.withCompressionPath("/**/test");
-                customBuilder.withCompression(true);
+                MetadataBuilder customBuilder = MetadataBuilder.customInstance()
+                    .withCompressionPath("/**/test")
+                    .withCompression(true);
 
                 applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(), false);
                 applicationRegistry.addApplication(serviceWithCustomConfiguration, customBuilder, true);
