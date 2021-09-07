@@ -31,19 +31,21 @@ import java.nio.file.FileAlreadyExistsException;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {StaticDefinitionController.class},
-    excludeFilters = { @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class) },
-    excludeAutoConfiguration = { SecurityAutoConfiguration.class}
+    excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class)},
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class}
 )
 class StaticDefinitionControllerTest {
 
     private static final String STATIC_DEF_GENERATE_ENDPOINT = "/static-api/generate";
     private static final String STATIC_DEF_OVERRIDE_ENDPOINT = "/static-api/override";
+    private static final String STATIC_DEF_DELETE_ENDPOINT = "/static-api/delete";
 
     @Autowired
     private MockMvc mockMvc;
@@ -72,9 +74,9 @@ class StaticDefinitionControllerTest {
         }
     }
 
-   @Nested
+    @Nested
     class GivenRequestWithNoContent {
-       @Nested
+        @Nested
         class whenCallStaticGenerationAPI {
             @Test
             void thenResponseIs400() throws Exception {
@@ -131,6 +133,17 @@ class StaticDefinitionControllerTest {
                 );
 
                 mockMvc.perform(post(STATIC_DEF_OVERRIDE_ENDPOINT).content(payload).header("Service-Id", "service"))
+                    .andExpect(status().is2xxSuccessful());
+            }
+        }
+
+        @Nested
+        class WhenCallDelete {
+
+            @Test
+            void givenValidId_thenResponseIsOK() throws Exception {
+                when(staticDefinitionGenerator.deleteFile("test-service")).thenReturn(new StaticAPIResponse(201, "OK"));
+                mockMvc.perform(delete(STATIC_DEF_DELETE_ENDPOINT).header("Service-Id", "test-service"))
                     .andExpect(status().is2xxSuccessful());
             }
         }

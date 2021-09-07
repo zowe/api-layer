@@ -30,7 +30,7 @@ public class StaticDefinitionController {
     /**
      * Retrieve the yaml from the request and store it in the file
      *
-     * @param payload  the request payload
+     * @param payload the request payload
      * @return the response entity
      */
     @PostMapping(value = "/generate", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -44,7 +44,7 @@ public class StaticDefinitionController {
     /**
      * Overwrite the file already created
      *
-     * @param payload  the request payload
+     * @param payload the request payload
      * @return the response entity
      */
     @PostMapping(value = "/override", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -53,5 +53,12 @@ public class StaticDefinitionController {
         return ResponseEntity
             .status(staticAPIResponse.getStatusCode())
             .body(staticAPIResponse.getBody());
+    }
+
+
+    @DeleteMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deleteStaticDef(@RequestHeader(value = "Service-Id") String serviceId) {
+        StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.deleteFile(serviceId);
+        return ResponseEntity.status(staticAPIResponse.getStatusCode()).body(staticAPIResponse.getBody());
     }
 }

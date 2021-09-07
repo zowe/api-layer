@@ -19,7 +19,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 /**
@@ -31,46 +30,54 @@ import java.util.regex.Pattern;
 @Slf4j
 public class StaticDefinitionGenerator {
 
-    private AtomicReference<String> fileName = new AtomicReference<>("");
-
-    @Value("${apiml.discovery.userid:eureka}")
-    private String eurekaUserid;
-
-    @Value("${apiml.discovery.password:password}")
-    private String eurekaPassword;
-
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
-
     @Value("${apiml.discovery.staticApiDefinitionsDirectories:config/local/api-defs}")
     private String staticApiDefinitionsDirectories;
 
-    public StaticAPIResponse generateFile(String file, String serviceId) throws IOException {
+    public StaticAPIResponse generateFile(String fileContent, String serviceId) throws IOException {
         if (!serviceIdIsValid(serviceId)) {
-            log.debug("The service ID {} has not valid format", serviceId);
-            return new StaticAPIResponse(400, "The service ID format is not valid.");
+            return getInvalidResponse(serviceId);
         }
-        String location = retrieveStaticDefLocation();
-        file = formatFile(file);
-        String absoluteFilePath = String.format("./%s/%s.yml", location, serviceId);
-        fileName.set(absoluteFilePath);
+        String absoluteFilePath = getAbsolutePath(serviceId);
 
         checkIfFileExists(absoluteFilePath);
         String message = "The static definition file has been created by the user! Its location is: %s";
-        return writeFileAndSendResponse(file, fileName, String.format(message, fileName));
+        return writeContentToFile(fileContent, absoluteFilePath, String.format(message, absoluteFilePath));
     }
 
-    public StaticAPIResponse overrideFile(String file, String serviceId) throws IOException {
+    public StaticAPIResponse overrideFile(String fileContent, String serviceId) throws IOException {
         if (!serviceIdIsValid(serviceId)) {
-            log.debug("The service ID {} has not valid format", serviceId);
-            return new StaticAPIResponse(400, "The service ID format is not valid.");
+            return getInvalidResponse(serviceId);
         }
-        String location = retrieveStaticDefLocation();
-        file = formatFile(file);
-        String absoluteFilePath = String.format("./%s/%s.yml", location, serviceId);
-        fileName.set(absoluteFilePath);
+        String absoluteFilePath = getAbsolutePath(serviceId);
+
         String message = "The static definition file %s has been overwritten by the user!";
-        return writeFileAndSendResponse(file, fileName, String.format(message, fileName));
+        return writeContentToFile(fileContent, absoluteFilePath, String.format(message, absoluteFilePath));
+    }
+
+    public StaticAPIResponse deleteFile(String serviceId) {
+        if (!serviceIdIsValid(serviceId)) {
+            return getInvalidResponse(serviceId);
+        }
+        String absoluteFilePath = getAbsolutePath(serviceId);
+
+        File fileForDeletion = new File(absoluteFilePath);
+        if (!fileForDeletion.exists()) {
+            return new StaticAPIResponse(404, "The static definition file %s does not exist!");
+        }
+        if (fileForDeletion.delete()) {
+            return new StaticAPIResponse(200, "The static definition file %s has been deleted by the user!");
+        } else
+            return new StaticAPIResponse(500, "The static definition file %s has not been able to delete!");
+    }
+
+    private String getAbsolutePath(String serviceId) {
+        String location = retrieveStaticDefLocation();
+        return String.format("%s/%s.yml", location, serviceId);
+    }
+
+    private StaticAPIResponse getInvalidResponse(String serviceId) {
+        log.debug("The service ID {} has not valid format", serviceId);
+        return new StaticAPIResponse(400, "The service ID format is not valid.");
     }
 
     private String formatFile(String file) {
@@ -79,10 +86,10 @@ public class StaticDefinitionGenerator {
         return file;
     }
 
-    private StaticAPIResponse writeFileAndSendResponse(String file, AtomicReference<String> fileName, String message) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(fileName.get())) {
-            fos.write(file.getBytes(StandardCharsets.UTF_8));
-
+    private StaticAPIResponse writeContentToFile(String fileContent, String fileName, String message) throws IOException {
+        fileContent = formatFile(fileContent);
+        try (FileOutputStream fos = new FileOutputStream(fileName)) {
+            fos.write(fileContent.getBytes(StandardCharsets.UTF_8));
             log.debug(message);
             return new StaticAPIResponse(201, message);
         }
@@ -98,6 +105,7 @@ public class StaticDefinitionGenerator {
     /**
      * Retrieve the static definition location either from the System environments or configuration. If no property is set,
      * the default value is used (local environment). The static definition is stored inside the first defined directory.
+     *
      * @return the static definition location
      */
     private String retrieveStaticDefLocation() {
@@ -108,17 +116,16 @@ public class StaticDefinitionGenerator {
 
     /**
      * Validate the service ID
+     *
      * @param serviceId the service ID
      * @return true if valid
      */
     private boolean serviceIdIsValid(String serviceId) {
         if (serviceId != null && !serviceId.isEmpty()) {
             Pattern p = Pattern.compile("^[A-Za-z][A-Za-z0-9-]*$");
-            if (p.matcher(serviceId).find() && serviceId.length() < 16) {
-                return true;
-            }
+            return p.matcher(serviceId).find() && serviceId.length() < 16;
         }
         return false;
-        }
+    }
 }
 

@@ -22,9 +22,12 @@ import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -33,42 +36,70 @@ class StaticDefinitionGeneratorTest {
     @InjectMocks
     private StaticDefinitionGenerator staticDefinitionGenerator;
 
+    String configFileLocation = "../config/local/api-defs";
+    String testServiceId = "test-static-def";
+
     @Nested
     class WhenStaticDefinitionGenerationResponse {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(staticDefinitionGenerator,"staticApiDefinitionsDirectories","config/local/api-defs");
+            TokenAuthentication authentication = new TokenAuthentication("token");
+            authentication.setAuthenticated(true);
+            SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
+            ReflectionTestUtils.setField(staticDefinitionGenerator, "staticApiDefinitionsDirectories", configFileLocation);
         }
 
         @Test
         void givenRequestWithInvalidServiceId_thenThrow400() throws IOException {
-            TokenAuthentication authentication = new TokenAuthentication("token");
-            authentication.setAuthenticated(true);
-            SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
+
             StaticAPIResponse actualResponse = staticDefinitionGenerator.generateFile("services: \\n  ", "");
             StaticAPIResponse expectedResponse = new StaticAPIResponse(400, "The service ID format is not valid.");
             assertEquals(expectedResponse, actualResponse);
         }
 
         @Test
-        void givenValidRequest_thenThrowExceptionWithCorrectPath() {
-            TokenAuthentication authentication = new TokenAuthentication("token");
-            authentication.setAuthenticated(true);
-            SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
-            Exception exception = assertThrows(IOException.class, () ->
-                staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n ", "service"));
-            assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
+        void givenCreateRequestWithValidServiceId_thenStatusOK() throws IOException {
+            StaticAPIResponse actualResponse = staticDefinitionGenerator.generateFile("services: \\n  ", testServiceId);
+            StaticAPIResponse expectedResponse = new StaticAPIResponse(201, "The static definition file has been created by the user! Its location is: "
+                + configFileLocation + File.separator + testServiceId + ".yml");
+            try {
+                assertEquals(expectedResponse, actualResponse);
+            } finally {
+                // cleanup
+                staticDefinitionGenerator.deleteFile(testServiceId);
+            }
+
         }
 
         @Test
-        void givenHttpValidRequest_thenThrowExceptionWithCorrectPath() {
-            TokenAuthentication authentication = new TokenAuthentication("token");
-            authentication.setAuthenticated(true);
-            SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
-            Exception exception = assertThrows(IOException.class, () ->
-                staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n ", "service"));
-            assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
+        void givenDeleteRequestWithValidServiceId_thenStatusOK() throws IOException {
+            //create file before deletion
+            staticDefinitionGenerator.generateFile("services: \\n  ", testServiceId);
+            StaticAPIResponse actualResponse = staticDefinitionGenerator.deleteFile(testServiceId);
+            StaticAPIResponse expectedResponse = new StaticAPIResponse(200, "The static definition file %s has been deleted by the user!");
+            assertEquals(expectedResponse, actualResponse);
+        }
+
+        @Test
+        void givenDeleteNonExistingFileRequest_thenStatusNotFound() {
+            //create file before deletion
+            StaticAPIResponse actualResponse = staticDefinitionGenerator.deleteFile(testServiceId);
+            StaticAPIResponse expectedResponse = new StaticAPIResponse(404, "The static definition file %s does not exist!");
+            assertEquals(expectedResponse, actualResponse);
+        }
+
+        @Test
+        void givenFileAlreadyExists_thenThrowException() throws IOException {
+            staticDefinitionGenerator.generateFile("services: \\n  ", testServiceId);
+            try {
+                Exception exception = assertThrows(FileAlreadyExistsException.class, () ->
+                    staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n ", testServiceId));
+                assertEquals("The static definition file ../config/local/api-defs/test-static-def.yml already exists!", exception.getMessage());
+            } finally {
+                // cleanup
+                staticDefinitionGenerator.deleteFile(testServiceId);
+            }
         }
 
     }
@@ -79,27 +110,31 @@ class StaticDefinitionGeneratorTest {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(staticDefinitionGenerator,"staticApiDefinitionsDirectories","config/local/api-defs");
+            TokenAuthentication authentication = new TokenAuthentication("token");
+            authentication.setAuthenticated(true);
+            SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
+            ReflectionTestUtils.setField(staticDefinitionGenerator, "staticApiDefinitionsDirectories", "../config/local/api-defs");
         }
 
         @Test
         void givenInvalidRequest_thenThrowException() throws IOException {
-            TokenAuthentication authentication = new TokenAuthentication("token");
-            authentication.setAuthenticated(true);
-            SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
             StaticAPIResponse actualResponse = staticDefinitionGenerator.overrideFile("services: \\n  ", "");
             StaticAPIResponse expectedResponse = new StaticAPIResponse(400, "The service ID format is not valid.");
             assertEquals(expectedResponse, actualResponse);
         }
 
         @Test
-        void givenInvalidRequest_thenThrowExceptionWithCorrectPath() {
-            TokenAuthentication authentication = new TokenAuthentication("token");
-            authentication.setAuthenticated(true);
-            SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
-            Exception exception = assertThrows(IOException.class, () ->
-                staticDefinitionGenerator.overrideFile("services: \\n serviceId: service\\n ", "service"));
-            assertEquals("./config/local/api-defs/service.yml (No such file or directory)", exception.getMessage());
+        void givenValidServiceId_thenResponseIsOK() throws IOException {
+
+            StaticAPIResponse actualResponse = staticDefinitionGenerator.overrideFile("services: \\n  ", testServiceId);
+            StaticAPIResponse expectedResponse = new StaticAPIResponse(201, "The static definition file "
+                + configFileLocation + File.separator + testServiceId + ".yml has been overwritten by the user!");
+            try {
+                assertEquals(expectedResponse, actualResponse);
+            } finally {
+                // cleanup
+                staticDefinitionGenerator.deleteFile(testServiceId);
+            }
         }
     }
 
