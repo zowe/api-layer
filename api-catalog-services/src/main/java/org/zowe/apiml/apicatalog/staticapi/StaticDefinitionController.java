@@ -57,7 +57,7 @@ public class StaticDefinitionController {
 
 
     @DeleteMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteStaticDef(@RequestHeader(value = "Service-Id") String serviceId) {
+    public ResponseEntity<String> deleteStaticDef(@RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.deleteFile(serviceId);
         return ResponseEntity.status(staticAPIResponse.getStatusCode()).body(staticAPIResponse.getBody());
     }

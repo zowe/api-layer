@@ -11,6 +11,7 @@
 package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -54,20 +55,22 @@ public class StaticDefinitionGenerator {
         return writeContentToFile(fileContent, absoluteFilePath, String.format(message, absoluteFilePath));
     }
 
-    public StaticAPIResponse deleteFile(String serviceId) {
+    public StaticAPIResponse deleteFile(String serviceId) throws IOException {
         if (!serviceIdIsValid(serviceId)) {
             return getInvalidResponse(serviceId);
         }
         String absoluteFilePath = getAbsolutePath(serviceId);
 
         File fileForDeletion = new File(absoluteFilePath);
-        if (!fileForDeletion.exists()) {
-            return new StaticAPIResponse(404, "The static definition file %s does not exist!");
+
+        if (FileUtils.directoryContains(new File(retrieveStaticDefLocation()), fileForDeletion)) {
+            if (fileForDeletion.delete()) {
+                return new StaticAPIResponse(200, "The static definition file %s has been deleted by the user!");
+            } else
+                return new StaticAPIResponse(500, "The static definition file %s has not been able to delete!");
         }
-        if (fileForDeletion.delete()) {
-            return new StaticAPIResponse(200, "The static definition file %s has been deleted by the user!");
-        } else
-            return new StaticAPIResponse(500, "The static definition file %s has not been able to delete!");
+        return new StaticAPIResponse(404, "The static definition file %s does not exist!");
+
     }
 
     private String getAbsolutePath(String serviceId) {

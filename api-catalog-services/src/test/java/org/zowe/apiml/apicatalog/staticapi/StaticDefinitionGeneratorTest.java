@@ -82,7 +82,7 @@ class StaticDefinitionGeneratorTest {
         }
 
         @Test
-        void givenDeleteNonExistingFileRequest_thenStatusNotFound() {
+        void givenDeleteNonExistingFileRequest_thenStatusNotFound() throws IOException {
             //create file before deletion
             StaticAPIResponse actualResponse = staticDefinitionGenerator.deleteFile(testServiceId);
             StaticAPIResponse expectedResponse = new StaticAPIResponse(404, "The static definition file %s does not exist!");
