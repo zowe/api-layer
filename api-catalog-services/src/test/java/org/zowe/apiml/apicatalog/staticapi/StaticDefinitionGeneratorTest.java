@@ -58,6 +58,14 @@ class StaticDefinitionGeneratorTest {
         }
 
         @Test
+        void givenDeleteRequestWithInvalidServiceId_thenThrow400() throws IOException {
+
+            StaticAPIResponse actualResponse = staticDefinitionGenerator.deleteFile("");
+            StaticAPIResponse expectedResponse = new StaticAPIResponse(400, "The service ID format is not valid.");
+            assertEquals(expectedResponse, actualResponse);
+        }
+
+        @Test
         void givenCreateRequestWithValidServiceId_thenStatusOK() throws IOException {
             StaticAPIResponse actualResponse = staticDefinitionGenerator.generateFile("services: \\n  ", testServiceId);
             try {
