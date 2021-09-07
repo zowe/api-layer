@@ -63,3 +63,7 @@ label.wCheckBox {
 label.wCheckBox span:last-child {
     color: #58606e;
 }
+
+.readyTab {
+    font-weight: 800;
+}
