@@ -34,6 +34,7 @@ async function gatherCiStats(octokit, owner, repo, from, to) {
     };
 
     await fs.writeFile('ci.json', JSON.stringify(stats));
+    // Test
 
     // JSON data
     console.log(stats);
