@@ -47,6 +47,7 @@ jobs:
                 with:
                     name: CITests
                     path: |
+                        **/reports/**
                         integration-tests/build/reports/**
             -   name: Cleanup Gradle Cache
                 run: |
