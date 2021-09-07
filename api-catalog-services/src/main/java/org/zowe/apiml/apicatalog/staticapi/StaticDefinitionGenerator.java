@@ -35,6 +35,8 @@ public class StaticDefinitionGenerator {
     @Value("${apiml.discovery.staticApiDefinitionsDirectories:config/local/api-defs}")
     private String staticApiDefinitionsDirectories;
 
+    private static final Pattern p = Pattern.compile("^[A-Za-z][A-Za-z0-9-]*$");
+
     public StaticAPIResponse generateFile(String fileContent, String serviceId) throws IOException {
         if (!serviceIdIsValid(serviceId)) {
             return getInvalidResponse(serviceId);
@@ -124,7 +126,6 @@ public class StaticDefinitionGenerator {
      */
     private boolean serviceIdIsValid(String serviceId) {
         if (serviceId != null && !serviceId.isEmpty()) {
-            Pattern p = Pattern.compile("^[A-Za-z][A-Za-z0-9-]*$");
             return p.matcher(serviceId).find() && serviceId.length() < 16;
         }
         return false;
