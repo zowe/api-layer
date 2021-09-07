@@ -29,15 +29,18 @@ import org.zowe.apiml.util.http.*;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
+import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @CatalogTest
 @Slf4j
@@ -47,8 +50,6 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String GET_CONTAINER_BY_INVALID_ID_ENDPOINT = "/apicatalog/api/v1/containers/bad";
     private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v1";
     private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v2";
-    private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
-    private static final String STATIC_DEFINITION_GENERATE_ENDPOINT = "/apicatalog/api/v1/static-api/generate";
 
     private String baseHost;
 
@@ -148,29 +149,53 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
     @Nested
     @TestMethodOrder(OrderAnnotation.class)
+    @TestInstance(PER_CLASS)
     class StaticApis {
+
+        private static final String STATIC_DEFINITION_GENERATE_ENDPOINT = "/apicatalog/api/v1/static-api/generate";
+        private static final String STATIC_DEFINITION_DELETE_ENDPOINT = "/apicatalog/api/v1/static-api/delete";
+        private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
+        private String staticDefinitionServiceId = "a" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+
+        @AfterAll
+        void cleanupStaticDefinition() {
+            given().relaxedHTTPSValidation()
+                .when()
+                .header("Service-Id", staticDefinitionServiceId)
+                .cookie(COOKIE_NAME, gatewayToken())
+                .delete(getUriFromGateway(STATIC_DEFINITION_DELETE_ENDPOINT));
+        }
 
         @Test
         @Order(1)
         void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
-            final Response response = getStaticApiResponse(REFRESH_STATIC_APIS_ENDPOINT, null, HttpStatus.SC_OK, null);
-
-            List<Object> errors = response.jsonPath().getList("errors");
-            //TODO reenable after deletion of static def merged
-            //TODO does it make sense to assert on the errors?
-            //assertThat(errors, is(empty()));
-
+            getStaticApiResponse(REFRESH_STATIC_APIS_ENDPOINT, null, HttpStatus.SC_OK, null);
         }
 
         @Test
         @Order(30)
         void whenCallStaticDefinitionGenerate_thenResponse201() throws IOException {
-
             String json = "# Dummy content";
-
-            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, "a" + UUID.randomUUID().toString().replace("-", "").substring(0, 10),HttpStatus.SC_CREATED, json);
+            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId ,HttpStatus.SC_CREATED, json);
         }
 
+        private Response getStaticApiResponse(String endpoint, String definitionFileName, int returnCode, String body) throws IOException {
+            URI uri = getUriFromGateway(endpoint);
+            RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+
+            RequestSpecification requestSpecification = given().config(SslContext.tlsWithoutCert).relaxedHTTPSValidation()
+                .when()
+                .cookie(COOKIE_NAME, gatewayToken())
+                .header("Accept", MediaType.APPLICATION_JSON_VALUE);
+            if (body != null) {
+                requestSpecification
+                    .header("Service-Id", definitionFileName)
+                    .body(body);
+            }
+
+            return requestSpecification.post(uri).then()
+                .statusCode(returnCode).extract().response();
+        }
     }
 
     // Execute the endpoint and check the response for a return code
@@ -179,31 +204,11 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         String cookie = HttpSecurityUtils.getCookieForGateway();
         HttpSecurityUtils.addCookie(request, cookie);
 
-        // When
         HttpResponse response = HttpClientUtils.client().execute(request);
-
-        // Then
         assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
 
         return response;
     }
 
-    // Execute the static apis endpoints and check the response for a return code
-    private Response getStaticApiResponse(String endpoint, String definitionFileName, int returnCode, String body) throws IOException {
-        URI uri = HttpRequestUtils.getUriFromGateway(endpoint);
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
-        RequestSpecification requestSpecification = given().config(SslContext.tlsWithoutCert).relaxedHTTPSValidation()
-            .when()
-            .cookie(COOKIE_NAME, gatewayToken())
-            .header("Accept", MediaType.APPLICATION_JSON_VALUE);
-            if (body != null) {
-                requestSpecification
-                    .header("Service-Id", definitionFileName)
-                    .body(body);
-            }
-
-        return requestSpecification.post(uri).then()
-                .statusCode(returnCode).extract().response();
-    }
 }
