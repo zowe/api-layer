@@ -15,9 +15,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -84,14 +82,14 @@ public class StaticDefinitionGenerator {
         return new StaticAPIResponse(400, "The service ID format is not valid.");
     }
 
-    private String formatFile(String file) {
-        file = file.replace("\\n", System.lineSeparator());
-        file = file.substring(1, file.length() - 1);
+    private String normalizeToUnixLineEndings(String file) {
+        file = file.replaceAll("\\r\\n", "\n");
+        file = file.replaceAll("\\r", "\n");
         return file;
     }
 
     private StaticAPIResponse writeContentToFile(String fileContent, String fileName, String message) throws IOException {
-        fileContent = formatFile(fileContent);
+        fileContent = normalizeToUnixLineEndings(fileContent);
         try (FileOutputStream fos = new FileOutputStream(fileName)) {
             fos.write(fileContent.getBytes(StandardCharsets.UTF_8));
             log.debug(message);

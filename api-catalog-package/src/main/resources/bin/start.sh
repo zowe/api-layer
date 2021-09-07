@@ -57,6 +57,13 @@ then
     LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
 fi
 
+# If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
+export APIML_STATIC_DEF=${STATIC_DEF_CONFIG_DIR}
+if [[ ! -z "$ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES" ]]
+then
+  export APIML_STATIC_DEF="${APIML_STATIC_DEF};${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
+fi
+
 EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
 
 if [[ -z "${GATEWAY_HOST}" ]]
@@ -94,6 +101,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Dapiml.service.eurekaUserId=eureka \
     -Dapiml.service.eurekaPassword=password \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
+    -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
     -Dspring.profiles.include=$LOG_LEVEL \
