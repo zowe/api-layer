@@ -149,13 +149,6 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     @Nested
     @TestMethodOrder(OrderAnnotation.class)
     class StaticApis {
-        // Functional
-
-
-        @BeforeEach
-        void setUp() {
-            RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-        }
 
         @Test
         @Order(1)
@@ -198,9 +191,10 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     // Execute the static apis endpoints and check the response for a return code
     private Response getStaticApiResponse(String endpoint, String definitionFileName, int returnCode, String body) throws IOException {
         URI uri = HttpRequestUtils.getUriFromGateway(endpoint);
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
         RequestSpecification requestSpecification = given().config(SslContext.tlsWithoutCert).relaxedHTTPSValidation()
-            .when().log().all()
+            .when()
             .cookie(COOKIE_NAME, gatewayToken())
             .header("Accept", MediaType.APPLICATION_JSON_VALUE);
             if (body != null) {
@@ -209,7 +203,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                     .body(body);
             }
 
-        return requestSpecification.post(uri).then().log().all()
+        return requestSpecification.post(uri).then()
                 .statusCode(returnCode).extract().response();
     }
 }
