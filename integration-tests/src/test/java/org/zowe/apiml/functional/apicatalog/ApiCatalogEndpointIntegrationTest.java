@@ -151,6 +151,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     class StaticApis {
         // Functional
         @Test
+        @Disabled
         void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
             final HttpResponse response = getStaticApiResponse(REFRESH_STATIC_APIS_ENDPOINT, HttpStatus.SC_OK, null);
 
@@ -163,6 +164,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         }
 
         @Test
+        @Disabled
         void whenCallStaticDefinitionGenerate_thenResponse201() throws IOException {
             String location;
             if (System.getenv("APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES") == null) {
