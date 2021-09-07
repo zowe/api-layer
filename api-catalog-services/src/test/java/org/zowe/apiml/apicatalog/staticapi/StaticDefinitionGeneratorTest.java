@@ -93,9 +93,8 @@ class StaticDefinitionGeneratorTest {
         void givenFileAlreadyExists_thenThrowException() throws IOException {
             staticDefinitionGenerator.generateFile("services: \\n  ", testServiceId);
             try {
-                Exception exception = assertThrows(FileAlreadyExistsException.class, () ->
+                assertThrows(FileAlreadyExistsException.class, () ->
                     staticDefinitionGenerator.generateFile("services: \\n serviceId: service\\n ", testServiceId));
-                assertEquals("The static definition file ../config/local/api-defs/test-static-def.yml already exists!", exception.getMessage());
             } finally {
                 // cleanup
                 staticDefinitionGenerator.deleteFile(testServiceId);

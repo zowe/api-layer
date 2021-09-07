@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.util.regex.Pattern;
 
 /**
@@ -64,10 +65,8 @@ public class StaticDefinitionGenerator {
         File fileForDeletion = new File(absoluteFilePath);
 
         if (FileUtils.directoryContains(new File(retrieveStaticDefLocation()), fileForDeletion)) {
-            if (fileForDeletion.delete()) {
-                return new StaticAPIResponse(200, "The static definition file %s has been deleted by the user!");
-            } else
-                return new StaticAPIResponse(500, "The static definition file %s has not been able to delete!");
+            Files.delete(fileForDeletion.toPath());
+            return new StaticAPIResponse(200, "The static definition file %s has been deleted by the user!");
         }
         return new StaticAPIResponse(404, "The static definition file %s does not exist!");
 
