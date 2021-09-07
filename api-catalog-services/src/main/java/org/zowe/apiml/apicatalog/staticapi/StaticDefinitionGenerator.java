@@ -49,7 +49,7 @@ public class StaticDefinitionGenerator {
             return new StaticAPIResponse(400, "The service ID format is not valid.");
         }
         String location = retrieveStaticDefLocation();
-        file = formatFile(file);
+        file = normalizeToUnixLineEndings(file);
         String absoluteFilePath = String.format("%s/%s.yml", location, serviceId);
         fileName.set(absoluteFilePath);
 
@@ -64,16 +64,16 @@ public class StaticDefinitionGenerator {
             return new StaticAPIResponse(400, "The service ID format is not valid.");
         }
         String location = retrieveStaticDefLocation();
-        file = formatFile(file);
+        file = normalizeToUnixLineEndings(file);
         String absoluteFilePath = String.format("%s/%s.yml", location, serviceId);
         fileName.set(absoluteFilePath);
         String message = "The static definition file %s has been overwritten by the user!";
         return writeFileAndSendResponse(file, fileName, String.format(message, fileName));
     }
 
-    private String formatFile(String file) {
-        file = file.replace("\\n", System.lineSeparator());
-        file = file.substring(1, file.length() - 1);
+    private String normalizeToUnixLineEndings(String file) {
+        file = file.replaceAll("\\r\\n", "\n");
+        file = file.replaceAll("\\r", "\n");
         return file;
     }
 
