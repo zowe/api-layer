@@ -23,7 +23,7 @@ jobs:
                 run: chmod +x gradlew
             -   name: Build with Gradle
                 run: >
-                    ./gradlew build --info --scan -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    ./gradlew :gateway-service:build --info --scan -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
