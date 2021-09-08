@@ -51,24 +51,28 @@ public class ServerSentEventProxyHandler {
     public SseEmitter getEmitter(HttpServletRequest request, HttpServletResponse response) throws IOException {
         SseEmitter emitter = new SseEmitter(-1L);
 
-        String[] uriParts = getUriParts(request);
-        if (uriParts != null && uriParts.length >= 5) {
-            String serviceId = uriParts[3];
-            String path = uriParts[4];
-            String[] params = Arrays.copyOfRange(uriParts, 5, uriParts.length);
-            ServiceInstance serviceInstance = findServiceInstance(serviceId);
-
-            if (serviceInstance == null) {
-                response.getWriter().print(String.format("Service '%s' could not be discovered", serviceId));
-                return null;
-            }
-
-            String targetUrl = getTargetUrl(serviceId, serviceInstance, path, params);
-            if (!sseEventStreams.containsKey(targetUrl)) {
-                addStream(targetUrl);
-            }
-            sseEventStreams.get(targetUrl).subscribe(consumer(emitter), error(emitter), emitter::complete);
+        List<String> uriParts = getUriParts(request);
+        if (uriParts.size() < 4) {
+            // need to have sse, version, service ID, and then path (can be empty) in valid route
+            // TODO better error handling
+            return emitter;
         }
+
+        String serviceId = uriParts.get(3); // TODO fix for diff route format
+        String path = uriParts.get(4);
+        ServiceInstance serviceInstance = findServiceInstance(serviceId);
+
+        if (serviceInstance == null) {
+            response.getWriter().print(String.format("Service '%s' could not be discovered", serviceId));
+            return null;
+        }
+
+        String targetUrl = getTargetUrl(serviceId, serviceInstance, path, request.getQueryString());
+        if (!sseEventStreams.containsKey(targetUrl)) {
+            addStream(targetUrl);
+        }
+        sseEventStreams.get(targetUrl).subscribe(consumer(emitter), error(emitter), emitter::complete);
+
         return emitter;
     }
 
@@ -105,32 +109,28 @@ public class ServerSentEventProxyHandler {
         sseEventStreams.put(sseStreamUrl, eventStream);
     }
 
-    private String[] getUriParts(HttpServletRequest request) {
+    private List<String> getUriParts(HttpServletRequest request) {
         String uriPath = request.getRequestURI();
-        Map<String, String[]> parameters = request.getParameterMap();
-        String[] arr = null;
-        if (uriPath != null) {
-            List<String> uriParts = new ArrayList<>(Arrays.asList(uriPath.split("/", 5)));
-            for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
-                uriParts.add(entry.getKey() + "=" + entry.getValue()[0]);
-            }
-            arr = uriParts.toArray(new String[uriParts.size()]);
+        if (uriPath == null) {
+            return new ArrayList<>();
         }
-        return arr;
+        return new ArrayList<>(Arrays.asList(uriPath.split("/", 5)));
     }
 
     private ServiceInstance findServiceInstance(String serviceId) {
         List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
-        if (!serviceInstances.isEmpty()) {
-            return serviceInstances.get(0);
-        } else {
-            return null;
-        }
+        return serviceInstances.isEmpty() ? null : serviceInstances.get(0);
     }
 
-    private String getTargetUrl(String serviceId, ServiceInstance serviceInstance, String path, String[] params) {
-        return "https" + "://" + serviceInstance.getHost() + ":"
-            + serviceInstance.getPort() +
-            SEPARATOR + serviceId + SEPARATOR + path + "?" + String.join("&", params);
+    private String getTargetUrl(String serviceId, ServiceInstance serviceInstance, String path, String queryParameterString) {
+        String parameters = queryParameterString == null ? "" : queryParameterString;
+        // TODO configurable protocol
+        // TODO how test target url is correct - service URL and query parameters
+        return String.format("https://%s:%d/%s/%s?%s",
+            serviceInstance.getHost(),
+            serviceInstance.getPort(),
+            serviceId,
+            path,
+            parameters);
     }
 }

@@ -28,7 +28,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -39,6 +38,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ServerSentEventProxyHandlerTest {
+    private static final String GATEWAY_PATH = "/serviceid/sse/v1/endpoint";
+    private static final String GATEWAY_PATH_OLD_FORMAT = "/sse/v1/serviceid/endpoint";
+
     private ServerSentEventProxyHandler underTest;
     private DiscoveryClient mockDiscoveryClient;
     private HttpServletRequest mockHttpServletRequest;
@@ -50,26 +52,37 @@ class ServerSentEventProxyHandlerTest {
         mockHttpServletResponse = mock(HttpServletResponse.class);
 
         mockDiscoveryClient = mock(DiscoveryClient.class);
-        underTest = new ServerSentEventProxyHandler(mockDiscoveryClient);
+        underTest = Mockito.spy(new ServerSentEventProxyHandler(mockDiscoveryClient));
     }
 
     @Nested
-    class whenGetEmitter {
+    class WhenGetEmitter {
+        // TODO expose the map of streams, validates keys as those are the target urls, verify urls proper
         @Nested
-        class givenUriParts {
+        class GivenBadUri_thenReturnEmitter {
             @Test
-            void givenNoUriParts_thenReturnEmitter() throws IOException {
-                mockUriParts(null, null);
-                SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
-                assertThat(result.getTimeout(), is(-1L));
+            void givenNoUriParts() throws IOException {
+                when(mockHttpServletRequest.getRequestURI()).thenReturn(null);
+                verifyConsumersNotUsed();
             }
 
-            // more testing of getUriParts
+            @Test
+            void givenShortUri() throws IOException {
+                when(mockHttpServletRequest.getRequestURI()).thenReturn("/notenoughparts");
+                verifyConsumersNotUsed();
+            }
+
+            private void verifyConsumersNotUsed() throws IOException {
+                SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
+                assertThat(result, is(not(nullValue())));
+                verify(underTest, times(0)).consumer(any());
+                verify(underTest, times(0)).error(any());
+            }
         }
 
         @Test
         void givenNoServiceInstances_thenReturnNull() throws IOException {
-            mockUriParts("uri/with/at/least/five/parts", new HashMap<>());
+            when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
 
             PrintWriter mockWriter = mock(PrintWriter.class);
             when(mockDiscoveryClient.getInstances(anyString())).thenReturn(new ArrayList<>());
@@ -80,46 +93,92 @@ class ServerSentEventProxyHandlerTest {
             verify(mockWriter, times(1)).print(anyString());
         }
 
-        @Test
-        void givenService_thenUtilizeConsumers() throws IOException {
-            ServerSentEventProxyHandler spy = Mockito.spy(underTest);
-            mockUriParts("/uri/with/at/least/five/parts", new HashMap<>());
+        @Nested
+        class ThenUtilizeConsumers {
+            @Test
+            void givenServiceWithEndpoint() throws IOException {
+                when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
+                mockOneServiceInstance();
 
+                verifyConsumersUsed();
+            }
+
+            @Test
+            void givenServiceWithNoEndpointPath() throws IOException {
+                when(mockHttpServletRequest.getRequestURI()).thenReturn("/serviceid/sse/v1/");
+                mockOneServiceInstance();
+
+                verifyConsumersUsed();
+            }
+
+            @Test
+            void givenServiceWithPathInEndpoint() throws IOException {
+                when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH + "/anotherendpoint");
+                mockOneServiceInstance();
+
+                verifyConsumersUsed();
+            }
+
+            @Test
+            void givenSameServiceTwice_thenUtilizeConsumersTwice() throws IOException {
+                when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
+                mockOneServiceInstance();
+
+                verifyConsumersUsed();
+                verifyConsumersUsed();
+            }
+        }
+
+        @Nested
+        class WhenUseDataConsumer {
+            @Test
+            void givenContent_thenEmitData() throws IOException {
+                SseEmitter mockEmitter = mock(SseEmitter.class);
+                Consumer<ServerSentEvent<String>> result = underTest.consumer(mockEmitter);
+
+                ServerSentEvent<String> event = ServerSentEvent.builder("event").build();
+                result.accept(event);
+
+                verify(mockEmitter).send(anyString());
+            }
+
+            @Test
+            void givenIOExceptionWhenSendContent_thenCompleteStream() throws IOException {
+                SseEmitter mockEmitter = mock(SseEmitter.class);
+                Consumer<ServerSentEvent<String>> result = underTest.consumer(mockEmitter);
+
+                doThrow(new IOException("error")).when(mockEmitter).send(anyString());
+
+                ServerSentEvent<String> event = ServerSentEvent.builder("event").build();
+                result.accept(event);
+
+                verify(mockEmitter).complete();
+            }
+        }
+
+        @Nested
+        class WhenUseErrorConsumer {
+            @Test
+            void givenError_thenCompleteStream() {
+                SseEmitter mockEmitter = mock(SseEmitter.class);
+                Consumer<Throwable> result = underTest.error(mockEmitter);
+                result.accept(new Exception("error"));
+
+                verify(mockEmitter).complete();
+            }
+        }
+
+        private void mockOneServiceInstance() {
             List<ServiceInstance> serviceInstances = new ArrayList<>();
             serviceInstances.add(mock(ServiceInstance.class));
             when(mockDiscoveryClient.getInstances(anyString())).thenReturn(serviceInstances);
-
-            SseEmitter result = spy.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
-            verify(spy).consumer(any());
-            verify(spy).error(any());
-            assertThat(result, is(not(nullValue())));
         }
 
-        @Test
-        void givenSameUrl_thenStillForwardEvents() throws IOException {
-            // ...
+        private void verifyConsumersUsed() throws IOException {
+            SseEmitter emitter = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
+            assertThat(emitter, is(not(nullValue())));
+            verify(underTest).consumer(emitter);
+            verify(underTest).error(emitter);
         }
-    }
-
-    @Nested
-    class whenUseConsumers {
-        @Test
-        void givenContent_thenEmitData() throws IOException {
-            SseEmitter mockEmitter = mock(SseEmitter.class);
-            Consumer<ServerSentEvent<String>> result = underTest.consumer(mockEmitter);
-
-            ServerSentEvent<String> event = ServerSentEvent.builder("event").build();
-            result.accept(event);
-            verify(mockEmitter, times(1)).send(anyString());
-        }
-
-        // test IO exception when try and emit data...
-
-        // test error consumer...
-    }
-
-    private void mockUriParts(String uri, Map<String, String[]> parameters) {
-        when(mockHttpServletRequest.getRequestURI()).thenReturn(uri);
-        when(mockHttpServletRequest.getParameterMap()).thenReturn(parameters);
     }
 }
