@@ -119,6 +119,7 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
         }
     }
 
+    // Necessary because IBM JDK will automatically add keyStore based on system variables when there is no keyStore
     private KeyStore getEmptyKeystore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
         KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
         emptyKeystore.load(null, null);
