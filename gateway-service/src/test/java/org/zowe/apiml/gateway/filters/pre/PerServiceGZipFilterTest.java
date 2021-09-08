@@ -187,9 +187,19 @@ class PerServiceGZipFilterTest {
 
     @Nested
     class ClientDoesntAcceptCompression {
-        @Test
-        void theCompressionIsntRequired() {
+        @BeforeEach
+        void setUp() {
+            when(discoveryClient.getInstances(SERVICE_WITH_COMPRESSION)).thenReturn(instances);
+            filter = new PerServiceGZipFilter(discoveryClient);
             request.setRequestURI("/api/v1/" + SERVICE_WITHOUT_COMPRESSION);
+        }
+
+        @Test
+        void theCompressionDoesntHappen() throws IOException, ServletException {
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilterInternal(request, response, (request, response1) ->
+                assertNotEquals(GZipResponseWrapper.class, response1.getClass()));
+
         }
     }
 
