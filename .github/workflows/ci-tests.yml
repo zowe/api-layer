@@ -9,7 +9,7 @@ on:
 jobs:
     BuildAndTest:
         runs-on: ubuntu-latest
-        timeout-minutes: 6
+        timeout-minutes: 13
 
         steps:
             -   uses: actions/checkout@v2
@@ -21,16 +21,32 @@ jobs:
                     java-version: 1.8
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :gateway-service:build --info --scan -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    ./gradlew build runStartUpCheck --info -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
                     name: CITests
                     path: |
-                        **/reports/**
                         integration-tests/build/reports/**
             -   name: Cleanup Gradle Cache
                 run: |
@@ -72,7 +88,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew --debug coverage sonarqube
+                    ./gradlew --info coverage sonarqube
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
