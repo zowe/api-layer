@@ -56,12 +56,13 @@ public class ServerSentEventProxyHandler {
             return emitter;
         }
 
-        String serviceId = uriParts.get(3); // TODO fix for diff route format
+        String serviceId = getServiceId(uriParts);
         String path = uriParts.get(4);
-        ServiceInstance serviceInstance = findServiceInstance(serviceId);
 
+        ServiceInstance serviceInstance = findServiceInstance(serviceId);
         if (serviceInstance == null) {
             response.getWriter().print(String.format("Service '%s' could not be discovered", serviceId));
+            // TODO better error handling
             return null;
         }
 
@@ -113,6 +114,14 @@ public class ServerSentEventProxyHandler {
             return new ArrayList<>();
         }
         return new ArrayList<>(Arrays.asList(uriPath.split("/", 5)));
+    }
+
+    private String getServiceId(List<String> uriParts) {
+        if ("sse".equals(uriParts.get(1))) {
+            return uriParts.get(3);
+        } else {
+            return uriParts.get(1);
+        }
     }
 
     private ServiceInstance findServiceInstance(String serviceId) {

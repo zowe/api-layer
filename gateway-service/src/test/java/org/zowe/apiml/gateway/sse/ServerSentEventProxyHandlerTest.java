@@ -39,8 +39,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ServerSentEventProxyHandlerTest {
     private static final String SERVICE_ID = "serviceid";
-    private static final String GATEWAY_PATH = "/" + SERVICE_ID + "/sse/v1/endpoint";
-    private static final String GATEWAY_PATH_OLD_FORMAT = "/sse/v1/" + SERVICE_ID + "/endpoint";
+    private static final String ENDPOINT = "/endpoint";
+    private static final String GATEWAY_PATH = "/" + SERVICE_ID + "/sse/v1" + ENDPOINT;
+    private static final String GATEWAY_PATH_OLD_FORMAT = "/sse/v1/" + SERVICE_ID + ENDPOINT;
 
     private ServerSentEventProxyHandler underTest;
     private DiscoveryClient mockDiscoveryClient;
@@ -100,7 +101,7 @@ class ServerSentEventProxyHandlerTest {
 
             verifyConsumersUsed();
             verifyConsumersUsed();
-            verifyTargetUrlUsed(GATEWAY_PATH);
+            verifyTargetPathUsed(ENDPOINT);
         }
 
         @Nested
@@ -111,37 +112,35 @@ class ServerSentEventProxyHandlerTest {
                 mockOneServiceInstance();
 
                 verifyConsumersUsed();
-                verifyTargetUrlUsed(GATEWAY_PATH);
+                verifyTargetPathUsed(ENDPOINT);
             }
 
             @Test
             void givenNoEndpointPath() throws IOException {
-                String path = "/serviceid/sse/v1/";
-                when(mockHttpServletRequest.getRequestURI()).thenReturn(path);
+                when(mockHttpServletRequest.getRequestURI()).thenReturn("/serviceid/sse/v1/");
                 mockOneServiceInstance();
 
                 verifyConsumersUsed();
-                verifyTargetUrlUsed(path);
+                verifyTargetPathUsed("/");
             }
 
             @Test
             void givenPathInEndpoint() throws IOException {
-                String path = GATEWAY_PATH + "/anotherendpoint";
-                when(mockHttpServletRequest.getRequestURI()).thenReturn(path);
+                String extraEndpoint = "/anotherendpoint";
+                when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH + extraEndpoint);
                 mockOneServiceInstance();
 
                 verifyConsumersUsed();
-                verifyTargetUrlUsed(path);
+                verifyTargetPathUsed(ENDPOINT + extraEndpoint);
             }
 
             @Test
             void givenOldPathFormat() throws IOException {
-                String path = GATEWAY_PATH_OLD_FORMAT;
-                when(mockHttpServletRequest.getRequestURI()).thenReturn(path);
+                when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH_OLD_FORMAT);
                 mockOneServiceInstance();
 
                 verifyConsumersUsed();
-                verifyTargetUrlUsed(path);
+                verifyTargetPathUsed(ENDPOINT);
             }
         }
 
@@ -187,7 +186,7 @@ class ServerSentEventProxyHandlerTest {
         private void mockOneServiceInstance() {
             List<ServiceInstance> serviceInstances = new ArrayList<>();
             serviceInstances.add(mock(ServiceInstance.class));
-            when(mockDiscoveryClient.getInstances(anyString())).thenReturn(serviceInstances);
+            when(mockDiscoveryClient.getInstances(SERVICE_ID)).thenReturn(serviceInstances);
         }
 
         private void verifyConsumersUsed() throws IOException {
@@ -197,7 +196,7 @@ class ServerSentEventProxyHandlerTest {
             verify(underTest).error(emitter);
         }
 
-        private void verifyTargetUrlUsed(String expectedUrlPath) {
+        private void verifyTargetPathUsed(String expectedUrlPath) {
             Set<String> usedUrls = underTest.getSseEventStreams().keySet();
             boolean used = false;
             for (String url : usedUrls) {
