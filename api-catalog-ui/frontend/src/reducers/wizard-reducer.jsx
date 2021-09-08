@@ -124,14 +124,19 @@ export function findEmptyFieldsOfCategory(content, silent) {
 
 /**
  * Tell minions they are minions
- * @param minions contains array of strings - names of categories that are minions
+ * @param minions contains array of objects - each object has a key of the minion category & the inputs that should be disabled
  * @param inputData inputData
  */
 function warnMinions(minions, inputData) {
     inputData.forEach(category => {
-        if (minions.includes(category.text)) {
-            category.isMinion = true;
-        }
+        minions.forEach(entry => {
+            if (category.text === entry.key) {
+                category.isMinion = true;
+                entry.inputsToBeDisabled.forEach(inputName => {
+                    category.content[0][inputName].disabled = true;
+                });
+            }
+        });
     });
 }
 
@@ -156,7 +161,10 @@ function loadCategories(enablerObj, config) {
         category = setDefault(category, enablerObj.defaults);
         category.nav = categoryInfo.nav;
         if (typeof category.minions !== 'undefined') {
-            minions.push(Object.keys(category.minions)[0]);
+            minions.push({
+                key: Object.keys(category.minions)[0],
+                inputsToBeDisabled: Object.values(category.minions)[0],
+            });
         }
         if (!(category.nav in navCategories)) {
             navCategories[category.nav] = { [category.text]: [[]], silent: true, warn: false };

@@ -19,6 +19,7 @@ export const staticSpecificCategories = [
             gatewayUrl: {
                 value: '',
                 question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
+                regexRestriction: [wizRegex.gatewayUrl],
             },
             serviceRelativeUrl: {
                 value: '',

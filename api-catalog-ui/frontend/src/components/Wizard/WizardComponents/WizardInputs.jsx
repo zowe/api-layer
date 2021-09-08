@@ -32,7 +32,7 @@ class WizardInputs extends Component {
         let { value } = event.target;
         const objectToChange = this.props.data;
         const arrIndex = parseInt(event.target.getAttribute('data-index'));
-        const { question, maxLength, lowercase, regexRestriction, validUrl } = objectToChange.content[arrIndex][name];
+        const { maxLength, lowercase, regexRestriction, validUrl } = objectToChange.content[arrIndex][name];
         const prevValue = objectToChange.content[arrIndex][name].value;
         // if prevValues was a boolean then we are handling a checkbox
         if (typeof prevValue === 'boolean') {
@@ -47,11 +47,38 @@ class WizardInputs extends Component {
         const arr = [...objectToChange.content];
         arr[arrIndex] = {
             ...arr[arrIndex],
-            [name]: { ...objectToChange.content[arrIndex][name], question, value, interactedWith: true },
+            [name]: { ...objectToChange.content[arrIndex][name], value, interactedWith: true },
         };
         this.updateDataWithNewContent(objectToChange, arr);
+        this.propagateToMinions(name, value, arrIndex);
         this.props.validateInput(objectToChange.nav, true);
     };
+
+    /**
+     * Check if there are any minions attached and update them if a shared value has been modified
+     * @param name key of the value that has been changed
+     * @param value the new value
+     * @param arrIndex index of the set
+     */
+    propagateToMinions(name, value, arrIndex) {
+        const { minions } = this.props.data;
+        if (minions) {
+            if (Object.values(minions)[0].includes(name)) {
+                let category;
+                this.props.inputData.forEach(cat => {
+                    if (cat.text === Object.keys(this.props.data.minions)[0]) {
+                        category = { ...cat };
+                    }
+                });
+                const arr = [...category.content];
+                arr[arrIndex] = {
+                    ...arr[arrIndex],
+                    [name]: { ...category.content[arrIndex][name], value },
+                };
+                this.props.updateWizardData({ ...category, content: arr });
+            }
+        }
+    }
 
     /**
      * Check the non-applicable restrictions
@@ -278,7 +305,19 @@ class WizardInputs extends Component {
      * @returns {JSX.Element} returns the input element
      */
     renderInputElement(itemKey, index, inputNode) {
-        const { question, value, empty, optional, options, maxLength, lowercase, tooltip, problem, type } = inputNode;
+        const {
+            question,
+            value,
+            empty,
+            optional,
+            options,
+            maxLength,
+            lowercase,
+            tooltip,
+            problem,
+            type,
+            disabled,
+        } = inputNode;
         let caption = '';
         if (optional) {
             caption += 'Optional field; ';
@@ -307,6 +346,7 @@ class WizardInputs extends Component {
                     data-index={index}
                     labelPosition="start"
                     justify
+                    disabled={disabled}
                 />
             );
         }
@@ -325,6 +365,7 @@ class WizardInputs extends Component {
                         text: entry,
                         onClick: () => this.handleSelect({ name: itemKey, index, value: entry }),
                     }))}
+                    disabled={disabled}
                 />
             );
         }
@@ -349,6 +390,7 @@ class WizardInputs extends Component {
                     label={question}
                     variant={variant}
                     caption={caption}
+                    disabled={disabled}
                 />
             </Tooltip>
         );
