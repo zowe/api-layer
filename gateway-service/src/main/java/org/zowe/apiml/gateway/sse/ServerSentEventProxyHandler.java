@@ -37,8 +37,6 @@ import java.util.function.Consumer;
 @Controller
 @Component("ServerSentEventProxyHandler")
 public class ServerSentEventProxyHandler {
-
-    private static final String SEPARATOR = "/";
     private final DiscoveryClient discovery;
     private final Map<String, Flux<ServerSentEvent<String>>> sseEventStreams = new ConcurrentHashMap<>();
 
@@ -67,7 +65,7 @@ public class ServerSentEventProxyHandler {
             return null;
         }
 
-        String targetUrl = getTargetUrl(serviceId, serviceInstance, path, request.getQueryString());
+        String targetUrl = getTargetUrl(serviceInstance, path, request.getQueryString());
         if (!sseEventStreams.containsKey(targetUrl)) {
             addStream(targetUrl);
         }
@@ -122,15 +120,18 @@ public class ServerSentEventProxyHandler {
         return serviceInstances.isEmpty() ? null : serviceInstances.get(0);
     }
 
-    private String getTargetUrl(String serviceId, ServiceInstance serviceInstance, String path, String queryParameterString) {
+    private String getTargetUrl(ServiceInstance serviceInstance, String path, String queryParameterString) {
         String parameters = queryParameterString == null ? "" : queryParameterString;
         // TODO configurable protocol
-        // TODO how test target url is correct - service URL and query parameters
         return String.format("https://%s:%d/%s/%s?%s",
             serviceInstance.getHost(),
             serviceInstance.getPort(),
-            serviceId,
+            serviceInstance.getServiceId(),
             path,
             parameters);
+    }
+
+    public Map<String, Flux<ServerSentEvent<String>>> getSseEventStreams() {
+        return sseEventStreams;
     }
 }
