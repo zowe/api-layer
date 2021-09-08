@@ -11,7 +11,7 @@ import * as enzyme from 'enzyme';
 import React from 'react';
 import WizardInputs from './WizardInputs';
 
-describe('>>> WizardInputs tests', () => {
+xdescribe('>>> WizardInputs tests', () => {
     it('should change value in component\'s state on keystroke when content is an array', () => {
         const updateWizardData = jest.fn();
         const dummyData = {

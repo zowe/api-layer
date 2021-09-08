@@ -12,7 +12,9 @@ import { connect } from 'react-redux';
 import { deleteCategoryConfig, updateWizardData, validateInput } from '../../../actions/wizard-actions';
 import WizardInputs from './WizardInputs';
 
-const mapStateToProps = () => ({});
+const mapStateToProps = state => ({
+    inputData: state.wizardReducer.inputData,
+});
 
 const mapDispatchToProps = {
     updateWizardData,

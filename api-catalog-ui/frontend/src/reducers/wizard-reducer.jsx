@@ -31,7 +31,7 @@ export const wizardReducerDefaultState = {
 };
 
 /**
- * Override multiple and indentation properties if the enabler asks to
+ * Override properties if the enabler specifies
  * @param category category object
  * @param categoryInfo enabler's category config
  */
@@ -39,18 +39,12 @@ export function compareVariables(category, categoryInfo) {
     if (categoryInfo.nav === undefined) {
         categoryInfo.nav = categoryInfo.name;
     }
-    if (categoryInfo.indentation !== undefined) {
-        category.indentation = categoryInfo.indentation;
-    }
-    if (categoryInfo.multiple !== undefined) {
-        category.multiple = categoryInfo.multiple;
-    }
-    if (categoryInfo.inArr !== undefined) {
-        category.inArr = categoryInfo.inArr;
-    }
-    if (categoryInfo.arrIndent !== undefined) {
-        category.arrIndent = categoryInfo.arrIndent;
-    }
+    const overridingValues = ['indentation', 'multiple', 'inArr', 'arrIndent', 'minions'];
+    overridingValues.forEach(overrideKey => {
+        if (categoryInfo[overrideKey] !== undefined) {
+            category[overrideKey] = categoryInfo[overrideKey];
+        }
+    });
     if (!Array.isArray(category.content) && category.content !== undefined) {
         const arr = [];
         arr.push(category.content);
@@ -79,7 +73,7 @@ export function addDefaultValues(content, defaultsArr) {
 }
 
 /**
- * Checks for invalid configurations, also handles situations where the content is an array instead of an object
+ * Checks for invalid configurations, also feeds
  * @param category category object
  * @param defaults defaults object; these are defined in wizard_defaults
  */
@@ -129,12 +123,26 @@ export function findEmptyFieldsOfCategory(content, silent) {
 }
 
 /**
+ * Tell minions they are minions
+ * @param minions contains array of strings - names of categories that are minions
+ * @param inputData inputData
+ */
+function warnMinions(minions, inputData) {
+    inputData.forEach(category => {
+        if (minions.includes(category.text)) {
+            category.isMinion = true;
+        }
+    });
+}
+
+/**
  * Load categories according to the enabler needs
  * @param enablerObj enabler config
  * @param config category & enabler data
  * @returns {any} inputData and navCategories wrapped in an object
  */
 function loadCategories(enablerObj, config) {
+    const minions = [];
     const inputData = [];
     const navCategories = {};
     const { categories } = enablerObj;
@@ -147,6 +155,9 @@ function loadCategories(enablerObj, config) {
         compareVariables(category, categoryInfo);
         category = setDefault(category, enablerObj.defaults);
         category.nav = categoryInfo.nav;
+        if (typeof category.minions !== 'undefined') {
+            minions.push(Object.keys(category.minions)[0]);
+        }
         if (!(category.nav in navCategories)) {
             navCategories[category.nav] = { [category.text]: [[]], silent: true, warn: false };
         } else {
@@ -154,6 +165,7 @@ function loadCategories(enablerObj, config) {
         }
         inputData.push(category);
     });
+    warnMinions(minions, inputData);
     return { inputData, navCategories };
 }
 

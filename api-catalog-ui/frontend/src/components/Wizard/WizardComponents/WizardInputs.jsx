@@ -19,6 +19,7 @@ class WizardInputs extends Component {
         this.state = {};
         this.handleInputChange = this.handleInputChange.bind(this);
         this.addFields = this.addFields.bind(this);
+        this.addFieldsToCurrentCategory = this.addFieldsToCurrentCategory.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
     }
 
@@ -123,10 +124,11 @@ class WizardInputs extends Component {
     }
 
     /**
-     * Adds another set of config if the category's multiple property is set to true
+     * Adds another set of config
+     * @param category category which we should add the set to
      */
-    addFields = () => {
-        const myObject = this.props.data.content[0];
+    addFields = category => {
+        const myObject = category.content[0];
         const newObject = {};
         Object.keys(myObject).forEach(key => {
             newObject[key] = { ...myObject[key] };
@@ -136,9 +138,9 @@ class WizardInputs extends Component {
             }
             newObject[key].question = myObject[key].question;
         });
-        const contentCopy = [...this.props.data.content];
+        const contentCopy = [...category.content];
         contentCopy.push(newObject);
-        let objectToChange = this.props.data;
+        let objectToChange = category;
         objectToChange = {
             ...objectToChange,
             content: contentCopy,
@@ -146,12 +148,26 @@ class WizardInputs extends Component {
         this.props.updateWizardData(objectToChange);
     };
 
+    addFieldsToCurrentCategory() {
+        this.addFields(this.props.data);
+        if (this.props.data.minions) {
+            this.props.inputData.forEach(category => {
+                if (category.text === Object.keys(this.props.data.minions)[0]) {
+                    this.addFields(category);
+                }
+            });
+        }
+    }
+
     handleDelete(event) {
         this.props.validateInput(this.props.data.nav, true);
         if (!this.state[`delBtn${event.target.name}`]) {
             this.setState({ [`delBtn${event.target.name}`]: true });
         } else {
             this.props.deleteCategoryConfig(event.target.name, this.props.data.text);
+            if (this.props.data.minions) {
+                this.props.deleteCategoryConfig(event.target.name, Object.keys(this.props.data.minions)[0]);
+            }
             this.setState({ [`delBtn${event.target.name}`]: false });
         }
     }
@@ -339,10 +355,13 @@ class WizardInputs extends Component {
     }
 
     render() {
+        const { multiple, isMinion } = this.props.data;
         return (
             <div className="wizardForm">
                 {this.loadInputs()}
-                {this.props.data.multiple ? <Button onClick={this.addFields}>Add more fields</Button> : null}
+                {multiple && typeof isMinion === 'undefined' ? (
+                    <Button onClick={this.addFieldsToCurrentCategory}>Add more fields</Button>
+                ) : null}
             </div>
         );
     }
