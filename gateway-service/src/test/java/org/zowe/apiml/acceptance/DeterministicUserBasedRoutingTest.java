@@ -23,6 +23,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 
 import java.io.IOException;
@@ -45,8 +46,13 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
     public void prepareApplications() {
         cache.getLocalCache().clear();
         applicationRegistry.clearApplications();
-        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, "authentication", false, false);
-        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, "authentication", false, false);
+        MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
+        defaultBuilder.withLoadBalancerStrategy("authentication");
+        MetadataBuilder customBuilder = MetadataBuilder.customInstance();
+        customBuilder.withLoadBalancerStrategy("authentication");
+
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, customBuilder, true);
     }
 
     @Nested
