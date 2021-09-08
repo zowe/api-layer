@@ -48,17 +48,11 @@ class SaveZosmfPublicKeyConsoleApplicationTest {
 
     @Test
     void whenSystemPropertiesAreSet_thenConfigIsPopulated() {
-        String trustStorePassword = "password";
         String protocol = "TLSv1.2";
         String trustStoreType = "PKCS12";
-        String trustStore = "truststore.p12";
-        System.setProperty("server.ssl.trustStorePassword", trustStorePassword);
-        System.setProperty("server.ssl.trustStore", trustStore);
+
         HttpsConfig config = SaveZosmfPublicKeyConsoleApplication.readHttpsConfig();
         assertEquals(config.getProtocol(), protocol);
-        assertEquals(config.getTrustStore(), trustStore);
         assertEquals(config.getTrustStoreType(), trustStoreType);
-        assertEquals(String.valueOf(config.getTrustStorePassword()), trustStorePassword);
-
     }
 }
