@@ -155,7 +155,10 @@ describe('>>> Wizard reducer tests', () => {
     it('should handle SELECT_ENABLER when the enabler allows multiple configs and it has to be in an array', () => {
         const dummyEnablerData = [{
             text: 'Test Enabler',
-            categories: [{ name: 'Test Category', indentation: false, multiple: true, inArr: true }]
+            categories: [
+                { name: 'Test Category', indentation: false, multiple: true, inArr: true,  minions: { 'Test Category 2': ['test2'] }, },
+                { name: 'Test Category 2', indentation: false, multiple: true, inArr: true,}
+            ]
         }];
 
         const dummyData = [{
@@ -164,7 +167,13 @@ describe('>>> Wizard reducer tests', () => {
                 myCategory: { value: 'dummy value', question: 'This is a dummy question', }
             }],
             multiple: false,
-        }];
+        },
+            {
+                text: 'Test Category 2',
+                content: [{test2: { value: 'val', question: 'Why?'}}],
+                multiple: false,
+            }
+        ];
 
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
@@ -181,9 +190,22 @@ describe('>>> Wizard reducer tests', () => {
                     multiple: true,
                     indentation: false,
                     inArr: true,
-                }],
+                    minions: { 'Test Category 2': ['test2'] }
+                },
+                    {
+                        text: 'Test Category 2',
+                        nav: 'Test Category 2',
+                        content: [{
+                            test2: { value: 'val', question: 'Why?', disabled: true},
+                        }],
+                        multiple: true,
+                        indentation: false,
+                        inArr: true,
+                        isMinion: true,
+                    }],
                 navsObj: {
-                    'Test Category': { 'Test Category': [[]], silent: true, warn: false, }
+                    'Test Category': { 'Test Category': [[]], silent: true, warn: false, },
+                    'Test Category 2': { 'Test Category 2': [[]], silent: true, warn: false, },
                 },
                 selectedCategory: 0
             });

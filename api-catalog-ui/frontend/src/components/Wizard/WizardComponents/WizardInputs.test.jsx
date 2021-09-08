@@ -11,7 +11,7 @@ import * as enzyme from 'enzyme';
 import React from 'react';
 import WizardInputs from './WizardInputs';
 
-xdescribe('>>> WizardInputs tests', () => {
+describe('>>> WizardInputs tests', () => {
     it('should change value in component\'s state on keystroke when content is an array', () => {
         const updateWizardData = jest.fn();
         const dummyData = {
@@ -143,7 +143,7 @@ xdescribe('>>> WizardInputs tests', () => {
             <WizardInputs updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        instance.addFields();
+        instance.addFields(dummyData);
         expect(updateWizardData).toHaveBeenCalled();
     });
     it('should add more fields when value is boolean', () => {
@@ -160,8 +160,139 @@ xdescribe('>>> WizardInputs tests', () => {
             <WizardInputs updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        instance.addFields();
+        instance.addFields(dummyData);
         expect(updateWizardData).toHaveBeenCalled();
+    });
+    it('should add more fields to the current category (minion)', () => {
+        const updateWizardData = jest.fn();
+        const dummyCategory = {
+            text: 'Dummy Category',
+            content: [{
+                field1: { value: true, question: '', show: true },
+                field2: { value: 'hey', question: '', show: true },
+            }],
+            multiple: true,
+            minions: { 'Test Category 2': ['test2'] }
+        };
+        const dummyData = [{
+            text: 'Test Category',
+            content: [{
+                myCategory: { value: 'dummy value', question: 'This is a dummy question', }
+            }],
+            multiple: true,
+        },
+            {
+                text: 'Test Category 2',
+                content: [{test2: { value: 'val', question: 'Why?'}}],
+                multiple: true,
+                isMinion: true,
+            }
+        ];
+        const wrapper = enzyme.shallow(
+            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory}/>
+        );
+        const instance = wrapper.instance();
+        instance.addFieldsToCurrentCategory();
+        expect(updateWizardData).toHaveBeenCalled();
+    });
+    it('should add more fields to the current category without minions', () => {
+        const updateWizardData = jest.fn();
+        const dummyCategory = {
+            text: 'Dummy Category',
+            content: [{
+                field1: { value: true, question: '', show: true },
+                field2: { value: 'hey', question: '', show: true },
+            }],
+            multiple: true,
+        };
+        const dummyData = [{
+            text: 'Test Category',
+            content: [{
+                myCategory: { value: 'dummy value', question: 'This is a dummy question', }
+            }],
+            multiple: true,
+        },];
+        const wrapper = enzyme.shallow(
+            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory}/>
+        );
+        const instance = wrapper.instance();
+        instance.addFieldsToCurrentCategory();
+        expect(updateWizardData).toHaveBeenCalled();
+    });
+    it('should update the value of the minions', () => {
+        const updateWizardData = jest.fn();
+        const dummyCategory = {
+            text: 'Dummy Category',
+            content: [{
+                test2: { value: 'val', question: '', show: true },
+            }],
+            multiple: true,
+            minions: { 'Test Category 2': ['test2'] }
+        };
+        const dummyData = [
+            {
+                text: 'Test Category 2',
+                content: [{test2: { value: '', question: 'Why?'}}],
+                multiple: true,
+                isMinion: true,
+            }
+        ];
+        const wrapper = enzyme.shallow(
+            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory}/>
+        );
+        const instance = wrapper.instance();
+        instance.propagateToMinions('test2', 'val', 0);
+        expect(updateWizardData).toHaveBeenCalled();
+    });
+    it('should not update the value of the minion if no such minion input field exists', () => {
+        const updateWizardData = jest.fn();
+        const dummyCategory = {
+            text: 'Dummy Category',
+            content: [{
+                test2: { value: 'val', question: '', show: true },
+            }],
+            multiple: true,
+            minions: { 'Test Category 2': ['test']}
+        };
+        const dummyData = [
+            {
+                text: 'Test Category 2',
+                content: [{test2: { value: '', question: 'Why?'}}],
+                multiple: true,
+                isMinion: true,
+            }
+        ];
+        const wrapper = enzyme.shallow(
+            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory}/>
+        );
+        const instance = wrapper.instance();
+        instance.propagateToMinions('test2', 'val', 0);
+        expect(updateWizardData).toHaveBeenCalledTimes(0);
+    });
+    it('should not update the value of the minion if no such minion exists', () => {
+        const updateWizardData = jest.fn();
+        const dummyCategory = {
+            text: 'Dummy Category',
+            content: [{
+                test2: { value: 'val', question: '', show: true },
+            }],
+            multiple: true,
+            minions: { 'Test Category 2': ['test2']}
+        };
+        const dummyData = [
+            {
+                text: 'Test Category',
+                content: [{test2: { value: '', question: 'Why?'}}],
+                multiple: true,
+                isMinion: true,
+            }
+        ];
+        const wrapper = enzyme.shallow(
+            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory}/>
+        );
+        const instance = wrapper.instance();
+        instance.propagateToMinions('test2', 'val', 0);
+        expect(updateWizardData).toHaveBeenCalledTimes(0);
     });
     it('should delete added input fields', () => {
         const deleteCategoryConfig = jest.fn();
@@ -181,6 +312,35 @@ xdescribe('>>> WizardInputs tests', () => {
             multiple: true,
         };
         const wrapper = enzyme.shallow(
+            <WizardInputs data={dummyData} deleteCategoryConfig={deleteCategoryConfig} validateInput={validateInput}
+                           />
+        );
+        const instance = wrapper.instance();
+        instance.setState({ [`delBtn1`]: true });
+        instance.handleDelete({ target: { name: 0 } });
+        instance.handleDelete({ target: { name: 1 } });
+        expect(validateInput).toHaveBeenCalledTimes(2);
+        expect(deleteCategoryConfig).toHaveBeenCalledTimes(1);
+    });
+    it('should delete added minion input fields', () => {
+        const deleteCategoryConfig = jest.fn();
+        const validateInput = jest.fn();
+        const dummyData = {
+            text: 'Dummy Data',
+            content: [
+                {
+                    test: { value: '', question: 'Why?', empty: true, },
+                    test2: { value: '', question: 'When?', empty: true, },
+                },
+                {
+                    test: { value: 'val', question: 'Why?', empty: false, },
+                    test2: { value: 'val2', question: 'When?', empty: false, },
+                }
+            ],
+            multiple: true,
+            minions: { 'Test Cat': ['testCont'] },
+        };
+        const wrapper = enzyme.shallow(
             <WizardInputs deleteCategoryConfig={deleteCategoryConfig} validateInput={validateInput}
                           data={dummyData} />
         );
@@ -189,7 +349,7 @@ xdescribe('>>> WizardInputs tests', () => {
         instance.handleDelete({ target: { name: 0 } });
         instance.handleDelete({ target: { name: 1 } });
         expect(validateInput).toHaveBeenCalledTimes(2);
-        expect(deleteCategoryConfig).toHaveBeenCalledTimes(1);
+        expect(deleteCategoryConfig).toHaveBeenCalledTimes(2);
     });
     it('should restrict values to lowercase and the allowed length', () => {
         const wrapper = enzyme.shallow(

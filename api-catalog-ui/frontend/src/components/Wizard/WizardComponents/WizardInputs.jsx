@@ -70,12 +70,14 @@ class WizardInputs extends Component {
                         category = { ...cat };
                     }
                 });
-                const arr = [...category.content];
-                arr[arrIndex] = {
-                    ...arr[arrIndex],
-                    [name]: { ...category.content[arrIndex][name], value },
-                };
-                this.props.updateWizardData({ ...category, content: arr });
+                if (typeof category !== 'undefined') {
+                    const arr = [...category.content];
+                    arr[arrIndex] = {
+                        ...arr[arrIndex],
+                        [name]: { ...category.content[arrIndex][name], value },
+                    };
+                    this.props.updateWizardData({ ...category, content: arr });
+                }
             }
         }
     }

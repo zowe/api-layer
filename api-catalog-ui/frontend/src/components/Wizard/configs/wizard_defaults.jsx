@@ -4,7 +4,7 @@
 // eslint-disable-next-line import/prefer-default-export
 export const defaultSpring = {
     Spring: { name: { value: '${apiml.service.serviceId}', hide: true } },
-    'Scheme info': { scheme: { value: 'https' }, contextPath: { value: '/${apiml.service.serviceId}' } },
+    'Scheme info': { scheme: { value: 'https' }, contextPath: { value: '/${apiml.service.serviceId}', hide: true } },
     'IP address info': {
         baseUrl: { value: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}' },
     },
@@ -34,15 +34,15 @@ export const defaultNode = {
         gatewayUrl: { value: '${routes.gatewayUrl}' },
     },
     Instance: {
-        app: { value: '${serviceId}' },
-        vipAddress: { value: '${serviceId}' },
+        app: { value: '${serviceId}', hide: true },
+        vipAddress: { value: '${serviceId}', hide: true },
         homePageUrl: { value: '${homePageRelativeUrl}' },
-        secureVipAddress: { value: '${serviceId}' },
+        secureVipAddress: { value: '${serviceId}', hide: true },
     },
     Metadata: {
-        'apiml.routes.api_v1.gatewayUrl': { value: '${routes.gatewayUrl}' },
-        'apiml.routes.api_v1.serviceUrl': { value: '${routes.serviceUrl}' },
-        'apiml.apiInfo.0.gatewayUrl': { value: '${routes.gatewayUrl}' },
+        'apiml.routes.api_v1.gatewayUrl': { value: '${routes.gatewayUrl}', hide: true },
+        'apiml.routes.api_v1.serviceUrl': { value: '${routes.serviceUrl}', hide: true },
+        'apiml.apiInfo.0.gatewayUrl': { value: '${routes.gatewayUrl}', hide: true },
     },
 };
 export const defaultMicronaut = {
@@ -51,26 +51,26 @@ export const defaultMicronaut = {
     },
     'Micronaut ports': {
         port: { value: '${apiml.service.port}' },
-        'context-path': { value: '/${apiml.service.serviceId}' },
+        'context-path': { value: '/${apiml.service.serviceId}', hide: true },
     },
     'Micronaut SSL key-store': {
-        password: { value: '${apiml.service.ssl[0].keyPassword}' },
-        type: { value: '${apiml.service.ssl[0].keyStoreType}' },
-        path: { value: 'file:${apiml.service.ssl[0].keyStore}' },
+        password: { value: '${apiml.service.ssl[0].keyPassword}', hide: true },
+        type: { value: '${apiml.service.ssl[0].keyStoreType}', hide: true },
+        path: { value: 'file:${apiml.service.ssl[0].keyStore}', hide: true },
     },
     'Micronaut SSL key': {
-        alias: { value: '${apiml.service.ssl[0].keyAlias}' },
-        password: { value: '${apiml.service.ssl[0].keyPassword}' },
+        alias: { value: '${apiml.service.ssl[0].keyAlias}', hide: true },
+        password: { value: '${apiml.service.ssl[0].keyPassword}', hide: true },
     },
     'Micronaut SSL trust-store': {
-        password: { value: '${apiml.service.ssl[0].trustStorePassword}' },
-        path: { value: 'file:${apiml.service.ssl[0].trustStore}' },
-        type: { value: '${apiml.service.ssl[0].trustStoreType}' },
+        password: { value: '${apiml.service.ssl[0].trustStorePassword}', hide: true },
+        path: { value: 'file:${apiml.service.ssl[0].trustStore}', hide: true },
+        type: { value: '${apiml.service.ssl[0].trustStoreType}', hide: true },
     },
     'Micronaut config': {
-        port: { value: '${apiml.service.port}' },
-        ciphers: { value: '${apiml.service.ssl[0].ciphers}' },
-        protocol: { value: '${apiml.service.ssl[0].protocol}' },
+        port: { value: '${apiml.service.port}', hide: true },
+        ciphers: { value: '${apiml.service.ssl[0].ciphers}', hide: true },
+        protocol: { value: '${apiml.service.ssl[0].protocol}', hide: true },
     },
     'Base URL': {
         baseUrl: { value: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}' },
