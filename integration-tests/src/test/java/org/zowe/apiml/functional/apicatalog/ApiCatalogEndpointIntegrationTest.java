@@ -192,7 +192,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         @Order(31)
         void whenCallStaticDefinitionGenerateWithUnauthorizedUser_thenResponse403() throws IOException {
             String json = "# Dummy content";
-            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId, HttpStatus.SC_CREATED, json, gatewayToken(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD));
+            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId, HttpStatus.SC_FORBIDDEN, json, gatewayToken(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD));
         }
 
         private Response getStaticApiResponse(String endpoint, String definitionFileName, int returnCode, String body, String JWT) throws IOException {
