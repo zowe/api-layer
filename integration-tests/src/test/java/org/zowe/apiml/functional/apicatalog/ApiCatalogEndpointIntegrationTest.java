@@ -24,8 +24,12 @@ import org.junit.jupiter.api.*;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CatalogTest;
-import org.zowe.apiml.util.config.*;
-import org.zowe.apiml.util.http.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.http.HttpClientUtils;
+import org.zowe.apiml.util.http.HttpRequestUtils;
+import org.zowe.apiml.util.http.HttpSecurityUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -50,6 +54,11 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String GET_CONTAINER_BY_INVALID_ID_ENDPOINT = "/apicatalog/api/v1/containers/bad";
     private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v1";
     private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v2";
+
+    private final static String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getUser();
+    private final static String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
 
     private String baseHost;
 
@@ -169,23 +178,30 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         @Test
         @Order(1)
         void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
-            getStaticApiResponse(REFRESH_STATIC_APIS_ENDPOINT, null, HttpStatus.SC_OK, null);
+            getStaticApiResponse(REFRESH_STATIC_APIS_ENDPOINT, null, HttpStatus.SC_OK, null, gatewayToken(USERNAME, PASSWORD));
         }
 
         @Test
         @Order(30)
         void whenCallStaticDefinitionGenerate_thenResponse201() throws IOException {
             String json = "# Dummy content";
-            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId ,HttpStatus.SC_CREATED, json);
+            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId, HttpStatus.SC_CREATED, json, gatewayToken(USERNAME, PASSWORD));
         }
 
-        private Response getStaticApiResponse(String endpoint, String definitionFileName, int returnCode, String body) throws IOException {
+        @Test
+        @Order(31)
+        void whenCallStaticDefinitionGenerateWithUnauthorizedUser_thenResponse403() throws IOException {
+            String json = "# Dummy content";
+            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId, HttpStatus.SC_FORBIDDEN, json, gatewayToken(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD));
+        }
+
+        private Response getStaticApiResponse(String endpoint, String definitionFileName, int returnCode, String body, String JWT) throws IOException {
             URI uri = getUriFromGateway(endpoint);
             RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
             RequestSpecification requestSpecification = given().config(SslContext.tlsWithoutCert).relaxedHTTPSValidation()
                 .when()
-                .cookie(COOKIE_NAME, gatewayToken())
+                .cookie(COOKIE_NAME, JWT)
                 .header("Accept", MediaType.APPLICATION_JSON_VALUE);
             if (body != null) {
                 requestSpecification

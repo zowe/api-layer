@@ -13,6 +13,7 @@ package org.zowe.apiml.apicatalog.staticapi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/static-api")
 @RequiredArgsConstructor
+@PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
 public class StaticDefinitionController {
     private final StaticDefinitionGenerator staticDefinitionGenerator;
 
