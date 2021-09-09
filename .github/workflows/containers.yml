@@ -81,15 +81,15 @@ jobs:
                 uses: actions/setup-java@v1
                 with:
                     java-version: 1.8
-#            -   name: Setup Docker
-#                run: |
-#                    apt update
-#                    apt install -y apt-transport-https ca-certificates curl software-properties-common
-#                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-#                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-#                    apt update
-#                    apt-cache policy docker-ce
-#                    apt install -y docker-ce
+            -   name: Setup Docker
+                run: |
+                    apt update
+                    apt install -y apt-transport-https ca-certificates curl software-properties-common
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+                    apt update
+                    apt-cache policy docker-ce
+                    apt install -y docker-ce
             -   name: Run docker-compose stack
                 run: docker-compose -f /$(pwd)/docker/local-single/docker-compose.yml up -d
             -   name: Grant execute permission for gradlew
