@@ -57,7 +57,7 @@ jobs:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
                 volumes:
-                    - /__w/api-layer/api-layer/config/docker/api-defs:/api-defs
+                    - /$(pwd)/config/docker/api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: /usr/local/etc/config/api-defs
             caching-service:
@@ -67,7 +67,7 @@ jobs:
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
                 volumes:
-                    - /__w/api-layer/api-layer/config/docker/api-defs:/api-defs
+                    - /$(pwd)/config/docker/api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:

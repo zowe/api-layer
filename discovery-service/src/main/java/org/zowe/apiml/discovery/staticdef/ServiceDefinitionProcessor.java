@@ -12,12 +12,12 @@ package org.zowe.apiml.discovery.staticdef;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.netflix.appinfo.DataCenterInfo;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.LeaseInfo;
+import com.netflix.appinfo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.exception.MetadataValidationException;
@@ -25,17 +25,12 @@ import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.util.MapUtils;
 import org.zowe.apiml.util.UrlUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -68,7 +63,7 @@ public class ServiceDefinitionProcessor {
 
     protected List<File> getFiles(StaticRegistrationResult context, String staticApiDefinitionsDirectories) {
         if (StringUtils.isEmpty(staticApiDefinitionsDirectories)) {
-            log.info("No static definition directory defined");
+            log.error("No static definition directory defined");
             return Collections.emptyList();
         }
 
@@ -79,7 +74,7 @@ public class ServiceDefinitionProcessor {
             .filter(directory -> {
                 final boolean isDir = directory.isDirectory();
                 if (isDir) {
-                    log.debug("Found directory {}", directory.getPath());
+                    log.error("Found directory {}", directory.getPath());
                 } else {
                     final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionsDirectoryNotValid", directory.getPath());
                     context.getErrors().add(msg);
@@ -100,7 +95,7 @@ public class ServiceDefinitionProcessor {
 
         final List<File> directories = getFiles(context, staticApiDefinitionsDirectories);
         for (final File directory : directories) {
-            log.info("Scanning directory with static services definition: " + directory);
+            log.error("Scanning directory with static services definition: " + directory);
             final File[] files = directory.listFiles((dir, name) -> name.endsWith(".yml"));
 
             if (files == null) {
@@ -126,7 +121,7 @@ public class ServiceDefinitionProcessor {
 
     protected Definition loadDefinition(StaticRegistrationResult context, File file) {
         final String fileName = file.getAbsolutePath();
-        log.info("Static API definition file: {}", fileName);
+        log.error("Static API definition file: {}", fileName);
 
         final String content;
         try {
