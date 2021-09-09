@@ -101,7 +101,7 @@ server:
             keyStoreType: ${server.ssl.keyStoreType:PKCS12}
             keyStore: ${server.ssl.keyStore:keystore}
             trustStoreType: ${server.ssl.trustStoreType:PKCS12}
-            trustStore: ${server.ssl.trustStore:trustore}
+            trustStore: ${server.ssl.trustStore:truststore}
             keyStorePassword: ${server.ssl.keyStorePassword:password}
             trustStorePassword: ${server.ssl.trustStorePassword:password}
             clientAuth: ${server.ssl.clientAuth}

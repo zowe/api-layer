@@ -14,4 +14,5 @@ dependencies {
     testCompile libraries.mockito_core
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
+    testCompile libraries.json_smart
 }

@@ -25,8 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
@@ -76,7 +75,7 @@ class LoginTest implements TestWithStartedInstances {
 
     @BeforeAll
     public static void init() throws Exception {
-        SslContext.prepareSslAuthentication();
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
     }
 
     @BeforeEach

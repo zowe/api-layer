@@ -22,6 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
 
 import java.io.IOException;
@@ -62,8 +63,13 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
             @BeforeEach
             void prepareService() throws IOException {
                 applicationRegistry.clearApplications();
-                applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, true, false, "authentication", false, true);
-                applicationRegistry.addApplication(serviceWithCustomConfiguration, true, false, true, "authentication", false, true);
+                MetadataBuilder customBuilder = MetadataBuilder.customInstance();
+                customBuilder.withSafIdt();
+                MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
+                defaultBuilder.withSafIdt();
+
+                applicationRegistry.addApplication(serviceWithDefaultConfiguration, defaultBuilder, false);
+                applicationRegistry.addApplication(serviceWithCustomConfiguration, customBuilder, true);
                 applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
 
                 reset(mockClient);

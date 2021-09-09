@@ -10,7 +10,7 @@
 import React from 'react';
 import * as enzyme from 'enzyme';
 import WizardNavigation from './WizardNavigation';
-import { IconError } from 'mineral-ui-icons';
+import { IconDanger} from 'mineral-ui-icons';
 
 describe('>>> Wizard navigation tests', () => {
     it('should handle category change', () => {
@@ -143,6 +143,6 @@ describe('>>> Wizard navigation tests', () => {
 
             />
         );
-        expect(wrapper.instance().loadTabs()[0].props.icon).toEqual(<IconError />);
+        expect(wrapper.instance().loadTabs()[0].props.icon).toEqual(<IconDanger style={{color:'red'}}/>);
     });
 });

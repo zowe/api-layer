@@ -16,18 +16,24 @@ import {
     REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
+    UPDATE_SERVICE_ID,
     VALIDATE_INPUT,
+    WIZARD_VISIBILITY_TOGGLE,
+    OVERRIDE_DEF,
 } from '../constants/wizard-constants';
 import { categoryData } from '../components/Wizard/configs/wizard_categories';
 import { enablerData } from '../components/Wizard/configs/wizard_onboarding_methods';
 
 export const wizardReducerDefaultState = {
+    userCanAutoOnboard: false,
     wizardIsOpen: false,
     enablerName: '',
     selectedCategory: 0,
     inputData: [],
     yamlObject: {},
     navsObj: {},
+    serviceId: '',
+    confirmDialog: false,
 };
 
 /**
@@ -35,7 +41,7 @@ export const wizardReducerDefaultState = {
  * @param category category object
  * @param categoryInfo enabler's category config
  */
-function compareVariables(category, categoryInfo) {
+export function compareVariables(category, categoryInfo) {
     if (categoryInfo.nav === undefined) {
         categoryInfo.nav = categoryInfo.name;
     }
@@ -44,6 +50,12 @@ function compareVariables(category, categoryInfo) {
     }
     if (categoryInfo.multiple !== undefined) {
         category.multiple = categoryInfo.multiple;
+    }
+    if (categoryInfo.inArr !== undefined) {
+        category.inArr = categoryInfo.inArr;
+    }
+    if (categoryInfo.arrIndent !== undefined) {
+        category.arrIndent = categoryInfo.arrIndent;
     }
     if (!Array.isArray(category.content) && category.content !== undefined) {
         const arr = [];
@@ -189,6 +201,11 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
         return state;
     }
     switch (action.type) {
+        case WIZARD_VISIBILITY_TOGGLE:
+            return {
+                ...state,
+                userCanAutoOnboard: action.payload.state,
+            };
         case TOGGLE_DISPLAY:
             return {
                 ...state,
@@ -237,6 +254,12 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             if (state.navsObj[navName] === undefined) return state;
             const navsObj = checkPresence(state.inputData, navName, state.navsObj, silent);
             return { ...state, navsObj };
+        }
+        case UPDATE_SERVICE_ID: {
+            return { ...state, serviceId: action.payload.value };
+        }
+        case OVERRIDE_DEF: {
+            return { ...state, confirmDialog: !state.confirmDialog, wizardIsOpen: !state.wizardIsOpen };
         }
         default:
             return state;

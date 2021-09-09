@@ -1,16 +1,17 @@
 ext {
     springBootVersion = '2.3.12.RELEASE'
     springCloudVersion = '2.2.9.RELEASE'
-    springSecurityVersion = '5.3.10.RELEASE'
+    springSecurityVersion = '5.3.11.RELEASE!!'
     springRetryVersion = '1.2.4.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
+    attlsVersion = '1.21.3'
     awaitilityVersion = '3.0.0'
     bootstrapVersion = '4.3.1'
     commonsLang3Version = '3.7'
     commonsTextVersion = '1.9'
     ehCacheVersion = '2.10.9.2'
-    eurekaClientVersion = '1.10.15'
+    eurekaClientVersion = '1.10.16'
     gradleGitPropertiesVersion = '2.2.4' // Used in classpath dependencies
     gradleNodeVersion = '3.0.1' // Used in classpath dependencies
     gsonVersion = '2.8.7'
@@ -27,12 +28,13 @@ ext {
     jettyWebSocketClientVersion = '9.4.43.v20210629'
     jjwtVersion = '0.11.2'
     jsonPathVersion = '2.6.0'
+    jsonSmartVersion = '2.4.7!!'
     jsonUnitVersion = '1.25.1'
     jsonVersion = '20180813'
     jsoupVersion = '1.8.3'
     jsr305Version = '3.0.2'
     junitJupiterVersion = '5.5.2'
-    jqueryVersion = '3.4.1'
+    jqueryVersion = '3.5.1!!'
     lettuceVersion = '6.0.6.RELEASE'
     logbackVersion = '1.2.3'
     lombokVersion = '1.18.20'
@@ -52,7 +54,8 @@ ext {
     swaggerJerseyJaxrsVersion = '1.5.10'
     tomcatVersion = '9.0.50'
     velocityVersion = '2.0'
-    attlsVersion = '1.21.3'
+    xstreamVersion = '1.4.18!!'
+
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
         spring_boot_configuration_processor: "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}",
@@ -74,8 +77,10 @@ ext {
         spring_cloud_starter_ribbon        : "org.springframework.cloud:spring-cloud-starter-netflix-ribbon:${springCloudVersion}",
         spring_cloud_starter_hystrix       : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix:${springCloudVersion}",
 
-        spring_security_web                : "org.springframework.security:spring-security-web:${springSecurityVersion}",
         spring_security_config             : "org.springframework.security:spring-security-config:${springSecurityVersion}",
+        spring_security_core               : "org.springframework.security:spring-security-core:${springSecurityVersion}",
+        spring_security_crypto             : "org.springframework.security:spring-security-crypto:${springSecurityVersion}",
+        spring_security_web                : "org.springframework.security:spring-security-web:${springSecurityVersion}",
 
         spring_retry                       : "org.springframework.retry:spring-retry:${springRetryVersion}",
         spring_web_test_client             : "io.rest-assured:spring-web-test-client:${springWebTestClientVersion}",
@@ -107,6 +112,7 @@ ext {
         jetty_websocket_api                : "org.eclipse.jetty.websocket:websocket-api:${jettyWebSocketClientVersion}",
         jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
         jetty_websocket_common             : "org.eclipse.jetty.websocket:websocket-common:${jettyWebSocketClientVersion}",
+        json_smart                         : "net.minidev:json-smart:${jsonSmartVersion}",
         jjwt                               : "io.jsonwebtoken:jjwt-api:${jjwtVersion}",
         jjwt_impl                          : "io.jsonwebtoken:jjwt-impl:${jjwtVersion}",
         jjwt_jackson                       : "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}",
@@ -139,6 +145,7 @@ ext {
         swagger3_parser                    : "io.swagger.parser.v3:swagger-parser-v3:${swagger3ParserVersion}",
         tomcat_coyote                      : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
         tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+        xstream                            : "com.thoughtworks.xstream:xstream:${xstreamVersion}",
 
         // Sample apps only
         jersey_container_servlet_core      : "org.glassfish.jersey.containers:jersey-container-servlet-core:${jerseyVersion}",

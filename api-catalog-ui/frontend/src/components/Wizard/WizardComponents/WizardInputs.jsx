@@ -33,6 +33,9 @@ class WizardInputs extends Component {
         const arrIndex = parseInt(event.target.getAttribute('data-index'));
         const { question, maxLength, lowercase } = objectToChange.content[arrIndex][name];
         const prevValue = objectToChange.content[arrIndex][name].value;
+        if (name === 'serviceId') {
+            this.props.updateServiceId(value);
+        }
         // if prevValues was a boolean then we are handling a checkbox
         if (typeof prevValue === 'boolean') {
             value = checked;
@@ -101,7 +104,9 @@ class WizardInputs extends Component {
         Object.keys(myObject).forEach(key => {
             newObject[key] = { ...myObject[key] };
             newObject[key].interactedWith = false;
-            newObject[key].value = '';
+            if (typeof newObject[key].value !== 'boolean') {
+                newObject[key].value = '';
+            }
             newObject[key].question = myObject[key].question;
         });
         const contentCopy = [...this.props.data.content];
@@ -255,8 +260,6 @@ class WizardInputs extends Component {
                     onChange={this.handleInputChange}
                     name={itemKey}
                     data-index={index}
-                    labelPosition="start"
-                    justify
                 />
             );
         }

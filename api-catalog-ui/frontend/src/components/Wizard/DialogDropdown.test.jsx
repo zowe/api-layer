@@ -14,7 +14,7 @@ describe('>>> DialogDropdown tests', () => {
     it('should have "Onboard New API" button', () => {
         const wrapper = enzyme.shallow(
             <DialogDropdown
-                WIP={false}
+                visible={true}
                 data={[{
                     text: 'Plain Java Enabler',
                 },
@@ -51,6 +51,7 @@ describe('>>> DialogDropdown tests', () => {
         ];
         const wrapper = enzyme.shallow(
             <DialogDropdown
+                userCanAutoOnboard={true}
                 WIP={true}
                 data={dummyData}
                 toggleWizard={testFunc}

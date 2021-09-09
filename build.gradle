@@ -98,11 +98,10 @@ subprojects {
        testImplementation  'org.junit.platform:junit-platform-commons:1.6.0'
        testImplementation  'org.junit.platform:junit-platform-engine:1.6.0'
    }
-}
 
-configurations {
-    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    all*.exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-kotlin'
+    configurations.all {
+        exclude group: 'org.glassfish', module: 'jakarta.el'
+    }
 }
 
 task buildCore(dependsOn: [':gateway-service:build', ':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',

@@ -13,14 +13,11 @@ import io.restassured.RestAssured;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.*;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.*;
 
 import java.net.URI;
 import java.util.Collections;
@@ -62,7 +59,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
     @BeforeAll
     public static void init() throws Exception {
-        SslContext.prepareSslAuthentication();
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
     }
 
 

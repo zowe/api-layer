@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.zowe.apiml.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
+import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -51,8 +52,8 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @BeforeEach
     public void prepareApplications() {
         applicationRegistry.clearApplications();
-        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false, false, false, false);
-        applicationRegistry.addApplication(serviceWithCustomConfiguration, true, true, false, true);
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(),false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance(),false);
     }
 
     protected void mockValid200HttpResponse() throws IOException {
