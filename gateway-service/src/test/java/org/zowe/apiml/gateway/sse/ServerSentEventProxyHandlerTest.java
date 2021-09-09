@@ -18,8 +18,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
@@ -35,7 +38,6 @@ import java.util.function.Consumer;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,6 +57,7 @@ class ServerSentEventProxyHandlerTest {
     private DiscoveryClient mockDiscoveryClient;
     private HttpServletRequest mockHttpServletRequest;
     private HttpServletResponse mockHttpServletResponse;
+    private final MessageService messageService = new YamlMessageService("/gateway-messages.yml");
 
     @BeforeEach
     public void setup() {
@@ -62,46 +65,89 @@ class ServerSentEventProxyHandlerTest {
         mockHttpServletResponse = mock(HttpServletResponse.class);
 
         mockDiscoveryClient = mock(DiscoveryClient.class);
-        underTest = Mockito.spy(new ServerSentEventProxyHandler(mockDiscoveryClient));
+        underTest = Mockito.spy(new ServerSentEventProxyHandler(mockDiscoveryClient, messageService));
     }
 
     @Nested
     class WhenGetEmitter {
-        @Nested
-        class GivenBadUri_thenReturnEmitter {
-            @Test
-            void givenNoUriParts() throws IOException {
-                when(mockHttpServletRequest.getRequestURI()).thenReturn(null);
-                verifyConsumersNotUsed();
-            }
-
-            @Test
-            void givenShortUri() throws IOException {
-                when(mockHttpServletRequest.getRequestURI()).thenReturn("/notenoughparts");
-                verifyConsumersNotUsed();
-            }
-
-            private void verifyConsumersNotUsed() throws IOException {
-                SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
-                assertThat(result, is(not(nullValue())));
-                verify(underTest, times(0)).consumer(any());
-                verify(underTest, times(0)).error(any());
-            }
-        }
 
         @Nested
-        class GivenNoServices_thenReturnNull {
-            @Test
-            void whenQueryDiscoveryService_thenReturnNull() throws IOException {
-                when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
+        class WhenError_thenWriteErrorAndReturnNull {
+            @Nested
+            class GivenBadUri_thenReturnEmitter {
+                @Test
+                void givenNoUriParts() throws IOException {
+                    when(mockHttpServletRequest.getRequestURI()).thenReturn(null);
+                    PrintWriter mockWriter = mock(PrintWriter.class);
+                    when(mockHttpServletResponse.getWriter()).thenReturn(mockWriter);
 
-                PrintWriter mockWriter = mock(PrintWriter.class);
-                when(mockHttpServletResponse.getWriter()).thenReturn(mockWriter);
-                when(mockDiscoveryClient.getInstances(anyString())).thenReturn(new ArrayList<>());
+                    SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
+                    verifyError(result, mockWriter, HttpStatus.BAD_REQUEST);
+                }
 
-                SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
-                assertThat(result, is(nullValue()));
-                verify(mockWriter).print(anyString());
+                @Test
+                void givenShortUri() throws IOException {
+                    when(mockHttpServletRequest.getRequestURI()).thenReturn("/notenoughparts");
+                    PrintWriter mockWriter = mock(PrintWriter.class);
+                    when(mockHttpServletResponse.getWriter()).thenReturn(mockWriter);
+
+                    SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
+                    verifyError(result, mockWriter, HttpStatus.BAD_REQUEST);
+                }
+            }
+
+            @Nested
+            class GivenNoServices_thenWriteErrorAndReturnNull {
+                @Test
+                void whenQueryDiscoveryService() throws IOException {
+                    when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
+
+                    PrintWriter mockWriter = mock(PrintWriter.class);
+                    when(mockHttpServletResponse.getWriter()).thenReturn(mockWriter);
+                    when(mockDiscoveryClient.getInstances(anyString())).thenReturn(new ArrayList<>());
+
+                    SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
+                    verifyError(result, mockWriter, HttpStatus.NOT_FOUND);
+                }
+
+                @Test
+                void whenQueryRoutedServices() throws IOException {
+                    when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
+
+                    PrintWriter mockWriter = mock(PrintWriter.class);
+                    when(mockHttpServletResponse.getWriter()).thenReturn(mockWriter);
+
+                    List<ServiceInstance> serviceInstances = new ArrayList<>();
+                    serviceInstances.add(mock(ServiceInstance.class));
+                    when(mockDiscoveryClient.getInstances(SERVICE_ID)).thenReturn(serviceInstances);
+
+                    SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
+                    verifyError(result, mockWriter, HttpStatus.NOT_FOUND);
+                }
+
+                @Test
+                void whenQueryRoutedService() throws IOException {
+                    when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
+
+                    PrintWriter mockWriter = mock(PrintWriter.class);
+                    when(mockHttpServletResponse.getWriter()).thenReturn(mockWriter);
+
+                    List<ServiceInstance> serviceInstances = new ArrayList<>();
+                    serviceInstances.add(mock(ServiceInstance.class));
+                    when(mockDiscoveryClient.getInstances(SERVICE_ID)).thenReturn(serviceInstances);
+
+                    RoutedServices mockRoutedServices = mock(RoutedServices.class);
+                    underTest.addRoutedServices(SERVICE_ID, mockRoutedServices);
+
+                    SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
+                    verifyError(result, mockWriter, HttpStatus.NOT_FOUND);
+                }
+            }
+
+            private void verifyError(SseEmitter returnedEmitter, PrintWriter writer, HttpStatus expectedStatus) {
+                verify(writer).print(anyString());
+                verify(mockHttpServletResponse).setStatus(expectedStatus.value());
+                assertThat(returnedEmitter, is(nullValue()));
             }
         }
 

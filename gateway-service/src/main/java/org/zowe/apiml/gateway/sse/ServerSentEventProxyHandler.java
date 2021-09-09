@@ -21,6 +21,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
@@ -41,23 +43,26 @@ import java.util.function.Consumer;
 @Component("ServerSentEventProxyHandler")
 public class ServerSentEventProxyHandler implements RoutedServicesUser {
     private final DiscoveryClient discovery;
+    private final MessageService messageService;
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
     private final Map<String, Flux<ServerSentEvent<String>>> sseEventStreams = new ConcurrentHashMap<>();
 
     @Autowired
-    public ServerSentEventProxyHandler(DiscoveryClient discovery) {
+    public ServerSentEventProxyHandler(DiscoveryClient discovery, MessageService messageService) {
         this.discovery = discovery;
+        this.messageService = messageService;
     }
 
     @GetMapping("/**/sse/**")
     public SseEmitter getEmitter(HttpServletRequest request, HttpServletResponse response) throws IOException {
         SseEmitter emitter = new SseEmitter(-1L);
 
-        List<String> uriParts = getUriParts(request);
+        String uri = request.getRequestURI();
+        List<String> uriParts = getUriParts(uri);
         if (uriParts.size() < 4) {
-            // need to have sse, version, service ID, and then path (can be empty) in valid route
-            // TODO better error handling
-            return emitter;
+            // TODO /sse/v1/ gets past this check? So does /sse/v1/asdf? Need size 5 check? Need to add last /?
+            writeError(response, SseErrorMessages.INVALID_ROUTE, uri);
+            return null;
         }
 
         String serviceId = getServiceId(uriParts);
@@ -66,19 +71,20 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
         ServiceInstance serviceInstance = findServiceInstance(serviceId);
         if (serviceInstance == null) {
-            response.getWriter().print(String.format("Service '%s' could not be discovered", serviceId));
-            // TODO better error handling
+            writeError(response, SseErrorMessages.INSTANCE_NOT_FOUND, serviceId);
             return null;
         }
 
         RoutedServices routedServices = routedServicesMap.get(serviceId);
         if (routedServices == null) {
-            // TODO error handling
+            writeError(response, SseErrorMessages.INSTANCE_NOT_FOUND, serviceId);
             return null;
         }
-        RoutedService routedService = routedServices.findServiceByGatewayUrl("sse/" + majorVersion);
+
+        String sseRoute = "sse/" + majorVersion;
+        RoutedService routedService = routedServices.findServiceByGatewayUrl("sse/" + sseRoute);
         if (routedService == null) {
-            // TODO error handling
+            writeError(response, SseErrorMessages.ENDPOINT_NOT_FOUND, sseRoute);
             return null;
         }
 
@@ -88,6 +94,7 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
         }
         sseEventStreams.get(targetUrl).subscribe(consumer(emitter), error(emitter), emitter::complete);
 
+        emitter.onCompletion(() -> sseEventStreams.remove(targetUrl));
         return emitter;
     }
 
@@ -124,12 +131,11 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
         sseEventStreams.put(sseStreamUrl, eventStream);
     }
 
-    private List<String> getUriParts(HttpServletRequest request) {
-        String uriPath = request.getRequestURI();
-        if (uriPath == null) {
+    private List<String> getUriParts(String uri) {
+        if (uri == null) {
             return new ArrayList<>();
         }
-        return new ArrayList<>(Arrays.asList(uriPath.split("/", 5)));
+        return new ArrayList<>(Arrays.asList(uri.split("/", 5)));
     }
 
     private String getServiceId(List<String> uriParts) {
@@ -156,6 +162,13 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
             path,
             parameters
         );
+    }
+
+    private void writeError(HttpServletResponse response, SseErrorMessages errorMessage, String messageParameter) throws IOException {
+        Message message = messageService.createMessage(errorMessage.getKey(), messageParameter);
+
+        response.getWriter().print(message.mapToReadableText());
+        response.setStatus(errorMessage.getStatus().value());
     }
 
     public Map<String, Flux<ServerSentEvent<String>>> getSseEventStreams() {
