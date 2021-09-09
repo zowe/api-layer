@@ -91,7 +91,7 @@ jobs:
 #                    apt-cache policy docker-ce
 #                    apt install -y docker-ce
             -   name: Run docker-compose stack
-                run: docker-compose -f docker/local-single/docker-compose.yml up -d
+                run: docker-compose -f /$(pwd)/docker/local-single/docker-compose.yml up -d
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
             -   name: Cache Gradle packages
