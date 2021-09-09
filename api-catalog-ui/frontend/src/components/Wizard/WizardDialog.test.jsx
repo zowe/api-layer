@@ -15,7 +15,8 @@ import { categoryData } from './configs/wizard_categories';
 describe('>>> WizardDialog tests', () => {
     it('should render the dialog if store value is true', () => {
         const wrapper = enzyme.shallow(
-            <WizardDialog wizardToggleDisplay={jest.fn()} inputData={categoryData} navsObj={{ 'Tab 1': {} }} wizardIsOpen />
+            <WizardDialog wizardToggleDisplay={jest.fn()} inputData={categoryData} navsObj={{ 'Tab 1': {} }}
+                          wizardIsOpen />
         );
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
     });
@@ -143,16 +144,14 @@ describe('>>> WizardDialog tests', () => {
                 selectedCategory={1}
                 navsObj={{ 'Basic info': {} }}
                 nextWizardCategory={jest.fn()}
+                sendYAML={jest.fn()}
                 createYamlObject={createYamlObject}
             />
         );
         const instance = wrapper.instance();
         instance.nextSave();
-        expect(createYamlObject).toHaveBeenCalled();
-        expect(wizardToggleDisplay).toHaveBeenCalled();
-        expect(refreshedStaticApi).toHaveBeenCalled();
         expect(wrapper.find({ size: 'large' })).toExist();
-    })
+    });
     it('should invoke nextCategory on clicking "Next"', () => {
         const nextWizardCategory = jest.fn();
         const validateInput = jest.fn();
@@ -161,13 +160,6 @@ describe('>>> WizardDialog tests', () => {
         ];
         const wrapper = enzyme.shallow(
             <WizardDialog
-                tiles={null}
-                fetchTilesStart={jest.fn()}
-                wizardToggleDisplay={jest.fn()}
-                refreshedStaticApi={jest.fn()}
-                fetchTilesStop={jest.fn()}
-                clearService={jest.fn()}
-                clear={jest.fn()}
                 inputData={dummyData}
                 selectedCategory={0}
                 navsObj={{ 'Basic info': {} }}
@@ -179,5 +171,47 @@ describe('>>> WizardDialog tests', () => {
         instance.nextSave();
         expect(nextWizardCategory).toHaveBeenCalled();
         expect(validateInput).toHaveBeenCalled();
+    });
+    it('should check presence on clicking "Next"', () => {
+        const sendYAML = jest.fn();
+        const dummyData = [
+            {
+                text: 'Basic info',
+                content: null,
+            },
+        ];
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                enablerName={'Static Onboarding'}
+                inputData={dummyData}
+                selectedCategory={1}
+                navsObj={{ Basics: { 'Basic info': [[]] } }}
+                sendYAML={sendYAML}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.nextSave();
+        expect(sendYAML).toHaveBeenCalled();
+    });
+    it('should throw err on clicking "Next" if presence is insufficient', () => {
+        const notifyError = jest.fn();
+        const dummyData = [
+            {
+                text: 'Basic info',
+                content: [{ key: { value: '' } }],
+            },
+        ];
+        const wrapper = enzyme.shallow(
+            <WizardDialog
+                enablerName={'Static Onboarding'}
+                inputData={dummyData}
+                selectedCategory={1}
+                navsObj={{ Basics: { 'Basic info': [['key']], silent: true } }}
+                notifyError={notifyError}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.nextSave();
+        expect(notifyError).toHaveBeenCalled();
     });
 });

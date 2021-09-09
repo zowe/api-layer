@@ -35,12 +35,16 @@ export default class DialogDropdown extends Component {
     openOnClick() {
         const { data } = this.state;
         if (Array.isArray(data)) {
-            this.setState({ data: data.map(item => ({ ...item, onClick: this.handleClick })) });
+            let arr = data.map(item => ({ ...item, onClick: this.handleClick }));
+            if (!this.props.userCanAutoOnboard) {
+                arr = arr.filter(item => item.text !== 'Static Onboarding');
+            }
+            this.setState({ data: arr });
         }
     }
 
     renderDropdown() {
-        if (this.props.WIP || !Array.isArray(this.state.data)) {
+        if (!this.props.visible || !Array.isArray(this.state.data)) {
             return null;
         }
         return (
