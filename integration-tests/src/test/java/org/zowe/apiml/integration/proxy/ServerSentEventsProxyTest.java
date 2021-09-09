@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.web.reactive.server.FluxExchangeResult;
@@ -26,7 +25,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import reactor.core.publisher.Flux;
 import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
 
