@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
+import * as YAML from 'yaml';
 import React, { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
@@ -25,10 +25,35 @@ export default class WizardDialog extends Component {
     };
 
     doneWizard = () => {
-        const { refreshedStaticApi, wizardToggleDisplay, createYamlObject, inputData } = this.props;
-        wizardToggleDisplay();
-        refreshedStaticApi();
-        createYamlObject(inputData);
+        const { sendYAML, navsObj, notifyError, yamlObject, serviceId, enablerName } = this.props;
+
+        /**
+         * Check that all mandatory fields are filled.
+         * @param navs navsObj contains information about all unfilled fields in each nav tab.
+         * @returns {boolean} true if no mandatory fields are empty
+         */
+        const presenceIsSufficient = navs => {
+            let sufficient = true;
+            Object.keys(navs).forEach(nav => {
+                Object.keys(navs[nav]).forEach(category => {
+                    if (Array.isArray(navs[nav][category])) {
+                        navs[nav][category].forEach(set => {
+                            if (set.length > 0) {
+                                sufficient = false;
+                            }
+                        });
+                    }
+                });
+            });
+            return sufficient;
+        };
+        if (enablerName !== 'Static Onboarding') {
+            this.closeWizard();
+        } else if (presenceIsSufficient(navsObj)) {
+            sendYAML(YAML.stringify(yamlObject), serviceId);
+        } else {
+            notifyError('Fill all mandatory fields first!');
+        }
     };
 
     /**

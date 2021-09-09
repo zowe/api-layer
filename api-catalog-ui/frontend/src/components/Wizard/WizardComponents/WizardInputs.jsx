@@ -33,6 +33,9 @@ class WizardInputs extends Component {
         const arrIndex = parseInt(event.target.getAttribute('data-index'));
         const { question, maxLength, lowercase } = objectToChange.content[arrIndex][name];
         const prevValue = objectToChange.content[arrIndex][name].value;
+        if (name === 'serviceId') {
+            this.props.updateServiceId(value);
+        }
         // if prevValues was a boolean then we are handling a checkbox
         if (typeof prevValue === 'boolean') {
             value = checked;
