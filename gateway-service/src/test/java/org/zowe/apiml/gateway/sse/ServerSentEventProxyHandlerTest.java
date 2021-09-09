@@ -20,6 +20,8 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,12 +42,14 @@ import static org.mockito.Mockito.*;
 class ServerSentEventProxyHandlerTest {
     private static final String HOST = "host.com";
     private static final int PORT = 10010;
-    private static final String URL_SECURE = "https://" + HOST + ":" + PORT;
-    private static final String URL_INSECURE = "http://" + HOST + ":" + PORT;
+    private static final String SERVICE_URL = "/service";
+    private static final String URL_SECURE = "https://" + HOST + ":" + PORT + SERVICE_URL;
+    private static final String URL_INSECURE = "http://" + HOST + ":" + PORT + SERVICE_URL;
     private static final String SERVICE_ID = "serviceid";
     private static final String ENDPOINT = "/endpoint";
-    private static final String GATEWAY_PATH = "/" + SERVICE_ID + "/sse/v1" + ENDPOINT;
-    private static final String GATEWAY_PATH_OLD_FORMAT = "/sse/v1/" + SERVICE_ID + ENDPOINT;
+    private static final String MAJOR_VERSION = "v1";
+    private static final String GATEWAY_PATH = "/" + SERVICE_ID + "/sse/" + MAJOR_VERSION + ENDPOINT;
+    private static final String GATEWAY_PATH_OLD_FORMAT = "/sse/" + MAJOR_VERSION + "/" + SERVICE_ID + ENDPOINT;
 
     private ServerSentEventProxyHandler underTest;
     private DiscoveryClient mockDiscoveryClient;
@@ -86,20 +90,23 @@ class ServerSentEventProxyHandlerTest {
         }
 
         @Nested
-        class GivenService {
+        class GivenNoServices_thenReturnNull {
             @Test
-            void givenNoServiceInstances_thenReturnNull() throws IOException {
+            void whenQueryDiscoveryService_thenReturnNull() throws IOException {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
 
                 PrintWriter mockWriter = mock(PrintWriter.class);
-                when(mockDiscoveryClient.getInstances(anyString())).thenReturn(new ArrayList<>());
                 when(mockHttpServletResponse.getWriter()).thenReturn(mockWriter);
+                when(mockDiscoveryClient.getInstances(anyString())).thenReturn(new ArrayList<>());
 
                 SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
                 assertThat(result, is(nullValue()));
-                verify(mockWriter, times(1)).print(anyString());
+                verify(mockWriter).print(anyString());
             }
+        }
 
+        @Nested
+        class GivenService {
             @Test
             void givenSameServiceTwice_thenUtilizeConsumersTwice() throws IOException {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
@@ -201,8 +208,13 @@ class ServerSentEventProxyHandlerTest {
         }
 
         private void mockServiceInstance(boolean isSecure) {
+            RoutedServices mockRoutedServices = mock(RoutedServices.class);
+            RoutedService mockRoutedService = mock(RoutedService.class);
+            when(mockRoutedService.getServiceUrl()).thenReturn(SERVICE_URL + "/");
+            when(mockRoutedServices.findServiceByGatewayUrl(anyString())).thenReturn(mockRoutedService);
+            underTest.addRoutedServices(SERVICE_ID, mockRoutedServices);
+
             ServiceInstance serviceInstance = mock(ServiceInstance.class);
-            when(serviceInstance.getServiceId()).thenReturn(SERVICE_ID);
             when(serviceInstance.getHost()).thenReturn(HOST);
             when(serviceInstance.getPort()).thenReturn(PORT);
             when(serviceInstance.isSecure()).thenReturn(isSecure);
@@ -221,7 +233,7 @@ class ServerSentEventProxyHandlerTest {
 
         private void verifyTargetUrlUsed(String expectedUrl) {
             Set<String> usedUrls = underTest.getSseEventStreams().keySet();
-            assertThat("Expected path '" + expectedUrl + "' was not used", usedUrls.contains(expectedUrl), is(true));
+            assertThat("Expected url '" + expectedUrl + "' was not used", usedUrls.contains(expectedUrl), is(true));
         }
     }
 }
