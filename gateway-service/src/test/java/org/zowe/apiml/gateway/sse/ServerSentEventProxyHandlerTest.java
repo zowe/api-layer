@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -156,7 +155,7 @@ class ServerSentEventProxyHandlerTest {
 
                 verifyConsumerUsed();
                 verifyConsumerUsed();
-                verifyTargetUrlUsed(URL_SECURE + ENDPOINT);
+                verify(underTest, times(2)).getSseStream(URL_SECURE + ENDPOINT);
             }
 
             @Test
@@ -165,8 +164,7 @@ class ServerSentEventProxyHandlerTest {
                 mockServiceInstance(false);
 
                 verifyConsumerUsed();
-                verifyConsumerUsed();
-                verifyTargetUrlUsed(URL_INSECURE + ENDPOINT);
+                verify(underTest).getSseStream(URL_INSECURE + ENDPOINT);
             }
         }
 
@@ -178,7 +176,7 @@ class ServerSentEventProxyHandlerTest {
                 mockServiceInstance(true);
 
                 verifyConsumerUsed();
-                verifyTargetUrlUsed(URL_SECURE + ENDPOINT);
+                verify(underTest).getSseStream(URL_SECURE + ENDPOINT);
             }
 
             @Test
@@ -187,7 +185,7 @@ class ServerSentEventProxyHandlerTest {
                 mockServiceInstance(true);
 
                 verifyConsumerUsed();
-                verifyTargetUrlUsed(URL_SECURE + "/");
+                verify(underTest).getSseStream(URL_SECURE + "/");
             }
 
             @Test
@@ -197,7 +195,7 @@ class ServerSentEventProxyHandlerTest {
                 mockServiceInstance(true);
 
                 verifyConsumerUsed();
-                verifyTargetUrlUsed(URL_SECURE + ENDPOINT + extraEndpoint);
+                verify(underTest).getSseStream(URL_SECURE + ENDPOINT + extraEndpoint);
             }
 
             @Test
@@ -206,7 +204,7 @@ class ServerSentEventProxyHandlerTest {
                 mockServiceInstance(true);
 
                 verifyConsumerUsed();
-                verifyTargetUrlUsed(URL_SECURE + ENDPOINT);
+                verify(underTest).getSseStream(URL_SECURE + ENDPOINT);
             }
         }
 
@@ -259,11 +257,6 @@ class ServerSentEventProxyHandlerTest {
             SseEmitter emitter = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
             assertThat(emitter, is(not(nullValue())));
             verify(underTest).consumer(emitter);
-        }
-
-        private void verifyTargetUrlUsed(String expectedUrl) {
-            Set<String> usedUrls = underTest.getSseEventStreams().keySet();
-            assertThat("Expected url '" + expectedUrl + "' was not used", usedUrls.contains(expectedUrl), is(true));
         }
     }
 }

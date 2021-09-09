@@ -45,7 +45,6 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
     private final DiscoveryClient discovery;
     private final MessageService messageService;
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
-    private final Map<String, Flux<ServerSentEvent<String>>> sseEventStreams = new ConcurrentHashMap<>();
 
     @Autowired
     public ServerSentEventProxyHandler(DiscoveryClient discovery, MessageService messageService) {
@@ -89,13 +88,8 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
         }
 
         String targetUrl = getTargetUrl(serviceInstance, routedService.getServiceUrl(), path, request.getQueryString());
-        if (!sseEventStreams.containsKey(targetUrl)) {
-            addStream(targetUrl);
-        }
-        sseEventStreams.get(targetUrl).subscribe(consumer(emitter), emitter::completeWithError, emitter::complete);
+        getSseStream(targetUrl).subscribe(consumer(emitter), emitter::completeWithError, emitter::complete);
 
-        // TODO check sseEventStreams is even needed
-        emitter.onCompletion(() -> sseEventStreams.remove(targetUrl));
         return emitter;
     }
 
@@ -110,15 +104,15 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
         };
     }
 
-    private void addStream(String sseStreamUrl) {
+    // package protected for unit testing
+    Flux<ServerSentEvent<String>> getSseStream(String sseStreamUrl) {
         WebClient client = WebClient.create(sseStreamUrl);
         ParameterizedTypeReference<ServerSentEvent<String>> type
             = new ParameterizedTypeReference<ServerSentEvent<String>>() {
         };
-        Flux<ServerSentEvent<String>> eventStream = client.get()
+        return client.get()
             .retrieve()
             .bodyToFlux(type);
-        sseEventStreams.put(sseStreamUrl, eventStream);
     }
 
     private List<String> getUriParts(String uri) {
@@ -159,10 +153,6 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
         response.getWriter().print(message.mapToReadableText());
         response.setStatus(errorMessage.getStatus().value());
-    }
-
-    public Map<String, Flux<ServerSentEvent<String>>> getSseEventStreams() {
-        return sseEventStreams;
     }
 
     @Override
