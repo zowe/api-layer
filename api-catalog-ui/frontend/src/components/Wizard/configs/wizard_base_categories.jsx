@@ -7,7 +7,7 @@ export const baseCategories = [
         content: {
             serviceId: {
                 value: '',
-                question: 'A unique identifier for the API:',
+                question: 'A unique identifier for the API (service ID):',
                 maxLength: 40,
                 lowercase: true,
             },
