@@ -78,6 +78,7 @@ export default class WizardDialog extends Component {
     render() {
         const { wizardIsOpen, enablerName, selectedCategory, navsObj } = this.props;
         const size = selectedCategory === Object.keys(navsObj).length ? 'large' : 'medium';
+        const disable = selectedCategory !== Object.keys(navsObj).length;
         return (
             <div className="dialog">
                 <Dialog id="wizard-dialog" isOpen={wizardIsOpen} size={size} closeOnClickOutside={false}>
@@ -93,8 +94,8 @@ export default class WizardDialog extends Component {
                             <Button size="medium" onClick={this.closeWizard}>
                                 Cancel
                             </Button>
-                            <Button size="medium" onClick={this.nextSave}>
-                                {selectedCategory === Object.keys(navsObj).length ? 'Done' : 'Next'}
+                            <Button size="medium" onClick={this.nextSave} disabled={disable}>
+                                Done
                             </Button>
                         </DialogActions>
                     </DialogFooter>
