@@ -82,7 +82,7 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
         }
 
         String sseRoute = "sse/" + majorVersion;
-        RoutedService routedService = routedServices.findServiceByGatewayUrl("sse/" + sseRoute);
+        RoutedService routedService = routedServices.findServiceByGatewayUrl(sseRoute);
         if (routedService == null) {
             writeError(response, SseErrorMessages.ENDPOINT_NOT_FOUND, sseRoute);
             return null;
@@ -92,8 +92,9 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
         if (!sseEventStreams.containsKey(targetUrl)) {
             addStream(targetUrl);
         }
-        sseEventStreams.get(targetUrl).subscribe(consumer(emitter), error(emitter), emitter::complete);
+        sseEventStreams.get(targetUrl).subscribe(consumer(emitter), emitter::completeWithError, emitter::complete);
 
+        // TODO check sseEventStreams is even needed
         emitter.onCompletion(() -> sseEventStreams.remove(targetUrl));
         return emitter;
     }
@@ -104,19 +105,8 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
             try {
                 emitter.send(content.data());
             } catch (IOException error) {
-                log.error("Error encounter sending SSE event");
-                log.error(error.getMessage());
-                emitter.complete();
+                emitter.completeWithError(error);
             }
-        };
-    }
-
-    // package protected for unit testing
-    Consumer<Throwable> error(SseEmitter emitter) {
-        return error -> {
-            log.error("Error receiving SSE");
-            log.error(error.getMessage());
-            emitter.complete();
         };
     }
 

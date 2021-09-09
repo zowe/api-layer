@@ -81,8 +81,7 @@ class ServerSentEventProxyHandlerTest {
                     PrintWriter mockWriter = mock(PrintWriter.class);
                     when(mockHttpServletResponse.getWriter()).thenReturn(mockWriter);
 
-                    SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
-                    verifyError(result, mockWriter, HttpStatus.BAD_REQUEST);
+                    verifyError(mockWriter, HttpStatus.BAD_REQUEST);
                 }
 
                 @Test
@@ -91,8 +90,7 @@ class ServerSentEventProxyHandlerTest {
                     PrintWriter mockWriter = mock(PrintWriter.class);
                     when(mockHttpServletResponse.getWriter()).thenReturn(mockWriter);
 
-                    SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
-                    verifyError(result, mockWriter, HttpStatus.BAD_REQUEST);
+                    verifyError(mockWriter, HttpStatus.BAD_REQUEST);
                 }
             }
 
@@ -106,8 +104,7 @@ class ServerSentEventProxyHandlerTest {
                     when(mockHttpServletResponse.getWriter()).thenReturn(mockWriter);
                     when(mockDiscoveryClient.getInstances(anyString())).thenReturn(new ArrayList<>());
 
-                    SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
-                    verifyError(result, mockWriter, HttpStatus.NOT_FOUND);
+                    verifyError(mockWriter, HttpStatus.NOT_FOUND);
                 }
 
                 @Test
@@ -121,8 +118,7 @@ class ServerSentEventProxyHandlerTest {
                     serviceInstances.add(mock(ServiceInstance.class));
                     when(mockDiscoveryClient.getInstances(SERVICE_ID)).thenReturn(serviceInstances);
 
-                    SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
-                    verifyError(result, mockWriter, HttpStatus.NOT_FOUND);
+                    verifyError(mockWriter, HttpStatus.NOT_FOUND);
                 }
 
                 @Test
@@ -139,15 +135,15 @@ class ServerSentEventProxyHandlerTest {
                     RoutedServices mockRoutedServices = mock(RoutedServices.class);
                     underTest.addRoutedServices(SERVICE_ID, mockRoutedServices);
 
-                    SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
-                    verifyError(result, mockWriter, HttpStatus.NOT_FOUND);
+                    verifyError(mockWriter, HttpStatus.NOT_FOUND);
                 }
             }
 
-            private void verifyError(SseEmitter returnedEmitter, PrintWriter writer, HttpStatus expectedStatus) {
+            private void verifyError(PrintWriter writer, HttpStatus expectedStatus) throws IOException {
+                SseEmitter result = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
                 verify(writer).print(anyString());
                 verify(mockHttpServletResponse).setStatus(expectedStatus.value());
-                assertThat(returnedEmitter, is(nullValue()));
+                assertThat(result, is(nullValue()));
             }
         }
 
@@ -158,8 +154,8 @@ class ServerSentEventProxyHandlerTest {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
                 mockServiceInstance(true);
 
-                verifyConsumersUsed();
-                verifyConsumersUsed();
+                verifyConsumerUsed();
+                verifyConsumerUsed();
                 verifyTargetUrlUsed(URL_SECURE + ENDPOINT);
             }
 
@@ -168,8 +164,8 @@ class ServerSentEventProxyHandlerTest {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
                 mockServiceInstance(false);
 
-                verifyConsumersUsed();
-                verifyConsumersUsed();
+                verifyConsumerUsed();
+                verifyConsumerUsed();
                 verifyTargetUrlUsed(URL_INSECURE + ENDPOINT);
             }
         }
@@ -181,7 +177,7 @@ class ServerSentEventProxyHandlerTest {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
                 mockServiceInstance(true);
 
-                verifyConsumersUsed();
+                verifyConsumerUsed();
                 verifyTargetUrlUsed(URL_SECURE + ENDPOINT);
             }
 
@@ -190,7 +186,7 @@ class ServerSentEventProxyHandlerTest {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn("/serviceid/sse/v1/");
                 mockServiceInstance(true);
 
-                verifyConsumersUsed();
+                verifyConsumerUsed();
                 verifyTargetUrlUsed(URL_SECURE + "/");
             }
 
@@ -200,7 +196,7 @@ class ServerSentEventProxyHandlerTest {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH + extraEndpoint);
                 mockServiceInstance(true);
 
-                verifyConsumersUsed();
+                verifyConsumerUsed();
                 verifyTargetUrlUsed(URL_SECURE + ENDPOINT + extraEndpoint);
             }
 
@@ -209,7 +205,7 @@ class ServerSentEventProxyHandlerTest {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH_OLD_FORMAT);
                 mockServiceInstance(true);
 
-                verifyConsumersUsed();
+                verifyConsumerUsed();
                 verifyTargetUrlUsed(URL_SECURE + ENDPOINT);
             }
         }
@@ -228,28 +224,17 @@ class ServerSentEventProxyHandlerTest {
             }
 
             @Test
-            void givenIOExceptionWhenSendContent_thenCompleteStream() throws IOException {
+            void givenIOExceptionWhenSendContent_thenCompleteWithError() throws IOException {
                 SseEmitter mockEmitter = mock(SseEmitter.class);
                 Consumer<ServerSentEvent<String>> result = underTest.consumer(mockEmitter);
 
-                doThrow(new IOException("error")).when(mockEmitter).send(anyString());
+                IOException error = new IOException("error");
+                doThrow(error).when(mockEmitter).send(anyString());
 
                 ServerSentEvent<String> event = ServerSentEvent.builder("event").build();
                 result.accept(event);
 
-                verify(mockEmitter).complete();
-            }
-        }
-
-        @Nested
-        class WhenUseErrorConsumer {
-            @Test
-            void givenError_thenCompleteStream() {
-                SseEmitter mockEmitter = mock(SseEmitter.class);
-                Consumer<Throwable> result = underTest.error(mockEmitter);
-                result.accept(new Exception("error"));
-
-                verify(mockEmitter).complete();
+                verify(mockEmitter).completeWithError(error);
             }
         }
 
@@ -257,7 +242,7 @@ class ServerSentEventProxyHandlerTest {
             RoutedServices mockRoutedServices = mock(RoutedServices.class);
             RoutedService mockRoutedService = mock(RoutedService.class);
             when(mockRoutedService.getServiceUrl()).thenReturn(SERVICE_URL + "/");
-            when(mockRoutedServices.findServiceByGatewayUrl(anyString())).thenReturn(mockRoutedService);
+            when(mockRoutedServices.findServiceByGatewayUrl("sse/" + MAJOR_VERSION)).thenReturn(mockRoutedService);
             underTest.addRoutedServices(SERVICE_ID, mockRoutedServices);
 
             ServiceInstance serviceInstance = mock(ServiceInstance.class);
@@ -270,11 +255,10 @@ class ServerSentEventProxyHandlerTest {
             when(mockDiscoveryClient.getInstances(SERVICE_ID)).thenReturn(serviceInstances);
         }
 
-        private void verifyConsumersUsed() throws IOException {
+        private void verifyConsumerUsed() throws IOException {
             SseEmitter emitter = underTest.getEmitter(mockHttpServletRequest, mockHttpServletResponse);
             assertThat(emitter, is(not(nullValue())));
             verify(underTest).consumer(emitter);
-            verify(underTest).error(emitter);
         }
 
         private void verifyTargetUrlUsed(String expectedUrl) {
