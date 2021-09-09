@@ -81,6 +81,15 @@ jobs:
                 uses: actions/setup-java@v1
                 with:
                     java-version: 1.8
+            -   name: Setup Docker
+                run: |
+                    apt update
+                    apt install -y apt-transport-https ca-certificates curl software-properties-common
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+                    apt update
+                    apt-cache policy docker-ce
+                    apt install -y docker-ce
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
             -   name: Cache Gradle packages
@@ -104,6 +113,10 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runContainerTests --info
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Get Container Logs
+                run: |
+                    docker ps -a
+                    docker ps -q | xargs -L 1 docker logs
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
