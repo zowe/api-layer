@@ -53,37 +53,37 @@ jobs:
         container: ubuntu:latest
         timeout-minutes: 6
 
-#        services:
-#            api-catalog-services:
-#                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
-#                volumes:
-#                    - /$(pwd)/api-defs:/api-defs
-#                env:
-#                    APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: /usr/local/etc/config/api-defs
-#            caching-service:
-#                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
-#            discoverable-client:
-#                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-#            discovery-service:
-#                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
-#                volumes:
-#                    - /$(pwd)/config/docker/api-defs:/api-defs
-#            gateway-service:
-#                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-#            mock-zosmf:
-#                image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - $(pwd)/config/docker/api-defs:/api-defs
+                env:
+                    APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: /usr/local/etc/config/api-defs
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - $(pwd)/config/docker/api-defs:/api-defs
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-zosmf:
+                image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
 
         steps:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
-            -   name: Copy static definitions
-                run: |
-                    pwd
-                    ls -la /$(pwd)
-                    ls -la /$(pwd)/config/docker/api-defs/
-                    cp $(pwd)/config/docker/api-defs/*.* $(pwd)/api-defs
-                    ls -la /$(pwd)/api-defs
+#            -   name: Copy static definitions
+#                run: |
+#                    pwd
+#                    ls -la /$(pwd)
+#                    ls -la /$(pwd)/config/docker/api-defs/
+#                    cp $(pwd)/config/docker/api-defs/*.* $(pwd)/api-defs
+#                    ls -la /$(pwd)/api-defs
             -   name: Set up JDK 1.8
                 uses: actions/setup-java@v1
                 with:
@@ -124,10 +124,10 @@ jobs:
                     key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
                     restore-keys: |
                         ${{ runner.OS }}-node001-
-#            -   name: Run CI Tests
-#                run: >
-#                    ./gradlew :integration-tests:runContainerTests --info
-#                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew :integration-tests:startUpCheck --info
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Get Container Logs
                 if: always()
                 run: |
