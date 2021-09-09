@@ -26,14 +26,19 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import reactor.core.publisher.Flux;
 import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
 
 import javax.net.ssl.SSLException;
 import java.time.Duration;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 @TestsNotMeantForZowe
 public class ServerSentEventsProxyTest {
+    private static final String SSE_ENDPOINT = "/discoverableclient/sse/v1/events";
     private static final GatewayServiceConfiguration gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
     private static WebTestClient webTestClient;
@@ -55,19 +60,18 @@ public class ServerSentEventsProxyTest {
     @Nested
     class WhenRoutingSession {
         @ParameterizedTest(name = "WhenRoutingSession.givenValidSsePaths_thenReturnEvents#message {0}")
-        @ValueSource(strings = {"/sse/v1/discoverableclient/events", "/discoverableclient/sse/v1/events"})
+        @ValueSource(strings = {"/sse/v1/discoverableclient/events", SSE_ENDPOINT})
         void givenValidSsePaths_thenReturnEvents(String path) {
             FluxExchangeResult<String> fluxResult = webTestClient
                 .get()
                 .uri(path)
-                .accept(MediaType.TEXT_EVENT_STREAM)
                 .exchange()
                 .expectStatus()
                 .isOk()
                 .returnResult(String.class);
 
             StepVerifier.create(fluxResult.getResponseBody())
-                .expectNext("event") // expected value after 'data:' in the stream
+                .expectNext("event")
                 .expectNext("event")
                 .thenCancel()
                 .verify(Duration.ofSeconds(3));
@@ -78,21 +82,45 @@ public class ServerSentEventsProxyTest {
             @ParameterizedTest(name = "WhenRoutingSession.GivenIncorrectPath_thenReturnError.givenInvalidServiceId#message {0}")
             @ValueSource(strings = {"/sse/v1/bad/events", "/bad/sse/v1/events"})
             void givenInvalidServiceId(String path) {
+                FluxExchangeResult<String> fluxResult = webTestClient
+                    .get()
+                    .uri(path)
+                    .exchange()
+                    .expectStatus()
+                    .isNotFound()
+                    .returnResult(String.class);
 
+                String response = fluxResult.getResponseBody().next().block();
+                assertThat(response, is("ZWEAG700E No instance of the service 'bad' found. Routing will not be available."));
             }
 
             @ParameterizedTest(name = "WhenRoutingSession.GivenIncorrectPath_thenReturnError.givenInvalidVersion#message {0}")
             @ValueSource(strings = {"/sse/bad/discoverableclient/events", "/discoverableclient/sse/bad/events"})
             void givenInvalidVersion(String path) {
+                FluxExchangeResult<String> fluxResult = webTestClient
+                    .get()
+                    .uri(path)
+                    .exchange()
+                    .expectStatus()
+                    .isNotFound()
+                    .returnResult(String.class);
 
+                String response = fluxResult.getResponseBody().next().block();
+                assertThat(response, is("ZWEAM104E The endpoint you are looking for 'sse/bad' could not be located"));
             }
-        }
 
-        @Nested
-        class GivenMultipleConnections {
             @Test
-            void thenReturnProperEventsToBoth() {
+            void givenNoServiceId() {
+                FluxExchangeResult<String> fluxResult = webTestClient
+                    .get()
+                    .uri("/sse/v1")
+                    .exchange()
+                    .expectStatus()
+                    .isBadRequest()
+                    .returnResult(String.class);
 
+                String response = fluxResult.getResponseBody().next().block();
+                assertThat(response, is("ZWEAG712E The URI '/sse/v1' is an invalid format"));
             }
         }
     }

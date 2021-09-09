@@ -149,16 +149,6 @@ class ServerSentEventProxyHandlerTest {
         @Nested
         class GivenService {
             @Test
-            void givenSameServiceTwice_thenUtilizeConsumersTwice() throws IOException {
-                when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
-                mockServiceInstance(true);
-
-                verifyConsumerUsed();
-                verifyConsumerUsed();
-                verify(underTest, times(2)).getSseStream(URL_SECURE + ENDPOINT);
-            }
-
-            @Test
             void givenInsecureService_thenHttpProtocolUsed() throws IOException {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
                 mockServiceInstance(false);
