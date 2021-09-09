@@ -47,7 +47,7 @@ class ServerSentEventProxyHandlerTest {
     private static final String URL_SECURE = "https://" + HOST + ":" + PORT + SERVICE_URL;
     private static final String URL_INSECURE = "http://" + HOST + ":" + PORT + SERVICE_URL;
     private static final String SERVICE_ID = "serviceid";
-    private static final String ENDPOINT = "/endpoint";
+    private static final String ENDPOINT = "/endpoint/";
     private static final String MAJOR_VERSION = "v1";
     private static final String GATEWAY_PATH = "/" + SERVICE_ID + "/sse/" + MAJOR_VERSION + ENDPOINT;
     private static final String GATEWAY_PATH_OLD_FORMAT = "/sse/" + MAJOR_VERSION + "/" + SERVICE_ID + ENDPOINT;
@@ -189,8 +189,17 @@ class ServerSentEventProxyHandlerTest {
             }
 
             @Test
+            void givenNoEndpointAndNoTrailingSlash() throws IOException {
+                when(mockHttpServletRequest.getRequestURI()).thenReturn("/serviceid/sse/v1");
+                mockServiceInstance(true);
+
+                verifyConsumerUsed();
+                verify(underTest).getSseStream(URL_SECURE + "/");
+            }
+
+            @Test
             void givenPathInEndpoint() throws IOException {
-                String extraEndpoint = "/anotherendpoint";
+                String extraEndpoint = "/anotherendpoint/";
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH + extraEndpoint);
                 mockServiceInstance(true);
 

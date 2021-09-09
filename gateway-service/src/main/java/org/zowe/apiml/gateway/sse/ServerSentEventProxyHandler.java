@@ -58,8 +58,7 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
         String uri = request.getRequestURI();
         List<String> uriParts = getUriParts(uri);
-        if (uriParts.size() < 4) {
-            // TODO /sse/v1/ gets past this check? So does /sse/v1/asdf? Need size 5 check? Need to add last /?
+        if (uriParts.size() < 5) {
             writeError(response, SseErrorMessages.INVALID_ROUTE, uri);
             return null;
         }
@@ -118,6 +117,10 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
     private List<String> getUriParts(String uri) {
         if (uri == null) {
             return new ArrayList<>();
+        }
+
+        if (!uri.endsWith("/")) {
+            uri += "/";
         }
         return new ArrayList<>(Arrays.asList(uri.split("/", 5)));
     }
