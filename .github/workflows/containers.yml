@@ -57,7 +57,7 @@ jobs:
 #            api-catalog-services:
 #                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
 #                volumes:
-#                    - /$(pwd)/config/docker/api-defs:/api-defs
+#                    - /$(pwd)/api-defs:/api-defs
 #                env:
 #                    APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: /usr/local/etc/config/api-defs
 #            caching-service:
@@ -77,6 +77,13 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+            -   name: Copy static definitions
+                run: |
+                    pwd
+                    ls -la /$(pwd)
+                    ls -la /$(pwd)/config/docker/api-defs/
+                    cp /$(pwd)/config/docker/api-defs/*.* /$(pwd)/api-defs
+                    ls -la /$(pwd)/api-defs
             -   name: Set up JDK 1.8
                 uses: actions/setup-java@v1
                 with:
@@ -90,14 +97,14 @@ jobs:
                     apt update
                     apt-cache policy docker-ce
                     apt install -y docker-ce
-            -   name: Setup Docker-compose
-                run: |
-                    curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-                    chmod +x /usr/local/bin/docker-compose
-                    ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-                    docker-compose --version
-            -   name: Run docker-compose stack
-                run: docker-compose -f /$(pwd)/docker/local-single/docker-compose.yml up -d
+#            -   name: Setup Docker-compose
+#                run: |
+#                    curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+#                    chmod +x /usr/local/bin/docker-compose
+#                    ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+#                    docker-compose --version
+#            -   name: Run docker-compose stack
+#                run: docker-compose -f /$(pwd)/docker/local-single/docker-compose.yml up -d
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
             -   name: Cache Gradle packages
