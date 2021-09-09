@@ -98,8 +98,8 @@ export const insert = (parent, content) => {
  */
 export function handleIndentationDependency(inputData, indentationDependency, indentation) {
     let result = indentation;
-    if (indentationDependency !== undefined) {
-        inputData.forEach(category => {
+    inputData.forEach(category => {
+        if (Array.isArray(category.content)) {
             category.content.forEach(inpt => {
                 Object.keys(inpt).forEach(k => {
                     if (k === indentationDependency) {
@@ -108,8 +108,15 @@ export function handleIndentationDependency(inputData, indentationDependency, in
                     }
                 });
             });
-        });
-    }
+        } else {
+            Object.keys(category.content).forEach(k => {
+                if (k === indentationDependency) {
+                    result = result.concat('/', category.content[k].value);
+                    return result;
+                }
+            });
+        }
+    });
     return result;
 }
 
@@ -169,7 +176,7 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
     if (!category.indentation) {
         insert(result, content);
     } else {
-        let indent = handleIndentationDependency(inputData, category.indentationDependency, category.indentation);
+        let indent = category.indentation;
         if (category.indentationDependency !== undefined) {
             indent = handleIndentationDependency(inputData, category.indentationDependency, category.indentation);
         }
