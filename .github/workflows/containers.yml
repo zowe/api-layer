@@ -82,7 +82,7 @@ jobs:
                     pwd
                     ls -la /$(pwd)
                     ls -la /$(pwd)/config/docker/api-defs/
-                    cp /$(pwd)/config/docker/api-defs/*.* /$(pwd)/api-defs
+                    cp $(pwd)/config/docker/api-defs/*.* $(pwd)/api-defs
                     ls -la /$(pwd)/api-defs
             -   name: Set up JDK 1.8
                 uses: actions/setup-java@v1
