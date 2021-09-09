@@ -114,6 +114,7 @@ jobs:
                     ./gradlew :integration-tests:runContainerTests --info
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Get Container Logs
+                if: always()
                 run: |
                     docker ps -a
                     docker ps -q | xargs -L 1 docker logs
