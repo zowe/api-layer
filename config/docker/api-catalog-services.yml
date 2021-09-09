@@ -36,6 +36,8 @@ apiml:
         cacheRefreshUpdateThresholdInMillis: 120000
         serviceFetchDelayInMillis: 10000
     banner: console
+    discovery:
+        staticApiDefinitionsDirectories: /api-defs
 
 spring:
     output:
