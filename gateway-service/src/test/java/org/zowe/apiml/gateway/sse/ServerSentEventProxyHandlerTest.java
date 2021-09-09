@@ -147,7 +147,7 @@ class ServerSentEventProxyHandlerTest {
         }
 
         @Nested
-        class GivenService {
+        class GivenService_thenUseConsumers {
             @Test
             void givenInsecureService_thenHttpProtocolUsed() throws IOException {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
@@ -156,10 +156,7 @@ class ServerSentEventProxyHandlerTest {
                 verifyConsumerUsed();
                 verify(underTest).getSseStream(URL_INSECURE + ENDPOINT);
             }
-        }
 
-        @Nested
-        class ThenUtilizeConsumers {
             @Test
             void givenEndpoint() throws IOException {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
@@ -204,6 +201,17 @@ class ServerSentEventProxyHandlerTest {
 
                 verifyConsumerUsed();
                 verify(underTest).getSseStream(URL_SECURE + ENDPOINT);
+            }
+
+            @Test
+            void givenUriParameters() throws IOException {
+                String params = "?param=123";
+                when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
+                when(mockHttpServletRequest.getQueryString()).thenReturn(params);
+                mockServiceInstance(true);
+
+                verifyConsumerUsed();
+                verify(underTest).getSseStream(URL_SECURE + ENDPOINT + params);
             }
         }
 

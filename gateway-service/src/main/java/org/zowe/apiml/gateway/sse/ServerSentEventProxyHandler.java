@@ -139,7 +139,7 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
     }
 
     private String getTargetUrl(ServiceInstance serviceInstance, String serviceUrl, String path, String queryParameterString) {
-        String parameters = queryParameterString == null ? "" : "?" + queryParameterString;
+        String parameters = queryParameterString == null ? "" : queryParameterString;
         String protocol = serviceInstance.isSecure() ? "https" : "http";
         return String.format("%s://%s:%d%s%s%s",
             protocol,
