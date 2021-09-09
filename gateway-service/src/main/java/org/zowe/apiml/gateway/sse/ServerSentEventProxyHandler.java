@@ -21,6 +21,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
+import org.zowe.apiml.product.routing.RoutedServicesUser;
 import reactor.core.publisher.Flux;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,8 +39,9 @@ import java.util.function.Consumer;
 @Slf4j
 @Controller
 @Component("ServerSentEventProxyHandler")
-public class ServerSentEventProxyHandler {
+public class ServerSentEventProxyHandler implements RoutedServicesUser {
     private final DiscoveryClient discovery;
+    private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
     private final Map<String, Flux<ServerSentEvent<String>>> sseEventStreams = new ConcurrentHashMap<>();
 
     @Autowired
@@ -57,6 +61,7 @@ public class ServerSentEventProxyHandler {
         }
 
         String serviceId = getServiceId(uriParts);
+        String majorVersion = getMajorVersion(uriParts);
         String path = uriParts.get(4);
 
         ServiceInstance serviceInstance = findServiceInstance(serviceId);
@@ -66,7 +71,18 @@ public class ServerSentEventProxyHandler {
             return null;
         }
 
-        String targetUrl = getTargetUrl(serviceInstance, path, request.getQueryString());
+        RoutedServices routedServices = routedServicesMap.get(serviceId);
+        if (routedServices == null) {
+            // TODO error handling
+            return null;
+        }
+        RoutedService routedService = routedServices.findServiceByGatewayUrl("sse/" + majorVersion);
+        if (routedService == null) {
+            // TODO error handling
+            return null;
+        }
+
+        String targetUrl = getTargetUrl(serviceInstance, routedService.getServiceUrl(), path, request.getQueryString());
         if (!sseEventStreams.containsKey(targetUrl)) {
             addStream(targetUrl);
         }
@@ -117,11 +133,11 @@ public class ServerSentEventProxyHandler {
     }
 
     private String getServiceId(List<String> uriParts) {
-        if ("sse".equals(uriParts.get(1))) {
-            return uriParts.get(3);
-        } else {
-            return uriParts.get(1);
-        }
+        return "sse".equals(uriParts.get(1)) ? uriParts.get(3) : uriParts.get(1);
+    }
+
+    private String getMajorVersion(List<String> uriParts) {
+        return "sse".equals(uriParts.get(1)) ? uriParts.get(2) : uriParts.get(3);
     }
 
     private ServiceInstance findServiceInstance(String serviceId) {
@@ -129,18 +145,25 @@ public class ServerSentEventProxyHandler {
         return serviceInstances.isEmpty() ? null : serviceInstances.get(0);
     }
 
-    private String getTargetUrl(ServiceInstance serviceInstance, String path, String queryParameterString) {
+    private String getTargetUrl(ServiceInstance serviceInstance, String serviceUrl, String path, String queryParameterString) {
         String parameters = queryParameterString == null ? "" : queryParameterString;
-        // TODO configurable protocol
-        return String.format("https://%s:%d/%s/%s?%s",
+        String protocol = serviceInstance.isSecure() ? "https" : "http";
+        return String.format("%s://%s:%d%s%s?%s",
+            protocol,
             serviceInstance.getHost(),
             serviceInstance.getPort(),
-            serviceInstance.getServiceId(),
+            serviceUrl,
             path,
-            parameters);
+            parameters
+        );
     }
 
     public Map<String, Flux<ServerSentEvent<String>>> getSseEventStreams() {
         return sseEventStreams;
+    }
+
+    @Override
+    public void addRoutedServices(String serviceId, RoutedServices routedServices) {
+        routedServicesMap.put(serviceId, routedServices);
     }
 }
