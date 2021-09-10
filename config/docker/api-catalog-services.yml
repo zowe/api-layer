@@ -37,7 +37,7 @@ apiml:
         serviceFetchDelayInMillis: 10000
     banner: console
     discovery:
-        staticApiDefinitionsDirectories: /api-defs
+        staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
 
 spring:
     output:

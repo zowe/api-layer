@@ -2,7 +2,7 @@ apiml:
     service:
         hostname: discovery-service
     discovery:
-        staticApiDefinitionsDirectories: /api-defs
+        staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
         allPeersUrls: https://discovery-service:10011/eureka,https://discovery-service2:10011/eureka
     security:
         ssl:
