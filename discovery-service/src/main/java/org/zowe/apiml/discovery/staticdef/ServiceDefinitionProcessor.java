@@ -63,7 +63,7 @@ public class ServiceDefinitionProcessor {
 
     protected List<File> getFiles(StaticRegistrationResult context, String staticApiDefinitionsDirectories) {
         if (StringUtils.isEmpty(staticApiDefinitionsDirectories)) {
-            log.error("No static definition directory defined");
+            log.info("No static definition directory defined");
             return Collections.emptyList();
         }
 
@@ -74,7 +74,7 @@ public class ServiceDefinitionProcessor {
             .filter(directory -> {
                 final boolean isDir = directory.isDirectory();
                 if (isDir) {
-                    log.error("Found directory {}", directory.getPath());
+                    log.debug("Found directory {}", directory.getPath());
                 } else {
                     final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionsDirectoryNotValid", directory.getPath());
                     context.getErrors().add(msg);
@@ -95,7 +95,7 @@ public class ServiceDefinitionProcessor {
 
         final List<File> directories = getFiles(context, staticApiDefinitionsDirectories);
         for (final File directory : directories) {
-            log.error("Scanning directory with static services definition: " + directory);
+            log.info("Scanning directory with static services definition: " + directory);
             final File[] files = directory.listFiles((dir, name) -> name.endsWith(".yml"));
 
             if (files == null) {
@@ -121,7 +121,7 @@ public class ServiceDefinitionProcessor {
 
     protected Definition loadDefinition(StaticRegistrationResult context, File file) {
         final String fileName = file.getAbsolutePath();
-        log.error("Static API definition file: {}", fileName);
+        log.info("Static API definition file: {}", fileName);
 
         final String content;
         try {
