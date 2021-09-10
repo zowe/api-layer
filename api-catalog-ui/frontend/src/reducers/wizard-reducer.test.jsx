@@ -19,7 +19,7 @@ import {
     VALIDATE_INPUT,
 } from '../constants/wizard-constants';
 import wizardReducer, {
-    addDefaultValues,
+    addDefaultValues, affectCategory,
     compareVariables,
     setDefault,
     wizardReducerDefaultState,
@@ -58,19 +58,24 @@ describe('>>> Wizard reducer tests', () => {
         const dummyData = [{
             text: 'Test Category',
             content: [{
-                myCategory: { value: 'dummy value', question: 'This is a dummy question', }
-            }]
+                type: { value: 'dummy value', question: 'This is a dummy question', options: ['Option 1'] }
+            }],
+            interference: 'catalog',
         }];
 
         const expectedData = [{
-            ...dummyData[0],
+            text: 'Test Category',
+            content: [{
+                type: { value: 'dummy value', question: 'This is a dummy question', options: ['Option 1', 'Option 2'] }
+            }],
+            interference: 'catalog',
             indentation: false,
             nav: 'Test Category',
         }];
 
         expect(wizardReducer({ inputData: [] }, {
             type: SELECT_ENABLER,
-            payload: { enablerName: 'Test Enabler' },
+            payload: { enablerName: 'Test Enabler', tiles: ['Option 2'] },
         }, { enablerData: dummyEnablerData, categoryData: dummyData }))
             .toEqual({
                 enablerName: 'Test Enabler',
@@ -156,8 +161,14 @@ describe('>>> Wizard reducer tests', () => {
         const dummyEnablerData = [{
             text: 'Test Enabler',
             categories: [
-                { name: 'Test Category', indentation: false, multiple: true, inArr: true,  minions: { 'Test Category 2': ['test2'] }, },
-                { name: 'Test Category 2', indentation: false, multiple: true, inArr: true,}
+                {
+                    name: 'Test Category',
+                    indentation: false,
+                    multiple: true,
+                    inArr: true,
+                    minions: { 'Test Category 2': ['test2'] },
+                },
+                { name: 'Test Category 2', indentation: false, multiple: true, inArr: true, }
             ]
         }];
 
@@ -170,7 +181,7 @@ describe('>>> Wizard reducer tests', () => {
         },
             {
                 text: 'Test Category 2',
-                content: [{test2: { value: 'val', question: 'Why?'}}],
+                content: [{ test2: { value: 'val', question: 'Why?' } }],
                 multiple: false,
             }
         ];
@@ -196,7 +207,7 @@ describe('>>> Wizard reducer tests', () => {
                         text: 'Test Category 2',
                         nav: 'Test Category 2',
                         content: [{
-                            test2: { value: 'val', question: 'Why?', disabled: true},
+                            test2: { value: 'val', question: 'Why?', disabled: true },
                         }],
                         multiple: true,
                         indentation: false,
@@ -600,9 +611,23 @@ describe('>>> Wizard reducer tests', () => {
             text: 'Category 1',
             content: { test: { value: '', question: 'Why?', }, },
         };
-        const categoryInfo = {name: 'Category 1', arrIndent: 'indent'};
+        const categoryInfo = { name: 'Category 1', arrIndent: 'indent' };
         compareVariables(category, categoryInfo);
         expect(category.content).toEqual([{ test: { value: '', question: 'Why?', }, }]);
         expect(category.arrIndent).toEqual('indent');
-    })
+    });
+    it('should alter fields of given category on initial onboarding method creation', () => {
+        const category = {
+            text: 'Test category',
+            content: [{ type: { value: '', question: 'Why?', options: ['Custom'] }, }],
+            interference: 'catalog',
+        };
+        const payload = { tiles: ['Tile 1', 'Tile 2'] };
+        const result = affectCategory(category, payload);
+        expect(result).toEqual({
+            text: 'Test category',
+            content: [{ type: { value: '', question: 'Why?', options: ['Custom', 'Tile 1', 'Tile 2'] }, }],
+            interference: 'catalog',
+        });
+    });
 });

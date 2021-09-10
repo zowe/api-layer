@@ -44,7 +44,7 @@ class WizardNavigation extends Component {
             }
             if (category.help) {
                 navs[category.nav].push(
-                    <Card className="wizardCategoryInfo">
+                    <Card key={`card#${index}`} className="wizardCategoryInfo">
                         <CardBlock>{category.help}</CardBlock>
                         {category.helpUrl ? (
                             <CardBlock>

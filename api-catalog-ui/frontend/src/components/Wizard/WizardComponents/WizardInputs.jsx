@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import * as log from 'loglevel';
 import React, { Component } from 'react';
 import { Checkbox, FormField, Select, Tooltip } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
@@ -134,7 +133,7 @@ class WizardInputs extends Component {
     /**
      * Alter fields if there's interference
      */
-    interferenceInjection(payload = {}) {
+    interferenceInjection(payload) {
         switch (this.props.data.interference) {
             case 'catalog': {
                 const { tiles, data } = this.props;
@@ -145,7 +144,6 @@ class WizardInputs extends Component {
                         selectedTile.disabled = true;
                     }
                 });
-                log.error({ tiles, data, selectedTile, tileTitle: payload.title });
                 const arr = [...data.content];
                 arr[0] = {
                     ...arr[0],

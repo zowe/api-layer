@@ -62,21 +62,22 @@ describe('>>> WizardInputs tests', () => {
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        instance.handleSelect({ name: 'testInput', index: 0, value: 'test' });
-        expect(updateWizardData).toHaveBeenCalledWith({
-            content: [{
-                testInput: {
-                    value: 'test',
-                    question: '',
-                    options: ['test'],
-                    interactedWith: true,
-                    show: true,
-                    empty: false,
-                    problem: false,
-                }
-            }],
-            text: 'Basic info',
-        });
+        instance.handleSelect({ name: 'testInput', index: 0, value: 'test' }).then(() =>
+            expect(updateWizardData).toHaveBeenCalledWith({
+                content: [{
+                    testInput: {
+                        value: 'test',
+                        question: '',
+                        options: ['test'],
+                        interactedWith: true,
+                        show: true,
+                        empty: false,
+                        problem: false,
+                    }
+                }],
+                text: 'Basic info',
+            })
+        );
     });
     it('should create correct events on select use', () => {
         const updateWizardData = jest.fn();
@@ -90,20 +91,20 @@ describe('>>> WizardInputs tests', () => {
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        instance.handleSelect({ name: 'testInput', index: 0, value: '' });
-        expect(updateWizardData).toHaveBeenCalledWith({
-            content: [{
-                testInput: {
-                    value: '',
-                    question: '',
-                    options: ['test'],
-                    show: true,
-                    interactedWith: true,
-                    problem: false,
-                }
-            }],
-            text: 'Basic info',
-        });
+        instance.handleSelect({ name: 'testInput', index: 0, value: '' }).then(() =>
+            expect(updateWizardData).toHaveBeenCalledWith({
+                content: [{
+                    testInput: {
+                        value: '',
+                        question: '',
+                        options: ['test'],
+                        show: true,
+                        interactedWith: true,
+                        problem: false,
+                    }
+                }],
+                text: 'Basic info',
+            }));
     });
     it('should create 3 inputs based on data and visibility', () => {
         const dummyData = {
@@ -183,13 +184,13 @@ describe('>>> WizardInputs tests', () => {
         },
             {
                 text: 'Test Category 2',
-                content: [{test2: { value: 'val', question: 'Why?'}}],
+                content: [{ test2: { value: 'val', question: 'Why?' } }],
                 multiple: true,
                 isMinion: true,
             }
         ];
         const wrapper = enzyme.shallow(
-            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory}/>
+            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory} />
         );
         const instance = wrapper.instance();
         instance.addFieldsToCurrentCategory();
@@ -213,7 +214,7 @@ describe('>>> WizardInputs tests', () => {
             multiple: true,
         },];
         const wrapper = enzyme.shallow(
-            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory}/>
+            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory} />
         );
         const instance = wrapper.instance();
         instance.addFieldsToCurrentCategory();
@@ -232,13 +233,13 @@ describe('>>> WizardInputs tests', () => {
         const dummyData = [
             {
                 text: 'Test Category 2',
-                content: [{test2: { value: '', question: 'Why?'}}],
+                content: [{ test2: { value: '', question: 'Why?' } }],
                 multiple: true,
                 isMinion: true,
             }
         ];
         const wrapper = enzyme.shallow(
-            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory}/>
+            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory} />
         );
         const instance = wrapper.instance();
         instance.propagateToMinions('test2', 'val', 0);
@@ -252,18 +253,18 @@ describe('>>> WizardInputs tests', () => {
                 test2: { value: 'val', question: '', show: true },
             }],
             multiple: true,
-            minions: { 'Test Category 2': ['test']}
+            minions: { 'Test Category 2': ['test'] }
         };
         const dummyData = [
             {
                 text: 'Test Category 2',
-                content: [{test2: { value: '', question: 'Why?'}}],
+                content: [{ test2: { value: '', question: 'Why?' } }],
                 multiple: true,
                 isMinion: true,
             }
         ];
         const wrapper = enzyme.shallow(
-            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory}/>
+            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory} />
         );
         const instance = wrapper.instance();
         instance.propagateToMinions('test2', 'val', 0);
@@ -277,18 +278,18 @@ describe('>>> WizardInputs tests', () => {
                 test2: { value: 'val', question: '', show: true },
             }],
             multiple: true,
-            minions: { 'Test Category 2': ['test2']}
+            minions: { 'Test Category 2': ['test2'] }
         };
         const dummyData = [
             {
                 text: 'Test Category',
-                content: [{test2: { value: '', question: 'Why?'}}],
+                content: [{ test2: { value: '', question: 'Why?' } }],
                 multiple: true,
                 isMinion: true,
             }
         ];
         const wrapper = enzyme.shallow(
-            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory}/>
+            <WizardInputs updateWizardData={updateWizardData} inputData={dummyData} data={dummyCategory} />
         );
         const instance = wrapper.instance();
         instance.propagateToMinions('test2', 'val', 0);
@@ -313,7 +314,7 @@ describe('>>> WizardInputs tests', () => {
         };
         const wrapper = enzyme.shallow(
             <WizardInputs data={dummyData} deleteCategoryConfig={deleteCategoryConfig} validateInput={validateInput}
-                           />
+            />
         );
         const instance = wrapper.instance();
         instance.setState({ [`delBtn1`]: true });
@@ -447,8 +448,7 @@ describe('>>> WizardInputs tests', () => {
         );
         const instance = wrapper.instance();
         const a = instance.renderInputElement('test', 0, dummyData.content[0].test);
-        a.props.data[1].onClick();
-        expect(updateWizardData).toHaveBeenCalledWith(expectedData);
+        a.props.data[1].onClick().then(() => expect(updateWizardData).toHaveBeenCalledWith(expectedData));
     });
     it('should check for regex restrictions', () => {
         const updateWizardData = jest.fn();
@@ -502,5 +502,63 @@ describe('>>> WizardInputs tests', () => {
         const instance = wrapper.instance();
         instance.renderInputElement('test', 0, dummyData.content[0].test);
         expect(wrapper.find('Tooltip').props().content).toEqual('hey');
+    });
+    it('should alter fields if there\'s interference', () => {
+        const updateWizardData = jest.fn();
+        const payload = { title: 'Option 1' };
+        const dummyData = {
+            text: 'Test category',
+            content: [{ type: { value: '', question: 'Why?', options: ['Custom'] }, }],
+            interference: 'catalog',
+        };
+        const dummyTiles = [{ title: 'Option 1', version: '1.0.0', id: 'opt1', description: 'Description' }];
+        const expectedArgument = {
+            text: 'Test category',
+            content: [
+                {
+                    title: { value: 'Option 1', disabled: true },
+                    version: { value: '1.0.0', disabled: true },
+                    id: { value: 'opt1', disabled: true },
+                    description: { value: 'Description', disabled: true },
+                    type: { value: '', question: 'Why?', show: true, options: ['Custom'] }
+                }
+            ],
+            interference: 'catalog',
+        };
+        const wrapper = enzyme.shallow(
+            <WizardInputs data={dummyData} tiles={dummyTiles} updateWizardData={updateWizardData} />
+        );
+        const instance = wrapper.instance();
+        instance.interferenceInjection(payload);
+        expect(updateWizardData).toHaveBeenCalledWith(expectedArgument);
+    });
+    it('should alter fields if there\'s interference correctly', () => {
+        const updateWizardData = jest.fn();
+        const payload = { title: 'Option 2' };
+        const dummyData = {
+            text: 'Test category',
+            content: [{ type: { value: '', question: 'Why?', options: ['Custom'] }, }],
+            interference: 'catalog',
+        };
+        const dummyTiles = [{ title: 'Option 1', version: '1.0.0', id: 'opt1', description: 'Description' }];
+        const expectedArgument = {
+            text: 'Test category',
+            content: [
+                {
+                    title: { value: '', disabled: false },
+                    version: { value: '', disabled: false },
+                    id: { value: '', disabled: false },
+                    description: { value: '', disabled: false },
+                    type: { value: '', question: 'Why?', show: true, options: ['Custom'] }
+                }
+            ],
+            interference: 'catalog',
+        };
+        const wrapper = enzyme.shallow(
+            <WizardInputs data={dummyData} tiles={dummyTiles} updateWizardData={updateWizardData} />
+        );
+        const instance = wrapper.instance();
+        instance.interferenceInjection(payload);
+        expect(updateWizardData).toHaveBeenCalledWith(expectedArgument);
     });
 });

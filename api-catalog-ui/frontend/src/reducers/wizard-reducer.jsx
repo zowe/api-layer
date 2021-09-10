@@ -146,7 +146,7 @@ function warnMinions(minions, inputData) {
  * @param category category to be affected
  * @param payload additional payload
  */
-const affectCategory = (category, payload) => {
+export function affectCategory(category, payload) {
     switch (category.interference) {
         case 'catalog': {
             const { tiles } = payload;
@@ -157,7 +157,7 @@ const affectCategory = (category, payload) => {
         default:
             return category;
     }
-};
+}
 
 /**
  * Load categories according to the enabler needs
@@ -166,7 +166,7 @@ const affectCategory = (category, payload) => {
  * @param payload additional payload from the enabler
  * @returns {any} inputData and navCategories wrapped in an object
  */
-function loadCategories(enablerObj, config, payload = {}) {
+function loadCategories(enablerObj, config, payload) {
     const minions = [];
     const inputData = [];
     const navCategories = {};

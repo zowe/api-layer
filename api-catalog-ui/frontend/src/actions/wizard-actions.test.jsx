@@ -35,10 +35,10 @@ describe('>>> Wizard actions tests', () => {
         expect(actions.wizardToggleDisplay()).toEqual(expectedAction);
     });
     it('should select enabler', () => {
-        const tiles = [];
+        const tiles = [{title:'test', id:'2'}];
         const expectedAction = {
             type: constants.SELECT_ENABLER,
-            payload: { enablerName: 'Test', tiles },
+            payload: { enablerName: 'Test', tiles: ['test'] },
         };
         const fn = jest.fn();
         actions.selectEnabler('Test')(fn, ()=>({tilesReducer:{tiles}}))

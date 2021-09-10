@@ -95,6 +95,11 @@ describe('>>> Wizard navigation tests', () => {
                     { name: 'Category 1', indentation: false },
                     { name: 'Category 2', indentation: false },
                 ],
+                help: 'Some additional information',
+                helpUrl: {
+                    title: 'Help',
+                    link: 'https://docs.zowe.org/stable/extend/extend-apiml/onboard-plain-java-enabler/#api-catalog-information',
+                },
             },
             {
                 text: 'Other Enabler',
@@ -117,6 +122,8 @@ describe('>>> Wizard navigation tests', () => {
             />
         );
         expect(wrapper.find('Tab').length).toEqual(2);
+        expect(wrapper.find('Card').length).toEqual(1);
+        expect(wrapper.find('Link').length).toEqual(1);
     });
 
     it('should add a class name for the problematic tabs', () => {
@@ -129,6 +136,7 @@ describe('>>> Wizard navigation tests', () => {
                 content: [{
                     test: { value: 'val', question: 'Why?', },
                 },],
+                help: 'Some additional information',
                 nav: 'Nav #1',
             },
         ];
