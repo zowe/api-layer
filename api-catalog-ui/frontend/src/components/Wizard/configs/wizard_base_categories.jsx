@@ -134,13 +134,26 @@ export const baseCategories = [
             scheme: {
                 value: 'bypass',
                 question: 'Authentication:',
-                options: ['bypass', 'zoweJwt', 'httpBasicPassTicket', 'zosmf', 'x509', 'headers'],
+                options: ['bypass', 'zoweJwt', 'httpBasicPassTicket', 'zosmf', 'x509'],
             },
             applid: {
                 value: '',
                 question: 'A service APPLID (valid only for the httpBasicPassTicket authentication scheme ):',
                 dependencies: { scheme: 'httpBasicPassTicket' },
             },
+            headers: {
+                value: 'X-Certificate-Public',
+                question: 'For the x509 scheme use the headers parameter to select which values to send to a service',
+                dependencies: { scheme: 'x509' },
+                options: ['X-Certificate-Public', 'X-Certificate-DistinguishedName', 'X-Certificate-CommonName'],
+            },
+        },
+        help:
+            'The following service authentication schemes are supported by the API Gateway: bypass, zoweJwt, httpBasicPassTicket, zosmf, x509. ',
+        helpUrl: {
+            title: 'More information about the authentication parameters',
+            link:
+                'https://docs.zowe.org/stable/extend/extend-apiml/onboard-plain-java-enabler/#api-catalog-information',
         },
     },
     {

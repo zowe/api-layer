@@ -69,3 +69,6 @@ label.wCheckBox span:last-child {
 .wizardTooltip > span {
     width: 100%;
 }
+.wizardCategoryInfo {
+    white-space: pre-wrap;
+}
