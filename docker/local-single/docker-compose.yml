@@ -3,7 +3,7 @@ services:
     api-catalog-services:
         image: ghcr.io/zowe/api-catalog-services:latest
         volumes:
-            - ../../config/docker/api-defs/shared:/api-defs
+            - ../../config/docker/api-defs-shared:/api-defs
         ports:
             - "10014:10014"
     caching-service:
@@ -17,7 +17,7 @@ services:
     discovery-service:
         image: ghcr.io/zowe/discovery-service:latest
         volumes:
-            - ../../config/docker/api-defs/shared:/api-defs
+            - ../../config/docker/api-defs-shared:/api-defs
         ports:
             - "10011:10011"
     gateway-service:
