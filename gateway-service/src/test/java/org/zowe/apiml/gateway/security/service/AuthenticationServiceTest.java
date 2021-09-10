@@ -565,8 +565,8 @@ public class AuthenticationServiceTest {
         QueryResponse qr1 = authService.parseJwtToken(jwt1);
         QueryResponse qr2 = authService.parseJwtToken(jwt2);
 
-        Date toBeExpired = DateUtils.addHours(qr1.getCreation(), 8);
-        Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), 1);
+        Date toBeExpired = DateUtils.addSeconds(qr1.getCreation(), authConfigurationProperties.getTokenProperties().getExpirationInSeconds());
+        Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), (int) authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds());
         assertEquals(qr1.getExpiration(), toBeExpired);
         assertEquals(qr2.getExpiration(), toBeExpired2);
     }
