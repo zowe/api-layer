@@ -14,6 +14,7 @@ import WizardInputs from './WizardInputs';
 
 const mapStateToProps = state => ({
     inputData: state.wizardReducer.inputData,
+    tiles: state.tilesReducer.tiles,
 });
 
 const mapDispatchToProps = {

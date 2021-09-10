@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import _ from 'lodash';
 import {
     CHANGE_CATEGORY,
@@ -141,12 +142,31 @@ function warnMinions(minions, inputData) {
 }
 
 /**
+ * Alter fields of given category on initial onboarding method creation
+ * @param category category to be affected
+ * @param payload additional payload
+ */
+const affectCategory = (category, payload) => {
+    switch (category.interference) {
+        case 'catalog': {
+            const { tiles } = payload;
+            const arr = [...category.content];
+            arr[0] = { ...arr[0], type: { ...arr[0].type, options: arr[0].type.options.concat(tiles) } };
+            return { ...category, content: arr };
+        }
+        default:
+            return category;
+    }
+};
+
+/**
  * Load categories according to the enabler needs
  * @param enablerObj enabler config
  * @param config category & enabler data
+ * @param payload additional payload from the enabler
  * @returns {any} inputData and navCategories wrapped in an object
  */
-function loadCategories(enablerObj, config) {
+function loadCategories(enablerObj, config, payload = {}) {
     const minions = [];
     const inputData = [];
     const navCategories = {};
@@ -160,12 +180,14 @@ function loadCategories(enablerObj, config) {
         compareVariables(category, categoryInfo);
         category = setDefault(category, enablerObj.defaults);
         category.nav = categoryInfo.nav;
+        // if category has minions, add them to the array so warnMinions() can warn them
         if (typeof category.minions !== 'undefined') {
             minions.push({
                 key: Object.keys(category.minions)[0],
                 inputsToBeDisabled: Object.values(category.minions)[0],
             });
         }
+        category = affectCategory(category, payload);
         if (!(category.nav in navCategories)) {
             navCategories[category.nav] = { [category.text]: [[]], silent: true, warn: false };
         } else {
@@ -229,7 +251,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             if (enablerObj === undefined || enablerObj.categories === undefined) {
                 return { ...state, enablerName };
             }
-            const { inputData, navCategories } = loadCategories(enablerObj, config);
+            const { inputData, navCategories } = loadCategories(enablerObj, config, action.payload);
             return { ...state, enablerName, inputData, selectedCategory: 0, navsObj: navCategories };
         }
         case INPUT_UPDATED: {

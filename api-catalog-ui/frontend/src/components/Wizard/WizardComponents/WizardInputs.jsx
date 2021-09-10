@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+import * as log from 'loglevel';
 import React, { Component } from 'react';
 import { Checkbox, FormField, Select, Tooltip } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
@@ -131,22 +132,58 @@ class WizardInputs extends Component {
     }
 
     /**
+     * Alter fields if there's interference
+     */
+    interferenceInjection(payload = {}) {
+        switch (this.props.data.interference) {
+            case 'catalog': {
+                const { tiles, data } = this.props;
+                let selectedTile = { id: '', title: '', description: '', version: '', disabled: false };
+                tiles.forEach(tile => {
+                    if (tile.title === payload.title) {
+                        selectedTile = tile;
+                        selectedTile.disabled = true;
+                    }
+                });
+                log.error({ tiles, data, selectedTile, tileTitle: payload.title });
+                const arr = [...data.content];
+                arr[0] = {
+                    ...arr[0],
+                    id: { ...arr[0].id, value: selectedTile.id, disabled: selectedTile.disabled },
+                    title: { ...arr[0].title, value: selectedTile.title, disabled: selectedTile.disabled },
+                    description: {
+                        ...arr[0].description,
+                        value: selectedTile.description,
+                        disabled: selectedTile.disabled,
+                    },
+                    version: { ...arr[0].version, value: selectedTile.version, disabled: selectedTile.disabled },
+                };
+                this.updateDataWithNewContent(this.props.data, arr);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    /**
      * Select's onChange event contains only the changed value, so we create a usable event ourselves
      * @param entry each item's basic info - name value and index - we create event from that
      */
-    handleSelect = entry => {
+    handleSelect = async entry => {
         const { name, value, index } = entry;
+        await this.interferenceInjection({ title: value });
         this.handleInputChange({ target: { name, value, getAttribute: () => index } });
     };
 
     /**
      * Receives new content object/array and fires a redux action
-     * @param objectToChange old data
+     * @param category old data
      * @param newC new content object/array
      */
-    updateDataWithNewContent(objectToChange, newC) {
+    updateDataWithNewContent(category, newC) {
         const result = {
-            ...objectToChange,
+            ...category,
             content: newC,
         };
         this.props.updateWizardData(result);
@@ -177,6 +214,9 @@ class WizardInputs extends Component {
         this.props.updateWizardData(objectToChange);
     };
 
+    /**
+     * Call addFields for current category
+     */
     addFieldsToCurrentCategory() {
         this.addFields(this.props.data);
         if (this.props.data.minions) {

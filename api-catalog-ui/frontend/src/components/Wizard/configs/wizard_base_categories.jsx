@@ -177,6 +177,12 @@ export const baseCategories = [
     {
         text: 'Catalog',
         content: {
+            type: {
+                value: 'Custom',
+                question: 'Choose existing catalog tile or create a new one:',
+                options: ['Custom'],
+                hidden: true,
+            },
             id: {
                 value: '',
                 question: 'The unique identifier for the product family of API services:',
@@ -194,6 +200,7 @@ export const baseCategories = [
                 question: 'The semantic version of this API Catalog tile (increase when adding changes):',
             },
         },
+        interference: 'catalog',
     },
     {
         text: 'SSL',

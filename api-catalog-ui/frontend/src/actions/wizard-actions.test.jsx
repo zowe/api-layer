@@ -35,11 +35,14 @@ describe('>>> Wizard actions tests', () => {
         expect(actions.wizardToggleDisplay()).toEqual(expectedAction);
     });
     it('should select enabler', () => {
+        const tiles = [];
         const expectedAction = {
             type: constants.SELECT_ENABLER,
-            payload: { enablerName: 'Test' },
+            payload: { enablerName: 'Test', tiles },
         };
-        expect(actions.selectEnabler('Test')).toEqual(expectedAction);
+        const fn = jest.fn();
+        actions.selectEnabler('Test')(fn, ()=>({tilesReducer:{tiles}}))
+        expect(fn).toHaveBeenCalledWith(expectedAction);
     });
     it('should insert if parent is empty', () => {
         const parent = {};

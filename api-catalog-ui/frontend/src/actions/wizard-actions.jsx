@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
+// import * as log from 'loglevel';
 import {
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
@@ -45,9 +45,12 @@ export function wizardToggleDisplay() {
  * @param enablerName the type/name of the onboarding method
  */
 export function selectEnabler(enablerName) {
-    return {
-        type: SELECT_ENABLER,
-        payload: { enablerName },
+    return (dispatch, getState) => {
+        const { tiles } = getState().tilesReducer;
+        dispatch({
+            type: SELECT_ENABLER,
+            payload: { enablerName, tiles: tiles.map(tile => tile.title) },
+        });
     };
 }
 
@@ -136,12 +139,20 @@ export function handleArrayIndentation(arrIndent, content) {
 export const addCategoryToYamlObject = (category, parent, inputData) => {
     const result = { ...parent };
     let content = {};
+
+    const shouldBePlacedInYAML = valueObj => {
+        if (valueObj.show !== false && valueObj.hidden !== true) {
+            return valueObj.value !== '' || valueObj.optional !== true;
+        }
+        return false;
+    };
+
     // load user's answer into content object
     if (!category.multiple) {
         const contentElement = category.content[0];
         Object.keys(contentElement).forEach(key => {
             const valueObj = contentElement[key];
-            if (valueObj.show !== false && (valueObj.value !== '' || valueObj.optional !== true)) {
+            if (shouldBePlacedInYAML(valueObj)) {
                 content[key] = contentElement[key].value;
             }
         });
@@ -152,7 +163,7 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
             category.content.forEach(o => {
                 Object.keys(o).forEach(key => {
                     const valueObj = category.content[index][key];
-                    if (valueObj.show !== false && (valueObj.value !== '' || valueObj.optional !== true)) {
+                    if (shouldBePlacedInYAML(valueObj)) {
                         content[index] = category.content[index][key].value;
                     }
                 });
@@ -163,7 +174,7 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
                 content[index] = {};
                 Object.keys(o).forEach(key => {
                     const valueObj = category.content[index][key];
-                    if (valueObj.show !== false && (valueObj.value !== '' || valueObj.optional !== true)) {
+                    if (shouldBePlacedInYAML(valueObj)) {
                         content[index][key] = category.content[index][key].value;
                     }
                 });
