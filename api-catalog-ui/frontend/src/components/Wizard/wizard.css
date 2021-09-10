@@ -72,3 +72,7 @@ label.wCheckBox span:last-child {
 .wizardCategoryInfo {
     white-space: pre-wrap;
 }
+
+.readyTab {
+    font-weight: 800;
+}

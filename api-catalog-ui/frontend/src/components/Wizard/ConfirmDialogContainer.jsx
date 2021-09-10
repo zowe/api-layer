@@ -7,29 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 import { connect } from 'react-redux';
-import {
-    deleteCategoryConfig,
-    updateWizardData,
-    validateInput,
-    updateServiceId,
-} from '../../../actions/wizard-actions';
-import WizardInputs from './WizardInputs';
+import { confirmStaticDefOverride, overrideStaticDef } from '../../actions/wizard-fetch-actions';
+import ConfirmDialog from './ConfirmDialog';
 
 const mapStateToProps = state => ({
-    inputData: state.wizardReducer.inputData,
-    tiles: state.tilesReducer.tiles,
+    wizardIsOpen: state.wizardReducer.wizardIsOpen,
+    yamlObject: state.wizardReducer.yamlObject,
+    serviceId: state.wizardReducer.serviceId,
+    confirmDialog: state.wizardReducer.confirmDialog,
 });
-
 const mapDispatchToProps = {
-    updateWizardData,
-    deleteCategoryConfig,
-    validateInput,
-    updateServiceId,
+    confirmStaticDefOverride,
+    overrideStaticDef,
 };
-
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(WizardInputs);
+)(ConfirmDialog);

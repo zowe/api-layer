@@ -11,12 +11,13 @@
 import {
     CHANGE_CATEGORY,
     INPUT_UPDATED,
-    NEXT_CATEGORY,
+    NEXT_CATEGORY, OVERRIDE_DEF,
     READY_YAML_OBJECT,
     REMOVE_INDEX,
     SELECT_ENABLER,
-    TOGGLE_DISPLAY,
+    TOGGLE_DISPLAY, UPDATE_SERVICE_ID,
     VALIDATE_INPUT,
+    WIZARD_VISIBILITY_TOGGLE
 } from '../constants/wizard-constants';
 import wizardReducer, {
     addDefaultValues, affectCategory,
@@ -28,6 +29,17 @@ import wizardReducer, {
 describe('>>> Wizard reducer tests', () => {
     it('should return default state in the default action', () => {
         expect(wizardReducer()).toEqual(wizardReducerDefaultState);
+    });
+
+    it('should handle WIZARD_VISIBILITY_TOGGLE true -> false & false -> true ', () => {
+        expect(wizardReducer({ userCanAutoOnboard: false }, {
+            type: WIZARD_VISIBILITY_TOGGLE,
+            payload: { state: true }
+        })).toEqual({ userCanAutoOnboard: true });
+        expect(wizardReducer({ userCanAutoOnboard: true }, {
+            type: WIZARD_VISIBILITY_TOGGLE,
+            payload: { state: false }
+        })).toEqual({ userCanAutoOnboard: false });
     });
 
     it('should handle TOGGLE_DISPLAY true -> false & false -> true ', () => {
@@ -549,6 +561,23 @@ describe('>>> Wizard reducer tests', () => {
             payload: { navName: 'Nav1', silent: false },
         })).toEqual(expectedState);
     });
+
+    it('should update the service ID', () => {
+        const expectedState = { serviceId: 'newId'};
+        expect(wizardReducer({ serviceId: 'hey' }, {
+            type: UPDATE_SERVICE_ID,
+            payload: {
+                value: 'newId',
+            },
+        })).toEqual(expectedState);
+    })
+
+    it('should override static definition', () => {
+        const expectedState = { confirmDialog: true, wizardIsOpen: false};
+        expect(wizardReducer({ confirmDialog: false, wizardIsOpen: true }, {
+            type: OVERRIDE_DEF,
+        })).toEqual(expectedState);
+    })
 
     it('should add default values', () => {
         const content = {

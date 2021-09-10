@@ -17,6 +17,7 @@ import {
     READY_YAML_OBJECT,
     REMOVE_INDEX,
     VALIDATE_INPUT,
+    UPDATE_SERVICE_ID,
 } from '../constants/wizard-constants';
 
 /**
@@ -100,8 +101,8 @@ export const insert = (parent, content) => {
  */
 export function handleIndentationDependency(inputData, indentationDependency, indentation) {
     let result = indentation;
-    if (indentationDependency !== undefined) {
-        inputData.forEach(category => {
+    inputData.forEach(category => {
+        if (Array.isArray(category.content)) {
             category.content.forEach(inpt => {
                 Object.keys(inpt).forEach(k => {
                     if (k === indentationDependency) {
@@ -110,8 +111,15 @@ export function handleIndentationDependency(inputData, indentationDependency, in
                     }
                 });
             });
-        });
-    }
+        } else {
+            Object.keys(category.content).forEach(k => {
+                if (k === indentationDependency) {
+                    result = result.concat('/', category.content[k].value);
+                    return result;
+                }
+            });
+        }
+    });
     return result;
 }
 
@@ -187,7 +195,10 @@ export const addCategoryToYamlObject = (category, parent, inputData) => {
     if (!category.indentation) {
         insert(result, content);
     } else {
-        const indent = handleIndentationDependency(inputData, category.indentationDependency, category.indentation);
+        let indent = category.indentation;
+        if (category.indentationDependency !== undefined) {
+            indent = handleIndentationDependency(inputData, category.indentationDependency, category.indentation);
+        }
         const arr = indent.split('/');
         arr.reverse().forEach(key => {
             if (key.length > 0)
@@ -252,5 +263,16 @@ export function validateInput(navName, silent) {
     return {
         type: VALIDATE_INPUT,
         payload: { navName, silent },
+    };
+}
+
+/**
+ * Store serviceId's value, because it's needed for saving staatic definitons
+ * @param value value of serviceId
+ */
+export function updateServiceId(value) {
+    return {
+        type: UPDATE_SERVICE_ID,
+        payload: { value },
     };
 }

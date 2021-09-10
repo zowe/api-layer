@@ -34,6 +34,9 @@ class WizardInputs extends Component {
         const arrIndex = parseInt(event.target.getAttribute('data-index'));
         const { maxLength, lowercase, regexRestriction, validUrl } = objectToChange.content[arrIndex][name];
         const prevValue = objectToChange.content[arrIndex][name].value;
+        if (name === 'serviceId') {
+            this.props.updateServiceId(value);
+        }
         // if prevValues was a boolean then we are handling a checkbox
         if (typeof prevValue === 'boolean') {
             value = checked;
@@ -384,9 +387,6 @@ class WizardInputs extends Component {
                     onChange={this.handleInputChange}
                     name={itemKey}
                     data-index={index}
-                    labelPosition="start"
-                    justify
-                    disabled={disabled}
                 />
             );
         }

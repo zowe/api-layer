@@ -561,4 +561,21 @@ describe('>>> WizardInputs tests', () => {
         instance.interferenceInjection(payload);
         expect(updateWizardData).toHaveBeenCalledWith(expectedArgument);
     });
+    it('should update service ID', () => {
+        const updateServiceId = jest.fn();
+        const updateWizardData = jest.fn();
+        const dummyData = {
+            text: 'Basic info',
+            content: [
+                { serviceId: { value: 'input', question: '' } },
+            ],
+            multiple: true,
+        };
+        const wrapper = enzyme.shallow(
+            <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} updateServiceId={updateServiceId} data={dummyData} />
+        );
+        const instance = wrapper.instance();
+        instance.handleInputChange({ target: { value: 'test1', name: 'serviceId', getAttribute: () => 0 } });
+        expect(updateServiceId).toHaveBeenCalled();
+    });
 });
