@@ -137,30 +137,58 @@ class WizardInputs extends Component {
      * Alter fields if there's interference
      */
     interferenceInjection(payload) {
-        if (this.props.data.interference === 'catalog') {
-            const { tiles, data } = this.props;
-            let selectedTile = { id: '', title: '', description: '', version: '', disabled: false };
-            tiles.forEach(tile => {
-                if (tile.title === payload.title) {
-                    selectedTile = tile;
-                    selectedTile.disabled = true;
-                }
-            });
-            const arr = [...data.content];
+        const { tiles } = this.props;
+        let { data } = this.props;
+        if (data.interference === 'catalog') {
+            const { arr } = this.fillCategoryFromATile(tiles, payload.title, data);
             arr[0] = {
                 ...arr[0],
                 type: { ...arr[0].type, value: payload.title },
             };
-            Object.keys(arr[0]).forEach(entry => {
-                if (entry !== 'type') {
-                    arr[0][entry] = { ...arr[0][entry], value: selectedTile[entry], disabled: selectedTile.disabled };
+            this.updateDataWithNewContent(data, arr);
+        } else if (data.interference === 'staticCatalog') {
+            this.props.inputData.forEach(category => {
+                if (category.text === 'Catalog UI Tiles') {
+                    data = category;
                 }
             });
-            this.updateDataWithNewContent(this.props.data, arr);
-        } else if(typeof this.props.data.interference === 'undefined'){
+            const { arr, id } = this.fillCategoryFromATile(tiles, payload.title, data);
+            this.updateDataWithNewContent(data, arr);
+            const currCategory = this.props.data.content;
+            currCategory[0] = {
+                ...currCategory[0],
+                type: { ...currCategory[0].type, value: payload.title },
+                catalogUiTileId: { ...currCategory[0].catalogUiTileId, value: id },
+            };
+            this.updateDataWithNewContent(this.props.data, currCategory);
+        } else if (typeof this.props.data.interference === 'undefined') {
             const { name, title, index } = payload;
             this.handleInputChange({ target: { name, value: title, getAttribute: () => index } });
         }
+    }
+
+    /**
+     * Fill out a category automatically from a tile object
+     * @param tiles array of tile objects
+     * @param title title of the tile
+     * @param data category object that should be updated
+     * @returns {{arr: *[], id: string}} returns the new, now filled category content and the id of the selected tile wrapped in an object
+     */
+    fillCategoryFromATile(tiles, title, data) {
+        let selectedTile = { id: '', title: '', description: '', version: '', disabled: false };
+        tiles.forEach(tile => {
+            if (tile.title === title) {
+                selectedTile = tile;
+                selectedTile.disabled = true;
+            }
+        });
+        const arr = [...data.content];
+        Object.keys(arr[0]).forEach(entry => {
+            if (entry !== 'type') {
+                arr[0][entry] = { ...arr[0][entry], value: selectedTile[entry], disabled: selectedTile.disabled };
+            }
+        });
+        return { arr, id: selectedTile.id };
     }
 
     /**
