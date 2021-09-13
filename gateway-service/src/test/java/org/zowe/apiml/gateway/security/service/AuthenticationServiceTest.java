@@ -558,17 +558,17 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    void testCreateJwtTokenUserExpire() {
+    void testCreateJwtTokensAndCheckExpiration() {
         String jwt1 = authService.createJwtToken("user", "domain", "ltpaToken");
         String jwt2 = authService.createJwtToken("expire", "domain", "ltpaToken");
 
         QueryResponse qr1 = authService.parseJwtToken(jwt1);
         QueryResponse qr2 = authService.parseJwtToken(jwt2);
 
-        assertEquals(
-            qr1.getExpiration().getTime() - authConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000,
-            qr2.getExpiration().getTime() - authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds() * 1000
-        );
+        Date toBeExpired = DateUtils.addSeconds(qr1.getCreation(), authConfigurationProperties.getTokenProperties().getExpirationInSeconds());
+        Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), (int) authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds());
+        assertEquals(qr1.getExpiration(), toBeExpired);
+        assertEquals(qr2.getExpiration(), toBeExpired2);
     }
 
     @Test
