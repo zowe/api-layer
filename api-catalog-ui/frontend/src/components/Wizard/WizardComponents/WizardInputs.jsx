@@ -149,6 +149,7 @@ class WizardInputs extends Component {
             const arr = [...data.content];
             arr[0] = {
                 ...arr[0],
+                type: { ...arr[0].type, value: payload.title },
                 id: { ...arr[0].id, value: selectedTile.id, disabled: selectedTile.disabled },
                 title: { ...arr[0].title, value: selectedTile.title, disabled: selectedTile.disabled },
                 description: {
@@ -166,10 +167,9 @@ class WizardInputs extends Component {
      * Select's onChange event contains only the changed value, so we create a usable event ourselves
      * @param entry each item's basic info - name value and index - we create event from that
      */
-    handleSelect = async entry => {
-        const { name, value, index } = entry;
-        await this.interferenceInjection({ title: value });
-        this.handleInputChange({ target: { name, value, getAttribute: () => index } });
+    handleSelect = entry => {
+        const { value } = entry;
+        this.interferenceInjection({ title: value });
     };
 
     /**
