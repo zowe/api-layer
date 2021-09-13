@@ -1,4 +1,4 @@
-import { defaultMicronaut, defaultNode, defaultSpring } from './wizard_defaults';
+import { defaultMicronaut, defaultNode, defaultPJE, defaultSpring } from './wizard_defaults';
 
 /**
  * Define which categories each enabler needs. Properties indentation and multiple can be used here as well.(override)
@@ -21,6 +21,7 @@ export const enablerData = [
             { name: 'Catalog', indentation: 'catalog/tile' },
             { name: 'SSL', indentation: 'ssl' },
         ],
+        defaults: defaultPJE,
     },
     {
         text: 'Spring Enabler',

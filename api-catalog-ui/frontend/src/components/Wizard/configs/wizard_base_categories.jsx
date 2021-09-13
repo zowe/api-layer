@@ -118,7 +118,7 @@ export const baseCategories = [
             gatewayUrl: {
                 value: '',
                 question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
-                tooltip: 'Format: /api/vX, Example: /api/v1',
+                tooltip: 'Format: api/vX, Example: api/v1',
                 regexRestriction: [wizRegex.gatewayUrl],
             },
             serviceUrl: {

@@ -3,6 +3,9 @@
  */
 
 // eslint-disable-next-line import/prefer-default-export
+export const defaultPJE = {
+    SSL: { protocol: { value: 'TLSv1.2', hide: true } },
+};
 export const defaultSpring = {
     Spring: { name: { value: '${apiml.service.serviceId}', hide: true } },
     'Scheme info': { scheme: { value: 'https' }, contextPath: { value: '/${apiml.service.serviceId}', hide: true } },
@@ -24,6 +27,7 @@ export const defaultSpring = {
             hide: true,
         },
     },
+    SSL: { protocol: { value: 'TLSv1.2', hide: true } },
 };
 export const defaultNode = {
     Eureka: {
@@ -87,4 +91,5 @@ export const defaultMicronaut = {
     'API Info for Micronaut': {
         gatewayUrl: { value: '${apiml.service.routes.gatewayUrl}' },
     },
+    'SSL detailed': { protocol: { value: 'TLSv1.2', hide: true } },
 };
