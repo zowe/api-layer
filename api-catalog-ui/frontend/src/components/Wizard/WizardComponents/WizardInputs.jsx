@@ -150,15 +150,12 @@ class WizardInputs extends Component {
             arr[0] = {
                 ...arr[0],
                 type: { ...arr[0].type, value: payload.title },
-                id: { ...arr[0].id, value: selectedTile.id, disabled: selectedTile.disabled },
-                title: { ...arr[0].title, value: selectedTile.title, disabled: selectedTile.disabled },
-                description: {
-                    ...arr[0].description,
-                    value: selectedTile.description,
-                    disabled: selectedTile.disabled,
-                },
-                version: { ...arr[0].version, value: selectedTile.version, disabled: selectedTile.disabled },
             };
+            Object.keys(arr[0]).forEach(entry => {
+                if (entry !== 'type') {
+                    arr[0][entry] = { ...arr[0][entry], value: selectedTile[entry], disabled: selectedTile.disabled };
+                }
+            });
             this.updateDataWithNewContent(this.props.data, arr);
         }
     }
