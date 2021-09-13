@@ -100,6 +100,13 @@ messages:
       reason: "The principal does not have the queried access to resource name within resource class."
       action: "No action needed."
 
+    - key: org.zowe.apiml.gateway.invalidRoute
+      number: ZWEAG712
+      type: ERROR
+      text: "The URI '%s' is an invalid format"
+      reason: "The URI did not follow the format /{serviceId}/{type}/{version}/{endpoint} or /{type}/{version}/{serviceId}/{endpoint}."
+      action: "Use a properly formatted URI."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic
