@@ -23,6 +23,7 @@ class WizardNavigation extends Component {
                 this.props.validateInput(navNamesArr[this.props.selectedCategory], false);
             }
             if (event === navNamesArr.length) {
+                this.props.assertAuthorization();
                 navNamesArr.forEach(navName => {
                     this.props.validateInput(navName, false);
                 });
