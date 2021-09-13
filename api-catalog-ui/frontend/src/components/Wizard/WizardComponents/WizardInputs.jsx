@@ -157,7 +157,7 @@ class WizardInputs extends Component {
                 }
             });
             this.updateDataWithNewContent(this.props.data, arr);
-        } else {
+        } else if(typeof this.props.data.interference === 'undefined'){
             const { name, title, index } = payload;
             this.handleInputChange({ target: { name, value: title, getAttribute: () => index } });
         }
