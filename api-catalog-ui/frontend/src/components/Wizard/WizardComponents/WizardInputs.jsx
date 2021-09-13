@@ -157,6 +157,9 @@ class WizardInputs extends Component {
                 }
             });
             this.updateDataWithNewContent(this.props.data, arr);
+        } else {
+            const { name, title, index } = payload;
+            this.handleInputChange({ target: { name, value: title, getAttribute: () => index } });
         }
     }
 
@@ -165,8 +168,8 @@ class WizardInputs extends Component {
      * @param entry each item's basic info - name value and index - we create event from that
      */
     handleSelect = entry => {
-        const { value } = entry;
-        this.interferenceInjection({ title: value });
+        const { name, value, index } = entry;
+        this.interferenceInjection({ title: value, name, index });
     };
 
     /**

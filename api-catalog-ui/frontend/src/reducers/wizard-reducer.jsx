@@ -153,7 +153,7 @@ function warnMinions(minions, inputData) {
  * @param payload additional payload
  */
 export function affectCategory(category, payload) {
-    if (category.interference === 'catalog') {
+    if (category.interference === 'catalog' || category.interference === 'staticCatalog') {
         const { tiles } = payload;
         const arr = [...category.content];
         arr[0] = { ...arr[0], type: { ...arr[0].type, options: arr[0].type.options.concat(tiles) } };

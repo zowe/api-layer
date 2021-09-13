@@ -31,12 +31,20 @@ export const staticSpecificCategories = [
     {
         text: 'Catalog info',
         content: {
+            type: {
+                value: 'Custom',
+                question: 'Choose existing catalog tile or create a new one:',
+                options: ['Custom'],
+                hidden: true,
+            },
             catalogUiTileId: {
                 value: '',
                 question: 'The id of the catalog tile:',
                 regexRestriction: [wizRegex.noWhiteSpaces],
+                dependencies: { type: 'Custom' },
             },
         },
+        interference: 'staticCatalog',
     },
     {
         text: 'Catalog UI Tiles',
