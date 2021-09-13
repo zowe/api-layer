@@ -524,6 +524,39 @@ describe('>>> WizardInputs tests', () => {
         instance.interferenceInjection(payload);
         expect(updateWizardData).toHaveBeenCalledWith(expectedArgument);
     });
+    it('should handle interference for the static catalog', () => {
+        const updateWizardData = jest.fn();
+        const payload = { title: 'Option 1' };
+        const dummyData = {
+            text: 'Catalog UI Tiles',
+            content: [{
+                type: { value: '', question: 'Why?', options: ['Custom'] },
+            }],
+            interference: 'staticCatalog',
+        };
+        const dummyTiles = [{ title: 'Option 1', version: '1.0.0', id: 'opt1', description: 'Description' }]
+        const dummyInputData = [
+            {
+            text: 'Catalog UI Tiles',
+            content: [{
+                type: { value: '', question: 'Why?', options: ['Custom'] },
+            }],
+            interference: 'staticCatalog',
+        },
+            {
+                text: 'Test category',
+                content: [{
+                    type: { value: '', question: 'Why?', options: ['Custom'] },
+                }],
+            }
+        ];
+        const wrapper = enzyme.shallow(
+            <WizardInputs data={dummyData} inputData={dummyInputData} tiles={dummyTiles} updateWizardData={updateWizardData} />
+        );
+        const instance = wrapper.instance();
+        instance.interferenceInjection(payload);
+        expect(updateWizardData).toHaveBeenCalledWith(dummyData);
+    })
     it('should handle incorrect interference', () => {
         const updateWizardData = jest.fn();
         const payload = { title: 'Option 1' };
@@ -541,6 +574,34 @@ describe('>>> WizardInputs tests', () => {
         const instance = wrapper.instance();
         instance.interferenceInjection(payload);
         expect(updateWizardData).toHaveBeenCalledTimes(0);
+    });
+    it('should handle undefined interference', () => {
+        const updateWizardData = jest.fn();
+        const validateInput = jest.fn();
+        const payload = { title: 'Option 1', name: 'field', index: 0 };
+        const dummyData = {
+            text: 'Test category',
+            content: [{
+                field: { value: '', question: 'Why?', options: ['Custom', 'Option 1'] },
+            }],
+            nav: 'Category',
+        };
+        const expectedArgument = {
+            text: 'Test category',
+            content: [{
+                field: { value: 'Option 1', question: 'Why?', options: ['Custom', 'Option 1'], problem: false, show: true, interactedWith: true, empty: false },
+            }],
+            nav: 'Category',
+        };
+        const dummyTiles = [{ title: 'Option 1', version: '1.0.0', id: 'opt1', description: 'Description' }];
+        const wrapper = enzyme.shallow(
+            <WizardInputs data={dummyData} tiles={dummyTiles} updateWizardData={updateWizardData} validateInput={validateInput} />
+        );
+        const instance = wrapper.instance();
+        instance.interferenceInjection(payload);
+        expect(updateWizardData).toHaveBeenCalledWith(expectedArgument);
+        expect(validateInput).toHaveBeenCalledWith(dummyData.nav, true);
+
     })
     it('should update service ID', () => {
         const updateServiceId = jest.fn();
