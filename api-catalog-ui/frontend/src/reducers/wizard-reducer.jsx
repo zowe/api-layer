@@ -109,6 +109,8 @@ function emptyFieldsOfContent(content, silent) {
                 objValue.empty = true;
                 emptyFieldsArr.push(key);
             }
+        } else if (objValue.problem) {
+            emptyFieldsArr.push(key);
         }
     });
     return emptyFieldsArr;

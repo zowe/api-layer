@@ -86,7 +86,7 @@ class WizardInputs extends Component {
     }
 
     /**
-     * Check the non-applicable restrictions
+     * Check the non-applicable restrictions - !regexes!
      * @param value user's input
      * @param regexRestriction restriction in regex expression
      * @param validUrl whether the value should be a valid URL
