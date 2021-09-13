@@ -10,7 +10,7 @@
 import React from 'react';
 import * as enzyme from 'enzyme';
 import WizardNavigation from './WizardNavigation';
-import { IconDanger} from 'mineral-ui-icons';
+import { IconDanger } from 'mineral-ui-icons';
 
 describe('>>> Wizard navigation tests', () => {
     it('should handle category change', () => {
@@ -44,13 +44,14 @@ describe('>>> Wizard navigation tests', () => {
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 validateInput={validateInput}
+                assertAuthorization={jest.fn()}
             />
         );
         const instance = wrapper.instance();
         instance.handleChange(2);
         expect(validateInput).toHaveBeenCalledTimes(3);
     });
-    it('should validate all tabs on YAML tab click', () => {
+    it('should not validate upon accessing something else', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
         const validateInput = jest.fn();
@@ -62,6 +63,7 @@ describe('>>> Wizard navigation tests', () => {
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 validateInput={validateInput}
+                assertAuthorization={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -151,6 +153,6 @@ describe('>>> Wizard navigation tests', () => {
 
             />
         );
-        expect(wrapper.instance().loadTabs()[0].props.icon).toEqual(<IconDanger style={{color:'red'}}/>);
+        expect(wrapper.instance().loadTabs()[0].props.icon).toEqual(<IconDanger style={{ color: 'red' }} />);
     });
 });
