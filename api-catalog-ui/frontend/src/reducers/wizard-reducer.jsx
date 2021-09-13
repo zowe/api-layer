@@ -159,7 +159,7 @@ export function affectCategory(category, payload) {
         arr[0] = { ...arr[0], type: { ...arr[0].type, options: arr[0].type.options.concat(tiles) } };
         return { ...category, content: arr };
     }
-       return category;
+    return category;
 }
 
 /**
