@@ -419,7 +419,7 @@ describe('>>> WizardInputs tests', () => {
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        const result = instance.checkRestrictions('hey', ['^[a-z]+$'], false);
+        const result = instance.checkRestrictions(dummyData,'hey', [{ value: '^[a-z]+$', tooltip: 'Warning' }], false);
         expect(result).toEqual(false);
     });
     it('should check for URL restrictions', () => {
@@ -429,18 +429,23 @@ describe('>>> WizardInputs tests', () => {
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        const result = instance.checkRestrictions('http://www.example.com/index.html', undefined, true);
+        const result = instance.checkRestrictions(dummyData,'http://www.example.com/index.html', undefined, true);
         expect(result).toEqual(false);
     });
     it('should check for restrictions correctly', () => {
         const updateWizardData = jest.fn();
         const dummyData = {};
+        const dummyCategoryContent = {
+            value: 'hEy9',
+            question: 'Why?',
+        }
         const wrapper = enzyme.shallow(
             <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
         );
         const instance = wrapper.instance();
-        const result = instance.checkRestrictions('hEy9', ['^[a-z]+$'], true);
+        const result = instance.checkRestrictions(dummyCategoryContent,'hEy9', [{ value: '^[a-z]+$', tooltip: 'Warning' }], true);
         expect(result).toEqual(true);
+        expect(dummyCategoryContent.tooltip).toEqual('The URL has to be valid, example: https://localhost:10014');
     });
     it('should handle tooltip', () => {
         const dummyData = {

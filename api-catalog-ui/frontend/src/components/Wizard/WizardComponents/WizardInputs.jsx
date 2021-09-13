@@ -45,7 +45,12 @@ class WizardInputs extends Component {
             if (value.length > 0) {
                 objectToChange.content[arrIndex][name].empty = false;
             }
-            objectToChange.content[arrIndex][name].problem = this.checkRestrictions(value, regexRestriction, validUrl);
+            objectToChange.content[arrIndex][name].problem = this.checkRestrictions(
+                objectToChange.content[arrIndex][name],
+                value,
+                regexRestriction,
+                validUrl
+            );
         }
         const arr = [...objectToChange.content];
         arr[arrIndex] = {
@@ -87,17 +92,19 @@ class WizardInputs extends Component {
 
     /**
      * Check the non-applicable restrictions
+     * @param inputObject one input object
      * @param value user's input
      * @param regexRestriction restriction in regex expression
      * @param validUrl whether the value should be a valid URL
      * @returns {boolean} true if there's a problem
      */
-    checkRestrictions(value, regexRestriction, validUrl) {
+    checkRestrictions(inputObject, value, regexRestriction, validUrl) {
         let problem = false;
         if (regexRestriction !== undefined) {
             regexRestriction.forEach(regex => {
-                const restriction = new RegExp(regex);
+                const restriction = new RegExp(regex.value);
                 if (!restriction.test(value)) {
+                    inputObject.tooltip = regex.tooltip;
                     problem = true;
                 }
             });
@@ -109,6 +116,7 @@ class WizardInputs extends Component {
                 problem = problem || false;
                 return problem;
             } catch {
+                inputObject.tooltip = 'The URL has to be valid, example: https://localhost:10014';
                 return true;
             }
         }
