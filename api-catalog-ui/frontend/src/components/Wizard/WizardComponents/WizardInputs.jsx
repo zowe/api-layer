@@ -137,33 +137,28 @@ class WizardInputs extends Component {
      * Alter fields if there's interference
      */
     interferenceInjection(payload) {
-        switch (this.props.data.interference) {
-            case 'catalog': {
-                const { tiles, data } = this.props;
-                let selectedTile = { id: '', title: '', description: '', version: '', disabled: false };
-                tiles.forEach(tile => {
-                    if (tile.title === payload.title) {
-                        selectedTile = tile;
-                        selectedTile.disabled = true;
-                    }
-                });
-                const arr = [...data.content];
-                arr[0] = {
-                    ...arr[0],
-                    id: { ...arr[0].id, value: selectedTile.id, disabled: selectedTile.disabled },
-                    title: { ...arr[0].title, value: selectedTile.title, disabled: selectedTile.disabled },
-                    description: {
-                        ...arr[0].description,
-                        value: selectedTile.description,
-                        disabled: selectedTile.disabled,
-                    },
-                    version: { ...arr[0].version, value: selectedTile.version, disabled: selectedTile.disabled },
-                };
-                this.updateDataWithNewContent(this.props.data, arr);
-                break;
-            }
-            default:
-                break;
+        if (this.props.data.interference === 'catalog') {
+            const { tiles, data } = this.props;
+            let selectedTile = { id: '', title: '', description: '', version: '', disabled: false };
+            tiles.forEach(tile => {
+                if (tile.title === payload.title) {
+                    selectedTile = tile;
+                    selectedTile.disabled = true;
+                }
+            });
+            const arr = [...data.content];
+            arr[0] = {
+                ...arr[0],
+                id: { ...arr[0].id, value: selectedTile.id, disabled: selectedTile.disabled },
+                title: { ...arr[0].title, value: selectedTile.title, disabled: selectedTile.disabled },
+                description: {
+                    ...arr[0].description,
+                    value: selectedTile.description,
+                    disabled: selectedTile.disabled,
+                },
+                version: { ...arr[0].version, value: selectedTile.version, disabled: selectedTile.disabled },
+            };
+            this.updateDataWithNewContent(this.props.data, arr);
         }
     }
 

@@ -153,16 +153,13 @@ function warnMinions(minions, inputData) {
  * @param payload additional payload
  */
 export function affectCategory(category, payload) {
-    switch (category.interference) {
-        case 'catalog': {
-            const { tiles } = payload;
-            const arr = [...category.content];
-            arr[0] = { ...arr[0], type: { ...arr[0].type, options: arr[0].type.options.concat(tiles) } };
-            return { ...category, content: arr };
-        }
-        default:
-            return category;
+    if (category.interference === 'catalog') {
+        const { tiles } = payload;
+        const arr = [...category.content];
+        arr[0] = { ...arr[0], type: { ...arr[0].type, options: arr[0].type.options.concat(tiles) } };
+        return { ...category, content: arr };
     }
+       return category;
 }
 
 /**
