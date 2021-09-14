@@ -10,8 +10,9 @@ jobs:
     BuildAndTest:
         runs-on: ${{ matrix.os }}
         strategy:
+            fail-fast: false
             matrix:
-                os: [macos-latest, ubuntu-latest, windows-latest]
+                os: [ macos-latest, ubuntu-latest, windows-latest ]
         timeout-minutes: 13
 
         steps:
