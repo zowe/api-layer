@@ -4,7 +4,7 @@ name: Relase new version (snapshot)
 
 on:
     push:
-        branches: [ master ]
+        branches: [ master, v2.x.x ]
 
 env:
     IMAGE_BASE_DIR: ./containers
