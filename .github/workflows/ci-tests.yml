@@ -9,11 +9,9 @@ on:
 jobs:
     BuildAndTest:
         runs-on: ${{ matrix.os }}
-        container: ${{ matrix.container }}
         strategy:
             matrix:
                 os: [macos-latest, ubuntu-latest, windows-latest]
-                container: [macos-latest, ubuntu-latest, windows-latest]
         timeout-minutes: 13
 
         steps:
