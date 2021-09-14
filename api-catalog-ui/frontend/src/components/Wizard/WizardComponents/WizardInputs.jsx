@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { Component } from 'react';
-import { Checkbox, FormField, Select } from 'mineral-ui';
+import { Checkbox, FormField, Select, Tooltip } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
 import Button from 'mineral-ui/Button';
 import { IconDelete } from 'mineral-ui-icons';
@@ -19,6 +19,7 @@ class WizardInputs extends Component {
         this.state = {};
         this.handleInputChange = this.handleInputChange.bind(this);
         this.addFields = this.addFields.bind(this);
+        this.addFieldsToCurrentCategory = this.addFieldsToCurrentCategory.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
     }
 
@@ -31,7 +32,7 @@ class WizardInputs extends Component {
         let { value } = event.target;
         const objectToChange = this.props.data;
         const arrIndex = parseInt(event.target.getAttribute('data-index'));
-        const { question, maxLength, lowercase } = objectToChange.content[arrIndex][name];
+        const { maxLength, lowercase, regexRestriction, validUrl } = objectToChange.content[arrIndex][name];
         const prevValue = objectToChange.content[arrIndex][name].value;
         if (name === 'serviceId') {
             this.props.updateServiceId(value);
@@ -44,16 +45,83 @@ class WizardInputs extends Component {
             if (value.length > 0) {
                 objectToChange.content[arrIndex][name].empty = false;
             }
+            objectToChange.content[arrIndex][name].problem = this.checkRestrictions(
+                objectToChange.content[arrIndex][name],
+                value,
+                regexRestriction,
+                validUrl
+            );
         }
         const arr = [...objectToChange.content];
         arr[arrIndex] = {
             ...arr[arrIndex],
-            [name]: { ...objectToChange.content[arrIndex][name], question, value, interactedWith: true },
+            [name]: { ...objectToChange.content[arrIndex][name], value, interactedWith: true },
         };
         this.updateDataWithNewContent(objectToChange, arr);
-
+        this.propagateToMinions(name, value, arrIndex);
         this.props.validateInput(objectToChange.nav, true);
     };
+
+    /**
+     * Check if there are any minions attached and update them if a shared value has been modified
+     * @param name key of the value that has been changed
+     * @param value the new value
+     * @param arrIndex index of the set
+     */
+    propagateToMinions(name, value, arrIndex) {
+        const { minions } = this.props.data;
+        if (minions) {
+            if (Object.values(minions)[0].includes(name)) {
+                let category;
+                this.props.inputData.forEach(cat => {
+                    if (cat.text === Object.keys(this.props.data.minions)[0]) {
+                        category = { ...cat };
+                    }
+                });
+                if (typeof category !== 'undefined') {
+                    const arr = [...category.content];
+                    arr[arrIndex] = {
+                        ...arr[arrIndex],
+                        [name]: { ...category.content[arrIndex][name], value },
+                    };
+                    this.props.updateWizardData({ ...category, content: arr });
+                }
+            }
+        }
+    }
+
+    /**
+     * Check the non-applicable restrictions
+     * @param inputObject one input object
+     * @param value user's input
+     * @param regexRestriction restriction in regex expression
+     * @param validUrl whether the value should be a valid URL
+     * @returns {boolean} true if there's a problem
+     */
+    checkRestrictions(inputObject, value, regexRestriction, validUrl) {
+        let problem = false;
+        if (regexRestriction !== undefined) {
+            regexRestriction.forEach(regex => {
+                const restriction = new RegExp(regex.value);
+                if (!restriction.test(value)) {
+                    inputObject.tooltip = regex.tooltip;
+                    problem = true;
+                }
+            });
+        }
+        if (validUrl) {
+            try {
+                // eslint-disable-next-line no-new
+                new URL(value);
+                problem = problem || false;
+                return problem;
+            } catch {
+                inputObject.tooltip = 'The URL has to be valid, example: https://localhost:10014';
+                return true;
+            }
+        }
+        return problem;
+    }
 
     /**
      * Apply any restrictions to the inputs
@@ -74,32 +142,91 @@ class WizardInputs extends Component {
     }
 
     /**
+     * Alter fields if there's interference
+     */
+    interferenceInjection(payload) {
+        const { tiles } = this.props;
+        let { data } = this.props;
+        if (data.interference === 'catalog') {
+            const { arr } = this.fillCategoryFromATile(tiles, payload.title, data);
+            arr[0] = {
+                ...arr[0],
+                type: { ...arr[0].type, value: payload.title },
+            };
+            this.updateDataWithNewContent(data, arr);
+        } else if (data.interference === 'staticCatalog') {
+            this.props.inputData.forEach(category => {
+                if (category.text === 'Catalog UI Tiles') {
+                    data = category;
+                }
+            });
+            const { arr, id } = this.fillCategoryFromATile(tiles, payload.title, data);
+            this.updateDataWithNewContent(data, arr);
+            const currCategory = this.props.data.content;
+            currCategory[0] = {
+                ...currCategory[0],
+                type: { ...currCategory[0].type, value: payload.title },
+                catalogUiTileId: { ...currCategory[0].catalogUiTileId, value: id },
+            };
+            this.updateDataWithNewContent(this.props.data, currCategory);
+        } else if (typeof this.props.data.interference === 'undefined') {
+            const { name, title, index } = payload;
+            this.handleInputChange({ target: { name, value: title, getAttribute: () => index } });
+        }
+    }
+
+    /**
+     * Fill out a category automatically from a tile object
+     * @param tiles array of tile objects
+     * @param title title of the tile
+     * @param data category object that should be updated
+     * @returns {{arr: *[], id: string}} returns the new, now filled category content and the id of the selected tile wrapped in an object
+     */
+    fillCategoryFromATile(tiles, title, data) {
+        let selectedTile = { id: '', title: '', description: '', version: '', disabled: false };
+        tiles.forEach(tile => {
+            if (tile.title === title) {
+                selectedTile = tile;
+                selectedTile.disabled = true;
+            }
+        });
+        const arr = [...data.content];
+        Object.keys(arr[0]).forEach(entry => {
+            if (entry !== 'type') {
+                arr[0][entry] = { ...arr[0][entry], value: selectedTile[entry], disabled: selectedTile.disabled };
+            }
+        });
+        return { arr, id: selectedTile.id };
+    }
+
+    /**
      * Select's onChange event contains only the changed value, so we create a usable event ourselves
      * @param entry each item's basic info - name value and index - we create event from that
      */
     handleSelect = entry => {
         const { name, value, index } = entry;
-        this.handleInputChange({ target: { name, value, getAttribute: () => index } });
+        this.interferenceInjection({ title: value, name, index });
     };
 
     /**
      * Receives new content object/array and fires a redux action
-     * @param objectToChange old data
+     * @param category old data
      * @param newC new content object/array
      */
-    updateDataWithNewContent(objectToChange, newC) {
+    updateDataWithNewContent(category, newC) {
         const result = {
-            ...objectToChange,
+            ...category,
             content: newC,
         };
         this.props.updateWizardData(result);
     }
 
     /**
-     * Adds another set of config if the category's multiple property is set to true
+     * Adds another set of config
+     * @param category category which we should add the set to
      */
-    addFields = () => {
-        const myObject = this.props.data.content[0];
+    addFields = category => {
+        const myObject = category.content[0];
         const newObject = {};
         Object.keys(myObject).forEach(key => {
             newObject[key] = { ...myObject[key] };
@@ -109,9 +236,9 @@ class WizardInputs extends Component {
             }
             newObject[key].question = myObject[key].question;
         });
-        const contentCopy = [...this.props.data.content];
+        const contentCopy = [...category.content];
         contentCopy.push(newObject);
-        let objectToChange = this.props.data;
+        let objectToChange = category;
         objectToChange = {
             ...objectToChange,
             content: contentCopy,
@@ -119,12 +246,29 @@ class WizardInputs extends Component {
         this.props.updateWizardData(objectToChange);
     };
 
+    /**
+     * Call addFields for current category
+     */
+    addFieldsToCurrentCategory() {
+        this.addFields(this.props.data);
+        if (this.props.data.minions) {
+            this.props.inputData.forEach(category => {
+                if (category.text === Object.keys(this.props.data.minions)[0]) {
+                    this.addFields(category);
+                }
+            });
+        }
+    }
+
     handleDelete(event) {
         this.props.validateInput(this.props.data.nav, true);
         if (!this.state[`delBtn${event.target.name}`]) {
             this.setState({ [`delBtn${event.target.name}`]: true });
         } else {
             this.props.deleteCategoryConfig(event.target.name, this.props.data.text);
+            if (this.props.data.minions) {
+                this.props.deleteCategoryConfig(event.target.name, Object.keys(this.props.data.minions)[0]);
+            }
             this.setState({ [`delBtn${event.target.name}`]: false });
         }
     }
@@ -218,6 +362,7 @@ class WizardInputs extends Component {
             }
             input.show = true;
             key += 1;
+            if (input.hide) return null;
             return (
                 <div className="entry" key={`${index}-${key}`}>
                     {this.renderInputElement(itemKey, index, input)}
@@ -234,7 +379,19 @@ class WizardInputs extends Component {
      * @returns {JSX.Element} returns the input element
      */
     renderInputElement(itemKey, index, inputNode) {
-        const { question, value, empty, optional, options, maxLength, lowercase } = inputNode;
+        const {
+            question,
+            value,
+            empty,
+            optional,
+            options,
+            maxLength,
+            lowercase,
+            tooltip,
+            problem,
+            type,
+            disabled,
+        } = inputNode;
         let caption = '';
         if (optional) {
             caption += 'Optional field; ';
@@ -250,7 +407,8 @@ class WizardInputs extends Component {
         } else {
             caption = undefined;
         }
-        const variant = empty ? 'danger' : undefined;
+        const error = empty || problem;
+        const variant = error ? 'danger' : undefined;
         if (typeof value === 'boolean') {
             return (
                 <Checkbox
@@ -266,6 +424,7 @@ class WizardInputs extends Component {
         if (Array.isArray(options)) {
             return (
                 <FormField
+                    className="formField"
                     input={Select}
                     size="large"
                     placeholder={itemKey}
@@ -277,30 +436,45 @@ class WizardInputs extends Component {
                         text: entry,
                         onClick: () => this.handleSelect({ name: itemKey, index, value: entry }),
                     }))}
+                    disabled={disabled}
                 />
             );
         }
+        let disableTooltip = false;
+        let finalTooltip = tooltip;
+        if (tooltip === undefined) {
+            disableTooltip = true;
+            finalTooltip = 'filler';
+        }
         return (
-            <FormField
-                input={TextInput}
-                size="large"
-                name={itemKey}
-                onChange={this.handleInputChange}
-                data-index={index}
-                placeholder={itemKey}
-                value={value}
-                label={question}
-                variant={variant}
-                caption={caption}
-            />
+            <Tooltip className="wizardTooltip" content={finalTooltip} disabled={disableTooltip}>
+                <FormField
+                    type={type}
+                    className="wizardFormFields"
+                    input={TextInput}
+                    size="large"
+                    name={itemKey}
+                    onChange={this.handleInputChange}
+                    data-index={index}
+                    placeholder={itemKey}
+                    value={value}
+                    label={question}
+                    variant={variant}
+                    caption={caption}
+                    disabled={disabled}
+                />
+            </Tooltip>
         );
     }
 
     render() {
+        const { multiple, isMinion } = this.props.data;
         return (
             <div className="wizardForm">
                 {this.loadInputs()}
-                {this.props.data.multiple ? <Button onClick={this.addFields}>Add more fields</Button> : null}
+                {multiple && typeof isMinion === 'undefined' ? (
+                    <Button onClick={this.addFieldsToCurrentCategory}>Add more fields</Button>
+                ) : null}
             </div>
         );
     }

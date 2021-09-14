@@ -1,79 +1,92 @@
 /**
  * Define default values for different enablers
  */
+
 // eslint-disable-next-line import/prefer-default-export
+export const defaultPJE = {
+    SSL: { protocol: { value: 'TLSv1.2', hide: true } },
+};
 export const defaultSpring = {
-    Spring: { name: '${apiml.service.serviceId}' },
-    'Scheme info': { scheme: 'https', contextPath: '/${apiml.service.serviceId}' },
-    'IP address info': { baseUrl: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}' },
-    URL: {
-        homePageRelativeUrl: '${apiml.service.contextPath}',
-        statusPageRelativeUrl: '${apiml.service.contextPath}',
-        healthCheckRelativeUrl: '${apiml.service.contextPath}',
+    Spring: { name: { value: '${apiml.service.serviceId}', hide: true } },
+    'Scheme info': { scheme: { value: 'https' }, contextPath: { value: '/${apiml.service.serviceId}', hide: true } },
+    'IP address info': {
+        baseUrl: { value: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}' },
     },
-    Routes: {
-        serviceUrl: '${apiml.service.contextPath}',
+    URL: {
+        homePageRelativeUrl: { value: '${apiml.service.contextPath}/' },
+        statusPageRelativeUrl: { value: '${apiml.service.contextPath}/' },
+        healthCheckRelativeUrl: { value: '${apiml.service.contextPath}/' },
     },
     'API Info': {
-        swaggerUrl:
-            '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
+        swaggerUrl: {
+            value:
+                '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
+            hide: true,
+        },
     },
+    SSL: { protocol: { value: 'TLSv1.2', hide: true } },
 };
 export const defaultNode = {
+    Eureka: {
+        maxRetries: { value: 30, hide: true },
+        requestRetryDelay: { value: 1000, hide: true },
+        registryFetchInterval: { value: 5, hide: true },
+    },
     'API Info shorter': {
-        gatewayUrl: '${routes.gatewayUrl}',
+        gatewayUrl: { value: '${routes.gatewayUrl}' },
     },
     Instance: {
-        app: '${serviceId}',
-        vipAddress: '${serviceId}',
-        homePageUrl: '${homePageRelativeUrl}',
-        secureVipAddress: '${serviceId}',
+        app: { value: '${serviceId}', hide: true },
+        vipAddress: { value: '${serviceId}', hide: true },
+        homePageUrl: { value: '${homePageRelativeUrl}' },
+        secureVipAddress: { value: '${serviceId}', hide: true },
     },
     Metadata: {
-        'apiml.routes.api_v1.gatewayUrl': '${routes.gatewayUrl}',
-        'apiml.routes.api_v1.serviceUrl': '${routes.serviceUrl}',
-        'apiml.apiInfo.0.gatewayUrl': '${routes.gatewayUrl}',
+        'apiml.routes.api_v1.gatewayUrl': { value: '${routes.gatewayUrl}', hide: true },
+        'apiml.routes.api_v1.serviceUrl': { value: '${routes.serviceUrl}', hide: true },
+        'apiml.apiInfo.0.gatewayUrl': { value: '${routes.gatewayUrl}', hide: true },
     },
 };
 export const defaultMicronaut = {
     Micronaut: {
-        name: '${apiml.service.serviceId}',
+        name: { value: '${apiml.service.serviceId}' },
     },
     'Micronaut ports': {
-        port: '${apiml.service.port}',
-        'context-path': '/${apiml.service.serviceId}',
+        port: { value: '${apiml.service.port}' },
+        'context-path': { value: '/${apiml.service.serviceId}', hide: true },
     },
     'Micronaut SSL key-store': {
-        password: '${apiml.service.ssl[0].keyPassword}', // NOSONAR
-        type: '${apiml.service.ssl[0].keyStoreType}',
-        path: 'file:${apiml.service.ssl[0].keyStore}',
+        password: { value: '${apiml.service.ssl[0].keyPassword}', hide: true },
+        type: { value: '${apiml.service.ssl[0].keyStoreType}', hide: true },
+        path: { value: 'file:${apiml.service.ssl[0].keyStore}', hide: true },
     },
     'Micronaut SSL key': {
-        alias: '${apiml.service.ssl[0].keyAlias}',
-        password: '${apiml.service.ssl[0].keyPassword}', // NOSONAR
+        alias: { value: '${apiml.service.ssl[0].keyAlias}', hide: true },
+        password: { value: '${apiml.service.ssl[0].keyPassword}', hide: true },
     },
     'Micronaut SSL trust-store': {
-        password: '${apiml.service.ssl[0].trustStorePassword}', // NOSONAR
-        path: 'file:${apiml.service.ssl[0].trustStore}',
-        type: '${apiml.service.ssl[0].trustStoreType}',
+        password: { value: '${apiml.service.ssl[0].trustStorePassword}', hide: true },
+        path: { value: 'file:${apiml.service.ssl[0].trustStore}', hide: true },
+        type: { value: '${apiml.service.ssl[0].trustStoreType}', hide: true },
     },
     'Micronaut config': {
-        port: '${apiml.service.port}',
-        ciphers: '${apiml.service.ssl[0].ciphers}',
-        protocol: '${apiml.service.ssl[0].protocol}',
+        port: { value: '${apiml.service.port}', hide: true },
+        ciphers: { value: '${apiml.service.ssl[0].ciphers}', hide: true },
+        protocol: { value: '${apiml.service.ssl[0].protocol}', hide: true },
     },
     'Base URL': {
-        baseUrl: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}',
+        baseUrl: { value: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}' },
     },
     'Scheme info': {
-        contextPath: '/${apiml.service.serviceId}',
+        contextPath: { value: '/${apiml.service.serviceId}' },
     },
     URL: {
-        homePageRelativeUrl: '${apiml.service.contextPath}',
-        statusPageRelativeUrl: '${apiml.service.contextPath}',
-        healthCheckRelativeUrl: '${apiml.service.contextPath}',
+        homePageRelativeUrl: { value: '${apiml.service.contextPath}' },
+        statusPageRelativeUrl: { value: '${apiml.service.contextPath}' },
+        healthCheckRelativeUrl: { value: '${apiml.service.contextPath}' },
     },
     'API Info for Micronaut': {
-        gatewayUrl: '${apiml.service.routes.gatewayUrl}',
+        gatewayUrl: { value: '${apiml.service.routes.gatewayUrl}' },
     },
+    'SSL detailed': { protocol: { value: 'TLSv1.2', hide: true } },
 };

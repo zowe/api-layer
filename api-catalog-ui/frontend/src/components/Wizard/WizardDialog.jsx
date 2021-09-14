@@ -17,6 +17,7 @@ export default class WizardDialog extends Component {
     constructor(props) {
         super(props);
         this.nextSave = this.nextSave.bind(this);
+        this.renderDoneButtonText = this.renderDoneButtonText.bind(this);
     }
 
     closeWizard = () => {
@@ -47,7 +48,7 @@ export default class WizardDialog extends Component {
             });
             return sufficient;
         };
-        if (enablerName !== 'Static Onboarding') {
+        if (enablerName !== 'Static Onboarding' || !this.props.userCanAutoOnboard) {
             this.closeWizard();
         } else if (presenceIsSufficient(navsObj)) {
             sendYAML(YAML.stringify(yamlObject), serviceId);
@@ -75,6 +76,13 @@ export default class WizardDialog extends Component {
         }
     };
 
+    renderDoneButtonText() {
+        if (this.props.enablerName === 'Static Onboarding' && this.props.userCanAutoOnboard) {
+            return 'Save';
+        }
+        return 'Done';
+    }
+
     render() {
         const { wizardIsOpen, enablerName, selectedCategory, navsObj } = this.props;
         const size = selectedCategory === Object.keys(navsObj).length ? 'large' : 'medium';
@@ -95,7 +103,7 @@ export default class WizardDialog extends Component {
                                 Cancel
                             </Button>
                             <Button size="medium" onClick={this.nextSave} disabled={disable}>
-                                Done
+                                {this.renderDoneButtonText()}
                             </Button>
                         </DialogActions>
                     </DialogFooter>

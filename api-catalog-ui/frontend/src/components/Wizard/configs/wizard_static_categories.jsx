@@ -1,3 +1,5 @@
+import { wizRegex } from './wizard_regex_restrictions';
+
 // eslint-disable-next-line import/prefer-default-export
 export const staticSpecificCategories = [
     {
@@ -16,23 +18,36 @@ export const staticSpecificCategories = [
         content: {
             gatewayUrl: {
                 value: '',
-                question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
+                question: 'Expose the Service API on Gateway under context path:',
+                tooltip: 'Format: /api/vX, Example: /api/v1',
+                regexRestriction: [wizRegex.gatewayUrl],
             },
             serviceRelativeUrl: {
                 value: '',
-                question: 'A portion of the service instance URL path which replaces the gatewayUrl part:',
+                question: 'Service API common context path:',
             },
         },
+        help:
+            'For service: <service>/allOfMyEndpointsAreHere/** exposed on Gateway under <gateway>/<serviceid>/api/v1/**\nFill in:\ngatewayUrl: /api/v1\nserviceUrl: /allOfMyEndpointsAreHere',
         multiple: true,
     },
     {
         text: 'Catalog info',
         content: {
+            type: {
+                value: 'Custom',
+                question: 'Choose existing catalog tile or create a new one:',
+                options: ['Custom'],
+                hidden: true,
+            },
             catalogUiTileId: {
                 value: '',
                 question: 'The id of the catalog tile:',
+                regexRestriction: [wizRegex.noWhiteSpaces],
+                dependencies: { type: 'Custom' },
             },
         },
+        interference: 'staticCatalog',
     },
     {
         text: 'Catalog UI Tiles',

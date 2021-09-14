@@ -1,3 +1,5 @@
+import { wizRegex } from './wizard_regex_restrictions';
+
 // eslint-disable-next-line import/prefer-default-export
 export const baseCategories = [
     {
@@ -5,7 +7,7 @@ export const baseCategories = [
         content: {
             serviceId: {
                 value: '',
-                question: 'A unique identifier for the API:',
+                question: 'A unique identifier for the API (service ID):',
                 maxLength: 40,
                 lowercase: true,
             },
@@ -30,6 +32,7 @@ export const baseCategories = [
             baseUrl: {
                 value: '',
                 question: 'The base URL of the service (the consistent part of the web address):',
+                validUrl: true,
             },
         },
     },
@@ -70,6 +73,7 @@ export const baseCategories = [
                 value: '',
                 question: 'The service IP address:',
                 optional: true,
+                regexRestriction: [wizRegex.version],
             },
         },
     },
@@ -80,14 +84,19 @@ export const baseCategories = [
                 value: '',
                 question: 'The relative path to the home page of the service:',
                 optional: true,
+                regexRestriction: [wizRegex.validRelativeUrl],
             },
             statusPageRelativeUrl: {
                 value: '',
                 question: 'The relative path to the status page of the service:',
+                optional: true,
+                regexRestriction: [wizRegex.validRelativeUrl],
             },
             healthCheckRelativeUrl: {
                 value: '',
                 question: 'The relative path to the health check endpoint of the service:',
+                optional: true,
+                regexRestriction: [wizRegex.validRelativeUrl],
             },
         },
     },
@@ -97,6 +106,7 @@ export const baseCategories = [
             discoveryServiceUrls: {
                 value: '',
                 question: 'Discovery Service URL:',
+                validUrl: true,
             },
         },
         multiple: false,
@@ -107,28 +117,46 @@ export const baseCategories = [
         content: {
             gatewayUrl: {
                 value: '',
-                question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
+                question: 'Expose the Service API on Gateway under context path:',
+                tooltip: 'Format: /api/vX, Example: /api/v1',
+                regexRestriction: [wizRegex.gatewayUrl],
             },
             serviceUrl: {
                 value: '',
-                question: 'A portion of the service instance URL path which replaces the gatewayUrl part:',
+                question: 'Service API common context path:',
             },
         },
+        help:
+            'For service: <service>/allOfMyEndpointsAreHere/** exposed on Gateway under <gateway>/<serviceid>/api/v1/**\nFill in:\ngatewayUrl: /api/v1\nserviceUrl: /allOfMyEndpointsAreHere',
         multiple: true,
     },
+
     {
         text: 'Authentication',
         content: {
             scheme: {
                 value: 'bypass',
                 question: 'Authentication:',
-                options: ['bypass', 'zoweJwt', 'httpBasicPassTicket', 'zosmf', 'x509', 'headers'],
+                options: ['bypass', 'zoweJwt', 'httpBasicPassTicket', 'zosmf', 'x509'],
             },
             applid: {
                 value: '',
                 question: 'A service APPLID (valid only for the httpBasicPassTicket authentication scheme ):',
                 dependencies: { scheme: 'httpBasicPassTicket' },
             },
+            headers: {
+                value: 'X-Certificate-Public',
+                question: 'For the x509 scheme use the headers parameter to select which values to send to a service',
+                dependencies: { scheme: 'x509' },
+                options: ['X-Certificate-Public', 'X-Certificate-DistinguishedName', 'X-Certificate-CommonName'],
+            },
+        },
+        help:
+            'The following service authentication schemes are supported by the API Gateway: bypass, zoweJwt, httpBasicPassTicket, zosmf, x509. ',
+        helpUrl: {
+            title: 'More information about the authentication parameters',
+            link:
+                'https://docs.zowe.org/stable/extend/extend-apiml/onboard-plain-java-enabler/#api-catalog-information',
         },
     },
     {
@@ -141,10 +169,14 @@ export const baseCategories = [
             version: {
                 value: '',
                 question: 'API version:',
+                tooltip: 'API version',
+                regexRestriction: [wizRegex.version],
             },
             gatewayUrl: {
                 value: '',
                 question: 'The base path at the API Gateway where the API is available:',
+                tooltip: 'Format: api/vX, Example: api/v1',
+                regexRestriction: [wizRegex.gatewayUrl],
             },
             swaggerUrl: {
                 value: '',
@@ -161,6 +193,12 @@ export const baseCategories = [
     {
         text: 'Catalog',
         content: {
+            type: {
+                value: 'Custom',
+                question: 'Choose existing catalog tile or create a new one:',
+                options: ['Custom'],
+                hidden: true,
+            },
             id: {
                 value: '',
                 question: 'The unique identifier for the product family of API services:',
@@ -178,13 +216,14 @@ export const baseCategories = [
                 question: 'The semantic version of this API Catalog tile (increase when adding changes):',
             },
         },
+        interference: 'catalog',
     },
     {
         text: 'SSL',
         content: {
             verifySslCertificatesOfServices: {
-                value: '',
-                question: 'Set this parameter to true in production environments:',
+                value: false,
+                question: 'Verify SSL certificates of services:',
             },
             protocol: {
                 value: 'TLSv1.2',
@@ -197,6 +236,7 @@ export const baseCategories = [
             keyPassword: {
                 value: '',
                 question: 'The password associated with the private key:',
+                type: 'password',
             },
             keyStore: {
                 value: '',
@@ -205,10 +245,12 @@ export const baseCategories = [
             keyStorePassword: {
                 value: '',
                 question: 'The password used to unlock the keystore:',
+                type: 'password',
             },
             keyStoreType: {
-                value: '',
+                value: 'PKCS12',
                 question: 'Type of the keystore:',
+                options: ['PKCS12', 'JKS', 'JCERACFKS'],
             },
             trustStore: {
                 value: '',
@@ -217,10 +259,12 @@ export const baseCategories = [
             trustStorePassword: {
                 value: '',
                 question: 'The password used to unlock the truststore:',
+                type: 'password',
             },
             trustStoreType: {
                 value: 'PKCS12',
                 question: 'Truststore type:',
+                options: ['PKCS12', 'JKS', 'JCERACFKS'],
             },
         },
     },
