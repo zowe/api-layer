@@ -2,9 +2,9 @@ name: Containers - Build, Test
 
 on:
     push:
-        branches: [ master ]
+        branches: [ master, v2.x.x ]
     pull_request:
-        branches: [ master ]
+        branches: [ master, v2.x.x ]
 
 jobs:
     PublishJibContainers:
