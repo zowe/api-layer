@@ -46,9 +46,12 @@ export function wizardToggleDisplay() {
  * @param enablerName the type/name of the onboarding method
  */
 export function selectEnabler(enablerName) {
-    return {
-        type: SELECT_ENABLER,
-        payload: { enablerName },
+    return (dispatch, getState) => {
+        const { tiles } = getState().tilesReducer;
+        dispatch({
+            type: SELECT_ENABLER,
+            payload: { enablerName, tiles: tiles.map(tile => tile.title) },
+        });
     };
 }
 
@@ -135,6 +138,52 @@ export function handleArrayIndentation(arrIndent, content) {
 }
 
 /**
+ * Checks if the current key/value pair should be placed in the yaml
+ * @param valueObj object containing the value and the properties of the field
+ * @returns {boolean} should be placed
+ */
+const shouldBePlacedInYAML = valueObj => {
+    if (valueObj.show !== false && valueObj.hidden !== true) {
+        return valueObj.value !== '' || valueObj.optional !== true;
+    }
+    return false;
+};
+
+/**
+ * Updates the YAML with a category that has a multiple property set to true
+ * @param category category object
+ * @returns {*} an array containing the sets of data ready to be presented as YAML
+ */
+function handleCategoryMultiple(category) {
+    let content = [];
+    let index = 0;
+    if (category.noKey) {
+        category.content.forEach(o => {
+            Object.keys(o).forEach(key => {
+                const valueObj = category.content[index][key];
+                if (shouldBePlacedInYAML(valueObj)) {
+                    content[index] = category.content[index][key].value;
+                }
+            });
+            index += 1;
+        });
+    } else {
+        category.content.forEach(o => {
+            content[index] = {};
+            Object.keys(o).forEach(key => {
+                const valueObj = category.content[index][key];
+                if (shouldBePlacedInYAML(valueObj)) {
+                    content[index][key] = category.content[index][key].value;
+                }
+            });
+            content = handleArrayIndentation(category.arrIndent, content);
+            index += 1;
+        });
+    }
+    return content;
+}
+
+/**
  * Receives a single category and translates it to an object the yaml library can correctly convert to yaml
  * @param category a category
  * @param parent parent object which the yaml-ready category should be added to
@@ -144,33 +193,18 @@ export function handleArrayIndentation(arrIndent, content) {
 export const addCategoryToYamlObject = (category, parent, inputData) => {
     const result = { ...parent };
     let content = {};
+
     // load user's answer into content object
     if (!category.multiple) {
-        Object.keys(category.content[0]).forEach(key => {
-            if (category.content[0][key].show !== false) {
-                content[key] = category.content[0][key].value;
+        const contentElement = category.content[0];
+        Object.keys(contentElement).forEach(key => {
+            const valueObj = contentElement[key];
+            if (shouldBePlacedInYAML(valueObj)) {
+                content[key] = contentElement[key].value;
             }
         });
     } else {
-        content = [];
-        let index = 0;
-        if (category.noKey) {
-            category.content.forEach(o => {
-                Object.keys(o).forEach(key => {
-                    content[index] = category.content[index][key].value;
-                });
-                index += 1;
-            });
-        } else {
-            category.content.forEach(o => {
-                content[index] = {};
-                Object.keys(o).forEach(key => {
-                    content[index][key] = category.content[index][key].value;
-                });
-                content = handleArrayIndentation(category.arrIndent, content);
-                index += 1;
-            });
-        }
+        content = handleCategoryMultiple(category);
     }
     // handle indentation, if any
     if (!category.indentation) {

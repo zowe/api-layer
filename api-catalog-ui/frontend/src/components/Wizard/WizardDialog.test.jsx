@@ -91,7 +91,7 @@ describe('>>> WizardDialog tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 inputData={dummyData}
-                selectedCategory={dummyData.length-1}
+                selectedCategory={dummyData.length - 1}
                 navsObj={{ 'Basic info': {}, 'IP info': {} }}
                 validateInput={validateInput}
                 nextWizardCategory={nextWizardCategory}
@@ -187,6 +187,7 @@ describe('>>> WizardDialog tests', () => {
                 selectedCategory={1}
                 navsObj={{ Basics: { 'Basic info': [[]] } }}
                 sendYAML={sendYAML}
+                userCanAutoOnboard={true}
             />
         );
         const instance = wrapper.instance();
@@ -208,6 +209,7 @@ describe('>>> WizardDialog tests', () => {
                 selectedCategory={1}
                 navsObj={{ Basics: { 'Basic info': [['key']], silent: true } }}
                 notifyError={notifyError}
+                userCanAutoOnboard={true}
             />
         );
         const instance = wrapper.instance();

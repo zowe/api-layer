@@ -1,24 +1,6 @@
 // eslint-disable-next-line import/prefer-default-export
 export const nodeSpecificCategories = [
     {
-        text: 'API Info for Node',
-        content: {
-            apiId: {
-                value: '',
-                question: 'A unique identifier to the API in the API ML:',
-            },
-            gatewayUrl: {
-                value: '',
-                question: 'The base path at the API Gateway where the API is available:',
-            },
-            swaggerUrl: {
-                value: '',
-                question: 'The Http or Https address where the Swagger JSON document is available:',
-                optional: true,
-            },
-        },
-    },
-    {
         text: 'SSL for Node',
         content: {
             certificate: {
@@ -36,6 +18,7 @@ export const nodeSpecificCategories = [
             keyPassword: {
                 value: '',
                 question: 'The password associated with the private key:',
+                type: 'password',
             },
         },
     },
@@ -65,14 +48,17 @@ export const nodeSpecificCategories = [
             maxRetries: {
                 value: '',
                 question: 'The maximum number of retries:',
+                hide: true,
             },
             requestRetryDelay: {
                 value: '',
                 question: 'The request retry delay:',
+                hide: true,
             },
             registryFetchInterval: {
                 value: '',
                 question: 'The interval for registry interval:',
+                hide: true,
             },
         },
     },
