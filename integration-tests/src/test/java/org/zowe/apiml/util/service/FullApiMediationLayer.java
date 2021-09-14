@@ -50,7 +50,7 @@ public class FullApiMediationLayer {
         prepareMockZosmf();
         prepareDiscovery();
         if (!attlsEnabled) {
-            prepareNodeJsSampleApp();
+//            prepareNodeJsSampleApp();
         }
     }
 
@@ -115,7 +115,7 @@ public class FullApiMediationLayer {
             discoverableClientService.start();
 
             if (!attlsEnabled) {
-                nodeJsSampleApp = nodeJsBuilder.start();
+//                nodeJsSampleApp = nodeJsBuilder.start();
             }
             cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
         } catch (IOException ex) {
@@ -134,7 +134,7 @@ public class FullApiMediationLayer {
 
             cachingService.stop();
             if (!attlsEnabled && !runsOffPlatform()) {
-                nodeJsSampleApp.destroy();
+//                nodeJsSampleApp.destroy();
             }
         } catch (Exception e) {
             e.printStackTrace();
