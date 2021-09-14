@@ -117,17 +117,20 @@ export const baseCategories = [
         content: {
             gatewayUrl: {
                 value: '',
-                question: 'The portion of the gateway URL which is replaced by the serviceUrl path part:',
-                tooltip: 'Format: api/vX, Example: api/v1',
+                question: 'Expose the Service API on Gateway under context path:',
+                tooltip: 'Format: /api/vX, Example: /api/v1',
                 regexRestriction: [wizRegex.gatewayUrl],
             },
             serviceUrl: {
                 value: '',
-                question: 'A portion of the service instance URL path which replaces the gatewayUrl part:',
+                question: 'Service API common context path:',
             },
         },
+        help:
+            'For service: <service>/allOfMyEndpointsAreHere/** exposed on Gateway under <gateway>/<serviceid>/api/v1/**\nFill in:\ngatewayUrl: /api/v1\nserviceUrl: /allOfMyEndpointsAreHere',
         multiple: true,
     },
+
     {
         text: 'Authentication',
         content: {

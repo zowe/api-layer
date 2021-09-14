@@ -17,9 +17,6 @@ export const defaultSpring = {
         statusPageRelativeUrl: { value: '${apiml.service.contextPath}/' },
         healthCheckRelativeUrl: { value: '${apiml.service.contextPath}/' },
     },
-    Routes: {
-        serviceUrl: { value: '${apiml.service.contextPath}', hide: true },
-    },
     'API Info': {
         swaggerUrl: {
             value:
