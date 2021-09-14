@@ -10,7 +10,6 @@ jobs:
     BuildAndTest:
         runs-on: ${{ matrix.os }}
         strategy:
-            fail-fast: false
             matrix:
                 os: [ macos-latest, ubuntu-latest, windows-latest ]
         timeout-minutes: 13
@@ -44,8 +43,6 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    java -version
-                    javac -version
                     ./gradlew build runStartUpCheck --scan --info -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
