@@ -63,7 +63,9 @@ public class RunningService {
         Map<String, String> envVariables = builder1.environment();
         envVariables.putAll(env);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
+        System.out.println(System.getProperty("os.name"));
         if (System.getProperty("os.name").contains("Windows")) {
+            System.out.println("hello");
             builder1.directory(new File("..\\"));
         } else {
             builder1.directory(new File("../"));
