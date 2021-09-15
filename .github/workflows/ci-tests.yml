@@ -42,10 +42,10 @@ jobs:
                     restore-keys: |
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
-                if: matrix.os == 'windows-latest' ||  matrix.os == 'macos-latest'
-                shell: bash
+#                if: matrix.os == 'windows-latest' ||  matrix.os == 'macos-latest'
+#                shell: bash
                 run: >
-                    ./gradlew build runStartUpCheck --scan --info -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    ./gradlew build runStartUpCheck --info -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
