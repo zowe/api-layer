@@ -108,10 +108,10 @@ public class FullApiMediationLayer {
     public void start() {
         try {
             if (System.getProperty("os.name").contains("Mac") || System.getProperty("os.name").contains("Windows")) {
-                discoveryService.startWithScript("sh discovery-package/src/main/resources/bin/start.sh", env);
-                gatewayService.startWithScript("sh gateway-package/src/main/resources/bin/start.sh", env);
-                cachingService.startWithScript("sh caching-service-package/src/main/resources/bin/start.sh", env);
-                apiCatalogService.startWithScript("sh api-catalog-package/src/main/resources/bin/start.sh", env);
+                discoveryService.startWithScript("bash discovery-package/src/main/resources/bin/start.sh", env);
+                gatewayService.startWithScript("bash gateway-package/src/main/resources/bin/start.sh", env);
+                cachingService.startWithScript("bash caching-service-package/src/main/resources/bin/start.sh", env);
+                apiCatalogService.startWithScript("bash api-catalog-package/src/main/resources/bin/start.sh", env);
             } else {
                 discoveryService.startWithScript("discovery-package/src/main/resources/bin/start.sh", env);
                 gatewayService.startWithScript("gateway-package/src/main/resources/bin/start.sh", env);
