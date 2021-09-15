@@ -42,8 +42,9 @@ jobs:
                     restore-keys: |
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
-#                if: matrix.os == 'windows-latest' ||  matrix.os == 'macos-latest'
-#                shell: bash
+                if: matrix.os == 'windows-latest' ||  matrix.os == 'macos-latest'
+            -   uses: Vampire/setup-wsl@v1
+                shell: bash
                 run: >
                     ./gradlew build runStartUpCheck --info -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
