@@ -52,7 +52,12 @@ public class RunningService {
             .forEach((key, value) -> shellCommand.add(key + '=' + value));
 
         ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
-        builder1.directory(new File("../"));
+        if (System.getProperty("os.name").contains("Windows")) {
+            System.out.println("hello");
+            builder1.directory(new File("..\\"));
+        } else {
+            builder1.directory(new File("../"));
+        }
         process = builder1.inheritIO().start();
     }
 
