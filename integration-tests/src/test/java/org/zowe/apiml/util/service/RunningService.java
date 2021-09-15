@@ -63,8 +63,11 @@ public class RunningService {
         Map<String, String> envVariables = builder1.environment();
         envVariables.putAll(env);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
-
-        builder1.directory(new File("../"));
+        if (System.getProperty("os.name").contains("Windows")) {
+            builder1.directory(new File("..\\"));
+        } else {
+            builder1.directory(new File("../"));
+        }
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         executorService.submit(() -> executeCommand(builder1));
     }
