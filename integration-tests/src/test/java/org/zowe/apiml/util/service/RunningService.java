@@ -64,6 +64,7 @@ public class RunningService {
         envVariables.putAll(env);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
         System.out.println(System.getProperty("os.name"));
+        System.out.println(System.getProperty("user.dir"));
         if (System.getProperty("os.name").contains("Windows")) {
             System.out.println("hello");
             builder1.directory(new File("..\\"));
