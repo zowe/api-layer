@@ -107,17 +107,24 @@ public class FullApiMediationLayer {
 
     public void start() {
         try {
-            discoveryService.startWithScript("discovery-package/src/main/resources/bin/start.sh", env);
-            gatewayService.startWithScript("gateway-package/src/main/resources/bin/start.sh", env);
+            if (System.getProperty("os.name").contains("Mac") || System.getProperty("os.name").contains("Windows")) {
+                discoveryService.startWithScript("bash discovery-package/src/main/resources/bin/start.sh", env);
+                gatewayService.startWithScript("bash gateway-package/src/main/resources/bin/start.sh", env);
+                cachingService.startWithScript("bash caching-service-package/src/main/resources/bin/start.sh", env);
+                apiCatalogService.startWithScript("bash api-catalog-package/src/main/resources/bin/start.sh", env);
+            } else {
+                discoveryService.startWithScript("discovery-package/src/main/resources/bin/start.sh", env);
+                gatewayService.startWithScript("gateway-package/src/main/resources/bin/start.sh", env);
+                apiCatalogService.startWithScript("api-catalog-package/src/main/resources/bin/start.sh", env);
+                cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
+            }
             mockZosmfService.start();
 
-            apiCatalogService.startWithScript("api-catalog-package/src/main/resources/bin/start.sh", env);
             discoverableClientService.start();
 
             if (!attlsEnabled) {
                 nodeJsSampleApp = nodeJsBuilder.start();
             }
-            cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
