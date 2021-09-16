@@ -54,7 +54,7 @@ public class RunningService {
         ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
         if (System.getProperty("os.name").contains("Windows")) {
             System.out.println("hello");
-            builder1.directory(new File("..\\"));
+            builder1.directory(new File(".."));
         } else {
             builder1.directory(new File("../"));
         }
@@ -72,7 +72,7 @@ public class RunningService {
         System.out.println(System.getProperty("user.dir"));
         if (System.getProperty("os.name").contains("Windows")) {
             System.out.println("hello");
-            builder1.directory(new File("..\\"));
+            builder1.directory(new File(".."));
         } else {
             builder1.directory(new File("../"));
         }
