@@ -2,7 +2,7 @@
 name: Create Image Only (No Release)
 
 on:
-    workflow_dispatch:
+    push:
 
 env:
     IMAGE_BASE_DIR: ./containers
