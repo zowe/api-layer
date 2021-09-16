@@ -1,8 +1,7 @@
 # This workflow will release project with Gradle
 name: Create Image Only (No Release)
 
-on:
-    workflow_dispatch:
+on: workflow_dispatch
 
 env:
     IMAGE_BASE_DIR: ./containers
