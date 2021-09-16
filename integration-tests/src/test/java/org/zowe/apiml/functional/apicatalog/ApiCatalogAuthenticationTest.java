@@ -22,8 +22,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.util.List;
