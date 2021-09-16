@@ -59,6 +59,8 @@ jobs:
                   rm -f ~/.gradle/caches/modules-2/gc.properties
 
     build-containers:
+        needs:
+            - build
         strategy:
             matrix:
                 arch: [ amd64, s390x ]
