@@ -136,7 +136,7 @@ zuul:
     host:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
-        maxTotalConnetions: ${server.maxTotalConnections}
+        maxTotalConnections: ${server.maxTotalConnections}
         maxPerRouteConnections: ${server.maxConnectionsPerRoute}
     forceOriginalQueryStringEncoding: true
     retryable: true
