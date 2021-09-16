@@ -1,5 +1,5 @@
 # This workflow will release project with Gradle
-name: Create Image only (No Release)
+name: Create Image Only (No Release)
 
 on:
     workflow_dispatch:
@@ -50,38 +50,6 @@ jobs:
                       ${{ runner.OS }}-
             - name: Build with Gradle
               run: ./gradlew build
-
-            # - name: Clean git
-            #   run: git reset --hard HEAD
-
-            # - name: Set email
-            #   run: git config user.email "zowe-robot@users.noreply.github.com"
-
-            # - name: Set name
-            #   run: git config user.name "Zowe Robot"
-
-            # - name: Release to NPM automatic
-            #   run: |
-            #       cd onboarding-enabler-nodejs
-            #       echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-            #       echo "registry=$DIST_REGISTRY" >> ~/.npmrc
-            #       npm version ${{ github.event.inputs.release_version }}
-            #       npm publish --access public
-            #       git add package.json
-            #       git commit -m "Update version"
-            #       git push
-            #       cd ..
-            #   env:
-            #       ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-            #       ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-            #       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-            #       DIST_REGISTRY: https://registry.npmjs.org/
-
-            # - name: Release with Gradle automatic
-            #   run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.new_version }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
-            #   env:
-            #       ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-            #       ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             - name: Cleanup Gradle Cache
                 # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
@@ -137,7 +105,7 @@ jobs:
                 with:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
-                    release: true
+                    release: false
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -192,7 +160,7 @@ jobs:
                 with:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
-                    release: true
+                    release: false
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
