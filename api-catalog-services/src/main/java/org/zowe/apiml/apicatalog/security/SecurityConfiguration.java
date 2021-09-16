@@ -163,7 +163,7 @@ public class SecurityConfiguration {
                 .authorizeRequests()
                 .antMatchers("/static-api/**").authenticated()
                 .antMatchers("/containers/**").authenticated()
-                .antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated()
+                .antMatchers(APIDOC_ROUTES).authenticated()
                 .antMatchers("/application/health", "/application/info").permitAll()
                 .antMatchers("/application/**").authenticated();
             if (isAttlsEnabled) {
