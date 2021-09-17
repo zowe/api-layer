@@ -67,7 +67,7 @@ jobs:
         strategy:
             matrix:
                 arch: [ amd64, s390x ]
-                service: [ '${{ github.event.issue.id }}, ${{github.event.issue.id}}' ]
+                service: [ discovery-service, '' , gateway-service, '' ]
                 os: [ ubuntu, ubi ]
                 # if: ${{ github.event.issue.id > 0 }}
                 # exclude:
@@ -95,16 +95,22 @@ jobs:
 
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v2
+            
+            -   name: checkout
+                if: matrix.service != ''
+                uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
             -   name: Set up JDK 1.8
+                if: matrix.service != ''
                 uses: actions/setup-java@v1
                 with:
                     java-version: 1.8
             -   name: Grant execute permission for gradlew
+                if: matrix.service != ''
                 run: chmod +x gradlew
             -   name: Cache Gradle packages
+                if: matrix.service != ''
                 uses: actions/cache@v2
                 with:
                     path: |
@@ -114,6 +120,7 @@ jobs:
                     restore-keys: |
                         ${{ runner.os }}-gradle001-
             -   name: Cache Node.js modules
+                if: matrix.service != ''
                 uses: actions/cache@v2
                 with:
                     path: |
@@ -122,9 +129,13 @@ jobs:
                     restore-keys: |
                         ${{ runner.OS }}-node001-
 
-            -   uses: zowe-actions/shared-actions/envvars-global@main
+            -   name: Setting Global ENV variable
+                if: matrix.service != ''
+                uses: zowe-actions/shared-actions/envvars-global@main
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@main
+            -   name: Preparing Docker
+                if: matrix.service != ''
+                uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
@@ -139,14 +150,15 @@ jobs:
                     redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
 
             -   name: Build amd64
-                if: matrix.arch == 'amd64'
+                if: matrix.arch == 'amd64' && matrix.service != ''
                 uses: zowe-actions/shared-actions/docker-build-local@main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
                 timeout-minutes: 5
 
+            
             -   name: Build s390x
-                if: matrix.arch == 's390x'
+                if: matrix.arch == 's390x' &&  matrix.service != ''
                 uses: zowe-actions/shared-actions/docker-build-zlinux@main
                 with:
                     zlinux-host: ${{ secrets.ZLINUX_HOST }}
@@ -169,17 +181,24 @@ jobs:
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v2
+            -   name: checkout
+                if: matrix.service != ''
+                uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
             -   name: Set up JDK 1.8
+                if: matrix.service != ''
                 uses: actions/setup-java@v1
                 with:
                     java-version: 1.8
 
-            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+            -   name: Preparing Workflow
+                if: matrix.service != ''
+                uses: zowe-actions/shared-actions/prepare-workflow@main
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@main
+            -   name: Prepare Docker
+                if: matrix.service != ''
+                uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
@@ -188,7 +207,9 @@ jobs:
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
 
-            -   uses: zowe-actions/shared-actions/docker-manifest@main
+            -   name: Docker Manifest
+                if: matrix.service != ''
+                uses: zowe-actions/shared-actions/docker-manifest@main
                 with:
                     linux-distro: ${{ matrix.os }}
                     cpu-arch-list: "amd64 s390x"
