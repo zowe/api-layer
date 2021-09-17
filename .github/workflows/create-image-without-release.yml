@@ -11,70 +11,82 @@ env:
     CACHING_SERVICE: true
 
 jobs:
-    build:
+    # build:
 
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
+    #     runs-on: ubuntu-latest
+    #     timeout-minutes: 20
 
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.head_ref }}
-                  token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
-            - name: Set up JDK 1.8
-              uses: actions/setup-java@v1
-              with:
-                  java-version: 1.8
-            - name: Set up Node
-              uses: actions/setup-node@v2
-              with:
-                  node-version: '14'
-            - run: npm install -g npm@7.20.5
-            - name: Grant execute permission for gradlew
-              run: chmod +x gradlew
-            - name: Cache Gradle packages
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle-
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
-            - name: Build with Gradle
-              run: ./gradlew build
+    #     steps:
+    #         - uses: actions/checkout@v2
+    #           with:
+    #               ref: ${{ github.head_ref }}
+    #               token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+    #         - name: Set up JDK 1.8
+    #           uses: actions/setup-java@v1
+    #           with:
+    #               java-version: 1.8
+    #         - name: Set up Node
+    #           uses: actions/setup-node@v2
+    #           with:
+    #               node-version: '14'
+    #         - run: npm install -g npm@7.20.5
+    #         - name: Grant execute permission for gradlew
+    #           run: chmod +x gradlew
+    #         - name: Cache Gradle packages
+    #           uses: actions/cache@v2
+    #           with:
+    #               path: |
+    #                   ~/.gradle/caches
+    #                   ~/.gradle/wrapper
+    #               key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+    #               restore-keys: |
+    #                   ${{ runner.os }}-gradle-
+    #         - name: Cache Node.js modules
+    #           uses: actions/cache@v2
+    #           with:
+    #               path: |
+    #                   ~/.npm
+    #                   **/node_modules
+    #               key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+    #               restore-keys: |
+    #                   ${{ runner.OS }}-node-
+    #                   ${{ runner.OS }}-
+    #         - name: Build with Gradle
+    #           run: ./gradlew build
 
-            - name: Cleanup Gradle Cache
-                # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
-                # Restoring these files from a GitHub Actions cache might cause problems for future builds.
-              run: |
-                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                  rm -f ~/.gradle/caches/modules-2/gc.properties
+    #         - name: Cleanup Gradle Cache
+    #             # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
+    #             # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+    #           run: |
+    #               rm -f ~/.gradle/caches/modules-2/modules-2.lock
+    #               rm -f ~/.gradle/caches/modules-2/gc.properties
 
     build-containers:
-        needs:
-            - build
+        # needs:
+        #     - build
         strategy:
             matrix:
                 arch: [ amd64, s390x ]
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 os: [ ubuntu, ubi ]
-                if: ${{ github.event.issue.number }}
+                if: ${{ github.event.issue.id > 0 }}
                 exclude:
                     -   arch: amd64
                         service: gateway-service
-                    -   arch: amd64
+                    -   arch: s390x
                         service: gateway-service
+                if: ${{ github.event.issue.id > 0 }}
+                exclude:
+                    -   arch: amd64
+                        service: discovery-service
+                    -   arch: s390x
+                        service: discovery-service
+                if: ${{ github.event.issue.id > 0 }}
+                exclude:
+                    -   arch: amd64
+                        service: api-catalog-services
+                    -   arch: s390x
+                        service: api-catalog-services 
                 include:
                     -   os: ubuntu
                         BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
