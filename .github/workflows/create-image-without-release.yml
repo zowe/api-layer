@@ -87,6 +87,7 @@ jobs:
                     -   arch: s390x
                         service: api-catalog-services
                 if: !env.CACHING_SERVICE == false
+                exclude:
                     -   arch: amd64
                         service: caching-service
                     -   arch: s390x
