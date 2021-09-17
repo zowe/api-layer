@@ -1,5 +1,5 @@
 # This workflow will release project with Gradle
-name: Relase new version (automated)
+name: Release new version (automated)
 
 on:
     schedule:
