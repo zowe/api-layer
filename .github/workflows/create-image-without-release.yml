@@ -69,17 +69,17 @@ jobs:
                 arch: [ amd64, s390x ]
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 if: ${{ env.GATEWAY_SERVCIE != true }}
-                    exclude:
-                        - service: gateway-service
+                exclude:
+                    - service: gateway-service
                 if: ${{ env.GATEWAY_SERVCIE != true }}
-                    exclude:
-                        - service: discovery-service
+                exclude:
+                    - service: discovery-service
                 if: ${{ env.GATEWAY_SERVCIE != true }}
-                    exclude:
-                        - service: api-catalog-services
+                exclude:
+                    - service: api-catalog-services
                 if: ${{ env.GATEWAY_SERVCIE != true }}
-                    exclude:
-                        - service: caching-service
+                exclude:
+                    - service: caching-service
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
