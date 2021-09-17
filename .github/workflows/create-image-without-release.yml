@@ -69,7 +69,7 @@ jobs:
             matrix:
                 arch: [ amd64, s390x ]
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
-                if: ${{ aa == aa }}
+                if: ${{ 2 == 2 }}
                 exclude:
                     -   arch: amd64
                         service: gateway-service
