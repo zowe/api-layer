@@ -67,26 +67,26 @@ jobs:
         strategy:
             matrix:
                 arch: [ amd64, s390x ]
-                service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
+                service: [ ${{ github.event.issue.id ]
                 os: [ ubuntu, ubi ]
-                if: ${{ github.event.issue.id > 0 }}
-                exclude:
-                    -   arch: amd64
-                        service: gateway-service
-                    -   arch: s390x
-                        service: gateway-service
-                if: ${{ github.event.issue.id > 0 }}
-                exclude:
-                    -   arch: amd64
-                        service: discovery-service
-                    -   arch: s390x
-                        service: discovery-service
-                if: ${{ github.event.issue.id > 0 }}
-                exclude:
-                    -   arch: amd64
-                        service: api-catalog-services
-                    -   arch: s390x
-                        service: api-catalog-services 
+                # if: ${{ github.event.issue.id > 0 }}
+                # exclude:
+                #     -   arch: amd64
+                #         service: gateway-service
+                #     -   arch: s390x
+                #         service: gateway-service
+                # if: ${{ github.event.issue.id > 0 }}
+                # exclude:
+                #     -   arch: amd64
+                #         service: discovery-service
+                #     -   arch: s390x
+                #         service: discovery-service
+                # if: ${{ github.event.issue.id > 0 }}
+                # exclude:
+                #     -   arch: amd64
+                #         service: api-catalog-services
+                #     -   arch: s390x
+                #         service: api-catalog-services 
                 include:
                     -   os: ubuntu
                         BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
