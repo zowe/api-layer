@@ -214,7 +214,7 @@ public class CachedProductFamilyService {
                     instanceInfo.getVIPAddress(),
                     instanceHomePage,
                     routes);
-            } catch (URLTransformationException|IllegalArgumentException e) {
+            } catch (URLTransformationException | IllegalArgumentException e) {
                 apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
             }
         }
