@@ -203,7 +203,7 @@ public class CachedProductFamilyService {
      * @return the transformed homepage url
      */
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
-        String instanceHomePage = instanceInfo.getHomePageUrl();
+        String instanceHomePage = instanceInfo.getHomePageUrl().trim();
 
         if (hasHomePage(instanceInfo)) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
@@ -214,7 +214,7 @@ public class CachedProductFamilyService {
                     instanceInfo.getVIPAddress(),
                     instanceHomePage,
                     routes);
-            } catch (URLTransformationException e) {
+            } catch (URLTransformationException|IllegalArgumentException e) {
                 apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
             }
         }
