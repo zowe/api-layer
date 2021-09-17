@@ -326,12 +326,18 @@ public class CachedProductFamilyService {
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
         String apiBasePath = getApiBasePath(instanceInfo);
-        Map<String, String> apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
-            Collectors.toMap(
-                apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : "v" + apiInfo.getMajorVersion(),
-                ApiInfo::getApiId
-            )
-        );
+        Map<String, String> apiId = new HashMap<>();
+        try {
+            apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
+                Collectors.toMap(
+                    apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : "v" + apiInfo.getMajorVersion(),
+                    ApiInfo::getApiId
+                )
+            );
+        } catch (Exception ex) {
+            log.info("createApiServiceFromInstance#incorrectVersions {}", ex.getMessage());
+        }
+
         return new APIService.Builder(instanceInfo.getAppName().toLowerCase())
             .title(instanceInfo.getMetadata().get(SERVICE_TITLE))
             .description(instanceInfo.getMetadata().get(SERVICE_DESCRIPTION))
