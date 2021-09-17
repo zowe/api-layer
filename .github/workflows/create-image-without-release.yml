@@ -70,19 +70,27 @@ jobs:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 if: env.GATEWAY_SERVCIE != true
                 exclude:
-                    - arch: [ amd64, s390x ]
+                    -   arch: amd64
                         service: gateway-service
+                    -   arch: s390x
+                        service: gateway-service    
                 if: env.GATEWAY_SERVCIE != true
                 exclude:
-                    - arch: [ amd64, s390x ]
+                    -   arch: amd64
+                        service: discovery-service
+                    -   arch: s390x
                         service: discovery-service
                 if: env.GATEWAY_SERVCIE != true
                 exclude:
-                    - arch: [ amd64, s390x ]
+                    -   arch: amd64
+                        service: api-catalog-services
+                    -   arch: s390x
                         service: api-catalog-services
                 if: env.GATEWAY_SERVCIE != true
                 exclude:
-                    - arch: [ amd64, s390x ]
+                    -   arch: amd64
+                        service: caching-service
+                    -   arch: s390x
                         service: caching-service
                 os: [ ubuntu, ubi ]
                 include:
