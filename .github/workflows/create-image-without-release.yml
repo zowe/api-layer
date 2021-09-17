@@ -7,11 +7,11 @@ on:
 
 env:
     IMAGE_BASE_DIR: ./containers
-    IMAGE_BASE_DIR: ./containers
-    GATEWAY_SERVICE: false
+    GATEWAY_SERVCIE: false
     DISCOVERY_SERVICE: false
     API_CATALOG_SERVICE: false
     CACHING_SERVICE: true
+
 jobs:
     build:
 
