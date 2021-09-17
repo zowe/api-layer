@@ -1,16 +1,17 @@
 # This workflow will release project with Gradle
 name: Create Image Only (No Release)
 
-on: push
+on:
+    push:
+    SELECTED
 
 env:
+    IMAGE_BASE_DIR: ./containers
     IMAGE_BASE_DIR: ./containers
     GATEWAY_SERVICE: false
     DISCOVERY_SERVICE: false
     API_CATALOG_SERVICE: false
     CACHING_SERVICE: true
-
-
 jobs:
     build:
 
@@ -69,31 +70,13 @@ jobs:
             matrix:
                 arch: [ amd64, s390x ]
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
-                if: env.GATEWAY_SERVICE == false
+                os: [ ubuntu, ubi ]
+                if: ${{ github.event.issue.number }}
                 exclude:
                     -   arch: amd64
                         service: gateway-service
-                    -   arch: s390x
+                    -   arch: amd64
                         service: gateway-service
-                # if: ${{ !env.DISCOVERY_SERVICE }}
-                # exclude:
-                #     -   arch: amd64
-                #         service: discovery-service
-                #     -   arch: s390x
-                #         service: discovery-service
-                # if: ${{ !env.API_CATALOG_SERVICE }}
-                # exclude:
-                #     -   arch: amd64
-                #         service: api-catalog-services
-                #     -   arch: s390x
-                #         service: api-catalog-services
-                # if: ${{ !env.CACHING_SERVICE }}
-                # exclude:
-                #     -   arch: amd64
-                #         service: caching-service
-                #     -   arch: s390x
-                #         service: caching-service
-                # os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
                         BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
