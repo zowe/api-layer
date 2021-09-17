@@ -11,15 +11,22 @@ package org.zowe.apiml.functional.apicatalog;
 
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
+import io.restassured.response.Validatable;
+import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.util.List;
@@ -37,11 +44,12 @@ class ApiCatalogAuthenticationTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
-    private static final String CATALOG_PREFIX = "/api/v1";
     private static final String CATALOG_SERVICE_ID = "apicatalog";
     private static final String CATALOG_SERVICE_ID_PATH = "/" + CATALOG_SERVICE_ID;
+    private static final String CATALOG_PREFIX = "/api/v1";
 
     private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc/discoverableclient/v1";
+    private static final String CATALOG_STATIC_REFRESH_ENDPOINT = "/static-api/refresh";
     private static final String CATALOG_ACTUATOR_ENDPOINT = "/application";
 
     private final static String COOKIE = "apimlAuthenticationToken";
@@ -51,10 +59,23 @@ class ApiCatalogAuthenticationTest {
 
     private static String apiCatalogServiceUrl = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getUrl();
 
-    static Stream<Arguments> urlsToTest() {
+    @FunctionalInterface
+    private interface Request {
+        Validatable<?, ?> execute(RequestSpecification when, String endpoint);
+    }
+
+    static Stream<Arguments> requestsToTest() {
         return Stream.of(
-            Arguments.of(CATALOG_APIDOC_ENDPOINT),
-            Arguments.of(CATALOG_ACTUATOR_ENDPOINT)
+            Arguments.of(CATALOG_APIDOC_ENDPOINT, (Request) (when, endpoint) -> when.get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint))),
+            Arguments.of(CATALOG_STATIC_REFRESH_ENDPOINT, (Request) (when, endpoint) -> when.post(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint))),
+            Arguments.of(CATALOG_ACTUATOR_ENDPOINT, (Request) (when, endpoint) -> when.get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint)))
+        );
+    }
+
+    static Stream<Arguments> requestsToTestWithCertificate() {
+        return Stream.of(
+            Arguments.of(CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT, (Request) (when, endpoint) -> when.get(apiCatalogServiceUrl + endpoint)),
+            Arguments.of(CATALOG_SERVICE_ID_PATH + CATALOG_STATIC_REFRESH_ENDPOINT, (Request) (when, endpoint) -> when.post(apiCatalogServiceUrl + endpoint))
         );
     }
 
@@ -82,24 +103,28 @@ class ApiCatalogAuthenticationTest {
         @Nested
         class ReturnOk {
             @ParameterizedTest(name = "givenValidBasicAuthentication {index} {0} ")
-            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
-            void givenValidBasicAuthentication(String endpoint) {
-                given()
-                    .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
-                    .when()
-                    .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
+            void givenValidBasicAuthentication(String endpoint, Request request) {
+                request.execute(
+                        given()
+                            .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                            .when(),
+                        endpoint
+                    )
                     .then()
                     .statusCode(is(SC_OK));
             }
 
-            @ParameterizedTest(name = "givenValidBasicAuthentication {index} {0} ")
-            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
-            void givenValidBasicAuthenticationAndCertificate(String endpoint) {
-                given()
-                    .config(SslContext.clientCertApiml)
-                    .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
-                    .when()
-                    .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
+            @ParameterizedTest(name = "givenValidBasicAuthenticationAndCertificate {index} {0} ")
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
+            void givenValidBasicAuthenticationAndCertificate(String endpoint, Request request) {
+                request.execute(
+                        given()
+                            .config(SslContext.clientCertApiml)
+                            .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                            .when(),
+                        endpoint
+                    )
                     .then()
                     .statusCode(is(SC_OK));
             }
@@ -108,14 +133,16 @@ class ApiCatalogAuthenticationTest {
         @Nested
         class ReturnUnauthorized {
             @ParameterizedTest(name = "givenNoAuthentication {index} {0}")
-            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
-            void givenNoAuthentication(String endpoint) {
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
+            void givenNoAuthentication(String endpoint, Request request) {
                 String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID_PATH + endpoint + "'";
 
-                given()
-                    .config(SslContext.tlsWithoutCert)
-                    .when()
-                    .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
+                request.execute(
+                        given()
+                            .config(SslContext.tlsWithoutCert)
+                            .when(),
+                        endpoint
+                    )
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX)
@@ -125,14 +152,16 @@ class ApiCatalogAuthenticationTest {
             }
 
             @ParameterizedTest(name = "givenInvalidBasicAuthentication {index} {0}")
-            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
-            void givenInvalidBasicAuthentication(String endpoint) {
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
+            void givenInvalidBasicAuthentication(String endpoint, Request request) {
                 String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + endpoint + "'";
 
-                given()
-                    .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
-                    .when()
-                    .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
+                request.execute(
+                        given()
+                            .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
+                            .when(),
+                        endpoint
+                    )
                     .then()
                     .body(
                         "messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
@@ -140,15 +169,17 @@ class ApiCatalogAuthenticationTest {
             }
 
             @ParameterizedTest(name = "givenInvalidTokenInCookie {index} {0}")
-            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#urlsToTest")
-            void givenInvalidTokenInCookie(String endpoint) {
+            @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
+            void givenInvalidTokenInCookie(String endpoint, Request request) {
                 String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID_PATH + endpoint + "'";
                 String invalidToken = "nonsense";
 
-                given()
-                    .cookie(COOKIE, invalidToken)
-                    .when()
-                    .get(getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID_PATH + endpoint))
+                request.execute(
+                        given()
+                            .cookie(COOKIE, invalidToken)
+                            .when(),
+                        endpoint
+                    )
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
@@ -166,23 +197,29 @@ class ApiCatalogAuthenticationTest {
 
             @Nested
             class ThenReturnOk {
-                @Test
-                void givenValidCertificate() {
-                    given()
-                        .config(SslContext.clientCertUser)
-                        .when()
-                        .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
+                @ParameterizedTest(name = "givenValidCertificate {index} {0} ")
+                @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTestWithCertificate")
+                void givenValidCertificate(String endpoint, Request request) {
+                    request.execute(
+                            given()
+                                .config(SslContext.clientCertUser)
+                                .when(),
+                            endpoint
+                        )
                         .then()
                         .statusCode(HttpStatus.OK.value());
                 }
 
-                @Test
-                void givenValidCertificateAndBasicAuth() {
-                    given()
-                        .config(SslContext.clientCertApiml)
-                        .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
-                        .when()
-                        .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
+                @ParameterizedTest(name = "givenValidCertificateAndBasicAuth {index} {0} ")
+                @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTestWithCertificate")
+                void givenValidCertificateAndBasicAuth(String endpoint, Request request) {
+                    request.execute(
+                            given()
+                                .config(SslContext.clientCertApiml)
+                                .auth().preemptive().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                                .when(),
+                            endpoint
+                        )
                         .then()
                         .statusCode(is(SC_OK));
                 }
@@ -190,21 +227,27 @@ class ApiCatalogAuthenticationTest {
 
             @Nested
             class ThenReturnUnauthorized {
-                @Test
-                void givenUnTrustedCertificateAndNoBasicAuth_thenReturnUnauthorized() {
-                    given()
-                        .config(SslContext.selfSignedUntrusted)
-                        .when()
-                        .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
+                @ParameterizedTest(name = "givenUnTrustedCertificateAndNoBasicAuth_thenReturnUnauthorized {index} {0} ")
+                @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTestWithCertificate")
+                void givenUnTrustedCertificateAndNoBasicAuth_thenReturnUnauthorized(String endpoint, Request request) {
+                    request.execute(
+                            given()
+                                .config(SslContext.selfSignedUntrusted)
+                                .when(),
+                            endpoint
+                        )
                         .then()
                         .statusCode(HttpStatus.UNAUTHORIZED.value());
                 }
 
-                @Test
-                void givenNoCertificateAndNoBasicAuth_thenReturnUnauthorized() {
-                    given()
-                        .when()
-                        .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT)
+                @ParameterizedTest(name = "givenNoCertificateAndNoBasicAuth_thenReturnUnauthorized {index} {0} ")
+                @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTestWithCertificate")
+                void givenNoCertificateAndNoBasicAuth_thenReturnUnauthorized(String endpoint, Request request) {
+                    request.execute(
+                            given()
+                                .when(),
+                            endpoint
+                        )
                         .then()
                         .statusCode(HttpStatus.UNAUTHORIZED.value());
                 }
@@ -212,7 +255,7 @@ class ApiCatalogAuthenticationTest {
         }
 
         @Test
-        void givenOnlyValidCertificate_whenAccessNotApiDocRoute_thenReturnUnauthorized() {
+        void givenOnlyValidCertificate_whenAccessNotCertificateAuthedRoute_thenReturnUnauthorized() {
             given()
                 .config(SslContext.clientCertApiml)
                 .when()
