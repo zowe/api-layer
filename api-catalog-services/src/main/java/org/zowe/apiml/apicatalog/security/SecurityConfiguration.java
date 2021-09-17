@@ -30,8 +30,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.filter.AttlsFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
@@ -60,6 +60,7 @@ import java.util.Set;
 @EnableApimlAuth
 public class SecurityConfiguration {
     private static final String APIDOC_ROUTES = "/apidoc/**";
+    private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
 
     private final ObjectMapper securityObjectMapper;
     private final AuthConfigurationProperties authConfigurationProperties;
@@ -84,7 +85,6 @@ public class SecurityConfiguration {
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
 
-
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
@@ -95,11 +95,11 @@ public class SecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(
-                baseConfiguration(http.antMatcher(APIDOC_ROUTES)),
+                baseConfiguration(http.requestMatchers().antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).and()),
                 authenticationManager()
             )
                 .authorizeRequests()
-                .antMatchers(APIDOC_ROUTES).authenticated();
+                .antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated();
 
             if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
                 if (isAttlsEnabled) {
@@ -187,6 +187,9 @@ public class SecurityConfiguration {
             )
             .defaultAuthenticationEntryPointFor(
                 handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher(APIDOC_ROUTES)
+            )
+            .defaultAuthenticationEntryPointFor(
+                handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher(STATIC_REFRESH_ROUTE)
             )
             .defaultAuthenticationEntryPointFor(
                 handlerInitializer.getUnAuthorizedHandler(), new AntPathRequestMatcher("/**")

@@ -1,5 +1,5 @@
 # This workflow will release project with Gradle
-name: Relase new version (specific)
+name: Release new version (specific)
 
 on:
     workflow_dispatch:
