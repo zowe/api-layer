@@ -67,7 +67,7 @@ jobs:
         strategy:
             matrix:
                 arch: [ amd64, s390x ]
-                service: [ '${{ github.event.issue.id }}','','','' ]
+                service: [ '${{ github.event.issue.id }}, ${{github.event.issue.id}}' ]
                 os: [ ubuntu, ubi ]
                 # if: ${{ github.event.issue.id > 0 }}
                 # exclude:
