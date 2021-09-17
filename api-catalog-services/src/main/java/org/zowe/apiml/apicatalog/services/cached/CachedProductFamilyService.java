@@ -203,9 +203,10 @@ public class CachedProductFamilyService {
      * @return the transformed homepage url
      */
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
-        String instanceHomePage = instanceInfo.getHomePageUrl().trim();
+        String instanceHomePage = instanceInfo.getHomePageUrl();
 
         if (hasHomePage(instanceInfo)) {
+            instanceHomePage = instanceHomePage.trim();
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
             try {
