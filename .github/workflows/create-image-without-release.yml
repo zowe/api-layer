@@ -9,11 +9,6 @@ env:
     DISCOVERY_SERVICE: false
     API_CATALOG_SERVICE: false
     CACHING_SERVICE: true
-     inputs:    
-    GATEWAY_SERVICE:    
-      description: '[Release] perform release'           
-      required: false
-      default: true
 
 
 jobs:
