@@ -68,11 +68,13 @@ jobs:
     build-containers:
         # needs:
         #     - build
+        env:
+            str: 'amd64, s390x'
         strategy:
             matrix:
-                arch: [ amd64, s390x ]
+                arch: [ env.str ]
                 # if: ${{ github.event.inputs.service == 'all' }}
-                service: ${{ 'all' == 'all' && '[ gateway-service, discovery-service, api-catalog-services, caching-service ]' || '[ ${{ github.event.inputs.service }} ]' }}
+                service: [ gateway-service ]
                 os: [ ubuntu, ubi ]        
                 # if: ${{ github.event.inputs.discovery == 'false' }}
                 # exclude:
