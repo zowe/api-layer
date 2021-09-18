@@ -72,7 +72,7 @@ jobs:
             matrix:
                 arch: [ amd64, s390x ]
                 # if: ${{ github.event.inputs.service == 'all' }}
-                service: ${{ 'all' == 'all' && [ gateway-service, discovery-service, api-catalog-services, caching-service ] || [ '${{ github.event.inputs.service }}' ] }}
+                service: ${{ 'all' == 'all' && '[ gateway-service, discovery-service, api-catalog-services, caching-service ]' || '[ ${{ github.event.inputs.service }} ]' }}
                 os: [ ubuntu, ubi ]        
                 # if: ${{ github.event.inputs.discovery == 'false' }}
                 # exclude:
