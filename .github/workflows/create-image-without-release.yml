@@ -147,7 +147,7 @@ jobs:
 
             
             -   name: Build s390x
-                if: matrix.arch == 's390x'\
+                if: matrix.arch == 's390x'
                 uses: zowe-actions/shared-actions/docker-build-zlinux@main
                 with:
                     zlinux-host: ${{ secrets.ZLINUX_HOST }}
