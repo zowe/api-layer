@@ -1,14 +1,18 @@
 # This workflow will release project with Gradle
 name: Create Image Only (No Release)
 
-on: push
+on:
+    push:
+    workflow_dispatch:
+        inputs:
+            service:
+                description: 'Choose any one service to create its image Eg. gateway-service, discovery-service, api-catalog-services, caching-service (default is all)'
+                required: false
+                default: 'all'
 
 env:
     IMAGE_BASE_DIR: ./containers
-    GATEWAY_SERVCIE: false
-    DISCOVERY_SERVICE: false
-    API_CATALOG_SERVICE: false
-    CACHING_SERVICE: true
+   
 
 jobs:
     # build:
@@ -67,31 +71,33 @@ jobs:
         strategy:
             matrix:
                 arch: [ amd64, s390x ]
-                service: [ discovery-service, '' , gateway-service, '' ]
-                os: [ ubuntu, ubi ]
-                # if: ${{ github.event.issue.id > 0 }}
-                # exclude:
-                #     -   arch: amd64
-                #         service: gateway-service
-                #     -   arch: s390x
-                #         service: gateway-service
-                # if: ${{ github.event.issue.id > 0 }}
+                # if: ${{ github.event.inputs.service == 'all' }}
+                service: ${{ 'all' == 'all' && [ gateway-service, discovery-service, api-catalog-services, caching-service ] || [ '${{ github.event.inputs.service }}' ] }}
+                os: [ ubuntu, ubi ]        
+                # if: ${{ github.event.inputs.discovery == 'false' }}
                 # exclude:
                 #     -   arch: amd64
                 #         service: discovery-service
                 #     -   arch: s390x
                 #         service: discovery-service
-                # if: ${{ github.event.issue.id > 0 }}
+                # if: ${{ github.event.inputs.api_catalog == 'false' }}
                 # exclude:
                 #     -   arch: amd64
                 #         service: api-catalog-services
                 #     -   arch: s390x
-                #         service: api-catalog-services 
+                #         service: api-catalog-services
+                # if: ${{ github.event.inputs.caching == 'false' }}
+                # exclude:
+                #     -   arch: amd64
+                #         service: aching-service
+                #     -   arch: s390x
+                #         service: aching-service 
                 include:
                     -   os: ubuntu
                         BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
                     -   os: ubi
                         BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
+                    
 
         runs-on: ubuntu-latest
         steps:
@@ -177,7 +183,7 @@ jobs:
             - build-containers
         strategy:
             matrix:
-                service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
+                service: ${{ 'all' == 'all' && [ gateway-service, discovery-service, api-catalog-services, caching-service ] || [ '${{ github.event.inputs.service }}' ] }}
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         steps:
