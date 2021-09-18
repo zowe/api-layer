@@ -185,7 +185,7 @@ jobs:
             - build-containers
         strategy:
             matrix:
-                service: ${{ 'all' == 'all' && [ gateway-service, discovery-service, api-catalog-services, caching-service ] || [ '${{ github.event.inputs.service }}' ] }}
+                service: [ gateway-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         steps:
