@@ -68,32 +68,13 @@ jobs:
     build-containers:
         # needs:
         #     - build
-        env:
-            str: 'amd64, s390x'
         strategy:
             matrix:
                 arch: [ env.str ]
-                # if: ${{ github.event.inputs.service == 'all' }}
-                service: [ gateway-service ]
+                service: ${{ 'all' == 'all'}}
+                if_true: [ gateway-service ]
+                if_false: [ 'gateway-service, discovery-service, api-catalog-services, caching-service }}' ]
                 os: [ ubuntu, ubi ]        
-                # if: ${{ github.event.inputs.discovery == 'false' }}
-                # exclude:
-                #     -   arch: amd64
-                #         service: discovery-service
-                #     -   arch: s390x
-                #         service: discovery-service
-                # if: ${{ github.event.inputs.api_catalog == 'false' }}
-                # exclude:
-                #     -   arch: amd64
-                #         service: api-catalog-services
-                #     -   arch: s390x
-                #         service: api-catalog-services
-                # if: ${{ github.event.inputs.caching == 'false' }}
-                # exclude:
-                #     -   arch: amd64
-                #         service: aching-service
-                #     -   arch: s390x
-                #         service: aching-service 
                 include:
                     -   os: ubuntu
                         BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
@@ -105,20 +86,20 @@ jobs:
         steps:
             
             -   name: checkout
-                if: matrix.service != ''
+                
                 uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
             -   name: Set up JDK 1.8
-                if: matrix.service != ''
+                
                 uses: actions/setup-java@v1
                 with:
                     java-version: 1.8
             -   name: Grant execute permission for gradlew
-                if: matrix.service != ''
+                
                 run: chmod +x gradlew
             -   name: Cache Gradle packages
-                if: matrix.service != ''
+                
                 uses: actions/cache@v2
                 with:
                     path: |
@@ -128,7 +109,7 @@ jobs:
                     restore-keys: |
                         ${{ runner.os }}-gradle001-
             -   name: Cache Node.js modules
-                if: matrix.service != ''
+                
                 uses: actions/cache@v2
                 with:
                     path: |
@@ -138,11 +119,11 @@ jobs:
                         ${{ runner.OS }}-node001-
 
             -   name: Setting Global ENV variable
-                if: matrix.service != ''
+                
                 uses: zowe-actions/shared-actions/envvars-global@main
 
             -   name: Preparing Docker
-                if: matrix.service != ''
+                
                 uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
@@ -158,7 +139,7 @@ jobs:
                     redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
 
             -   name: Build amd64
-                if: matrix.arch == 'amd64' && matrix.service != ''
+                if: matrix.arch == 'amd64'
                 uses: zowe-actions/shared-actions/docker-build-local@main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
@@ -166,7 +147,7 @@ jobs:
 
             
             -   name: Build s390x
-                if: matrix.arch == 's390x' &&  matrix.service != ''
+                if: matrix.arch == 's390x'\
                 uses: zowe-actions/shared-actions/docker-build-zlinux@main
                 with:
                     zlinux-host: ${{ secrets.ZLINUX_HOST }}
@@ -185,27 +166,23 @@ jobs:
             - build-containers
         strategy:
             matrix:
-                service: [ gateway-service ]
+                service: [ '${{ github.event.inputs.service }}' ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         steps:
             -   name: checkout
-                if: matrix.service != ''
                 uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
             -   name: Set up JDK 1.8
-                if: matrix.service != ''
                 uses: actions/setup-java@v1
                 with:
                     java-version: 1.8
 
             -   name: Preparing Workflow
-                if: matrix.service != ''
                 uses: zowe-actions/shared-actions/prepare-workflow@main
 
             -   name: Prepare Docker
-                if: matrix.service != ''
                 uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
@@ -216,7 +193,6 @@ jobs:
                     linux-distro: ${{ matrix.os }}
 
             -   name: Docker Manifest
-                if: matrix.service != ''
                 uses: zowe-actions/shared-actions/docker-manifest@main
                 with:
                     linux-distro: ${{ matrix.os }}
