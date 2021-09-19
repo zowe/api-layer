@@ -1,11 +1,11 @@
-# This workflow will release project with Gradle
+# This workflow will create images for api-layer services
 name: Create Image Only (No Release)
 
 on: 
     push:
     workflow_dispatch:
         inputs:
-            release:
+            service:
                 description: 'Enter a service name for creating its Image Eg. gateway-service, discovery-service, api-catalog-services, caching-service (If skipped it will create images for all 4 services)'
                 required: false
                 default: 'all'
@@ -78,7 +78,7 @@ jobs:
                     -   os: ubi
                         BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
         runs-on: ubuntu-latest
-        if: {{ github.event.inputs.service == all }}
+        if: ${{ github.event.inputs.service == 'all' }}
         steps:
             -   uses: actions/checkout@v2
                 with:
@@ -151,7 +151,7 @@ jobs:
         strategy:
             matrix:
                 arch: [ amd64, s390x ]
-                service: [ github.event.inputs.service ]
+                service: [ '${{ github.event.inputs.service}}' ]
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
@@ -159,7 +159,7 @@ jobs:
                     -   os: ubi
                         BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
         runs-on: ubuntu-latest
-        if: {{ github.event.inputs.service != all }}
+        if: ${{ github.event.inputs.service != all }}
         steps:
             -   uses: actions/checkout@v2
                 with:
@@ -235,7 +235,7 @@ jobs:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
-        if: {{ github.event.inputs.service == all }}
+        if: ${{ github.event.inputs.service == all }}
         steps:
             -   uses: actions/checkout@v2
                 with:
@@ -268,10 +268,10 @@ jobs:
             
         strategy:
             matrix:
-                service: [ {{ github.event.inputs.service }} ]
+                service: [ '${{ github.event.inputs.service }}' ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
-        if: {{ github.event.inputs.service != all }}
+        if: ${{ github.event.inputs.service != all }}
         steps:
             -   uses: actions/checkout@v2
                 with:
