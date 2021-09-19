@@ -159,7 +159,7 @@ jobs:
                     -   os: ubi
                         BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
         runs-on: ubuntu-latest
-        if: ${{ github.event.inputs.service != all }}
+        if: ${{ github.event.inputs.service != 'all' }}
         steps:
             -   uses: actions/checkout@v2
                 with:
@@ -235,7 +235,7 @@ jobs:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
-        if: ${{ github.event.inputs.service == all }}
+        if: ${{ github.event.inputs.service == 'all' }}
         steps:
             -   uses: actions/checkout@v2
                 with:
@@ -271,7 +271,7 @@ jobs:
                 service: [ '${{ github.event.inputs.service }}' ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
-        if: ${{ github.event.inputs.service != all }}
+        if: ${{ github.event.inputs.service != 'all' }}
         steps:
             -   uses: actions/checkout@v2
                 with:
