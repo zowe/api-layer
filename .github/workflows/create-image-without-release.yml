@@ -266,7 +266,6 @@ jobs:
             
         strategy:
             matrix:
-                service: [ '${{ github.event.inputs.service }}' ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         if: ${{ github.event.inputs.service != 'all' }}
@@ -286,8 +285,8 @@ jobs:
                     registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
                     registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
                     release: false
-                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
-                    image-name: ${{ matrix.service }}
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ github.event.inputs.service }}
+                    image-name: ${{ github.event.inputs.service }}
                     linux-distro: ${{ matrix.os }}
 
             -   uses: zowe-actions/shared-actions/docker-manifest@main
