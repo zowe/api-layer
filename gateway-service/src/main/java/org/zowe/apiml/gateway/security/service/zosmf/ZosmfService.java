@@ -341,24 +341,20 @@ public class ZosmfService extends AbstractZosmfService {
             log.debug("Trying to validate token with strategy: {}", s.toString());
             try {
                 s.validate(request);
-                if (requestValidationIsDecided(request)) {
+                if (requestIsAuthenticated(request)) {
                     log.debug("Token validity has been successfully determined: {}", request.getAuthenticated());
-                    break;
+                    return true;
                 }
             } catch (RuntimeException re) {
                 log.debug("Exception during token validation:", re);
             }
         }
         log.debug("Token validation strategies exhausted, final validation status: {}", request.getAuthenticated());
-        return requestIsAuthenticated(request);
+        return false;
     }
 
     private boolean requestIsAuthenticated(TokenValidationRequest request) {
         return TokenValidationRequest.STATUS.AUTHENTICATED.equals(request.getAuthenticated());
-    }
-
-    private boolean requestValidationIsDecided(TokenValidationRequest request) {
-        return !TokenValidationRequest.STATUS.UNKNOWN.equals(request.getAuthenticated());
     }
 
     public Map<String, Boolean> getEndpointMap() {
