@@ -134,7 +134,8 @@ public class FunctionalApar implements Apar {
 
     protected boolean noAuthentication(Map<String, String> headers) {
         String basicAuth = headers.get(AUTHORIZATION_HEADER);
-        return (basicAuth == null || basicAuth.isEmpty()) && noJwtCookie(headers) && noLtpaCookie(headers);
+        String cookie = headers.get(COOKIE_HEADER);
+        return (basicAuth == null || basicAuth.isEmpty()) && (cookie == null || cookie.isEmpty());
     }
 
     protected boolean containsInvalidOrNoUser(Map<String, String> headers) {
