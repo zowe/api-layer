@@ -32,7 +32,7 @@ zosmf:
     username: USER,APIMTST,USER1,USER2
     password: validPassword,PASSTICKET
     baseVersion: 2.4
-    appliedApars: PH34201
+    appliedApars: PH12143
     jwtKeyStorePath: keystore/localhost/localhost.keystore.p12
 
 ---
