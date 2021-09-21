@@ -26,7 +26,8 @@ public class PH34201 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
-        if (containsInvalidOrNoUser(headers) && noJwtCookie(headers) && noLtpaCookie(headers)) {
+        // JWT token not accepted for create method
+        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -36,7 +37,12 @@ public class PH34201 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        return handleAuthenticationCreate(headers, response);
+        if (containsInvalidOrNoUser(headers) && noJwtCookie(headers) && noLtpaCookie(headers)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        String[] credentials = getPiecesOfCredentials(headers);
+        return validJwtResponse(response, credentials[0], keystorePath);
     }
 
     @Override
