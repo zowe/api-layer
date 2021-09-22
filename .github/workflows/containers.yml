@@ -207,7 +207,7 @@ jobs:
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: PH12143,RSU2012
+                    ZOSMF_APPLIEDAPARS: PH12143,RSU2012
 
         steps:
             -   uses: actions/checkout@v2
@@ -277,7 +277,7 @@ jobs:
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: PH12143,RSU2012,PH34201
+                    ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
 
         steps:
             -   uses: actions/checkout@v2
@@ -347,7 +347,7 @@ jobs:
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: ''
+                    ZOSMF_APPLIEDAPARS: ''
 
         steps:
             -   uses: actions/checkout@v2
@@ -418,7 +418,7 @@ jobs:
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: AuthenticateApar
+                    ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
             -   uses: actions/checkout@v2
@@ -560,7 +560,7 @@ jobs:
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: AuthenticateApar
+                    ZOSMF_APPLIEDAPARS: AuthenticateApar
             redis-master:
                 image: redis:latest
                 ports:
@@ -648,7 +648,7 @@ jobs:
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: AuthenticateApar
+                    ZOSMF_APPLIEDAPARS: AuthenticateApar
             redis-master:
                 image: redis:latest
                 ports:
