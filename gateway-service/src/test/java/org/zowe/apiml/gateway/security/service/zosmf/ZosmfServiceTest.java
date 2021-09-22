@@ -365,57 +365,73 @@ class ZosmfServiceTest {
         assertDoesNotThrow(() -> zosmfService.validate("TOKN"));
     }
 
-    @Test
-    void returnsResultBasedOnTokenValidationRequestStatus() {
-        ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(Collections.singletonList(tokenValidationStrategy1));
+    @Nested
+    class WhenValidateToken {
 
-        //UNKNOWN by default
-        assertThat(zosmfService.validate("TOKN"), is(false));
+        @Test
+        void givenOneValidationStrategy_thenReturnValidationStrategyResult() {
+            ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(Collections.singletonList(tokenValidationStrategy1));
 
-        doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.AUTHENTICATED);
+            //UNKNOWN by default
+            assertThat(zosmfService.validate("TOKN"), is(false));
 
-        assertThat(zosmfService.validate("TOKN"), is(true));
+            doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.AUTHENTICATED);
 
-        doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.INVALID);
-        assertThat(zosmfService.validate("TOKN"), is(false));
-    }
+            assertThat(zosmfService.validate("TOKN"), is(true));
 
-    @Test
-    void validationHappensWithShortCircuitLogic() {
-        ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
+            doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.INVALID);
+            assertThat(zosmfService.validate("TOKN"), is(false));
+        }
 
-        assertThat(zosmfService.validate("TOKN"), is(false));
-        verify(tokenValidationStrategy1, times(1)).validate(any());
-        verify(tokenValidationStrategy2, times(1)).validate(any());
+        @Test
+        void givenFirstValidationStrategyAuthentications_thenDontUseSecondValidationStrategy() {
+            ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
 
-        doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.AUTHENTICATED);
-        assertThat(zosmfService.validate("TOKN"), is(true));
-        verify(tokenValidationStrategy1, times(2)).validate(any());
-        verify(tokenValidationStrategy2, times(1)).validate(any());
-    }
+            assertThat(zosmfService.validate("TOKN"), is(false));
+            verify(tokenValidationStrategy1, times(1)).validate(any());
+            verify(tokenValidationStrategy2, times(1)).validate(any());
 
-    private static void doValidate(TokenValidationStrategy tokenValidationStrategy1, TokenValidationRequest.STATUS status) {
-        doAnswer(invocation -> {
-            Object[] args = invocation.getArguments();
-            ((TokenValidationRequest) args[0]).setAuthenticated(status);
-            return null;
-        }).when(tokenValidationStrategy1).validate(any());
-    }
+            doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.AUTHENTICATED);
+            assertThat(zosmfService.validate("TOKN"), is(true));
+            verify(tokenValidationStrategy1, times(2)).validate(any());
+            verify(tokenValidationStrategy2, times(1)).validate(any());
+        }
 
-    @Test
-    void doesNotRethrowExceptionsFromValidationStrategies() {
-        ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(Collections.singletonList(tokenValidationStrategy1));
-        TokenValidationRequest request = mock(TokenValidationRequest.class);
+        @Test
+        void givenFirstStrategyInvalidAndSecondValid_thenTokenIsValid() {
+            ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
 
-        doThrow(RuntimeException.class).when(tokenValidationStrategy1).validate(request);
-        assertDoesNotThrow(() -> zosmfService.validate("TOKN"));
-    }
+            doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.INVALID);
+            doValidate(tokenValidationStrategy2, TokenValidationRequest.STATUS.AUTHENTICATED);
 
-    @Test
-    void suppliesValidationRequestWithVerifiedEndpointsList() {
-        ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
-        zosmfService.validate("TOKN");
-        verify(tokenValidationStrategy1).validate(argThat(request -> request.getEndpointExistenceMap().size() > 0));
+            assertThat(zosmfService.validate("TOKN"), is(true));
+            verify(tokenValidationStrategy1, times(1)).validate(any());
+            verify(tokenValidationStrategy2, times(1)).validate(any());
+        }
+
+        @Test
+        void doesNotRethrowExceptionsFromValidationStrategies() {
+            ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(Collections.singletonList(tokenValidationStrategy1));
+            TokenValidationRequest request = mock(TokenValidationRequest.class);
+
+            doThrow(RuntimeException.class).when(tokenValidationStrategy1).validate(request);
+            assertDoesNotThrow(() -> zosmfService.validate("TOKN"));
+        }
+
+        @Test
+        void suppliesValidationRequestWithVerifiedEndpointsList() {
+            ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
+            zosmfService.validate("TOKN");
+            verify(tokenValidationStrategy1).validate(argThat(request -> request.getEndpointExistenceMap().size() > 0));
+        }
+
+        private void doValidate(TokenValidationStrategy tokenValidationStrategy1, TokenValidationRequest.STATUS status) {
+            doAnswer(invocation -> {
+                Object[] args = invocation.getArguments();
+                ((TokenValidationRequest) args[0]).setAuthenticated(status);
+                return null;
+            }).when(tokenValidationStrategy1).validate(any());
+        }
     }
 
     @Test
