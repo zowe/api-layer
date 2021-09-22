@@ -331,7 +331,7 @@ public class CachedProductFamilyService {
         try {
             apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
                 Collectors.toMap(
-                    apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : "v" + apiInfo.getMajorVersion(),
+                    apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : apiInfo.getApiId() + "  v" + apiInfo.getVersion(),
                     ApiInfo::getApiId
                 )
             );

@@ -67,11 +67,7 @@ public class APIDocRetrievalService {
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         List<String> apiVersions = new ArrayList<>();
         for (ApiInfo apiInfo : apiInfoList) {
-            int majorVersion = getMajorVersion(apiInfo);
-            if (majorVersion >= 0) {
-                // -1 indicates major version not found
-                apiVersions.add("v" + majorVersion);
-            }
+            apiVersions.add(apiInfo.getApiId() + " v" + apiInfo.getVersion());
         }
         return apiVersions;
     }
@@ -314,9 +310,13 @@ public class APIDocRetrievalService {
             return null;
         }
 
+        String api[] = apiVersion.split(" ");
+        String apiId = api[0];
+        String version = api[1].replace("v", "");
+
         return apiInfos.stream()
             .filter(
-                f -> f.getGatewayUrl().equals(apiVersion == null ? "api" : "api/" + apiVersion)
+                f -> f.getApiId().equals(apiId) && f.getVersion().equals(version)
             )
             .findFirst()
             .orElse(apiInfos.get(0));
