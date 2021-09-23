@@ -195,7 +195,7 @@ Consider the following when you create or respond to pull requests:
 
 ## Security fixes
 
-For the purpose of long-term support(LTS) for previous major version, any security fix must be merged to the master branch as a separate commit. The reasoning behind these requirements is, that security fixes will be cherry-picked to the previous LTS version of API Mediation layer.
+To provide long-term support(LTS) for versions in maintenance mode, any security fix must be merged to the master branch as a separate commit. The reasoning behind these requirements is, that security fixes will be cherry-picked to the maintenance versions of API Mediation layer.
 
 ## Documentation Guidelines
 
