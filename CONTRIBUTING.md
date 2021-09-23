@@ -193,6 +193,10 @@ Consider the following when you create or respond to pull requests:
 - Review guidelines for [how to write the perfect pull request](https://github.com/blog/1943-how-to-write-the-perfect-pull-request)
   and [good commits](https://chris.beams.io/posts/git-commit/).
 
+## Security fixes
+
+To provide long-term support(LTS) for versions in maintenance mode, any security fix must be merged to the master branch as a separate commit. The reasoning behind these requirements is, that security fixes will be cherry-picked to the maintenance versions of API Mediation layer.
+
 ## Documentation Guidelines
 
 Open a pull request in the [docs-site repository](https://github.com/zowe/docs-site) to create documentation for your contribution.
