@@ -60,6 +60,8 @@ apiml:
                 service-url: ${apiml.service.contextPath}/ws
             -   gateway-url: "sse/v1"
                 service-url: ${apiml.service.contextPath}/
+            -   gateway-url: "graphql/v1"
+                service-url: ${apiml.service.contextPath}/
         apiInfo:
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 1.0.0
@@ -69,8 +71,8 @@ apiml:
                 defaultApi: true
             -   apiId: zowe.apiml.discoverableclient.ws
                 version: 1.0.0
-                gatewayUrl: ws/v1
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                gatewayUrl: graphql/v1
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs?group=graphv1
                 documentationUrl: https://www.zowe.org
                 defaultApi: true
             -   apiId: zowe.apiml.discoverableclient.rest

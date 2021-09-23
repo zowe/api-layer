@@ -328,11 +328,19 @@ public class CachedProductFamilyService {
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
         String apiBasePath = getApiBasePath(instanceInfo);
         Map<String, String> apiId = new HashMap<>();
+        Map<String, String> gatewayUrls = new HashMap<>();
         try {
             apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
                 Collectors.toMap(
-                    apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : apiInfo.getApiId() + "  v" + apiInfo.getVersion(),
+                    apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : apiInfo.getApiId() + " v" + apiInfo.getVersion(),
                     ApiInfo::getApiId
+                )
+            );
+
+            gatewayUrls = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
+                Collectors.toMap(
+                    apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : apiInfo.getApiId() + " v" + apiInfo.getVersion(),
+                    ApiInfo::getGatewayUrl
                 )
             );
         } catch (Exception ex) {
@@ -348,6 +356,7 @@ public class CachedProductFamilyService {
             .basePath(apiBasePath)
             .sso(isSso(instanceInfo))
             .apiId(apiId)
+            .gatewayUrls(gatewayUrls)
             .build();
     }
 

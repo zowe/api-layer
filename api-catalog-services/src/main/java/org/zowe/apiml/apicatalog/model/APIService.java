@@ -65,13 +65,16 @@ public class APIService implements Serializable {
     @ApiModelProperty(notes = "The API ID for this service")
     private Map<String, String> apiId;
 
+    @ApiModelProperty(notes = "The Gateway URLs used within this service")
+    private Map<String, String> gatewayUrls;
+
     private APIService(String serviceId) {
         this.serviceId = serviceId;
         this.status = "UP";
     }
     public static class Builder {
         private APIService apiService;
-        
+
         public Builder(String serviceId) {
             apiService = new APIService(serviceId);
             apiService.status = "UP";
@@ -124,6 +127,11 @@ public class APIService implements Serializable {
 
         public Builder apiId(Map<String, String> apiId) {
             apiService.apiId = apiId;
+            return this;
+        }
+
+        public Builder gatewayUrls(Map<String, String> gatewayUrls) {
+            apiService.gatewayUrls = gatewayUrls;
             return this;
         }
 

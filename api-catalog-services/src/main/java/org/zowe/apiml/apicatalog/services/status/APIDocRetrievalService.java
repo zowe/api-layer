@@ -93,7 +93,7 @@ public class APIDocRetrievalService {
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         ApiInfo defaultApiInfo = getDefaultApiInfo(apiInfoList);
 
-        return "v" + getMajorVersion(defaultApiInfo);
+        return defaultApiInfo.getApiId() + " v" + defaultApiInfo.getVersion();
     }
 
     /**
