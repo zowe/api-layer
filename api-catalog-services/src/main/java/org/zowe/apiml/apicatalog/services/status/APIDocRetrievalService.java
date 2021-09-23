@@ -32,6 +32,7 @@ import org.zowe.apiml.product.routing.RoutedServices;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Retrieves the API documentation for a registered service
@@ -314,12 +315,17 @@ public class APIDocRetrievalService {
         String apiId = api.length > 0 ? api[0] : "";
         String version = api.length > 1 ? api[1].replace("v", ""): "";
 
-        return apiInfos.stream()
+        Optional<ApiInfo> result = apiInfos.stream()
             .filter(
                 f -> apiId.equals(f.getApiId()) && version.equals(f.getVersion())
             )
-            .findFirst()
-            .orElse(apiInfos.get(0));
+            .findFirst();
+
+        if (!result.isPresent()) {
+            throw new ApiDocNotFoundException("There is no api doc for combination of apiId and version. " + apiId + " " + version);
+        } else {
+            return result.get();
+        }
     }
 
     private InstanceInfo getInstanceInfo(String serviceId) {
