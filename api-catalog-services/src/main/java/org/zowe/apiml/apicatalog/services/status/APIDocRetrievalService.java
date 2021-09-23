@@ -310,13 +310,13 @@ public class APIDocRetrievalService {
             return null;
         }
 
-        String api[] = apiVersion.split(" ");
-        String apiId = api[0];
-        String version = api[1].replace("v", "");
+        String[] api = apiVersion.split(" ");
+        String apiId = api.length > 0 ? api[0] : "";
+        String version = api.length > 1 ? api[1].replace("v", ""): "";
 
         return apiInfos.stream()
             .filter(
-                f -> f.getApiId().equals(apiId) && f.getVersion().equals(version)
+                f -> apiId.equals(f.getApiId()) && version.equals(f.getVersion())
             )
             .findFirst()
             .orElse(apiInfos.get(0));

@@ -74,7 +74,6 @@ apiml:
                 gatewayUrl: graphql/v1
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs?group=graphv1
                 documentationUrl: https://www.zowe.org
-                defaultApi: true
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 2.0.0
                 gatewayUrl: api/v2
