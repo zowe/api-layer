@@ -72,7 +72,7 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
             passTicket = passTicketService.generate(userId, applId);
         } catch (IRRPassTicketGenerationException e) {
             throw new PassTicketException(
-                String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId), e
+                String.format("Could not generate PassTicket for user ID %s and APPLID %s. Supply a valid user and application name, and check that corresponding permissions have been set up.", userId, applId), e
             );
         }
         final String encoded = Base64.getEncoder()

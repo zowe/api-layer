@@ -13,10 +13,14 @@ package org.zowe.apiml.gateway.ribbon.http;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.server.ResponseStatusException;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
@@ -26,12 +30,11 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
 @RequiredArgsConstructor
+@Slf4j
 public class ServiceAuthenticationDecorator {
 
     private final ServiceAuthenticationService serviceAuthenticationService;
     private final AuthenticationService authenticationService;
-
-    private static final String INVALID_JWT_MESSAGE = "Invalid JWT token";
 
     /**
      * If a service requires authentication,
@@ -68,6 +71,13 @@ public class ServiceAuthenticationDecorator {
                     throw new RequestAbortException(new TokenNotValidException("JWT Token is not authenticated"));
                 }
             }
+
+            catch (PassTicketException ae) {
+                log.error("The request to service " + info.getInstanceId() + " has failed due to this reason: " + ae.getMessage());
+                throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR, ae.getMessage(), ae);
+            }
+
             catch (AuthenticationException ae) {
                 throw new RequestAbortException(ae);
             }

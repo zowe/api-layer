@@ -140,7 +140,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         Exception exception = assertThrows(PassTicketException.class,
             () -> httpBasicPassTicketScheme.createCommand(authentication, () -> queryResponse),
             "Expected exception is not AuthenticationException");
-        assertEquals((String.format("Could not generate PassTicket for user ID %s and APPLID %s", UNKNOWN_USER, applId)), exception.getMessage());
+        assertEquals((String.format("Could not generate PassTicket for user ID %s and APPLID %s. Supply a valid user and application name, and check that corresponding permissions have been set up.", UNKNOWN_USER, applId)), exception.getMessage());
     }
 
     @Test
