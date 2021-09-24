@@ -46,7 +46,7 @@ class CatalogApiDocControllerApiDocNotFoundTest {
     private MockMvc mockMvc;
 
     @Test
-    void getApiDocAnfFailThenThrowApiDocNotFoundException() throws Exception {
+    void getApiDocAndFailThenThrowApiDocNotFoundException() throws Exception {
         this.mockMvc.perform(get("/apidoc/service2/v1"))
             .andExpect(status().isInternalServerError())
             .andExpect(jsonPath("$.messages[?(@.messageNumber == 'ZWEAC103E')].messageContent",
@@ -62,6 +62,9 @@ class CatalogApiDocControllerApiDocNotFoundTest {
         @Bean
         public CatalogApiDocController catalogApiDocController() {
             when(apiServiceStatusService.getServiceCachedApiDocInfo("service2", "v1"))
+                .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
+
+            when(apiServiceStatusService.getServiceCachedApiDocInfo("service2", null))
                 .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
 
             verify(apiServiceStatusService, never()).getServiceCachedApiDocInfo("service2", "v1");

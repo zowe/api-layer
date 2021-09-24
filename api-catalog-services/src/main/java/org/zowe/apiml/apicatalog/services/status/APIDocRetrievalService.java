@@ -94,6 +94,10 @@ public class APIDocRetrievalService {
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         ApiInfo defaultApiInfo = getDefaultApiInfo(apiInfoList);
 
+        if (defaultApiInfo == null) {
+            return "";
+        }
+
         return defaultApiInfo.getApiId() + " v" + defaultApiInfo.getVersion();
     }
 
@@ -317,7 +321,7 @@ public class APIDocRetrievalService {
 
         String[] api = apiVersion.split(" ");
         String apiId = api.length > 0 ? api[0] : "";
-        String version = api.length > 1 ? api[1].replace("v", ""): "";
+        String version = api.length > 1 ? api[1].replace("v", "") : "";
 
         Optional<ApiInfo> result = apiInfos.stream()
             .filter(
