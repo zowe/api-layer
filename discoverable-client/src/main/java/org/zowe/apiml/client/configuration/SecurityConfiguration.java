@@ -26,7 +26,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             .authorizeRequests()
             .antMatchers("/ws/**").authenticated()
-            .antMatchers("/**").authenticated()
+            .antMatchers("/**").permitAll()
             .and().httpBasic();
     }
 
@@ -37,9 +37,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .password("{noop}pass").roles("ADMIN");
     }
 
-//    @Override
-//    public void configure(WebSecurity web) {
-//        web.ignoring()
-//            .antMatchers("/api/**");
-//    }
+    @Override
+    public void configure(WebSecurity web) {
+        web.ignoring()
+            .antMatchers("/api/**");
+    }
 }

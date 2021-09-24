@@ -163,6 +163,26 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                     .body("message", containsString(expectedMessage));
 
             }
+
+            @Test
+            @MainframeDependentTests // The appl id needs to be verified against actual ESM
+            void givenIssuedForIncorrectUser() {
+                String jwt = gatewayToken();
+                String expectedMessage = "Error on evaluation of PassTicket";
+
+                URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(
+                    PASSTICKET_TEST_ENDPOINT,
+                    Collections.singletonList(new BasicNameValuePair("user", "UNKNOWN_USER"))
+                );
+
+                given()
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                    .when()
+                    .get(discoverablePassticketUrl)
+                    .then()
+                    .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+                    .body("message", containsString(expectedMessage));
+            }
         }
     }
 
