@@ -11,9 +11,12 @@ package org.zowe.apiml.apicatalog.functional;
 
 import org.junit.jupiter.api.Test;
 
-public class ApiCatalogFullTest extends ApiCatalogFunctionalTest {
-    @Test
-    void testStart() {
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+class PrototypeFunctionalTest extends ApiCatalogFunctionalTest {
+
+    @Test
+    void testContextStarts() {
+        assertTrue(true);
     }
 }
