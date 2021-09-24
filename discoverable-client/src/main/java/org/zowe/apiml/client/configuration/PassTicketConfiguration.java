@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.client.configuration;
 
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 public class PassTicketConfiguration {
 
     @Bean
-    public PassTicketService passTicketService() {
-        return new PassTicketService();
+    public PassTicketService passTicketService(MessageService messageService) {
+        return new PassTicketService(messageService);
     }
 }
