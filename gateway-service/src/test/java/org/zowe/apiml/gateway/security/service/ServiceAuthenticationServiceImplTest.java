@@ -39,6 +39,7 @@ import org.zowe.apiml.gateway.security.service.schema.*;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
@@ -155,7 +156,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     }
 
     @Test
-    void testGetAuthenticationCommand() {
+    void testGetAuthenticationCommand() throws IRRPassTicketGenerationException {
         AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
         // token1 - valid
         QueryResponse qr1 = new QueryResponse("domain", "userId",
@@ -195,7 +196,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     }
 
     @Test
-    void testGetAuthenticationCommand_whenNoJwt() {
+    void testGetAuthenticationCommand_whenNoJwt() throws IRRPassTicketGenerationException {
         AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET))
             .thenReturn(schemeBeanMock);
@@ -210,7 +211,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     }
 
     @Test
-    void testGetAuthenticationCommandByServiceId() {
+    void testGetAuthenticationCommandByServiceId() throws IRRPassTicketGenerationException {
         AuthenticationCommand ok = new AuthenticationCommandTest(false);
         Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
         Authentication a2 = new Authentication(AuthenticationScheme.ZOWE_JWT, null);
@@ -276,7 +277,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     }
 
     @Test
-    void testGetAuthenticationCommandByServiceIdCache() {
+    void testGetAuthenticationCommandByServiceIdCache() throws IRRPassTicketGenerationException {
         InstanceInfo ii1 = createInstanceInfo("i1", AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1");
         AuthenticationCommand ac1 = new AuthenticationCommandTest(true);
         AuthenticationCommand ac2 = new AuthenticationCommandTest(false);
@@ -304,7 +305,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     }
 
     @Test
-    void testUniversalAuthenticationCommand() {
+    void testUniversalAuthenticationCommand() throws IRRPassTicketGenerationException {
         ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand uac = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
         assertFalse(uac.isExpired());
 
@@ -346,7 +347,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     }
 
     @Test
-    void testEvictCacheService() {
+    void testEvictCacheService() throws IRRPassTicketGenerationException {
         AuthenticationCommand command = AuthenticationCommand.EMPTY;
         Authentication auth = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0001");
         doReturn(Collections.singletonList(createInstanceInfo("instance0001", auth))).when(discoveryClient).getInstancesById("service0001");
@@ -385,7 +386,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     }
 
     @Test
-    void testNoApplication() {
+    void testNoApplication() throws IRRPassTicketGenerationException {
         when(discoveryClient.getApplication(any())).thenReturn(null);
         assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", "jwtToken"));
     }
@@ -474,7 +475,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     }
 
     @Test
-    void givenServiceIdAndJwt_whenExpiringCommand_thenReturnNewOne() {
+    void givenServiceIdAndJwt_whenExpiringCommand_thenReturnNewOne() throws IRRPassTicketGenerationException {
         AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
         Application application = createApplication(
             createInstanceInfo("instanceId", AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")

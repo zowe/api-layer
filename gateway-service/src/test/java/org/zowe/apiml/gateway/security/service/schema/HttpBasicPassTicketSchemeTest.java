@@ -20,8 +20,9 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
@@ -46,10 +47,11 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     private static final String USERNAME = "USERNAME";
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private HttpBasicPassTicketScheme httpBasicPassTicketScheme;
+    private final MessageService messageService = new YamlMessageService("/gateway-messages.yml");
 
     @BeforeEach
     void init() {
-        PassTicketService passTicketService = new PassTicketService();
+        PassTicketService passTicketService = new PassTicketService(messageService);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
     }
 
@@ -59,7 +61,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void testCreateCommand() {
+    void testCreateCommand() throws IRRPassTicketGenerationException {
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
         QueryResponse queryResponse = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
@@ -137,14 +139,14 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, applId);
         QueryResponse queryResponse = new QueryResponse("domain", UNKNOWN_USER, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
-        Exception exception = assertThrows(PassTicketException.class,
+        Exception exception = assertThrows(IRRPassTicketGenerationException.class,
             () -> httpBasicPassTicketScheme.createCommand(authentication, () -> queryResponse),
             "Expected exception is not AuthenticationException");
-        assertEquals((String.format("Could not generate PassTicket for user ID %s and APPLID %s. Supply a valid user and application name, and check that corresponding permissions have been set up.", UNKNOWN_USER, applId)), exception.getMessage());
+        assertEquals((String.format("Error on generation of PassTicket: Not authorized to use this service. Verify that the user and the application name are valid, and check that corresponding permissions have been set up.", UNKNOWN_USER, applId)), exception.getMessage());
     }
 
     @Test
-    void testIsRequiredValidJwt() {
+    void testIsRequiredValidJwt() throws IRRPassTicketGenerationException {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, 1);
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
@@ -154,13 +156,13 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void whenCallWithoutJwt_thenDoNothing() {
+    void whenCallWithoutJwt_thenDoNothing() throws IRRPassTicketGenerationException {
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, () -> null);
         assertSame(AuthenticationCommand.EMPTY, ac);
     }
 
-    private HttpBasicPassTicketScheme.PassTicketCommand getPassTicketCommand() {
+    private HttpBasicPassTicketScheme.PassTicketCommand getPassTicketCommand() throws IRRPassTicketGenerationException {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.YEAR, 1);
 
@@ -172,7 +174,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenJwtInCookie_whenApply_thenJwtIsRemoved() {
+    void givenJwtInCookie_whenApply_thenJwtIsRemoved() throws IRRPassTicketGenerationException {
         AuthenticationCommand command = getPassTicketCommand();
         RequestContext requestContext = new RequestContext();
         requestContext.addZuulRequestHeader("cookie",
@@ -188,7 +190,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenNoCookie_whenApplyToRequest_thenNoCookies() {
+    void givenNoCookie_whenApplyToRequest_thenNoCookies() throws IRRPassTicketGenerationException {
         AuthenticationCommand command = getPassTicketCommand();
         HttpRequest httpRequest = new HttpGet();
 
@@ -198,7 +200,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenJwtInCookie_whenApplyToRequest_thenJwtIsRemoved() {
+    void givenJwtInCookie_whenApplyToRequest_thenJwtIsRemoved() throws IRRPassTicketGenerationException {
         AuthenticationCommand command = getPassTicketCommand();
         HttpRequest httpRequest = new HttpGet();
         httpRequest.setHeader("cookie",

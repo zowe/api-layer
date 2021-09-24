@@ -19,6 +19,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
@@ -74,7 +75,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
             }
         } catch (TokenExpireException tee) {
             cmd = null;
-        } catch (AuthenticationException ae) {
+        } catch (AuthenticationException | IRRPassTicketGenerationException ae) {
             rejected = true;
         } catch (Exception e) {
             throw new ZuulRuntimeException(

@@ -16,12 +16,12 @@ public class IRRPassTicketEvaluationException extends AbstractIRRPassTicketExcep
 
     private static final long serialVersionUID = -7401871844111323433L;
 
-    public IRRPassTicketEvaluationException(int safRc, int racfRc, int racfRsn) {
-        super(safRc, racfRc, racfRsn);
+    public IRRPassTicketEvaluationException(ErrorCode errorCode, String user, String applId) {
+        super(errorCode, user, applId);
     }
 
-    public IRRPassTicketEvaluationException(ErrorCode errorCode) {
-        super(errorCode);
+    public IRRPassTicketEvaluationException(int safRc, int racfRc, int racfRsn, String user, String applId) {
+        super(safRc, racfRc, racfRsn, user, applId);
     }
 
     @Override

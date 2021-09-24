@@ -25,6 +25,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
@@ -58,7 +59,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void testRun() {
+    void testRun() throws IRRPassTicketGenerationException {
         Mockito.when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
 
         HttpServletRequest request = mock(HttpServletRequest.class);
@@ -101,7 +102,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         }
     }
 
-    private AuthenticationCommand createJwtValidationCommand(String jwtToken) {
+    private AuthenticationCommand createJwtValidationCommand(String jwtToken) throws IRRPassTicketGenerationException {
         RequestContext requestContext = mock(RequestContext.class);
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
         RequestContext.testSetCurrentContext(requestContext);
@@ -115,7 +116,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenValidJwt_whenTokenRequired_thenCallThrought() {
+    void givenValidJwt_whenTokenRequired_thenCallThrought() throws IRRPassTicketGenerationException {
         String jwtToken = "invalidJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         doReturn(new TokenAuthentication("user", jwtToken)).when(authenticationService).validateJwtToken(jwtToken);
@@ -128,7 +129,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenValidJwt_whenTokenRequired_thenRejected() {
+    void givenValidJwt_whenTokenRequired_thenRejected() throws IRRPassTicketGenerationException {
         String jwtToken = "validJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         doReturn(TokenAuthentication.createAuthenticated("user", jwtToken)).when(authenticationService).validateJwtToken(jwtToken);
@@ -141,7 +142,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenValidJwt_whenCommandFailed_thenInternalError() {
+    void givenValidJwt_whenCommandFailed_thenInternalError() throws IRRPassTicketGenerationException {
         String jwtToken = "validJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         doThrow(new RuntimeException()).when(cmd).apply(null);
@@ -163,7 +164,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenExpiredJwt_thenCallThrought() {
+    void givenExpiredJwt_thenCallThrought() throws IRRPassTicketGenerationException {
         String jwtToken = "expiredJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         doThrow(new TokenExpireException("Token is expired.")).when(authenticationService).validateJwtToken(jwtToken);
@@ -176,7 +177,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenInvalidJwt_whenAuthenticationException_thenReject() {
+    void givenInvalidJwt_whenAuthenticationException_thenReject() throws IRRPassTicketGenerationException {
         String jwtToken = "unparsableJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         AuthenticationException ae = mock(AuthenticationException.class);

@@ -30,6 +30,7 @@ import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationSche
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.util.CacheUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -89,7 +90,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) throws IRRPassTicketGenerationException {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
         if (jwtToken == null) return scheme.createCommand(authentication, () -> null);
         return scheme.createCommand(authentication, () -> authenticationService.parseJwtToken(jwtToken));
@@ -103,7 +104,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) throws IRRPassTicketGenerationException {
         final Application application = discoveryClient.getApplication(serviceId);
         if (application == null) return AuthenticationCommand.EMPTY;
 
@@ -174,7 +175,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
                     rejected = (jwtToken == null) || !authenticationService.validateJwtToken(jwtToken).isAuthenticated();
                 }
 
-            } catch (AuthenticationException ae) {
+            } catch (AuthenticationException | IRRPassTicketGenerationException ae) {
                 rejected = true;
             }
 

@@ -16,6 +16,7 @@ import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -85,9 +86,9 @@ class TokenCreationServiceTest {
     void givenZosmfIsAvailableButPassticketGenerationFails_whenTokenIsRequested_thenExceptionIsThrown() throws IRRPassTicketGenerationException {
         when(providers.isZosmfAvailable()).thenReturn(true);
         when(providers.isZosfmUsed()).thenReturn(true);
-        when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenThrow(new IRRPassTicketGenerationException(4, 4, 4));
+        when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenThrow(new IRRPassTicketGenerationException(4, 4, 4, "user", "applid"));
 
-        assertThrows(PassTicketException.class,
+        assertThrows(AuthenticationTokenException.class,
             () -> underTest.createJwtTokenWithoutCredentials(VALID_USER_ID)
         );
     }

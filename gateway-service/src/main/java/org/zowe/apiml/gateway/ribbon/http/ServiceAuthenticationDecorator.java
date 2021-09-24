@@ -15,16 +15,17 @@ import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpRequest;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.server.ResponseStatusException;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
@@ -35,6 +36,7 @@ public class ServiceAuthenticationDecorator {
 
     private final ServiceAuthenticationService serviceAuthenticationService;
     private final AuthenticationService authenticationService;
+    private final PassTicketService passTicketService;
 
     /**
      * If a service requires authentication,
@@ -46,8 +48,9 @@ public class ServiceAuthenticationDecorator {
      * provided.
      *
      * @param request Current http request.
+     * @return
      */
-    public void process(HttpRequest request) {
+    public ResponseEntity<ApiMessageView> process(HttpRequest request) {
         final RequestContext context = RequestContext.getCurrentContext();
 
         if (context.get(AUTHENTICATION_COMMAND_KEY) instanceof ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand) {
@@ -63,7 +66,7 @@ public class ServiceAuthenticationDecorator {
                 cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, jwtToken);
 
                 if (cmd == null) {
-                    return;
+                    return null;
                 }
 
                 if (cmd.isRequiredValidJwt()
@@ -72,10 +75,11 @@ public class ServiceAuthenticationDecorator {
                 }
             }
 
-            catch (PassTicketException ae) {
-                log.error("The request to service " + info.getInstanceId() + " has failed due to this reason: " + ae.getMessage());
-                throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, ae.getMessage(), ae);
+            catch (IRRPassTicketGenerationException ae) {
+                log.error(String.format("The request to service %s has failed because Zowe API ML user ID %s is not authorized to generate PassTickets for APPLID %s.", info.getInstanceId(), ae.getUser(), ae.getApplId()));
+                return ResponseEntity
+                    .status(ae.getErrorCode().getHttpStatus())
+                    .body(passTicketService.writeResponse(ae));
             }
 
             catch (AuthenticationException ae) {
@@ -84,6 +88,7 @@ public class ServiceAuthenticationDecorator {
 
             cmd.applyToRequest(request);
         }
+        return null;
     }
 }
 

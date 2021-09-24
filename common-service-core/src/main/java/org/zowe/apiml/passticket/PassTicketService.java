@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.passticket;
 
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 import org.zowe.apiml.util.ObjectUtil;
 import lombok.AllArgsConstructor;
@@ -27,8 +29,10 @@ import java.util.Set;
 public class PassTicketService {
 
     private IRRPassTicket irrPassTicket;
+    private final MessageService messageService;
 
-    public PassTicketService() {
+    public PassTicketService(MessageService messageService) {
+        this.messageService = messageService;
         this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
             "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
             new ClassOrDefaultProxyUtils.ByMethodName<>(
@@ -52,6 +56,14 @@ public class PassTicketService {
         return stateInterface.isUsingBaseImplementation();
     }
 
+    public ApiMessageView writeResponse(IRRPassTicketGenerationException exception) {
+        return messageService.createMessage(
+            "org.zowe.apiml.security.ticket.generateFailed",
+            exception.getErrorCode().getMessage() +
+                String.format(" Your ID is %s and your APPLID is %s.",
+                exception.getUser(), exception.getApplId())).mapToView();
+    }
+
     public static class DefaultPassTicketImpl implements IRRPassTicket {
 
         private static int id = 0;
@@ -72,7 +84,7 @@ public class PassTicketService {
             ObjectUtil.requireNotNull(passTicket, "Parameter passTicket is empty");
 
             if (StringUtils.equalsIgnoreCase(UNKNOWN_APPLID, applId)) {
-                throw new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28);
+                throw new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, userId, applId);
             }
 
             if (userId.equals(ZOWE_DUMMY_USERID) && passTicket.startsWith(ZOWE_DUMMY_PASS_TICKET_PREFIX)) {
@@ -82,18 +94,18 @@ public class PassTicketService {
             final Set<String> passTickets = userAppToPasstickets.get(new UserApp(userId, applId));
 
             if ((passTickets == null) || !passTickets.contains(passTicket)) {
-                throw new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32);
+                throw new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32, userId, applId);
             }
         }
 
         @Override
         public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
             if (StringUtils.equalsIgnoreCase(UNKNOWN_USER, userId)) {
-                throw new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16);
+                throw new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16, userId, applId);
             }
 
             if (StringUtils.equalsIgnoreCase(UNKNOWN_APPLID, applId)) {
-                throw new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28);
+                throw new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, userId, applId);
             }
 
             if (StringUtils.equalsIgnoreCase(DUMMY_USER, userId)) {

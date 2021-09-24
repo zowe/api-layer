@@ -16,14 +16,14 @@ class IRRPassTicketEvaluationExceptionTest {
 
     @Test
     void testInit() {
-        IRRPassTicketEvaluationException exception = new IRRPassTicketEvaluationException(8, 12, 20);
+        IRRPassTicketEvaluationException exception = new IRRPassTicketEvaluationException(8, 12, 20, "user", "applId");
         assertEquals(8, exception.getSafRc());
         assertEquals(12, exception.getRacfRc());
         assertEquals(20, exception.getRacfRsn());
         assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_12_20, exception.getErrorCode());
         assertEquals("Error on evaluation of PassTicket: Invocation of the Security Server Network Authentication Service Program Call (PC) interface failed with an 'abend in the PC service routine' return code. The symptom record associated with this abend can be found in the logrec data set.", exception.getMessage());
 
-        IRRPassTicketEvaluationException exception2 = new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28);
+        IRRPassTicketEvaluationException exception2 = new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, "user", "applId");
         assertEquals(8, exception2.getSafRc());
         assertEquals(16, exception2.getRacfRc());
         assertEquals(28, exception2.getRacfRsn());

@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.util.function.Supplier;
@@ -34,7 +35,7 @@ public interface AbstractAuthenticationScheme {
      * @param authentication DTO describing details about authentication
      * @param token User's parsed (Zowe's) JWT token, evaluated only, if needed
      */
-    AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token);
+    AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) throws IRRPassTicketGenerationException;
 
     /**
      * Define implementation, which will be use in case no scheme is defined.

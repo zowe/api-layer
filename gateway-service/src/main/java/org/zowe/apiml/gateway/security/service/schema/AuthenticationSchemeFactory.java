@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
@@ -78,7 +79,7 @@ public class AuthenticationSchemeFactory {
         return output;
     }
 
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication) {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication) throws IRRPassTicketGenerationException {
         final AbstractAuthenticationScheme scheme;
         if ((authentication == null) || (authentication.getScheme() == null)) {
             scheme = defaultScheme;

@@ -22,6 +22,8 @@ import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
@@ -43,13 +45,13 @@ class ServiceAuthenticationDecoratorTest {
 
     @BeforeEach
     void setUp() {
-       decorator = new ServiceAuthenticationDecorator(serviceAuthenticationService, authenticationService);
+       decorator = new ServiceAuthenticationDecorator(serviceAuthenticationService, authenticationService, mock(PassTicketService.class));
        request = new HttpGet("/");
        RequestContext.getCurrentContext().clear();
     }
 
     @Test
-    void givenContextWithoutCommand_whenProcess_thenNoAction() {
+    void givenContextWithoutCommand_whenProcess_thenNoAction() throws IRRPassTicketGenerationException {
         HttpRequest request = new HttpGet("/");
 
         decorator.process(request);
@@ -59,7 +61,7 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenContextWithAnyOtherCommand_whenProcess_thenNoAction() {
+    void givenContextWithAnyOtherCommand_whenProcess_thenNoAction() throws IRRPassTicketGenerationException {
         HttpRequest request = new HttpGet("/");
         AuthenticationCommand cmd = mock(ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand.class);
         prepareContext(cmd);
@@ -71,7 +73,7 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenContextWithCorrectKey_whenProcess_thenShouldRetrieveCommand() {
+    void givenContextWithCorrectKey_whenProcess_thenShouldRetrieveCommand() throws IRRPassTicketGenerationException {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareContext(universalCmd);
         doReturn(TokenAuthentication.createAuthenticated("user", "jwtToken")).when(authenticationService).validateJwtToken("jwtToken");
@@ -92,7 +94,7 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenContextWithCorrectKeyAndJWT_whenJwtNotAuthenticated_thenShouldAbort() {
+    void givenContextWithCorrectKeyAndJWT_whenJwtNotAuthenticated_thenShouldAbort() throws IRRPassTicketGenerationException {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareContext(universalCmd);
         TokenAuthentication tokenAuthentication = mock(TokenAuthentication.class);
@@ -106,7 +108,7 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenContextWithCorrectKeyAndJWT_whenAuthenticationThrows_thenShouldAbort() {
+    void givenContextWithCorrectKeyAndJWT_whenAuthenticationThrows_thenShouldAbort() throws IRRPassTicketGenerationException {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareContext(universalCmd);
         AuthenticationException ae = mock(AuthenticationException.class);
@@ -119,7 +121,7 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenWrongContext_whenProcess_thenReturnWhenCmdIsNull() throws RequestAbortException {
+    void givenWrongContext_whenProcess_thenReturnWhenCmdIsNull() throws RequestAbortException, IRRPassTicketGenerationException {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareWrongContextForCmdNull(universalCmd);
 
@@ -129,7 +131,7 @@ class ServiceAuthenticationDecoratorTest {
         verify(universalCmd, times(0)).applyToRequest(request);
     }
 
-    private void prepareContext(AuthenticationCommand command) {
+    private void prepareContext(AuthenticationCommand command) throws IRRPassTicketGenerationException {
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
         doReturn(Optional.of("jwtToken")).when(authenticationService).getJwtTokenFromRequest(any());
@@ -140,7 +142,7 @@ class ServiceAuthenticationDecoratorTest {
         doReturn(true).when(command).isRequiredValidJwt();
     }
 
-    private void prepareWrongContextForCmdNull(AuthenticationCommand command) {
+    private void prepareWrongContextForCmdNull(AuthenticationCommand command) throws IRRPassTicketGenerationException {
 
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);

@@ -15,6 +15,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
@@ -123,7 +124,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void testGetAuthenticationCommand() {
+    void testGetAuthenticationCommand() throws IRRPassTicketGenerationException {
         final AbstractAuthenticationScheme byPass = spy(createScheme(AuthenticationScheme.BYPASS, true));
         final AbstractAuthenticationScheme passTicket = spy(createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false));
 
@@ -173,7 +174,7 @@ class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void testUnknownScheme() {
+    void testUnknownScheme() throws IRRPassTicketGenerationException {
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(
             mock(AuthenticationService.class),
             Arrays.asList(

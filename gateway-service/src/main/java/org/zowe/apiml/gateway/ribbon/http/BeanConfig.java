@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
+import org.zowe.apiml.passticket.PassTicketService;
 
 /**
  * Bean construction for HttpClientProxy
@@ -35,8 +36,9 @@ public class BeanConfig {
     @Bean
     public ServiceAuthenticationDecorator serviceAuthenticationDecorator(
         ServiceAuthenticationService serviceAuthenticationService,
-        AuthenticationService authenticationService
+        AuthenticationService authenticationService,
+        PassTicketService passTicketService
     ) {
-        return new ServiceAuthenticationDecorator(serviceAuthenticationService, authenticationService);
+        return new ServiceAuthenticationDecorator(serviceAuthenticationService, authenticationService, passTicketService);
     }
 }

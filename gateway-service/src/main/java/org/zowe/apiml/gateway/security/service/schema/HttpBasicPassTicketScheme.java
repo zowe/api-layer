@@ -18,7 +18,6 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.message.BasicHeader;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
@@ -57,7 +56,7 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> tokenSupplier) {
+    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> tokenSupplier) throws IRRPassTicketGenerationException {
         final long before = System.currentTimeMillis();
         final QueryResponse token = tokenSupplier.get();
 
@@ -68,13 +67,7 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
         final String applId = authentication.getApplid();
         final String userId = token.getUserId();
         String passTicket;
-        try {
-            passTicket = passTicketService.generate(userId, applId);
-        } catch (IRRPassTicketGenerationException e) {
-            throw new PassTicketException(
-                String.format("Could not generate PassTicket for user ID %s and APPLID %s. Supply a valid user and application name, and check that corresponding permissions have been set up.", userId, applId), e
-            );
-        }
+        passTicket = passTicketService.generate(userId, applId);
         final String encoded = Base64.getEncoder()
             .encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));
         final String value = "Basic " + encoded;

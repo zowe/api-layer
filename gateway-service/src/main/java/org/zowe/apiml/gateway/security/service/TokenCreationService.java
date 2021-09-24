@@ -19,6 +19,7 @@ import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 @RequiredArgsConstructor
@@ -57,9 +58,7 @@ public class TokenCreationService {
                 return ((TokenAuthentication) zosmfAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(user, passTicket)))
                     .getCredentials();
             } catch (IRRPassTicketGenerationException e) {
-                throw new PassTicketException(
-                    String.format("Could not generate PassTicket for user ID %s and APPLID %s. Supply a valid user and application name, and check that corresponding permissions have been set up.", user, zosmfApplId), e
-                );
+                throw new AuthenticationTokenException("Problem with generating PassTicket");
             }
         } else {
             final String domain = "security-domain";
