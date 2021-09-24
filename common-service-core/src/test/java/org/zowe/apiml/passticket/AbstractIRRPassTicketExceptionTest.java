@@ -38,7 +38,7 @@ class AbstractIRRPassTicketExceptionTest {
     class TestException extends AbstractIRRPassTicketException {
 
         public TestException(int safRc, int racfRc, int racfRsn) {
-            super(safRc, racfRc, racfRsn);
+            super(safRc, racfRc, racfRsn, "user", "applId");
         }
 
     }

@@ -16,14 +16,14 @@ class IRRPassTicketGenerationExceptionTest {
 
     @Test
     void testInit() {
-        IRRPassTicketGenerationException exception = new IRRPassTicketGenerationException(8, 16, 32);
+        IRRPassTicketGenerationException exception = new IRRPassTicketGenerationException(8, 16, 32, "user", "applId");
         assertEquals(8, exception.getSafRc());
         assertEquals(16, exception.getRacfRc());
         assertEquals(32, exception.getRacfRsn());
         assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32, exception.getErrorCode());
         assertEquals("Error on generation of PassTicket: " + AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32.getMessage(), exception.getMessage());
 
-        IRRPassTicketGenerationException exception2 = new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_12_8);
+        IRRPassTicketGenerationException exception2 = new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_12_8, "user", "applId");
         assertEquals(8, exception2.getSafRc());
         assertEquals(12, exception2.getRacfRc());
         assertEquals(8, exception2.getRacfRsn());

@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.passticket;
 
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.*;
 
 class PassTicketServiceTest {
@@ -35,7 +37,7 @@ class PassTicketServiceTest {
 
     @BeforeEach
     void setUp() {
-        passTicketService = new PassTicketService();
+        passTicketService = new PassTicketService(mock(MessageService.class));
     }
 
     @Test
@@ -47,7 +49,7 @@ class PassTicketServiceTest {
 
     @Test
     void testInit() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
-        PassTicketService passTicketService = new PassTicketService();
+        PassTicketService passTicketService = new PassTicketService(mock(MessageService.class));
         ReflectionTestUtils.setField(passTicketService, "irrPassTicket", new IRRPassTicket() {
             @Override
             public void evaluate(String userId, String applId, String passTicket) {
