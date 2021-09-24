@@ -25,7 +25,7 @@ apiml:
         discoveryServiceUrls: https://localhost:10011/eureka/
         dsIpAddress: 0.0.0.0
         eurekaPassword: password
-        eurekaUserId: eureka
+        eurekaUserName: eureka
         gatewayHostname: https://localhost:10010
         preferIpAddress: false
         truststore: keystore/localhost/localhost.truststore.p12

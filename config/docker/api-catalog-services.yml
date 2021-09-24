@@ -24,7 +24,7 @@ apiml:
         port: 10014
         discoveryServiceUrls: https://discovery-service:10011/eureka/
         eurekaPassword: password
-        eurekaUserId: eureka
+        eurekaUserName: eureka
         gatewayHostname: https://gateway-service:10010
         preferIpAddress: false
         truststore: /docker/all-services.truststore.p12

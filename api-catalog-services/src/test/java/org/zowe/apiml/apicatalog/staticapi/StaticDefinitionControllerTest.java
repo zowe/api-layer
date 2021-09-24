@@ -15,16 +15,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -41,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class)},
     excludeAutoConfiguration = {SecurityAutoConfiguration.class}
 )
+@ContextConfiguration(classes = StaticApiContextConfiguration.class)
 class StaticDefinitionControllerTest {
 
     private static final String STATIC_DEF_GENERATE_ENDPOINT = "/static-api/generate";
@@ -146,28 +143,6 @@ class StaticDefinitionControllerTest {
                 mockMvc.perform(delete(STATIC_DEF_DELETE_ENDPOINT).header("Service-Id", "test-service"))
                     .andExpect(status().is2xxSuccessful());
             }
-        }
-    }
-
-    @Configuration
-    static class ContextConfiguration {
-
-        @MockBean
-        private StaticDefinitionGenerator staticDefinitionGenerator;
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService("/apicatalog-log-messages.yml");
-        }
-
-        @Bean
-        public StaticDefinitionControllerExceptionHandler staticDefinitionControllerExceptionHandler() {
-            return new StaticDefinitionControllerExceptionHandler(messageService());
-        }
-
-        @Bean
-        public StaticDefinitionController staticAPIRefreshController() {
-            return new StaticDefinitionController(staticDefinitionGenerator);
         }
     }
 }
