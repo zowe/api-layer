@@ -27,7 +27,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 
 @Component
 @RequiredArgsConstructor
-public class PerServiceHeaderSanitizerFilter extends ZuulFilter {
+public class PerServiceIgnoreHeaderFilter extends ZuulFilter {
 
     private final DiscoveryClient discoveryClient;
     private final ProxyRequestHelper proxyRequestHelper;
