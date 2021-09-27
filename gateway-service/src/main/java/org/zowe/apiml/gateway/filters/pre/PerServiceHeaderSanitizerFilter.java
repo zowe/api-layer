@@ -18,9 +18,8 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.routing.RouteUtil;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
@@ -51,39 +50,18 @@ public class PerServiceHeaderSanitizerFilter extends ZuulFilter {
     @Override
     public Object run() throws ZuulException {
         RequestContext context = RequestContext.getCurrentContext();
-        Optional<ServiceInstance> validInstance = getInstanceInfoForUri(context.getRequest().getRequestURI());
+        Optional<ServiceInstance> validInstance = RouteUtil.getInstanceInfoForUri(context.getRequest().getRequestURI(), discoveryClient);
+
         if (validInstance.isPresent()) {
             ServiceInstance serviceInstance = validInstance.get();
-            String headersToSanitize = serviceInstance.getMetadata().get("apiml.headersToIgnore");
-            if (headersToSanitize != null && !headersToSanitize.trim().isEmpty()) {
-                String[] headers = StringUtils.stripAll(headersToSanitize.split(","));
+            String headersToIgnore = serviceInstance.getMetadata().get("apiml.headersToIgnore");
+
+            if (headersToIgnore != null && !headersToIgnore.trim().isEmpty()) {
+                String[] headers = StringUtils.stripAll(headersToIgnore.split(","));
                 proxyRequestHelper.addIgnoredHeaders(headers);
             }
         }
 
         return null;
-    }
-
-    // TODO DRY - move to utils or something
-    Optional<ServiceInstance> getInstanceInfoForUri(String requestUri) {
-        // Compress only if there is valid instance with relevant metadata.
-        String[] uriParts = requestUri.split("/");
-        List<ServiceInstance> instances;
-        if (uriParts.length < 2) {
-            return Optional.empty();
-        }
-        if ("api".equals(uriParts[1]) || "ui".equals(uriParts[1])) {
-            if (uriParts.length < 4) {
-                return Optional.empty();
-            }
-            instances = discoveryClient.getInstances(uriParts[3]);
-        } else {
-            instances = discoveryClient.getInstances(uriParts[1]);
-        }
-        if (instances == null || instances.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return Optional.of(instances.get(0));
     }
 }

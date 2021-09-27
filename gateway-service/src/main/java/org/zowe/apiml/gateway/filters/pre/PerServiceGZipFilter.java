@@ -15,6 +15,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.gateway.routing.RouteUtil;
 import org.zowe.apiml.gzip.GZipResponseUtils;
 import org.zowe.apiml.gzip.GZipResponseWrapper;
 
@@ -94,36 +95,13 @@ public class PerServiceGZipFilter extends OncePerRequestFilter {
     boolean requiresCompression(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
         boolean acceptsCompression = requestAcceptsCompression(request);
-        Optional<ServiceInstance> validInstance = getInstanceInfoForUri(requestUri);
+        Optional<ServiceInstance> validInstance = RouteUtil.getInstanceInfoForUri(requestUri, discoveryClient);
         if (!validInstance.isPresent()) {
             return false;
         }
         boolean serviceRequestsCompression = serviceOnRouteRequestsCompression(validInstance.get(), requestUri);
 
         return acceptsCompression && serviceRequestsCompression;
-    }
-
-    // Verify non versioned APIs
-    Optional<ServiceInstance> getInstanceInfoForUri(String requestUri) {
-        // Compress only if there is valid instance with relevant metadata.
-        String[] uriParts = requestUri.split("/");
-        List<ServiceInstance> instances;
-        if (uriParts.length < 2) {
-            return Optional.empty();
-        }
-        if ("api".equals(uriParts[1]) || "ui".equals(uriParts[1])) {
-            if (uriParts.length < 4) {
-                return Optional.empty();
-            }
-            instances = discoveryClient.getInstances(uriParts[3]);
-        } else {
-            instances = discoveryClient.getInstances(uriParts[1]);
-        }
-        if (instances == null || instances.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return Optional.of(instances.get(0));
     }
 
     boolean requestAcceptsCompression(HttpServletRequest request) {
