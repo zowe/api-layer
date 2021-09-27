@@ -16,6 +16,7 @@ import org.apache.http.HttpStatus;
 /**
  * Abstract exception from IRR passticket service. It collect common values about exception
  */
+@AllArgsConstructor
 @Getter
 public abstract class AbstractIRRPassTicketException extends Exception {
 
@@ -27,22 +28,13 @@ public abstract class AbstractIRRPassTicketException extends Exception {
     protected final String user;
     protected final String applId;
 
-    public AbstractIRRPassTicketException(ErrorCode errorCode, String user, String applId) {
+    protected AbstractIRRPassTicketException(ErrorCode errorCode, String user, String applId) {
         this.safRc = errorCode.getSafRc();
         this.racfRc = errorCode.getRacfRc();
         this.racfRsn = errorCode.getRacfRsn();
         this.user = user;
         this.applId = applId;
     }
-
-    public AbstractIRRPassTicketException(int safRc, int racfRc, int racfRsn, String user, String applId) {
-        this.safRc = safRc;
-        this.racfRc = racfRc;
-        this.racfRsn = racfRsn;
-        this.user = user;
-        this.applId = applId;
-    }
-
 
     public ErrorCode getErrorCode() {
         return ErrorCode.getErrorCode(this);
