@@ -37,10 +37,10 @@ public class PassTicketService {
             "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
             new ClassOrDefaultProxyUtils.ByMethodName<>(
                 "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
-                IRRPassTicketEvaluationException.class, "getSafRc", "getRacfRc", "getRacfRsn"),
+                IRRPassTicketEvaluationException.class, "getSafRc", "getRacfRc", "getRacfRsn", "getUser", "getApplId"),
             new ClassOrDefaultProxyUtils.ByMethodName<>(
                 "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
-                IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn"));
+                IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn", "getUser", "getApplId"));
     }
 
     public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
