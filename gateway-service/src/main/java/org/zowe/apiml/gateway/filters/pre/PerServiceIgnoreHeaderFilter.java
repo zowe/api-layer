@@ -14,9 +14,11 @@ import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
+import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.routing.RouteUtil;
 
@@ -31,6 +33,12 @@ public class PerServiceIgnoreHeaderFilter extends ZuulFilter {
 
     private final DiscoveryClient discoveryClient;
     private final ProxyRequestHelper proxyRequestHelper;
+
+    @Autowired
+    public PerServiceIgnoreHeaderFilter(DiscoveryClient discoveryClient, ZuulProperties zuulProperties) {
+        this.discoveryClient = discoveryClient;
+        this.proxyRequestHelper = new ProxyRequestHelper(zuulProperties);
+    }
 
     @Override
     public String filterType() {
