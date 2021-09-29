@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
-import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +24,7 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 class PerServiceIgnoreHeaderFilterTest {
     private static final String SERVICE_ID = "serviceid";
@@ -40,11 +40,9 @@ class PerServiceIgnoreHeaderFilterTest {
 
     @BeforeEach
     void setup() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRequestURI("/" + SERVICE_ID + "/api/v1");
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
-        ctx.setRequest(request);
+        ctx.set(SERVICE_ID_KEY, SERVICE_ID);
 
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(instance));
         when(instance.getMetadata()).thenReturn(metadata);

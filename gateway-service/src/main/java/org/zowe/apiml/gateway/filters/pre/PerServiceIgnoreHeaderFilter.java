@@ -20,12 +20,10 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.gateway.routing.RouteUtil;
 
-import java.util.Optional;
+import java.util.List;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 @Component
 @RequiredArgsConstructor
@@ -58,10 +56,11 @@ public class PerServiceIgnoreHeaderFilter extends ZuulFilter {
     @Override
     public Object run() throws ZuulException {
         RequestContext context = RequestContext.getCurrentContext();
-        Optional<ServiceInstance> validInstance = RouteUtil.getInstanceInfoForUri(context.getRequest().getRequestURI(), discoveryClient);
+        String serviceId = (String) context.get(SERVICE_ID_KEY);
+        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(serviceId);
 
-        if (validInstance.isPresent()) {
-            ServiceInstance serviceInstance = validInstance.get();
+        if (serviceInstances != null && !serviceInstances.isEmpty()) {
+            ServiceInstance serviceInstance = serviceInstances.get(0);
             String headersToIgnore = serviceInstance.getMetadata().get("apiml.headersToIgnore");
 
             if (headersToIgnore != null && !headersToIgnore.trim().isEmpty()) {

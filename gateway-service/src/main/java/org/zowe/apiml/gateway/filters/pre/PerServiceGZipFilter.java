@@ -15,7 +15,6 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.zowe.apiml.gateway.routing.RouteUtil;
 import org.zowe.apiml.gzip.GZipResponseUtils;
 import org.zowe.apiml.gzip.GZipResponseWrapper;
 
@@ -25,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.zip.GZIPOutputStream;
@@ -94,13 +94,36 @@ public class PerServiceGZipFilter extends OncePerRequestFilter {
     boolean requiresCompression(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
         boolean acceptsCompression = requestAcceptsCompression(request);
-        Optional<ServiceInstance> validInstance = RouteUtil.getInstanceInfoForUri(requestUri, discoveryClient);
+        Optional<ServiceInstance> validInstance = getInstanceInfoForUri(requestUri);
         if (!validInstance.isPresent()) {
             return false;
         }
         boolean serviceRequestsCompression = serviceOnRouteRequestsCompression(validInstance.get(), requestUri);
 
         return acceptsCompression && serviceRequestsCompression;
+    }
+
+    // Verify non versioned APIs
+    Optional<ServiceInstance> getInstanceInfoForUri(String requestUri) {
+        // Compress only if there is valid instance with relevant metadata.
+        String[] uriParts = requestUri.split("/");
+        List<ServiceInstance> instances;
+        if (uriParts.length < 2) {
+            return Optional.empty();
+        }
+        if ("api".equals(uriParts[1]) || "ui".equals(uriParts[1])) {
+            if (uriParts.length < 4) {
+                return Optional.empty();
+            }
+            instances = discoveryClient.getInstances(uriParts[3]);
+        } else {
+            instances = discoveryClient.getInstances(uriParts[1]);
+        }
+        if (instances == null || instances.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(instances.get(0));
     }
 
     boolean requestAcceptsCompression(HttpServletRequest request) {
@@ -124,9 +147,9 @@ public class PerServiceGZipFilter extends OncePerRequestFilter {
 
         String[] setOfRoutesToMatch = routesToCompress.split(",");
         AntPathMatcher matcher = new AntPathMatcher();
-        for (String pattern: setOfRoutesToMatch) {
+        for (String pattern : setOfRoutesToMatch) {
             if (!pattern.startsWith("/")) {
-               pattern = "/" + pattern;
+                pattern = "/" + pattern;
             }
             if (matcher.match(pattern, requestUri)) {
                 return true;
