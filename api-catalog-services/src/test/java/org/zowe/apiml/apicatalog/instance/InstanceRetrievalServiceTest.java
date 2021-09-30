@@ -21,9 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.*;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -44,8 +41,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "/application.yml")
-@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
-@Import(InstanceRetrievalServiceTest.TestConfig.class)
+@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = InstanceServicesContextConfiguration.class)
 class InstanceRetrievalServiceTest {
 
     private static final String APPS_ENDPOINT = "apps/";
@@ -330,13 +326,4 @@ class InstanceRetrievalServiceTest {
             )).thenReturn(new ResponseEntity<>(body, HttpStatus.OK));
     }
 
-    @Configuration
-    public static class TestConfig {
-
-        @Bean
-        public DiscoveryConfigProperties discoveryConfigProperties() {
-            return new DiscoveryConfigProperties();
-        }
-
-    }
 }

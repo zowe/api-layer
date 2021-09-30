@@ -23,6 +23,9 @@ public class AuthenticateApar extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
+        if (noAuthentication(headers)) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         if (isUnauthorized(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -42,6 +45,6 @@ public class AuthenticateApar extends FunctionalApar {
     }
 
     private boolean isUnauthorized(Map<String, String> headers) {
-        return containsInvalidUser(headers) && noLtpaCookie(headers);
+        return containsInvalidOrNoUser(headers) && noLtpaCookie(headers);
     }
 }

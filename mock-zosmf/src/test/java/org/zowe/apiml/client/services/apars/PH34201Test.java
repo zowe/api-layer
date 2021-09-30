@@ -27,12 +27,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
 
-class PH12143Test {
+class PH34201Test {
     private static final String SERVICE = "authentication";
     private static final String USERNAME = "USER";
     private static final String PASSWORD = "validPassword";
 
-    private PH12143 underTest;
+    private PH34201 underTest;
     private HttpServletResponse mockResponse;
     private Map<String, String> headers;
 
@@ -41,7 +41,7 @@ class PH12143Test {
         List<String> usernames = Collections.singletonList(USERNAME);
         List<String> passwords = Collections.singletonList(PASSWORD);
 
-        underTest = new PH12143(usernames, passwords, "../keystore/localhost/localhost.keystore.p12");
+        underTest = new PH34201(usernames, passwords, "../keystore/localhost/localhost.keystore.p12");
         mockResponse = mock(HttpServletResponse.class);
         headers = new HashMap<>();
     }
@@ -50,8 +50,8 @@ class PH12143Test {
     class whenAuthenticating {
         @ParameterizedTest
         @ValueSource(strings = {"create", "verify", "delete"})
-        void givenNoAuthorization_thenReturnInternalServerError(String method) {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        void givenNoAuthorization_thenReturnUnauthorized(String method) {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
 
@@ -60,8 +60,8 @@ class PH12143Test {
 
         @ParameterizedTest
         @ValueSource(strings = {"create", "verify", "delete"})
-        void givenEmptyAuthorization_thenReturnInternalServerError(String method) {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        void givenEmptyAuthorization_thenReturnUnauthorized(String method) {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
             headers.put("authorization", "");
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
@@ -173,36 +173,6 @@ class PH12143Test {
 
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, "delete", Optional.empty(), mockResponse, headers);
             assertThat(result, is(expected));
-        }
-    }
-
-    @Nested
-    class whenApplyApar {
-        @Test
-        void givenAuthenticationMethodNotHandled_thenReturnOriginalResult() {
-            Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
-
-            Optional<ResponseEntity<?>> result = underTest.apply("authentication", "default", previousResult, mockResponse, headers);
-            assertThat(result, is(previousResult));
-        }
-
-        @Test
-        void givenServiceNotHandled_thenReturnOriginalResult() {
-            Optional<ResponseEntity<?>> previousResult = Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT));
-
-            Optional<ResponseEntity<?>> result = underTest.apply("badservice", "", previousResult, mockResponse, headers);
-            assertThat(result, is(previousResult));
-        }
-    }
-
-    @Nested
-    class whenRetrieveJwtKeys {
-        @Test
-        void thenOkIsReturned() {
-            Optional<ResponseEntity<?>> result = underTest.apply("jwtKeys", "get", null, null, null);
-
-            assertThat(result.isPresent(), is(true));
-            assertThat(result.get().getStatusCode(), is(HttpStatus.OK));
         }
     }
 

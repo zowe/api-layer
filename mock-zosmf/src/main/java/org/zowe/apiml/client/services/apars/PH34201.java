@@ -16,21 +16,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("squid:S1452")
-public class PH12143 extends FunctionalApar {
+public class PH34201 extends FunctionalApar {
     private final String keystorePath;
 
-    public PH12143(List<String> usernames, List<String> passwords, String keystorePath) {
+    public PH34201(List<String> usernames, List<String> passwords, String keystorePath) {
         super(usernames, passwords);
         this.keystorePath = keystorePath;
     }
 
     @Override
     protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
-        if (noAuthentication(headers)) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (isUnauthorized(headers)) {
+        // JWT token not accepted for create method
+        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -40,26 +37,19 @@ public class PH12143 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        return handleAuthenticationCreate(headers, response);
+        if (containsInvalidOrNoUser(headers) && noJwtCookie(headers) && noLtpaCookie(headers)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        String[] credentials = getPiecesOfCredentials(headers);
+        return validJwtResponse(response, credentials[0], keystorePath);
     }
 
     @Override
     protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
-        if (noAuthentication(headers)) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (isUnauthorized(headers)) {
+        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers) && noJwtCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @Override
-    protected ResponseEntity<?> handleJwtKeys() {
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    private boolean isUnauthorized(Map<String, String> headers) {
-        return containsInvalidOrNoUser(headers) && noLtpaCookie(headers);
     }
 }

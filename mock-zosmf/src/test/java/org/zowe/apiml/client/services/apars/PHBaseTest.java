@@ -69,23 +69,23 @@ class PHBaseTest {
     @Nested
     class whenAuthenticateIsCalled {
         @Test
-        void givenVerifyMethodWithNoAuthorization_returnUnauthorized() {
+        void givenVerifyMethodWithNoAuthorization_returnInternalServerError() {
             Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();
-            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
         @Test
-        void givenVerifyMethodWithEmptyAuthorization_returnUnauthorized() {
+        void givenVerifyMethodWithEmptyAuthorization_returnInternalServerError() {
             headers.put("authorization", "");
 
             Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();
-            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
         @Test
