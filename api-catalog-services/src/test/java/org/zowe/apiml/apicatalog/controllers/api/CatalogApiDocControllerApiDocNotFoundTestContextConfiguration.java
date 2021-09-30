@@ -30,6 +30,9 @@ class CatalogApiDocControllerApiDocNotFoundTestContextConfiguration {
         when(apiServiceStatusService.getServiceCachedApiDocInfo("service2", "v1"))
             .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
 
+        when(apiServiceStatusService.getServiceCachedApiDocInfo("service2", null))
+            .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
+
         verify(apiServiceStatusService, never()).getServiceCachedApiDocInfo("service2", "v1");
 
         return new CatalogApiDocController(apiServiceStatusService);
@@ -41,7 +44,8 @@ class CatalogApiDocControllerApiDocNotFoundTestContextConfiguration {
     }
 
     @Bean
-    public CatalogApiDocControllerExceptionHandler catalogApiDocControllerExceptionHandler() {
-        return new CatalogApiDocControllerExceptionHandler(messageService());
+    public CatalogApiDocControllerExceptionHandler catalogApiDocControllerExceptionHandler(MessageService messageService) {
+        return new CatalogApiDocControllerExceptionHandler(messageService);
     }
+
 }
