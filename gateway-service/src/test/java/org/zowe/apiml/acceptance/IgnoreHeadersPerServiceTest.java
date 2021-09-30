@@ -25,9 +25,7 @@ import java.util.Collections;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayWithSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @AcceptanceTest
 public class IgnoreHeadersPerServiceTest extends AcceptanceTestWithTwoServices {
@@ -36,6 +34,9 @@ public class IgnoreHeadersPerServiceTest extends AcceptanceTestWithTwoServices {
 
     @BeforeEach
     void setup() throws IOException {
+        applicationRegistry.clearApplications();
+        reset(mockClient);
+
         mockValid200HttpResponse();
 
         MetadataBuilder customBuilder = MetadataBuilder.customInstance()
@@ -105,8 +106,6 @@ public class IgnoreHeadersPerServiceTest extends AcceptanceTestWithTwoServices {
                 .get(basePath + serviceWithDefaultConfiguration.getPath())
                 .then()
                 .statusCode(HttpStatus.SC_OK);
-
-            verify(mockClient, times(1)).execute(any(HttpUriRequest.class));
 
             ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
             verify(mockClient, times(1)).execute(captor.capture());
