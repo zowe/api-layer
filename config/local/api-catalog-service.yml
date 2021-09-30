@@ -16,6 +16,9 @@ server:
         keyStore: keystore/localhost/localhost.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
 
 apiml:
     service:
@@ -25,12 +28,10 @@ apiml:
         discoveryServiceUrls: https://localhost:10011/eureka/
         dsIpAddress: 0.0.0.0
         eurekaPassword: password
-        eurekaUserId: eureka
+        eurekaUserName: eureka
         gatewayHostname: https://localhost:10010
         preferIpAddress: false
-        truststore: keystore/localhost/localhost.truststore.p12
-        truststorePassword: password
-        truststoreType: PKCS12
+
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
         cacheRefreshRetryDelayInMillis: 10000

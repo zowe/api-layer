@@ -185,7 +185,7 @@ If your editor of choice happens to be Idea and you want to use its 'Run Dashboa
          discoveryLocations: http://eureka:password@discoveryInstance1:10022/eureka,http://eureka:password@discoveryInstance2:10033/eureka
          dsIpAddress: 0.0.0.0
          eurekaPassword: password
-         eurekaUserId: eureka
+         eurekaUserName: eureka
          hostname: discoveryInstance1
          initialCacheRefreshDelayInMillis: 10000
          ipAddress: 127.0.0.2
