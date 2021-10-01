@@ -26,7 +26,5 @@ autoEncoding:
 apimlServices:
   dynamic:
     - serviceId: apicatalog
-desktopIframePlugins:
-  - id: org.zowe.api.catalog
-    icon: assets/api-catalog.png
-    url: /ui/v1/apicatalog
+appfwPlugins:
+- path: "."
