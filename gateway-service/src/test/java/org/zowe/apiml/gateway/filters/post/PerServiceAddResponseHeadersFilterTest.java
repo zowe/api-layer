@@ -42,8 +42,8 @@ public class PerServiceAddResponseHeadersFilterTest {
 
     @BeforeEach
     void setup() {
-        context = mock(RequestContext.class);
-        when(context.get(SERVICE_ID_KEY)).thenReturn(SERVICE_ID);
+        context = spy(new RequestContext());
+        context.put(SERVICE_ID_KEY, SERVICE_ID);
         RequestContext.testSetCurrentContext(context);
 
         metadata = new HashMap<>();
