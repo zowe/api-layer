@@ -22,6 +22,7 @@ services:
       customMetadata:
           apiml:
               enableUrlEncodedCharacters: true
+              headersToIgnore: Origin
 
     - serviceId: ibmzosmf
       title: IBM z/OSMF
@@ -43,6 +44,7 @@ services:
       customMetadata:
           apiml:
               enableUrlEncodedCharacters: true
+              headersToIgnore: Origin
 catalogUiTiles:
     zosmf:
         title: z/OSMF services
