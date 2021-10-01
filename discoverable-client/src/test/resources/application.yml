@@ -41,11 +41,11 @@ apiml:
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
 
         routes:
-            -   gateway-url: "ui/v1"
+            -   gateway-url: "/ui/v1"
                 service-url: ${apiml.service.contextPath}
-            -   gateway-url: "api/v1"
+            -   gateway-url: "/api/v1"
                 service-url: ${apiml.service.contextPath}/api/v1
-            -   gateway-url: "ws/v1"
+            -   gateway-url: "/ws/v1"
                 service-url: ${apiml.service.contextPath}/ws
         apiInfo:
             -   apiId: zowe.apiml.discoverableclient
@@ -138,4 +138,3 @@ logging:
         com.netflix: INFO
 
 logbackServiceName: ZWEADC1
-

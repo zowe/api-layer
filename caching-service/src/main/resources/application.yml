@@ -61,7 +61,7 @@ apiml:
             scheme: x509
             headers: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         routes:
-            -   gateway-url: "api/v1"
+            -   gateway-url: "/api/v1"
                 service-url: ${apiml.service.contextPath}/api/v1
         apiInfo:
             -   apiId: zowe.apiml.cachingservice

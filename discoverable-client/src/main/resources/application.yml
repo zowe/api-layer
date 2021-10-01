@@ -50,17 +50,17 @@ apiml:
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
 
         routes:
-            -   gateway-url: "ui/v1"
+            -   gateway-url: "/ui/v1"
                 service-url: ${apiml.service.contextPath}
-            -   gateway-url: "api/v1"
+            -   gateway-url: "/api/v1"
                 service-url: ${apiml.service.contextPath}/api/v1
-            -   gateway-url: "api/v2"
+            -   gateway-url: "/api/v2"
                 service-url: ${apiml.service.contextPath}/api/v2
-            -   gateway-url: "ws/v1"
+            -   gateway-url: "/ws/v1"
                 service-url: ${apiml.service.contextPath}/ws
-            -   gateway-url: "sse/v1"
+            -   gateway-url: "/sse/v1"
                 service-url: ${apiml.service.contextPath}/
-            -   gateway-url: "graphql/v1"
+            -   gateway-url: "/graphql/v1"
                 service-url: ${apiml.service.contextPath}/
         apiInfo:
             -   apiId: zowe.apiml.discoverableclient.rest
