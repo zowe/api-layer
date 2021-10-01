@@ -59,7 +59,7 @@ Below is an example of the configuration.
     discoveryServiceUrls:
       - https://localhost:10011/eureka
     routes:
-      - gatewayUrl: api/v1
+      - gatewayUrl: /api/v1
         serviceRelativeUrl: /api/v1
     apiInfo:
       - apiId: org.zowe.hwexpress
