@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.error.ErrorUtils;
+import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.TokenExpireException;
@@ -51,6 +52,11 @@ public class SecurityErrorCheck implements ErrorCheck {
                 messageView = messageService.createMessage("org.zowe.apiml.security.login.invalidCredentials",
                     ErrorUtils.getGatewayUri(request)
                 ).mapToView();
+            } else if (cause instanceof PassTicketException) {
+                messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
+                    cause.getMessage() + ". " + cause.getCause()
+                ).mapToView();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(messageView);
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON).body(messageView);
         }

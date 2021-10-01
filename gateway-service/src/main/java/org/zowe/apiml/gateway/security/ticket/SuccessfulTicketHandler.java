@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.ticket;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.security.common.ticket.TicketRequest;
 import org.zowe.apiml.security.common.ticket.TicketResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -35,6 +36,7 @@ import java.io.IOException;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper mapper;
     private final PassTicketService passTicketService;
@@ -64,6 +66,7 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
                 e.getErrorCode().getMessage()).mapToView();
             mapper.writeValue(response.getWriter(), messageView);
+            log.debug("The generation of the PassTicket failed. Please supply a valid user and application name, and check that corresponding permissions have been set up.");
         }
 
         response.getWriter().flush();

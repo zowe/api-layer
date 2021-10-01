@@ -54,7 +54,7 @@ public abstract class AbstractIRRPassTicketException extends Exception {
         ERR_8_8_4(8, 8, 4, HttpStatus.SC_INTERNAL_SERVER_ERROR, "Parameter list error."),
         ERR_8_8_8(8, 8, 8, HttpStatus.SC_INTERNAL_SERVER_ERROR, "An internal error was encountered."),
         ERR_8_8_12(8, 8, 12, HttpStatus.SC_INTERNAL_SERVER_ERROR, "A recovery environment could not be established."),
-        ERR_8_8_16(8, 8, 16, HttpStatus.SC_INTERNAL_SERVER_ERROR, "Not authorized to use this service."),
+        ERR_8_8_16(8, 8, 16, HttpStatus.SC_INTERNAL_SERVER_ERROR, "Not authorized to use this service. Verify that the user and the application name are valid, and check that corresponding permissions have been set up."),
         ERR_8_8_20(8, 8, 20, HttpStatus.SC_INTERNAL_SERVER_ERROR, "High order bit was not set to indicate last parameter."),
         ERR_8_12_8(8, 12, 8, HttpStatus.SC_INTERNAL_SERVER_ERROR, "Invocation of the Security Server Network Authentication Service Program Call (PC) interface failed with a 'parameter buffer overflow' return code. This indicates an internal error in IRRSPK00."),
         ERR_8_12_12(8, 12, 12, HttpStatus.SC_INTERNAL_SERVER_ERROR, "Invocation of the Security Server Network Authentication Service Program Call (PC) interface failed with an 'unable to allocate storage' return code. The region size for the Security Server Network Authentication Service started task (SKRBKDC) should be increased."),
