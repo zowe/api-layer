@@ -14,7 +14,7 @@ Example:
                 apiml:
                     routes:
                         ws_v1:
-                            gatewayUrl: "ws/v1"
+                            gatewayUrl: "/ws/v1"
                             serviceUrl: /discoverableclient/ws
 
 This maps requests `wss://gatewayHost:port/ws/v1/serviceId/path` to `ws://serviceHost:port/discoverableclient/ws/path` 
