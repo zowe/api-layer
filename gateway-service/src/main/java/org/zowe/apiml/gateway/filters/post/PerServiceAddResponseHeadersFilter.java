@@ -62,8 +62,11 @@ public class PerServiceAddResponseHeadersFilter extends ZuulFilter {
                 String[] headerValuePairs = StringUtils.stripAll(headersToAdd.split(","));
 
                 for (String headerValuePair : headerValuePairs) {
-                    String[] headerValue = headerValuePair.split(": ?");
-                    context.addZuulResponseHeader(headerValue[0], headerValue[1]);
+                    String[] headerValue = StringUtils.stripAll(headerValuePair.split(":", 2)); // separate header name and header value
+                    String header = headerValue[0];
+                    String value = headerValue.length > 1 ? headerValue[1] : "";
+
+                    context.addZuulResponseHeader(header, value);
                 }
             }
         }
