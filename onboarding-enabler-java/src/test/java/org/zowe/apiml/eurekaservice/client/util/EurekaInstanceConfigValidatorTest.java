@@ -14,7 +14,6 @@ import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockServletContext;
@@ -26,7 +25,6 @@ import org.zowe.apiml.product.logging.LogMessageTracker;
 import javax.servlet.ServletContext;
 import java.util.Collections;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
