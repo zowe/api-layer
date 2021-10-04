@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.controllers;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -19,7 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 
 import java.text.ParseException;
@@ -44,7 +45,7 @@ class AuthControllerTest {
     private AuthenticationService authenticationService;
 
     @Mock
-    private JwtSecurityInitializer jwtSecurityInitializer;
+    private JwtSecurity jwtSecurityInitializer;
 
     @Mock
     private ZosmfService zosmfService;
@@ -111,31 +112,49 @@ class AuthControllerTest {
             .andExpect(content().json(jwkSet.toString()));
     }
 
-    @Test
-    void testGetActivePublicKeys_useZoweJwt() throws Exception {
-        initPublicKeys(false);
-        JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
-        this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
-            .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
-    }
+    @Nested
+    class WhenGettingActiveKey {
+        // With header
+        // Without header
 
-    @Test
-    void testGetActivePublicKeys_useBoth() throws Exception {
-        initPublicKeys(true);
-        JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
-        this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
-            .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
-    }
+        // This probably needs to go down from the controller.
+        // JWTSecurity
+        @Nested
+        class GivenZosmfIsUsed {
 
-    @Test
-    void testGetActivePublicKeys_missingZosmf() throws Exception {
-        initPublicKeys(false);
-        JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
-        this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
-            .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
-    }
+        }
 
+        @Nested
+        class GivenInternalKeyIsUsed {
+
+        }
+
+
+        @Test
+        void useZoweJwt() throws Exception {
+            initPublicKeys(false);
+            JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
+            mockMvc.perform(get("/gateway/auth/keys/public/current"))
+                .andExpect(status().is(SC_OK))
+                .andExpect(content().json(jwkSet.toString()));
+        }
+
+        @Test
+        void useBoth() throws Exception {
+            initPublicKeys(true);
+            JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
+            mockMvc.perform(get("/gateway/auth/keys/public/current"))
+                .andExpect(status().is(SC_OK))
+                .andExpect(content().json(jwkSet.toString()));
+        }
+
+        @Test
+        void missingZosmf() throws Exception {
+            initPublicKeys(false);
+            JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
+            mockMvc.perform(get("/gateway/auth/keys/public/current"))
+                .andExpect(status().is(SC_OK))
+                .andExpect(content().json(jwkSet.toString()));
+        }
+    }
 }

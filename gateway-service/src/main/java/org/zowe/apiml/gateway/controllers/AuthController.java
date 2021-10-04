@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -38,7 +38,7 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
 
-    private final JwtSecurityInitializer jwtSecurityInitializer;
+    private final JwtSecurity jwtSecurityInitializer;
     private final ZosmfService zosmfService;
 
     public static final String CONTROLLER_PATH = "/gateway/auth";  // NOSONAR: URL is always using / to separate path segments
@@ -95,11 +95,28 @@ public class AuthController {
     /**
      * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
      * configured one is used.
+     *
      * @return The key actually used to verify the JWT tokens.
      */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
     @ResponseBody
-    public JSONObject getCurrentPublicKeys() {
+    public JSONObject getCurrentPublicKeys(
+        @RequestHeader(name = "X-Zowe-Key-Format", required = false) String keyFormat
+    ) {
+        // If either none header or a header X-Zowe-Key-Format is sent with value PEM
+        //    Otherwise return 400 with information about the unsupported format for key
+
+        // If the zOSMF is used to issue tokens
+        //   If zOSMF is offline or unavailable
+        //      Return 500 with message on zOSMF not available
+        //   Load the key from zOSMF
+        //   If X-Zowe-Key-Format is PEM
+        //      Transform the received key to PEM
+        // If internal Key is used
+        //   Load the key from Keystore/Keyring
+        //   If X-Zowe-Key-Format is PEM
+        //      Transform to the PEM
+
         final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
 
         if (keys.isEmpty()) {
