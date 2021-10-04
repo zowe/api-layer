@@ -9,17 +9,14 @@
  */
 package org.zowe.apiml.product.instance.lookup;
 
-import org.zowe.apiml.product.instance.InstanceNotFoundException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.product.instance.InstanceNotFoundException;
 
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -31,8 +28,7 @@ import java.util.function.Consumer;
 public class InstanceLookupExecutor {
 
     private final EurekaClient eurekaClient;
-    private final ScheduledExecutorService executorService =
-        Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "InstanceLookupExecutor-Thread"));
+
     private final int initialDelay;
     private final int period;
 
@@ -71,25 +67,19 @@ public class InstanceLookupExecutor {
                     BiConsumer<Exception, Boolean> handleFailureConsumer) {
         log.debug("Started instance finder");
 
-        executorService.scheduleAtFixedRate(
-            () -> {
-                try {
-                    InstanceInfo instanceInfo = findEurekaInstance(serviceId);
-                    log.debug("App found {}", instanceInfo.getAppName());
+        try {
+            InstanceInfo instanceInfo = findEurekaInstance(serviceId);
+            log.debug("App found {}", instanceInfo.getAppName());
 
-                    action.accept(instanceInfo);
-                    executorService.shutdownNow();
-                } catch (InstanceNotFoundException | RetryException e) {
-                    log.debug(e.getMessage());
-                    handleFailureConsumer.accept(e, false);
-                } catch (Exception e) {
-                    executorService.shutdownNow();
-                    handleFailureConsumer.accept(e, true);
-                    log.debug("Unexpected exception while retrieving '{}' service from Eureka", serviceId);
-                }
+            action.accept(instanceInfo);
+        } catch (InstanceNotFoundException | RetryException e) {
+            log.debug(e.getMessage());
+            handleFailureConsumer.accept(e, false);
+        } catch (Exception e) {
+            handleFailureConsumer.accept(e, true);
+            log.debug("Unexpected exception while retrieving '{}' service from Eureka", serviceId);
+        }
 
-            },
-            initialDelay, period, TimeUnit.MILLISECONDS
-        );
     }
+
 }

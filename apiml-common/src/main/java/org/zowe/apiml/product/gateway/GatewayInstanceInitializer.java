@@ -9,16 +9,16 @@
  */
 package org.zowe.apiml.product.gateway;
 
-import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.instance.InstanceInitializationException;
-import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.instance.InstanceInitializationException;
+import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.net.URI;
@@ -57,11 +57,8 @@ public class GatewayInstanceInitializer {
      * EventListener method that starts the lookup for Gateway
      * Listens for {@link ApplicationReadyEvent} to start the {@link InstanceLookupExecutor} and provides the processing logic for the executor
      */
-    @EventListener(ApplicationReadyEvent.class)
+    @Scheduled(fixedDelay = 90000)
     public void init() {
-        if (gatewayClient.isInitialized()) {
-            return;
-        }
 
         log.info("GatewayInstanceInitializer starting asynchronous initialization of Gateway configuration");
 
