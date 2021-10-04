@@ -14,6 +14,7 @@ import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockServletContext;
@@ -24,6 +25,8 @@ import org.zowe.apiml.product.logging.LogMessageTracker;
 
 import javax.servlet.ServletContext;
 import java.util.Collections;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,7 +57,7 @@ class EurekaInstanceConfigValidatorTest {
     @CsvSource(value = {
         "bad-ssl-configuration.yml|SSL configuration was not provided. Try add apiml.service.ssl section.",
         "wrong-routes-service-configuration.yml|Routes parameters  ** gatewayUrl, serviceUrl ** are missing or were not replaced by the system properties.",
-        "missing-ssl-configuration.yml|SSL parameters ** protocol, trustStore, keyStore, keyAlias, keyStoreType, trustStoreType, keyPassword, enabled, trustStorePassword, keyStorePassword ** are missing or were not replaced by the system properties."
+        "missing-ssl-configuration.yml|SSL parameters ** protocol, trustStore, keyStore, keyAlias, keyStoreType, trustStoreType, enabled, trustStorePassword, keyStorePassword, keyPassword ** are missing or were not replaced by the system properties."
     }, delimiter = '|')
     void givenConfigurationWithInvalidSsl_whenValidate_thenThrowException(String cfgFile, String expectedMsg) throws ServiceDefinitionException {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration(cfgFile);
@@ -69,6 +72,31 @@ class EurekaInstanceConfigValidatorTest {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("bad-ssl-configuration.yml");
         testConfig.setDiscoveryServiceUrls(Collections.singletonList("http://localhost:10011/eureka"));
         assertDoesNotThrow(() -> validator.validate(testConfig));
+    }
+
+    @Test
+    void emptyKeyringPasswordsAreSupported() throws ServiceDefinitionException {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("service-configuration-keyring.yml");
+        testConfig.setDiscoveryServiceUrls(Collections.singletonList("https://localhost:10011/eureka"));
+        assertDoesNotThrow(() -> validator.validate(testConfig));
+    }
+
+    @SuppressWarnings("squid:S5778") //Lambda formatting
+    @Test
+    void emptyPasswordsWithKeystoresAreValidatedAsErrors() {
+        assertThrows(MetadataValidationException.class, () -> validator.validate(
+            loadValidSslConfiguration(c -> c.getSsl().setKeyPassword(null))));
+        assertThrows(MetadataValidationException.class, () -> validator.validate(
+            loadValidSslConfiguration(c -> c.getSsl().setKeyStorePassword(null))));
+        assertThrows(MetadataValidationException.class, () -> validator.validate(
+            loadValidSslConfiguration(c -> c.getSsl().setTrustStorePassword(null))));
+    }
+
+    private ApiMediationServiceConfig loadValidSslConfiguration(Consumer<ApiMediationServiceConfig> configModifier) throws ServiceDefinitionException {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("service-configuration.yml");
+        testConfig.setDiscoveryServiceUrls(Collections.singletonList("https://localhost:10011/eureka"));
+        configModifier.accept(testConfig);
+        return testConfig;
     }
 
     @Test
