@@ -48,8 +48,13 @@ task liteLibJarAll(type: Jar) {
     archiveName = getBaseNameLite() + ".jar"
     entryCompression = ZipEntryCompression.STORED
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    from { rootProject.subprojects.collectMany {getLiteLibJarOutput(it.buildDir)}.collect() }
+    from { rootProject.subprojects.collectMany {
+        if (it.properties.get('projectPath').toString() != ':onboarding-enabler-java-sample-app-plain-java') {
+            getLiteLibJarOutput(it.buildDir)
+        } else {
+            []
+        }
+    }.collect() }
 }
 
 build.dependsOn(liteLibJarAll)
