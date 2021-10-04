@@ -1,9 +1,10 @@
 buildscript {
     repositories {
         mavenCentral()
+        gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.bmuschko:gradle-tomcat-plugin:2.5'
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.7.0'
     }
 }
 
@@ -36,11 +37,10 @@ dependencies {
     testCompile libraries.mockito_core
     testCompile libraries.json_path
 
-    def tomcatVersion = '8.0.53'
+    def tomcatVersion = '9.0.1'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
-        "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+        "org.apache.tomcat.embed:tomcat-embed-logging-juli:9.0.0.M6",
         "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
-        "org.apache.tomcat.embed:tomcat-servlet-api:${tomcatVersion}"
 }
 
 tomcat {
@@ -53,4 +53,6 @@ tomcat {
     tomcatRun.truststoreFile = file("${project.rootDir}/keystore/localhost/localhost.truststore.p12")
     tomcatRun.keystorePass = "password"
     tomcatRun.truststorePass = "password"
+    httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
+    ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
 }
