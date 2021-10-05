@@ -29,18 +29,6 @@ public class InstanceLookupExecutor {
 
     private final EurekaClient eurekaClient;
 
-    private final int initialDelay;
-    private final int period;
-
-    /**
-     * Constructor with predefined initial delay of 100ms and retry frequency of 5000ms
-     *
-     * @param eurekaClient EurekaClient to use for search
-     */
-    public InstanceLookupExecutor(EurekaClient eurekaClient) {
-        this(eurekaClient, 100, 5000);
-    }
-
     private InstanceInfo findEurekaInstance(String serviceId) {
         Application application = eurekaClient.getApplication(serviceId);
         if (application == null) {

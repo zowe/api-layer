@@ -12,7 +12,6 @@ package org.zowe.apiml.product.gateway;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -37,7 +36,7 @@ public class GatewayInstanceInitializer {
     private final GatewayClient gatewayClient;
 
     @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     private GatewayConfigProperties process(InstanceInfo instanceInfo) {
         try {
@@ -54,10 +53,6 @@ public class GatewayInstanceInitializer {
 
     }
 
-    /**
-     * EventListener method that starts the lookup for Gateway
-     * Listens for {@link ApplicationReadyEvent} to start the {@link InstanceLookupExecutor} and provides the processing logic for the executor
-     */
     @EventListener(HeartbeatEvent.class)
     public void init() {
 
