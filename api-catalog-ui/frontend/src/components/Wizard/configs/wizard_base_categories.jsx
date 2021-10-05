@@ -73,7 +73,7 @@ export const baseCategories = [
                 value: '',
                 question: 'The service IP address:',
                 optional: true,
-                regexRestriction: [wizRegex.version],
+                regexRestriction: [wizRegex.ipAddress],
             },
         },
     },
@@ -202,6 +202,7 @@ export const baseCategories = [
             id: {
                 value: '',
                 question: 'The unique identifier for the product family of API services:',
+                tooltip: 'reverse domain name notation, e.g. org.zowe.apiml',
             },
             title: {
                 value: '',
