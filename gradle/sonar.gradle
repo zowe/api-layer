@@ -72,6 +72,12 @@ project(":onboarding-enabler-nodejs") {
     }
 }
 
+project(":onboarding-enabler-java-sample-app-plain-java") {
+    sonarqube {
+        skipProject = true
+    }
+}
+
 project(":onboarding-enabler-nodejs-sample-app") {
     sonarqube {
         skipProject = true
