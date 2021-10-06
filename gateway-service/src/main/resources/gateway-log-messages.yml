@@ -107,6 +107,13 @@ messages:
       reason: "The URI did not follow the format /{serviceId}/{type}/{version}/{endpoint} or /{type}/{version}/{serviceId}/{endpoint}."
       action: "Use a properly formatted URI."
 
+    - key: org.zowe.apiml.gateway.jwtProducerConfigError
+      number: ZWEAG713
+      type: ERROR
+      text: "Configuration error when trying to establish JWT producer. Events: %s"
+      reason: "A problem occurred while trying to make sure that there is a valid JWT producer avaliable."
+      action: "Based on the information in the message either: verify that the key configuration is correct or that the zOSMF is available."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic
