@@ -13,6 +13,9 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
+import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
@@ -21,6 +24,9 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.security.PublicKey;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -95,35 +101,63 @@ public class AuthController {
     /**
      * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
      * configured one is used.
+     * How exactly should the PEM be returned.
      *
      * @return The key actually used to verify the JWT tokens.
      */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
     @ResponseBody
-    public JSONObject getCurrentPublicKeys(
-        @RequestHeader(name = "X-Zowe-Key-Format", required = false) String keyFormat
+    public Object getPublicKeyUsedForSigning(
+        @RequestHeader(name = "X-Zowe-Key-Format", required = false) String keyFormat,
+        HttpServletResponse response
     ) {
-        // If either none header or a header X-Zowe-Key-Format is sent with value PEM
-        //    Otherwise return 400 with information about the unsupported format for key
-
-        // If the zOSMF is used to issue tokens
-        //   If zOSMF is offline or unavailable
-        //      Return 500 with message on zOSMF not available
-        //   Load the key from zOSMF
-        //   If X-Zowe-Key-Format is PEM
-        //      Transform the received key to PEM
-        // If internal Key is used
-        //   Load the key from Keystore/Keyring
-        //   If X-Zowe-Key-Format is PEM
-        //      Transform to the PEM
-
-        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
-
-        if (keys.isEmpty()) {
-            Optional<JWK> key = jwtSecurityInitializer.getJwkPublicKey();
-            key.ifPresent(keys::add);
+        if (keyFormat != null && !keyFormat.isEmpty() && !keyFormat.equals("PEM")) {
+            response.setStatus(SC_BAD_REQUEST);
+            return "";
         }
-        return new JWKSet(keys).toJSONObject(true);
+
+        JwtSecurity.JwtProducer producer = jwtSecurityInitializer.actualJwtProducer();
+
+        switch(producer) {
+            case ZOSMF:
+                JWKSet keysReceivedFromZosmf = zosmfService.getPublicKeys();
+                // Get key from zOSMF
+                return keysReceivedFromZosmf.toJSONObject();
+            case APIML:
+                Optional<JWK> publicKey = jwtSecurityInitializer.getJwkPublicKey();
+                if (publicKey.isPresent()) {
+                    return publicKey.get().toJSONObject();
+                }
+                /*
+                // Valid way to produce PEM encoded key.
+                PublicKey key = publicKey.get().toRSAKey().toPublicKey();
+                PEM is going to be a plain file response
+                */
+            case UNKNOWN:
+                //return 500 as we just don't know yet.
+                response.setStatus(SC_INTERNAL_SERVER_ERROR);
+                return new JWKSet().toJSONObject(true);
+        }
+
+        // Have JWK key here at the moment.
+        if (keyFormat.equals("PEM")) {
+            PublicKey key = jwtSecurityInitializer.getJwtPublicKey();
+            try {
+                return getPublicKeyAsPem(key);
+            } catch (IOException ex) {
+                response.setStatus(SC_INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return "";
     }
 
+    private String getPublicKeyAsPem(PublicKey publicKey) throws IOException {
+        StringWriter writer = new StringWriter();
+        PemWriter pemWriter = new PemWriter(writer);
+        pemWriter.writeObject(new PemObject("PUBLIC KEY", publicKey.getEncoded()));
+        pemWriter.flush();
+        pemWriter.close();
+        return writer.toString();
+    }
 }

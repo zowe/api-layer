@@ -36,7 +36,6 @@ import java.security.Key;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -311,7 +310,7 @@ public class JwtSecurity {
         }
     }
 
-    enum JwtProducer {
+    public enum JwtProducer {
         ZOSMF,
         APIML,
         UNKNOWN
