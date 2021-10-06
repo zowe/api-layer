@@ -440,10 +440,9 @@ class WizardInputs extends Component {
                 />
             );
         }
-        let disableTooltip = false;
+        const disableTooltip = false;
         let finalTooltip = tooltip;
         if (tooltip === undefined) {
-            disableTooltip = true;
             finalTooltip = 'filler';
         }
         return (
