@@ -42,7 +42,7 @@ export const enablerData = [
                 minions: { 'API Info': ['gatewayUrl'] },
             },
             { name: 'API Info', indentation: 'apiml/service/apiInfo', multiple: true },
-            { name: 'Catalog', indentation: 'apiml/service/catalog/tiles', nav: 'Catalog' },
+            { name: 'Catalog', indentation: 'apiml/service/catalog/tile', nav: 'Catalog' },
             { name: 'Authentication', indentation: 'apiml/service/authentication', nav: 'Auth & SSL' },
             { name: 'SSL', indentation: 'apiml/service/ssl', nav: 'Auth & SSL' },
         ],
