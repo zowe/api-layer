@@ -1,0 +1,44 @@
+serviceId: plainjavaenablersample
+title: Plain java enabler sample
+description: Plain java enabler sample
+baseUrl: https://localhost:8080
+serviceIpAddress: 127.0.0.1
+preferIpAddress: false
+
+homePageRelativeUrl: /greeting
+statusPageRelativeUrl: /status
+healthCheckRelativeUrl: /health
+
+discoveryServiceUrls:
+  - https://localhost:10011/eureka
+
+routes:
+  - gatewayUrl: api/v1
+    serviceUrl: /
+
+apiInfo:
+  - apiId: org.zowe.pjesample
+    version: 1.0.0
+    gatewayUrl: api/v1
+    swaggerUrl:
+    doumentationUrl: https://localhost:8080/apidoc
+
+
+catalog:
+    tile:
+        id: cademoapps
+        title: Sample API Mediation Layer Applications
+        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+        version: 1.0.0
+
+ssl:
+    verifySslCertificatesOfServices: true
+    protocol: TLSv1.2
+    keyAlias: localhost
+    keyPassword: password
+    keyStore: keystore/localhost/localhost.keystore.p12
+    keyStorePassword: password
+    keyStoreType: PKCS12
+    trustStore: keystore/localhost/localhost.truststore.p12
+    trustStorePassword: password
+    trustStoreType: PKCS12

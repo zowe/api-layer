@@ -27,4 +27,4 @@ apimlServices:
   dynamic:
     - serviceId: apicatalog
 appfwPlugins:
-- path: "."
+- path: "plugin"
