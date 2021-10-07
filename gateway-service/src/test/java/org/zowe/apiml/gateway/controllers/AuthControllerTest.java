@@ -23,6 +23,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -33,6 +34,7 @@ import static org.apache.http.HttpStatus.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
@@ -50,13 +52,13 @@ class AuthControllerTest {
     @Mock
     private ZosmfService zosmfService;
 
-    @Mock
     private MessageService messageService;
 
     private JWK jwk1, jwk2, jwk3;
 
     @BeforeEach
     void setUp() throws ParseException {
+        messageService = new YamlMessageService("/gateway-log-messages.yml");
         authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
 
@@ -163,9 +165,8 @@ class AuthControllerTest {
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.UNKNOWN);
 
                 mockMvc.perform(get("/gateway/auth/keys/public"))
-                    .andExpect(status().is(SC_INTERNAL_SERVER_ERROR));
-
-                verify(messageService, times(1)).createMessage("org.zowe.apiml.gateway.keys.unknownState");
+                    .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                    .andExpect(jsonPath("$.messageNumber", is("ZWEAG716E")));
             }
 
             @Test
@@ -174,9 +175,8 @@ class AuthControllerTest {
                 when(zosmfService.getPublicKeys()).thenReturn(new JWKSet());
 
                 mockMvc.perform(get("/gateway/auth/keys/public"))
-                    .andExpect(status().is(SC_INTERNAL_SERVER_ERROR));
-
-                verify(messageService, times(1)).createMessage("org.zowe.apiml.gateway.keys.wrongAmount", 0);
+                    .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                    .andExpect(jsonPath("$.messageNumber", is("ZWEAG715E")));
             }
         }
 

@@ -83,7 +83,7 @@ public class FunctionalApar implements Apar {
      * Override to provide response entity when the JWT keys are requested from the zOSMF
      */
     protected ResponseEntity<?> handleJwtKeys() {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return null;
     }
 
     /**
@@ -213,7 +213,7 @@ public class FunctionalApar implements Apar {
     }
 
     private Key getKeyForSigning(String keystorePath) {
-        try (FileInputStream keystore = new FileInputStream(new File(keystorePath))) {
+        try (FileInputStream keystore = new FileInputStream(keystorePath)) {
             KeyStore ks = KeyStore.getInstance("PKCS12");
             ks.load(
                 keystore,

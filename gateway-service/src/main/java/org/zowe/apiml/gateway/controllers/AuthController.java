@@ -141,12 +141,12 @@ public class AuthController {
                 break;
             case UNKNOWN:
                 //return 500 as we just don't know yet.
-                return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.unknownState"), HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.unknownState").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         List<JWK> publicKeys = currentKey.getKeys();
         if (publicKeys.size() != 1) {
-            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.wrongAmount", publicKeys.size()), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.wrongAmount", publicKeys.size()).mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         try {
@@ -155,7 +155,7 @@ public class AuthController {
                 .toPublicKey();
             return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
         } catch (IOException | JOSEException ex) {
-            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.unknown"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
