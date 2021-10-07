@@ -9,8 +9,6 @@
  */
 package org.zowe.apiml.product.gateway;
 
-import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
@@ -23,14 +21,14 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 
 import java.util.Collections;
 
 import static java.time.Duration.ofMillis;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTimeout;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 class GatewayInstanceInitializerTest {
@@ -62,9 +60,9 @@ class GatewayInstanceInitializerTest {
             when(
                 eurekaClient.getApplication(SERVICE_ID)
             ).thenReturn(application);
-    
+
             gatewayInstanceInitializer.init();
-    
+
             while (!gatewayClient.isInitialized()) ;
         });
 
@@ -77,9 +75,6 @@ class GatewayInstanceInitializerTest {
     @Configuration
     static class TestConfig {
 
-        private static final int INITIAL_DELAY = 1;
-        private static final int PERIOD = 10;
-
         @MockBean
         private EurekaClient eurekaClient;
 
@@ -91,9 +86,7 @@ class GatewayInstanceInitializerTest {
         @Bean
         public InstanceLookupExecutor instanceLookupExecutor() {
             return new InstanceLookupExecutor(
-                eurekaClient,
-                INITIAL_DELAY,
-                PERIOD
+                eurekaClient
             );
         }
 

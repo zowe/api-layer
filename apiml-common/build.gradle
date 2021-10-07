@@ -10,6 +10,7 @@ dependencies {
     compile libraries.janino
     compile libraries.xstream
 
+    implementation libraries.spring_cloud_commons
 
     compileOnly libraries.spring_boot_configuration_processor
     compileOnly libraries.lombok
