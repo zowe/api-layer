@@ -9,17 +9,20 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
-import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,8 +47,9 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
 
-    private final JwtSecurity jwtSecurityInitializer;
+    private final JwtSecurity jwtSecurity;
     private final ZosmfService zosmfService;
+    private final MessageService messageService;
 
     public static final String CONTROLLER_PATH = "/gateway/auth";  // NOSONAR: URL is always using / to separate path segments
     public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
@@ -91,9 +95,8 @@ public class AuthController {
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
     @ResponseBody
     public JSONObject getAllPublicKeys() {
-        final List<JWK> keys = new LinkedList<>();
-        keys.addAll(zosmfService.getPublicKeys().getKeys());
-        Optional<JWK> key = jwtSecurityInitializer.getJwkPublicKey();
+        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+        Optional<JWK> key = jwtSecurity.getJwkPublicKey();
         key.ifPresent(keys::add);
         return new JWKSet(keys).toJSONObject(true);
     }
@@ -101,55 +104,59 @@ public class AuthController {
     /**
      * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
      * configured one is used.
-     * How exactly should the PEM be returned.
-     *
      * @return The key actually used to verify the JWT tokens.
      */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
     @ResponseBody
-    public Object getPublicKeyUsedForSigning(
-        @RequestHeader(name = "X-Zowe-Key-Format", required = false) String keyFormat,
-        HttpServletResponse response
-    ) {
-        if (keyFormat != null && !keyFormat.isEmpty() && !keyFormat.equals("PEM")) {
-            response.setStatus(SC_BAD_REQUEST);
-            return "";
+    public JSONObject getCurrentPublicKeys() {
+        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+
+        if (keys.isEmpty()) {
+            Optional<JWK> key = jwtSecurity.getJwkPublicKey();
+            key.ifPresent(keys::add);
         }
+        return new JWKSet(keys).toJSONObject(true);
+    }
 
-        JwtSecurity.JwtProducer producer = jwtSecurityInitializer.actualJwtProducer();
+    /**
+     * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
+     * configured one is used. The key is provided in the PEM format.
+     *
+     * Until the key to be produced is resolved, this returns 500 with the message code ZWEAG716.
+     *
+     * @return The key actually used to verify the JWT tokens.
+     */
+    @GetMapping(path = PUBLIC_KEYS_PATH)
+    @ResponseBody
+    public ResponseEntity<?> getPublicKeyUsedForSigning() {
+        JwtSecurity.JwtProducer producer = jwtSecurity.actualJwtProducer();
 
-        switch(producer) {
+        JWKSet currentKey = new JWKSet();
+        switch (producer) {
             case ZOSMF:
-                JWKSet keysReceivedFromZosmf = zosmfService.getPublicKeys();
-                // Get key from zOSMF
-                return keysReceivedFromZosmf.toJSONObject();
+                currentKey = zosmfService.getPublicKeys();
+                break;
             case APIML:
-                Optional<JWK> publicKey = jwtSecurityInitializer.getJwkPublicKey();
-                if (publicKey.isPresent()) {
-                    return publicKey.get().toJSONObject();
-                }
-                /*
-                // Valid way to produce PEM encoded key.
-                PublicKey key = publicKey.get().toRSAKey().toPublicKey();
-                PEM is going to be a plain file response
-                */
+                currentKey = jwtSecurity.getPublicKeyInSet();
+                break;
             case UNKNOWN:
                 //return 500 as we just don't know yet.
-                response.setStatus(SC_INTERNAL_SERVER_ERROR);
-                return new JWKSet().toJSONObject(true);
+                return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.unknownState"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        // Have JWK key here at the moment.
-        if (keyFormat.equals("PEM")) {
-            PublicKey key = jwtSecurityInitializer.getJwtPublicKey();
-            try {
-                return getPublicKeyAsPem(key);
-            } catch (IOException ex) {
-                response.setStatus(SC_INTERNAL_SERVER_ERROR);
-            }
+        List<JWK> publicKeys = currentKey.getKeys();
+        if (publicKeys.size() != 1) {
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.wrongAmount", publicKeys.size()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return "";
+        try {
+            PublicKey key = publicKeys.get(0)
+                .toRSAKey()
+                .toPublicKey();
+            return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
+        } catch (IOException | JOSEException ex) {
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.unknown"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private String getPublicKeyAsPem(PublicKey publicKey) throws IOException {

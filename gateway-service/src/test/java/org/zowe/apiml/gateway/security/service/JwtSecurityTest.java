@@ -12,6 +12,8 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEventListener;
 import com.netflix.discovery.StatusChangeEvent;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.security.HttpsConfigError;
+
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -182,26 +186,36 @@ class JwtSecurityTest {
     }
 
     @Nested
-    class WhenGettingValidAndUsedKey {
-        @Nested
-        class GivenZosmfIsUsedButOffline {
-            // Return no key.
+    class GetJwkPublicKey {
+        @BeforeEach
+        void setUp() {
+            underTest = new JwtSecurity(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+
+            when(providers.isZosfmUsed()).thenReturn(false);
         }
 
-        @Nested
-        class GivenZosmfIsUsedAndOnline {
-            // Return the key.
+        @Test
+        void asSet() {
+            underTest.loadAppropriateJwtKeyOrFail();
+            JWKSet result = underTest.getPublicKeyInSet();
+
+            assertThat(result.getKeys().size(), is(1));
         }
 
-        @Nested
-        class GivenApiMlIsUsed {
+        @Test
+        void whenOnePresent_asOneKey() {
+            underTest.loadAppropriateJwtKeyOrFail();
+            Optional<JWK> result = underTest.getJwkPublicKey();
 
+            assertThat(result.isPresent(), is(true));
         }
-    }
 
-    @Nested
-    class WhenGettingTheProducer {
+        @Test
+        void whenKeyNotLoaded_Empty() {
+            Optional<JWK> result = underTest.getJwkPublicKey();
 
+            assertThat(result.isPresent(), is(false));
+        }
     }
 }
 

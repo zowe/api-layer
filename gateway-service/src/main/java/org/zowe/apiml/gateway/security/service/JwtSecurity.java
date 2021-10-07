@@ -14,6 +14,7 @@ import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ import java.security.Key;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -215,6 +217,15 @@ public class JwtSecurity {
 
     public PublicKey getJwtPublicKey() {
         return jwtPublicKey;
+    }
+
+    public JWKSet getPublicKeyInSet() {
+        final List<JWK> keys = new LinkedList<>();
+
+        Optional<JWK> publicKey = getJwkPublicKey();
+        publicKey.ifPresent(keys::add);
+
+        return new JWKSet(keys);
     }
 
     public Optional<JWK> getJwkPublicKey() {
