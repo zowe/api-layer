@@ -16,7 +16,6 @@ import org.zowe.apiml.client.services.MockZosmfException;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.FileInputStream;
 import java.security.Key;
 import java.security.KeyStore;
