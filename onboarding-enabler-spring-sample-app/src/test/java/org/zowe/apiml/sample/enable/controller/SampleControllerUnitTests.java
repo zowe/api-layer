@@ -9,8 +9,8 @@
  */
 package org.zowe.apiml.sample.enable.controller;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.MediaType;
@@ -22,7 +22,7 @@ import static org.hamcrest.core.Is.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class SampleControllerUnitTests {
+class SampleControllerUnitTests {
 
     private MockMvc mockMvc;
 
@@ -30,8 +30,8 @@ public class SampleControllerUnitTests {
     private SampleController suspectsController;
 
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(suspectsController)
@@ -39,7 +39,7 @@ public class SampleControllerUnitTests {
     }
 
     @Test
-    public void test_get_all_samples() throws Exception {
+    void test_get_all_samples() throws Exception {
         mockMvc.perform(get("/api/v1/samples"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
