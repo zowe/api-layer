@@ -41,6 +41,7 @@ import static org.zowe.apiml.util.SecurityUtils.*;
 public class PassticketSchemeTest implements TestWithStartedInstances {
     private final static String REQUEST_INFO_ENDPOINT = "/api/v1/dcpassticket/request";
     private final static String PASSTICKET_TEST_ENDPOINT = "/api/v1/dcpassticket/passticketTest";
+    private final static String PASSTICKET_TEST_GENERATION_ENDPOINT = "/api/v1/dcpassticket/passticketGenerationTest";
 
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
@@ -168,11 +169,14 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             @MainframeDependentTests // The appl id needs to be verified against actual ESM
             void givenIssuedForIncorrectUser() {
                 String jwt = gatewayToken();
-                String expectedMessage = "Error on evaluation of PassTicket";
+                String expectedMessage = "Error on generation of PassTicket";
+                List<NameValuePair> args = new ArrayList<>();
+                args.add(new BasicNameValuePair("applId", "XBADAPPL"));
+                args.add(new BasicNameValuePair("user", "UNKNOWN_USER"));
 
                 URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(
-                    PASSTICKET_TEST_ENDPOINT,
-                    Collections.singletonList(new BasicNameValuePair("user", "UNKNOWN_USER"))
+                    PASSTICKET_TEST_GENERATION_ENDPOINT,
+                    args
                 );
 
                 given()
