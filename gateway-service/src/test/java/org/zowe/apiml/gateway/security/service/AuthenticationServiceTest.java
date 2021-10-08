@@ -90,7 +90,7 @@ public class AuthenticationServiceTest {
     private AuthConfigurationProperties authConfigurationProperties;
 
     @Autowired
-    private JwtSecurityInitializer jwtSecurityInitializer;
+    private JwtSecurity jwtSecurityInitializer;
 
     @Autowired
     private RestTemplate restTemplate;

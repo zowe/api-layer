@@ -40,8 +40,8 @@ public class MockedAuthenticationServiceContext {
     }
 
     @Bean
-    public JwtSecurityInitializer getJwtSecurityInitializer() {
-        return mock(JwtSecurityInitializer.class);
+    public JwtSecurity getJwtSecurityInitializer() {
+        return mock(JwtSecurity.class);
     }
 
     @Bean

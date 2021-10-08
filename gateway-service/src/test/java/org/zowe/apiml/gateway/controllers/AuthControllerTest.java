@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.controllers;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -19,8 +20,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -31,8 +34,8 @@ import static org.apache.http.HttpStatus.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.CoreMatchers.is;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 class AuthControllerTest {
@@ -44,16 +47,19 @@ class AuthControllerTest {
     private AuthenticationService authenticationService;
 
     @Mock
-    private JwtSecurityInitializer jwtSecurityInitializer;
+    private JwtSecurity jwtSecurity;
 
     @Mock
     private ZosmfService zosmfService;
+
+    private MessageService messageService;
 
     private JWK jwk1, jwk2, jwk3;
 
     @BeforeEach
     void setUp() throws ParseException {
-        authController = new AuthController(authenticationService, jwtSecurityInitializer, zosmfService);
+        messageService = new YamlMessageService("/gateway-log-messages.yml");
+        authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
 
         jwk1 = getJwk(1);
@@ -99,7 +105,7 @@ class AuthControllerTest {
             zosmfKeys ? Arrays.asList(jwk1, jwk2) : Collections.emptyList()
         );
         when(zosmfService.getPublicKeys()).thenReturn(zosmf);
-        when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(Optional.of(jwk3));
+        when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(jwk3));
     }
 
     @Test
@@ -111,31 +117,79 @@ class AuthControllerTest {
             .andExpect(content().json(jwkSet.toString()));
     }
 
-    @Test
-    void testGetActivePublicKeys_useZoweJwt() throws Exception {
-        initPublicKeys(false);
-        JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
-        this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
-            .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
+    @Nested
+    class WhenGettingActiveKey {
+        @Test
+        void useZoweJwt() throws Exception {
+            initPublicKeys(false);
+            JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
+            mockMvc.perform(get("/gateway/auth/keys/public/current"))
+                .andExpect(status().is(SC_OK))
+                .andExpect(content().json(jwkSet.toString()));
+        }
+
+        @Test
+        void useBoth() throws Exception {
+            initPublicKeys(true);
+            JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
+            mockMvc.perform(get("/gateway/auth/keys/public/current"))
+                .andExpect(status().is(SC_OK))
+                .andExpect(content().json(jwkSet.toString()));
+        }
+
+        @Test
+        void missingZosmf() throws Exception {
+            initPublicKeys(false);
+            JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
+            mockMvc.perform(get("/gateway/auth/keys/public/current"))
+                .andExpect(status().is(SC_OK))
+                .andExpect(content().json(jwkSet.toString()));
+        }
     }
 
-    @Test
-    void testGetActivePublicKeys_useBoth() throws Exception {
-        initPublicKeys(true);
-        JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
-        this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
-            .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
-    }
+    @Nested
+    class GetPublicKeyUsedForSigning {
+        @Nested
+        class GivenZosmfIsProducer {
+            @Test
+            void whenOnlineAndSupportJwt_returnValidPemKey() throws Exception {
+                when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
+                when(zosmfService.getPublicKeys()).thenReturn(new JWKSet(getJwk(0)));
 
-    @Test
-    void testGetActivePublicKeys_missingZosmf() throws Exception {
-        initPublicKeys(false);
-        JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
-        this.mockMvc.perform(get("/gateway/auth/keys/public/current"))
-            .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
-    }
+                mockMvc.perform(get("/gateway/auth/keys/public"))
+                    .andExpect(status().is(SC_OK));
+            }
 
+            @Test
+            void whenNotReady_returnInternalServerError() throws Exception {
+                when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.UNKNOWN);
+
+                mockMvc.perform(get("/gateway/auth/keys/public"))
+                    .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                    .andExpect(jsonPath("$.messageNumber", is("ZWEAG716E")));
+            }
+
+            @Test
+            void whenZosmfReturnsIncorrectAmountOfKeys_returnInternalServerError() throws Exception {
+                when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
+                when(zosmfService.getPublicKeys()).thenReturn(new JWKSet());
+
+                mockMvc.perform(get("/gateway/auth/keys/public"))
+                    .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                    .andExpect(jsonPath("$.messageNumber", is("ZWEAG715E")));
+            }
+        }
+
+        @Nested
+        class GivenApiMlIsProducer {
+            @Test
+            void returnValidPemKey() throws Exception {
+                when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
+                when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JWKSet(getJwk(0)));
+
+                mockMvc.perform(get("/gateway/auth/keys/public"))
+                    .andExpect(status().is(SC_OK));
+            }
+        }
+    }
 }

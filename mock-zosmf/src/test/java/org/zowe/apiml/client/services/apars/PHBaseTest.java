@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -179,8 +180,7 @@ class PHBaseTest {
         void thenNotFoundIsReturned() {
             Optional<ResponseEntity<?>> result = underTest.apply("jwtKeys", "get", null, null, null);
 
-            assertThat(result.isPresent(), is(true));
-            assertThat(result.get().getStatusCode(), is(HttpStatus.NOT_FOUND));
+            assertThat(result, is(nullValue()));
         }
     }
 }
