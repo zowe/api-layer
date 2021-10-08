@@ -27,6 +27,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import java.net.URI;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
