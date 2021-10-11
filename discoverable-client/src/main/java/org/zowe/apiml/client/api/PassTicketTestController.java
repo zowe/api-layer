@@ -10,7 +10,6 @@
 package org.zowe.apiml.client.api;
 
 import org.zowe.apiml.passticket.IRRPassTicketEvaluationException;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -60,26 +59,6 @@ public class PassTicketTestController {
                  applId = defaultApplId;
             }
             passTicketService.evaluate(userId, applId, passTicket);
-        } else {
-            throw new IllegalArgumentException("Missing Basic authorization header");
-        }
-    }
-
-    /**
-     * Generate the PassTicket.
-     */
-    @GetMapping(value = "/api/v1/passticketGenerationTest")
-    @ApiOperation(value = "Validate that the PassTicket in Authorization header is valid", tags = { "Test Operations" })
-    @HystrixCommand()
-    public void passticketGenerationTest(@RequestHeader("authorization") String authorization,
-                                         @RequestParam(value = "applId", defaultValue = "", required = false) String applId,
-                                         @RequestParam(value = "user", defaultValue = "", required = false) String user)
-        throws IRRPassTicketGenerationException {
-        if (authorization != null && authorization.toLowerCase().startsWith("basic")) {
-            if (applId.isEmpty()) {
-                applId = defaultApplId;
-            }
-            passTicketService.generate(user, applId);
         } else {
             throw new IllegalArgumentException("Missing Basic authorization header");
         }

@@ -18,7 +18,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.apache.http.NameValuePair;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
@@ -28,8 +27,6 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import java.net.URI;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
@@ -44,7 +41,6 @@ import static org.zowe.apiml.util.SecurityUtils.*;
 public class PassticketSchemeTest implements TestWithStartedInstances {
     private final static String REQUEST_INFO_ENDPOINT = "/api/v1/dcpassticket/request";
     private final static String PASSTICKET_TEST_ENDPOINT = "/api/v1/dcpassticket/passticketTest";
-    private final static String PASSTICKET_TEST_GENERATION_ENDPOINT = "/api/v1/dcpassticket/passticketGenerationTest";
 
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
@@ -166,29 +162,6 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                     .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                     .body("message", containsString(expectedMessage));
 
-            }
-
-            @Test
-            @MainframeDependentTests // The appl id needs to be verified against actual ESM
-            void givenIssuedForIncorrectUser() {
-                String jwt = gatewayToken();
-                String expectedMessage = "Error on generation of PassTicket";
-                List<NameValuePair> args = new ArrayList<>();
-                args.add(new BasicNameValuePair("applId", "XBADAPPL"));
-                args.add(new BasicNameValuePair("user", "UNKNOWN_USER"));
-
-                URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(
-                    PASSTICKET_TEST_GENERATION_ENDPOINT,
-                    args
-                );
-
-                given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-                    .when()
-                    .get(discoverablePassticketUrl)
-                    .then()
-                    .statusCode(is(SC_INTERNAL_SERVER_ERROR))
-                    .body("message", containsString(expectedMessage));
             }
         }
     }
