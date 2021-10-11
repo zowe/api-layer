@@ -10,7 +10,7 @@
 import React from 'react';
 import * as enzyme from 'enzyme';
 import WizardNavigation from './WizardNavigation';
-import { IconError } from 'mineral-ui-icons';
+import { IconDanger } from 'mineral-ui-icons';
 
 describe('>>> Wizard navigation tests', () => {
     it('should handle category change', () => {
@@ -44,13 +44,14 @@ describe('>>> Wizard navigation tests', () => {
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 validateInput={validateInput}
+                assertAuthorization={jest.fn()}
             />
         );
         const instance = wrapper.instance();
         instance.handleChange(2);
         expect(validateInput).toHaveBeenCalledTimes(3);
     });
-    it('should validate all tabs on YAML tab click', () => {
+    it('should not validate upon accessing something else', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
         const validateInput = jest.fn();
@@ -62,6 +63,7 @@ describe('>>> Wizard navigation tests', () => {
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 validateInput={validateInput}
+                assertAuthorization={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -95,6 +97,11 @@ describe('>>> Wizard navigation tests', () => {
                     { name: 'Category 1', indentation: false },
                     { name: 'Category 2', indentation: false },
                 ],
+                help: 'Some additional information',
+                helpUrl: {
+                    title: 'Help',
+                    link: 'https://docs.zowe.org/stable/extend/extend-apiml/onboard-plain-java-enabler/#api-catalog-information',
+                },
             },
             {
                 text: 'Other Enabler',
@@ -117,6 +124,8 @@ describe('>>> Wizard navigation tests', () => {
             />
         );
         expect(wrapper.find('Tab').length).toEqual(2);
+        expect(wrapper.find('Card').length).toEqual(1);
+        expect(wrapper.find('Link').length).toEqual(1);
     });
 
     it('should add a class name for the problematic tabs', () => {
@@ -129,6 +138,7 @@ describe('>>> Wizard navigation tests', () => {
                 content: [{
                     test: { value: 'val', question: 'Why?', },
                 },],
+                help: 'Some additional information',
                 nav: 'Nav #1',
             },
         ];
@@ -143,6 +153,6 @@ describe('>>> Wizard navigation tests', () => {
 
             />
         );
-        expect(wrapper.instance().loadTabs()[0].props.icon).toEqual(<IconError />);
+        expect(wrapper.instance().loadTabs()[0].props.icon).toEqual(<IconDanger style={{ color: 'red' }} />);
     });
 });

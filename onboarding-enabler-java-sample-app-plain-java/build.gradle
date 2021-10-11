@@ -1,0 +1,15 @@
+dependencies {
+    compile (project(':onboarding-enabler-java'))
+    compile ("javax.servlet:javax.servlet-api:4.0.1")
+}
+
+jar {
+    archiveName = "sample.jar"
+    manifest {
+        attributes "Main-Class": "org.zowe.apiml.sample.PlainJavaEnablerApp"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}

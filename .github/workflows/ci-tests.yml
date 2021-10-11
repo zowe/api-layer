@@ -2,9 +2,9 @@ name: CI Testing
 
 on:
     push:
-        branches: [ master ]
+        branches: [ master, v2.x.x ]
     pull_request:
-        branches: [ master ]
+        branches: [ master, v2.x.x ]
 
 jobs:
     BuildAndTest:
@@ -40,7 +40,7 @@ jobs:
                         ${{ runner.OS }}-node001-
             -   name: Build with Gradle
                 run: >
-                    ./gradlew build runStartUpCheck -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    ./gradlew build runStartUpCheck --info -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()

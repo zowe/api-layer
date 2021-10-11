@@ -28,6 +28,7 @@ public class EurekaInstanceConfigValidator {
 
     private static final String UNSET_VALUE_STRING = "{apiml.";
     private static final char[] UNSET_VALUE_CHAR_ARRAY = UNSET_VALUE_STRING.toCharArray();
+    private static final String KEYRING_KEY = "JCERACFKS";
 
     private final List<String> missingSslParameters = new ArrayList<>();
     private final List<String> missingRoutesParameters = new ArrayList<>();
@@ -94,9 +95,6 @@ public class EurekaInstanceConfigValidator {
         if (isInvalid(ssl.getTrustStoreType())) {
             addParameterToProblemsList("trustStoreType", missingSslParameters);
         }
-        if (isInvalid(ssl.getKeyPassword())) {
-            addParameterToProblemsList("keyPassword", missingSslParameters);
-        }
         if (ssl.getEnabled() == null) {
             addParameterToProblemsList("enabled", missingSslParameters);
         }
@@ -105,13 +103,19 @@ public class EurekaInstanceConfigValidator {
     private void validateSsl(Ssl ssl) {
         validateSslParameters(ssl, missingSslParameters);
         if (isInvalid(ssl.getTrustStorePassword()) && (isInvalid(ssl.getTrustStoreType()) ||
-                (!isInvalid(ssl.getTrustStoreType()) && !ssl.getTrustStoreType().equals("JCERACFKS")))) {
+                (!isInvalid(ssl.getTrustStoreType()) && !ssl.getTrustStoreType().equals(KEYRING_KEY)))) {
             addParameterToProblemsList("trustStorePassword", missingSslParameters);
         }
         if (isInvalid(ssl.getKeyStorePassword()) && (isInvalid(ssl.getKeyStoreType()) ||
-                (!isInvalid(ssl.getKeyStoreType()) && !ssl.getKeyStoreType().equals("JCERACFKS")))) {
+                (!isInvalid(ssl.getKeyStoreType()) && !ssl.getKeyStoreType().equals(KEYRING_KEY)))) {
             addParameterToProblemsList("keyStorePassword", missingSslParameters);
         }
+        if (isInvalid(ssl.getKeyPassword()) && (isInvalid(ssl.getKeyStoreType()) ||
+            (!isInvalid(ssl.getKeyStoreType()) && !ssl.getKeyStoreType().equals(KEYRING_KEY)))) {
+            addParameterToProblemsList("keyPassword", missingSslParameters);
+        }
+
+
         if (!missingSslParameters.isEmpty()) {
             throw new MetadataValidationException(String.format("SSL parameters ** %s ** are missing or were not replaced by the system properties.", String.join(", ", missingSslParameters)));
         }

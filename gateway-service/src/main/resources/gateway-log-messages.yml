@@ -100,6 +100,41 @@ messages:
       reason: "The principal does not have the queried access to resource name within resource class."
       action: "No action needed."
 
+    - key: org.zowe.apiml.gateway.invalidRoute
+      number: ZWEAG712
+      type: ERROR
+      text: "The URI '%s' is an invalid format"
+      reason: "The URI did not follow the format /{serviceId}/{type}/{version}/{endpoint} or /{type}/{version}/{serviceId}/{endpoint}."
+      action: "Use a properly formatted URI."
+
+    - key: org.zowe.apiml.gateway.jwtProducerConfigError
+      number: ZWEAG713
+      type: ERROR
+      text: "Configuration error when trying to establish JWT producer. Events: %s"
+      reason: "A problem occurred while trying to make sure that there is a valid JWT producer avaliable."
+      action: "Based on the information in the message either: verify that the key configuration is correct or that the zOSMF is available."
+
+    - key: org.zowe.apiml.gateway.keys.unknown
+      number: ZWEAG714
+      type: ERROR
+      text: "Unknown error happened while retrieving the used public key"
+      reason: "Unknown problem occured when retrieving the used public key. This should never happen."
+      action: "Try again later."
+
+    - key: org.zowe.apiml.gateway.keys.wrongAmount
+      number: ZWEAG715
+      type: ERROR
+      text: "The wrong amount of keys retrieved. The amount of retrieved keys is: %s"
+      reason: "In either case verify the configuration of zOSMF."
+      action: "Verify the configuration of the zOSMF to make sure that zOSMF provides only one used key."
+
+    - key: org.zowe.apiml.gateway.keys.unknownState
+      number: ZWEAG716
+      type: ERROR
+      text: "The system doesn't know yet what key should be used."
+      reason: "Typically zOSMF is either unavailable or offline."
+      action: "Verify the zOSMF is available, accessible by the gateway service and online."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic

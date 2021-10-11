@@ -25,7 +25,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.TokenValidationStrategy;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.SecurityUtils;
@@ -55,7 +55,7 @@ class SuccessfulQueryHandlerTest {
     private ApplicationContext applicationContext;
 
     @Mock
-    private JwtSecurityInitializer jwtSecurityInitializer;
+    private JwtSecurity jwtSecurityInitializer;
 
     @Mock
     private RestTemplate restTemplate;

@@ -101,7 +101,7 @@ server:
             keyStoreType: ${server.ssl.keyStoreType:PKCS12}
             keyStore: ${server.ssl.keyStore:keystore}
             trustStoreType: ${server.ssl.trustStoreType:PKCS12}
-            trustStore: ${server.ssl.trustStore:trustore}
+            trustStore: ${server.ssl.trustStore:truststore}
             keyStorePassword: ${server.ssl.keyStorePassword:password}
             trustStorePassword: ${server.ssl.trustStorePassword:password}
             clientAuth: ${server.ssl.clientAuth}
@@ -128,13 +128,16 @@ zuul:
     ignoreSecurityHeaders: false
     includeDebugHeader: false
     sensitiveHeaders: Expires,Date
+    semaphore:
+        maxSemaphores: ${server.maxTotalConnections}
     ignoredPatterns:
         - /**/ws/**
+        - /**/sse/**
     host:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
-        maxTotalConnetions: ${server.maxConnectionsPerRoute}
-        maxPerRouteConnections: ${server.maxTotalConnections}
+        maxTotalConnections: ${server.maxTotalConnections}
+        maxPerRouteConnections: ${server.maxConnectionsPerRoute}
     forceOriginalQueryStringEncoding: true
     retryable: true
     decodeUrl: false # Flag to indicate whether to decode the matched URL or use it as is

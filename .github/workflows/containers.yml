@@ -2,9 +2,9 @@ name: Containers - Build, Test
 
 on:
     push:
-        branches: [ master ]
+        branches: [ master, v2.x.x ]
     pull_request:
-        branches: [ master ]
+        branches: [ master, v2.x.x ]
 
 jobs:
     PublishJibContainers:
@@ -56,12 +56,16 @@ jobs:
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:
@@ -120,12 +124,16 @@ jobs:
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:
@@ -184,18 +192,22 @@ jobs:
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: PH12143,RSU2012
+                    ZOSMF_APPLIEDAPARS: PH12143,RSU2012
 
         steps:
             -   uses: actions/checkout@v2
@@ -241,6 +253,75 @@ jobs:
                     rm -f ~/.gradle/caches/modules-2/gc.properties
                     rm -rf ~/.gradle/caches/build-cache-1
 
+    CITestsZosmfPH34201:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 6
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-zosmf:
+                image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                    restore-keys: |
+                        ${{ runner.os }}-gradle001-
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                    restore-keys: |
+                        ${{ runner.OS }}-node001-
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: CITestsZosmfPH34201
+                    path: |
+                        integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
 
     CITestsZosmfWithoutJwt:
         needs: PublishJibContainers
@@ -251,18 +332,22 @@ jobs:
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: ''
+                    ZOSMF_APPLIEDAPARS: ''
 
         steps:
             -   uses: actions/checkout@v2
@@ -318,18 +403,22 @@ jobs:
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: AuthenticateApar
+                    ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
             -   uses: actions/checkout@v2
@@ -384,12 +473,16 @@ jobs:
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:
@@ -448,6 +541,8 @@ jobs:
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
@@ -458,28 +553,23 @@ jobs:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: AuthenticateApar
+                    ZOSMF_APPLIEDAPARS: AuthenticateApar
             redis-master:
                 image: redis:latest
                 ports:
                     - "6379:6379"
-                volumes:
-                    - /api-layer/keystore:/usr/local/etc/keystore
-                    - /api-layer/docker/redis/config/master-tls.conf:/usr/local/etc/redis/redis.conf
 
             redis-replica:
                 image: redis:latest
                 ports:
                     - "6380:6380"
-                volumes:
-                    - /api-layer/keystore:/usr/local/etc/keystore
-                    - /api-layer/docker/redis/config/replica-tls.conf:/usr/local/etc/redis/redis.conf
-
 
         steps:
             -   uses: actions/checkout@v2
@@ -534,6 +624,8 @@ jobs:
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
@@ -545,6 +637,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     VERIFY_CERTIFICATES: false
             gateway-service:
@@ -554,20 +648,16 @@ jobs:
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
                 env:
-                    ZOSMF_APPLIED_APARS: AuthenticateApar
+                    ZOSMF_APPLIEDAPARS: AuthenticateApar
             redis-master:
                 image: redis:latest
                 ports:
                     - "6379:6379"
-                volumes:
-                    - /api-layer/docker/redis/config/master.conf:/usr/local/etc/redis/redis.conf
 
             redis-replica:
                 image: redis:latest
                 ports:
                     - "6380:6380"
-                volumes:
-                    - /api-layer/docker/redis/config/replica.conf:/usr/local/etc/redis/redis.conf
 
         steps:
             -   uses: actions/checkout@v2
@@ -620,17 +710,14 @@ jobs:
         timeout-minutes: 6
 
         services:
-            nginx:
-                image: nginx:latest
-                ports:
-                    - 443:443
-                volumes:
-                    - /$(pwd)/docker/nginx/load-balancer.conf:/etc/nginx
-                    - /$(pwd)/keystore/docker:/etc/ssl/private
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             api-catalog-services-2:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
             caching-service:
@@ -645,10 +732,14 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-zosmf
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
@@ -718,15 +809,10 @@ jobs:
         timeout-minutes: 6
 
         services:
-            nginx:
-                image: nginx:latest
-                ports:
-                    - 443:443
-                volumes:
-                    - /$(pwd)/docker/nginx/load-balancer.conf:/etc/nginx
-                    - /$(pwd)/keystore/docker:/etc/ssl/private
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service
             discoverable-client:
@@ -742,10 +828,14 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-zosmf
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
@@ -833,15 +923,10 @@ jobs:
         timeout-minutes: 6
 
         services:
-            nginx:
-                image: nginx:latest
-                ports:
-                    - 443:443
-                volumes:
-                    - /$(pwd)/docker/nginx/load-balancer.conf:/etc/nginx
-                    - /$(pwd)/keystore/docker:/etc/ssl/private
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service
             discoverable-client:
@@ -850,10 +935,14 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-zosmf
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
@@ -924,15 +1013,10 @@ jobs:
         timeout-minutes: 6
 
         services:
-            nginx:
-                image: nginx:latest
-                ports:
-                    - 443:443
-                volumes:
-                    - /$(pwd)/docker/nginx/load-balancer.conf:/etc/nginx
-                    - /$(pwd)/keystore/docker:/etc/ssl/private
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service
             discoverable-client:
@@ -941,10 +1025,14 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-zosmf
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
@@ -1015,15 +1103,10 @@ jobs:
         timeout-minutes: 6
 
         services:
-            nginx:
-                image: nginx:latest
-                ports:
-                    - 443:443
-                volumes:
-                    - /$(pwd)/docker/nginx/load-balancer.conf:/etc/nginx
-                    - /$(pwd)/keystore/docker:/etc/ssl/private
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service
             discoverable-client:
@@ -1036,10 +1119,14 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-zosmf
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
@@ -1110,15 +1197,10 @@ jobs:
         timeout-minutes: 6
 
         services:
-            nginx:
-                image: nginx:latest
-                ports:
-                    - 443:443
-                volumes:
-                    - /$(pwd)/docker/nginx/load-balancer.conf:/etc/nginx
-                    - /$(pwd)/keystore/docker:/etc/ssl/private
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service
             discoverable-client:
@@ -1131,10 +1213,14 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-zosmf
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka

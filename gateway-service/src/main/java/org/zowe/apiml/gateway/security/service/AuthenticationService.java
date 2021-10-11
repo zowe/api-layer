@@ -62,7 +62,7 @@ public class AuthenticationService {
 
     private final ApplicationContext applicationContext;
     private final AuthConfigurationProperties authConfigurationProperties;
-    private final JwtSecurityInitializer jwtSecurityInitializer;
+    private final JwtSecurity jwtSecurityInitializer;
     private final ZosmfService zosmfService;
     private final EurekaClient discoveryClient;
     private final RestTemplate restTemplate;

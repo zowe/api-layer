@@ -73,6 +73,15 @@ class ZaasHttpsClientProviderTests {
     }
 
     @Test
+    void giveNoKeyStorePath_whenTheClientIsConstructed_thenEmptyKeyStoreIsUsed() throws ZaasConfigurationException, IOException {
+        ConfigProperties config = getConfigProperties();
+        config.setKeyStorePath(null);
+        ZaasHttpsClientProvider provider = new ZaasHttpsClientProvider(config);
+
+        assertNotNull(provider.getHttpClient());
+    }
+
+    @Test
     void whenGetHttpsClientWithKeyStoreAndTrustStore_thenIdenticalClientReturned() throws ZaasConfigurationException {
         CloseableHttpClient client1 = zaasHttpsClientProvider.getHttpClient();
         CloseableHttpClient client2 = zaasHttpsClientProvider.getHttpClient();

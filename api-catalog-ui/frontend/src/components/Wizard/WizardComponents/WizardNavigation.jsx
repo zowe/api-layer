@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { IconError } from 'mineral-ui-icons';
 import Tabs, { Tab } from 'mineral-ui/Tabs';
+import { IconDanger } from 'mineral-ui-icons';
+import { Card, CardBlock, Link } from 'mineral-ui';
 import WizardInputsContainer from './WizardInputsContainer';
 import YAMLVisualizerContainer from '../YAML/YAMLVisualizerContainer';
 
@@ -22,6 +23,7 @@ class WizardNavigation extends Component {
                 this.props.validateInput(navNamesArr[this.props.selectedCategory], false);
             }
             if (event === navNamesArr.length) {
+                this.props.assertAuthorization();
                 navNamesArr.forEach(navName => {
                     this.props.validateInput(navName, false);
                 });
@@ -41,6 +43,20 @@ class WizardNavigation extends Component {
             if (!Array.isArray(navs[category.nav])) {
                 navs[category.nav] = [];
             }
+            if (category.help) {
+                navs[category.nav].push(
+                    <Card key={`card#${index}`} className="wizardCategoryInfo">
+                        <CardBlock>{category.help}</CardBlock>
+                        {category.helpUrl ? (
+                            <CardBlock>
+                                <Link target="_blank" href={category.helpUrl.link}>
+                                    {category.helpUrl.title}
+                                </Link>
+                            </CardBlock>
+                        ) : null}
+                    </Card>
+                );
+            }
             navs[category.nav].push(<WizardInputsContainer key={`nav#${index}`} data={category} />);
             index += 1;
         });
@@ -57,8 +73,14 @@ class WizardNavigation extends Component {
             const name = entry[0];
             const categoryArr = entry[1];
             index += 1;
+            const done = !this.props.navsObj[name].silent && !this.props.navsObj[name].warn;
             return (
-                <Tab key={index} title={name} icon={this.props.navsObj[name].warn ? <IconError /> : undefined}>
+                <Tab
+                    className={done ? 'readyTab' : undefined}
+                    key={index}
+                    title={name}
+                    icon={this.props.navsObj[name].warn ? <IconDanger style={{ color: 'red' }} /> : undefined}
+                >
                     {categoryArr}
                 </Tab>
             );

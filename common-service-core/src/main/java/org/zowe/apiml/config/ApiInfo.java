@@ -72,7 +72,8 @@ public class ApiInfo {
             return -1;
         }
 
-        String[] versionFields = version.split("[^0-9a-zA-Z]");
+        String versionWithoutId = version.replace(apiId + " ", "");
+        String[] versionFields = versionWithoutId.split("[^0-9a-zA-Z]");
         String majorVersionStr = versionFields[0].replaceAll("[^0-9]", "");
         return majorVersionStr.isEmpty() ? -1 : Integer.parseInt(majorVersionStr);
     }

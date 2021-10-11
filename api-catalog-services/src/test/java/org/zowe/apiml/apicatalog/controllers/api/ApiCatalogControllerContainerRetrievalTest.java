@@ -9,26 +9,19 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
-import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     excludeFilters = { @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class) },
     excludeAutoConfiguration = { SecurityAutoConfiguration.class}
 )
+@ContextConfiguration(classes = ApiCatalogControllerContainerRetrievalTestContextConfiguration.class)
 class ApiCatalogControllerContainerRetrievalTest {
 
     @Autowired
@@ -51,30 +45,5 @@ class ApiCatalogControllerContainerRetrievalTest {
                 hasItem("Could not retrieve container statuses, java.lang.NullPointerException")));
     }
 
-    @Configuration
-    static class ContextConfiguration {
 
-        @MockBean
-        private CachedProductFamilyService cachedProductFamilyService;
-
-        @Bean
-        public ApiCatalogController apiCatalogController() {
-            when(cachedProductFamilyService.getAllContainers())
-                .thenThrow(new NullPointerException());
-
-            verify(cachedProductFamilyService, never()).getAllContainers();
-
-            return new ApiCatalogController(cachedProductFamilyService, null);
-        }
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService("/apicatalog-log-messages.yml");
-        }
-
-        @Bean
-        public ApiCatalogControllerExceptionHandler apiCatalogControllerExceptionHandler() {
-            return new ApiCatalogControllerExceptionHandler(messageService());
-        }
-    }
 }

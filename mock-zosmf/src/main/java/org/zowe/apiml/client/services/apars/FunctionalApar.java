@@ -16,7 +16,6 @@ import org.zowe.apiml.client.services.MockZosmfException;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.FileInputStream;
 import java.security.Key;
 import java.security.KeyStore;
@@ -83,7 +82,7 @@ public class FunctionalApar implements Apar {
      * Override to provide response entity when the JWT keys are requested from the zOSMF
      */
     protected ResponseEntity<?> handleJwtKeys() {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return null;
     }
 
     /**
@@ -132,7 +131,13 @@ public class FunctionalApar implements Apar {
         return null;
     }
 
-    protected boolean containsInvalidUser(Map<String, String> headers) {
+    protected boolean noAuthentication(Map<String, String> headers) {
+        String basicAuth = headers.get(AUTHORIZATION_HEADER);
+        String cookie = headers.get(COOKIE_HEADER);
+        return (basicAuth == null || basicAuth.isEmpty()) && (cookie == null || cookie.isEmpty());
+    }
+
+    protected boolean containsInvalidOrNoUser(Map<String, String> headers) {
         String authorization = headers.get(AUTHORIZATION_HEADER);
         if (authorization == null || authorization.isEmpty()) {
             return true;
@@ -207,7 +212,7 @@ public class FunctionalApar implements Apar {
     }
 
     private Key getKeyForSigning(String keystorePath) {
-        try (FileInputStream keystore = new FileInputStream(new File(keystorePath))) {
+        try (FileInputStream keystore = new FileInputStream(keystorePath)) {
             KeyStore ks = KeyStore.getInstance("PKCS12");
             ks.load(
                 keystore,

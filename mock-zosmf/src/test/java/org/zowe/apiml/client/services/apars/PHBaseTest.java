@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -69,23 +70,23 @@ class PHBaseTest {
     @Nested
     class whenAuthenticateIsCalled {
         @Test
-        void givenVerifyMethodWithNoAuthorization_returnUnauthorized() {
+        void givenVerifyMethodWithNoAuthorization_returnInternalServerError() {
             Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();
-            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
         @Test
-        void givenVerifyMethodWithEmptyAuthorization_returnUnauthorized() {
+        void givenVerifyMethodWithEmptyAuthorization_returnInternalServerError() {
             headers.put("authorization", "");
 
             Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();
-            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
         @Test
@@ -179,8 +180,7 @@ class PHBaseTest {
         void thenNotFoundIsReturned() {
             Optional<ResponseEntity<?>> result = underTest.apply("jwtKeys", "get", null, null, null);
 
-            assertThat(result.isPresent(), is(true));
-            assertThat(result.get().getStatusCode(), is(HttpStatus.NOT_FOUND));
+            assertThat(result, is(nullValue()));
         }
     }
 }

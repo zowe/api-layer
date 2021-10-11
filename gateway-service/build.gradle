@@ -55,6 +55,7 @@ configurations.all {
 
 dependencies {
     implementation(project(':apiml-security-common'))
+    implementation libraries.spring_boot_starter_webflux
     implementation libraries.spring_cloud_starter_zuul
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web

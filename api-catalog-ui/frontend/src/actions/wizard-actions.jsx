@@ -17,6 +17,7 @@ import {
     READY_YAML_OBJECT,
     REMOVE_INDEX,
     VALIDATE_INPUT,
+    UPDATE_SERVICE_ID,
 } from '../constants/wizard-constants';
 
 /**
@@ -45,9 +46,12 @@ export function wizardToggleDisplay() {
  * @param enablerName the type/name of the onboarding method
  */
 export function selectEnabler(enablerName) {
-    return {
-        type: SELECT_ENABLER,
-        payload: { enablerName },
+    return (dispatch, getState) => {
+        const { tiles } = getState().tilesReducer;
+        dispatch({
+            type: SELECT_ENABLER,
+            payload: { enablerName, tiles: tiles.map(tile => tile.title) },
+        });
     };
 }
 
@@ -89,46 +93,127 @@ export const insert = (parent, content) => {
 };
 
 /**
+ * Adds the value of
+ * @param inputData inputData array with all categories (already filled by user)
+ * @param indentationDependency the name of the input on which it depends
+ * @param indentation the predefined indentation of the category
+ * @returns result the updated indentation
+ */
+export function handleIndentationDependency(inputData, indentationDependency, indentation) {
+    let result = indentation;
+    inputData.forEach(category => {
+        if (Array.isArray(category.content)) {
+            category.content.forEach(inpt => {
+                Object.keys(inpt).forEach(k => {
+                    if (k === indentationDependency) {
+                        result = result.concat('/', inpt[k].value);
+                        return result;
+                    }
+                });
+            });
+        } else {
+            Object.keys(category.content).forEach(k => {
+                if (k === indentationDependency) {
+                    result = result.concat('/', category.content[k].value);
+                    return result;
+                }
+            });
+        }
+    });
+    return result;
+}
+
+export function handleArrayIndentation(arrIndent, content) {
+    let finalContent = [];
+    if (arrIndent !== undefined) {
+        let index = 0;
+        content.forEach(set => {
+            finalContent[index] = { [arrIndent]: set };
+            index += 1;
+        });
+    } else {
+        finalContent = content;
+    }
+    return finalContent;
+}
+
+/**
+ * Checks if the current key/value pair should be placed in the yaml
+ * @param valueObj object containing the value and the properties of the field
+ * @returns {boolean} should be placed
+ */
+const shouldBePlacedInYAML = valueObj => {
+    if (valueObj.show !== false && valueObj.hidden !== true) {
+        return valueObj.value !== '' || valueObj.optional !== true;
+    }
+    return false;
+};
+
+/**
+ * Updates the YAML with a category that has a multiple property set to true
+ * @param category category object
+ * @returns {*} an array containing the sets of data ready to be presented as YAML
+ */
+function handleCategoryMultiple(category) {
+    let content = [];
+    let index = 0;
+    if (category.noKey) {
+        category.content.forEach(o => {
+            Object.keys(o).forEach(key => {
+                const valueObj = category.content[index][key];
+                if (shouldBePlacedInYAML(valueObj)) {
+                    content[index] = category.content[index][key].value;
+                }
+            });
+            index += 1;
+        });
+    } else {
+        category.content.forEach(o => {
+            content[index] = {};
+            Object.keys(o).forEach(key => {
+                const valueObj = category.content[index][key];
+                if (shouldBePlacedInYAML(valueObj)) {
+                    content[index][key] = category.content[index][key].value;
+                }
+            });
+            content = handleArrayIndentation(category.arrIndent, content);
+            index += 1;
+        });
+    }
+    return content;
+}
+
+/**
  * Receives a single category and translates it to an object the yaml library can correctly convert to yaml
  * @param category a category
  * @param parent parent object which the yaml-ready category should be added to
+ * @param inputData array with all categories (already filled by user)
  * @returns result the updated parent
  */
-export const addCategoryToYamlObject = (category, parent) => {
+export const addCategoryToYamlObject = (category, parent, inputData) => {
     const result = { ...parent };
     let content = {};
+
     // load user's answer into content object
     if (!category.multiple) {
-        Object.keys(category.content[0]).forEach(key => {
-            if (category.content[0][key].show !== false) {
-                content[key] = category.content[0][key].value;
+        const contentElement = category.content[0];
+        Object.keys(contentElement).forEach(key => {
+            const valueObj = contentElement[key];
+            if (shouldBePlacedInYAML(valueObj)) {
+                content[key] = contentElement[key].value;
             }
         });
     } else {
-        content = [];
-        let index = 0;
-        if (category.noKey) {
-            category.content.forEach(o => {
-                Object.keys(o).forEach(key => {
-                    content[index] = category.content[index][key].value;
-                });
-                index += 1;
-            });
-        } else {
-            category.content.forEach(o => {
-                content[index] = {};
-                Object.keys(o).forEach(key => {
-                    content[index][key] = category.content[index][key].value;
-                });
-                index += 1;
-            });
-        }
+        content = handleCategoryMultiple(category);
     }
     // handle indentation, if any
     if (!category.indentation) {
         insert(result, content);
     } else {
-        const indent = category.indentation;
+        let indent = category.indentation;
+        if (category.indentationDependency !== undefined) {
+            indent = handleIndentationDependency(inputData, category.indentationDependency, category.indentation);
+        }
         const arr = indent.split('/');
         arr.reverse().forEach(key => {
             if (key.length > 0)
@@ -148,12 +233,27 @@ export const addCategoryToYamlObject = (category, parent) => {
  */
 export function createYamlObject(inputData) {
     let result = {};
+    const arr = [];
     inputData.forEach(category => {
-        result = addCategoryToYamlObject(category, result);
+        if (category.inArr) {
+            result = addCategoryToYamlObject(category, result, inputData);
+        }
+    });
+    if (Object.keys(result).length > 0) {
+        arr.push(result);
+    }
+    let finalResult;
+    if (arr.length > 0) {
+        finalResult = { services: arr };
+    }
+    inputData.forEach(cat => {
+        if (cat.inArr === undefined) {
+            finalResult = addCategoryToYamlObject(cat, finalResult, inputData);
+        }
     });
     return {
         type: READY_YAML_OBJECT,
-        payload: { yaml: result },
+        payload: { yaml: finalResult },
     };
 }
 
@@ -178,5 +278,16 @@ export function validateInput(navName, silent) {
     return {
         type: VALIDATE_INPUT,
         payload: { navName, silent },
+    };
+}
+
+/**
+ * Store serviceId's value, because it's needed for saving staatic definitons
+ * @param value value of serviceId
+ */
+export function updateServiceId(value) {
+    return {
+        type: UPDATE_SERVICE_ID,
+        payload: { value },
     };
 }

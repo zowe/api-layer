@@ -7,6 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import _ from 'lodash';
 import {
     CHANGE_CATEGORY,
@@ -16,35 +17,41 @@ import {
     REMOVE_INDEX,
     SELECT_ENABLER,
     TOGGLE_DISPLAY,
+    UPDATE_SERVICE_ID,
     VALIDATE_INPUT,
+    WIZARD_VISIBILITY_TOGGLE,
+    OVERRIDE_DEF,
 } from '../constants/wizard-constants';
 import { categoryData } from '../components/Wizard/configs/wizard_categories';
 import { enablerData } from '../components/Wizard/configs/wizard_onboarding_methods';
 
 export const wizardReducerDefaultState = {
+    userCanAutoOnboard: false,
     wizardIsOpen: false,
     enablerName: '',
     selectedCategory: 0,
     inputData: [],
     yamlObject: {},
     navsObj: {},
+    serviceId: '',
+    confirmDialog: false,
 };
 
 /**
- * Override multiple and indentation properties if the enabler asks to
+ * Override properties if the enabler specifies
  * @param category category object
  * @param categoryInfo enabler's category config
  */
-function compareVariables(category, categoryInfo) {
+export function compareVariables(category, categoryInfo) {
     if (categoryInfo.nav === undefined) {
         categoryInfo.nav = categoryInfo.name;
     }
-    if (categoryInfo.indentation !== undefined) {
-        category.indentation = categoryInfo.indentation;
-    }
-    if (categoryInfo.multiple !== undefined) {
-        category.multiple = categoryInfo.multiple;
-    }
+    const overridingValues = ['indentation', 'multiple', 'inArr', 'arrIndent', 'minions'];
+    overridingValues.forEach(overrideKey => {
+        if (categoryInfo[overrideKey] !== undefined) {
+            category[overrideKey] = categoryInfo[overrideKey];
+        }
+    });
     if (!Array.isArray(category.content) && category.content !== undefined) {
         const arr = [];
         arr.push(category.content);
@@ -61,16 +68,19 @@ export function addDefaultValues(content, defaultsArr) {
     const newContent = { ...content };
     defaultsArr.forEach(entry => {
         const key = entry[0];
-        const defaultValue = entry[1];
+        const defaultValueObj = entry[1];
         if (newContent[key]) {
-            newContent[key].value = defaultValue;
+            newContent[key].value = defaultValueObj.value;
+            if (defaultValueObj.hide !== undefined) {
+                newContent[key].hide = defaultValueObj.hide;
+            }
         }
     });
     return newContent;
 }
 
 /**
- * Checks for invalid configurations, also handles situations where the content is an array instead of an object
+ * Checks for invalid configurations, also feeds
  * @param category category object
  * @param defaults defaults object; these are defined in wizard_defaults
  */
@@ -99,6 +109,8 @@ function emptyFieldsOfContent(content, silent) {
                 objValue.empty = true;
                 emptyFieldsArr.push(key);
             }
+        } else if (objValue.problem) {
+            emptyFieldsArr.push(key);
         }
     });
     return emptyFieldsArr;
@@ -120,12 +132,47 @@ export function findEmptyFieldsOfCategory(content, silent) {
 }
 
 /**
+ * Tell minions they are minions
+ * @param minions contains array of objects - each object has a key of the minion category & the inputs that should be disabled
+ * @param inputData inputData
+ */
+function warnMinions(minions, inputData) {
+    inputData.forEach(category => {
+        minions.forEach(entry => {
+            if (category.text === entry.key) {
+                category.isMinion = true;
+                entry.inputsToBeDisabled.forEach(inputName => {
+                    category.content[0][inputName].disabled = true;
+                });
+            }
+        });
+    });
+}
+
+/**
+ * Alter fields of given category on initial onboarding method creation
+ * @param category category to be affected
+ * @param payload additional payload
+ */
+export function affectCategory(category, payload) {
+    if (category.interference === 'catalog' || category.interference === 'staticCatalog') {
+        const { tiles } = payload;
+        const arr = [...category.content];
+        arr[0] = { ...arr[0], type: { ...arr[0].type, options: arr[0].type.options.concat(tiles) } };
+        return { ...category, content: arr };
+    }
+    return category;
+}
+
+/**
  * Load categories according to the enabler needs
  * @param enablerObj enabler config
  * @param config category & enabler data
+ * @param payload additional payload from the enabler
  * @returns {any} inputData and navCategories wrapped in an object
  */
-function loadCategories(enablerObj, config) {
+function loadCategories(enablerObj, config, payload) {
+    const minions = [];
     const inputData = [];
     const navCategories = {};
     const { categories } = enablerObj;
@@ -138,6 +185,14 @@ function loadCategories(enablerObj, config) {
         compareVariables(category, categoryInfo);
         category = setDefault(category, enablerObj.defaults);
         category.nav = categoryInfo.nav;
+        // if category has minions, add them to the array so warnMinions() can warn them
+        if (typeof category.minions !== 'undefined') {
+            minions.push({
+                key: Object.keys(category.minions)[0],
+                inputsToBeDisabled: Object.values(category.minions)[0],
+            });
+        }
+        category = affectCategory(category, payload);
         if (!(category.nav in navCategories)) {
             navCategories[category.nav] = { [category.text]: [[]], silent: true, warn: false };
         } else {
@@ -145,6 +200,7 @@ function loadCategories(enablerObj, config) {
         }
         inputData.push(category);
     });
+    warnMinions(minions, inputData);
     return { inputData, navCategories };
 }
 
@@ -189,6 +245,11 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
         return state;
     }
     switch (action.type) {
+        case WIZARD_VISIBILITY_TOGGLE:
+            return {
+                ...state,
+                userCanAutoOnboard: action.payload.state,
+            };
         case TOGGLE_DISPLAY:
             return {
                 ...state,
@@ -200,7 +261,7 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             if (enablerObj === undefined || enablerObj.categories === undefined) {
                 return { ...state, enablerName };
             }
-            const { inputData, navCategories } = loadCategories(enablerObj, config);
+            const { inputData, navCategories } = loadCategories(enablerObj, config, action.payload);
             return { ...state, enablerName, inputData, selectedCategory: 0, navsObj: navCategories };
         }
         case INPUT_UPDATED: {
@@ -237,6 +298,12 @@ const wizardReducer = (state = wizardReducerDefaultState, action = {}, config = 
             if (state.navsObj[navName] === undefined) return state;
             const navsObj = checkPresence(state.inputData, navName, state.navsObj, silent);
             return { ...state, navsObj };
+        }
+        case UPDATE_SERVICE_ID: {
+            return { ...state, serviceId: action.payload.value };
+        }
+        case OVERRIDE_DEF: {
+            return { ...state, confirmDialog: !state.confirmDialog, wizardIsOpen: !state.wizardIsOpen };
         }
         default:
             return state;

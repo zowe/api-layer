@@ -458,8 +458,8 @@ class CachedProductFamilyServiceTest {
         APIService apiService = apiContainer.getServices().iterator().next();
         assertNotNull(apiService.getApiId());
         assertEquals(3, apiService.getApiId().size());
-        assertEquals("api1", apiService.getApiId().get("v1"));
-        assertEquals("api2", apiService.getApiId().get("v2"));
+        assertEquals("api1", apiService.getApiId().get("api1 v1.0.0"));
+        assertEquals("api2", apiService.getApiId().get("api2 v2"));
         assertEquals("api3", apiService.getApiId().get("default"));
     }
 

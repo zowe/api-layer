@@ -17,6 +17,9 @@ server:
         keyStorePassword: password
         keyStoreType: PKCS12
         clientAuth: want
+        trustStore: /docker/all-services.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
 
 apiml:
     service:
@@ -24,18 +27,17 @@ apiml:
         port: 10014
         discoveryServiceUrls: https://discovery-service:10011/eureka/
         eurekaPassword: password
-        eurekaUserId: eureka
+        eurekaUserName: eureka
         gatewayHostname: https://gateway-service:10010
         preferIpAddress: false
-        truststore: /docker/all-services.truststore.p12
-        truststorePassword: password
-        truststoreType: PKCS12
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
         cacheRefreshRetryDelayInMillis: 10000
         cacheRefreshUpdateThresholdInMillis: 120000
         serviceFetchDelayInMillis: 10000
     banner: console
+    discovery:
+        staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
 
 spring:
     output:

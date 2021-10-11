@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
@@ -67,7 +68,11 @@ public class CatalogApiDocController {
         @PathVariable(value = "serviceId") String serviceId,
         @ApiParam(name = "apiVersion", value = "The major version of the API documentation (v1, v2, etc.)", required = true, example = "v1")
         @PathVariable(value = "apiVersion") String apiVersion) {
-        return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiVersion);
+        try {
+            return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiVersion);
+        } catch (ApiDocNotFoundException e) {
+            return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, null);
+        }
     }
 
     @GetMapping(value = "/{serviceId}/{apiVersion1}/{apiVersion2}", produces = MediaType.TEXT_HTML_VALUE)

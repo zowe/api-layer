@@ -6,7 +6,7 @@ IJO="$IJO -Dapiml.service.discoveryServiceUrls=${{PFX}}_EUREKA"
 IJO="$IJO -Dapiml.service.ipAddress=${{PFX}}_{{SYSN}}_IP_ADDRESS"
 IJO="$IJO -Dapiml.service.preferIpAddress=${{PFX}}_PREFER_IP_ADDRESS"
 IJO="$IJO -Dapiml.service.gatewayHostname=${{PFX}}_GATEWAY_HOSTNAME"
-IJO="$IJO -Dapiml.service.eurekaUserId=${{PFX}}_DISCOVERY_SERVICE_USERID"
+IJO="$IJO -Dapiml.service.eurekaUserName=${{PFX}}_DISCOVERY_SERVICE_USERID"
 IJO="$IJO -Dapiml.service.eurekaPassword=${{PFX}}_DISCOVERY_SERVICE_PASSWORD"
 
 # SSL configuration:

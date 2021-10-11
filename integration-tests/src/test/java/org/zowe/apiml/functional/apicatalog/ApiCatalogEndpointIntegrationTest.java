@@ -11,20 +11,22 @@ package org.zowe.apiml.functional.apicatalog;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.springframework.http.MediaType;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CatalogTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.http.HttpSecurityUtils;
@@ -32,19 +34,31 @@ import org.zowe.apiml.util.http.HttpSecurityUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedHashMap;
+import java.util.UUID;
 
+import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
+import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
+import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
+import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @CatalogTest
+@Slf4j
 class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
     private static final String GET_CONTAINER_BY_INVALID_ID_ENDPOINT = "/apicatalog/api/v1/containers/bad";
-    private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v1";
-    private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/v2";
-    private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
+    private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/zowe.apiml.apicatalog v1.0.0";
+    private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/zowe.apiml.apicatalog v18.0.0";
+
+    private final static String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getUser();
+    private final static String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
 
     private String baseHost;
 
@@ -142,17 +156,62 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         }
     }
 
-    // Functional
-    @Test
-    void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
-        final HttpResponse response = getStaticApiRefreshResponse(REFRESH_STATIC_APIS_ENDPOINT, HttpStatus.SC_OK);
+    @Nested
+    @TestMethodOrder(OrderAnnotation.class)
+    @TestInstance(PER_CLASS)
+    class StaticApis {
 
-        // When
-        final String jsonResponse = EntityUtils.toString(response.getEntity());
+        private static final String STATIC_DEFINITION_GENERATE_ENDPOINT = "/apicatalog/api/v1/static-api/generate";
+        private static final String STATIC_DEFINITION_DELETE_ENDPOINT = "/apicatalog/api/v1/static-api/delete";
+        private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
+        private String staticDefinitionServiceId = "a" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
 
-        JSONArray errors = JsonPath.parse(jsonResponse).read("$.errors");
+        @AfterAll
+        void cleanupStaticDefinition() {
+            given().relaxedHTTPSValidation()
+                .when()
+                .header("Service-Id", staticDefinitionServiceId)
+                .cookie(COOKIE_NAME, gatewayToken())
+                .delete(getUriFromGateway(STATIC_DEFINITION_DELETE_ENDPOINT));
+        }
 
-        assertEquals("[]", errors.toString());
+        @Test
+        @Order(1)
+        void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
+            getStaticApiResponse(REFRESH_STATIC_APIS_ENDPOINT, null, HttpStatus.SC_OK, null, gatewayToken(USERNAME, PASSWORD));
+        }
+
+        @Test
+        @Order(30)
+        void whenCallStaticDefinitionGenerate_thenResponse201() throws IOException {
+            String json = "# Dummy content";
+            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId, HttpStatus.SC_CREATED, json, gatewayToken(USERNAME, PASSWORD));
+        }
+
+        @Test
+        @Order(31)
+        void whenCallStaticDefinitionGenerateWithUnauthorizedUser_thenResponse403() throws IOException {
+            String json = "# Dummy content";
+            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId, HttpStatus.SC_FORBIDDEN, json, gatewayToken(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD));
+        }
+
+        private Response getStaticApiResponse(String endpoint, String definitionFileName, int returnCode, String body, String JWT) throws IOException {
+            URI uri = getUriFromGateway(endpoint);
+            RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+
+            RequestSpecification requestSpecification = given().config(SslContext.tlsWithoutCert).relaxedHTTPSValidation()
+                .when()
+                .cookie(COOKIE_NAME, JWT)
+                .header("Accept", MediaType.APPLICATION_JSON_VALUE);
+            if (body != null) {
+                requestSpecification
+                    .header("Service-Id", definitionFileName)
+                    .body(body);
+            }
+
+            return requestSpecification.post(uri).then()
+                .statusCode(returnCode).extract().response();
+        }
     }
 
     // Execute the endpoint and check the response for a return code
@@ -161,30 +220,11 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         String cookie = HttpSecurityUtils.getCookieForGateway();
         HttpSecurityUtils.addCookie(request, cookie);
 
-        // When
         HttpResponse response = HttpClientUtils.client().execute(request);
-
-        // Then
         assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
 
         return response;
     }
 
-    // Execute the refresh static apis endpoint and check the response for a return code
-    private HttpResponse getStaticApiRefreshResponse(String endpoint, int returnCode) throws IOException {
-        URI uri = HttpRequestUtils.getUriFromGateway(endpoint);
-        HttpPost request = new HttpPost(uri);
-        request.addHeader("Accept", "application/json");
 
-        String cookie = HttpSecurityUtils.getCookieForGateway();
-        HttpSecurityUtils.addCookie(request, cookie);
-
-        // When
-        HttpResponse response = HttpClientUtils.client().execute(request);
-
-        // Then
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
-
-        return response;
-    }
 }

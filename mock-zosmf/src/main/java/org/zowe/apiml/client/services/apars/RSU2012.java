@@ -28,7 +28,7 @@ public class RSU2012 extends FunctionalApar {
     @Override
     protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
         // JWT token not accepted for create method
-        if (containsInvalidUser(headers) && noLtpaCookie(headers)) {
+        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -38,7 +38,7 @@ public class RSU2012 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        if (containsInvalidUser(headers) && noLtpaCookie(headers) && noJwtCookie(headers)) {
+        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers) && noJwtCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -48,7 +48,7 @@ public class RSU2012 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
-        if (containsInvalidUser(headers) && noLtpaCookie(headers) && noJwtCookie(headers)) {
+        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers) && noJwtCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

@@ -9,18 +9,27 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.security.PublicKey;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -38,8 +47,9 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
 
-    private final JwtSecurityInitializer jwtSecurityInitializer;
+    private final JwtSecurity jwtSecurity;
     private final ZosmfService zosmfService;
+    private final MessageService messageService;
 
     public static final String CONTROLLER_PATH = "/gateway/auth";  // NOSONAR: URL is always using / to separate path segments
     public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
@@ -85,9 +95,8 @@ public class AuthController {
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
     @ResponseBody
     public JSONObject getAllPublicKeys() {
-        final List<JWK> keys = new LinkedList<>();
-        keys.addAll(zosmfService.getPublicKeys().getKeys());
-        Optional<JWK> key = jwtSecurityInitializer.getJwkPublicKey();
+        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+        Optional<JWK> key = jwtSecurity.getJwkPublicKey();
         key.ifPresent(keys::add);
         return new JWKSet(keys).toJSONObject(true);
     }
@@ -103,10 +112,59 @@ public class AuthController {
         final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
 
         if (keys.isEmpty()) {
-            Optional<JWK> key = jwtSecurityInitializer.getJwkPublicKey();
+            Optional<JWK> key = jwtSecurity.getJwkPublicKey();
             key.ifPresent(keys::add);
         }
         return new JWKSet(keys).toJSONObject(true);
     }
 
+    /**
+     * Return key that's actually used. If there is one available from zOSMF, then this one is used otherwise the
+     * configured one is used. The key is provided in the PEM format.
+     *
+     * Until the key to be produced is resolved, this returns 500 with the message code ZWEAG716.
+     *
+     * @return The key actually used to verify the JWT tokens.
+     */
+    @GetMapping(path = PUBLIC_KEYS_PATH)
+    @ResponseBody
+    public ResponseEntity<?> getPublicKeyUsedForSigning() {
+        JwtSecurity.JwtProducer producer = jwtSecurity.actualJwtProducer();
+
+        JWKSet currentKey = new JWKSet();
+        switch (producer) {
+            case ZOSMF:
+                currentKey = zosmfService.getPublicKeys();
+                break;
+            case APIML:
+                currentKey = jwtSecurity.getPublicKeyInSet();
+                break;
+            case UNKNOWN:
+                //return 500 as we just don't know yet.
+                return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.unknownState").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        List<JWK> publicKeys = currentKey.getKeys();
+        if (publicKeys.size() != 1) {
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.keys.wrongAmount", publicKeys.size()).mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        try {
+            PublicKey key = publicKeys.get(0)
+                .toRSAKey()
+                .toPublicKey();
+            return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
+        } catch (IOException | JOSEException ex) {
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.gateway.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private String getPublicKeyAsPem(PublicKey publicKey) throws IOException {
+        StringWriter writer = new StringWriter();
+        PemWriter pemWriter = new PemWriter(writer);
+        pemWriter.writeObject(new PemObject("PUBLIC KEY", publicKey.getEncoded()));
+        pemWriter.flush();
+        pemWriter.close();
+        return writer.toString();
+    }
 }
