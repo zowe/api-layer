@@ -24,6 +24,11 @@ public class PHBase extends FunctionalApar {
     }
 
     @Override
+    protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @Override
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
         if (noAuthentication(headers)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
