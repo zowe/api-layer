@@ -19,4 +19,7 @@ public class PassTicketException extends AuthenticationException {
         super(message, cause);
     }
 
+    public PassTicketException(String message) {
+        super(message);
+    }
 }
