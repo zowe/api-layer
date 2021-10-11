@@ -82,8 +82,21 @@ these files get used by NGINX proxy to simulate AT_TLS on CI server.
 
 ##### How to generate additional client certs using OPENSSL
 
-    openssl req -newkey rsa:2048 -keyout PRIVATEKEY.key -out MYCSR.csr -config openssl.conf
-    openssl x509 -req -days 365 -in MYCSR.csr -CA APIML_External_Certificate_Authority.cer -CAkey APIML_External_Certificate_Authority.key -out server-cert.pem -CAcreateserial -extfile openssl.conf -extensions v3_clientauth
+Generate CSR
+
+    openssl req -newkey rsa:2048 -keyout PRIVATEKEY.key -out MYCSR.csr -config openssl.conf -outform PEM
+
+Display CSR to verify the content(it has to contain all extensions, e.g. Extended Key Usage)
+
+    openssl req -text -noout -verify -in MYCSR.csr
+    
+Sign CSR with API ML CA
+
+    openssl x509 -req -days 500 -in MYCSR.csr -CA APIML_External_Certificate_Authority.cer -CAkey APIML_External_Certificate_Authority.key -out server-cert.pem -CAcreateserial -sha256 -outform PEM -extfile openssl.conf -extensions v3_req
+
+Display certificate content
+
+    openssl x509 -in server-cert.pem -text -noout
 
 
 ## Generating own certificates for localhost
