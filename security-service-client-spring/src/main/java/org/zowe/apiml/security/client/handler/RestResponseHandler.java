@@ -10,6 +10,7 @@
 package org.zowe.apiml.security.client.handler;
 
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
@@ -68,6 +69,8 @@ public class RestResponseHandler {
                         throw new TokenNotValidException(errorType.getDefaultMessage(), exception);
                     } else if (errorType.equals(ErrorType.TOKEN_NOT_PROVIDED)) {
                         throw new TokenNotProvidedException(errorType.getDefaultMessage());
+                    } else if (errorType.equals(ErrorType.NO_TOKEN)) {
+                        throw new AuthenticationTokenException(errorType.getDefaultMessage()); // TODO make new exception type probably
                     }
                 }
                 throw new BadCredentialsException(ErrorType.BAD_CREDENTIALS.getDefaultMessage(), exception);
