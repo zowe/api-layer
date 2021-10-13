@@ -9,13 +9,6 @@
  */
 package org.zowe.apiml.security.client.handler;
 
-import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
-import org.zowe.apiml.security.common.error.AuthenticationTokenException;
-import org.zowe.apiml.security.common.error.ErrorType;
-import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -25,6 +18,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
+import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
+import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
+import org.zowe.apiml.security.common.error.ErrorType;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.TokenNotInAuthenticationResponseException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.validation.constraints.NotNull;
 
@@ -38,10 +38,10 @@ public class RestResponseHandler {
     /**
      * Consumes an exception and transforms it into manageable exception
      *
-     * @param exception Input exception, can not be null
-     * @param errorType Error type enum, see {@link ErrorType}
+     * @param exception              Input exception, can not be null
+     * @param errorType              Error type enum, see {@link ErrorType}
      * @param genericLogErrorMessage Generic message that gets printed in log
-     * @param logParameters Additional messages are printed into the log after the generic message log line
+     * @param logParameters          Additional messages are printed into the log after the generic message log line
      */
     public void handleBadResponse(@NotNull Exception exception, ErrorType errorType, String genericLogErrorMessage, Object... logParameters) {
         if (exception instanceof HttpClientErrorException) {
@@ -69,8 +69,8 @@ public class RestResponseHandler {
                         throw new TokenNotValidException(errorType.getDefaultMessage(), exception);
                     } else if (errorType.equals(ErrorType.TOKEN_NOT_PROVIDED)) {
                         throw new TokenNotProvidedException(errorType.getDefaultMessage());
-                    } else if (errorType.equals(ErrorType.NO_TOKEN)) {
-                        throw new AuthenticationTokenException(errorType.getDefaultMessage()); // TODO make new exception type probably
+                    } else if (errorType.equals(ErrorType.TOKEN_NOT_IN_AUTHENTICATION_RESPONSE)) {
+                        throw new TokenNotInAuthenticationResponseException(errorType.getDefaultMessage());
                     }
                 }
                 throw new BadCredentialsException(ErrorType.BAD_CREDENTIALS.getDefaultMessage(), exception);

@@ -36,7 +36,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotInAuthenticationResponseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -277,9 +277,9 @@ class ZosmfAuthenticationProviderTest {
         mockZosmfRealmRestCallResponse();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
             new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
-        Exception exception = assertThrows(TokenNotProvidedException.class,
+        Exception exception = assertThrows(TokenNotInAuthenticationResponseException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
-            "Expected exception is not TokenNotProvidedException");
+            "Expected exception is not TokenNotInAuthenticationResponseException");
         assertEquals("No supported token in z/OSMF response", exception.getMessage());
     }
 
@@ -483,14 +483,14 @@ class ZosmfAuthenticationProviderTest {
         void willThrowWhenOverrideAndNoTokens() {
             authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
             tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
-            assertThrows(TokenNotProvidedException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
+            assertThrows(TokenNotInAuthenticationResponseException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
         }
 
         @Test
         void willThrowWhenOverrideAndNoTokens2() {
             authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
             tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
-            assertThrows(TokenNotProvidedException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
+            assertThrows(TokenNotInAuthenticationResponseException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
         }
     }
 }
