@@ -51,6 +51,13 @@ messages:
       reason: "The authorization header is missing, or the request body is missing or invalid."
       action: "Provide valid authentication."
 
+    - key: org.zowe.apiml.security.login.noToken
+      number: ZWEAG122
+      type: ERROR
+      text: "No token provided"
+      reason: "asdf."
+      action: "asdf."
+
     # Query messages (130 - 140)
     - key: org.zowe.apiml.security.query.invalidToken
       number: ZWEAS130

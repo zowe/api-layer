@@ -37,6 +37,13 @@ messages:
       type: ERROR
       text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
 
+    - key: org.zowe.apiml.security.login.noToken
+      number: ZWEAG122
+      type: ERROR
+      text: "No token provided"
+      reason: "asdf."
+      action: "asdf."
+
     # Query messages (130 - 140)
     - key: org.zowe.apiml.security.query.invalidToken
       number: ZWEAS130
