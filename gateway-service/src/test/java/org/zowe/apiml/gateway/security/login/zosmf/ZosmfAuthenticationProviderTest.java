@@ -36,6 +36,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -152,12 +153,11 @@ class ZosmfAuthenticationProviderTest {
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
 
-        HttpHeaders headers = new HttpHeaders();
         when(restTemplate.exchange(Mockito.anyString(),
             Mockito.eq(HttpMethod.GET),
             Mockito.any(),
             Mockito.<Class<Object>>any()))
-            .thenReturn(new ResponseEntity<>(getResponse(true), headers, HttpStatus.OK));
+            .thenThrow(new BadCredentialsException("Username or password are invalid."));
 
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
@@ -277,10 +277,10 @@ class ZosmfAuthenticationProviderTest {
         mockZosmfRealmRestCallResponse();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
             new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
-        Exception exception = assertThrows(BadCredentialsException.class,
+        Exception exception = assertThrows(TokenNotProvidedException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
-            "Expected exception is not BadCredentialsException");
-        assertEquals("Username or password are invalid.", exception.getMessage());
+            "Expected exception is not TokenNotProvidedException");
+        assertEquals("No supported token in z/OSMF response", exception.getMessage());
     }
 
     private void mockZosmfRealmRestCallResponse() {
@@ -483,14 +483,14 @@ class ZosmfAuthenticationProviderTest {
         void willThrowWhenOverrideAndNoTokens() {
             authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
             tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
-            assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
+            assertThrows(TokenNotProvidedException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
         }
 
         @Test
         void willThrowWhenOverrideAndNoTokens2() {
             authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
             tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
-            assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
+            assertThrows(TokenNotProvidedException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
         }
     }
 }

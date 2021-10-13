@@ -10,15 +10,15 @@
 package org.zowe.apiml.gateway.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -68,7 +68,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
                 break;
         }
 
-        throw new AuthenticationTokenException("No JWT or LTPA token in z/OSMF response.") {};
+        throw new TokenNotProvidedException("No supported token in z/OSMF response");
     }
 
     public TokenAuthentication getZosmfJwtToken(String user, ZosmfService.AuthenticationResponse ar) {
