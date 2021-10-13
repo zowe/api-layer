@@ -31,6 +31,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class GatewaySecurityService {
+    private static final String MESSAGE_KEY_STRING = "messageKey\":\"";
+
     private final GatewayClient gatewayClient;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final RestTemplate restTemplate;
@@ -72,29 +74,6 @@ public class GatewaySecurityService {
         return Optional.empty();
     }
 
-    private ErrorType getErrorType(RestClientException ex) {
-        String detailMessage = ex.getMessage();
-        if (detailMessage == null) {
-            return ErrorType.AUTH_GENERAL;
-        }
-
-        String messageKeyString = "messageKey\":\"";
-        int indexOfMessageKey = detailMessage.indexOf(messageKeyString);
-        if (indexOfMessageKey < 0) {
-            return ErrorType.AUTH_GENERAL;
-        }
-
-        // substring from `messageKey":"` to next `"` - this is the messageKey value
-        String messageKeyToEndOfExceptionMessage = detailMessage.substring(indexOfMessageKey + messageKeyString.length());
-        String messageKey = messageKeyToEndOfExceptionMessage.substring(0, messageKeyToEndOfExceptionMessage.indexOf("\""));
-
-        try {
-            return ErrorType.fromMessageKey(messageKey);
-        } catch (IllegalArgumentException e) {
-            return ErrorType.AUTH_GENERAL;
-        }
-    }
-
     /**
      * Verifies JWT token validity and returns JWT token data
      *
@@ -123,6 +102,28 @@ public class GatewaySecurityService {
                 "Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
         }
         return null;
+    }
+
+    private ErrorType getErrorType(RestClientException ex) {
+        String detailMessage = ex.getMessage();
+        if (detailMessage == null) {
+            return ErrorType.AUTH_GENERAL;
+        }
+
+        int indexOfMessageKey = detailMessage.indexOf(MESSAGE_KEY_STRING);
+        if (indexOfMessageKey < 0) {
+            return ErrorType.AUTH_GENERAL;
+        }
+
+        // substring from `messageKey":"` to next `"` - this is the messageKey value
+        String messageKeyToEndOfExceptionMessage = detailMessage.substring(indexOfMessageKey + MESSAGE_KEY_STRING.length());
+        String messageKey = messageKeyToEndOfExceptionMessage.substring(0, messageKeyToEndOfExceptionMessage.indexOf("\""));
+
+        try {
+            return ErrorType.fromMessageKey(messageKey);
+        } catch (IllegalArgumentException e) {
+            return ErrorType.AUTH_GENERAL;
+        }
     }
 
     private Optional<String> extractToken(String cookies) {
