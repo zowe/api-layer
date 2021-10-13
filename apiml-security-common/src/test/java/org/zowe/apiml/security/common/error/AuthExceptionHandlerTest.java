@@ -182,6 +182,20 @@ class AuthExceptionHandlerTest {
     }
 
     @Test
+    void testTokenNotInResponseException() throws IOException, ServletException {
+        authExceptionHandler.handleException(
+            httpServletRequest,
+            httpServletResponse,
+            new TokenNotInAuthenticationResponseException("ERROR"));
+
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
+
+        Message message = messageService.createMessage(ErrorType.TOKEN_NOT_IN_AUTHENTICATION_RESPONSE.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+    }
+
+    @Test
     void testAuthenticationFailure_whenOccurUnexpectedException() throws ServletException {
         assertThrows(ServletException.class, () -> {
             authExceptionHandler.handleException(
