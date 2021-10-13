@@ -12,10 +12,12 @@ package org.zowe.apiml.gateway.security.login.zosmf;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
@@ -67,7 +69,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         }
 
         // JWT and LTPA tokens are missing, authentication was wrong
-        throw new BadCredentialsException("Username or password are invalid.");
+        throw new AuthenticationTokenException("Username or asdfpassword are invalid.") {};
     }
 
     public TokenAuthentication getZosmfJwtToken(String user, ZosmfService.AuthenticationResponse ar) {
