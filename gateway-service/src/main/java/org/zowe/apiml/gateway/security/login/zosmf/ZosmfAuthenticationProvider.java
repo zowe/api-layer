@@ -68,8 +68,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
                 break;
         }
 
-        // JWT and LTPA tokens are missing, authentication was wrong
-        throw new AuthenticationTokenException("Username or asdfpassword are invalid.") {};
+        throw new AuthenticationTokenException("No JWT or LTPA token in z/OSMF response.") {};
     }
 
     public TokenAuthentication getZosmfJwtToken(String user, ZosmfService.AuthenticationResponse ar) {

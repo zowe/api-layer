@@ -24,7 +24,7 @@ public enum ErrorType {
     AUTH_GENERAL("org.zowe.apiml.security.generic", "A failure occurred when authenticating."),
     SERVICE_UNAVAILABLE("org.zowe.apiml.security.serviceUnavailable", "Authentication service not available."),
     GATEWAY_NOT_AVAILABLE("org.zowe.apiml.security.gatewayNotAvailable", "API Gateway Service not available."),
-    NO_TOKEN("org.zowe.apiml.security.login.noToken", "SDFSDF");
+    NO_TOKEN("org.zowe.apiml.security.login.noTokenInResponse", "Error retrieving token from Authentication service.");
 
     private final String errorMessageKey;
     private final String defaultMessage;
