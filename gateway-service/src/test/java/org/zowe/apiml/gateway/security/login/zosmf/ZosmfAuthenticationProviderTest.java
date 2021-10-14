@@ -35,8 +35,8 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -492,6 +492,18 @@ class ZosmfAuthenticationProviderTest {
             authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
             tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
             assertThrows(InvalidTokenTypeException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
+        }
+
+        @Test
+        void willThrowBadCredentialsWhenNoTokenPresentExpectingLtpa() {
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
+            assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthentication));
+        }
+
+        @Test
+        void willThrowBadCredentialsWhenNoTokenPresentExpectingJwt() {
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
+            assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthentication));
         }
     }
 }

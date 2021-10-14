@@ -120,17 +120,6 @@ class GatewaySecurityServiceTest {
             @Nested
             class ThenHandleAuthGeneralError {
                 @Test
-                void givenNoMessageKey() {
-                    String errorMessage = "my message";
-                    HttpClientErrorException ex = new HttpClientErrorException(HttpStatus.UNAUTHORIZED, errorMessage);
-                    when(restTemplate.exchange(uri, HttpMethod.POST, loginRequest, String.class))
-                        .thenThrow(ex);
-
-                    assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD));
-                    verify(responseHandler).handleBadResponse(ex, ErrorType.AUTH_GENERAL, LOG_PARAMETER_STRING, uri, "401 " + errorMessage);
-                }
-
-                @Test
                 void givenInvalidMessageKey() {
                     String errorMessage = MESSAGE_KEY_STRING + "badKey\"";
                     HttpClientErrorException ex = new HttpClientErrorException(HttpStatus.UNAUTHORIZED, errorMessage);
