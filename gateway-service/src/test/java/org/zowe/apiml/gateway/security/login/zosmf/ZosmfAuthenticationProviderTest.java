@@ -153,11 +153,12 @@ class ZosmfAuthenticationProviderTest {
         final Application application = createApplication(zosmfInstance);
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
 
+        HttpHeaders headers = new HttpHeaders();
         when(restTemplate.exchange(Mockito.anyString(),
             Mockito.eq(HttpMethod.GET),
             Mockito.any(),
             Mockito.<Class<Object>>any()))
-            .thenThrow(new BadCredentialsException("Username or password are invalid."));
+            .thenReturn(new ResponseEntity<>(getResponse(true), headers, HttpStatus.OK));
 
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
@@ -277,10 +278,10 @@ class ZosmfAuthenticationProviderTest {
         mockZosmfRealmRestCallResponse();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
             new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
-        Exception exception = assertThrows(TokenNotInAuthenticationResponseException.class,
+        Exception exception = assertThrows(BadCredentialsException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
-            "Expected exception is not TokenNotInAuthenticationResponseException");
-        assertEquals("No supported token in z/OSMF response", exception.getMessage());
+            "Expected exception is not BadCredentialsException");
+        assertEquals("Username or password are invalid.", exception.getMessage());
     }
 
     private void mockZosmfRealmRestCallResponse() {
@@ -480,14 +481,14 @@ class ZosmfAuthenticationProviderTest {
         }
 
         @Test
-        void willThrowWhenOverrideAndNoTokens() {
+        void willThrowWhenOverrideAndWrongTokenLtpa() {
             authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
             tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
             assertThrows(TokenNotInAuthenticationResponseException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
         }
 
         @Test
-        void willThrowWhenOverrideAndNoTokens2() {
+        void willThrowWhenOverrideAndWrongTokenJwt() {
             authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
             tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
             assertThrows(TokenNotInAuthenticationResponseException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));

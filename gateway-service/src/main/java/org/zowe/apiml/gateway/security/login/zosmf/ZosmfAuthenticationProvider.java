@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -50,11 +51,15 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             case LTPA:
                 if (ar.getTokens().containsKey(LTPA)) {
                     return getApimlJwtToken(user, ar);
+                } else if (ar.getTokens().containsKey(JWT)) {
+                    throw new TokenNotInAuthenticationResponseException("JWT token in z/OSMF response but configured to expect LTPA");
                 }
                 break;
             case JWT:
                 if (ar.getTokens().containsKey(JWT)) {
                     return getZosmfJwtToken(user, ar);
+                } else if (ar.getTokens().containsKey(LTPA)) {
+                    throw new TokenNotInAuthenticationResponseException("LTPA token in z/OSMF response but configured to expect JWT");
                 }
                 break;
             default: //AUTO
@@ -68,7 +73,8 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
                 break;
         }
 
-        throw new TokenNotInAuthenticationResponseException("No supported token in z/OSMF response");
+        // JWT and LTPA tokens are missing, authentication was wrong
+        throw new BadCredentialsException("Username or password are invalid.");
     }
 
     public TokenAuthentication getZosmfJwtToken(String user, ZosmfService.AuthenticationResponse ar) {
