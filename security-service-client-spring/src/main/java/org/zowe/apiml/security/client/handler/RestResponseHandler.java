@@ -22,7 +22,7 @@ import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenNotInAuthenticationResponseException;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -69,8 +69,8 @@ public class RestResponseHandler {
                         throw new TokenNotValidException(errorType.getDefaultMessage(), exception);
                     } else if (errorType.equals(ErrorType.TOKEN_NOT_PROVIDED)) {
                         throw new TokenNotProvidedException(errorType.getDefaultMessage());
-                    } else if (errorType.equals(ErrorType.TOKEN_NOT_IN_AUTHENTICATION_RESPONSE)) {
-                        throw new TokenNotInAuthenticationResponseException(errorType.getDefaultMessage());
+                    } else if (errorType.equals(ErrorType.INVALID_TOKEN_TYPE)) {
+                        throw new InvalidTokenTypeException(errorType.getDefaultMessage());
                     }
                 }
                 throw new BadCredentialsException(ErrorType.BAD_CREDENTIALS.getDefaultMessage(), exception);

@@ -186,12 +186,12 @@ class AuthExceptionHandlerTest {
         authExceptionHandler.handleException(
             httpServletRequest,
             httpServletResponse,
-            new TokenNotInAuthenticationResponseException("ERROR"));
+            new InvalidTokenTypeException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
 
-        Message message = messageService.createMessage(ErrorType.TOKEN_NOT_IN_AUTHENTICATION_RESPONSE.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        Message message = messageService.createMessage(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 

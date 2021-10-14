@@ -22,7 +22,7 @@ import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenNotInAuthenticationResponseException;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -67,8 +67,8 @@ class RestResponseHandlerTest {
 
     @Test
     void handleBadResponseWithTokenNotInResponse() {
-        assertThrows(TokenNotInAuthenticationResponseException.class,
-            () -> handler.handleBadResponse(unauthorizedException, ErrorType.TOKEN_NOT_IN_AUTHENTICATION_RESPONSE, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+        assertThrows(InvalidTokenTypeException.class,
+            () -> handler.handleBadResponse(unauthorizedException, ErrorType.INVALID_TOKEN_TYPE, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
     }
 
     @Test

@@ -37,11 +37,11 @@ messages:
       type: ERROR
       text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
 
-    - key: org.zowe.apiml.security.login.noTokenInResponse
-      number: ZWEAG122
+    - key: org.zowe.apiml.security.login.invalidTokenType
+      number: ZWEAS123
       type: ERROR
-      text: "Error retrieving token from Authentication service"
-      reason: "Could not retrieve an authentication token from the Authentication service response."
+      text: "Invalid token type in response from Authentication service."
+      reason: "Could not retrieve the proper authentication token from the Authentication service response."
       action: "Review your APIML authentication provider configuration and ensure your Authentication service is working."
 
     # Query messages (130 - 140)

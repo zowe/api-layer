@@ -19,7 +19,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenNotInAuthenticationResponseException;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -52,14 +52,14 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
                 if (ar.getTokens().containsKey(LTPA)) {
                     return getApimlJwtToken(user, ar);
                 } else if (ar.getTokens().containsKey(JWT)) {
-                    throw new TokenNotInAuthenticationResponseException("JWT token in z/OSMF response but configured to expect LTPA");
+                    throw new InvalidTokenTypeException("JWT token in z/OSMF response but configured to expect LTPA");
                 }
                 break;
             case JWT:
                 if (ar.getTokens().containsKey(JWT)) {
                     return getZosmfJwtToken(user, ar);
                 } else if (ar.getTokens().containsKey(LTPA)) {
-                    throw new TokenNotInAuthenticationResponseException("LTPA token in z/OSMF response but configured to expect JWT");
+                    throw new InvalidTokenTypeException("LTPA token in z/OSMF response but configured to expect JWT");
                 }
                 break;
             default: //AUTO

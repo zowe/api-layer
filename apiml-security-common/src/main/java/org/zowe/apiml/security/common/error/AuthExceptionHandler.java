@@ -67,8 +67,8 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleInvalidCertificate(response, ex);
         } else if (ex instanceof ZosAuthenticationException) {
             handleZosAuthenticationException(response, (ZosAuthenticationException) ex);
-        } else if (ex instanceof TokenNotInAuthenticationResponseException) {
-            handleTokenNotInResponseException(request, response, ex);
+        } else if (ex instanceof InvalidTokenTypeException) {
+            handleInvalidTokenTypeException(request, response, ex);
         } else if (ex instanceof AuthenticationException) {
             handleAuthenticationException(request, response, ex);
         } else {
@@ -130,9 +130,9 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.BAD_REQUEST, request, response);
     }
 
-    private void handleTokenNotInResponseException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+    private void handleInvalidTokenTypeException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(ERROR_MESSAGE_400, ex.getMessage());
-        writeErrorResponse(ErrorType.TOKEN_NOT_IN_AUTHENTICATION_RESPONSE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
+        writeErrorResponse(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
     //500

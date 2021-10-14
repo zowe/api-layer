@@ -13,8 +13,8 @@
             "messageText": "Invalid username or password"
         },
         {
-            "messageKey": "ZWEAG122E",
-            "messageText": "Error retrieving token from the Authentication service"
+            "messageKey": "ZWEAS123E",
+            "messageText": "Invalid token type in response from Authentication service"
         },
         {
             "messageKey": "ZWEAM700E",
