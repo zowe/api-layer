@@ -109,7 +109,16 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info
+                include: health, info, turbine.stream
+
+turbine:
+    aggregator:
+        clusterConfig: DISCOVERABLECLIENT,APICATALOG
+    clusterNameExpression: metadata['cluster']
+    instanceUrlSuffix:
+        DISCOVERABLECLIENT: /discoverableclient/application/hystrix.stream
+        APICATALOG: /apicatalog/application/hystrix.stream
+    appConfig: discoverableclient,apicatalog
 
 ---
 spring:

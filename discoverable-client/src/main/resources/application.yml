@@ -25,6 +25,9 @@ eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
+    instance:
+        metadata-map:
+            cluster: discoverableclient
 apiml:
     enabled: true
     service:
@@ -96,7 +99,8 @@ apiml:
                 gatewayAuthEndpoint: /api/v1/gateway/auth
                 corsEnabled: false
                 lb:
-                    type: headerRequest
+                    instanceIdHeader: enabled
+            cluster: DISCOVERABLECLIENT
 
 server:
     error:
@@ -133,13 +137,10 @@ management:
         web:
             base-path: /application
             exposure:
-                include: hystrix.stream, health, info, routes, shutdown
+                include: hystrix.stream, health, info, routes
     health:
         defaults:
-            enabled: true
-    endpoint:
-        shutdown:
-            enabled: true
+            enabled: false
 
 hystrix:
     dashboard:
@@ -156,9 +157,6 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-    endpoint:
-        shutdown:
-            enabled: true
 
 ---
 spring:
@@ -182,7 +180,13 @@ spring:
 
 apiml:
     service:
+        discoveryServiceUrls: http://localhost:10001/eureka/
         scheme: http
+        customMetadata:
+            apiml:
+                enableUrlEncodedCharacters: true
+                gatewayPort: 10030
+                gatewayAuthEndpoint: /api/v1/gateway/auth
 
 server:
     ssl:
