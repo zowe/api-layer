@@ -8,8 +8,11 @@
         "@material-ui/core": "4.11.4",
         "@material-ui/icons": "4.11.2",
         "@wojtekmaj/enzyme-adapter-react-17": "0.6.1",
+        "axios": "^0.21.1",
+        "d3": "^7.0.0",
         "eslint": "7.11.0",
         "history": "4.10.1",
+        "jquery": "^3.6.0",
         "lodash": "4.17.21",
         "loglevel": "1.7.1",
         "react": "17.0.2",
@@ -26,6 +29,8 @@
         "redux-persist-transform-filter": "0.0.20",
         "redux-thunk": "2.3.0",
         "rxjs": "6.6.7",
+        "tinysort": "^3.2.7",
+        "underscore": "^1.13.1",
         "uuid": "8.3.2"
     },
     "devDependencies": {
@@ -50,6 +55,11 @@
         "start": "react-scripts start",
         "cy:open": "cypress open",
         "cy:e2e": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --browser firefox --headless"
+    },
+    "jest": {
+        "transformIgnorePatterns": [
+            "<roodDir>/node_modules/(?!@swish)"
+        ]
     },
     "jest-html-reporter": {
         "pageTitle": "Metrics Service UI Unit Tests",

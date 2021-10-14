@@ -52,7 +52,7 @@ const Header = (props) => {
     const dashboard = '/metrics-service/ui/v1/#/dashboard';
 
     return (
-        <div className="header">
+        <div className="login-header">
             <MetricsIconButton />
             <ServiceNameHeader id="name" variant="h6" align="left" underline="none" href={dashboard}>
                 Metrics Service
