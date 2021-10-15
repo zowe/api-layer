@@ -36,7 +36,7 @@ public class RealJwtTokenEndpoint {
         @RequestHeader Map<String, String> headers
     ) throws NoSuchAlgorithmException, InvalidKeySpecException {
 
-        if (headers.containsKey(HttpHeaders.AUTHORIZATION.toLowerCase())) {
+        if (headers.containsKey(HttpHeaders.AUTHORIZATION.toLowerCase()) && !headers.get(HttpHeaders.AUTHORIZATION.toLowerCase()).equals("Basic Og==")) {
             HttpHeaders resHeaders = new HttpHeaders();
             resHeaders.add(HttpHeaders.SET_COOKIE, "jwtToken=" + tokenService.generateJwt("USER"));
             return new ResponseEntity(resHeaders, HttpStatus.NO_CONTENT);
@@ -75,6 +75,26 @@ public class RealJwtTokenEndpoint {
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
 
+    }
+
+    @GetMapping(value = "/zosmf/info", produces = "application/json; charset=utf-8")
+    public ResponseEntity<?> info(
+        HttpServletResponse response,
+        @RequestHeader Map<String, String> headers
+    ) {
+        return new ResponseEntity<>("{\n" +
+            "  \"zos_version\": \"04.27.00\",\n" +
+            "  \"zosmf_port\": \"1443\",\n" +
+            "  \"zosmf_version\": \"27\",\n" +
+            "  \"zosmf_hostname\": \"usilca32.lvn.broadcom.net\",\n" +
+            "  \"plugins\": {\n" +
+            "    \"msgId\": \"IZUG612E\",\n" +
+            "    \"msgText\": \"IZUG612E\"\n" +
+            "  },\n" +
+            "  \"zosmf_saf_realm\": \"SAFRealm\",\n" +
+            "  \"zosmf_full_version\": \"27.0\",\n" +
+            "  \"api_version\": \"1\"\n" +
+            "}", HttpStatus.OK);
     }
 
     private String extractToken(Map<String, String> headers) {
