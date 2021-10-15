@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
 import java.security.Key;
 import java.security.KeyStore;
+import java.time.*;
 import java.util.*;
 
 @SuppressWarnings({"squid:S1452", "squid:S1172"})
@@ -189,10 +190,13 @@ public class FunctionalApar implements Apar {
         final int HOUR = 3600000;
         Date expiration = new Date(current.getTime() + 8 * HOUR);
 
+        LocalDateTime definedExpiration = LocalDateTime.now().plusSeconds(10);
+        Date realExpiration = Date.from(definedExpiration.atZone(ZoneId.systemDefault()).toInstant());
+
         String jwtToken = Jwts.builder()
             .setSubject(username)
             .setIssuedAt(new Date())
-            .setExpiration(expiration)
+            .setExpiration(realExpiration)
             .setIssuer("zOSMF")
             .setId(UUID.randomUUID().toString())
             .signWith(getKeyForSigning(keystorePath))

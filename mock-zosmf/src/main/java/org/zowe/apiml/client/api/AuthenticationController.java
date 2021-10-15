@@ -10,6 +10,7 @@
 package org.zowe.apiml.client.api;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.services.AparBasedService;
@@ -20,6 +21,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @SuppressWarnings("squid:S1452")
+@ConditionalOnProperty(name = "zosmf.enableMock", havingValue = "true", matchIfMissing = true)
 public class AuthenticationController {
     private static final String AUTHENTICATION_SERVICE = "authentication";
 
