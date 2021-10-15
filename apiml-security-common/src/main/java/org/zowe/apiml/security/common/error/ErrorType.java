@@ -23,7 +23,8 @@ public enum ErrorType {
     AUTH_REQUIRED("org.zowe.apiml.security.authRequired", "Authentication is required."),
     AUTH_GENERAL("org.zowe.apiml.security.generic", "A failure occurred when authenticating."),
     SERVICE_UNAVAILABLE("org.zowe.apiml.security.serviceUnavailable", "Authentication service not available."),
-    GATEWAY_NOT_AVAILABLE("org.zowe.apiml.security.gatewayNotAvailable", "API Gateway Service not available.");
+    GATEWAY_NOT_AVAILABLE("org.zowe.apiml.security.gatewayNotAvailable", "API Gateway Service not available."),
+    INVALID_TOKEN_TYPE("org.zowe.apiml.security.login.invalidTokenType", "Invalid token type in response from Authentication service.");
 
     private final String errorMessageKey;
     private final String defaultMessage;
@@ -39,5 +40,14 @@ public enum ErrorType {
 
     public String getDefaultMessage() {
         return defaultMessage;
+    }
+
+    public static ErrorType fromMessageKey(String messageKey) {
+        for (ErrorType errorType : ErrorType.values()) {
+            if (errorType.errorMessageKey.equals(messageKey)) {
+                return errorType;
+            }
+        }
+        throw new IllegalArgumentException("Message key '" + messageKey + "' is invalid");
     }
 }
