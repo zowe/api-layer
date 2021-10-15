@@ -99,7 +99,7 @@ apiml:
                 gatewayAuthEndpoint: /api/v1/gateway/auth
                 corsEnabled: false
                 lb:
-                    instanceIdHeader: enabled
+                    type: headerRequest
             cluster: DISCOVERABLECLIENT
 
 server:
@@ -137,15 +137,21 @@ management:
         web:
             base-path: /application
             exposure:
-                include: hystrix.stream, health, info, routes
+                include: hystrix.stream, health, info, routes, shutdown
     health:
         defaults:
-            enabled: false
+            enabled: true
+    endpoint:
+        shutdown:
+            enabled: true
 
 hystrix:
     dashboard:
         proxy-stream-allow-list: '*'
     command.default.execution.timeout.enabled: false
+    endpoint:
+        shutdown:
+            enabled: true
 
 ---
 spring:
@@ -180,13 +186,7 @@ spring:
 
 apiml:
     service:
-        discoveryServiceUrls: http://localhost:10001/eureka/
         scheme: http
-        customMetadata:
-            apiml:
-                enableUrlEncodedCharacters: true
-                gatewayPort: 10030
-                gatewayAuthEndpoint: /api/v1/gateway/auth
 
 server:
     ssl:
