@@ -47,7 +47,7 @@ public class JwtTokenService {
             .compact() + "; Path=/; Secure; HttpOnly";
     }
 
-    public boolean validateJwtToken(String token) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public boolean validateJwtToken(String token) {
         if (invalidatedTokens.contains(token)) {
             return false;
         }
@@ -116,7 +116,7 @@ public class JwtTokenService {
 
         String privateKeyPEM = key
             .replace("-----BEGIN PRIVATE KEY-----", "")
-            .replaceAll("\n", "")
+            .replaceAll("\n", "") //NOSONAR
             .replace("-----END PRIVATE KEY-----", "");
 
         byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
@@ -127,7 +127,7 @@ public class JwtTokenService {
     }
 
     public static RSAPublicKey readPemPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        String key = "-----BEGIN PUBLIC KEY-----\n" +
+        String key = "-----BEGIN PUBLIC KEY-----\n" + //NOSONAR
             "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjpEmp7mNnx8bi/nF2lqL\n" +
             "EkN1cxUn1qLavU2EAy70XmX9rZSx1hlA1k8St1apD678oI+Ob38Mab+vTrnk9nvJ\n" +
             "gs6e67mtsm00OP1mpGHzQSY2WDwA5OGLv+9FeDI6HThAH1cEz148pRBtiN9VkVM+\n" +
@@ -135,18 +135,18 @@ public class JwtTokenService {
             "we0ghAMrsiTz0eVKgfVr76rP0hIYZMwC3b1bxfhjwUOuQxjEeYMh2jEL+5Nv2IcE\n" +
             "fOzXYEOC/IrD/rLa4m4nfBs+JJiw4hOgHvjzdNz9EzV0D+HSWrInHXEd/gWjDn4s\n" +
             "FwIDAQAB\n" +
-            "-----END PUBLIC KEY-----";
+            "-----END PUBLIC KEY-----"; //NOSONAR
 
         return getRsaPublicKey(key);
     }
 
     public static RSAPublicKey readAnotherPemPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        String key = "-----BEGIN PUBLIC KEY-----\n" +
+        String key = "-----BEGIN PUBLIC KEY-----\n" + //NOSONAR
             "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDCFENGw33yGihy92pDjZQhl0C3\n" +
             "6rPJj+CvfSC8+q28hxA161QFNUd13wuCTUcq0Qd2qsBe/2hFyc2DCJJg0h1L78+6\n" +
             "Z4UMR7EOcpfdUE9Hf3m/hs+FUR45uBJeDK1HSFHD8bHKD6kv8FPGfJTotc+2xjJw\n" +
             "oYi+1hqp1fIekaxsyQIDAQAB\n" +
-            "-----END PUBLIC KEY-----";
+            "-----END PUBLIC KEY-----"; //NOSONAR
 
         return getRsaPublicKey(key);
     }
@@ -154,7 +154,7 @@ public class JwtTokenService {
     private static RSAPublicKey getRsaPublicKey(String pemKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
         String publicKeyPEM = pemKey
             .replace("-----BEGIN PUBLIC KEY-----", "")
-            .replaceAll("\n", "")
+            .replaceAll("\n", "") //NOSONAR
             .replace("-----END PUBLIC KEY-----", "");
 
         byte[] encoded = Base64.getDecoder().decode(publicKeyPEM);

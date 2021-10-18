@@ -190,13 +190,10 @@ public class FunctionalApar implements Apar {
         final int HOUR = 3600000;
         Date expiration = new Date(current.getTime() + 8 * HOUR);
 
-        LocalDateTime definedExpiration = LocalDateTime.now().plusSeconds(10);
-        Date realExpiration = Date.from(definedExpiration.atZone(ZoneId.systemDefault()).toInstant());
-
         String jwtToken = Jwts.builder()
             .setSubject(username)
             .setIssuedAt(new Date())
-            .setExpiration(realExpiration)
+            .setExpiration(expiration)
             .setIssuer("zOSMF")
             .setId(UUID.randomUUID().toString())
             .signWith(getKeyForSigning(keystorePath))

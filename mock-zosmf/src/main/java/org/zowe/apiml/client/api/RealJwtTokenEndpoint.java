@@ -24,7 +24,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-// TODO should be conditioned on something else
+@SuppressWarnings({"squid:S1452", "squid:S3740", "squid:S1192"})
 @ConditionalOnProperty(name = "jwtToken.enableMock", havingValue = "true")
 public class RealJwtTokenEndpoint {
 
@@ -86,7 +86,7 @@ public class RealJwtTokenEndpoint {
             "  \"zos_version\": \"04.27.00\",\n" +
             "  \"zosmf_port\": \"1443\",\n" +
             "  \"zosmf_version\": \"27\",\n" +
-            "  \"zosmf_hostname\": \"usilca32.lvn.broadcom.net\",\n" +
+            "  \"zosmf_hostname\": \"zosmf.host.name.net\",\n" +
             "  \"plugins\": {\n" +
             "    \"msgId\": \"IZUG612E\",\n" +
             "    \"msgText\": \"IZUG612E\"\n" +
