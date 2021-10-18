@@ -47,6 +47,8 @@ apiml:
                 service-url: ${apiml.service.contextPath}
             -   gateway-url: "api/v1"
                 service-url: ${apiml.service.contextPath}
+            -   gateway-url: "/sse/v1"
+                service-url: ${apiml.service.contextPath}
         apiInfo:
             -   apiId: zowe.apiml.metricsservice
                 version: 1.0.0
