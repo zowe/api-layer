@@ -208,13 +208,13 @@ class ServerSentEventProxyHandlerTest {
 
             @Test
             void givenUriParameters() throws IOException {
-                String params = "?param=123";
+                String params = "param=123";
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
                 when(mockHttpServletRequest.getQueryString()).thenReturn(params);
                 mockServiceInstance(true);
 
                 verifyConsumerUsed();
-                verify(underTest).getSseStream(URL_SECURE + ENDPOINT + params);
+                verify(underTest).getSseStream(URL_SECURE + ENDPOINT + "?" + params);
             }
         }
 
