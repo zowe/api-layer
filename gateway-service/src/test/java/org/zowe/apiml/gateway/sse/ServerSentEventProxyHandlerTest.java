@@ -169,7 +169,7 @@ class ServerSentEventProxyHandlerTest {
                 verify(underTest).getSseStream(URL_SECURE + ENDPOINT);
             }
 
-            @Test
+            @Test // TODO add this and next test to parameterized test below to have all four routes tested in one - maybe more?
             void givenNoEndpointPath() throws IOException {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn("/serviceid/sse/v1/");
                 mockServiceInstance(true);
@@ -187,9 +187,10 @@ class ServerSentEventProxyHandlerTest {
                 verify(underTest).getSseStream(URL_SECURE + "/");
             }
 
-            @Test
-            void givenPathInEndpoint() throws IOException {
-                String extraEndpoint = "/anotherendpoint/";
+            @ParameterizedTest
+            @ValueSource(booleans = {true, false}) // TODO add back true
+            void givenPathInEndpoint(boolean trailingSlash) throws IOException {
+                String extraEndpoint = "anotherendpoint" + (trailingSlash ? "/" : "");
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH + extraEndpoint);
                 mockServiceInstance(true);
 
