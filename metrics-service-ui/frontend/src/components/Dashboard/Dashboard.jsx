@@ -17,10 +17,7 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 
-// import HystrixCommandMonitor from './HystrixCommandMonitor';
-// import addStreams from './monitor';
 import axios from 'axios';
-import './hystrixCommand.css';
 
 const useStyles = makeStyles((theme) => ({
     formControl: {
@@ -37,12 +34,6 @@ export default function Dashboard() {
     const [currentStream, setCurrentStream] = useState('DISCOVERABLECLIENT');
 
     useEffect(() => {
-        // eslint-disable-next-line no-console
-        console.log(`${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_METRICS_HOME}`);
-        axios.get('https://localhost:10010/api/v1/metrics-service/clusters').then((res) => {
-            // eslint-disable-next-line no-console
-            console.log(res.data);
-        });
         setTimeout(() => {
             window.addStreams(`https://localhost:10010/metrics-service/sse/v1/turbine.stream?cluster=${currentStream}`);
         }, 0);
