@@ -26,6 +26,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
+import org.zowe.apiml.util.UrlUtils;
 import reactor.core.publisher.Flux;
 
 import javax.servlet.http.HttpServletRequest;
@@ -141,11 +142,11 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
     private String getTargetUrl(ServiceInstance serviceInstance, String serviceUrl, String path, String queryParameterString) {
         String parameters = queryParameterString == null ? "" : queryParameterString;
         String protocol = serviceInstance.isSecure() ? "https" : "http";
-        return String.format("%s://%s:%d%s%s%s",
+        return String.format("%s://%s:%d/%s/%s%s",
             protocol,
             serviceInstance.getHost(),
             serviceInstance.getPort(),
-            serviceUrl,
+            UrlUtils.removeFirstAndLastSlash(serviceUrl),
             path,
             parameters
         );

@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
@@ -157,10 +159,11 @@ class ServerSentEventProxyHandlerTest {
                 verify(underTest).getSseStream(URL_INSECURE + ENDPOINT);
             }
 
-            @Test
-            void givenEndpoint() throws IOException {
+            @ParameterizedTest
+            @ValueSource(booleans = {true, false})
+            void givenEndpoint(boolean serviceUrlEndingSlash) throws IOException {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
-                mockServiceInstance(true);
+                mockServiceInstance(true, serviceUrlEndingSlash);
 
                 verifyConsumerUsed();
                 verify(underTest).getSseStream(URL_SECURE + ENDPOINT);
@@ -244,9 +247,13 @@ class ServerSentEventProxyHandlerTest {
         }
 
         private void mockServiceInstance(boolean isSecure) {
+            mockServiceInstance(isSecure, true);
+        }
+
+        private void mockServiceInstance(boolean isSecure, boolean serviceUrlEndWithSlash) {
             RoutedServices mockRoutedServices = mock(RoutedServices.class);
             RoutedService mockRoutedService = mock(RoutedService.class);
-            when(mockRoutedService.getServiceUrl()).thenReturn(SERVICE_URL + "/");
+            when(mockRoutedService.getServiceUrl()).thenReturn(SERVICE_URL + (serviceUrlEndWithSlash ? "/" : ""));
             when(mockRoutedServices.findServiceByGatewayUrl("sse/" + MAJOR_VERSION)).thenReturn(mockRoutedService);
             underTest.addRoutedServices(SERVICE_ID, mockRoutedServices);
 
