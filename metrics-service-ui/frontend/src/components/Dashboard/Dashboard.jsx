@@ -44,7 +44,7 @@ export default function Dashboard() {
             console.log(res.data);
         });
         setTimeout(() => {
-            window.addStreams(`https://localhost:10019/metrics-service/turbine.stream?cluster=${currentStream}`);
+            window.addStreams(`https://localhost:10010/metrics-service/sse/v1/turbine.stream?cluster=${currentStream}`);
         }, 0);
     }, [currentStream]);
 
