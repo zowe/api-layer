@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.services.JwtTokenService;
 
 import javax.servlet.http.HttpServletResponse;
+import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,15 +36,23 @@ public class RealJwtTokenEndpoint {
     public ResponseEntity<?> authenticate(
         HttpServletResponse response,
         @RequestHeader Map<String, String> headers
-    ) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    ) {
+        AtomicReference<ResponseEntity> returnValue = new AtomicReference<>(new ResponseEntity(HttpStatus.UNAUTHORIZED));
+        Optional<Map.Entry<String, String>> basicAuthHeader = headers.entrySet().stream()
+            .filter(e -> e.getKey().equalsIgnoreCase(HttpHeaders.AUTHORIZATION) && !e.getValue().equals("Basic Og=="))
+            .findFirst();
 
-        if (headers.containsKey(HttpHeaders.AUTHORIZATION.toLowerCase()) && !headers.get(HttpHeaders.AUTHORIZATION.toLowerCase()).equals("Basic Og==")) {
+        basicAuthHeader.ifPresent(h -> {
             HttpHeaders resHeaders = new HttpHeaders();
-            resHeaders.add(HttpHeaders.SET_COOKIE, "jwtToken=" + tokenService.generateJwt("USER"));
-            return new ResponseEntity(resHeaders, HttpStatus.NO_CONTENT);
-        }
+            try {
+                resHeaders.add(HttpHeaders.SET_COOKIE, "jwtToken=" + tokenService.generateJwt("USER"));
+            } catch (GeneralSecurityException e) {
+                e.printStackTrace();
+            }
+            returnValue.set(new ResponseEntity(resHeaders, HttpStatus.NO_CONTENT));
+        });
 
-        return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        return returnValue.get();
     }
 
     @DeleteMapping(value = "/zosmf/services/authenticate", produces = "application/json; charset=utf-8")
@@ -61,7 +71,7 @@ public class RealJwtTokenEndpoint {
     }
 
     @GetMapping(value = "/zosmf/notifications/inbox", produces = "application/json; charset=utf-8")
-    public ResponseEntity<?> verify(HttpServletResponse response, @RequestHeader Map<String, String> headers) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public ResponseEntity<?> verify(HttpServletResponse response, @RequestHeader Map<String, String> headers) {
 
         String token = extractToken(headers);
 
@@ -99,7 +109,7 @@ public class RealJwtTokenEndpoint {
 
     private String extractToken(Map<String, String> headers) {
 
-        return headers.entrySet().stream().filter(e -> e.getKey().equals("cookie") && e.getValue().startsWith("jwtToken="))
+        return headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith("jwtToken="))
             .map(Map.Entry::getValue).map(s -> s.replaceFirst("jwtToken=", "")).findFirst().orElse("");
     }
 }
