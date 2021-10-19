@@ -10,13 +10,16 @@
 package org.zowe.apiml.gateway.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -48,11 +51,15 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             case LTPA:
                 if (ar.getTokens().containsKey(LTPA)) {
                     return getApimlJwtToken(user, ar);
+                } else if (ar.getTokens().containsKey(JWT)) {
+                    throw new InvalidTokenTypeException("JWT token in z/OSMF response but configured to expect LTPA");
                 }
                 break;
             case JWT:
                 if (ar.getTokens().containsKey(JWT)) {
                     return getZosmfJwtToken(user, ar);
+                } else if (ar.getTokens().containsKey(LTPA)) {
+                    throw new InvalidTokenTypeException("LTPA token in z/OSMF response but configured to expect JWT");
                 }
                 break;
             default: //AUTO
