@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -35,6 +37,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -161,7 +164,7 @@ class ServerSentEventProxyHandlerTest {
 
             @ParameterizedTest
             @ValueSource(booleans = {true, false})
-            void givenEndpoint(boolean serviceUrlEndingSlash) throws IOException {
+            void givenServiceUrlFormat(boolean serviceUrlEndingSlash) throws IOException {
                 when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH);
                 mockServiceInstance(true, serviceUrlEndingSlash);
 
@@ -169,41 +172,14 @@ class ServerSentEventProxyHandlerTest {
                 verify(underTest).getSseStream(URL_SECURE + ENDPOINT);
             }
 
-            @Test
-            void givenNoEndpointPath() throws IOException {
-                when(mockHttpServletRequest.getRequestURI()).thenReturn("/serviceid/sse/v1/");
+            @ParameterizedTest(name = "givenEndpoint {0}")
+            @MethodSource("org.zowe.apiml.gateway.sse.ServerSentEventProxyHandlerTest#endpoints")
+            void givenEndpoint(String endpoint, String expectedEndpoint) throws IOException {
+                when(mockHttpServletRequest.getRequestURI()).thenReturn(endpoint);
                 mockServiceInstance(true);
 
                 verifyConsumerUsed();
-                verify(underTest).getSseStream(URL_SECURE + "/");
-            }
-
-            @Test
-            void givenNoEndpointAndNoTrailingSlash() throws IOException {
-                when(mockHttpServletRequest.getRequestURI()).thenReturn("/serviceid/sse/v1");
-                mockServiceInstance(true);
-
-                verifyConsumerUsed();
-                verify(underTest).getSseStream(URL_SECURE + "/");
-            }
-
-            @Test
-            void givenPathInEndpoint() throws IOException {
-                String extraEndpoint = "/anotherendpoint/";
-                when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH + extraEndpoint);
-                mockServiceInstance(true);
-
-                verifyConsumerUsed();
-                verify(underTest).getSseStream(URL_SECURE + ENDPOINT + extraEndpoint);
-            }
-
-            @Test
-            void givenOldPathFormat() throws IOException {
-                when(mockHttpServletRequest.getRequestURI()).thenReturn(GATEWAY_PATH_OLD_FORMAT);
-                mockServiceInstance(true);
-
-                verifyConsumerUsed();
-                verify(underTest).getSseStream(URL_SECURE + ENDPOINT);
+                verify(underTest).getSseStream(URL_SECURE + expectedEndpoint);
             }
 
             @Test
@@ -272,5 +248,16 @@ class ServerSentEventProxyHandlerTest {
             assertThat(emitter, is(not(nullValue())));
             verify(underTest).consumer(emitter);
         }
+    }
+
+    private static Stream<Arguments> endpoints() {
+        return Stream.of(
+            Arguments.of(GATEWAY_PATH, ENDPOINT),
+            Arguments.of(GATEWAY_PATH_OLD_FORMAT, ENDPOINT),
+            Arguments.of(GATEWAY_PATH + "anotherendpoint", ENDPOINT + "anotherendpoint"),
+            Arguments.of(GATEWAY_PATH + "anotherendpoint/", ENDPOINT + "anotherendpoint/"),
+            Arguments.of("/serviceid/sse/v1", "/"),
+            Arguments.of("/serviceid/sse/v1/", "/")
+        );
     }
 }

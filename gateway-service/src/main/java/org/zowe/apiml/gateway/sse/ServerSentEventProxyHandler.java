@@ -59,14 +59,14 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
         String uri = request.getRequestURI();
         List<String> uriParts = getUriParts(uri);
-        if (uriParts.size() < 5) {
+        if (uriParts.size() < 4) {
             writeError(response, SseErrorMessages.INVALID_ROUTE, uri);
             return null;
         }
 
         String serviceId = getServiceId(uriParts);
         String majorVersion = getMajorVersion(uriParts);
-        String path = uriParts.get(4);
+        String path = uriParts.size() < 5 ? "" : uriParts.get(4);
 
         ServiceInstance serviceInstance = findServiceInstance(serviceId);
         if (serviceInstance == null) {
@@ -120,9 +120,6 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
             return new ArrayList<>();
         }
 
-        if (!uri.endsWith("/")) {
-            uri += "/";
-        }
         return new ArrayList<>(Arrays.asList(uri.split("/", 5)));
     }
 
