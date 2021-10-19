@@ -11,6 +11,7 @@
 package org.zowe.apiml.client.api;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RequiredArgsConstructor
 @SuppressWarnings({"squid:S1452", "squid:S3740", "squid:S1192"})
 @ConditionalOnProperty(name = "jwtToken.enableMock", havingValue = "true")
+@Slf4j
 public class RealJwtTokenEndpoint {
 
     private final JwtTokenService tokenService;
@@ -47,7 +49,7 @@ public class RealJwtTokenEndpoint {
             try {
                 resHeaders.add(HttpHeaders.SET_COOKIE, "jwtToken=" + tokenService.generateJwt("USER"));
             } catch (GeneralSecurityException e) {
-                e.printStackTrace();
+                log.error("Failed to generate token", e);
             }
             returnValue.set(new ResponseEntity(resHeaders, HttpStatus.NO_CONTENT));
         });
@@ -62,7 +64,7 @@ public class RealJwtTokenEndpoint {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @CrossOrigin(origins = "*") // for https://token.dev/
+    @CrossOrigin(origins = "*") //NOSONAR for https://token.dev/, this is not security hotspot
     @GetMapping(value = "/jwt/ibm/api/zOSMFBuilder/jwk", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> jwk(HttpServletResponse response,
                                  @RequestHeader Map<String, String> headers) throws NoSuchAlgorithmException, InvalidKeySpecException {

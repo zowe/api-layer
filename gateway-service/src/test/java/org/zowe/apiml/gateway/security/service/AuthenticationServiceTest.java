@@ -63,7 +63,7 @@ import static org.mockito.Mockito.*;
     MockedAuthenticationServiceContext.class
 })
 
-public class AuthenticationServiceTest {
+public class AuthenticationServiceTest { //NOSONAR
 
     public static final String ZOSMF = "zosmf";
     private static final String ZOSMF_HOSTNAME = "zosmfhostname";
