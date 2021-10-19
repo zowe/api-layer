@@ -306,7 +306,11 @@ public class AuthenticationService {
      * @throws TokenNotValidException if the token is not valid
      */
     public TokenAuthentication validateJwtToken(TokenAuthentication token) {
-        return meAsProxy.validateJwtToken( token != null ? token.getCredentials() : null);
+        if (token == null) {
+            throw new TokenNotValidException("Null token.");
+        }
+        parseJwtToken(token.getCredentials()); // throws on expired token, this needs to happen before cache, which is in the next line
+        return meAsProxy.validateJwtToken( token.getCredentials());
     }
 
     /**
