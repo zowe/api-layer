@@ -16,8 +16,7 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.*;
 import org.apache.commons.lang.time.DateUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -35,6 +34,7 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.TokenValidationStrategy;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
@@ -176,18 +176,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         );
     }
 
-    // This test has to have lenient timigns because it can fail when run in isolation or when junit decides to run this test first.
-    // I speculate that the cache needs to be warmed up. If run within tests, it can have tight timings.
-    @Test
-    void shouldThrowExceptionWhenTokenIsFirstTimeValidatedThenExpiredAndValidatedAgain() throws InterruptedException {
-        TokenAuthentication token = new TokenAuthentication(createJwtTokenWithExpiry(privateKey, System.currentTimeMillis() + 3000));
-        assertDoesNotThrow(() -> authService.validateJwtToken(token));
-        new CountDownLatch(1).await(4, SECONDS);
-        assertThrows(
-            TokenExpireException.class,
-            () -> authService.validateJwtToken(token)
-        );
-    }
 
     @Test
     void shouldThrowExceptionWhenOccurUnexpectedException() {
