@@ -24,6 +24,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 @GeneralAuthenticationTest
 @SAFAuthTest
 @zOSMFAuthTest
+@TestsNotMeantForZowe
 public class RefreshTest implements TestWithStartedInstances {
     private final GatewayRequests requests = new GatewayRequests();
 
