@@ -16,7 +16,8 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.*;
 import org.apache.commons.lang.time.DateUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -34,7 +35,6 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.config.CacheConfig;
-import org.zowe.apiml.gateway.security.service.saf.SafRestAuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.TokenValidationStrategy;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
@@ -47,10 +47,8 @@ import org.zowe.apiml.util.EurekaUtils;
 import javax.servlet.http.Cookie;
 import java.security.*;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
