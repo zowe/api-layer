@@ -102,7 +102,7 @@ jobs:
                     restore-keys: |
                         ${{ runner.OS }}-node001-
 
-            -   uses: zowe-actions/shared-actions/envvars-global@main
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
