@@ -1,7 +1,7 @@
 # This workflow will create images for api-layer services
 name: Create Image Only (No Release)
 
-on: 
+on:
     workflow_dispatch:
         inputs:
             service:
@@ -106,7 +106,7 @@ jobs:
                     restore-keys: |
                         ${{ runner.OS }}-node001-
 
-            -   uses: zowe-actions/shared-actions/envvars-global@main
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
@@ -143,7 +143,7 @@ jobs:
                     redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
                     redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
                 timeout-minutes: 10
-                
+
     build-containers-single-service:
         needs:
             - build
@@ -186,7 +186,7 @@ jobs:
                     restore-keys: |
                         ${{ runner.OS }}-node001-
 
-            -   uses: zowe-actions/shared-actions/envvars-global@main
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
@@ -227,7 +227,7 @@ jobs:
     define-manifests-all-services:
         needs:
             - build-containers-all-services
-            
+
         strategy:
             matrix:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service ]
@@ -263,7 +263,7 @@ jobs:
     define-manifests-single-service:
         needs:
             - build-containers-single-service
-            
+
         strategy:
             matrix:
                 os: [ ubuntu, ubi ]
