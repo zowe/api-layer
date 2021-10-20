@@ -115,8 +115,7 @@ management:
 
 turbine:
     aggregator:
-        clusterConfig: DISCOVERABLECLIENT,APICATALOG
-    clusterNameExpression: metadata['cluster']
+        clusterConfig: DISCOVERABLECLIENT,APICATALOG # uppercase serviceId
     instanceUrlSuffix:
         DISCOVERABLECLIENT: /discoverableclient/application/hystrix.stream
         APICATALOG: /apicatalog/application/hystrix.stream

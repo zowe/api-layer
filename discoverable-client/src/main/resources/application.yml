@@ -100,7 +100,6 @@ apiml:
                 corsEnabled: false
                 lb:
                     type: headerRequest
-            cluster: DISCOVERABLECLIENT
 
 server:
     error:
