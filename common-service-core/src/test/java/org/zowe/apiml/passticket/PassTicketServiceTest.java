@@ -156,7 +156,7 @@ class PassTicketServiceTest {
         assertEquals(16, e.getRacfRsn());
         assertNotNull(e.getErrorCode());
         assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16, e.getErrorCode());
-        assertEquals("Error on generation of PassTicket: Not authorized to use this service.", e.getMessage());
+        assertEquals("Error on generation of PassTicket: Not authorized to use this service. Verify that the user and the application name are valid, and check that corresponding permissions have been set up.", e.getMessage());
     }
 
     @Test

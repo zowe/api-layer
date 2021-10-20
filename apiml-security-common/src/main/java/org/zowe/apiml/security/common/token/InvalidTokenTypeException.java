@@ -7,19 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.service;
+package org.zowe.apiml.security.common.token;
 
 import org.springframework.security.core.AuthenticationException;
 
-public class PassTicketException extends AuthenticationException {
+/**
+ * This exception is thrown in case the JWT token is not provided.
+ */
+public class InvalidTokenTypeException extends AuthenticationException {
 
-    private static final long serialVersionUID = -5152411541425940337L;
-
-    public PassTicketException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public PassTicketException(String message) {
-        super(message);
+    public InvalidTokenTypeException(String msg) {
+        super(msg);
     }
 }

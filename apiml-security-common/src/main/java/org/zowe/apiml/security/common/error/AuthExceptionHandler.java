@@ -12,7 +12,9 @@ package org.zowe.apiml.security.common.error;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.api.ApiMessageView;
@@ -61,17 +63,15 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleTokenExpire(request, response, ex);
         } else if (ex instanceof TokenFormatNotValidException) {
             handleTokenFormatException(request, response, ex);
-        }
-        else if (ex instanceof InvalidCertificateException) {
+        } else if (ex instanceof InvalidCertificateException) {
             handleInvalidCertificate(response, ex);
-        }
-        else if (ex instanceof ZosAuthenticationException) {
+        } else if (ex instanceof ZosAuthenticationException) {
             handleZosAuthenticationException(response, (ZosAuthenticationException) ex);
-        }
-        else if (ex instanceof AuthenticationException) {
+        } else if (ex instanceof InvalidTokenTypeException) {
+            handleInvalidTokenTypeException(request, response, ex);
+        } else if (ex instanceof AuthenticationException) {
             handleAuthenticationException(request, response, ex);
-        }
-        else {
+        } else {
             throw new ServletException(ex);
         }
     }
@@ -128,6 +128,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleTokenFormatException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(ERROR_MESSAGE_400, ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.BAD_REQUEST, request, response);
+    }
+
+    private void handleInvalidTokenTypeException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        writeErrorResponse(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
     //500

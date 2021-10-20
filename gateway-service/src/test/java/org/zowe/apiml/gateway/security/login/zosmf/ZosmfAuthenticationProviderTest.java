@@ -35,6 +35,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
@@ -480,17 +481,29 @@ class ZosmfAuthenticationProviderTest {
         }
 
         @Test
-        void willThrowWhenOverrideAndNoTokens() {
+        void willThrowWhenOverrideAndWrongTokenLtpa() {
             authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
             tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
-            assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
+            assertThrows(InvalidTokenTypeException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
         }
 
         @Test
-        void willThrowWhenOverrideAndNoTokens2() {
+        void willThrowWhenOverrideAndWrongTokenJwt() {
             authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
             tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
-            assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
+            assertThrows(InvalidTokenTypeException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
+        }
+
+        @Test
+        void willThrowBadCredentialsWhenNoTokenPresentExpectingLtpa() {
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
+            assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthentication));
+        }
+
+        @Test
+        void willThrowBadCredentialsWhenNoTokenPresentExpectingJwt() {
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
+            assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthentication));
         }
     }
 }

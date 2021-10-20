@@ -40,17 +40,12 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
 import javax.servlet.http.Cookie;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.PublicKey;
+import java.security.*;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -62,8 +57,7 @@ import static org.mockito.Mockito.*;
     CacheConfig.class,
     MockedAuthenticationServiceContext.class
 })
-
-public class AuthenticationServiceTest {
+public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     public static final String ZOSMF = "zosmf";
     private static final String ZOSMF_HOSTNAME = "zosmfhostname";
@@ -180,6 +174,7 @@ public class AuthenticationServiceTest {
         );
     }
 
+
     @Test
     void shouldThrowExceptionWhenOccurUnexpectedException() {
         assertThrows(
@@ -267,10 +262,12 @@ public class AuthenticationServiceTest {
     }
 
     private String createExpiredJwtToken(Key secretKey) {
-        long expiredTimeMillis = System.currentTimeMillis() - 1000;
+        return createJwtTokenWithExpiry(secretKey,  System.currentTimeMillis() - 1000);
+    }
 
+    private String createJwtTokenWithExpiry(Key secretKey, long expireAt) {
         return Jwts.builder()
-            .setExpiration(new Date(expiredTimeMillis))
+            .setExpiration(new Date(expireAt))
             .setIssuer(authConfigurationProperties.getTokenProperties().getIssuer())
             .signWith(ALGORITHM, secretKey)
             .compact();
