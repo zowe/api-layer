@@ -2,6 +2,29 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `1.25.4 (2021-10-25)`
+
+* Feature:  Add controller for public key provisioning (#1824) ([5acb9e9](https://github.com/zowe/api-layer/commit/5acb9e9)), closes [#1824](https://github.com/zowe/api-layer/issues/1824)
+* Feature:  Per service configuration to direct the APIML to add headers (#1812) ([25bbdbe](https://github.com/zowe/api-layer/commit/25bbdbe)), closes [#1812](https://github.com/zowe/api-layer/issues/1812)
+* Feature:  Per service configuration to ignore certain headers (#1806) ([b258732](https://github.com/zowe/api-layer/commit/b258732)), closes [#1806](https://github.com/zowe/api-layer/issues/1806)
+* Feature:  Certificate authentication for static refresh endpoint (#1782) ([d4a91b0](https://github.com/zowe/api-layer/commit/d4a91b0)), closes [#1782](https://github.com/zowe/api-layer/issues/1782)
+
+
+* Bugfix:  Apiml/client side swagger host (#1841) ([37cbfbc](https://github.com/zowe/api-layer/commit/37cbfbc)), closes [#1841](https://github.com/zowe/api-layer/issues/1841)
+* Bugfix:  Correct error message when wrong jwtConfigurationMode used (#1830) ([990426d](https://github.com/zowe/api-layer/commit/990426d)), closes [#1830](https://github.com/zowe/api-layer/issues/1830)
+* Bugfix:  GH1478 Handle token expiry correctly (#1836) ([90a887d](https://github.com/zowe/api-layer/commit/90a887d)), closes [#1836](https://github.com/zowe/api-layer/issues/1836)
+* Bugfix:  SSE no longer adds trailing slash to endpoint (#1839) ([5f7ba56](https://github.com/zowe/api-layer/commit/5f7ba56)), closes [#1839](https://github.com/zowe/api-layer/issues/1839)
+* Bugfix:  Add handling in case of PassTicketException (#1810) ([f962361](https://github.com/zowe/api-layer/commit/f962361)), closes [#1810](https://github.com/zowe/api-layer/issues/1810)
+* Bugfix:  add https://${ZOWE_EXTERNAL_HOST}:${ZWE_EXTERNAL_PORT} to destination (#1829) ([6527a32](https://github.com/zowe/api-layer/commit/6527a32)), closes [#1829](https://github.com/zowe/api-layer/issues/1829)
+* Bugfix:  api-catalog app failed to load in desktop if Gateway service is registered as NodePort (#1827) ([ec45915](https://github.com/zowe/api-layer/commit/ec45915)), closes [#1827](https://github.com/zowe/api-layer/issues/1827)
+* Bugfix:  add pluginDefinition.json to package (#1822) ([4745548](https://github.com/zowe/api-layer/commit/4745548)), closes [#1822](https://github.com/zowe/api-layer/issues/1822)
+* Bugfix:  define appfwPlugins instead of desktopIframePlugins (#1814) ([371cc0b](https://github.com/zowe/api-layer/commit/371cc0b)), closes [#1814](https://github.com/zowe/api-layer/issues/1814)
+* Bugfix:  periodically update GW url (#1817) ([7016ea5](https://github.com/zowe/api-layer/commit/7016ea5)), closes [#1817](https://github.com/zowe/api-layer/issues/1817)
+* Bugfix:  PJE enabler sample and password validation fixes (#1819) ([45a4001](https://github.com/zowe/api-layer/commit/45a4001)), closes [#1819](https://github.com/zowe/api-layer/issues/1819)
+* Bugfix:  Display multiple APIs with multiple different versions. (#1800) ([6400aa3](https://github.com/zowe/api-layer/commit/6400aa3)), closes [#1800](https://github.com/zowe/api-layer/issues/1800)
+* Bugfix:  Handle errors in apiversions and wrong URLs (#1788) ([7a0346f](https://github.com/zowe/api-layer/commit/7a0346f)), closes [#1788](https://github.com/zowe/api-layer/issues/1788)
+* Bugfix:  support for APAR PH34201 (#1795) ([5503e4b](https://github.com/zowe/api-layer/commit/5503e4b)), closes [#1795](https://github.com/zowe/api-layer/issues/1795)
+
 ## `1.24.4 (2021-09-01)`
 
 * Feature:  SAF resource access controller that allows the authorized user to query the SAF resource access levels (#1734) ([680f4b9](https://github.com/zowe/api-layer/commit/680f4b9)), closes [#1734](https://github.com/zowe/api-layer/issues/1734)
