@@ -2,12 +2,21 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `1.25.4 (2021-10-25)`
+## `1.25.0 (apiml: 1.25.4 2021-10-25)`
 
 * Feature:  Add controller for public key provisioning (#1824) ([5acb9e9](https://github.com/zowe/api-layer/commit/5acb9e9)), closes [#1824](https://github.com/zowe/api-layer/issues/1824)
 * Feature:  Per service configuration to direct the APIML to add headers (#1812) ([25bbdbe](https://github.com/zowe/api-layer/commit/25bbdbe)), closes [#1812](https://github.com/zowe/api-layer/issues/1812)
 * Feature:  Per service configuration to ignore certain headers (#1806) ([b258732](https://github.com/zowe/api-layer/commit/b258732)), closes [#1806](https://github.com/zowe/api-layer/issues/1806)
 * Feature:  Certificate authentication for static refresh endpoint (#1782) ([d4a91b0](https://github.com/zowe/api-layer/commit/d4a91b0)), closes [#1782](https://github.com/zowe/api-layer/issues/1782)
+* Feature:  Server Sent Events Handler - Access Turbine SSE events through Gateway (#1723) ([9bea501](https://github.com/zowe/api-layer/commit/9bea501)), closes [#1723](https://github.com/zowe/api-layer/issues/1723)
+* Feature:  Wizard improvements (#1772) ([20dd70b](https://github.com/zowe/api-layer/commit/20dd70b)), closes [#1772](https://github.com/zowe/api-layer/issues/1772)
+* Feature:  possibility to delete static def (#1759) ([e4c22dc](https://github.com/zowe/api-layer/commit/e4c22dc)), closes [#1759](https://github.com/zowe/api-layer/issues/1759)
+* Feature:  Provide compression for specific paths only.  (#1755) ([cc612e5](https://github.com/zowe/api-layer/commit/cc612e5)), closes [#1755](https://github.com/zowe/api-layer/issues/1755)
+* Feature:  static api enpoints protected by SAF check (#1764) ([e2d95df](https://github.com/zowe/api-layer/commit/e2d95df)), closes [#1764](https://github.com/zowe/api-layer/issues/1764)
+* Feature:  Static Definition creation endpoints in API Catalog (#1735) ([2976db5](https://github.com/zowe/api-layer/commit/2976db5)), closes [#1735](https://github.com/zowe/api-layer/issues/1735)
+* Feature:  Wizard automatic onboarding & SAF check (#1751) ([3228249](https://github.com/zowe/api-layer/commit/3228249)), closes [#1751](https://github.com/zowe/api-layer/issues/1751)
+* Feature:  Wizard NodeJS & Micronaut enablers' configurations (#1733) ([1e077e8](https://github.com/zowe/api-layer/commit/1e077e8)), closes [#1733](https://github.com/zowe/api-layer/issues/1733)
+* Feature:  Wizard UX tweaks (#1752) ([47c5414](https://github.com/zowe/api-layer/commit/47c5414)), closes [#1752](https://github.com/zowe/api-layer/issues/1752)
 
 
 * Bugfix:  Apiml/client side swagger host (#1841) ([37cbfbc](https://github.com/zowe/api-layer/commit/37cbfbc)), closes [#1841](https://github.com/zowe/api-layer/issues/1841)
@@ -24,8 +33,11 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Display multiple APIs with multiple different versions. (#1800) ([6400aa3](https://github.com/zowe/api-layer/commit/6400aa3)), closes [#1800](https://github.com/zowe/api-layer/issues/1800)
 * Bugfix:  Handle errors in apiversions and wrong URLs (#1788) ([7a0346f](https://github.com/zowe/api-layer/commit/7a0346f)), closes [#1788](https://github.com/zowe/api-layer/issues/1788)
 * Bugfix:  support for APAR PH34201 (#1795) ([5503e4b](https://github.com/zowe/api-layer/commit/5503e4b)), closes [#1795](https://github.com/zowe/api-layer/issues/1795)
+* Bugfix:  Fix flaky unit test (#1771) ([58d9656](https://github.com/zowe/api-layer/commit/58d9656)), closes [#1771](https://github.com/zowe/api-layer/issues/1771)
+* Bugfix:  static generation (#1761) ([b6790cb](https://github.com/zowe/api-layer/commit/b6790cb)), closes [#1761](https://github.com/zowe/api-layer/issues/1761)
+* Bugfix:  Zaas client to not send a certificate during authentication  (#1763) ([691036a](https://github.com/zowe/api-layer/commit/691036a)), closes [#1763](https://github.com/zowe/api-layer/issues/1763)
 
-## `1.24.4 (2021-09-01)`
+## `1.24.0 (apiml: 1.24.4 2021-09-01)`
 
 * Feature:  SAF resource access controller that allows the authorized user to query the SAF resource access levels (#1734) ([680f4b9](https://github.com/zowe/api-layer/commit/680f4b9)), closes [#1734](https://github.com/zowe/api-layer/issues/1734)
 * Feature:  Compress routed response with GZIP based on the routed service's preference (#1728) ([85b5948](https://github.com/zowe/api-layer/commit/85b5948)), closes [#1728](https://github.com/zowe/api-layer/issues/1728)
