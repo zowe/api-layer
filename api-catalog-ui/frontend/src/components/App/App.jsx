@@ -1,4 +1,4 @@
-import React, { Component, Suspense } from 'react';
+import { Component, Suspense } from 'react';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';

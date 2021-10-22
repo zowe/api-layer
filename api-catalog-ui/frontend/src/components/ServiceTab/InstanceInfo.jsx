@@ -1,5 +1,5 @@
 import { Text, Tooltip, ThemeProvider } from 'mineral-ui';
-import React, { Component } from 'react';
+import { Component } from 'react';
 import './InstanceInfo.css';
 import Shield from '../ErrorBoundary/Shield/Shield';
 

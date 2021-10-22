@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Checkbox, FormField, Select, Tooltip } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
 import Button from 'mineral-ui/Button';

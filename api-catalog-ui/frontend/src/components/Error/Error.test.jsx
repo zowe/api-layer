@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 
-import React from 'react';
 import * as enzyme from 'enzyme';
 import { AjaxError } from 'rxjs/ajax/index';
 import Error from './Error';
