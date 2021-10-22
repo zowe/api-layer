@@ -1,5 +1,4 @@
 import { Text } from 'mineral-ui';
-import React from 'react';
 import renderHTML from 'react-render-html';
 import uuidv4 from 'uuid/v4';
 

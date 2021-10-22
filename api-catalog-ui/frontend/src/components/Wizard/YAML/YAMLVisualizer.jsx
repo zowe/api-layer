@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import * as YAML from 'yaml';
 import { Button } from 'mineral-ui';
 import { IconContentCopy } from 'mineral-ui-icons';

@@ -1,5 +1,5 @@
 import { Text, Button } from 'mineral-ui';
-import React, { Component } from 'react';
+import { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import './Dashboard.css';

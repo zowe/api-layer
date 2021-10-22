@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import * as YAML from 'yaml';
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
 import './wizard.css';
 import WizardNavigationContainer from './WizardComponents/WizardNavigationContainer';

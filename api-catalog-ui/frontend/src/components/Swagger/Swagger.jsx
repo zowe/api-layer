@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
+import * as React from 'react';
 import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
