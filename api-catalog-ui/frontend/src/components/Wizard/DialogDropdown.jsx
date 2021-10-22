@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { IconArrowDropDown } from 'mineral-ui-icons';
 import { Dropdown } from 'mineral-ui';
 import Button from 'mineral-ui/Button';

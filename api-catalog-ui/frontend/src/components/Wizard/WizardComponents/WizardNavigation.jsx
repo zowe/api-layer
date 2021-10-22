@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import Tabs, { Tab } from 'mineral-ui/Tabs';
 import { IconDanger } from 'mineral-ui-icons';
 import { Card, CardBlock, Link } from 'mineral-ui';

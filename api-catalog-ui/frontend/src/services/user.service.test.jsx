@@ -9,8 +9,6 @@
  */
 
 /* eslint-disable no-undef */
-import * as React from 'react';
-// tslint:disable-next-line:no-implicit-dependencies
 import * as enzyme from 'enzyme';
 import jest from 'jest-mock';
 import { userService } from './user.service';

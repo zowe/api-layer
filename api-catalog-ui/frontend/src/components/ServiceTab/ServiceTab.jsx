@@ -1,5 +1,5 @@
 import { Link, Text, Tooltip } from 'mineral-ui';
-import React, { Component } from 'react';
+import { Fragment, Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import '../Swagger/Swagger.css';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
@@ -138,7 +138,7 @@ export default class ServiceTab extends Component {
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
 
         return (
-            <React.Fragment>
+            <Fragment>
                 {currentService === null && (
                     <Text element="h3" style={{ margin: '0 auto', background: '#ffff', width: '100vh' }}>
                         <br />
@@ -147,12 +147,12 @@ export default class ServiceTab extends Component {
                     </Text>
                 )}
                 <Shield title={message}>
-                    <React.Fragment>
+                    <Fragment>
                         <div className="serviceTab">
                             <div className="header">
                                 <Text element="h2">{selectedService.title}</Text>
                                 {hasHomepage && (
-                                    <React.Fragment>
+                                    <Fragment>
                                         {selectedService.status === 'UP' && (
                                             <Tooltip
                                                 key={selectedService.serviceId}
@@ -175,7 +175,7 @@ export default class ServiceTab extends Component {
                                                 </Link>
                                             </Tooltip>
                                         )}
-                                    </React.Fragment>
+                                    </Fragment>
                                 )}
                                 <br />
                                 <br />
@@ -231,9 +231,9 @@ export default class ServiceTab extends Component {
                                 />
                             )}
                         </div>
-                    </React.Fragment>
+                    </Fragment>
                 </Shield>
-            </React.Fragment>
+            </Fragment>
         );
     }
 }

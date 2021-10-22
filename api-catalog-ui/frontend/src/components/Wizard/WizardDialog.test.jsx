@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 import * as enzyme from 'enzyme';
-import React from 'react';
 import WizardDialog from './WizardDialog';
 import { categoryData } from './configs/wizard_categories';
 
