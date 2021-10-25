@@ -179,6 +179,21 @@ jobs:
                     redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
                 timeout-minutes: 10
 
+            -   name: Run Snyk to check Docker image for vulnerabilities
+                env:
+                    SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+                    continue-on-error: true
+                    uses: snyk/actions/docker@master
+                    with:
+                    image: ${{ env.IMAGE_NAME_FULL_REMOTE }}
+                    args: --file=${{ env.IMAGE_DIRECTORY }}/Dockerfile
+                    command: test
+
+            -   name: Upload result to GitHub Code Scanning
+                uses: github/codeql-action/upload-sarif@v1
+                with:
+                    sarif_file: snyk.sarif
+
     define-manifests:
         needs:
             - build-containers
