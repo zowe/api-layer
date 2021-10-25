@@ -12,32 +12,25 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
 
-      <!-- Setup base for everything -->
-    <link rel="stylesheet" type="text/css" href="./lib/hystrix-dashboard/global.css" />
+      <!-- Load base JS and CSS -->
+    <script type="text/javascript" src="./monitor.js"></script>
+    <link rel="stylesheet" type="text/css" href="./hystrix-dashboard/monitor/monitor.css"/>
+    <link rel="stylesheet" type="text/css" href="./hystrix-dashboard/css/global.css"/>
 
-    <!-- Our custom CSS -->
-    <link rel="stylesheet" type="text/css" href="./lib/hystrix-dashboard/monitor.css" />
-
-    <!-- d3 -->
-    <script type="text/javascript" src="./lib/d3.v2.min.js"></script>
-
-    <!-- Javascript to monitor and display -->
-    <script type="text/javascript" src="./lib/jquery.min.js"></script>
-    <script type="text/javascript" src="./lib/jquery.tinysort.min.js"></script>
-    <script type="text/javascript" src="./lib/tmpl.js"></script>
-    <script type="text/javascript" src="./lib/underscore-min.js"></script>
-
-    <script type="text/javascript" src="./lib/hystrix-dashboard/HystrixCommand/templates/HystrixCircuitTemplate.js"></script>
-    <script type="text/javascript" src="./lib/hystrix-dashboard/HystrixCommand/templates/HystrixCircuitContainerTemplate.js"></script>
+    <!-- Load javascript libraries for hystrix dashboard -->
+    <script type="text/javascript" src="./hystrix-dashboard/js/d3.v2.min.js"></script>
+    <script type="text/javascript" src="./hystrix-dashboard/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./hystrix-dashboard/js/jquery.tinysort.min.js"></script>
+    <script type="text/javascript" src="./hystrix-dashboard/js/tmpl.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 
     <!-- HystrixCommand -->
-    <script type="text/javascript" src="./lib/hystrix-dashboard/HystrixCommand/hystrixCommand.js"></script>
-    <link rel="stylesheet" type="text/css" href="./lib/hystrix-dashboard/HystrixCommand/hystrixCommand.css" />
+    <script type="text/javascript" src="./hystrix-dashboard/components/hystrixCommand/hystrixCommand.js"></script>
+    <link rel="stylesheet" type="text/css" href="./hystrix-dashboard/components/hystrixCommand/hystrixCommand.css"/>
 
     <!-- HystrixThreadPool -->
-    <script type="text/javascript" src="./lib/hystrix-dashboard/HystrixThreadPool/hystrixThreadPool.js"></script>
-    <link rel="stylesheet" type="text/css" href="./lib/hystrix-dashboard/HystrixThreadPool/hystrixThreadPool.css" />
-    <script type="text/javascript" src="./lib/hystrix-dashboard/monitor.js"></script>
+    <script type="text/javascript" src="./hystrix-dashboard/components/hystrixThreadPool/hystrixThreadPool.js"></script>
+    <link rel="stylesheet" type="text/css" href="./hystrix-dashboard/components/hystrixThreadPool/hystrixThreadPool.css"/>
 
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
