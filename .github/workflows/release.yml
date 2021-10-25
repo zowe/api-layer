@@ -182,9 +182,9 @@ jobs:
             -   name: Run Snyk to check Docker image for vulnerabilities
                 env:
                     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-                    continue-on-error: true
-                    uses: snyk/actions/docker@master
-                    with:
+                continue-on-error: true
+                uses: snyk/actions/docker@master
+                with:
                     image: ${{ env.IMAGE_NAME_FULL_REMOTE }}
                     args: --file=${{ env.IMAGE_DIRECTORY }}/Dockerfile
                     command: test
