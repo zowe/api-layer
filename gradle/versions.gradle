@@ -11,7 +11,7 @@ ext {
     commonsLang3Version = '3.7'
     commonsTextVersion = '1.9'
     ehCacheVersion = '2.10.9.2'
-    eurekaClientVersion = '1.10.16'
+    eurekaClientVersion = '1.10.17'
     gradleGitPropertiesVersion = '2.2.4' // Used in classpath dependencies
     gradleNodeVersion = '3.0.1' // Used in classpath dependencies
     gsonVersion = '2.8.7'
@@ -35,11 +35,11 @@ ext {
     jsr305Version = '3.0.2'
     junitJupiterVersion = '5.5.2'
     jqueryVersion = '3.5.1!!'
-    lettuceVersion = '6.0.6.RELEASE'
+    lettuceVersion = '6.0.8.RELEASE'
     logbackVersion = '1.2.3'
     lombokVersion = '1.18.20'
     mockitoCoreVersion = '2.23.4'
-    netflixServoVersion = '0.12.28'
+    netflixServoVersion = '0.13.2'
     nimbusJoseJwtVersion = '8.21.1'
     openApiDiffVersion = '2.0.0-beta.10'
     reactorTestVersion = '3.4.9'
@@ -52,7 +52,7 @@ ext {
     swagger3ParserVersion = '2.0.17'
     swaggerCoreVersion = '1.5.24'
     swaggerJerseyJaxrsVersion = '1.5.10'
-    tomcatVersion = '9.0.50'
+    tomcatVersion = '9.0.54'
     velocityVersion = '2.0'
     xstreamVersion = '1.4.18!!'
 
