@@ -25,9 +25,6 @@ eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
-    instance:
-        metadata-map:
-            cluster: discoverableclient
 apiml:
     enabled: true
     service:
@@ -148,9 +145,6 @@ hystrix:
     dashboard:
         proxy-stream-allow-list: '*'
     command.default.execution.timeout.enabled: false
-    endpoint:
-        shutdown:
-            enabled: true
 
 ---
 spring:
@@ -162,6 +156,9 @@ management:
             base-path: /application
             exposure:
                 include: "*"
+    endpoint:
+        shutdown:
+            enabled: true
 
 ---
 spring:
