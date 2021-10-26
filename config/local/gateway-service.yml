@@ -14,7 +14,7 @@ apiml:
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
         ssl:
-            verifySslCertificatesOfServices: false
+            verifySslCertificatesOfServices: true
         x509:
             enabled: true
     banner: console
