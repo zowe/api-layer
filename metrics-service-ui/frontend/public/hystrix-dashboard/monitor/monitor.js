@@ -4,11 +4,14 @@ This file is a modified version of monitor.html.
 The changes are largely simply taking the monitor.html script elements and providing them in this Javascript file.
 */
 
+// removed adding streams on a timeout in window.load
+
 //Read a page's GET URL variables and return them as an associative array.
 // from: http://jquery-howto.blogspot.com/2009/09/get-url-parameters-values-with-jquery.html
 function getUrlVars() {
     var vars = [], hash;
-    const url = 'https://localhost:10012/discoverableclient/hystrix/monitor?stream=https%3A%2F%2Flocalhost%3A10012%2Fdiscoverableclient%2Fapplication%2Fhystrix.stream&title=Discoverable%20Client%20Service';
+    // CHANGE: currently using hardcoded URL for PoC to set hystrix stream URL
+    const url = 'https://localhost:10012/discoverableclient/hystrix/monitor?stream=https%3A%2F%2Flocalhost%3A10012%2Fdiscoverabledasclient%2Fapplication%2Fhystrix.stream&title=Discoverable%20Client%20Service';
     var hashes = url.slice(url.indexOf('?') + 1).split('&');
     for(var i = 0; i < hashes.length; i++) {
         hash = hashes[i].split('=');
@@ -60,6 +63,8 @@ function addStreams(proxyStream) {
                 origin = origin + "&authorization=" + s.auth;
             }
         }
+
+        // CHANGE: removed proxyStream variable declaration in favour of function parameter
 
         // start the EventSource which will open a streaming connection to the server
         var source = new EventSource(proxyStream);
