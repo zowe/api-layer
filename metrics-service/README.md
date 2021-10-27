@@ -8,7 +8,7 @@ Eventually, the display of metrics will use either a better pre-built UI, or wil
 
 ## Architecture
 
-TODO
+![Diagram](metrics-service-structure.png "Architecture of the service")
 
 ## How to use
 
