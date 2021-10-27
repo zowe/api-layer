@@ -85,7 +85,8 @@
 		function preProcessData(data) {
 			validateData(data);
 			// escape string used in jQuery & d3 selectors
-			data.escapedName = data.name.replace(/([ !"#$%&'()*+,./:;<=>?@[\]^`{|}~])/g,'\\$1') + '_' + data.index;
+			// CHANGE: properly escape backslash
+			data.escapedName = data.name.replace(/([ !"#$%&'()*+,./:;<=>?@[\\]^`{|}~])/g,'\\$1') + '_' + data.index;
 			// do math
 			converAllAvg(data);
 			calcRatePerSecond(data);
