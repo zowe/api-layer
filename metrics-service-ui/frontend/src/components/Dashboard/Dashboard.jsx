@@ -17,8 +17,6 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 
-import axios from 'axios';
-
 const useStyles = makeStyles((theme) => ({
     formControl: {
         margin: theme.spacing(1),
