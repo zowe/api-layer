@@ -38,7 +38,7 @@ class CatalogApiDocControllerApiDocNotFoundTest {
     private MockMvc mockMvc;
 
     @Test
-    void getApiDocAnfFailThenThrowApiDocNotFoundException() throws Exception {
+    void getApiDocAndFailThenThrowApiDocNotFoundException() throws Exception {
         this.mockMvc.perform(get("/apidoc/service2/v1"))
             .andExpect(status().isInternalServerError())
             .andExpect(jsonPath("$.messages[?(@.messageNumber == 'ZWEAC103E')].messageContent",

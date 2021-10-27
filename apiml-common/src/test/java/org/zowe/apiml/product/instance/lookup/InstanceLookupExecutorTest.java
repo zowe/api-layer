@@ -9,9 +9,6 @@
  */
 package org.zowe.apiml.product.instance.lookup;
 
-import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.instance.InstanceInitializationException;
-import org.zowe.apiml.product.instance.InstanceNotFoundException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
@@ -20,6 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.instance.InstanceInitializationException;
+import org.zowe.apiml.product.instance.InstanceNotFoundException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,8 +33,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class InstanceLookupExecutorTest {
 
-    private static final int INITIAL_DELAY = 1;
-    private static final int PERIOD = 10;
     private static final String SERVICE_ID = CoreService.API_CATALOG.getServiceId();
 
     @Mock
@@ -49,7 +47,7 @@ class InstanceLookupExecutorTest {
 
     @BeforeEach
     void setUp() {
-        instanceLookupExecutor = new InstanceLookupExecutor(eurekaClient, INITIAL_DELAY, PERIOD);
+        instanceLookupExecutor = new InstanceLookupExecutor(eurekaClient);
         instances = Collections.singletonList(
             getInstance(SERVICE_ID));
         latch = new CountDownLatch(1);
@@ -154,9 +152,9 @@ class InstanceLookupExecutorTest {
     }
 
     InstanceInfo createInstance(String serviceId, String instanceId,
-                                       InstanceInfo.InstanceStatus status,
-                                       InstanceInfo.ActionType actionType,
-                                       HashMap<String, String> metadata) {
+                                InstanceInfo.InstanceStatus status,
+                                InstanceInfo.ActionType actionType,
+                                HashMap<String, String> metadata) {
         return new InstanceInfo(
             instanceId,
             serviceId.toUpperCase(),

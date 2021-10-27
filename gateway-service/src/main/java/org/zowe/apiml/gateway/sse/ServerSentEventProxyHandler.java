@@ -11,125 +11,153 @@
 package org.zowe.apiml.gateway.sse;
 
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
+import org.zowe.apiml.product.routing.RoutedServicesUser;
+import org.zowe.apiml.util.UrlUtils;
+import reactor.core.publisher.Flux;
 
-
-import java.util.Map;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.ArrayList;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 @Slf4j
 @Controller
 @Component("ServerSentEventProxyHandler")
-public class ServerSentEventProxyHandler {
-
-    private static final String SEPARATOR = "/";
+public class ServerSentEventProxyHandler implements RoutedServicesUser {
     private final DiscoveryClient discovery;
-    private Map<String, Flux<ServerSentEvent<String>>> sseEventStreams = new ConcurrentHashMap<>();
+    private final MessageService messageService;
+    private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
 
     @Autowired
-    public ServerSentEventProxyHandler(DiscoveryClient discovery) {
+    public ServerSentEventProxyHandler(DiscoveryClient discovery, MessageService messageService) {
         this.discovery = discovery;
+        this.messageService = messageService;
     }
 
     @GetMapping("/**/sse/**")
     public SseEmitter getEmitter(HttpServletRequest request, HttpServletResponse response) throws IOException {
         SseEmitter emitter = new SseEmitter(-1L);
-        
-        String[] uriParts = getUriParts(request);
-        if (uriParts != null && uriParts.length >= 5) {
-            String serviceId = uriParts[3];
-            String path = uriParts[4];
-            String[] params = Arrays.copyOfRange(uriParts, 5, uriParts.length);
-            ServiceInstance serviceInstance = findServiceInstance(serviceId);
 
-            if (serviceInstance == null) {
-                response.getWriter().print(String.format("Service '%s' could not be discovered", serviceId));
-                return null;
-            }
-
-            String targetUrl = getTargetUrl(serviceId, serviceInstance, path, params);
-            if (!sseEventStreams.containsKey(targetUrl)) {
-                addStream(targetUrl);
-            }
-            forwardEvents(sseEventStreams.get(targetUrl), emitter);
+        String uri = request.getRequestURI();
+        List<String> uriParts = getUriParts(uri);
+        if (uriParts.size() < 4) {
+            writeError(response, SseErrorMessages.INVALID_ROUTE, uri);
+            return null;
         }
+
+        String serviceId = getServiceId(uriParts);
+        String majorVersion = getMajorVersion(uriParts);
+        String path = uriParts.size() < 5 ? "" : uriParts.get(4);
+
+        ServiceInstance serviceInstance = findServiceInstance(serviceId);
+        if (serviceInstance == null) {
+            writeError(response, SseErrorMessages.INSTANCE_NOT_FOUND, serviceId);
+            return null;
+        }
+
+        RoutedServices routedServices = routedServicesMap.get(serviceId);
+        if (routedServices == null) {
+            writeError(response, SseErrorMessages.INSTANCE_NOT_FOUND, serviceId);
+            return null;
+        }
+
+        String sseRoute = "sse/" + majorVersion;
+        RoutedService routedService = routedServices.findServiceByGatewayUrl(sseRoute);
+        if (routedService == null) {
+            writeError(response, SseErrorMessages.ENDPOINT_NOT_FOUND, sseRoute);
+            return null;
+        }
+
+        String targetUrl = getTargetUrl(serviceInstance, routedService.getServiceUrl(), path, request.getQueryString());
+        getSseStream(targetUrl).subscribe(consumer(emitter), emitter::completeWithError, emitter::complete);
+
         return emitter;
     }
 
-    public void forwardEvents(Flux<ServerSentEvent<String>> stream, SseEmitter emitter) {
-        stream.subscribe(
-            content -> {
-                try {
-                    emitter.send(content.data());
-                } catch (IOException error) {
-                    log.error("Error encounter sending SSE event");
-                    log.error(error.getMessage());
-                    emitter.complete();
-                }
-            },
-            error -> {
-                log.error("Error receiving SSE");
-                log.error(error.getMessage());
-                emitter.complete();
-            },
-            () -> emitter.complete());
+    // package protected for unit testing
+    Consumer<ServerSentEvent<String>> consumer(SseEmitter emitter) {
+        return content -> {
+            try {
+                emitter.send(content.data());
+            } catch (IOException error) {
+                emitter.completeWithError(error);
+            }
+        };
     }
 
-    private void addStream(String sseStreamUrl) {
+    // package protected for unit testing
+    Flux<ServerSentEvent<String>> getSseStream(String sseStreamUrl) {
         WebClient client = WebClient.create(sseStreamUrl);
         ParameterizedTypeReference<ServerSentEvent<String>> type
-        = new ParameterizedTypeReference<ServerSentEvent<String>>() {};
-        Flux<ServerSentEvent<String>> eventStream = client.get()
-        .retrieve()
-        .bodyToFlux(type);
-        sseEventStreams.put(sseStreamUrl, eventStream);
+            = new ParameterizedTypeReference<ServerSentEvent<String>>() {
+        };
+        return client.get()
+            .retrieve()
+            .bodyToFlux(type);
     }
 
-    private String[] getUriParts(HttpServletRequest request) {
-        String uriPath = request.getRequestURI();
-        Map<String, String[]> parameters = request.getParameterMap();
-        String[] arr = null;
-        if (uriPath != null) {
-            List<String> uriParts = new ArrayList<>(Arrays.asList(uriPath.split("/", 5)));
-            Iterator<Map.Entry<String, String[]>> it = (parameters.entrySet()).iterator();
-            while (it.hasNext()) {
-                Map.Entry<String, String[]> entry = it.next();
-                uriParts.add(entry.getKey() + "=" + entry.getValue()[0]);
-            }
-            arr = uriParts.toArray(new String[uriParts.size()]);
+    private List<String> getUriParts(String uri) {
+        if (uri == null) {
+            return new ArrayList<>();
         }
-        return arr;
+
+        return new ArrayList<>(Arrays.asList(uri.split("/", 5)));
+    }
+
+    private String getServiceId(List<String> uriParts) {
+        return "sse".equals(uriParts.get(1)) ? uriParts.get(3) : uriParts.get(1);
+    }
+
+    private String getMajorVersion(List<String> uriParts) {
+        return "sse".equals(uriParts.get(1)) ? uriParts.get(2) : uriParts.get(3);
     }
 
     private ServiceInstance findServiceInstance(String serviceId) {
         List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
-        if (!serviceInstances.isEmpty()) {
-            return serviceInstances.get(0);
-        } else {
-            return null;
-        }
+        return serviceInstances.isEmpty() ? null : serviceInstances.get(0);
     }
 
-    private String getTargetUrl(String serviceId, ServiceInstance serviceInstance, String path, String[] params) {
-        return "https" + "://" + serviceInstance.getHost() + ":"
-            + serviceInstance.getPort() +
-            SEPARATOR + serviceId + SEPARATOR + path + "?" + String.join("&", params);
+    private String getTargetUrl(ServiceInstance serviceInstance, String serviceUrl, String path, String queryParameterString) {
+        String parameters = queryParameterString == null ? "" : "?" + queryParameterString;
+        String protocol = serviceInstance.isSecure() ? "https" : "http";
+        return String.format("%s://%s:%d/%s/%s%s",
+            protocol,
+            serviceInstance.getHost(),
+            serviceInstance.getPort(),
+            UrlUtils.removeFirstAndLastSlash(serviceUrl),
+            path,
+            parameters
+        );
+    }
+
+    private void writeError(HttpServletResponse response, SseErrorMessages errorMessage, String messageParameter) throws IOException {
+        Message message = messageService.createMessage(errorMessage.getKey(), messageParameter);
+
+        response.getWriter().print(message.mapToReadableText());
+        response.setStatus(errorMessage.getStatus().value());
+    }
+
+    @Override
+    public void addRoutedServices(String serviceId, RoutedServices routedServices) {
+        routedServicesMap.put(serviceId, routedServices);
     }
 }

@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,16 +97,16 @@ public class APIServiceStatusService {
      * @return response containing HTML document detailing changes between api doc versions
      */
     public ResponseEntity<String> getApiDiffInfo(@NonNull String serviceId, String apiVersion1, String apiVersion2) {
-        String doc1 = cachedApiDocService.getApiDocForService(serviceId, apiVersion1);
-        String doc2 = cachedApiDocService.getApiDocForService(serviceId, apiVersion2);
         try {
+            String doc1 = cachedApiDocService.getApiDocForService(serviceId, apiVersion1);
+            String doc2 = cachedApiDocService.getApiDocForService(serviceId, apiVersion2);
             ChangedOpenApi diff = openApiCompareProducer.fromContents(doc1, doc2);
             HtmlRender render = new HtmlRender();
             String result = render.render(diff);
             //Remove external stylesheet
             result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
             return new ResponseEntity<>(result, createHeaders(), HttpStatus.OK);
-        } catch (NullPointerException e) {
+        } catch (NullPointerException | ApiDocNotFoundException e) {
             throw new ApiDiffNotAvailableException(String.format("No Diff available for %s and versions %s and %s", serviceId, apiVersion1, apiVersion2));
         }
     }

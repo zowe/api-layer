@@ -56,7 +56,18 @@ public class PH12143 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleJwtKeys() {
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>("{\n" +
+            "  \"keys\": [\n" +
+            "    {\n" +
+            "      \"kty\": \"RSA\",\n" +
+            "      \"e\": \"AQAB\",\n" +
+            "      \"use\": \"sig\",\n" +
+            "      \"kid\": \"ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg\",\n" +
+            "      \"alg\": \"RS256\",\n" +
+            "      \"n\": \"wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q\"\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}", HttpStatus.OK);
     }
 
     private boolean isUnauthorized(Map<String, String> headers) {

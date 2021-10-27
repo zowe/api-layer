@@ -21,7 +21,12 @@ export default class ServiceTab extends Component {
         let basePath = '';
         if (selectedService.basePath) {
             const version = selectedVersion || selectedService.defaultApiVersion;
-            basePath = selectedService.basePath.replace('{api-version}', version);
+            let gatewayUrl = '';
+            if (selectedService.gatewayUrls && selectedService.gatewayUrls[version]) {
+                gatewayUrl = selectedService.gatewayUrls[version];
+            }
+            // Take the first part of the basePath and then add the gatewayUrl
+            basePath = `/${selectedService.serviceId}/${gatewayUrl}`;
         }
         return basePath;
     }
