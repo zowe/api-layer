@@ -32,18 +32,26 @@ export default function Dashboard() {
     /* eslint-disable */
     const classes = useStyles();
 
-    // TODO need to set first stream using clusters response - load until get clusters response, check for cluster returned (if none show error message), then window.addStreams it
     const [availableStreams, setAvailableStreams] = useState([]);
 
-    let clusters = [];
-
     useEffect(() => {
+        if (availableStreams.length === 0) {
+            // TODO only run this if we *haven't* already tried to get response from clusters endpoint - if empty response this keeps firing
+            axios.get(`${window.location.origin}/metrics-service/api/v1/clusters`).then((res) =>{
+                const clusters = res.data.map((d => d.name));
+                setAvailableStreams(clusters);
+                if (clusters.length > 0) {
+                    window.addStreams(`${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${clusters[0]}`);
+                }
+            });
+        }
+
         setTimeout(() => {
             axios.get(`${window.location.origin}/metrics-service/api/v1/clusters`).then((res) =>{
-                    clusters = res.data.map((d => d.name));
+                    const clusters = res.data.map((d => d.name));
                     setAvailableStreams(clusters);
             });
-        }, 5000); // TODO once have first stream set change this to 30 seconds
+        }, 30000);
     });
 
     const handleChange = (event) => {
@@ -55,12 +63,13 @@ export default function Dashboard() {
             <Typography id="name" variant="h2" component="h1" gutterBottom align="center">
                 Metrics Service
             </Typography>
+            {availableStreams.length > 0 && (
             <FormControl className={classes.formControl}>
                 <InputLabel id="demo-simple-select-label">Stream</InputLabel>
                 <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={currentStream}
+                    value="availableStreams"
                     onChange={handleChange}
                 >
                 {availableStreams.map(stream => (
@@ -68,6 +77,7 @@ export default function Dashboard() {
                 ))}
                 </Select>
             </FormControl>
+            )}
             <Container maxWidth="lg" id="content" className="dependencies" />
         </React.Fragment>
     );
