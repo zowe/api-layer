@@ -152,3 +152,22 @@ spring:
         - diag
 
 logbackServiceName: ZWEAMS1
+
+---
+spring:
+    profiles: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+apiml:
+    service:
+        scheme: http
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false
