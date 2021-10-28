@@ -16,6 +16,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme) => ({
     formControl: {
@@ -28,18 +29,28 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Dashboard() {
+    /* eslint-disable */
     const classes = useStyles();
-    const [currentStream, setCurrentStream] = useState('DISCOVERABLECLIENT');
 
-    useEffect(() => {
-        setTimeout(() => {
-            window.addStreams(`https://localhost:10010/metrics-service/sse/v1/turbine.stream?cluster=${currentStream}`);
-        }, 0);
-    }, [currentStream]);
+    axios.get('https://localhost:10010/metrics-service/api/v1/clusters').then((res) =>{
+        console.log('clusters');
+        console.log(res);
+        const clusterNames = res.data.map((d => d.name));
+        console.log(clusterNames);
+        console.log(clusterNames[0]);
 
-    const handleChange = (event) => {
-        setCurrentStream(event.target.value);
-    };
+        const [currentStream, setCurrentStream] = useState(clusterNames[0]);
+
+        useEffect(() => {
+            setTimeout(() => {
+                window.addStreams(`https://localhost:10010/metrics-service/sse/v1/turbine.stream?cluster=${currentStream}`);
+            }, 0);
+        }, [currentStream]);
+
+        const handleChange = (event) => {
+            setCurrentStream(event.target.value);
+        };
+    });
 
     return (
         <React.Fragment>
