@@ -32,25 +32,23 @@ export default function Dashboard() {
     /* eslint-disable */
     const classes = useStyles();
 
-    axios.get('https://localhost:10010/metrics-service/api/v1/clusters').then((res) =>{
-        console.log('clusters');
-        console.log(res);
-        const clusterNames = res.data.map((d => d.name));
-        console.log(clusterNames);
-        console.log(clusterNames[0]);
+    // TODO need to set first stream using clusters response - load until get clusters response, check for cluster returned (if none show error message), then window.addStreams it
+    const [availableStreams, setAvailableStreams] = useState([]);
 
-        const [currentStream, setCurrentStream] = useState(clusterNames[0]);
+    let clusters = [];
 
-        useEffect(() => {
-            setTimeout(() => {
-                window.addStreams(`https://localhost:10010/metrics-service/sse/v1/turbine.stream?cluster=${currentStream}`);
-            }, 0);
-        }, [currentStream]);
-
-        const handleChange = (event) => {
-            setCurrentStream(event.target.value);
-        };
+    useEffect(() => {
+        setTimeout(() => {
+            axios.get(`${window.location.origin}/metrics-service/api/v1/clusters`).then((res) =>{
+                    clusters = res.data.map((d => d.name));
+                    setAvailableStreams(clusters);
+            });
+        }, 5000); // TODO once have first stream set change this to 30 seconds
     });
+
+    const handleChange = (event) => {
+        window.addStreams(`${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${event.target.value}`);
+    };
 
     return (
         <React.Fragment>
@@ -65,8 +63,9 @@ export default function Dashboard() {
                     value={currentStream}
                     onChange={handleChange}
                 >
-                    <MenuItem value="DISCOVERABLECLIENT">DISCOVERABLECLIENT</MenuItem>
-                    <MenuItem value="APICATALOG">APICATALOG</MenuItem>
+                {availableStreams.map(stream => (
+                    <MenuItem value={stream}>{stream}</MenuItem>
+                ))}
                 </Select>
             </FormControl>
             <Container maxWidth="lg" id="content" className="dependencies" />
