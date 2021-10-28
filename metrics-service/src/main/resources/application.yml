@@ -26,6 +26,8 @@ eureka:
 apiml:
     enabled: true
     service:
+        preferIpAddress: false
+
         serviceId: metrics-service
         title: Metrics Service.
         description: Service to display metrics for APIML services.
@@ -63,7 +65,7 @@ apiml:
                 version: 1.0.0
         ssl:
             enabled: true
-            verifySslCertificatesOfServices: false
+            verifySslCertificatesOfServices: true
             protocol: ${server.ssl.protocol}
             keyStoreType: ${server.ssl.keyStoreType}
             trustStoreType: ${server.ssl.trustStoreType}
