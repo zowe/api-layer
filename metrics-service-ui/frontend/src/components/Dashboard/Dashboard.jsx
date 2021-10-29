@@ -33,6 +33,7 @@ export default function Dashboard() {
     const classes = useStyles();
 
     const [availableStreams, setAvailableStreams] = useState([]);
+    const [currentCluster, setCurrentCluster] = useState(null);
     const [haveGottenClusters, setHaveGottenClusters] = useState(false);
 
     useEffect(() => {
@@ -41,7 +42,9 @@ export default function Dashboard() {
                 const clusters = res.data.map((d => d.name));
                 setAvailableStreams(clusters);
                 if (clusters.length > 0) {
-                    window.addStreams(`${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${clusters[0]}`);
+                    const cluster = clusters[0];
+                    setCurrentCluster(cluster);
+                    window.addStreams(`${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`);
                 }
             });
         }
@@ -55,7 +58,9 @@ export default function Dashboard() {
     });
 
     const handleChange = (event) => {
-        window.addStreams(`${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${event.target.value}`);
+        const cluster = event.target.value;
+        setCurrentCluster(cluster);
+        window.addStreams(`${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`);
     };
 
     return (
@@ -69,7 +74,7 @@ export default function Dashboard() {
                 <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value="availableStreams"
+                    value={currentCluster}
                     onChange={handleChange}
                 >
                 {availableStreams.map(stream => (
