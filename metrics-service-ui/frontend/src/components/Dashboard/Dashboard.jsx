@@ -37,7 +37,10 @@ export default function Dashboard() {
 
     function setMetricsDisplay(cluster) {
         setCurrentCluster(cluster);
-        window.addStreams(`${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`);
+        window.addStreams(
+            `${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`,
+            cluster
+        );
     }
 
     function retrieveAvailableClusters(callback) {
