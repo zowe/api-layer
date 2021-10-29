@@ -29,14 +29,14 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Dashboard() {
-    /* eslint-disable */
+    /* eslint-disable */ // TODO clean up code and enable this
     const classes = useStyles();
 
     const [availableStreams, setAvailableStreams] = useState([]);
+    const [haveGottenClusters, setHaveGottenClusters] = useState(false);
 
     useEffect(() => {
-        if (availableStreams.length === 0) {
-            // TODO only run this if we *haven't* already tried to get response from clusters endpoint - if empty response this keeps firing
+        if (!haveGottenClusters && availableStreams.length === 0) {
             axios.get(`${window.location.origin}/metrics-service/api/v1/clusters`).then((res) =>{
                 const clusters = res.data.map((d => d.name));
                 setAvailableStreams(clusters);
