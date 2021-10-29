@@ -29,38 +29,47 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Dashboard() {
-    /* eslint-disable */ // TODO clean up code and enable this
     const classes = useStyles();
 
-    const [availableStreams, setAvailableStreams] = useState([]);
+    const [availableClusters, setAvailableClusters] = useState([]);
     const [currentCluster, setCurrentCluster] = useState(null);
     const [haveGottenClusters, setHaveGottenClusters] = useState(false);
 
+    function setMetricsDisplay(cluster) {
+        setCurrentCluster(cluster);
+        window.addStreams(`${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`);
+    }
+
+    function retrieveAvailableClusters(callback) {
+        axios.get(`${window.location.origin}/metrics-service/api/v1/clusters`).then((res) => {
+            callback(res);
+        });
+    }
+
     useEffect(() => {
-        if (!haveGottenClusters && availableStreams.length === 0) {
-            axios.get(`${window.location.origin}/metrics-service/api/v1/clusters`).then((res) =>{
-                const clusters = res.data.map((d => d.name));
-                setAvailableStreams(clusters);
+        if (!haveGottenClusters && availableClusters.length === 0) {
+            retrieveAvailableClusters((res) => {
+                setHaveGottenClusters(true);
+
+                const clusters = res.data.map((d) => d.name);
+                setAvailableClusters(clusters);
+
                 if (clusters.length > 0) {
-                    const cluster = clusters[0];
-                    setCurrentCluster(cluster);
-                    window.addStreams(`${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`);
+                    setMetricsDisplay(clusters[0]);
                 }
             });
         }
 
         setTimeout(() => {
-            axios.get(`${window.location.origin}/metrics-service/api/v1/clusters`).then((res) =>{
-                    const clusters = res.data.map((d => d.name));
-                    setAvailableStreams(clusters);
+            retrieveAvailableClusters((res) => {
+                const clusters = res.data.map((d) => d.name);
+                setAvailableClusters(clusters);
             });
         }, 30000);
     });
 
     const handleChange = (event) => {
-        const cluster = event.target.value;
-        setCurrentCluster(cluster);
-        window.addStreams(`${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`);
+        setMetricsDisplay(event.target.value);
     };
 
     return (
@@ -68,20 +77,20 @@ export default function Dashboard() {
             <Typography id="name" variant="h2" component="h1" gutterBottom align="center">
                 Metrics Service
             </Typography>
-            {availableStreams.length > 0 && (
-            <FormControl className={classes.formControl}>
-                <InputLabel id="demo-simple-select-label">Stream</InputLabel>
-                <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={currentCluster}
-                    onChange={handleChange}
-                >
-                {availableStreams.map(stream => (
-                    <MenuItem value={stream}>{stream}</MenuItem>
-                ))}
-                </Select>
-            </FormControl>
+            {availableClusters.length > 0 && (
+                <FormControl className={classes.formControl}>
+                    <InputLabel id="demo-simple-select-label">Stream</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={currentCluster}
+                        onChange={handleChange}
+                    >
+                        {availableClusters.map((stream) => (
+                            <MenuItem value={stream}>{stream}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
             )}
             <Container maxWidth="lg" id="content" className="dependencies" />
         </React.Fragment>
