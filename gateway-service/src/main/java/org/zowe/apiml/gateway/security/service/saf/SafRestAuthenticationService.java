@@ -88,7 +88,7 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             return Optional.empty();
         }
         catch (IRRPassTicketGenerationException e) {
-        throw new AuthenticationTokenException("Problem with generating PassTicket");
+            throw new AuthenticationTokenException("Problem with generating PassTicket");
         }
     }
 
