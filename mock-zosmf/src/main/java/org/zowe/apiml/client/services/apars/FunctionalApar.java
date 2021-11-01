@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.client.services.apars;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.client.services.JwtTokenService;
@@ -134,13 +135,13 @@ public class FunctionalApar implements Apar {
     }
 
     protected boolean noAuthentication(Map<String, String> headers) {
-        String basicAuth = headers.get(AUTHORIZATION_HEADER);
-        String cookie = headers.get(COOKIE_HEADER);
+        String basicAuth = headers.get(AUTHORIZATION_HEADER) != null ? headers.get(AUTHORIZATION_HEADER) : headers.get(HttpHeaders.AUTHORIZATION);
+        String cookie = headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
         return (basicAuth == null || basicAuth.isEmpty()) && (cookie == null || cookie.isEmpty());
     }
 
     protected boolean containsInvalidOrNoUser(Map<String, String> headers) {
-        String authorization = headers.get(AUTHORIZATION_HEADER);
+        String authorization = headers.get(AUTHORIZATION_HEADER) != null ? headers.get(AUTHORIZATION_HEADER) : headers.get(HttpHeaders.AUTHORIZATION);
         if (authorization == null || authorization.isEmpty()) {
             return true;
         }
@@ -151,14 +152,14 @@ public class FunctionalApar implements Apar {
     }
 
     protected String[] getPiecesOfCredentials(Map<String, String> headers) {
-        String authorization = headers.get(AUTHORIZATION_HEADER);
+        String authorization = headers.get(AUTHORIZATION_HEADER) != null ? headers.get(AUTHORIZATION_HEADER) : headers.get(HttpHeaders.AUTHORIZATION);
         if (authorization != null) {
             byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
             String credentials = new String(decoded);
             return credentials.split(":");
         }
 
-        String cookie = headers.get(COOKIE_HEADER);
+        String cookie = headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
         if (cookie != null) {
             return cookie.split("=");
         }
@@ -167,12 +168,12 @@ public class FunctionalApar implements Apar {
     }
 
     protected boolean noLtpaCookie(Map<String, String> headers) {
-        String cookie = headers.get(COOKIE_HEADER);
+        String cookie = headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
         return cookie == null || !cookie.contains(LTPA_TOKEN_NAME);
     }
 
     protected boolean isValidJwtCookie(Map<String, String> headers) {
-        String cookie = headers.get(COOKIE_HEADER);
+        String cookie = headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
         if (cookie == null || !cookie.contains(JWT_TOKEN_NAME)) {
             return false;
         }

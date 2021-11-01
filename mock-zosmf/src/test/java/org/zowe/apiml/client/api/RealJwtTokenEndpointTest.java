@@ -17,7 +17,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.zowe.apiml.client.services.AparBasedService;
 import org.zowe.apiml.client.services.JwtTokenService;
+import org.zowe.apiml.client.services.versions.Versions;
 
 import javax.servlet.http.Cookie;
 
@@ -25,8 +27,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = RealJwtTokenEndpoint.class, properties = {"jwtToken.enableMock=true"})
-@ContextConfiguration(classes = {JwtTokenService.class, RealJwtTokenEndpoint.class})
+@WebMvcTest(controllers = {AuthenticationController.class, FilesController.class, InfoController.class, JwtController.class})
+@ContextConfiguration(classes = {AuthenticationController.class, FilesController.class, InfoController.class, JwtController.class, AparBasedService.class, Versions.class})
 class RealJwtTokenEndpointTest {
 
     @Autowired
@@ -42,14 +44,11 @@ class RealJwtTokenEndpointTest {
 
         MvcResult mvcResult = mvc.perform(
             post("/zosmf/services/authenticate")
-                .header(HttpHeaders.AUTHORIZATION, "Basic AMIDOINITRITE=")
+                .header(HttpHeaders.AUTHORIZATION, "Basic VVNFUjp2YWxpZFBhc3N3b3Jk")
         ).andReturn();
-
-        String token = mvcResult.getResponse().getHeader("Set-Cookie").replace("jwtToken=", "").replaceAll(";.*$", "");
-
         mvc.perform(
-            get("/zosmf/notifications/inbox")
-                .cookie(new Cookie("jwtToken", token))
+            get("/zosmf/notifications/inbox").cookie(mvcResult.getResponse().getCookies())
+
         ).andExpect(status().isOk());
     }
 
@@ -62,12 +61,16 @@ class RealJwtTokenEndpointTest {
     void authenticateTest() throws Exception {
         mvc.perform(
             post("/zosmf/services/authenticate")
-                .header(HttpHeaders.AUTHORIZATION, "Basic AMIDOINITRITE=")
-        ).andExpect(status().isNoContent()).andExpect(header().exists(HttpHeaders.SET_COOKIE));
+                .header(HttpHeaders.AUTHORIZATION, "Basic VVNFUjp2YWxpZFBhc3N3b3Jk")
+        ).andExpect(status().isOk()).andExpect(header().exists(HttpHeaders.SET_COOKIE));
     }
 
     @Test
     void authenticateDeleteTest() throws Exception {
-        mvc.perform(delete("/zosmf/services/authenticate")).andExpect(status().isOk());
+        MvcResult mvcResult = mvc.perform(
+            post("/zosmf/services/authenticate")
+                .header(HttpHeaders.AUTHORIZATION, "Basic VVNFUjp2YWxpZFBhc3N3b3Jk")
+        ).andReturn();
+        mvc.perform(delete("/zosmf/services/authenticate").cookie(mvcResult.getResponse().getCookies())).andExpect(status().isNoContent());
     }
 }

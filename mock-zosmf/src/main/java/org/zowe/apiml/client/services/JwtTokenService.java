@@ -16,9 +16,6 @@ import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -31,20 +28,15 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
-@Service
-@ConditionalOnProperty(name = "jwtToken.enableMock", havingValue = "true")
 public class JwtTokenService {
 
+    public static final String JWT_TOKEN = "jwtToken=";
     private Set<String> invalidatedTokens = new HashSet<>();
 
-    @Value("${jwtToken.expirationSeconds:60}")
     private int expirationSeconds;
 
     public JwtTokenService(int expirationSeconds) {
         this.expirationSeconds = expirationSeconds;
-    }
-
-    public JwtTokenService() {
     }
 
     public String generateJwt(String user) throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -178,9 +170,10 @@ public class JwtTokenService {
     }
 
     public String extractToken(Map<String, String> headers) {
-        return (headers != null) ? headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith("jwtToken="))
-            .map(Map.Entry::getValue).map(s -> s.replaceFirst("jwtToken=", "")).findFirst().orElse(headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith("LtpaToken2="))
-                .map(Map.Entry::getValue).map(s -> s.substring(s.indexOf("jwtToken=") + "jwtToken=".length())).findFirst().orElse("")) : "";
+        return (headers != null) ? headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith(JWT_TOKEN))
+            .map(Map.Entry::getValue).map(s -> s.replaceFirst(JWT_TOKEN, "")).findFirst().orElse(
+                headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith("LtpaToken2="))
+                    .map(Map.Entry::getValue).map(s -> s.substring(s.indexOf(JWT_TOKEN) + JWT_TOKEN.length())).findFirst().orElse("")) : "";
     }
 
 }
