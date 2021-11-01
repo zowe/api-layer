@@ -24,23 +24,12 @@ At this time only core APIML services are expected to be onboarded to the Metric
 While it may be possible for Metrics Service configuration to be overridden to onboard other services, this is not supported and may not work properly.  
 
 ## How to run for local development
-<<<<<<< HEAD
 
 The Metrics Service is a Spring Boot application. You can either add it as a run configuration and run it together with other services.
 
 At this time, the Gateway by default has the Metrics Service disabled. In order to view the Metrics Service set `apiml.metrics.enabled=true` for the Gateway. 
 
 In local usage, the Metrics Service will run at `https://localhost:10019/metrics-service`.
-=======
-
-The Metrics Service is a Spring Boot application. You can either add it as a run configuration and run it together with other services.
-
-At this time, the Gateway by default has the Metrics Service disabled. In order to view the Metrics Service set `apiml.metrics.enabled=true` for the Gateway. 
-
-In local usage, the Metrics Service will run at `https://localhost:10019/metrics-service`.
-
-**Note: At this time, the Gateway and Discovery Service need to have `apiml.security.ssl.verifySslCertificatesOfServices=false` in order for the Metrics Service to register and be accessible.**
->>>>>>> fdcfcd24b8554933b14236deba368f34d34b8c6a
 
 ## Configuration properties
 
