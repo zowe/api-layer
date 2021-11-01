@@ -37,7 +37,7 @@ public class PH34201 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        if (containsInvalidOrNoUser(headers) && noJwtCookie(headers) && noLtpaCookie(headers)) {
+        if (containsInvalidOrNoUser(headers) && !isValidJwtCookie(headers) && noLtpaCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -47,7 +47,7 @@ public class PH34201 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
-        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers) && noJwtCookie(headers)) {
+        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers) && !isValidJwtCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

@@ -10,8 +10,12 @@
 
 package org.zowe.apiml.client.services;
 
-import com.nimbusds.jose.jwk.*;
-import io.jsonwebtoken.*;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -20,7 +24,9 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -34,6 +40,13 @@ public class JwtTokenService {
     @Value("${jwtToken.expirationSeconds:60}")
     private int expirationSeconds;
 
+    public JwtTokenService(int expirationSeconds) {
+        this.expirationSeconds = expirationSeconds;
+    }
+
+    public JwtTokenService() {
+    }
+
     public String generateJwt(String user) throws NoSuchAlgorithmException, InvalidKeySpecException {
         return Jwts.builder()
             .setHeaderParam("kid", "ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg")
@@ -44,7 +57,7 @@ public class JwtTokenService {
             .setIssuer("zOSMF")
             .setIssuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()))
             .setExpiration(Date.from(LocalDateTime.now().plusSeconds(expirationSeconds).atZone(ZoneId.systemDefault()).toInstant()))
-            .compact() + "; Path=/; Secure; HttpOnly";
+            .compact();
     }
 
     public boolean validateJwtToken(String token) {
@@ -70,8 +83,8 @@ public class JwtTokenService {
     public static JWKSet getKeySet() throws NoSuchAlgorithmException, InvalidKeySpecException {
         ArrayList<JWK> keys = new ArrayList<>();
 
-        keys.add(loadJWK(readAnotherPemPublicKey(),"someotherkey"));
-        keys.add(loadJWK(readPemPublicKey(),"ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg"));
+        keys.add(loadJWK(readAnotherPemPublicKey(), "someotherkey"));
+        keys.add(loadJWK(readPemPublicKey(), "ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg"));
 
         return new JWKSet(keys);
     }
@@ -162,6 +175,12 @@ public class JwtTokenService {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
         return (RSAPublicKey) keyFactory.generatePublic(keySpec);
+    }
+
+    public String extractToken(Map<String, String> headers) {
+        return (headers != null) ? headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith("jwtToken="))
+            .map(Map.Entry::getValue).map(s -> s.replaceFirst("jwtToken=", "")).findFirst().orElse(headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith("LtpaToken2="))
+                .map(Map.Entry::getValue).map(s -> s.substring(s.indexOf("jwtToken=") + "jwtToken=".length())).findFirst().orElse("")) : "";
     }
 
 }

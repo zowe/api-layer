@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.client.services.JwtTokenService;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -153,10 +154,13 @@ class PHBaseTest {
 
     @Nested
     class whenFilesAreCalled {
-        @Test
-        void givenProperAuthorization_validFilesAreReturned() {
-            headers.put("cookie", "LtpaToken2=randomValidValue");
 
+        @Test
+        void givenProperAuthorization_validFilesAreReturned() throws Exception {
+
+            JwtTokenService service = new JwtTokenService(60);
+            String token = service.generateJwt("USER");
+            headers.put("cookie", "LtpaToken2=randomValidValue;jwtToken=" + token);
             Optional<ResponseEntity<?>> result = underTest.apply("files", "", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
 

@@ -9,17 +9,16 @@
  */
 package org.zowe.apiml.client.services.apars;
 
-import io.jsonwebtoken.Jwts;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.zowe.apiml.client.services.MockZosmfException;
+import org.zowe.apiml.client.services.JwtTokenService;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
-import java.security.Key;
-import java.security.KeyStore;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @SuppressWarnings({"squid:S1452", "squid:S1172"})
 public class FunctionalApar implements Apar {
@@ -31,6 +30,7 @@ public class FunctionalApar implements Apar {
 
     private final List<String> usernames;
     private final List<String> passwords;
+    private final JwtTokenService jwtTokenService = new JwtTokenService(60);
 
     protected FunctionalApar(List<String> usernames, List<String> passwords) {
         this.usernames = usernames;
@@ -45,6 +45,7 @@ public class FunctionalApar implements Apar {
         HttpServletResponse response = (HttpServletResponse) parameters[3];
         Map<String, String> headers = (Map<String, String>) parameters[4];
         ResponseEntity<?> result = null;
+        String token = jwtTokenService.extractToken(headers);
 
         if (calledService.equals("authentication")) {
             switch (calledMethod) {
@@ -56,6 +57,7 @@ public class FunctionalApar implements Apar {
                     break;
                 case "delete":
                     result = handleAuthenticationDelete(headers);
+                    jwtTokenService.invalidateJwtToken(token);
                     break;
                 default:
                     result = handleAuthenticationDefault(headers);
@@ -169,9 +171,14 @@ public class FunctionalApar implements Apar {
         return cookie == null || !cookie.contains(LTPA_TOKEN_NAME);
     }
 
-    protected boolean noJwtCookie(Map<String, String> headers) {
+    protected boolean isValidJwtCookie(Map<String, String> headers) {
         String cookie = headers.get(COOKIE_HEADER);
-        return cookie == null || !cookie.contains(JWT_TOKEN_NAME);
+        if (cookie == null || !cookie.contains(JWT_TOKEN_NAME)) {
+            return false;
+        }
+        String jwtToken = jwtTokenService.extractToken(headers);
+        return jwtTokenService.validateJwtToken(jwtToken);
+
     }
 
     protected void setLtpaToken(HttpServletResponse response) {
@@ -185,18 +192,13 @@ public class FunctionalApar implements Apar {
     }
 
     protected ResponseEntity<?> validJwtResponse(HttpServletResponse response, String username, String keystorePath) {
-        Date current = new Date();
-        final int HOUR = 3600000;
-        Date expiration = new Date(current.getTime() + 8 * HOUR);
+        String jwtToken;
+        try {
+            jwtToken = jwtTokenService.generateJwt(username);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Not able to generate jwt. Message: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-        String jwtToken = Jwts.builder()
-            .setSubject(username)
-            .setIssuedAt(new Date())
-            .setExpiration(expiration)
-            .setIssuer("zOSMF")
-            .setId(UUID.randomUUID().toString())
-            .signWith(getKeyForSigning(keystorePath))
-            .compact();
 
         // Build a valid JWT token
         Cookie jwtCookie = new Cookie(JWT_TOKEN_NAME, jwtToken);
@@ -211,16 +213,4 @@ public class FunctionalApar implements Apar {
         return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 
-    private Key getKeyForSigning(String keystorePath) {
-        try (FileInputStream keystore = new FileInputStream(keystorePath)) {
-            KeyStore ks = KeyStore.getInstance("PKCS12");
-            ks.load(
-                keystore,
-                "password".toCharArray()
-            );
-            return ks.getKey("localhost", "password".toCharArray());
-        } catch (Exception ex) {
-            throw new MockZosmfException(ex);
-        }
-    }
 }

@@ -47,7 +47,7 @@ public class RealJwtTokenEndpoint {
         basicAuthHeader.ifPresent(h -> {
             HttpHeaders resHeaders = new HttpHeaders();
             try {
-                resHeaders.add(HttpHeaders.SET_COOKIE, "jwtToken=" + tokenService.generateJwt("USER"));
+                resHeaders.add(HttpHeaders.SET_COOKIE, "jwtToken=" + tokenService.generateJwt("USER") + "; Path=/; Secure; HttpOnly");
             } catch (GeneralSecurityException e) {
                 log.error("Failed to generate token", e);
             }
@@ -60,7 +60,7 @@ public class RealJwtTokenEndpoint {
     @DeleteMapping(value = "/zosmf/services/authenticate", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> logout(HttpServletResponse response,
                                     @RequestHeader Map<String, String> headers) {
-        tokenService.invalidateJwtToken(extractToken(headers));
+        tokenService.invalidateJwtToken(tokenService.extractToken(headers));
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -75,7 +75,7 @@ public class RealJwtTokenEndpoint {
     @GetMapping(value = "/zosmf/notifications/inbox", produces = "application/json; charset=utf-8")
     public ResponseEntity<?> verify(HttpServletResponse response, @RequestHeader Map<String, String> headers) {
 
-        String token = extractToken(headers);
+        String token = tokenService.extractToken(headers);
 
         if (token.isEmpty()) {
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
@@ -109,9 +109,4 @@ public class RealJwtTokenEndpoint {
             "}", HttpStatus.OK);
     }
 
-    private String extractToken(Map<String, String> headers) {
-
-        return headers.entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("cookie") && e.getValue().startsWith("jwtToken="))
-            .map(Map.Entry::getValue).map(s -> s.replaceFirst("jwtToken=", "")).findFirst().orElse("");
-    }
 }
