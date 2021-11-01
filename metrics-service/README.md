@@ -31,8 +31,6 @@ At this time, the Gateway by default has the Metrics Service disabled. In order 
 
 In local usage, the Metrics Service will run at `https://localhost:10019/metrics-service`.
 
-**Note: At this time, the Gateway and Discovery Service need to have `apiml.security.ssl.verifySslCertificatesOfServices=false` in order for the Metrics Service to register and be accessible.**
-
 ## Configuration properties
 
 The Metrics Service uses the standard `application.yml` structure for configuration.
