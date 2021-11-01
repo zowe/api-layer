@@ -18,10 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.zowe.apiml.client.services.AparBasedService;
-import org.zowe.apiml.client.services.JwtTokenService;
 import org.zowe.apiml.client.services.versions.Versions;
-
-import javax.servlet.http.Cookie;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
