@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
@@ -34,14 +35,16 @@ class SafRestAuthenticationServiceTest {
     private AuthenticationService authenticationService;
     private RestTemplate restTemplate;
 
+    private PassTicketService passTicketService;
     private final String VALID_USERNAME = "am456723";
 
     @BeforeEach
     void setUp() {
         authenticationService = mock(AuthenticationService.class);
         restTemplate = mock(RestTemplate.class);
+        passTicketService = mock(PassTicketService.class);
 
-        underTest = new SafRestAuthenticationService(restTemplate, authenticationService);
+        underTest = new SafRestAuthenticationService(restTemplate, authenticationService, passTicketService);
         underTest.authenticationUrl = "https://localhost:10013/zss/saf/generate";
         underTest.verifyUrl = "https://localhost:10013/zss/saf/verify";
     }
