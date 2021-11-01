@@ -84,6 +84,9 @@ dependencies {
     implementation libraries.spring_security_core
     implementation libraries.spring_security_crypto
     implementation libraries.spring_security_web
+    implementation libraries.tomcat_annotations_api
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
     implementation libraries.xstream
 
     implementation libraries.springFox

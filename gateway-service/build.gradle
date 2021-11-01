@@ -74,7 +74,9 @@ dependencies {
     implementation libraries.swagger3_parser
     implementation libraries.jackson_core
     implementation libraries.tomcat_coyote
+    implementation libraries.tomcat_annotations_api
     implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
     implementation libraries.spring_cloud_starter_eureka
     implementation libraries.spring_cloud_starter_ribbon
     implementation libraries.jetty_websocket_common

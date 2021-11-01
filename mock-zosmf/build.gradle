@@ -54,6 +54,9 @@ dependencies {
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
+    implementation libraries.tomcat_annotations_api
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
 
     implementation libraries.bootstrap
     implementation libraries.jquery
