@@ -4,7 +4,7 @@ The Metrics service provides a UI that displays service metrics.
 At this time only HTTP metrics are displayed, however eventually system metrics (e.g. CPU usage) will be displayed as well. 
 
 The initial implementation of the service uses Netflix Hystrix to provide HTTP metrics, Netflix Turbine to aggregate the metrics, and Netflix Hystrix Dashboard to display them.
-Eventually, the display of metrics will use either a better pre-built UI, or will be a custom implementation. Eventually, HTTP metrics will be able to be supplied by any provider, not just Hystrix/Turbine.
+Eventually, the display of metrics will use either a better pre-built UI (e.g. integrating Grafana or Kibana), or will be a custom implementation. Eventually, HTTP metrics will be able to be supplied by any provider, not just Hystrix/Turbine.
 
 ## Architecture
 
@@ -31,7 +31,7 @@ At this time, the Gateway by default has the Metrics Service disabled. In order 
 
 In local usage, the Metrics Service will run at `https://localhost:10019/metrics-service`.
 
-**Note: At this time, the Gateway and Discovery Service need to have certificate verification disabled in order for the Metrics Service to register and be accessible.**
+**Note: At this time, the Gateway and Discovery Service need to have `apiml.security.ssl.verifySslCertificatesOfServices=false` in order for the Metrics Service to register and be accessible.**
 
 ## Configuration properties
 
