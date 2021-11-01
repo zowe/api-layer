@@ -18,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.net.URI;
@@ -39,11 +42,14 @@ import static org.springframework.util.StringUtils.isEmpty;
 public class SafRestAuthenticationService implements SafIdtProvider {
     private final RestTemplate restTemplate;
     private final AuthenticationService authenticationService;
+    private final PassTicketService passTicketService;
 
     @Value("${apiml.security.saf.urls.authenticate}")
     String authenticationUrl;
     @Value("${apiml.security.saf.urls.verify}")
     String verifyUrl;
+    @Value("${apiml.security.zosmf.applid:IZUDFLT}")
+    protected String zosmfApplId;
 
     @Override
     public Optional<String> generate(String username) {
@@ -62,6 +68,9 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             Authentication authentication = new Authentication();
             authentication.setJwt(jwtToken.get());
             authentication.setUsername(username);
+            String passTicket = passTicketService.generate(username, zosmfApplId);
+            log.debug("Generated passticket: {}", passTicket);
+            authentication.setPass(passTicket);
 
             ResponseEntity<Token> re = restTemplate.postForEntity(URI.create(authenticationUrl), authentication, Token.class);
 
@@ -77,6 +86,9 @@ public class SafRestAuthenticationService implements SafIdtProvider {
             return Optional.of(responseBody.getJwt());
         } catch (HttpClientErrorException.Unauthorized e) {
             return Optional.empty();
+        }
+        catch (IRRPassTicketGenerationException e) {
+        throw new AuthenticationTokenException("Problem with generating PassTicket");
         }
     }
 
@@ -107,5 +119,6 @@ public class SafRestAuthenticationService implements SafIdtProvider {
     public static class Authentication {
         String jwt;
         String username;
+        String pass;
     }
 }

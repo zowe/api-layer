@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.passticket.PassTicketService;
 
 @Configuration
 @RequiredArgsConstructor
@@ -23,8 +24,9 @@ public class SafProviderBeansConfig {
     @ConditionalOnProperty(name = "apiml.security.saf.provider", havingValue = "rest")
     public SafIdtProvider restSafProvider(
         RestTemplate restTemplate,
-        AuthenticationService authenticationService
+        AuthenticationService authenticationService,
+        PassTicketService passTicketService
     ) {
-        return new SafRestAuthenticationService(restTemplate, authenticationService);
+        return new SafRestAuthenticationService(restTemplate, authenticationService, passTicketService);
     }
 }
