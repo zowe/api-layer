@@ -36,10 +36,6 @@ zosmf:
     appliedApars: PH12143
     jwtKeyStorePath: keystore/localhost/localhost.keystore.p12
 
-jwtToken:
-    enableMock: false
-    expirationSeconds: 60
-
 
 ---
 spring:

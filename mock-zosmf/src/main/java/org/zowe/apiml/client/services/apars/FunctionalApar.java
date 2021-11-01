@@ -135,13 +135,13 @@ public class FunctionalApar implements Apar {
     }
 
     protected boolean noAuthentication(Map<String, String> headers) {
-        String basicAuth = headers.get(AUTHORIZATION_HEADER) != null ? headers.get(AUTHORIZATION_HEADER) : headers.get(HttpHeaders.AUTHORIZATION);
+        String basicAuth = getAuthorizationHeader(headers);
         String cookie = headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
         return (basicAuth == null || basicAuth.isEmpty()) && (cookie == null || cookie.isEmpty());
     }
 
     protected boolean containsInvalidOrNoUser(Map<String, String> headers) {
-        String authorization = headers.get(AUTHORIZATION_HEADER) != null ? headers.get(AUTHORIZATION_HEADER) : headers.get(HttpHeaders.AUTHORIZATION);
+        String authorization = getAuthorizationHeader(headers);
         if (authorization == null || authorization.isEmpty()) {
             return true;
         }
@@ -151,8 +151,12 @@ public class FunctionalApar implements Apar {
             (!passwords.contains(piecesOfCredentials[1]) && !piecesOfCredentials[1].contains("PASS_TICKET")));
     }
 
+    private String getAuthorizationHeader(Map<String, String> headers){
+        return headers.get(AUTHORIZATION_HEADER) != null ? headers.get(AUTHORIZATION_HEADER) : headers.get(HttpHeaders.AUTHORIZATION);
+    }
+
     protected String[] getPiecesOfCredentials(Map<String, String> headers) {
-        String authorization = headers.get(AUTHORIZATION_HEADER) != null ? headers.get(AUTHORIZATION_HEADER) : headers.get(HttpHeaders.AUTHORIZATION);
+        String authorization = getAuthorizationHeader(headers);
         if (authorization != null) {
             byte[] decoded = Base64.getDecoder().decode(authorization.replace("Basic ", ""));
             String credentials = new String(decoded);
@@ -168,18 +172,22 @@ public class FunctionalApar implements Apar {
     }
 
     protected boolean noLtpaCookie(Map<String, String> headers) {
-        String cookie = headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
+        String cookie = getAuthCookie(headers);
         return cookie == null || !cookie.contains(LTPA_TOKEN_NAME);
     }
 
     protected boolean isValidJwtCookie(Map<String, String> headers) {
-        String cookie = headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
+        String cookie = getAuthCookie(headers);
         if (cookie == null || !cookie.contains(JWT_TOKEN_NAME)) {
             return false;
         }
         String jwtToken = jwtTokenService.extractToken(headers);
         return jwtTokenService.validateJwtToken(jwtToken);
 
+    }
+
+    private String getAuthCookie(Map<String, String> headers) {
+       return headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
     }
 
     protected void setLtpaToken(HttpServletResponse response) {

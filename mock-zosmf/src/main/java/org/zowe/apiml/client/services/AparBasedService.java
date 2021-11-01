@@ -12,7 +12,6 @@ package org.zowe.apiml.client.services;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,6 @@ import java.util.Optional;
 @Service
 @Slf4j
 @SuppressWarnings("squid:S1452")
-@ConditionalOnProperty(name = "zosmf.enableMock", havingValue = "true", matchIfMissing = true)
 public class AparBasedService {
     private final String baseVersion;
     private final List<String> appliedApars;
