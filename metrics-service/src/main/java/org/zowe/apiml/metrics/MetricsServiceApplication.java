@@ -17,12 +17,14 @@ import org.springframework.context.ApplicationListener;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
+import org.springframework.cloud.netflix.turbine.EnableTurbine;
 
 import javax.annotation.Nonnull;
 
 @SpringBootApplication
 @EnableApiDiscovery
 @EnableApimlLogger
+@EnableTurbine
 @Slf4j
 public class MetricsServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
 

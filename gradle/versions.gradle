@@ -76,6 +76,7 @@ ext {
         spring_cloud_starter_eureka        : "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:${springCloudVersion}",
         spring_cloud_starter_ribbon        : "org.springframework.cloud:spring-cloud-starter-netflix-ribbon:${springCloudVersion}",
         spring_cloud_starter_hystrix       : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix:${springCloudVersion}",
+        spring_cloud_starter_turbine       : "org.springframework.cloud:spring-cloud-starter-netflix-turbine:${springCloudVersion}",
         spring_cloud_commons               : "org.springframework.cloud:spring-cloud-commons:${springCloudVersion}",
 
         spring_security_config             : "org.springframework.security:spring-security-config:${springSecurityVersion}",
