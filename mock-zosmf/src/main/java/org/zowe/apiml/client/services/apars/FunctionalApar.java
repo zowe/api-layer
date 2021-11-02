@@ -151,7 +151,7 @@ public class FunctionalApar implements Apar {
             (!passwords.contains(piecesOfCredentials[1]) && !piecesOfCredentials[1].contains("PASS_TICKET")));
     }
 
-    private String getAuthorizationHeader(Map<String, String> headers){
+    private String getAuthorizationHeader(Map<String, String> headers) {
         return headers.get(AUTHORIZATION_HEADER) != null ? headers.get(AUTHORIZATION_HEADER) : headers.get(HttpHeaders.AUTHORIZATION);
     }
 
@@ -187,7 +187,7 @@ public class FunctionalApar implements Apar {
     }
 
     private String getAuthCookie(Map<String, String> headers) {
-       return headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
+        return headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
     }
 
     protected void setLtpaToken(HttpServletResponse response) {
