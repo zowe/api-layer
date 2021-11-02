@@ -136,7 +136,7 @@ public class FunctionalApar implements Apar {
 
     protected boolean noAuthentication(Map<String, String> headers) {
         String basicAuth = getAuthorizationHeader(headers);
-        String cookie = headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
+        String cookie = getAuthCookie(headers);
         return (basicAuth == null || basicAuth.isEmpty()) && (cookie == null || cookie.isEmpty());
     }
 
@@ -163,7 +163,7 @@ public class FunctionalApar implements Apar {
             return credentials.split(":");
         }
 
-        String cookie = headers.get(COOKIE_HEADER) != null ? headers.get(COOKIE_HEADER) : headers.get(HttpHeaders.COOKIE);
+        String cookie = getAuthCookie(headers);
         if (cookie != null) {
             return cookie.split("=");
         }
