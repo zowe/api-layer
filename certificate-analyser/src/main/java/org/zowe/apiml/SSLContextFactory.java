@@ -16,13 +16,13 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-public class VerifierSSLContext {
+public class SSLContextFactory {
 
     private final Stores stores;
     private SSLContext sslContext;
     private SSLContext sslContextWithKeystore;
 
-    private VerifierSSLContext(Stores stores) {
+    private SSLContextFactory(Stores stores) {
         this.stores = stores;
     }
 
@@ -38,9 +38,9 @@ public class VerifierSSLContext {
         return sslContextWithKeystore;
     }
 
-    static VerifierSSLContext initSSLContextWithKeystore(Stores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+    static SSLContextFactory initSSLContextWithKeystore(Stores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
 
-        VerifierSSLContext conf = new VerifierSSLContext(stores);
+        SSLContextFactory conf = new SSLContextFactory(stores);
         TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustFactory.init(stores.getTrustStore());
         KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -87,9 +87,9 @@ public class VerifierSSLContext {
 
     }
 
-    static VerifierSSLContext initSSLContextWithoutKeystore(Stores stores) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+    static SSLContextFactory initSSLContextWithoutKeystore(Stores stores) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
 
-        VerifierSSLContext conf = new VerifierSSLContext(stores);
+        SSLContextFactory conf = new SSLContextFactory(stores);
         TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustFactory.init(stores.getTrustStore());
         KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());

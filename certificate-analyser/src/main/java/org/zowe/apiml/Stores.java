@@ -18,7 +18,12 @@ import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Stores {
 
@@ -26,6 +31,7 @@ public class Stores {
     private KeyStore keyStore;
     private KeyStore trustStore;
     private final Config conf;
+    private Map<String, Certificate> caList;
 
     public Stores(Config conf) {
         this.conf = conf;
@@ -84,6 +90,39 @@ public class Stores {
                 this.keyStore = readKeyStore(keyStoreIStream, conf.getKeyPasswd().toCharArray(), conf.getKeyStoreType());
             }
         }
+    }
+
+    public Map<String, Certificate> getListOfCertificates() throws KeyStoreException{
+        if(this.caList != null){
+            return this.caList;
+        }
+        this.caList = new HashMap<>();
+        Enumeration<String> aliases = trustStore.aliases();
+
+        while (aliases.hasMoreElements()) {
+            String certAuthAlias = aliases.nextElement();
+            this.caList.put(certAuthAlias, trustStore.getCertificate(certAuthAlias));
+        }
+        return this.caList;
+    }
+
+    public X509Certificate getX509Certificate(String alias) throws KeyStoreException{
+        Certificate[] certificate = getServerCertificateChain(alias);
+        if(certificate.length > 0) {
+            X509Certificate x509Certificate = (X509Certificate) certificate[0];
+            return x509Certificate;
+        }
+        else {
+            System.out.println("Alias \"" + alias + "\" is not available in keystore.");
+            throw new RuntimeException("No x509 certificate available in keystore");
+        }
+    }
+
+    public Certificate[] getServerCertificateChain(String alias) throws KeyStoreException{
+        if (alias == null) {
+            alias = keyStore.aliases().nextElement();
+        }
+        return keyStore.getCertificateChain(alias);
     }
 
     public static KeyStore readKeyStore(InputStream is, char[] pass, String type) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
