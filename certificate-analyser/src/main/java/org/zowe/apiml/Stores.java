@@ -25,9 +25,9 @@ public class Stores {
     public static final String SAFKEYRING = "safkeyring";
     private KeyStore keyStore;
     private KeyStore trustStore;
-    private final ApimlConf conf;
+    private final Config conf;
 
-    public Stores(ApimlConf conf) {
+    public Stores(Config conf) {
         this.conf = conf;
         init();
     }
@@ -100,7 +100,7 @@ public class Stores {
         return trustStore;
     }
 
-    public ApimlConf getConf() {
+    public Config getConf() {
         return conf;
     }
 
