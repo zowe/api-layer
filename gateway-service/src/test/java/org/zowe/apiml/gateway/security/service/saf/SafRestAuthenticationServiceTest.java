@@ -18,13 +18,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -113,6 +116,25 @@ class SafRestAuthenticationServiceTest {
 
                     Optional<String> token = underTest.generate(VALID_USERNAME);
                     assertThat(token.isPresent(), is(false));
+                }
+            }
+
+            @Nested
+            class ThrowException {
+                @Test
+                void givenInvalidPassticket() throws IRRPassTicketGenerationException {
+                    String validSafToken = "validSafToken";
+
+                    ResponseEntity<Object> response = mock(ResponseEntity.class);
+                    when(restTemplate.postForEntity(any(), any(), any())).thenReturn(response);
+                    when(response.getStatusCode()).thenReturn(HttpStatus.CREATED);
+                    SafRestAuthenticationService.Token responseBody = new SafRestAuthenticationService.Token();
+                    responseBody.setJwt(validSafToken);
+                    when(response.getBody()).thenReturn(responseBody);
+
+                    when(passTicketService.generate(any(), any())).thenThrow(new IRRPassTicketGenerationException(1, 2, 3));
+                    assertThrows(AuthenticationTokenException.class,
+                        () -> underTest.generate(VALID_USERNAME), "Exception is not AuthenticationTokenException");
                 }
             }
         }
