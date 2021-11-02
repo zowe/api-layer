@@ -13,8 +13,6 @@ import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
@@ -33,7 +31,7 @@ public class LocalVerifier implements Verifier {
         try {
             String alias = stores.getConf().getKeyAlias();
 
-            Map<String, Certificate> caList  = stores.getListOfCertificates();
+            Map<String, Certificate> caList = stores.getListOfCertificates();
 
             X509Certificate x509Certificate = stores.getX509Certificate(alias);
             for (Map.Entry<String, Certificate> cert : caList.entrySet()) {

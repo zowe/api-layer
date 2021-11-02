@@ -16,7 +16,7 @@ import picocli.CommandLine.Option;
     "Versioned Command 1.0",
     "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
     "OS: ${os.name} ${os.version} ${os.arch}"})
-public class ApimlConf implements Config{
+public class ApimlConf implements Config {
 
     @Option(names = {"-k", "--keystore"}, description = "Path to keystore file or keyring. When using keyring, pass -Djava.protocol.handler.pkgs=com.ibm.crypto.provider in command line.")
     private String keyStore;

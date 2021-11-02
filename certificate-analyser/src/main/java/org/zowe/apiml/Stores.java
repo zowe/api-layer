@@ -92,8 +92,8 @@ public class Stores {
         }
     }
 
-    public Map<String, Certificate> getListOfCertificates() throws KeyStoreException{
-        if(this.caList != null){
+    public Map<String, Certificate> getListOfCertificates() throws KeyStoreException {
+        if (this.caList != null) {
             return this.caList;
         }
         this.caList = new HashMap<>();
@@ -106,19 +106,18 @@ public class Stores {
         return this.caList;
     }
 
-    public X509Certificate getX509Certificate(String alias) throws KeyStoreException{
+    public X509Certificate getX509Certificate(String alias) throws KeyStoreException {
         Certificate[] certificate = getServerCertificateChain(alias);
-        if(certificate.length > 0) {
+        if (certificate.length > 0) {
             X509Certificate x509Certificate = (X509Certificate) certificate[0];
             return x509Certificate;
-        }
-        else {
+        } else {
             System.out.println("Alias \"" + alias + "\" is not available in keystore.");
             throw new RuntimeException("No x509 certificate available in keystore");
         }
     }
 
-    public Certificate[] getServerCertificateChain(String alias) throws KeyStoreException{
+    public Certificate[] getServerCertificateChain(String alias) throws KeyStoreException {
         if (alias == null) {
             alias = keyStore.aliases().nextElement();
         }
