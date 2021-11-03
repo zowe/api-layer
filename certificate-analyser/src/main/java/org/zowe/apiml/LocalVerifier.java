@@ -13,8 +13,6 @@ import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
@@ -32,24 +30,10 @@ public class LocalVerifier implements Verifier {
             "  against truststore: " + stores.getConf().getTrustStore());
         try {
             String alias = stores.getConf().getKeyAlias();
-            Certificate[] certificate;
-            if (alias == null) {
-                alias = stores.getKeyStore().aliases().nextElement();
-            }
-            certificate = stores.getKeyStore().getCertificateChain(alias);
 
-            if (certificate == null) {
-                System.out.println("Alias \"" + alias + "\" is not available in keystore.");
-                return;
-            }
-            Map<String, Certificate> caList = new HashMap<>();
-            Enumeration<String> aliases = stores.getTrustStore().aliases();
+            Map<String, Certificate> caList = stores.getListOfCertificates();
 
-            while (aliases.hasMoreElements()) {
-                String certAuthAlias = aliases.nextElement();
-                caList.put(certAuthAlias, stores.getTrustStore().getCertificate(certAuthAlias));
-            }
-            X509Certificate x509Certificate = (X509Certificate) certificate[0];
+            X509Certificate x509Certificate = stores.getX509Certificate(alias);
             for (Map.Entry<String, Certificate> cert : caList.entrySet()) {
                 try { //NOSONAR
                     x509Certificate.verify(cert.getValue().getPublicKey());

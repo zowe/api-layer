@@ -20,28 +20,28 @@ import java.security.KeyStoreException;
 @SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class LocalHandshake implements Verifier {
 
-    private VerifierSSLContext verifierSslContext;
+    private SSLContextFactory sslContextFactory;
     private HttpClient client;
 
-    public LocalHandshake(VerifierSSLContext verifierSslContext, HttpClient client) {
-        this.verifierSslContext = verifierSslContext;
+    public LocalHandshake(SSLContextFactory sslContextFactory, HttpClient client) {
+        this.sslContextFactory = sslContextFactory;
         this.client = client;
     }
 
     @Override
     public void verify() {
         try { //NOSONAR
-            SSLServerSocket listener = (SSLServerSocket) verifierSslContext.getSslContextWithKeystore().getServerSocketFactory().createServerSocket(0);
+            SSLServerSocket listener = (SSLServerSocket) sslContextFactory.getSslContextWithKeystore().getServerSocketFactory().createServerSocket(0);
 //            start listening on socket to do a SSL handshake
             new SocketServer(listener);
             String address = "https://localhost:" + listener.getLocalPort();
-            String keyAlias = verifierSslContext.getStores().getConf().getKeyAlias();
+            String keyAlias = sslContextFactory.getStores().getConf().getKeyAlias();
             if (keyAlias == null) {
 
-                keyAlias = verifierSslContext.getStores().getKeyStore().aliases().nextElement();
+                keyAlias = sslContextFactory.getStores().getKeyStore().aliases().nextElement();
 
             }
-            String trustStore = verifierSslContext.getStores().getConf().getTrustStore();
+            String trustStore = sslContextFactory.getStores().getConf().getTrustStore();
             try { //NOSONAR
                 System.out.println("Start of the local TLS handshake.");
                 client.executeCall(new URL(address));

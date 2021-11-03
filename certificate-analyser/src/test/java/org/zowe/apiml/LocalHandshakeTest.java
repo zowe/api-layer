@@ -47,7 +47,7 @@ class LocalHandshakeTest {
         CommandLine cmdLine = new CommandLine(conf);
         cmdLine.parseArgs(args);
         Stores stores = new Stores(conf);
-        VerifierSSLContext sslContext = VerifierSSLContext.initSSLContextWithKeystore(stores);
+        SSLContextFactory sslContext = SSLContextFactory.initSSLContextWithKeystore(stores);
         HttpClient client = new HttpClient(sslContext.getSslContextWithKeystore());
         Verifier localHandshake = new LocalHandshake(sslContext, client);
         localHandshake.verify();
@@ -66,7 +66,7 @@ class LocalHandshakeTest {
         CommandLine cmdLine = new CommandLine(conf);
         cmdLine.parseArgs(args);
         Stores stores = new Stores(conf);
-        VerifierSSLContext sslContext = VerifierSSLContext.initSSLContextWithKeystore(stores);
+        SSLContextFactory sslContext = SSLContextFactory.initSSLContextWithKeystore(stores);
         HttpClient client = new HttpClient(sslContext.getSslContextWithKeystore());
         Verifier localHandshake = new LocalHandshake(sslContext, client);
         localHandshake.verify();
