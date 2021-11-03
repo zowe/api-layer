@@ -48,6 +48,7 @@ dependencies {
     compile libraries.jjwt
     compile libraries.jjwt_impl
     compile libraries.jjwt_jackson
+    implementation libraries.nimbusJoseJwt
 
     implementation libraries.springFox
     implementation libraries.spring_boot_starter
