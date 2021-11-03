@@ -109,11 +109,10 @@ public class Stores {
     public X509Certificate getX509Certificate(String alias) throws KeyStoreException {
         Certificate[] certificate = getServerCertificateChain(alias);
         if (certificate.length > 0) {
-            X509Certificate x509Certificate = (X509Certificate) certificate[0];
-            return x509Certificate;
+            return (X509Certificate) certificate[0];
         } else {
             System.out.println("Alias \"" + alias + "\" is not available in keystore.");
-            throw new RuntimeException("No x509 certificate available in keystore");
+            throw new StoresNotInitializeException("No x509 certificate available in keystore");
         }
     }
 
