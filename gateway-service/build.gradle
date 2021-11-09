@@ -115,6 +115,9 @@ dependencies {
     implementation libraries.netty_transport_rxtx
     implementation libraries.netty_transport_sctp
     implementation libraries.netty_transport_udt
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation "commons-io:commons-io:2.7!!"
+
     
 
     implementation libraries.eh_cache

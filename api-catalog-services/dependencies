@@ -1,10 +1,10 @@
 To honour the JVM settings for this build a single-use Daemon process will be forked. See https://docs.gradle.org/6.8.3/userguide/gradle_daemon.html#sec:disabling_the_daemon.
 Daemon will be stopped at the end of the build 
 
-> Task :discovery-service:dependencies
+> Task :api-catalog-services:dependencies
 
 ------------------------------------------------------------
-Project ':discovery-service'
+Project ':api-catalog-services'
 ------------------------------------------------------------
 
 annotationProcessor - Annotation processors and their dependencies for source set 'main'.
@@ -48,21 +48,26 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    |    |    |    |         \--- xmlpull:xmlpull:1.1.3.1
 |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7
 |    |    |    |    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.12.28
-|    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.26 -> 1.7.30
-|    |    |    |    |    |    |    +--- com.google.guava:guava:19.0
-|    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.88.0
-|    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.26 -> 1.7.30
-|    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1 -> 1.19.4
+|    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.13.2
+|    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.30
+|    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 28.2-android
+|    |    |    |    |    |    |    |    +--- com.google.guava:failureaccess:1.0.1
+|    |    |    |    |    |    |    |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
+|    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    |    |    |    +--- org.checkerframework:checker-compat-qual:2.5.5
+|    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.3.4
+|    |    |    |    |    |    |    |    \--- com.google.j2objc:j2objc-annotations:1.3
+|    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.124.0
+|    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1
 |    |    |    |    |    |    |    \--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    |    |    |    +--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4
-|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-core:1.19.4 (*)
+|    |    |    |    |    |    +--- com.sun.jersey:jersey-client:1.19.1
+|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-core:1.19.1 (*)
 |    |    |    |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1
 |    |    |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.1.1 -> 4.5.13
 |    |    |    |    |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.13 -> 4.4.14
 |    |    |    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
 |    |    |    |    |    |    |    |    \--- commons-codec:commons-codec:1.11 -> 1.14
-|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4 (*)
+|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-client:1.19.1 (*)
 |    |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.3 -> 4.5.13 (*)
 |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    |    |    +--- commons-configuration:commons-configuration:1.10
@@ -71,13 +76,13 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    |    |    |    +--- com.google.inject:guice:4.1.0
 |    |    |    |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    |    |    |    +--- aopalliance:aopalliance:1.0
-|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0
+|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 28.2-android (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.10.5 -> 2.11.4
 |    |    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-databind:2.10.5.1 -> 2.11.4
 |    |    |    |    |    |         +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
 |    |    |    |    |    |         \--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    |    +--- com.netflix.servo:servo-core:0.13.2 -> 0.12.28 (*)
+|    |    |    |    |    +--- com.netflix.servo:servo-core:0.13.2 (*)
 |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
@@ -87,13 +92,13 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.31 -> 1.7.30
 |    |    |    |    |    +--- org.yaml:snakeyaml:1.27 -> 1.26
-|    |    |    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    |    |    +--- org.apache.commons:commons-text:1.9
-|    |    |    |    |    |    \--- org.apache.commons:commons-lang3:3.11 -> 3.10
+|    |    |    |    |    |    \--- org.apache.commons:commons-lang3:3.11 -> 3.7
 |    |    |    |    |    +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
 |    |    |    |    |    \--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    |    \--- org.eclipse.jetty.websocket:websocket-client:9.4.43.v20210629
@@ -175,7 +180,7 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    |         +--- org.jboss.logging:jboss-logging:3.3.2.Final -> 3.4.2.Final
 |    |    |    |         \--- com.fasterxml:classmate:1.3.4 -> 1.5.1
 |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    +--- org.codehaus.janino:janino:3.1.6 -> 3.1.4
@@ -201,7 +206,7 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
 |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
 |    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
 |    |    \--- org.bouncycastle:bcpkix-jdk15on:1.69
 |    |         +--- org.bouncycastle:bcprov-jdk15on:1.69
@@ -210,7 +215,11 @@ compileClasspath - Compile classpath for source set 'main'.
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
 |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
-|    \--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    \--- org.apache.commons:commons-lang3:3.7
++--- io.swagger:swagger-models:1.6.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.1 -> 2.11.4
+|    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
+|    \--- io.swagger:swagger-annotations:1.6.2
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
@@ -221,11 +230,6 @@ compileClasspath - Compile classpath for source set 'main'.
 |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
 |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
 |         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
-+--- org.springframework.boot:spring-boot-starter-security:2.3.12.RELEASE
-|    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    +--- org.springframework.security:spring-security-config:5.3.9.RELEASE -> 5.3.11.RELEASE (*)
-|    \--- org.springframework.security:spring-security-web:5.3.9.RELEASE -> 5.3.11.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-actuator-autoconfigure:2.3.12.RELEASE
@@ -235,7 +239,8 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    \--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
 |    \--- io.micrometer:micrometer-core:1.5.14
 |         \--- org.hdrhistogram:HdrHistogram:2.1.12
-+--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE
++--- org.springframework.boot:spring-boot-configuration-processor:2.3.12.RELEASE
++--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:2.2.9.RELEASE
 |    +--- org.springframework.cloud:spring-cloud-starter:2.2.9.RELEASE
 |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    |    +--- org.springframework.cloud:spring-cloud-context:2.2.9.RELEASE
@@ -244,75 +249,21 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    \--- org.springframework.security:spring-security-crypto:5.3.9.RELEASE -> 5.3.11.RELEASE
 |    |    \--- org.springframework.security:spring-security-rsa:1.0.9.RELEASE
 |    |         \--- org.bouncycastle:bcpkix-jdk15on:1.64 -> 1.69 (*)
-|    +--- org.springframework.cloud:spring-cloud-netflix-eureka-server:2.2.9.RELEASE
-|    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
-|    |    +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE (*)
-|    |    +--- org.springframework.boot:spring-boot-starter-freemarker:2.3.12.RELEASE
-|    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    +--- org.freemarker:freemarker:2.3.31
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
-|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    +--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE (*)
-|    |    +--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE
-|    |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
-|    |    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    |    |         \--- org.aspectj:aspectjweaver:1.9.6
-|    |    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
-|    |    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
+|    +--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE
+|    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
+|    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
+|    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
+|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
+|    |         \--- org.aspectj:aspectjweaver:1.9.6
+|    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
+|    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
+|    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
+|    +--- com.netflix.eureka:eureka-core:1.10.14
 |    |    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
-|    |    +--- com.sun.jersey:jersey-servlet:1.19.4
-|    |    |    \--- com.sun.jersey:jersey-server:1.19.4
-|    |    |         \--- com.sun.jersey:jersey-core:1.19.4 (*)
-|    |    +--- com.sun.jersey:jersey-server:1.19.4 (*)
-|    |    +--- com.sun.jersey:jersey-client:1.19.4 (*)
-|    |    +--- com.netflix.eureka:eureka-core:1.10.14
-|    |    |    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277
-|    |    |    |    +--- commons-logging:commons-logging:1.1.3 -> 1.2
-|    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.2 -> 4.5.13 (*)
-|    |    |    |    +--- software.amazon.ion:ion-java:1.0.2
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.6.7.1 -> 2.11.4 (*)
-|    |    |    |    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.6.7 -> 2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    \--- joda-time:joda-time:2.8.1
-|    |    |    +--- com.amazonaws:aws-java-sdk-ec2:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277
-|    |    |    |         \--- com.fasterxml.jackson.core:jackson-databind:2.6.7.1 -> 2.11.4 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-autoscaling:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-sts:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-route53:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.thoughtworks.xstream:xstream:1.4.16 -> 1.4.18 (*)
-|    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.5 -> 2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    +--- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    |    +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.2 -> 2.3.3
-|    |    |    |    |    |    \--- jakarta.activation:jakarta.activation-api:1.2.2
-|    |    |    |    |    \--- jakarta.activation:jakarta.activation-api:1.2.1 -> 1.2.2
-|    |    |    |    +--- org.codehaus.woodstox:stax2-api:4.2.1
-|    |    |    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.3
-|    |    |    |         \--- org.codehaus.woodstox:stax2-api:4.2.1
-|    |    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.1 -> 6.2.3 (*)
-|    |    +--- com.netflix.archaius:archaius-core:0.7.7
-|    |    +--- javax.inject:javax.inject:1
-|    |    \--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.4 (*)
+|    |    +--- com.thoughtworks.xstream:xstream:1.4.16 -> 1.4.18 (*)
+|    |    +--- javax.ws.rs:jsr311-api:1.1.1
+|    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.1
+|    |         \--- org.codehaus.woodstox:stax2-api:4.2.1
 |    +--- org.springframework.cloud:spring-cloud-starter-netflix-archaius:2.2.9.RELEASE
 |    |    +--- org.springframework.cloud:spring-cloud-starter:2.2.9.RELEASE (*)
 |    |    +--- org.springframework.cloud:spring-cloud-netflix-ribbon:2.2.9.RELEASE
@@ -341,16 +292,112 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |         \--- io.projectreactor:reactor-core:3.3.16.RELEASE -> 3.3.17.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-cache:2.3.12.RELEASE
 |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE (*)
+|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
+|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
+|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
+|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
 |    |    \--- com.stoyanr:evictor:1.0.0
-|    +--- com.netflix.ribbon:ribbon-eureka:2.3.0
-|    \--- org.glassfish.jaxb:jaxb-runtime:2.3.4
-|         +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.3 (*)
-|         +--- org.glassfish.jaxb:txw2:2.3.4
-|         \--- com.sun.istack:istack-commons-runtime:3.0.12
-+--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10
-|    +--- org.yaml:snakeyaml:1.23 -> 1.26
-|    \--- com.fasterxml.jackson.core:jackson-core:2.9.10 -> 2.11.4
+|    \--- com.netflix.ribbon:ribbon-eureka:2.3.0
++--- org.springframework.retry:spring-retry:1.2.4.RELEASE
+|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.15.RELEASE (*)
++--- io.swagger:swagger-core:1.5.24
+|    +--- org.apache.commons:commons-lang3:3.2.1 -> 3.7
+|    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.10 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.9.10 -> 2.11.4 (*)
+|    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10 -> 2.11.4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
+|    |    +--- org.yaml:snakeyaml:1.26
+|    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
+|    +--- io.swagger:swagger-models:1.5.24 -> 1.6.2 (*)
+|    +--- com.google.guava:guava:27.0.1-android -> 28.2-android (*)
+|    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
++--- io.swagger.core.v3:swagger-core:2.0.0
+|    +--- org.apache.commons:commons-lang3:3.7
+|    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.4 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.9.4 -> 2.11.4 (*)
+|    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4 -> 2.11.4 (*)
+|    +--- io.swagger.core.v3:swagger-annotations:2.0.0
+|    +--- io.swagger.core.v3:swagger-models:2.0.0 -> 2.1.7
+|    |    \--- com.fasterxml.jackson.core:jackson-annotations:2.12.1 -> 2.11.4
+|    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
++--- io.swagger.parser.v3:swagger-parser-v3:2.0.17
+|    +--- io.swagger.core.v3:swagger-models:2.1.1 -> 2.1.7 (*)
+|    +--- io.swagger.core.v3:swagger-core:2.1.1 -> 2.0.0 (*)
+|    +--- io.swagger.parser.v3:swagger-parser-core:2.0.17 -> 2.0.25
+|    |    \--- io.swagger.core.v3:swagger-models:2.1.7 (*)
+|    +--- commons-io:commons-io:2.4 -> 2.7
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.1 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.10.1 -> 2.11.4 (*)
+|    \--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.10.1 -> 2.11.4 (*)
++--- com.fasterxml.jackson.core:jackson-core:2.11.4
++--- org.apache.commons:commons-lang3:3.7
++--- org.springframework.boot:spring-boot-starter-thymeleaf:2.3.12.RELEASE
+|    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
+|    +--- org.thymeleaf:thymeleaf-spring5:3.0.12.RELEASE
+|    |    +--- org.thymeleaf:thymeleaf:3.0.12.RELEASE
+|    |    |    +--- org.attoparser:attoparser:2.0.5.RELEASE
+|    |    |    +--- org.unbescape:unbescape:1.1.6.RELEASE
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    \--- org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE
+|         +--- org.thymeleaf:thymeleaf:3.0.11.RELEASE -> 3.0.12.RELEASE (*)
+|         \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
++--- org.apache.velocity:velocity-engine-core:2.0
+|    +--- org.apache.commons:commons-lang3:3.5 -> 3.7
+|    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
++--- org.openapitools.openapidiff:openapi-diff-core:2.0.0-beta.10
+|    +--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    +--- io.swagger.parser.v3:swagger-parser:2.0.25
+|    |    +--- io.swagger.parser.v3:swagger-parser-v2-converter:2.0.25
+|    |    |    +--- io.swagger:swagger-core:1.6.2 -> 1.5.24 (*)
+|    |    |    +--- io.swagger:swagger-parser:1.0.54
+|    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
+|    |    |    |    +--- org.slf4j:slf4j-ext:1.7.28 -> 1.7.30
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.30
+|    |    |    |    +--- org.slf4j:slf4j-api:1.7.28 -> 1.7.30
+|    |    |    |    \--- commons-io:commons-io:2.4 -> 2.7
+|    |    |    +--- io.swagger:swagger-compat-spec-parser:1.0.54
+|    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
+|    |    |    |    +--- io.swagger:swagger-parser:1.0.54 (*)
+|    |    |    |    +--- com.github.java-json-tools:json-schema-validator:2.2.14
+|    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
+|    |    |    |    |    +--- com.github.java-json-tools:json-schema-core:1.2.14
+|    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils:2.0
+|    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
+|    |    |    |    |    |    +--- com.github.java-json-tools:uri-template:0.10
+|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 28.2-android (*)
+|    |    |    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2
+|    |    |    |    |    |    |    |    +--- com.github.java-json-tools:btf:1.3
+|    |    |    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |    +--- org.mozilla:rhino:1.7.7.2
+|    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    +--- com.sun.mail:mailapi:1.6.2
+|    |    |    |    |    +--- joda-time:joda-time:2.10.5
+|    |    |    |    |    +--- com.googlecode.libphonenumber:libphonenumber:8.11.1
+|    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    \--- net.sf.jopt-simple:jopt-simple:5.0.4
+|    |    |    |    +--- com.github.java-json-tools:json-patch:1.13
+|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
+|    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0
+|    |    |    |    \--- org.apache.httpcomponents:httpclient:4.5.2 -> 4.5.13 (*)
+|    |    |    +--- io.swagger.core.v3:swagger-models:2.1.7 (*)
+|    |    |    +--- io.swagger.parser.v3:swagger-parser-core:2.0.25 (*)
+|    |    |    \--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    |    +--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    |    \--- commons-io:commons-io:2.6 -> 2.7
+|    +--- io.swagger.parser.v3:swagger-parser-v2-converter:2.0.25 (*)
+|    +--- com.j2html:j2html:1.4.0
+|    +--- org.apache.commons:commons-collections4:4.4
+|    \--- org.slf4j:slf4j-api:1.7.30
++--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 +--- org.eclipse.jetty:jetty-client:9.4.43.v20210629 (*)
 +--- org.eclipse.jetty:jetty-http:9.4.43.v20210629 (*)
 +--- org.eclipse.jetty:jetty-io:9.4.43.v20210629 (*)
@@ -367,7 +414,50 @@ compileClasspath - Compile classpath for source set 'main'.
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (*)
 +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
 +--- commons-io:commons-io:2.7
-\--- com.netflix.servo:servo-core:0.12.28 (*)
+\--- io.springfox:springfox-swagger2:2.9.2
+     +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
+     +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
+     +--- io.springfox:springfox-spi:2.9.2
+     |    \--- io.springfox:springfox-core:2.9.2
+     |         +--- net.bytebuddy:byte-buddy:1.8.12 -> 1.10.22
+     |         +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |         +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     |         +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     |         +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE
+     |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
+     |         \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE
+     |              +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     |              \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
+     +--- io.springfox:springfox-schema:2.9.2
+     |    +--- io.springfox:springfox-core:2.9.2 (*)
+     |    \--- io.springfox:springfox-spi:2.9.2 (*)
+     +--- io.springfox:springfox-swagger-common:2.9.2
+     |    +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
+     |    +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
+     |    +--- io.springfox:springfox-spi:2.9.2 (*)
+     |    +--- io.springfox:springfox-schema:2.9.2 (*)
+     |    +--- io.springfox:springfox-spring-web:2.9.2
+     |    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     |    |    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+     |    |    \--- io.springfox:springfox-spi:2.9.2 (*)
+     |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     |    \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+     +--- io.springfox:springfox-spring-web:2.9.2 (*)
+     +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+     \--- org.mapstruct:mapstruct:1.2.0.Final
 
 compileOnly - Compile only dependencies for source set 'main'. (n)
 \--- org.projectlombok:lombok:1.18.20 (n)
@@ -380,12 +470,22 @@ No dependencies
 
 implementation - Implementation only dependencies for source set 'main'. (n)
 +--- project security-service-client-spring (n)
++--- io.swagger:swagger-models:1.6.2 (n)
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (n)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE (n)
-+--- org.springframework.boot:spring-boot-starter-security:2.3.12.RELEASE (n)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE (n)
-+--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE (n)
-+--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10 (n)
++--- org.springframework.boot:spring-boot-configuration-processor:2.3.12.RELEASE (n)
++--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:2.2.9.RELEASE (n)
++--- org.springframework.retry:spring-retry:1.2.4.RELEASE (n)
++--- io.swagger:swagger-core:1.5.24 (n)
++--- io.swagger.core.v3:swagger-core:2.0.0 (n)
++--- io.swagger.parser.v3:swagger-parser-v3:2.0.17 (n)
++--- com.fasterxml.jackson.core:jackson-core:2.11.4 (n)
++--- org.apache.commons:commons-lang3:3.7 (n)
++--- org.springframework.boot:spring-boot-starter-thymeleaf:2.3.12.RELEASE (n)
++--- org.apache.velocity:velocity-engine-core:2.0 (n)
++--- org.openapitools.openapidiff:openapi-diff-core:2.0.0-beta.10 (n)
++--- org.apache.httpcomponents:httpclient:4.5.13 (n)
 +--- org.eclipse.jetty:jetty-client:9.4.43.v20210629 (n)
 +--- org.eclipse.jetty:jetty-http:9.4.43.v20210629 (n)
 +--- org.eclipse.jetty:jetty-io:9.4.43.v20210629 (n)
@@ -402,7 +502,7 @@ implementation - Implementation only dependencies for source set 'main'. (n)
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (n)
 +--- com.thoughtworks.xstream:xstream:1.4.18 (n)
 +--- commons-io:commons-io:2.7 (n)
-\--- com.netflix.servo:servo-core:0.12.28 (n)
+\--- io.springfox:springfox-swagger2:2.9.2 (n)
 
 jacocoAgent - The Jacoco agent to use to get coverage data.
 \--- org.jacoco:org.jacoco.agent:0.8.4
@@ -437,26 +537,31 @@ productionRuntimeClasspath
 |    |    |    |    |    |    |    +--- com.netflix.netflix-commons:netflix-infix:0.3.0
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
 |    |    |    |    |    |    |    |    +--- commons-jxpath:commons-jxpath:1.3
-|    |    |    |    |    |    |    |    +--- joda-time:joda-time:2.3 -> 2.8.1
+|    |    |    |    |    |    |    |    +--- joda-time:joda-time:2.3 -> 2.10.5
 |    |    |    |    |    |    |    |    +--- org.antlr:antlr-runtime:3.4
 |    |    |    |    |    |    |    |    |    +--- org.antlr:stringtemplate:3.2.1
 |    |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
 |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
-|    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.1 -> 3.0.2
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 19.0
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 28.2-android
+|    |    |    |    |    |    |    |    |    +--- com.google.guava:failureaccess:1.0.1
+|    |    |    |    |    |    |    |    |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
+|    |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    |    |    |    |    +--- org.checkerframework:checker-compat-qual:2.5.5
+|    |    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.3.4
+|    |    |    |    |    |    |    |    |    \--- com.google.j2objc:j2objc-annotations:1.3
 |    |    |    |    |    |    |    |    \--- com.google.code.gson:gson:2.1 -> 2.8.7
-|    |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.5.3 -> 0.12.28
-|    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.26 -> 1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0
-|    |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.88.0
-|    |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.26 -> 1.7.30
+|    |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.5.3 -> 0.13.2
+|    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.30
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.124.0
+|    |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.3.3 -> 0.7.7
 |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.1 -> 3.0.2
 |    |    |    |    |    |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10
 |    |    |    |    |    |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    |    |    |    |    |    \--- commons-logging:commons-logging:1.1.1 -> 1.2
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 19.0
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-databind:2.4.3 -> 2.11.4
@@ -468,29 +573,29 @@ productionRuntimeClasspath
 |    |    |    |    |    |    |         \--- xmlpull:xmlpull:1.1.3.1
 |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    |    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.12.28 (*)
-|    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1 -> 1.19.4
+|    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.13.2 (*)
+|    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1
 |    |    |    |    |    |    |    \--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    |    |    |    +--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4
-|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-core:1.19.4 (*)
+|    |    |    |    |    |    +--- com.sun.jersey:jersey-client:1.19.1
+|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-core:1.19.1 (*)
 |    |    |    |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1
 |    |    |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.1.1 -> 4.5.13
 |    |    |    |    |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.13 -> 4.4.14
 |    |    |    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
 |    |    |    |    |    |    |    |    \--- commons-codec:commons-codec:1.11 -> 1.14
-|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4 (*)
+|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-client:1.19.1 (*)
 |    |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.3 -> 4.5.13 (*)
 |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    |    |    +--- commons-configuration:commons-configuration:1.10 (*)
 |    |    |    |    |    |    +--- com.google.inject:guice:4.1.0
 |    |    |    |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    |    |    |    +--- aopalliance:aopalliance:1.0
-|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0
+|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 28.2-android (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.10.5.1 -> 2.11.4 (*)
 |    |    |    |    |    |    \--- org.codehaus.jettison:jettison:1.4.0
-|    |    |    |    |    +--- com.netflix.servo:servo-core:0.13.2 -> 0.12.28 (*)
+|    |    |    |    |    +--- com.netflix.servo:servo-core:0.13.2 (*)
 |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
@@ -500,13 +605,13 @@ productionRuntimeClasspath
 |    |    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.31 -> 1.7.30
 |    |    |    |    |    +--- org.yaml:snakeyaml:1.27 -> 1.26
-|    |    |    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    |    |    +--- org.apache.commons:commons-text:1.9
-|    |    |    |    |    |    \--- org.apache.commons:commons-lang3:3.11 -> 3.10
+|    |    |    |    |    |    \--- org.apache.commons:commons-lang3:3.11 -> 3.7
 |    |    |    |    |    +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
 |    |    |    |    |    \--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    |    \--- org.eclipse.jetty.websocket:websocket-client:9.4.43.v20210629
@@ -588,7 +693,7 @@ productionRuntimeClasspath
 |    |    |    |         +--- org.jboss.logging:jboss-logging:3.3.2.Final -> 3.4.2.Final
 |    |    |    |         \--- com.fasterxml:classmate:1.3.4 -> 1.5.1
 |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    +--- org.codehaus.janino:janino:3.1.6 -> 3.1.4
@@ -616,7 +721,7 @@ productionRuntimeClasspath
 |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
 |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
 |    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
 |    |    \--- org.bouncycastle:bcpkix-jdk15on:1.69
 |    |         +--- org.bouncycastle:bcprov-jdk15on:1.69
@@ -625,7 +730,11 @@ productionRuntimeClasspath
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
 |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
-|    \--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    \--- org.apache.commons:commons-lang3:3.7
++--- io.swagger:swagger-models:1.6.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.1 -> 2.11.4
+|    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
+|    \--- io.swagger:swagger-annotations:1.6.2
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
@@ -636,11 +745,6 @@ productionRuntimeClasspath
 |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
 |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
 |         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
-+--- org.springframework.boot:spring-boot-starter-security:2.3.12.RELEASE
-|    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    +--- org.springframework.security:spring-security-config:5.3.9.RELEASE -> 5.3.11.RELEASE (*)
-|    \--- org.springframework.security:spring-security-web:5.3.9.RELEASE -> 5.3.11.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-actuator-autoconfigure:2.3.12.RELEASE
@@ -653,7 +757,8 @@ productionRuntimeClasspath
 |    \--- io.micrometer:micrometer-core:1.5.14
 |         +--- org.hdrhistogram:HdrHistogram:2.1.12
 |         \--- org.latencyutils:LatencyUtils:2.0.3
-+--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE
++--- org.springframework.boot:spring-boot-configuration-processor:2.3.12.RELEASE
++--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:2.2.9.RELEASE
 |    +--- org.springframework.cloud:spring-cloud-starter:2.2.9.RELEASE
 |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    |    +--- org.springframework.cloud:spring-cloud-context:2.2.9.RELEASE
@@ -661,75 +766,21 @@ productionRuntimeClasspath
 |    |    +--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE (*)
 |    |    \--- org.springframework.security:spring-security-rsa:1.0.9.RELEASE
 |    |         \--- org.bouncycastle:bcpkix-jdk15on:1.64 -> 1.69 (*)
-|    +--- org.springframework.cloud:spring-cloud-netflix-eureka-server:2.2.9.RELEASE
-|    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
-|    |    +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE (*)
-|    |    +--- org.springframework.boot:spring-boot-starter-freemarker:2.3.12.RELEASE
-|    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    +--- org.freemarker:freemarker:2.3.31
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
-|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    +--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE (*)
-|    |    +--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE
-|    |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
-|    |    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    |    |         \--- org.aspectj:aspectjweaver:1.9.6
-|    |    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
-|    |    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
+|    +--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE
+|    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
+|    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
+|    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
+|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
+|    |         \--- org.aspectj:aspectjweaver:1.9.6
+|    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
+|    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
+|    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
+|    +--- com.netflix.eureka:eureka-core:1.10.14
 |    |    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
-|    |    +--- com.sun.jersey:jersey-servlet:1.19.4
-|    |    |    \--- com.sun.jersey:jersey-server:1.19.4
-|    |    |         \--- com.sun.jersey:jersey-core:1.19.4 (*)
-|    |    +--- com.sun.jersey:jersey-server:1.19.4 (*)
-|    |    +--- com.sun.jersey:jersey-client:1.19.4 (*)
-|    |    +--- com.netflix.eureka:eureka-core:1.10.14
-|    |    |    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277
-|    |    |    |    +--- commons-logging:commons-logging:1.1.3 -> 1.2
-|    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.2 -> 4.5.13 (*)
-|    |    |    |    +--- software.amazon.ion:ion-java:1.0.2
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.6.7.1 -> 2.11.4 (*)
-|    |    |    |    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.6.7 -> 2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    \--- joda-time:joda-time:2.8.1
-|    |    |    +--- com.amazonaws:aws-java-sdk-ec2:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277
-|    |    |    |         \--- com.fasterxml.jackson.core:jackson-databind:2.6.7.1 -> 2.11.4 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-autoscaling:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-sts:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-route53:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.thoughtworks.xstream:xstream:1.4.16 -> 1.4.18 (*)
-|    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.5 -> 2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    +--- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    |    +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.2 -> 2.3.3
-|    |    |    |    |    |    \--- jakarta.activation:jakarta.activation-api:1.2.2
-|    |    |    |    |    \--- jakarta.activation:jakarta.activation-api:1.2.1 -> 1.2.2
-|    |    |    |    +--- org.codehaus.woodstox:stax2-api:4.2.1
-|    |    |    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.3
-|    |    |    |         \--- org.codehaus.woodstox:stax2-api:4.2.1
-|    |    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.1 -> 6.2.3 (*)
-|    |    +--- com.netflix.archaius:archaius-core:0.7.7 (*)
-|    |    +--- javax.inject:javax.inject:1
-|    |    \--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.4 (*)
+|    |    +--- com.thoughtworks.xstream:xstream:1.4.16 -> 1.4.18 (*)
+|    |    +--- javax.ws.rs:jsr311-api:1.1.1
+|    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.1
+|    |         \--- org.codehaus.woodstox:stax2-api:4.2.1
 |    +--- org.springframework.cloud:spring-cloud-starter-netflix-archaius:2.2.9.RELEASE
 |    |    +--- org.springframework.cloud:spring-cloud-starter:2.2.9.RELEASE (*)
 |    |    +--- org.springframework.cloud:spring-cloud-netflix-ribbon:2.2.9.RELEASE
@@ -744,7 +795,7 @@ productionRuntimeClasspath
 |    |    +--- com.netflix.ribbon:ribbon:2.3.0
 |    |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0
 |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0 -> 19.0
+|    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
 |    |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
 |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
@@ -756,8 +807,8 @@ productionRuntimeClasspath
 |    |    |    |    |    |    \--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
 |    |    |    |    |    +--- io.reactivex:rxjava:1.0.9 -> 1.3.8
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.12.28 (*)
-|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
+|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1
 |    |    |    |    |         \--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
@@ -771,10 +822,10 @@ productionRuntimeClasspath
 |    |    |    |    +--- io.reactivex:rxnetty-servo:0.4.9
 |    |    |    |    |    +--- io.reactivex:rxjava:1.0.10 -> 1.3.8
 |    |    |    |    |    +--- io.reactivex:rxnetty:0.4.9 (*)
-|    |    |    |    |    \--- com.netflix.servo:servo-core:0.7.5 -> 0.12.28 (*)
+|    |    |    |    |    \--- com.netflix.servo:servo-core:0.7.5 -> 0.13.2 (*)
 |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    +--- com.netflix.hystrix:hystrix-core:1.4.3
 |    |    |    |    +--- com.netflix.archaius:archaius-core:0.4.1 -> 0.7.7 (*)
@@ -784,7 +835,7 @@ productionRuntimeClasspath
 |    |    |    +--- io.reactivex:rxjava:1.0.10 -> 1.3.8
 |    |    |    +--- io.reactivex:rxnetty:0.4.9 (*)
 |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
 |    |    +--- com.netflix.ribbon:ribbon-httpclient:2.3.0
@@ -792,11 +843,11 @@ productionRuntimeClasspath
 |    |    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
 |    |    |    +--- commons-collections:commons-collections:3.2.2
 |    |    |    +--- org.apache.httpcomponents:httpclient:4.2.1 -> 4.5.13 (*)
-|    |    |    +--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4 (*)
+|    |    |    +--- com.sun.jersey:jersey-client:1.19.1 (*)
 |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1 (*)
 |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.12.28 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1 (*)
 |    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
@@ -813,22 +864,123 @@ productionRuntimeClasspath
 |    |    |         \--- io.projectreactor:reactor-core:3.3.16.RELEASE -> 3.3.17.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-cache:2.3.12.RELEASE
 |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE (*)
+|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
+|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
+|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
+|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
 |    |    \--- com.stoyanr:evictor:1.0.0
-|    +--- com.netflix.ribbon:ribbon-eureka:2.3.0
-|    |    +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
-|    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
-|    |    +--- com.netflix.eureka:eureka-client:1.7.2 -> 1.10.17 (*)
-|    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
-|    \--- org.glassfish.jaxb:jaxb-runtime:2.3.4
-|         +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.3 (*)
-|         +--- org.glassfish.jaxb:txw2:2.3.4
-|         +--- com.sun.istack:istack-commons-runtime:3.0.12
-|         \--- com.sun.activation:jakarta.activation:1.2.2
-+--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10
-|    +--- org.yaml:snakeyaml:1.23 -> 1.26
-|    \--- com.fasterxml.jackson.core:jackson-core:2.9.10 -> 2.11.4
+|    \--- com.netflix.ribbon:ribbon-eureka:2.3.0
+|         +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
+|         +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
+|         +--- com.netflix.eureka:eureka-client:1.7.2 -> 1.10.17 (*)
+|         +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
+|         \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
++--- org.springframework.retry:spring-retry:1.2.4.RELEASE
+|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.15.RELEASE (*)
++--- io.swagger:swagger-core:1.5.24
+|    +--- org.apache.commons:commons-lang3:3.2.1 -> 3.7
+|    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.10 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.9.10 -> 2.11.4 (*)
+|    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10 -> 2.11.4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
+|    |    +--- org.yaml:snakeyaml:1.26
+|    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
+|    +--- io.swagger:swagger-models:1.5.24 -> 1.6.2 (*)
+|    +--- com.google.guava:guava:27.0.1-android -> 28.2-android (*)
+|    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
++--- io.swagger.core.v3:swagger-core:2.0.0
+|    +--- org.apache.commons:commons-lang3:3.7
+|    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.4 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.9.4 -> 2.11.4 (*)
+|    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4 -> 2.11.4 (*)
+|    +--- io.swagger.core.v3:swagger-annotations:2.0.0
+|    +--- io.swagger.core.v3:swagger-models:2.0.0 -> 2.1.7
+|    |    \--- com.fasterxml.jackson.core:jackson-annotations:2.12.1 -> 2.11.4
+|    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
++--- io.swagger.parser.v3:swagger-parser-v3:2.0.17
+|    +--- io.swagger.core.v3:swagger-models:2.1.1 -> 2.1.7 (*)
+|    +--- io.swagger.core.v3:swagger-core:2.1.1 -> 2.0.0 (*)
+|    +--- io.swagger.parser.v3:swagger-parser-core:2.0.17 -> 2.0.25
+|    |    \--- io.swagger.core.v3:swagger-models:2.1.7 (*)
+|    +--- commons-io:commons-io:2.4 -> 2.7
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.1 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.10.1 -> 2.11.4 (*)
+|    \--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.10.1 -> 2.11.4 (*)
++--- com.fasterxml.jackson.core:jackson-core:2.11.4
++--- org.apache.commons:commons-lang3:3.7
++--- org.springframework.boot:spring-boot-starter-thymeleaf:2.3.12.RELEASE
+|    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
+|    +--- org.thymeleaf:thymeleaf-spring5:3.0.12.RELEASE
+|    |    +--- org.thymeleaf:thymeleaf:3.0.12.RELEASE
+|    |    |    +--- org.attoparser:attoparser:2.0.5.RELEASE
+|    |    |    +--- org.unbescape:unbescape:1.1.6.RELEASE
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    \--- org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE
+|         +--- org.thymeleaf:thymeleaf:3.0.11.RELEASE -> 3.0.12.RELEASE (*)
+|         \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
++--- org.apache.velocity:velocity-engine-core:2.0
+|    +--- org.apache.commons:commons-lang3:3.5 -> 3.7
+|    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
++--- org.openapitools.openapidiff:openapi-diff-core:2.0.0-beta.10
+|    +--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    +--- io.swagger.parser.v3:swagger-parser:2.0.25
+|    |    +--- io.swagger.parser.v3:swagger-parser-v2-converter:2.0.25
+|    |    |    +--- io.swagger:swagger-core:1.6.2 -> 1.5.24 (*)
+|    |    |    +--- io.swagger:swagger-parser:1.0.54
+|    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
+|    |    |    |    +--- org.slf4j:slf4j-ext:1.7.28 -> 1.7.30
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.30
+|    |    |    |    +--- org.slf4j:slf4j-api:1.7.28 -> 1.7.30
+|    |    |    |    \--- commons-io:commons-io:2.4 -> 2.7
+|    |    |    +--- io.swagger:swagger-compat-spec-parser:1.0.54
+|    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
+|    |    |    |    +--- io.swagger:swagger-parser:1.0.54 (*)
+|    |    |    |    +--- com.github.java-json-tools:json-schema-validator:2.2.14
+|    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
+|    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0
+|    |    |    |    |    |         +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |         +--- com.github.java-json-tools:msg-simple:1.2
+|    |    |    |    |    |         |    +--- com.github.java-json-tools:btf:1.3
+|    |    |    |    |    |         |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |         |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |         \--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    +--- com.github.java-json-tools:json-schema-core:1.2.14
+|    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils:2.0 (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0 (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:uri-template:0.10
+|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 28.2-android (*)
+|    |    |    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
+|    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |    +--- org.mozilla:rhino:1.7.7.2
+|    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    +--- com.sun.mail:mailapi:1.6.2
+|    |    |    |    |    +--- joda-time:joda-time:2.10.5
+|    |    |    |    |    +--- com.googlecode.libphonenumber:libphonenumber:8.11.1
+|    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    \--- net.sf.jopt-simple:jopt-simple:5.0.4
+|    |    |    |    +--- com.github.java-json-tools:json-patch:1.13
+|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
+|    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0 (*)
+|    |    |    |    \--- org.apache.httpcomponents:httpclient:4.5.2 -> 4.5.13 (*)
+|    |    |    +--- io.swagger.core.v3:swagger-models:2.1.7 (*)
+|    |    |    +--- io.swagger.parser.v3:swagger-parser-core:2.0.25 (*)
+|    |    |    \--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    |    +--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    |    \--- commons-io:commons-io:2.6 -> 2.7
+|    +--- io.swagger.parser.v3:swagger-parser-v2-converter:2.0.25 (*)
+|    +--- com.j2html:j2html:1.4.0
+|    +--- org.apache.commons:commons-collections4:4.4
+|    \--- org.slf4j:slf4j-api:1.7.30
++--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 +--- org.eclipse.jetty:jetty-client:9.4.43.v20210629 (*)
 +--- org.eclipse.jetty:jetty-http:9.4.43.v20210629 (*)
 +--- org.eclipse.jetty:jetty-io:9.4.43.v20210629 (*)
@@ -845,7 +997,50 @@ productionRuntimeClasspath
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (*)
 +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
 +--- commons-io:commons-io:2.7
-\--- com.netflix.servo:servo-core:0.12.28 (*)
+\--- io.springfox:springfox-swagger2:2.9.2
+     +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
+     +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
+     +--- io.springfox:springfox-spi:2.9.2
+     |    \--- io.springfox:springfox-core:2.9.2
+     |         +--- net.bytebuddy:byte-buddy:1.8.12 -> 1.10.22
+     |         +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |         +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     |         +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     |         +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE
+     |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
+     |         \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE
+     |              +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     |              \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
+     +--- io.springfox:springfox-schema:2.9.2
+     |    +--- io.springfox:springfox-core:2.9.2 (*)
+     |    \--- io.springfox:springfox-spi:2.9.2 (*)
+     +--- io.springfox:springfox-swagger-common:2.9.2
+     |    +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
+     |    +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
+     |    +--- io.springfox:springfox-spi:2.9.2 (*)
+     |    +--- io.springfox:springfox-schema:2.9.2 (*)
+     |    +--- io.springfox:springfox-spring-web:2.9.2
+     |    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     |    |    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+     |    |    \--- io.springfox:springfox-spi:2.9.2 (*)
+     |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     |    \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+     +--- io.springfox:springfox-spring-web:2.9.2 (*)
+     +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+     \--- org.mapstruct:mapstruct:1.2.0.Final
 
 runtimeClasspath - Runtime classpath of source set 'main'.
 +--- project :security-service-client-spring
@@ -859,26 +1054,31 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    |    |    +--- com.netflix.netflix-commons:netflix-infix:0.3.0
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
 |    |    |    |    |    |    |    |    +--- commons-jxpath:commons-jxpath:1.3
-|    |    |    |    |    |    |    |    +--- joda-time:joda-time:2.3 -> 2.8.1
+|    |    |    |    |    |    |    |    +--- joda-time:joda-time:2.3 -> 2.10.5
 |    |    |    |    |    |    |    |    +--- org.antlr:antlr-runtime:3.4
 |    |    |    |    |    |    |    |    |    +--- org.antlr:stringtemplate:3.2.1
 |    |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
 |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
-|    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.1 -> 3.0.2
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 19.0
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 28.2-android
+|    |    |    |    |    |    |    |    |    +--- com.google.guava:failureaccess:1.0.1
+|    |    |    |    |    |    |    |    |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
+|    |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    |    |    |    |    +--- org.checkerframework:checker-compat-qual:2.5.5
+|    |    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.3.4
+|    |    |    |    |    |    |    |    |    \--- com.google.j2objc:j2objc-annotations:1.3
 |    |    |    |    |    |    |    |    \--- com.google.code.gson:gson:2.1 -> 2.8.7
-|    |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.5.3 -> 0.12.28
-|    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.26 -> 1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0
-|    |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.88.0
-|    |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.26 -> 1.7.30
+|    |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.5.3 -> 0.13.2
+|    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.30
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.124.0
+|    |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.3.3 -> 0.7.7
 |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.1 -> 3.0.2
 |    |    |    |    |    |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10
 |    |    |    |    |    |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    |    |    |    |    |    \--- commons-logging:commons-logging:1.1.1 -> 1.2
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 19.0
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-databind:2.4.3 -> 2.11.4
@@ -890,29 +1090,29 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    |    |         \--- xmlpull:xmlpull:1.1.3.1
 |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    |    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.12.28 (*)
-|    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1 -> 1.19.4
+|    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.13.2 (*)
+|    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1
 |    |    |    |    |    |    |    \--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    |    |    |    +--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4
-|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-core:1.19.4 (*)
+|    |    |    |    |    |    +--- com.sun.jersey:jersey-client:1.19.1
+|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-core:1.19.1 (*)
 |    |    |    |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1
 |    |    |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.1.1 -> 4.5.13
 |    |    |    |    |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.13 -> 4.4.14
 |    |    |    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
 |    |    |    |    |    |    |    |    \--- commons-codec:commons-codec:1.11 -> 1.14
-|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4 (*)
+|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-client:1.19.1 (*)
 |    |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.3 -> 4.5.13 (*)
 |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    |    |    +--- commons-configuration:commons-configuration:1.10 (*)
 |    |    |    |    |    |    +--- com.google.inject:guice:4.1.0
 |    |    |    |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    |    |    |    +--- aopalliance:aopalliance:1.0
-|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0
+|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 28.2-android (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.10.5.1 -> 2.11.4 (*)
 |    |    |    |    |    |    \--- org.codehaus.jettison:jettison:1.4.0
-|    |    |    |    |    +--- com.netflix.servo:servo-core:0.13.2 -> 0.12.28 (*)
+|    |    |    |    |    +--- com.netflix.servo:servo-core:0.13.2 (*)
 |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
@@ -922,13 +1122,13 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.31 -> 1.7.30
 |    |    |    |    |    +--- org.yaml:snakeyaml:1.27 -> 1.26
-|    |    |    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    |    |    +--- org.apache.commons:commons-text:1.9
-|    |    |    |    |    |    \--- org.apache.commons:commons-lang3:3.11 -> 3.10
+|    |    |    |    |    |    \--- org.apache.commons:commons-lang3:3.11 -> 3.7
 |    |    |    |    |    +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
 |    |    |    |    |    \--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    |    \--- org.eclipse.jetty.websocket:websocket-client:9.4.43.v20210629
@@ -1010,7 +1210,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |         +--- org.jboss.logging:jboss-logging:3.3.2.Final -> 3.4.2.Final
 |    |    |    |         \--- com.fasterxml:classmate:1.3.4 -> 1.5.1
 |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    +--- org.codehaus.janino:janino:3.1.6 -> 3.1.4
@@ -1038,7 +1238,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
 |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
 |    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
 |    |    \--- org.bouncycastle:bcpkix-jdk15on:1.69
 |    |         +--- org.bouncycastle:bcprov-jdk15on:1.69
@@ -1047,7 +1247,11 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
 |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
-|    \--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    \--- org.apache.commons:commons-lang3:3.7
++--- io.swagger:swagger-models:1.6.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.1 -> 2.11.4
+|    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
+|    \--- io.swagger:swagger-annotations:1.6.2
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
@@ -1058,11 +1262,6 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
 |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
 |         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
-+--- org.springframework.boot:spring-boot-starter-security:2.3.12.RELEASE
-|    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    +--- org.springframework.security:spring-security-config:5.3.9.RELEASE -> 5.3.11.RELEASE (*)
-|    \--- org.springframework.security:spring-security-web:5.3.9.RELEASE -> 5.3.11.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-actuator-autoconfigure:2.3.12.RELEASE
@@ -1075,7 +1274,8 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    \--- io.micrometer:micrometer-core:1.5.14
 |         +--- org.hdrhistogram:HdrHistogram:2.1.12
 |         \--- org.latencyutils:LatencyUtils:2.0.3
-+--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE
++--- org.springframework.boot:spring-boot-configuration-processor:2.3.12.RELEASE
++--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:2.2.9.RELEASE
 |    +--- org.springframework.cloud:spring-cloud-starter:2.2.9.RELEASE
 |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    |    +--- org.springframework.cloud:spring-cloud-context:2.2.9.RELEASE
@@ -1083,75 +1283,21 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    +--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE (*)
 |    |    \--- org.springframework.security:spring-security-rsa:1.0.9.RELEASE
 |    |         \--- org.bouncycastle:bcpkix-jdk15on:1.64 -> 1.69 (*)
-|    +--- org.springframework.cloud:spring-cloud-netflix-eureka-server:2.2.9.RELEASE
-|    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
-|    |    +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE (*)
-|    |    +--- org.springframework.boot:spring-boot-starter-freemarker:2.3.12.RELEASE
-|    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    +--- org.freemarker:freemarker:2.3.31
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
-|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    +--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE (*)
-|    |    +--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE
-|    |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
-|    |    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    |    |         \--- org.aspectj:aspectjweaver:1.9.6
-|    |    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
-|    |    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
+|    +--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE
+|    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
+|    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
+|    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
+|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
+|    |         \--- org.aspectj:aspectjweaver:1.9.6
+|    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
+|    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
+|    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
+|    +--- com.netflix.eureka:eureka-core:1.10.14
 |    |    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
-|    |    +--- com.sun.jersey:jersey-servlet:1.19.4
-|    |    |    \--- com.sun.jersey:jersey-server:1.19.4
-|    |    |         \--- com.sun.jersey:jersey-core:1.19.4 (*)
-|    |    +--- com.sun.jersey:jersey-server:1.19.4 (*)
-|    |    +--- com.sun.jersey:jersey-client:1.19.4 (*)
-|    |    +--- com.netflix.eureka:eureka-core:1.10.14
-|    |    |    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277
-|    |    |    |    +--- commons-logging:commons-logging:1.1.3 -> 1.2
-|    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.2 -> 4.5.13 (*)
-|    |    |    |    +--- software.amazon.ion:ion-java:1.0.2
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.6.7.1 -> 2.11.4 (*)
-|    |    |    |    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.6.7 -> 2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    \--- joda-time:joda-time:2.8.1
-|    |    |    +--- com.amazonaws:aws-java-sdk-ec2:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277
-|    |    |    |         \--- com.fasterxml.jackson.core:jackson-databind:2.6.7.1 -> 2.11.4 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-autoscaling:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-sts:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-route53:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.thoughtworks.xstream:xstream:1.4.16 -> 1.4.18 (*)
-|    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.5 -> 2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    +--- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    |    +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.2 -> 2.3.3
-|    |    |    |    |    |    \--- jakarta.activation:jakarta.activation-api:1.2.2
-|    |    |    |    |    \--- jakarta.activation:jakarta.activation-api:1.2.1 -> 1.2.2
-|    |    |    |    +--- org.codehaus.woodstox:stax2-api:4.2.1
-|    |    |    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.3
-|    |    |    |         \--- org.codehaus.woodstox:stax2-api:4.2.1
-|    |    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.1 -> 6.2.3 (*)
-|    |    +--- com.netflix.archaius:archaius-core:0.7.7 (*)
-|    |    +--- javax.inject:javax.inject:1
-|    |    \--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.4 (*)
+|    |    +--- com.thoughtworks.xstream:xstream:1.4.16 -> 1.4.18 (*)
+|    |    +--- javax.ws.rs:jsr311-api:1.1.1
+|    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.1
+|    |         \--- org.codehaus.woodstox:stax2-api:4.2.1
 |    +--- org.springframework.cloud:spring-cloud-starter-netflix-archaius:2.2.9.RELEASE
 |    |    +--- org.springframework.cloud:spring-cloud-starter:2.2.9.RELEASE (*)
 |    |    +--- org.springframework.cloud:spring-cloud-netflix-ribbon:2.2.9.RELEASE
@@ -1166,7 +1312,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    +--- com.netflix.ribbon:ribbon:2.3.0
 |    |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0
 |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0 -> 19.0
+|    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
 |    |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
 |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
@@ -1178,8 +1324,8 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    |    \--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
 |    |    |    |    |    +--- io.reactivex:rxjava:1.0.9 -> 1.3.8
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.12.28 (*)
-|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
+|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1
 |    |    |    |    |         \--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
@@ -1193,10 +1339,10 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    +--- io.reactivex:rxnetty-servo:0.4.9
 |    |    |    |    |    +--- io.reactivex:rxjava:1.0.10 -> 1.3.8
 |    |    |    |    |    +--- io.reactivex:rxnetty:0.4.9 (*)
-|    |    |    |    |    \--- com.netflix.servo:servo-core:0.7.5 -> 0.12.28 (*)
+|    |    |    |    |    \--- com.netflix.servo:servo-core:0.7.5 -> 0.13.2 (*)
 |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    +--- com.netflix.hystrix:hystrix-core:1.4.3
 |    |    |    |    +--- com.netflix.archaius:archaius-core:0.4.1 -> 0.7.7 (*)
@@ -1206,7 +1352,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    +--- io.reactivex:rxjava:1.0.10 -> 1.3.8
 |    |    |    +--- io.reactivex:rxnetty:0.4.9 (*)
 |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
 |    |    +--- com.netflix.ribbon:ribbon-httpclient:2.3.0
@@ -1214,11 +1360,11 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
 |    |    |    +--- commons-collections:commons-collections:3.2.2
 |    |    |    +--- org.apache.httpcomponents:httpclient:4.2.1 -> 4.5.13 (*)
-|    |    |    +--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4 (*)
+|    |    |    +--- com.sun.jersey:jersey-client:1.19.1 (*)
 |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1 (*)
 |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.12.28 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1 (*)
 |    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
@@ -1235,22 +1381,123 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |         \--- io.projectreactor:reactor-core:3.3.16.RELEASE -> 3.3.17.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-cache:2.3.12.RELEASE
 |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE (*)
+|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
+|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
+|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
+|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
 |    |    \--- com.stoyanr:evictor:1.0.0
-|    +--- com.netflix.ribbon:ribbon-eureka:2.3.0
-|    |    +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
-|    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
-|    |    +--- com.netflix.eureka:eureka-client:1.7.2 -> 1.10.17 (*)
-|    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
-|    \--- org.glassfish.jaxb:jaxb-runtime:2.3.4
-|         +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.3 (*)
-|         +--- org.glassfish.jaxb:txw2:2.3.4
-|         +--- com.sun.istack:istack-commons-runtime:3.0.12
-|         \--- com.sun.activation:jakarta.activation:1.2.2
-+--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10
-|    +--- org.yaml:snakeyaml:1.23 -> 1.26
-|    \--- com.fasterxml.jackson.core:jackson-core:2.9.10 -> 2.11.4
+|    \--- com.netflix.ribbon:ribbon-eureka:2.3.0
+|         +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
+|         +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
+|         +--- com.netflix.eureka:eureka-client:1.7.2 -> 1.10.17 (*)
+|         +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
+|         \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
++--- org.springframework.retry:spring-retry:1.2.4.RELEASE
+|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.15.RELEASE (*)
++--- io.swagger:swagger-core:1.5.24
+|    +--- org.apache.commons:commons-lang3:3.2.1 -> 3.7
+|    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.10 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.9.10 -> 2.11.4 (*)
+|    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10 -> 2.11.4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
+|    |    +--- org.yaml:snakeyaml:1.26
+|    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
+|    +--- io.swagger:swagger-models:1.5.24 -> 1.6.2 (*)
+|    +--- com.google.guava:guava:27.0.1-android -> 28.2-android (*)
+|    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
++--- io.swagger.core.v3:swagger-core:2.0.0
+|    +--- org.apache.commons:commons-lang3:3.7
+|    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.4 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.9.4 -> 2.11.4 (*)
+|    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4 -> 2.11.4 (*)
+|    +--- io.swagger.core.v3:swagger-annotations:2.0.0
+|    +--- io.swagger.core.v3:swagger-models:2.0.0 -> 2.1.7
+|    |    \--- com.fasterxml.jackson.core:jackson-annotations:2.12.1 -> 2.11.4
+|    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
++--- io.swagger.parser.v3:swagger-parser-v3:2.0.17
+|    +--- io.swagger.core.v3:swagger-models:2.1.1 -> 2.1.7 (*)
+|    +--- io.swagger.core.v3:swagger-core:2.1.1 -> 2.0.0 (*)
+|    +--- io.swagger.parser.v3:swagger-parser-core:2.0.17 -> 2.0.25
+|    |    \--- io.swagger.core.v3:swagger-models:2.1.7 (*)
+|    +--- commons-io:commons-io:2.4 -> 2.7
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.1 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.10.1 -> 2.11.4 (*)
+|    \--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.10.1 -> 2.11.4 (*)
++--- com.fasterxml.jackson.core:jackson-core:2.11.4
++--- org.apache.commons:commons-lang3:3.7
++--- org.springframework.boot:spring-boot-starter-thymeleaf:2.3.12.RELEASE
+|    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
+|    +--- org.thymeleaf:thymeleaf-spring5:3.0.12.RELEASE
+|    |    +--- org.thymeleaf:thymeleaf:3.0.12.RELEASE
+|    |    |    +--- org.attoparser:attoparser:2.0.5.RELEASE
+|    |    |    +--- org.unbescape:unbescape:1.1.6.RELEASE
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    \--- org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE
+|         +--- org.thymeleaf:thymeleaf:3.0.11.RELEASE -> 3.0.12.RELEASE (*)
+|         \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
++--- org.apache.velocity:velocity-engine-core:2.0
+|    +--- org.apache.commons:commons-lang3:3.5 -> 3.7
+|    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
++--- org.openapitools.openapidiff:openapi-diff-core:2.0.0-beta.10
+|    +--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    +--- io.swagger.parser.v3:swagger-parser:2.0.25
+|    |    +--- io.swagger.parser.v3:swagger-parser-v2-converter:2.0.25
+|    |    |    +--- io.swagger:swagger-core:1.6.2 -> 1.5.24 (*)
+|    |    |    +--- io.swagger:swagger-parser:1.0.54
+|    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
+|    |    |    |    +--- org.slf4j:slf4j-ext:1.7.28 -> 1.7.30
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.30
+|    |    |    |    +--- org.slf4j:slf4j-api:1.7.28 -> 1.7.30
+|    |    |    |    \--- commons-io:commons-io:2.4 -> 2.7
+|    |    |    +--- io.swagger:swagger-compat-spec-parser:1.0.54
+|    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
+|    |    |    |    +--- io.swagger:swagger-parser:1.0.54 (*)
+|    |    |    |    +--- com.github.java-json-tools:json-schema-validator:2.2.14
+|    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
+|    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0
+|    |    |    |    |    |         +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |         +--- com.github.java-json-tools:msg-simple:1.2
+|    |    |    |    |    |         |    +--- com.github.java-json-tools:btf:1.3
+|    |    |    |    |    |         |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |         |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |         \--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    +--- com.github.java-json-tools:json-schema-core:1.2.14
+|    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils:2.0 (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0 (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:uri-template:0.10
+|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 28.2-android (*)
+|    |    |    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
+|    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |    +--- org.mozilla:rhino:1.7.7.2
+|    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    +--- com.sun.mail:mailapi:1.6.2
+|    |    |    |    |    +--- joda-time:joda-time:2.10.5
+|    |    |    |    |    +--- com.googlecode.libphonenumber:libphonenumber:8.11.1
+|    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    \--- net.sf.jopt-simple:jopt-simple:5.0.4
+|    |    |    |    +--- com.github.java-json-tools:json-patch:1.13
+|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
+|    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0 (*)
+|    |    |    |    \--- org.apache.httpcomponents:httpclient:4.5.2 -> 4.5.13 (*)
+|    |    |    +--- io.swagger.core.v3:swagger-models:2.1.7 (*)
+|    |    |    +--- io.swagger.parser.v3:swagger-parser-core:2.0.25 (*)
+|    |    |    \--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    |    +--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    |    \--- commons-io:commons-io:2.6 -> 2.7
+|    +--- io.swagger.parser.v3:swagger-parser-v2-converter:2.0.25 (*)
+|    +--- com.j2html:j2html:1.4.0
+|    +--- org.apache.commons:commons-collections4:4.4
+|    \--- org.slf4j:slf4j-api:1.7.30
++--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 +--- org.eclipse.jetty:jetty-client:9.4.43.v20210629 (*)
 +--- org.eclipse.jetty:jetty-http:9.4.43.v20210629 (*)
 +--- org.eclipse.jetty:jetty-io:9.4.43.v20210629 (*)
@@ -1267,7 +1514,50 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (*)
 +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
 +--- commons-io:commons-io:2.7
-\--- com.netflix.servo:servo-core:0.12.28 (*)
+\--- io.springfox:springfox-swagger2:2.9.2
+     +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
+     +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
+     +--- io.springfox:springfox-spi:2.9.2
+     |    \--- io.springfox:springfox-core:2.9.2
+     |         +--- net.bytebuddy:byte-buddy:1.8.12 -> 1.10.22
+     |         +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |         +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     |         +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     |         +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE
+     |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
+     |         \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE
+     |              +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     |              \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
+     +--- io.springfox:springfox-schema:2.9.2
+     |    +--- io.springfox:springfox-core:2.9.2 (*)
+     |    \--- io.springfox:springfox-spi:2.9.2 (*)
+     +--- io.springfox:springfox-swagger-common:2.9.2
+     |    +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
+     |    +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
+     |    +--- io.springfox:springfox-spi:2.9.2 (*)
+     |    +--- io.springfox:springfox-schema:2.9.2 (*)
+     |    +--- io.springfox:springfox-spring-web:2.9.2
+     |    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     |    |    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+     |    |    \--- io.springfox:springfox-spi:2.9.2 (*)
+     |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     |    \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+     +--- io.springfox:springfox-spring-web:2.9.2 (*)
+     +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+     +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+     +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+     +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+     \--- org.mapstruct:mapstruct:1.2.0.Final
 
 runtimeElements - Elements of runtime for main. (n)
 No dependencies
@@ -1291,21 +1581,26 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    |    |    |    |         \--- xmlpull:xmlpull:1.1.3.1
 |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7
 |    |    |    |    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.12.28
-|    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.26 -> 1.7.30
-|    |    |    |    |    |    |    +--- com.google.guava:guava:19.0
-|    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.88.0
-|    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.26 -> 1.7.30
-|    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1 -> 1.19.4
+|    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.13.2
+|    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.30
+|    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 28.2-android
+|    |    |    |    |    |    |    |    +--- com.google.guava:failureaccess:1.0.1
+|    |    |    |    |    |    |    |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
+|    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    |    |    |    +--- org.checkerframework:checker-compat-qual:2.5.5
+|    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.3.4
+|    |    |    |    |    |    |    |    \--- com.google.j2objc:j2objc-annotations:1.3
+|    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.124.0
+|    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1
 |    |    |    |    |    |    |    \--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    |    |    |    +--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4
-|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-core:1.19.4 (*)
+|    |    |    |    |    |    +--- com.sun.jersey:jersey-client:1.19.1
+|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-core:1.19.1 (*)
 |    |    |    |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1
 |    |    |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.1.1 -> 4.5.13
 |    |    |    |    |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.13 -> 4.4.14
 |    |    |    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
 |    |    |    |    |    |    |    |    \--- commons-codec:commons-codec:1.11 -> 1.14
-|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4 (*)
+|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-client:1.19.1 (*)
 |    |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.3 -> 4.5.13 (*)
 |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    |    |    +--- commons-configuration:commons-configuration:1.10
@@ -1314,13 +1609,13 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    |    |    |    +--- com.google.inject:guice:4.1.0
 |    |    |    |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    |    |    |    +--- aopalliance:aopalliance:1.0
-|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0
+|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 28.2-android (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.10.5 -> 2.11.4
 |    |    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-databind:2.10.5.1 -> 2.11.4
 |    |    |    |    |    |         +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
 |    |    |    |    |    |         \--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    |    +--- com.netflix.servo:servo-core:0.13.2 -> 0.12.28 (*)
+|    |    |    |    |    +--- com.netflix.servo:servo-core:0.13.2 (*)
 |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
@@ -1330,13 +1625,13 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.31 -> 1.7.30
 |    |    |    |    |    +--- org.yaml:snakeyaml:1.27 -> 1.26
-|    |    |    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    |    |    +--- org.apache.commons:commons-text:1.9
-|    |    |    |    |    |    \--- org.apache.commons:commons-lang3:3.11 -> 3.10
+|    |    |    |    |    |    \--- org.apache.commons:commons-lang3:3.11 -> 3.7
 |    |    |    |    |    +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
 |    |    |    |    |    \--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    |    \--- org.eclipse.jetty.websocket:websocket-client:9.4.43.v20210629
@@ -1418,7 +1713,7 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    |         +--- org.jboss.logging:jboss-logging:3.3.2.Final -> 3.4.2.Final
 |    |    |    |         \--- com.fasterxml:classmate:1.3.4 -> 1.5.1
 |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    +--- org.codehaus.janino:janino:3.1.6 -> 3.1.4
@@ -1444,7 +1739,7 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
 |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
 |    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
 |    |    \--- org.bouncycastle:bcpkix-jdk15on:1.69
 |    |         +--- org.bouncycastle:bcprov-jdk15on:1.69
@@ -1453,7 +1748,11 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
 |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
-|    \--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    \--- org.apache.commons:commons-lang3:3.7
++--- io.swagger:swagger-models:1.6.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.1 -> 2.11.4
+|    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
+|    \--- io.swagger:swagger-annotations:1.6.2
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
@@ -1464,11 +1763,6 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
 |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
 |         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
-+--- org.springframework.boot:spring-boot-starter-security:2.3.12.RELEASE
-|    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    +--- org.springframework.security:spring-security-config:5.3.9.RELEASE -> 5.3.11.RELEASE (*)
-|    \--- org.springframework.security:spring-security-web:5.3.9.RELEASE -> 5.3.11.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-actuator-autoconfigure:2.3.12.RELEASE
@@ -1478,7 +1772,8 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    \--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
 |    \--- io.micrometer:micrometer-core:1.5.14
 |         \--- org.hdrhistogram:HdrHistogram:2.1.12
-+--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE
++--- org.springframework.boot:spring-boot-configuration-processor:2.3.12.RELEASE
++--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:2.2.9.RELEASE
 |    +--- org.springframework.cloud:spring-cloud-starter:2.2.9.RELEASE
 |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    |    +--- org.springframework.cloud:spring-cloud-context:2.2.9.RELEASE
@@ -1487,75 +1782,21 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    \--- org.springframework.security:spring-security-crypto:5.3.9.RELEASE -> 5.3.11.RELEASE
 |    |    \--- org.springframework.security:spring-security-rsa:1.0.9.RELEASE
 |    |         \--- org.bouncycastle:bcpkix-jdk15on:1.64 -> 1.69 (*)
-|    +--- org.springframework.cloud:spring-cloud-netflix-eureka-server:2.2.9.RELEASE
-|    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
-|    |    +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE (*)
-|    |    +--- org.springframework.boot:spring-boot-starter-freemarker:2.3.12.RELEASE
-|    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    +--- org.freemarker:freemarker:2.3.31
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
-|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    +--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE (*)
-|    |    +--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE
-|    |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
-|    |    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    |    |         \--- org.aspectj:aspectjweaver:1.9.6
-|    |    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
-|    |    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
+|    +--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE
+|    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
+|    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
+|    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
+|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
+|    |         \--- org.aspectj:aspectjweaver:1.9.6
+|    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
+|    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
+|    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
+|    +--- com.netflix.eureka:eureka-core:1.10.14
 |    |    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
-|    |    +--- com.sun.jersey:jersey-servlet:1.19.4
-|    |    |    \--- com.sun.jersey:jersey-server:1.19.4
-|    |    |         \--- com.sun.jersey:jersey-core:1.19.4 (*)
-|    |    +--- com.sun.jersey:jersey-server:1.19.4 (*)
-|    |    +--- com.sun.jersey:jersey-client:1.19.4 (*)
-|    |    +--- com.netflix.eureka:eureka-core:1.10.14
-|    |    |    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277
-|    |    |    |    +--- commons-logging:commons-logging:1.1.3 -> 1.2
-|    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.2 -> 4.5.13 (*)
-|    |    |    |    +--- software.amazon.ion:ion-java:1.0.2
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.6.7.1 -> 2.11.4 (*)
-|    |    |    |    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.6.7 -> 2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    \--- joda-time:joda-time:2.8.1
-|    |    |    +--- com.amazonaws:aws-java-sdk-ec2:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277
-|    |    |    |         \--- com.fasterxml.jackson.core:jackson-databind:2.6.7.1 -> 2.11.4 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-autoscaling:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-sts:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-route53:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.thoughtworks.xstream:xstream:1.4.16 -> 1.4.18 (*)
-|    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.5 -> 2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    +--- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    |    +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.2 -> 2.3.3
-|    |    |    |    |    |    \--- jakarta.activation:jakarta.activation-api:1.2.2
-|    |    |    |    |    \--- jakarta.activation:jakarta.activation-api:1.2.1 -> 1.2.2
-|    |    |    |    +--- org.codehaus.woodstox:stax2-api:4.2.1
-|    |    |    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.3
-|    |    |    |         \--- org.codehaus.woodstox:stax2-api:4.2.1
-|    |    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.1 -> 6.2.3 (*)
-|    |    +--- com.netflix.archaius:archaius-core:0.7.7
-|    |    +--- javax.inject:javax.inject:1
-|    |    \--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.4 (*)
+|    |    +--- com.thoughtworks.xstream:xstream:1.4.16 -> 1.4.18 (*)
+|    |    +--- javax.ws.rs:jsr311-api:1.1.1
+|    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.1
+|    |         \--- org.codehaus.woodstox:stax2-api:4.2.1
 |    +--- org.springframework.cloud:spring-cloud-starter-netflix-archaius:2.2.9.RELEASE
 |    |    +--- org.springframework.cloud:spring-cloud-starter:2.2.9.RELEASE (*)
 |    |    +--- org.springframework.cloud:spring-cloud-netflix-ribbon:2.2.9.RELEASE
@@ -1584,16 +1825,112 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |         \--- io.projectreactor:reactor-core:3.3.16.RELEASE -> 3.3.17.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-cache:2.3.12.RELEASE
 |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE (*)
+|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
+|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
+|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
+|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
 |    |    \--- com.stoyanr:evictor:1.0.0
-|    +--- com.netflix.ribbon:ribbon-eureka:2.3.0
-|    \--- org.glassfish.jaxb:jaxb-runtime:2.3.4
-|         +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.3 (*)
-|         +--- org.glassfish.jaxb:txw2:2.3.4
-|         \--- com.sun.istack:istack-commons-runtime:3.0.12
-+--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10
-|    +--- org.yaml:snakeyaml:1.23 -> 1.26
-|    \--- com.fasterxml.jackson.core:jackson-core:2.9.10 -> 2.11.4
+|    \--- com.netflix.ribbon:ribbon-eureka:2.3.0
++--- org.springframework.retry:spring-retry:1.2.4.RELEASE
+|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.15.RELEASE (*)
++--- io.swagger:swagger-core:1.5.24
+|    +--- org.apache.commons:commons-lang3:3.2.1 -> 3.7
+|    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.10 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.9.10 -> 2.11.4 (*)
+|    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10 -> 2.11.4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
+|    |    +--- org.yaml:snakeyaml:1.26
+|    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
+|    +--- io.swagger:swagger-models:1.5.24 -> 1.6.2 (*)
+|    +--- com.google.guava:guava:27.0.1-android -> 28.2-android (*)
+|    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
++--- io.swagger.core.v3:swagger-core:2.0.0
+|    +--- org.apache.commons:commons-lang3:3.7
+|    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.4 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.9.4 -> 2.11.4 (*)
+|    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4 -> 2.11.4 (*)
+|    +--- io.swagger.core.v3:swagger-annotations:2.0.0
+|    +--- io.swagger.core.v3:swagger-models:2.0.0 -> 2.1.7
+|    |    \--- com.fasterxml.jackson.core:jackson-annotations:2.12.1 -> 2.11.4
+|    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
++--- io.swagger.parser.v3:swagger-parser-v3:2.0.17
+|    +--- io.swagger.core.v3:swagger-models:2.1.1 -> 2.1.7 (*)
+|    +--- io.swagger.core.v3:swagger-core:2.1.1 -> 2.0.0 (*)
+|    +--- io.swagger.parser.v3:swagger-parser-core:2.0.17 -> 2.0.25
+|    |    \--- io.swagger.core.v3:swagger-models:2.1.7 (*)
+|    +--- commons-io:commons-io:2.4 -> 2.7
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.1 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.10.1 -> 2.11.4 (*)
+|    \--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.10.1 -> 2.11.4 (*)
++--- com.fasterxml.jackson.core:jackson-core:2.11.4
++--- org.apache.commons:commons-lang3:3.7
++--- org.springframework.boot:spring-boot-starter-thymeleaf:2.3.12.RELEASE
+|    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
+|    +--- org.thymeleaf:thymeleaf-spring5:3.0.12.RELEASE
+|    |    +--- org.thymeleaf:thymeleaf:3.0.12.RELEASE
+|    |    |    +--- org.attoparser:attoparser:2.0.5.RELEASE
+|    |    |    +--- org.unbescape:unbescape:1.1.6.RELEASE
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    \--- org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE
+|         +--- org.thymeleaf:thymeleaf:3.0.11.RELEASE -> 3.0.12.RELEASE (*)
+|         \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
++--- org.apache.velocity:velocity-engine-core:2.0
+|    +--- org.apache.commons:commons-lang3:3.5 -> 3.7
+|    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
++--- org.openapitools.openapidiff:openapi-diff-core:2.0.0-beta.10
+|    +--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    +--- io.swagger.parser.v3:swagger-parser:2.0.25
+|    |    +--- io.swagger.parser.v3:swagger-parser-v2-converter:2.0.25
+|    |    |    +--- io.swagger:swagger-core:1.6.2 -> 1.5.24 (*)
+|    |    |    +--- io.swagger:swagger-parser:1.0.54
+|    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
+|    |    |    |    +--- org.slf4j:slf4j-ext:1.7.28 -> 1.7.30
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.30
+|    |    |    |    +--- org.slf4j:slf4j-api:1.7.28 -> 1.7.30
+|    |    |    |    \--- commons-io:commons-io:2.4 -> 2.7
+|    |    |    +--- io.swagger:swagger-compat-spec-parser:1.0.54
+|    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
+|    |    |    |    +--- io.swagger:swagger-parser:1.0.54 (*)
+|    |    |    |    +--- com.github.java-json-tools:json-schema-validator:2.2.14
+|    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
+|    |    |    |    |    +--- com.github.java-json-tools:json-schema-core:1.2.14
+|    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils:2.0
+|    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
+|    |    |    |    |    |    +--- com.github.java-json-tools:uri-template:0.10
+|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 28.2-android (*)
+|    |    |    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2
+|    |    |    |    |    |    |    |    +--- com.github.java-json-tools:btf:1.3
+|    |    |    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |    +--- org.mozilla:rhino:1.7.7.2
+|    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    +--- com.sun.mail:mailapi:1.6.2
+|    |    |    |    |    +--- joda-time:joda-time:2.10.5
+|    |    |    |    |    +--- com.googlecode.libphonenumber:libphonenumber:8.11.1
+|    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    \--- net.sf.jopt-simple:jopt-simple:5.0.4
+|    |    |    |    +--- com.github.java-json-tools:json-patch:1.13
+|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
+|    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0
+|    |    |    |    \--- org.apache.httpcomponents:httpclient:4.5.2 -> 4.5.13 (*)
+|    |    |    +--- io.swagger.core.v3:swagger-models:2.1.7 (*)
+|    |    |    +--- io.swagger.parser.v3:swagger-parser-core:2.0.25 (*)
+|    |    |    \--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    |    +--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    |    \--- commons-io:commons-io:2.6 -> 2.7
+|    +--- io.swagger.parser.v3:swagger-parser-v2-converter:2.0.25 (*)
+|    +--- com.j2html:j2html:1.4.0
+|    +--- org.apache.commons:commons-collections4:4.4
+|    \--- org.slf4j:slf4j-api:1.7.30
++--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 +--- org.eclipse.jetty:jetty-client:9.4.43.v20210629 (*)
 +--- org.eclipse.jetty:jetty-http:9.4.43.v20210629 (*)
 +--- org.eclipse.jetty:jetty-io:9.4.43.v20210629 (*)
@@ -1610,7 +1947,85 @@ testCompileClasspath - Compile classpath for source set 'test'.
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (*)
 +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
 +--- commons-io:commons-io:2.7
-+--- com.netflix.servo:servo-core:0.12.28 (*)
++--- io.springfox:springfox-swagger2:2.9.2
+|    +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
+|    +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
+|    +--- io.springfox:springfox-spi:2.9.2
+|    |    \--- io.springfox:springfox-core:2.9.2
+|    |         +--- net.bytebuddy:byte-buddy:1.8.12 -> 1.10.22
+|    |         +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |         +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+|    |         +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |         +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE
+|    |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+|    |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+|    |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+|    |         |    \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
+|    |         \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE
+|    |              +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+|    |              \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
+|    +--- io.springfox:springfox-schema:2.9.2
+|    |    +--- io.springfox:springfox-core:2.9.2 (*)
+|    |    \--- io.springfox:springfox-spi:2.9.2 (*)
+|    +--- io.springfox:springfox-swagger-common:2.9.2
+|    |    +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
+|    |    +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
+|    |    +--- io.springfox:springfox-spi:2.9.2 (*)
+|    |    +--- io.springfox:springfox-schema:2.9.2 (*)
+|    |    +--- io.springfox:springfox-spring-web:2.9.2
+|    |    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+|    |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+|    |    |    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+|    |    |    \--- io.springfox:springfox-spi:2.9.2 (*)
+|    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+|    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+|    |    \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+|    +--- io.springfox:springfox-spring-web:2.9.2 (*)
+|    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+|    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+|    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+|    \--- org.mapstruct:mapstruct:1.2.0.Final
++--- io.rest-assured:rest-assured:3.0.7
+|    +--- org.codehaus.groovy:groovy:2.4.12 -> 2.5.14
+|    +--- org.codehaus.groovy:groovy-xml:2.4.12 -> 2.5.14
+|    |    \--- org.codehaus.groovy:groovy:2.5.14
+|    +--- org.apache.httpcomponents:httpclient:4.5.3 -> 4.5.13 (*)
+|    +--- org.apache.httpcomponents:httpmime:4.5.1 -> 4.5.13
+|    |    \--- org.apache.httpcomponents:httpclient:4.5.13 (*)
+|    +--- org.hamcrest:hamcrest-core:1.3 -> 2.2
+|    |    \--- org.hamcrest:hamcrest:2.2
+|    +--- org.hamcrest:hamcrest-library:1.3 -> 2.2
+|    |    \--- org.hamcrest:hamcrest-core:2.2 (*)
+|    +--- org.ccil.cowan.tagsoup:tagsoup:1.2.1
+|    +--- io.rest-assured:json-path:3.0.7 -> 3.3.0
+|    |    +--- org.codehaus.groovy:groovy-json:2.4.15 -> 2.5.14
+|    |    |    \--- org.codehaus.groovy:groovy:2.5.14
+|    |    +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
+|    |    \--- io.rest-assured:rest-assured-common:3.3.0
+|    |         +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
+|    |         \--- org.apache.commons:commons-lang3:3.4 -> 3.7
+|    \--- io.rest-assured:xml-path:3.0.7 -> 3.3.0
+|         +--- org.codehaus.groovy:groovy-xml:2.4.15 -> 2.5.14 (*)
+|         +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
+|         +--- io.rest-assured:rest-assured-common:3.3.0 (*)
+|         +--- org.apache.commons:commons-lang3:3.4 -> 3.7
+|         +--- org.ccil.cowan.tagsoup:tagsoup:1.2.1
+|         +--- javax.xml.bind:jaxb-api:2.2.12 -> 2.3.1
+|         |    \--- javax.activation:javax.activation-api:1.2.0
+|         +--- com.sun.xml.bind:jaxb-osgi:2.2.10
+|         \--- org.apache.sling:org.apache.sling.javax.activation:0.1.0
+|              \--- javax.activation:activation:1.1.1
++--- io.rest-assured:spring-mock-mvc:3.0.7
+|    +--- io.rest-assured:rest-assured:3.0.7 (*)
+|    +--- org.springframework:spring-test:4.2.6.RELEASE -> 5.2.15.RELEASE
+|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    \--- org.springframework:spring-webmvc:4.2.6.RELEASE -> 5.2.15.RELEASE (*)
 +--- org.projectlombok:lombok:1.18.20
 +--- org.springframework.boot:spring-boot-starter-test:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
@@ -1625,7 +2040,8 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    \--- net.minidev:accessors-smart:2.4.7
 |    |    |         \--- org.ow2.asm:asm:9.1
 |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
-|    +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.3 (*)
+|    +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.3
+|    |    \--- jakarta.activation:jakarta.activation-api:1.2.2
 |    +--- org.assertj:assertj-core:3.16.1
 |    +--- org.hamcrest:hamcrest:2.2
 |    +--- org.junit.jupiter:junit-jupiter:5.6.3 -> 5.5.2
@@ -1666,16 +2082,9 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    +--- org.skyscreamer:jsonassert:1.5.0
 |    |    \--- com.vaadin.external.google:android-json:0.0.20131108.vaadin1
 |    +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    +--- org.springframework:spring-test:5.2.15.RELEASE
-|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    +--- org.springframework:spring-test:5.2.15.RELEASE (*)
 |    \--- org.xmlunit:xmlunit-core:2.7.0
 +--- net.minidev:json-smart:{strictly 2.4.7} -> 2.4.7 (*)
-+--- org.awaitility:awaitility:3.0.0
-|    +--- org.hamcrest:hamcrest-library:1.3 -> 2.2
-|    |    \--- org.hamcrest:hamcrest-core:2.2
-|    |         \--- org.hamcrest:hamcrest:2.2
-|    +--- org.hamcrest:hamcrest-core:1.3 -> 2.2 (*)
-|    \--- org.objenesis:objenesis:2.5.1 -> 2.6
 +--- org.junit.jupiter:junit-jupiter:5.5.2 (*)
 +--- org.mockito:mockito-junit-jupiter:2.23.4 (*)
 +--- org.junit.platform:junit-platform-launcher:1.6.0
@@ -1683,42 +2092,7 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    +--- org.apiguardian:apiguardian-api:1.1.0
 |    \--- org.junit.platform:junit-platform-engine:1.6.0 (*)
 +--- org.junit.platform:junit-platform-commons:1.6.0 (*)
-+--- org.junit.platform:junit-platform-engine:1.6.0 (*)
-+--- io.rest-assured:rest-assured:3.0.7
-|    +--- org.codehaus.groovy:groovy:2.4.12 -> 2.5.14
-|    +--- org.codehaus.groovy:groovy-xml:2.4.12 -> 2.5.14
-|    |    \--- org.codehaus.groovy:groovy:2.5.14
-|    +--- org.apache.httpcomponents:httpclient:4.5.3 -> 4.5.13 (*)
-|    +--- org.apache.httpcomponents:httpmime:4.5.1 -> 4.5.13
-|    |    \--- org.apache.httpcomponents:httpclient:4.5.13 (*)
-|    +--- org.hamcrest:hamcrest-core:1.3 -> 2.2 (*)
-|    +--- org.hamcrest:hamcrest-library:1.3 -> 2.2 (*)
-|    +--- org.ccil.cowan.tagsoup:tagsoup:1.2.1
-|    +--- io.rest-assured:json-path:3.0.7 -> 3.3.0
-|    |    +--- org.codehaus.groovy:groovy-json:2.4.15 -> 2.5.14
-|    |    |    \--- org.codehaus.groovy:groovy:2.5.14
-|    |    +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
-|    |    \--- io.rest-assured:rest-assured-common:3.3.0
-|    |         +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
-|    |         \--- org.apache.commons:commons-lang3:3.4 -> 3.10
-|    \--- io.rest-assured:xml-path:3.0.7 -> 3.3.0
-|         +--- org.codehaus.groovy:groovy-xml:2.4.15 -> 2.5.14 (*)
-|         +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
-|         +--- io.rest-assured:rest-assured-common:3.3.0 (*)
-|         +--- org.apache.commons:commons-lang3:3.4 -> 3.10
-|         +--- org.ccil.cowan.tagsoup:tagsoup:1.2.1
-|         +--- javax.xml.bind:jaxb-api:2.2.12 -> 2.3.1
-|         |    \--- javax.activation:javax.activation-api:1.2.0
-|         +--- com.sun.xml.bind:jaxb-osgi:2.2.10
-|         \--- org.apache.sling:org.apache.sling.javax.activation:0.1.0
-|              \--- javax.activation:activation:1.1.1
-\--- project :integration-tests
-     +--- project :integration-tests (*)
-     +--- io.jsonwebtoken:jjwt-impl:0.11.2
-     |    \--- io.jsonwebtoken:jjwt-api:0.11.2
-     \--- io.jsonwebtoken:jjwt-jackson:0.11.2
-          +--- io.jsonwebtoken:jjwt-api:0.11.2
-          \--- com.fasterxml.jackson.core:jackson-databind:2.9.10.4 -> 2.11.4 (*)
+\--- org.junit.platform:junit-platform-engine:1.6.0 (*)
 
 testCompileOnly - Compile only dependencies for source set 'test'. (n)
 No dependencies
@@ -1728,9 +2102,7 @@ testImplementation - Implementation only dependencies for source set 'test'. (n)
 +--- org.mockito:mockito-junit-jupiter:2.23.4 (n)
 +--- org.junit.platform:junit-platform-launcher:1.6.0 (n)
 +--- org.junit.platform:junit-platform-commons:1.6.0 (n)
-+--- org.junit.platform:junit-platform-engine:1.6.0 (n)
-+--- io.rest-assured:rest-assured:3.0.7 (n)
-\--- project integration-tests (n)
+\--- org.junit.platform:junit-platform-engine:1.6.0 (n)
 
 testRuntimeClasspath - Runtime classpath of source set 'test'.
 +--- project :security-service-client-spring
@@ -1744,26 +2116,31 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    |    |    +--- com.netflix.netflix-commons:netflix-infix:0.3.0
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
 |    |    |    |    |    |    |    |    +--- commons-jxpath:commons-jxpath:1.3
-|    |    |    |    |    |    |    |    +--- joda-time:joda-time:2.3 -> 2.8.1
+|    |    |    |    |    |    |    |    +--- joda-time:joda-time:2.3 -> 2.10.5
 |    |    |    |    |    |    |    |    +--- org.antlr:antlr-runtime:3.4
 |    |    |    |    |    |    |    |    |    +--- org.antlr:stringtemplate:3.2.1
 |    |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
 |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
-|    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.1 -> 3.0.2
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 19.0
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 28.2-android
+|    |    |    |    |    |    |    |    |    +--- com.google.guava:failureaccess:1.0.1
+|    |    |    |    |    |    |    |    |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
+|    |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    |    |    |    |    +--- org.checkerframework:checker-compat-qual:2.5.5
+|    |    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.3.4
+|    |    |    |    |    |    |    |    |    \--- com.google.j2objc:j2objc-annotations:1.3
 |    |    |    |    |    |    |    |    \--- com.google.code.gson:gson:2.1 -> 2.8.7
-|    |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.5.3 -> 0.12.28
-|    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.26 -> 1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0
-|    |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.88.0
-|    |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.26 -> 1.7.30
+|    |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.5.3 -> 0.13.2
+|    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.30
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.124.0
+|    |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.3.3 -> 0.7.7
 |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.1 -> 3.0.2
 |    |    |    |    |    |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10
 |    |    |    |    |    |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    |    |    |    |    |    \--- commons-logging:commons-logging:1.1.1 -> 1.2
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 19.0
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-databind:2.4.3 -> 2.11.4
@@ -1775,29 +2152,29 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    |    |         \--- xmlpull:xmlpull:1.1.3.1
 |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    |    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.12.28 (*)
-|    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1 -> 1.19.4
+|    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.13.2 (*)
+|    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1
 |    |    |    |    |    |    |    \--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    |    |    |    +--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4
-|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-core:1.19.4 (*)
+|    |    |    |    |    |    +--- com.sun.jersey:jersey-client:1.19.1
+|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-core:1.19.1 (*)
 |    |    |    |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1
 |    |    |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.1.1 -> 4.5.13
 |    |    |    |    |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.13 -> 4.4.14
 |    |    |    |    |    |    |    |    +--- commons-logging:commons-logging:1.2
 |    |    |    |    |    |    |    |    \--- commons-codec:commons-codec:1.11 -> 1.14
-|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4 (*)
+|    |    |    |    |    |    |    \--- com.sun.jersey:jersey-client:1.19.1 (*)
 |    |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.3 -> 4.5.13 (*)
 |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    |    |    +--- commons-configuration:commons-configuration:1.10 (*)
 |    |    |    |    |    |    +--- com.google.inject:guice:4.1.0
 |    |    |    |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    |    |    |    +--- aopalliance:aopalliance:1.0
-|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0
+|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 28.2-android (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.10.5.1 -> 2.11.4 (*)
 |    |    |    |    |    |    \--- org.codehaus.jettison:jettison:1.4.0
-|    |    |    |    |    +--- com.netflix.servo:servo-core:0.13.2 -> 0.12.28 (*)
+|    |    |    |    |    +--- com.netflix.servo:servo-core:0.13.2 (*)
 |    |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
@@ -1807,13 +2184,13 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.31 -> 1.7.30
 |    |    |    |    |    +--- org.yaml:snakeyaml:1.27 -> 1.26
-|    |    |    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    |    |    +--- org.apache.commons:commons-text:1.9
-|    |    |    |    |    |    \--- org.apache.commons:commons-lang3:3.11 -> 3.10
+|    |    |    |    |    |    \--- org.apache.commons:commons-lang3:3.11 -> 3.7
 |    |    |    |    |    +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
 |    |    |    |    |    \--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    |    \--- org.eclipse.jetty.websocket:websocket-client:9.4.43.v20210629
@@ -1895,7 +2272,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |         +--- org.jboss.logging:jboss-logging:3.3.2.Final -> 3.4.2.Final
 |    |    |    |         \--- com.fasterxml:classmate:1.3.4 -> 1.5.1
 |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    +--- org.codehaus.janino:janino:3.1.6 -> 3.1.4
@@ -1923,7 +2300,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
 |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
 |    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    +--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
 |    |    \--- org.bouncycastle:bcpkix-jdk15on:1.69
 |    |         +--- org.bouncycastle:bcprov-jdk15on:1.69
@@ -1932,7 +2309,11 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
 |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
-|    \--- org.apache.commons:commons-lang3:3.7 -> 3.10
+|    \--- org.apache.commons:commons-lang3:3.7
++--- io.swagger:swagger-models:1.6.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.1 -> 2.11.4
+|    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
+|    \--- io.swagger:swagger-annotations:1.6.2
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
@@ -1943,11 +2324,6 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
 |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
 |         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
-+--- org.springframework.boot:spring-boot-starter-security:2.3.12.RELEASE
-|    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    +--- org.springframework.security:spring-security-config:5.3.9.RELEASE -> 5.3.11.RELEASE (*)
-|    \--- org.springframework.security:spring-security-web:5.3.9.RELEASE -> 5.3.11.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-actuator-autoconfigure:2.3.12.RELEASE
@@ -1960,7 +2336,8 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    \--- io.micrometer:micrometer-core:1.5.14
 |         +--- org.hdrhistogram:HdrHistogram:2.1.12
 |         \--- org.latencyutils:LatencyUtils:2.0.3
-+--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE
++--- org.springframework.boot:spring-boot-configuration-processor:2.3.12.RELEASE
++--- org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:2.2.9.RELEASE
 |    +--- org.springframework.cloud:spring-cloud-starter:2.2.9.RELEASE
 |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    |    +--- org.springframework.cloud:spring-cloud-context:2.2.9.RELEASE
@@ -1968,75 +2345,21 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    +--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE (*)
 |    |    \--- org.springframework.security:spring-security-rsa:1.0.9.RELEASE
 |    |         \--- org.bouncycastle:bcpkix-jdk15on:1.64 -> 1.69 (*)
-|    +--- org.springframework.cloud:spring-cloud-netflix-eureka-server:2.2.9.RELEASE
-|    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
-|    |    +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE (*)
-|    |    +--- org.springframework.boot:spring-boot-starter-freemarker:2.3.12.RELEASE
-|    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    +--- org.freemarker:freemarker:2.3.31
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
-|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    +--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE (*)
-|    |    +--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE
-|    |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
-|    |    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    |    |         \--- org.aspectj:aspectjweaver:1.9.6
-|    |    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
-|    |    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
+|    +--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE
+|    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
+|    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
+|    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
+|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
+|    |         \--- org.aspectj:aspectjweaver:1.9.6
+|    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
+|    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
+|    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
+|    +--- com.netflix.eureka:eureka-core:1.10.14
 |    |    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
-|    |    +--- com.sun.jersey:jersey-servlet:1.19.4
-|    |    |    \--- com.sun.jersey:jersey-server:1.19.4
-|    |    |         \--- com.sun.jersey:jersey-core:1.19.4 (*)
-|    |    +--- com.sun.jersey:jersey-server:1.19.4 (*)
-|    |    +--- com.sun.jersey:jersey-client:1.19.4 (*)
-|    |    +--- com.netflix.eureka:eureka-core:1.10.14
-|    |    |    +--- com.netflix.eureka:eureka-client:1.10.14 -> 1.10.17 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277
-|    |    |    |    +--- commons-logging:commons-logging:1.1.3 -> 1.2
-|    |    |    |    +--- org.apache.httpcomponents:httpclient:4.5.2 -> 4.5.13 (*)
-|    |    |    |    +--- software.amazon.ion:ion-java:1.0.2
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.6.7.1 -> 2.11.4 (*)
-|    |    |    |    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.6.7 -> 2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    \--- joda-time:joda-time:2.8.1
-|    |    |    +--- com.amazonaws:aws-java-sdk-ec2:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277
-|    |    |    |         \--- com.fasterxml.jackson.core:jackson-databind:2.6.7.1 -> 2.11.4 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-autoscaling:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-sts:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.amazonaws:aws-java-sdk-route53:1.11.277
-|    |    |    |    +--- com.amazonaws:aws-java-sdk-core:1.11.277 (*)
-|    |    |    |    \--- com.amazonaws:jmespath-java:1.11.277 (*)
-|    |    |    +--- com.thoughtworks.xstream:xstream:1.4.16 -> 1.4.18 (*)
-|    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
-|    |    |    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.5 -> 2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
-|    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    +--- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
-|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
-|    |    |    |    |    +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.2 -> 2.3.3
-|    |    |    |    |    |    \--- jakarta.activation:jakarta.activation-api:1.2.2
-|    |    |    |    |    \--- jakarta.activation:jakarta.activation-api:1.2.1 -> 1.2.2
-|    |    |    |    +--- org.codehaus.woodstox:stax2-api:4.2.1
-|    |    |    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.3
-|    |    |    |         \--- org.codehaus.woodstox:stax2-api:4.2.1
-|    |    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.1 -> 6.2.3 (*)
-|    |    +--- com.netflix.archaius:archaius-core:0.7.7 (*)
-|    |    +--- javax.inject:javax.inject:1
-|    |    \--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.4 (*)
+|    |    +--- com.thoughtworks.xstream:xstream:1.4.16 -> 1.4.18 (*)
+|    |    +--- javax.ws.rs:jsr311-api:1.1.1
+|    |    \--- com.fasterxml.woodstox:woodstox-core:6.2.1
+|    |         \--- org.codehaus.woodstox:stax2-api:4.2.1
 |    +--- org.springframework.cloud:spring-cloud-starter-netflix-archaius:2.2.9.RELEASE
 |    |    +--- org.springframework.cloud:spring-cloud-starter:2.2.9.RELEASE (*)
 |    |    +--- org.springframework.cloud:spring-cloud-netflix-ribbon:2.2.9.RELEASE
@@ -2051,7 +2374,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    +--- com.netflix.ribbon:ribbon:2.3.0
 |    |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0
 |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0 -> 19.0
+|    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
 |    |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
 |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
@@ -2063,8 +2386,8 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    |    \--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
 |    |    |    |    |    +--- io.reactivex:rxjava:1.0.9 -> 1.3.8
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.12.28 (*)
-|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
+|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1
 |    |    |    |    |         \--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
@@ -2078,10 +2401,10 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    +--- io.reactivex:rxnetty-servo:0.4.9
 |    |    |    |    |    +--- io.reactivex:rxjava:1.0.10 -> 1.3.8
 |    |    |    |    |    +--- io.reactivex:rxnetty:0.4.9 (*)
-|    |    |    |    |    \--- com.netflix.servo:servo-core:0.7.5 -> 0.12.28 (*)
+|    |    |    |    |    \--- com.netflix.servo:servo-core:0.7.5 -> 0.13.2 (*)
 |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    +--- com.netflix.hystrix:hystrix-core:1.4.3
 |    |    |    |    +--- com.netflix.archaius:archaius-core:0.4.1 -> 0.7.7 (*)
@@ -2091,7 +2414,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    +--- io.reactivex:rxjava:1.0.10 -> 1.3.8
 |    |    |    +--- io.reactivex:rxnetty:0.4.9 (*)
 |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
 |    |    +--- com.netflix.ribbon:ribbon-httpclient:2.3.0
@@ -2099,11 +2422,11 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
 |    |    |    +--- commons-collections:commons-collections:3.2.2
 |    |    |    +--- org.apache.httpcomponents:httpclient:4.2.1 -> 4.5.13 (*)
-|    |    |    +--- com.sun.jersey:jersey-client:1.19.1 -> 1.19.4 (*)
+|    |    |    +--- com.sun.jersey:jersey-client:1.19.1 (*)
 |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1 (*)
 |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.12.28 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 19.0
+|    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
 |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1 (*)
 |    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
@@ -2120,22 +2443,123 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |         \--- io.projectreactor:reactor-core:3.3.16.RELEASE -> 3.3.17.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-cache:2.3.12.RELEASE
 |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE (*)
+|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
+|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
+|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
+|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
 |    |    \--- com.stoyanr:evictor:1.0.0
-|    +--- com.netflix.ribbon:ribbon-eureka:2.3.0
-|    |    +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
-|    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
-|    |    +--- com.netflix.eureka:eureka-client:1.7.2 -> 1.10.17 (*)
-|    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
-|    \--- org.glassfish.jaxb:jaxb-runtime:2.3.4
-|         +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.3 (*)
-|         +--- org.glassfish.jaxb:txw2:2.3.4
-|         +--- com.sun.istack:istack-commons-runtime:3.0.12
-|         \--- com.sun.activation:jakarta.activation:1.2.2
-+--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10
-|    +--- org.yaml:snakeyaml:1.23 -> 1.26
-|    \--- com.fasterxml.jackson.core:jackson-core:2.9.10 -> 2.11.4
+|    \--- com.netflix.ribbon:ribbon-eureka:2.3.0
+|         +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
+|         +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
+|         +--- com.netflix.eureka:eureka-client:1.7.2 -> 1.10.17 (*)
+|         +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
+|         \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
++--- org.springframework.retry:spring-retry:1.2.4.RELEASE
+|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.15.RELEASE (*)
++--- io.swagger:swagger-core:1.5.24
+|    +--- org.apache.commons:commons-lang3:3.2.1 -> 3.7
+|    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.10 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.9.10 -> 2.11.4 (*)
+|    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10 -> 2.11.4
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
+|    |    +--- org.yaml:snakeyaml:1.26
+|    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
+|    +--- io.swagger:swagger-models:1.5.24 -> 1.6.2 (*)
+|    +--- com.google.guava:guava:27.0.1-android -> 28.2-android (*)
+|    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
++--- io.swagger.core.v3:swagger-core:2.0.0
+|    +--- org.apache.commons:commons-lang3:3.7
+|    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.9.4 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.9.4 -> 2.11.4 (*)
+|    +--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4 -> 2.11.4 (*)
+|    +--- io.swagger.core.v3:swagger-annotations:2.0.0
+|    +--- io.swagger.core.v3:swagger-models:2.0.0 -> 2.1.7
+|    |    \--- com.fasterxml.jackson.core:jackson-annotations:2.12.1 -> 2.11.4
+|    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
++--- io.swagger.parser.v3:swagger-parser-v3:2.0.17
+|    +--- io.swagger.core.v3:swagger-models:2.1.1 -> 2.1.7 (*)
+|    +--- io.swagger.core.v3:swagger-core:2.1.1 -> 2.0.0 (*)
+|    +--- io.swagger.parser.v3:swagger-parser-core:2.0.17 -> 2.0.25
+|    |    \--- io.swagger.core.v3:swagger-models:2.1.7 (*)
+|    +--- commons-io:commons-io:2.4 -> 2.7
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.1 -> 2.11.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.10.1 -> 2.11.4 (*)
+|    \--- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.10.1 -> 2.11.4 (*)
++--- com.fasterxml.jackson.core:jackson-core:2.11.4
++--- org.apache.commons:commons-lang3:3.7
++--- org.springframework.boot:spring-boot-starter-thymeleaf:2.3.12.RELEASE
+|    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
+|    +--- org.thymeleaf:thymeleaf-spring5:3.0.12.RELEASE
+|    |    +--- org.thymeleaf:thymeleaf:3.0.12.RELEASE
+|    |    |    +--- org.attoparser:attoparser:2.0.5.RELEASE
+|    |    |    +--- org.unbescape:unbescape:1.1.6.RELEASE
+|    |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    \--- org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE
+|         +--- org.thymeleaf:thymeleaf:3.0.11.RELEASE -> 3.0.12.RELEASE (*)
+|         \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
++--- org.apache.velocity:velocity-engine-core:2.0
+|    +--- org.apache.commons:commons-lang3:3.5 -> 3.7
+|    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
++--- org.openapitools.openapidiff:openapi-diff-core:2.0.0-beta.10
+|    +--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    +--- io.swagger.parser.v3:swagger-parser:2.0.25
+|    |    +--- io.swagger.parser.v3:swagger-parser-v2-converter:2.0.25
+|    |    |    +--- io.swagger:swagger-core:1.6.2 -> 1.5.24 (*)
+|    |    |    +--- io.swagger:swagger-parser:1.0.54
+|    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
+|    |    |    |    +--- org.slf4j:slf4j-ext:1.7.28 -> 1.7.30
+|    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.30
+|    |    |    |    +--- org.slf4j:slf4j-api:1.7.28 -> 1.7.30
+|    |    |    |    \--- commons-io:commons-io:2.4 -> 2.7
+|    |    |    +--- io.swagger:swagger-compat-spec-parser:1.0.54
+|    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
+|    |    |    |    +--- io.swagger:swagger-parser:1.0.54 (*)
+|    |    |    |    +--- com.github.java-json-tools:json-schema-validator:2.2.14
+|    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
+|    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0
+|    |    |    |    |    |         +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |         +--- com.github.java-json-tools:msg-simple:1.2
+|    |    |    |    |    |         |    +--- com.github.java-json-tools:btf:1.3
+|    |    |    |    |    |         |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |         |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |         \--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    +--- com.github.java-json-tools:json-schema-core:1.2.14
+|    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils:2.0 (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0 (*)
+|    |    |    |    |    |    +--- com.github.java-json-tools:uri-template:0.10
+|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 28.2-android (*)
+|    |    |    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
+|    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
+|    |    |    |    |    |    +--- org.mozilla:rhino:1.7.7.2
+|    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    +--- com.sun.mail:mailapi:1.6.2
+|    |    |    |    |    +--- joda-time:joda-time:2.10.5
+|    |    |    |    |    +--- com.googlecode.libphonenumber:libphonenumber:8.11.1
+|    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
+|    |    |    |    |    \--- net.sf.jopt-simple:jopt-simple:5.0.4
+|    |    |    |    +--- com.github.java-json-tools:json-patch:1.13
+|    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
+|    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
+|    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0 (*)
+|    |    |    |    \--- org.apache.httpcomponents:httpclient:4.5.2 -> 4.5.13 (*)
+|    |    |    +--- io.swagger.core.v3:swagger-models:2.1.7 (*)
+|    |    |    +--- io.swagger.parser.v3:swagger-parser-core:2.0.25 (*)
+|    |    |    \--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    |    +--- io.swagger.parser.v3:swagger-parser-v3:2.0.25 -> 2.0.17 (*)
+|    |    \--- commons-io:commons-io:2.6 -> 2.7
+|    +--- io.swagger.parser.v3:swagger-parser-v2-converter:2.0.25 (*)
+|    +--- com.j2html:j2html:1.4.0
+|    +--- org.apache.commons:commons-collections4:4.4
+|    \--- org.slf4j:slf4j-api:1.7.30
++--- org.apache.httpcomponents:httpclient:4.5.13 (*)
 +--- org.eclipse.jetty:jetty-client:9.4.43.v20210629 (*)
 +--- org.eclipse.jetty:jetty-http:9.4.43.v20210629 (*)
 +--- org.eclipse.jetty:jetty-io:9.4.43.v20210629 (*)
@@ -2152,7 +2576,85 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (*)
 +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
 +--- commons-io:commons-io:2.7
-+--- com.netflix.servo:servo-core:0.12.28 (*)
++--- io.springfox:springfox-swagger2:2.9.2
+|    +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
+|    +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
+|    +--- io.springfox:springfox-spi:2.9.2
+|    |    \--- io.springfox:springfox-core:2.9.2
+|    |         +--- net.bytebuddy:byte-buddy:1.8.12 -> 1.10.22
+|    |         +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |         +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+|    |         +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |         +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE
+|    |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+|    |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+|    |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+|    |         |    \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
+|    |         \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE
+|    |              +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+|    |              \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
+|    +--- io.springfox:springfox-schema:2.9.2
+|    |    +--- io.springfox:springfox-core:2.9.2 (*)
+|    |    \--- io.springfox:springfox-spi:2.9.2 (*)
+|    +--- io.springfox:springfox-swagger-common:2.9.2
+|    |    +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
+|    |    +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
+|    |    +--- io.springfox:springfox-spi:2.9.2 (*)
+|    |    +--- io.springfox:springfox-schema:2.9.2 (*)
+|    |    +--- io.springfox:springfox-spring-web:2.9.2
+|    |    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+|    |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+|    |    |    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+|    |    |    \--- io.springfox:springfox-spi:2.9.2 (*)
+|    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+|    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+|    |    \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+|    +--- io.springfox:springfox-spring-web:2.9.2 (*)
+|    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
+|    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
+|    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
+|    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
+|    \--- org.mapstruct:mapstruct:1.2.0.Final
++--- io.rest-assured:rest-assured:3.0.7
+|    +--- org.codehaus.groovy:groovy:2.4.12 -> 2.5.14
+|    +--- org.codehaus.groovy:groovy-xml:2.4.12 -> 2.5.14
+|    |    \--- org.codehaus.groovy:groovy:2.5.14
+|    +--- org.apache.httpcomponents:httpclient:4.5.3 -> 4.5.13 (*)
+|    +--- org.apache.httpcomponents:httpmime:4.5.1 -> 4.5.13
+|    |    \--- org.apache.httpcomponents:httpclient:4.5.13 (*)
+|    +--- org.hamcrest:hamcrest-core:1.3 -> 2.2
+|    |    \--- org.hamcrest:hamcrest:2.2
+|    +--- org.hamcrest:hamcrest-library:1.3 -> 2.2
+|    |    \--- org.hamcrest:hamcrest-core:2.2 (*)
+|    +--- org.ccil.cowan.tagsoup:tagsoup:1.2.1
+|    +--- io.rest-assured:json-path:3.0.7 -> 3.3.0
+|    |    +--- org.codehaus.groovy:groovy-json:2.4.15 -> 2.5.14
+|    |    |    \--- org.codehaus.groovy:groovy:2.5.14
+|    |    +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
+|    |    \--- io.rest-assured:rest-assured-common:3.3.0
+|    |         +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
+|    |         \--- org.apache.commons:commons-lang3:3.4 -> 3.7
+|    \--- io.rest-assured:xml-path:3.0.7 -> 3.3.0
+|         +--- org.codehaus.groovy:groovy-xml:2.4.15 -> 2.5.14 (*)
+|         +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
+|         +--- io.rest-assured:rest-assured-common:3.3.0 (*)
+|         +--- org.apache.commons:commons-lang3:3.4 -> 3.7
+|         +--- org.ccil.cowan.tagsoup:tagsoup:1.2.1
+|         +--- javax.xml.bind:jaxb-api:2.2.12 -> 2.3.1
+|         |    \--- javax.activation:javax.activation-api:1.2.0
+|         +--- com.sun.xml.bind:jaxb-osgi:2.2.10
+|         \--- org.apache.sling:org.apache.sling.javax.activation:0.1.0
+|              \--- javax.activation:activation:1.1.1
++--- io.rest-assured:spring-mock-mvc:3.0.7
+|    +--- io.rest-assured:rest-assured:3.0.7 (*)
+|    +--- org.springframework:spring-test:4.2.6.RELEASE -> 5.2.15.RELEASE
+|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    \--- org.springframework:spring-webmvc:4.2.6.RELEASE -> 5.2.15.RELEASE (*)
 +--- org.projectlombok:lombok:1.18.20
 +--- org.springframework.boot:spring-boot-starter-test:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
@@ -2167,7 +2669,8 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    \--- net.minidev:accessors-smart:2.4.7
 |    |    |         \--- org.ow2.asm:asm:9.1
 |    |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
-|    +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.3 (*)
+|    +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.3
+|    |    \--- jakarta.activation:jakarta.activation-api:1.2.2
 |    +--- org.assertj:assertj-core:3.16.1
 |    +--- org.hamcrest:hamcrest:2.2
 |    +--- org.junit.jupiter:junit-jupiter:5.6.3 -> 5.5.2
@@ -2215,16 +2718,9 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    +--- org.skyscreamer:jsonassert:1.5.0
 |    |    \--- com.vaadin.external.google:android-json:0.0.20131108.vaadin1
 |    +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    +--- org.springframework:spring-test:5.2.15.RELEASE
-|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    +--- org.springframework:spring-test:5.2.15.RELEASE (*)
 |    \--- org.xmlunit:xmlunit-core:2.7.0
 +--- net.minidev:json-smart:{strictly 2.4.7} -> 2.4.7 (*)
-+--- org.awaitility:awaitility:3.0.0
-|    +--- org.hamcrest:hamcrest-library:1.3 -> 2.2
-|    |    \--- org.hamcrest:hamcrest-core:2.2
-|    |         \--- org.hamcrest:hamcrest:2.2
-|    +--- org.hamcrest:hamcrest-core:1.3 -> 2.2 (*)
-|    \--- org.objenesis:objenesis:2.5.1 -> 2.6
 +--- org.junit.jupiter:junit-jupiter:5.5.2 (*)
 +--- org.mockito:mockito-junit-jupiter:2.23.4 (*)
 +--- org.junit.platform:junit-platform-launcher:1.6.0
@@ -2232,46 +2728,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    +--- org.apiguardian:apiguardian-api:1.1.0
 |    \--- org.junit.platform:junit-platform-engine:1.6.0 (*)
 +--- org.junit.platform:junit-platform-commons:1.6.0 (*)
-+--- org.junit.platform:junit-platform-engine:1.6.0 (*)
-+--- io.rest-assured:rest-assured:3.0.7
-|    +--- org.codehaus.groovy:groovy:2.4.12 -> 2.5.14
-|    +--- org.codehaus.groovy:groovy-xml:2.4.12 -> 2.5.14
-|    |    \--- org.codehaus.groovy:groovy:2.5.14
-|    +--- org.apache.httpcomponents:httpclient:4.5.3 -> 4.5.13 (*)
-|    +--- org.apache.httpcomponents:httpmime:4.5.1 -> 4.5.13
-|    |    \--- org.apache.httpcomponents:httpclient:4.5.13 (*)
-|    +--- org.hamcrest:hamcrest-core:1.3 -> 2.2 (*)
-|    +--- org.hamcrest:hamcrest-library:1.3 -> 2.2 (*)
-|    +--- org.ccil.cowan.tagsoup:tagsoup:1.2.1
-|    +--- io.rest-assured:json-path:3.0.7 -> 3.3.0
-|    |    +--- org.codehaus.groovy:groovy-json:2.4.15 -> 2.5.14
-|    |    |    \--- org.codehaus.groovy:groovy:2.5.14
-|    |    +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
-|    |    \--- io.rest-assured:rest-assured-common:3.3.0
-|    |         +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
-|    |         \--- org.apache.commons:commons-lang3:3.4 -> 3.10
-|    \--- io.rest-assured:xml-path:3.0.7 -> 3.3.0
-|         +--- org.codehaus.groovy:groovy-xml:2.4.15 -> 2.5.14 (*)
-|         +--- org.codehaus.groovy:groovy:2.4.15 -> 2.5.14
-|         +--- io.rest-assured:rest-assured-common:3.3.0 (*)
-|         +--- org.apache.commons:commons-lang3:3.4 -> 3.10
-|         +--- org.ccil.cowan.tagsoup:tagsoup:1.2.1
-|         +--- javax.xml.bind:jaxb-api:2.2.12 -> 2.3.1
-|         |    \--- javax.activation:javax.activation-api:1.2.0
-|         +--- com.sun.xml.bind:jaxb-osgi:2.2.10
-|         \--- org.apache.sling:org.apache.sling.javax.activation:0.1.0
-|              \--- javax.activation:activation:1.1.1
-\--- project :integration-tests
-     +--- project :integration-tests (*)
-     +--- project :apiml-security-common (*)
-     +--- io.rest-assured:rest-assured:3.0.7 (*)
-     +--- org.projectlombok:lombok:1.18.20
-     +--- org.apache.httpcomponents:httpclient:4.5.13 (*)
-     +--- io.jsonwebtoken:jjwt-impl:0.11.2
-     |    \--- io.jsonwebtoken:jjwt-api:0.11.2
-     \--- io.jsonwebtoken:jjwt-jackson:0.11.2
-          +--- io.jsonwebtoken:jjwt-api:0.11.2
-          \--- com.fasterxml.jackson.core:jackson-databind:2.9.10.4 -> 2.11.4 (*)
+\--- org.junit.platform:junit-platform-engine:1.6.0 (*)
 
 testRuntimeOnly - Runtime only dependencies for source set 'test'. (n)
 No dependencies

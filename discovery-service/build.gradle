@@ -78,6 +78,9 @@ dependencies {
     implementation libraries.tomcat_embed_core
     implementation libraries.tomcat_embed_websocket
     implementation libraries.xstream
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation "commons-io:commons-io:2.7!!"
+
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
