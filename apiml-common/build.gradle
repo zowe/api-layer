@@ -6,19 +6,9 @@ dependencies {
     compile libraries.jackson_databind
     compile libraries.apache_commons_lang3
     compile libraries.http_client
-    compile libraries.http_core
+    compile libraries.http_core 
     compile libraries.janino
     compile libraries.xstream
-    compile libraries.spring_aop
-    compile libraries.spring_beans
-    compile libraries.spring_context
-    compile libraries.spring_context_support
-    compile libraries.spring_core
-    compile libraries.spring_expression
-    compile libraries.spring_messaging
-    compile libraries.spring_web
-    compile libraries.spring_webmvc
-    compile libraries.spring_websocket
 
     implementation libraries.spring_cloud_commons
 

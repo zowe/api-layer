@@ -1,15 +1,5 @@
 dependencies {
     compile libraries.spring_boot_starter_web
-    compile libraries.spring_aop
-    compile libraries.spring_beans
-    compile libraries.spring_context
-    compile libraries.spring_context_support
-    compile libraries.spring_core
-    compile libraries.spring_expression
-    compile libraries.spring_messaging
-    compile libraries.spring_web
-    compile libraries.spring_webmvc
-    compile libraries.spring_websocket
     compile libraries.zowe_attls
     testCompile libraries.mockito_core
     testCompile libraries.mockito_jupiter
