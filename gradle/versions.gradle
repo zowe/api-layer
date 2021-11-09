@@ -7,6 +7,7 @@ ext {
 
     attlsVersion = '1.21.3'
     awaitilityVersion = '3.0.0'
+    bouncyCastleVersion = '1.69'
     bootstrapVersion = '4.3.1'
     commonsLang3Version = '3.7'
     commonsTextVersion = '1.9'
@@ -91,6 +92,8 @@ ext {
         apache_commons_text                : "org.apache.commons:commons-text:${commonsTextVersion}",
         apache_velocity                    : "org.apache.velocity:velocity-engine-core:${velocityVersion}",
         awaitility                         : "org.awaitility:awaitility:${awaitilityVersion}",
+        bcprov                             : "org.bouncycastle:bcprov-jdk15on:${bouncyCastleVersion}",
+        bcpkix                             : "org.bouncycastle:bcpkix-jdk15on:${bouncyCastleVersion}",
         bootstrap                          : "org.webjars:bootstrap:${bootstrapVersion}",
         eh_cache                           : "net.sf.ehcache:ehcache:${ehCacheVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
