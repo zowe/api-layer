@@ -6,6 +6,17 @@ dependencies {
     compile libraries.apache_commons_lang3
     compile libraries.bcprov;
     compile libraries.bcpkix;
+    compile libraries.spring_aop
+    compile libraries.spring_beans
+    compile libraries.spring_context
+    compile libraries.spring_context_support
+    compile libraries.spring_core
+    compile libraries.spring_expression
+    compile libraries.spring_messaging
+    compile libraries.spring_web
+    compile libraries.spring_webmvc
+    compile libraries.spring_websocket
+    
 
     compileOnly libraries.javax_servlet_api
     compileOnly libraries.lombok

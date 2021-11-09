@@ -50,12 +50,12 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    |    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
 |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.13.2
 |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.30
-|    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 28.2-android
+|    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 31.0.1-jre
 |    |    |    |    |    |    |    |    +--- com.google.guava:failureaccess:1.0.1
 |    |    |    |    |    |    |    |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
 |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
-|    |    |    |    |    |    |    |    +--- org.checkerframework:checker-compat-qual:2.5.5
-|    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.3.4
+|    |    |    |    |    |    |    |    +--- org.checkerframework:checker-qual:3.12.0
+|    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.7.1
 |    |    |    |    |    |    |    |    \--- com.google.j2objc:j2objc-annotations:1.3
 |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.124.0
 |    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1
@@ -76,7 +76,7 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    |    |    |    +--- com.google.inject:guice:4.1.0
 |    |    |    |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    |    |    |    +--- aopalliance:aopalliance:1.0
-|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.10.5 -> 2.11.4
 |    |    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-databind:2.10.5.1 -> 2.11.4
@@ -118,17 +118,17 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE
 |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot:2.3.12.RELEASE
-|    |    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE
-|    |    |    |    |    |    |    |    \--- org.springframework:spring-jcl:5.2.15.RELEASE
-|    |    |    |    |    |    |    \--- org.springframework:spring-context:5.2.15.RELEASE
-|    |    |    |    |    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE
-|    |    |    |    |    |    |         |    +--- org.springframework:spring-beans:5.2.15.RELEASE
-|    |    |    |    |    |    |         |    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         \--- org.springframework:spring-expression:5.2.15.RELEASE
-|    |    |    |    |    |    |              \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |    |    \--- org.springframework:spring-jcl:5.2.18.RELEASE -> 5.2.15.RELEASE
+|    |    |    |    |    |    |    \--- org.springframework:spring-context:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |         +--- org.springframework:spring-aop:5.2.18.RELEASE
+|    |    |    |    |    |    |         |    +--- org.springframework:spring-beans:5.2.18.RELEASE
+|    |    |    |    |    |    |         |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         \--- org.springframework:spring-expression:5.2.18.RELEASE
+|    |    |    |    |    |    |              \--- org.springframework:spring-core:5.2.18.RELEASE (*)
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE
 |    |    |    |    |    |    |    \--- org.springframework.boot:spring-boot:2.3.12.RELEASE (*)
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter-logging:2.3.12.RELEASE
@@ -139,13 +139,13 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    |    |    |    |    \--- org.slf4j:jul-to-slf4j:1.7.30
 |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    +--- jakarta.annotation:jakarta.annotation-api:1.3.5
-|    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |    |    |    |    |    \--- org.yaml:snakeyaml:1.26
 |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter-json:2.3.12.RELEASE
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE
-|    |    |    |    |    |    |    +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.11.4
 |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
@@ -163,14 +163,32 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    |    |    |    |    \--- org.apache.tomcat:tomcat-annotations-api:9.0.54
 |    |    |    |    |    |    \--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.46 -> 9.0.54
 |    |    |    |    |    |         \--- org.apache.tomcat.embed:tomcat-embed-core:9.0.54 (*)
-|    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE (*)
-|    |    |    |    |    \--- org.springframework:spring-webmvc:5.2.15.RELEASE
-|    |    |    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-expression:5.2.15.RELEASE (*)
-|    |    |    |    |         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-webmvc:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |         +--- org.springframework:spring-aop:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-expression:5.2.18.RELEASE (*)
+|    |    |    |    |         \--- org.springframework:spring-web:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-web:5.2.18.RELEASE (*)
 |    |    |    |    \--- org.zowe.apiml.sdk:attls:1.21.3
 |    |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    |    |    +--- org.springframework.boot:spring-boot-starter-validation:2.3.12.RELEASE
@@ -185,33 +203,53 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    +--- org.codehaus.janino:janino:3.1.6 -> 3.1.4
 |    |    |    |    \--- org.codehaus.janino:commons-compiler:3.1.4
-|    |    |    \--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
+|    |    |    +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
+|    |    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE
 |    |    |    +--- org.springframework.security:spring-security-core:5.3.11.RELEASE
-|    |    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    \--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    \--- org.springframework:spring-web:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    \--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-web:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
 |    |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE
 |    |    |    +--- org.springframework.security:spring-security-core:5.3.11.RELEASE (*)
-|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
+|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
 |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
-|    |    \--- org.bouncycastle:bcpkix-jdk15on:1.69
-|    |         +--- org.bouncycastle:bcprov-jdk15on:1.69
-|    |         \--- org.bouncycastle:bcutil-jdk15on:1.69
-|    |              \--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    +--- org.bouncycastle:bcpkix-jdk15on:1.69
+|    |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    |    \--- org.bouncycastle:bcutil-jdk15on:1.69
+|    |    |         \--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    \--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
 |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
@@ -223,13 +261,8 @@ compileClasspath - Compile classpath for source set 'main'.
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
-|    +--- org.springframework:spring-messaging:5.2.15.RELEASE
-|    |    +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    \--- org.springframework:spring-websocket:5.2.15.RELEASE
-|         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
+|    +--- org.springframework:spring-messaging:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    \--- org.springframework:spring-websocket:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-actuator-autoconfigure:2.3.12.RELEASE
@@ -253,7 +286,7 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
 |    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
 |    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
+|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |         \--- org.aspectj:aspectjweaver:1.9.6
 |    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
 |    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
@@ -292,14 +325,11 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |         \--- io.projectreactor:reactor-core:3.3.16.RELEASE -> 3.3.17.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-cache:2.3.12.RELEASE
 |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
-|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |    \--- com.stoyanr:evictor:1.0.0
 |    \--- com.netflix.ribbon:ribbon-eureka:2.3.0
 +--- org.springframework.retry:spring-retry:1.2.4.RELEASE
-|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.15.RELEASE (*)
+|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.18.RELEASE (*)
 +--- io.swagger:swagger-core:1.5.24
 |    +--- org.apache.commons:commons-lang3:3.2.1 -> 3.7
 |    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
@@ -310,7 +340,7 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    +--- org.yaml:snakeyaml:1.26
 |    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
 |    +--- io.swagger:swagger-models:1.5.24 -> 1.6.2 (*)
-|    +--- com.google.guava:guava:27.0.1-android -> 28.2-android (*)
+|    +--- com.google.guava:guava:27.0.1-android -> 31.0.1-jre (*)
 |    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
 +--- io.swagger.core.v3:swagger-core:2.0.0
 |    +--- org.apache.commons:commons-lang3:3.7
@@ -362,15 +392,15 @@ compileClasspath - Compile classpath for source set 'main'.
 |    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
 |    |    |    |    +--- io.swagger:swagger-parser:1.0.54 (*)
 |    |    |    |    +--- com.github.java-json-tools:json-schema-validator:2.2.14
-|    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
 |    |    |    |    |    +--- com.github.java-json-tools:json-schema-core:1.2.14
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
-|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils:2.0
 |    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
 |    |    |    |    |    |    +--- com.github.java-json-tools:uri-template:0.10
-|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 28.2-android (*)
+|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2
 |    |    |    |    |    |    |    |    +--- com.github.java-json-tools:btf:1.3
 |    |    |    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
@@ -413,20 +443,31 @@ compileClasspath - Compile classpath for source set 'main'.
 +--- org.apache.tomcat.embed:tomcat-embed-core:9.0.54 (*)
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (*)
 +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
-+--- commons-io:commons-io:2.7
++--- commons-io:commons-io:{strictly 2.7} -> 2.7
++--- com.google.guava:guava:31.0.1-jre (*)
++--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 \--- io.springfox:springfox-swagger2:2.9.2
      +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
      +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
      +--- io.springfox:springfox-spi:2.9.2
      |    \--- io.springfox:springfox-core:2.9.2
      |         +--- net.bytebuddy:byte-buddy:1.8.12 -> 1.10.22
-     |         +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |         +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      |         +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      |         +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      |         +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE
-     |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
-     |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
-     |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
+     |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
+     |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
      |         |    \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
      |         \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE
      |              +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
@@ -440,19 +481,19 @@ compileClasspath - Compile classpath for source set 'main'.
      |    +--- io.springfox:springfox-spi:2.9.2 (*)
      |    +--- io.springfox:springfox-schema:2.9.2 (*)
      |    +--- io.springfox:springfox-spring-web:2.9.2
-     |    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    |    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
      |    |    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
      |    |    \--- io.springfox:springfox-spi:2.9.2 (*)
-     |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
      |    \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
      +--- io.springfox:springfox-spring-web:2.9.2 (*)
-     +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
@@ -502,6 +543,17 @@ implementation - Implementation only dependencies for source set 'main'. (n)
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (n)
 +--- com.thoughtworks.xstream:xstream:1.4.18 (n)
 +--- commons-io:commons-io:2.7 (n)
++--- com.google.guava:guava:31.0.1-jre (n)
++--- org.springframework:spring-aop:5.2.18.RELEASE (n)
++--- org.springframework:spring-beans:5.2.18.RELEASE (n)
++--- org.springframework:spring-context:5.2.18.RELEASE (n)
++--- org.springframework:spring-context-support:5.2.18.RELEASE (n)
++--- org.springframework:spring-core:5.2.18.RELEASE (n)
++--- org.springframework:spring-expression:5.2.18.RELEASE (n)
++--- org.springframework:spring-messaging:5.2.18.RELEASE (n)
++--- org.springframework:spring-web:5.2.18.RELEASE (n)
++--- org.springframework:spring-webmvc:5.2.18.RELEASE (n)
++--- org.springframework:spring-websocket:5.2.18.RELEASE (n)
 \--- io.springfox:springfox-swagger2:2.9.2 (n)
 
 jacocoAgent - The Jacoco agent to use to get coverage data.
@@ -542,17 +594,17 @@ productionRuntimeClasspath
 |    |    |    |    |    |    |    |    |    +--- org.antlr:stringtemplate:3.2.1
 |    |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
 |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 28.2-android
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 31.0.1-jre
 |    |    |    |    |    |    |    |    |    +--- com.google.guava:failureaccess:1.0.1
 |    |    |    |    |    |    |    |    |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
 |    |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
-|    |    |    |    |    |    |    |    |    +--- org.checkerframework:checker-compat-qual:2.5.5
-|    |    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.3.4
+|    |    |    |    |    |    |    |    |    +--- org.checkerframework:checker-qual:3.12.0
+|    |    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.7.1
 |    |    |    |    |    |    |    |    |    \--- com.google.j2objc:j2objc-annotations:1.3
 |    |    |    |    |    |    |    |    \--- com.google.code.gson:gson:2.1 -> 2.8.7
 |    |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.5.3 -> 0.13.2
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.124.0
 |    |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.3.3 -> 0.7.7
@@ -561,7 +613,7 @@ productionRuntimeClasspath
 |    |    |    |    |    |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    |    |    |    |    |    \--- commons-logging:commons-logging:1.1.1 -> 1.2
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-databind:2.4.3 -> 2.11.4
@@ -590,7 +642,7 @@ productionRuntimeClasspath
 |    |    |    |    |    |    +--- com.google.inject:guice:4.1.0
 |    |    |    |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    |    |    |    +--- aopalliance:aopalliance:1.0
-|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.10.5.1 -> 2.11.4 (*)
@@ -631,17 +683,17 @@ productionRuntimeClasspath
 |    |    |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE
 |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot:2.3.12.RELEASE
-|    |    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE
-|    |    |    |    |    |    |    |    \--- org.springframework:spring-jcl:5.2.15.RELEASE
-|    |    |    |    |    |    |    \--- org.springframework:spring-context:5.2.15.RELEASE
-|    |    |    |    |    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE
-|    |    |    |    |    |    |         |    +--- org.springframework:spring-beans:5.2.15.RELEASE
-|    |    |    |    |    |    |         |    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         \--- org.springframework:spring-expression:5.2.15.RELEASE
-|    |    |    |    |    |    |              \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |    |    \--- org.springframework:spring-jcl:5.2.18.RELEASE -> 5.2.15.RELEASE
+|    |    |    |    |    |    |    \--- org.springframework:spring-context:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |         +--- org.springframework:spring-aop:5.2.18.RELEASE
+|    |    |    |    |    |    |         |    +--- org.springframework:spring-beans:5.2.18.RELEASE
+|    |    |    |    |    |    |         |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         \--- org.springframework:spring-expression:5.2.18.RELEASE
+|    |    |    |    |    |    |              \--- org.springframework:spring-core:5.2.18.RELEASE (*)
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE
 |    |    |    |    |    |    |    \--- org.springframework.boot:spring-boot:2.3.12.RELEASE (*)
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter-logging:2.3.12.RELEASE
@@ -652,13 +704,13 @@ productionRuntimeClasspath
 |    |    |    |    |    |    |    \--- org.slf4j:jul-to-slf4j:1.7.30
 |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    +--- jakarta.annotation:jakarta.annotation-api:1.3.5
-|    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |    |    |    |    |    \--- org.yaml:snakeyaml:1.26
 |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter-json:2.3.12.RELEASE
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE
-|    |    |    |    |    |    |    +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.11.4
 |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
@@ -676,14 +728,32 @@ productionRuntimeClasspath
 |    |    |    |    |    |    |    \--- org.apache.tomcat:tomcat-annotations-api:9.0.54
 |    |    |    |    |    |    \--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.46 -> 9.0.54
 |    |    |    |    |    |         \--- org.apache.tomcat.embed:tomcat-embed-core:9.0.54 (*)
-|    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE (*)
-|    |    |    |    |    \--- org.springframework:spring-webmvc:5.2.15.RELEASE
-|    |    |    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-expression:5.2.15.RELEASE (*)
-|    |    |    |    |         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-webmvc:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |         +--- org.springframework:spring-aop:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-expression:5.2.18.RELEASE (*)
+|    |    |    |    |         \--- org.springframework:spring-web:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-web:5.2.18.RELEASE (*)
 |    |    |    |    \--- org.zowe.apiml.sdk:attls:1.21.3
 |    |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    |    |    +--- org.springframework.boot:spring-boot-starter-validation:2.3.12.RELEASE
@@ -699,34 +769,54 @@ productionRuntimeClasspath
 |    |    |    +--- org.codehaus.janino:janino:3.1.6 -> 3.1.4
 |    |    |    |    \--- org.codehaus.janino:commons-compiler:3.1.4
 |    |    |    +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
+|    |    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 |    |    |    \--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE
 |    |    |         \--- org.springframework.security:spring-security-crypto:5.3.9.RELEASE -> 5.3.11.RELEASE
 |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE
 |    |    |    +--- org.springframework.security:spring-security-core:5.3.11.RELEASE
-|    |    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    \--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    \--- org.springframework:spring-web:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    \--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-web:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
 |    |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE
 |    |    |    +--- org.springframework.security:spring-security-core:5.3.11.RELEASE (*)
-|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
+|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
 |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
-|    |    \--- org.bouncycastle:bcpkix-jdk15on:1.69
-|    |         +--- org.bouncycastle:bcprov-jdk15on:1.69
-|    |         \--- org.bouncycastle:bcutil-jdk15on:1.69
-|    |              \--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    +--- org.bouncycastle:bcpkix-jdk15on:1.69
+|    |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    |    \--- org.bouncycastle:bcutil-jdk15on:1.69
+|    |    |         \--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    \--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
 |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
@@ -738,13 +828,8 @@ productionRuntimeClasspath
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
-|    +--- org.springframework:spring-messaging:5.2.15.RELEASE
-|    |    +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    \--- org.springframework:spring-websocket:5.2.15.RELEASE
-|         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
+|    +--- org.springframework:spring-messaging:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    \--- org.springframework:spring-websocket:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-actuator-autoconfigure:2.3.12.RELEASE
@@ -770,7 +855,7 @@ productionRuntimeClasspath
 |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
 |    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
 |    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
+|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |         \--- org.aspectj:aspectjweaver:1.9.6
 |    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
 |    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
@@ -795,7 +880,7 @@ productionRuntimeClasspath
 |    |    +--- com.netflix.ribbon:ribbon:2.3.0
 |    |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0
 |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
+|    |    |    |    +--- com.google.guava:guava:16.0 -> 31.0.1-jre (*)
 |    |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
 |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
@@ -808,7 +893,7 @@ productionRuntimeClasspath
 |    |    |    |    |    +--- io.reactivex:rxjava:1.0.9 -> 1.3.8
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
 |    |    |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
-|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1
 |    |    |    |    |         \--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
@@ -825,7 +910,7 @@ productionRuntimeClasspath
 |    |    |    |    |    \--- com.netflix.servo:servo-core:0.7.5 -> 0.13.2 (*)
 |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    +--- com.netflix.hystrix:hystrix-core:1.4.3
 |    |    |    |    +--- com.netflix.archaius:archaius-core:0.4.1 -> 0.7.7 (*)
@@ -835,7 +920,7 @@ productionRuntimeClasspath
 |    |    |    +--- io.reactivex:rxjava:1.0.10 -> 1.3.8
 |    |    |    +--- io.reactivex:rxnetty:0.4.9 (*)
 |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
 |    |    +--- com.netflix.ribbon:ribbon-httpclient:2.3.0
@@ -847,7 +932,7 @@ productionRuntimeClasspath
 |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1 (*)
 |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
 |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1 (*)
 |    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
@@ -864,10 +949,7 @@ productionRuntimeClasspath
 |    |    |         \--- io.projectreactor:reactor-core:3.3.16.RELEASE -> 3.3.17.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-cache:2.3.12.RELEASE
 |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
-|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |    \--- com.stoyanr:evictor:1.0.0
 |    \--- com.netflix.ribbon:ribbon-eureka:2.3.0
 |         +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
@@ -876,7 +958,7 @@ productionRuntimeClasspath
 |         +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
 |         \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 +--- org.springframework.retry:spring-retry:1.2.4.RELEASE
-|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.15.RELEASE (*)
+|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.18.RELEASE (*)
 +--- io.swagger:swagger-core:1.5.24
 |    +--- org.apache.commons:commons-lang3:3.2.1 -> 3.7
 |    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
@@ -887,7 +969,7 @@ productionRuntimeClasspath
 |    |    +--- org.yaml:snakeyaml:1.26
 |    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
 |    +--- io.swagger:swagger-models:1.5.24 -> 1.6.2 (*)
-|    +--- com.google.guava:guava:27.0.1-android -> 28.2-android (*)
+|    +--- com.google.guava:guava:27.0.1-android -> 31.0.1-jre (*)
 |    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
 +--- io.swagger.core.v3:swagger-core:2.0.0
 |    +--- org.apache.commons:commons-lang3:3.7
@@ -939,10 +1021,10 @@ productionRuntimeClasspath
 |    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
 |    |    |    |    +--- io.swagger:swagger-parser:1.0.54 (*)
 |    |    |    |    +--- com.github.java-json-tools:json-schema-validator:2.2.14
-|    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
-|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0
 |    |    |    |    |    |         +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
 |    |    |    |    |    |         +--- com.github.java-json-tools:msg-simple:1.2
@@ -952,11 +1034,11 @@ productionRuntimeClasspath
 |    |    |    |    |    |         \--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    |    +--- com.github.java-json-tools:json-schema-core:1.2.14
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
-|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils:2.0 (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0 (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:uri-template:0.10
-|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 28.2-android (*)
+|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
 |    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
 |    |    |    |    |    |    +--- org.mozilla:rhino:1.7.7.2
@@ -996,20 +1078,31 @@ productionRuntimeClasspath
 +--- org.apache.tomcat.embed:tomcat-embed-core:9.0.54 (*)
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (*)
 +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
-+--- commons-io:commons-io:2.7
++--- commons-io:commons-io:{strictly 2.7} -> 2.7
++--- com.google.guava:guava:31.0.1-jre (*)
++--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 \--- io.springfox:springfox-swagger2:2.9.2
      +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
      +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
      +--- io.springfox:springfox-spi:2.9.2
      |    \--- io.springfox:springfox-core:2.9.2
      |         +--- net.bytebuddy:byte-buddy:1.8.12 -> 1.10.22
-     |         +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |         +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      |         +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      |         +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      |         +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE
-     |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
-     |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
-     |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
+     |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
+     |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
      |         |    \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
      |         \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE
      |              +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
@@ -1023,19 +1116,19 @@ productionRuntimeClasspath
      |    +--- io.springfox:springfox-spi:2.9.2 (*)
      |    +--- io.springfox:springfox-schema:2.9.2 (*)
      |    +--- io.springfox:springfox-spring-web:2.9.2
-     |    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    |    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
      |    |    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
      |    |    \--- io.springfox:springfox-spi:2.9.2 (*)
-     |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
      |    \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
      +--- io.springfox:springfox-spring-web:2.9.2 (*)
-     +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
@@ -1059,17 +1152,17 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    |    |    |    |    +--- org.antlr:stringtemplate:3.2.1
 |    |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
 |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 28.2-android
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 31.0.1-jre
 |    |    |    |    |    |    |    |    |    +--- com.google.guava:failureaccess:1.0.1
 |    |    |    |    |    |    |    |    |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
 |    |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
-|    |    |    |    |    |    |    |    |    +--- org.checkerframework:checker-compat-qual:2.5.5
-|    |    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.3.4
+|    |    |    |    |    |    |    |    |    +--- org.checkerframework:checker-qual:3.12.0
+|    |    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.7.1
 |    |    |    |    |    |    |    |    |    \--- com.google.j2objc:j2objc-annotations:1.3
 |    |    |    |    |    |    |    |    \--- com.google.code.gson:gson:2.1 -> 2.8.7
 |    |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.5.3 -> 0.13.2
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.124.0
 |    |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.3.3 -> 0.7.7
@@ -1078,7 +1171,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    |    |    |    |    |    \--- commons-logging:commons-logging:1.1.1 -> 1.2
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-databind:2.4.3 -> 2.11.4
@@ -1107,7 +1200,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    |    +--- com.google.inject:guice:4.1.0
 |    |    |    |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    |    |    |    +--- aopalliance:aopalliance:1.0
-|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.10.5.1 -> 2.11.4 (*)
@@ -1148,17 +1241,17 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE
 |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot:2.3.12.RELEASE
-|    |    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE
-|    |    |    |    |    |    |    |    \--- org.springframework:spring-jcl:5.2.15.RELEASE
-|    |    |    |    |    |    |    \--- org.springframework:spring-context:5.2.15.RELEASE
-|    |    |    |    |    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE
-|    |    |    |    |    |    |         |    +--- org.springframework:spring-beans:5.2.15.RELEASE
-|    |    |    |    |    |    |         |    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         \--- org.springframework:spring-expression:5.2.15.RELEASE
-|    |    |    |    |    |    |              \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |    |    \--- org.springframework:spring-jcl:5.2.18.RELEASE -> 5.2.15.RELEASE
+|    |    |    |    |    |    |    \--- org.springframework:spring-context:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |         +--- org.springframework:spring-aop:5.2.18.RELEASE
+|    |    |    |    |    |    |         |    +--- org.springframework:spring-beans:5.2.18.RELEASE
+|    |    |    |    |    |    |         |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         \--- org.springframework:spring-expression:5.2.18.RELEASE
+|    |    |    |    |    |    |              \--- org.springframework:spring-core:5.2.18.RELEASE (*)
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE
 |    |    |    |    |    |    |    \--- org.springframework.boot:spring-boot:2.3.12.RELEASE (*)
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter-logging:2.3.12.RELEASE
@@ -1169,13 +1262,13 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    |    |    \--- org.slf4j:jul-to-slf4j:1.7.30
 |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    +--- jakarta.annotation:jakarta.annotation-api:1.3.5
-|    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |    |    |    |    |    \--- org.yaml:snakeyaml:1.26
 |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter-json:2.3.12.RELEASE
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE
-|    |    |    |    |    |    |    +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.11.4
 |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
@@ -1193,14 +1286,32 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    |    |    \--- org.apache.tomcat:tomcat-annotations-api:9.0.54
 |    |    |    |    |    |    \--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.46 -> 9.0.54
 |    |    |    |    |    |         \--- org.apache.tomcat.embed:tomcat-embed-core:9.0.54 (*)
-|    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE (*)
-|    |    |    |    |    \--- org.springframework:spring-webmvc:5.2.15.RELEASE
-|    |    |    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-expression:5.2.15.RELEASE (*)
-|    |    |    |    |         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-webmvc:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |         +--- org.springframework:spring-aop:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-expression:5.2.18.RELEASE (*)
+|    |    |    |    |         \--- org.springframework:spring-web:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-web:5.2.18.RELEASE (*)
 |    |    |    |    \--- org.zowe.apiml.sdk:attls:1.21.3
 |    |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    |    |    +--- org.springframework.boot:spring-boot-starter-validation:2.3.12.RELEASE
@@ -1216,34 +1327,54 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    +--- org.codehaus.janino:janino:3.1.6 -> 3.1.4
 |    |    |    |    \--- org.codehaus.janino:commons-compiler:3.1.4
 |    |    |    +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
+|    |    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 |    |    |    \--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE
 |    |    |         \--- org.springframework.security:spring-security-crypto:5.3.9.RELEASE -> 5.3.11.RELEASE
 |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE
 |    |    |    +--- org.springframework.security:spring-security-core:5.3.11.RELEASE
-|    |    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    \--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    \--- org.springframework:spring-web:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    \--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-web:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
 |    |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE
 |    |    |    +--- org.springframework.security:spring-security-core:5.3.11.RELEASE (*)
-|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
+|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
 |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
-|    |    \--- org.bouncycastle:bcpkix-jdk15on:1.69
-|    |         +--- org.bouncycastle:bcprov-jdk15on:1.69
-|    |         \--- org.bouncycastle:bcutil-jdk15on:1.69
-|    |              \--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    +--- org.bouncycastle:bcpkix-jdk15on:1.69
+|    |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    |    \--- org.bouncycastle:bcutil-jdk15on:1.69
+|    |    |         \--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    \--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
 |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
@@ -1255,13 +1386,8 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
-|    +--- org.springframework:spring-messaging:5.2.15.RELEASE
-|    |    +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    \--- org.springframework:spring-websocket:5.2.15.RELEASE
-|         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
+|    +--- org.springframework:spring-messaging:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    \--- org.springframework:spring-websocket:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-actuator-autoconfigure:2.3.12.RELEASE
@@ -1287,7 +1413,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
 |    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
 |    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
+|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |         \--- org.aspectj:aspectjweaver:1.9.6
 |    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
 |    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
@@ -1312,7 +1438,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    +--- com.netflix.ribbon:ribbon:2.3.0
 |    |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0
 |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
+|    |    |    |    +--- com.google.guava:guava:16.0 -> 31.0.1-jre (*)
 |    |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
 |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
@@ -1325,7 +1451,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    +--- io.reactivex:rxjava:1.0.9 -> 1.3.8
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
 |    |    |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
-|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1
 |    |    |    |    |         \--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
@@ -1342,7 +1468,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    \--- com.netflix.servo:servo-core:0.7.5 -> 0.13.2 (*)
 |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    +--- com.netflix.hystrix:hystrix-core:1.4.3
 |    |    |    |    +--- com.netflix.archaius:archaius-core:0.4.1 -> 0.7.7 (*)
@@ -1352,7 +1478,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    +--- io.reactivex:rxjava:1.0.10 -> 1.3.8
 |    |    |    +--- io.reactivex:rxnetty:0.4.9 (*)
 |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
 |    |    +--- com.netflix.ribbon:ribbon-httpclient:2.3.0
@@ -1364,7 +1490,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1 (*)
 |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
 |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1 (*)
 |    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
@@ -1381,10 +1507,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |         \--- io.projectreactor:reactor-core:3.3.16.RELEASE -> 3.3.17.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-cache:2.3.12.RELEASE
 |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
-|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |    \--- com.stoyanr:evictor:1.0.0
 |    \--- com.netflix.ribbon:ribbon-eureka:2.3.0
 |         +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
@@ -1393,7 +1516,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |         +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
 |         \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 +--- org.springframework.retry:spring-retry:1.2.4.RELEASE
-|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.15.RELEASE (*)
+|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.18.RELEASE (*)
 +--- io.swagger:swagger-core:1.5.24
 |    +--- org.apache.commons:commons-lang3:3.2.1 -> 3.7
 |    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
@@ -1404,7 +1527,7 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    +--- org.yaml:snakeyaml:1.26
 |    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
 |    +--- io.swagger:swagger-models:1.5.24 -> 1.6.2 (*)
-|    +--- com.google.guava:guava:27.0.1-android -> 28.2-android (*)
+|    +--- com.google.guava:guava:27.0.1-android -> 31.0.1-jre (*)
 |    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
 +--- io.swagger.core.v3:swagger-core:2.0.0
 |    +--- org.apache.commons:commons-lang3:3.7
@@ -1456,10 +1579,10 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
 |    |    |    |    +--- io.swagger:swagger-parser:1.0.54 (*)
 |    |    |    |    +--- com.github.java-json-tools:json-schema-validator:2.2.14
-|    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
-|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0
 |    |    |    |    |    |         +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
 |    |    |    |    |    |         +--- com.github.java-json-tools:msg-simple:1.2
@@ -1469,11 +1592,11 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 |    |    |    |    |    |         \--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    |    +--- com.github.java-json-tools:json-schema-core:1.2.14
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
-|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils:2.0 (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0 (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:uri-template:0.10
-|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 28.2-android (*)
+|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
 |    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
 |    |    |    |    |    |    +--- org.mozilla:rhino:1.7.7.2
@@ -1513,20 +1636,31 @@ runtimeClasspath - Runtime classpath of source set 'main'.
 +--- org.apache.tomcat.embed:tomcat-embed-core:9.0.54 (*)
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (*)
 +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
-+--- commons-io:commons-io:2.7
++--- commons-io:commons-io:{strictly 2.7} -> 2.7
++--- com.google.guava:guava:31.0.1-jre (*)
++--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 \--- io.springfox:springfox-swagger2:2.9.2
      +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
      +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
      +--- io.springfox:springfox-spi:2.9.2
      |    \--- io.springfox:springfox-core:2.9.2
      |         +--- net.bytebuddy:byte-buddy:1.8.12 -> 1.10.22
-     |         +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |         +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      |         +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      |         +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      |         +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE
-     |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
-     |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
-     |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+     |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
+     |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
+     |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
      |         |    \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
      |         \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE
      |              +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
@@ -1540,19 +1674,19 @@ runtimeClasspath - Runtime classpath of source set 'main'.
      |    +--- io.springfox:springfox-spi:2.9.2 (*)
      |    +--- io.springfox:springfox-schema:2.9.2 (*)
      |    +--- io.springfox:springfox-spring-web:2.9.2
-     |    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    |    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
      |    |    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
      |    |    \--- io.springfox:springfox-spi:2.9.2 (*)
-     |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     |    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
      |    \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
      +--- io.springfox:springfox-spring-web:2.9.2 (*)
-     +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+     +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
      +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
      +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
      +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
@@ -1583,12 +1717,12 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    |    |    |    +--- javax.ws.rs:jsr311-api:1.1.1
 |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.12.21 -> 0.13.2
 |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.30
-|    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 28.2-android
+|    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 31.0.1-jre
 |    |    |    |    |    |    |    |    +--- com.google.guava:failureaccess:1.0.1
 |    |    |    |    |    |    |    |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
 |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
-|    |    |    |    |    |    |    |    +--- org.checkerframework:checker-compat-qual:2.5.5
-|    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.3.4
+|    |    |    |    |    |    |    |    +--- org.checkerframework:checker-qual:3.12.0
+|    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.7.1
 |    |    |    |    |    |    |    |    \--- com.google.j2objc:j2objc-annotations:1.3
 |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.124.0
 |    |    |    |    |    |    +--- com.sun.jersey:jersey-core:1.19.1
@@ -1609,7 +1743,7 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    |    |    |    +--- com.google.inject:guice:4.1.0
 |    |    |    |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    |    |    |    +--- aopalliance:aopalliance:1.0
-|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.10.5 -> 2.11.4
 |    |    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-databind:2.10.5.1 -> 2.11.4
@@ -1651,17 +1785,17 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE
 |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot:2.3.12.RELEASE
-|    |    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE
-|    |    |    |    |    |    |    |    \--- org.springframework:spring-jcl:5.2.15.RELEASE
-|    |    |    |    |    |    |    \--- org.springframework:spring-context:5.2.15.RELEASE
-|    |    |    |    |    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE
-|    |    |    |    |    |    |         |    +--- org.springframework:spring-beans:5.2.15.RELEASE
-|    |    |    |    |    |    |         |    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         \--- org.springframework:spring-expression:5.2.15.RELEASE
-|    |    |    |    |    |    |              \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |    |    \--- org.springframework:spring-jcl:5.2.18.RELEASE -> 5.2.15.RELEASE
+|    |    |    |    |    |    |    \--- org.springframework:spring-context:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |         +--- org.springframework:spring-aop:5.2.18.RELEASE
+|    |    |    |    |    |    |         |    +--- org.springframework:spring-beans:5.2.18.RELEASE
+|    |    |    |    |    |    |         |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         \--- org.springframework:spring-expression:5.2.18.RELEASE
+|    |    |    |    |    |    |              \--- org.springframework:spring-core:5.2.18.RELEASE (*)
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE
 |    |    |    |    |    |    |    \--- org.springframework.boot:spring-boot:2.3.12.RELEASE (*)
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter-logging:2.3.12.RELEASE
@@ -1672,13 +1806,13 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    |    |    |    |    \--- org.slf4j:jul-to-slf4j:1.7.30
 |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    +--- jakarta.annotation:jakarta.annotation-api:1.3.5
-|    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |    |    |    |    |    \--- org.yaml:snakeyaml:1.26
 |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter-json:2.3.12.RELEASE
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE
-|    |    |    |    |    |    |    +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.11.4
 |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
@@ -1696,14 +1830,32 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    |    |    |    |    \--- org.apache.tomcat:tomcat-annotations-api:9.0.54
 |    |    |    |    |    |    \--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.46 -> 9.0.54
 |    |    |    |    |    |         \--- org.apache.tomcat.embed:tomcat-embed-core:9.0.54 (*)
-|    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE (*)
-|    |    |    |    |    \--- org.springframework:spring-webmvc:5.2.15.RELEASE
-|    |    |    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-expression:5.2.15.RELEASE (*)
-|    |    |    |    |         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-webmvc:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |         +--- org.springframework:spring-aop:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-expression:5.2.18.RELEASE (*)
+|    |    |    |    |         \--- org.springframework:spring-web:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-web:5.2.18.RELEASE (*)
 |    |    |    |    \--- org.zowe.apiml.sdk:attls:1.21.3
 |    |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    |    |    +--- org.springframework.boot:spring-boot-starter-validation:2.3.12.RELEASE
@@ -1718,33 +1870,53 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    +--- org.apache.httpcomponents:httpcore:4.4.14
 |    |    |    +--- org.codehaus.janino:janino:3.1.6 -> 3.1.4
 |    |    |    |    \--- org.codehaus.janino:commons-compiler:3.1.4
-|    |    |    \--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
+|    |    |    +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
+|    |    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE
 |    |    |    +--- org.springframework.security:spring-security-core:5.3.11.RELEASE
-|    |    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    \--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    \--- org.springframework:spring-web:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    \--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-web:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
 |    |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE
 |    |    |    +--- org.springframework.security:spring-security-core:5.3.11.RELEASE (*)
-|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
+|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
 |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
-|    |    \--- org.bouncycastle:bcpkix-jdk15on:1.69
-|    |         +--- org.bouncycastle:bcprov-jdk15on:1.69
-|    |         \--- org.bouncycastle:bcutil-jdk15on:1.69
-|    |              \--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    +--- org.bouncycastle:bcpkix-jdk15on:1.69
+|    |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    |    \--- org.bouncycastle:bcutil-jdk15on:1.69
+|    |    |         \--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    \--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
 |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
@@ -1756,13 +1928,8 @@ testCompileClasspath - Compile classpath for source set 'test'.
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
-|    +--- org.springframework:spring-messaging:5.2.15.RELEASE
-|    |    +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    \--- org.springframework:spring-websocket:5.2.15.RELEASE
-|         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
+|    +--- org.springframework:spring-messaging:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    \--- org.springframework:spring-websocket:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-actuator-autoconfigure:2.3.12.RELEASE
@@ -1786,7 +1953,7 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
 |    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
 |    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
+|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |         \--- org.aspectj:aspectjweaver:1.9.6
 |    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
 |    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
@@ -1825,14 +1992,11 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |         \--- io.projectreactor:reactor-core:3.3.16.RELEASE -> 3.3.17.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-cache:2.3.12.RELEASE
 |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
-|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |    \--- com.stoyanr:evictor:1.0.0
 |    \--- com.netflix.ribbon:ribbon-eureka:2.3.0
 +--- org.springframework.retry:spring-retry:1.2.4.RELEASE
-|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.15.RELEASE (*)
+|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.18.RELEASE (*)
 +--- io.swagger:swagger-core:1.5.24
 |    +--- org.apache.commons:commons-lang3:3.2.1 -> 3.7
 |    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
@@ -1843,7 +2007,7 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    +--- org.yaml:snakeyaml:1.26
 |    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
 |    +--- io.swagger:swagger-models:1.5.24 -> 1.6.2 (*)
-|    +--- com.google.guava:guava:27.0.1-android -> 28.2-android (*)
+|    +--- com.google.guava:guava:27.0.1-android -> 31.0.1-jre (*)
 |    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
 +--- io.swagger.core.v3:swagger-core:2.0.0
 |    +--- org.apache.commons:commons-lang3:3.7
@@ -1895,15 +2059,15 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
 |    |    |    |    +--- io.swagger:swagger-parser:1.0.54 (*)
 |    |    |    |    +--- com.github.java-json-tools:json-schema-validator:2.2.14
-|    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
 |    |    |    |    |    +--- com.github.java-json-tools:json-schema-core:1.2.14
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
-|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils:2.0
 |    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
 |    |    |    |    |    |    +--- com.github.java-json-tools:uri-template:0.10
-|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 28.2-android (*)
+|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2
 |    |    |    |    |    |    |    |    +--- com.github.java-json-tools:btf:1.3
 |    |    |    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
@@ -1946,20 +2110,31 @@ testCompileClasspath - Compile classpath for source set 'test'.
 +--- org.apache.tomcat.embed:tomcat-embed-core:9.0.54 (*)
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (*)
 +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
-+--- commons-io:commons-io:2.7
++--- commons-io:commons-io:{strictly 2.7} -> 2.7
++--- com.google.guava:guava:31.0.1-jre (*)
++--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 +--- io.springfox:springfox-swagger2:2.9.2
 |    +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
 |    +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
 |    +--- io.springfox:springfox-spi:2.9.2
 |    |    \--- io.springfox:springfox-core:2.9.2
 |    |         +--- net.bytebuddy:byte-buddy:1.8.12 -> 1.10.22
-|    |         +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |         +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
 |    |         +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
 |    |         +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |         +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE
-|    |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
-|    |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
-|    |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+|    |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
+|    |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
+|    |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
 |    |         |    \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
 |    |         \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE
 |    |              +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
@@ -1973,19 +2148,19 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    +--- io.springfox:springfox-spi:2.9.2 (*)
 |    |    +--- io.springfox:springfox-schema:2.9.2 (*)
 |    |    +--- io.springfox:springfox-spring-web:2.9.2
-|    |    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |    |    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
 |    |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
 |    |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
 |    |    |    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
 |    |    |    \--- io.springfox:springfox-spi:2.9.2 (*)
-|    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
 |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
 |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
 |    |    \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
 |    +--- io.springfox:springfox-spring-web:2.9.2 (*)
-|    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
 |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
 |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
@@ -2024,8 +2199,8 @@ testCompileClasspath - Compile classpath for source set 'test'.
 +--- io.rest-assured:spring-mock-mvc:3.0.7
 |    +--- io.rest-assured:rest-assured:3.0.7 (*)
 |    +--- org.springframework:spring-test:4.2.6.RELEASE -> 5.2.15.RELEASE
-|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    \--- org.springframework:spring-webmvc:4.2.6.RELEASE -> 5.2.15.RELEASE (*)
+|    |    \--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    \--- org.springframework:spring-webmvc:4.2.6.RELEASE -> 5.2.18.RELEASE (*)
 +--- org.projectlombok:lombok:1.18.20
 +--- org.springframework.boot:spring-boot-starter-test:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
@@ -2081,7 +2256,7 @@ testCompileClasspath - Compile classpath for source set 'test'.
 |    |    \--- org.mockito:mockito-core:2.23.4 -> 3.3.3 (*)
 |    +--- org.skyscreamer:jsonassert:1.5.0
 |    |    \--- com.vaadin.external.google:android-json:0.0.20131108.vaadin1
-|    +--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    +--- org.springframework:spring-test:5.2.15.RELEASE (*)
 |    \--- org.xmlunit:xmlunit-core:2.7.0
 +--- net.minidev:json-smart:{strictly 2.4.7} -> 2.4.7 (*)
@@ -2121,17 +2296,17 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    |    |    |    |    +--- org.antlr:stringtemplate:3.2.1
 |    |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
 |    |    |    |    |    |    |    |    |    \--- antlr:antlr:2.7.7
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 28.2-android
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:14.0.1 -> 31.0.1-jre
 |    |    |    |    |    |    |    |    |    +--- com.google.guava:failureaccess:1.0.1
 |    |    |    |    |    |    |    |    |    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
 |    |    |    |    |    |    |    |    |    +--- com.google.code.findbugs:jsr305:3.0.2
-|    |    |    |    |    |    |    |    |    +--- org.checkerframework:checker-compat-qual:2.5.5
-|    |    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.3.4
+|    |    |    |    |    |    |    |    |    +--- org.checkerframework:checker-qual:3.12.0
+|    |    |    |    |    |    |    |    |    +--- com.google.errorprone:error_prone_annotations:2.7.1
 |    |    |    |    |    |    |    |    |    \--- com.google.j2objc:j2objc-annotations:1.3
 |    |    |    |    |    |    |    |    \--- com.google.code.gson:gson:2.1 -> 2.8.7
 |    |    |    |    |    |    |    +--- com.netflix.servo:servo-core:0.5.3 -> 0.13.2
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:19.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    |    \--- com.netflix.spectator:spectator-api:0.124.0
 |    |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.3.3 -> 0.7.7
@@ -2140,7 +2315,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    |    |    |    |    |    \--- commons-logging:commons-logging:1.1.1 -> 1.2
 |    |    |    |    |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    |    +--- com.google.guava:guava:16.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.4.3 -> 2.11.4
 |    |    |    |    |    |    |    |    \--- com.fasterxml.jackson.core:jackson-databind:2.4.3 -> 2.11.4
@@ -2169,7 +2344,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    |    +--- com.google.inject:guice:4.1.0
 |    |    |    |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    |    |    |    +--- aopalliance:aopalliance:1.0
-|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 28.2-android (*)
+|    |    |    |    |    |    |    \--- com.google.guava:guava:19.0 -> 31.0.1-jre (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.10.5 -> 2.11.4
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.10.5.1 -> 2.11.4 (*)
@@ -2210,17 +2385,17 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE
 |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot:2.3.12.RELEASE
-|    |    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE
-|    |    |    |    |    |    |    |    \--- org.springframework:spring-jcl:5.2.15.RELEASE
-|    |    |    |    |    |    |    \--- org.springframework:spring-context:5.2.15.RELEASE
-|    |    |    |    |    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE
-|    |    |    |    |    |    |         |    +--- org.springframework:spring-beans:5.2.15.RELEASE
-|    |    |    |    |    |    |         |    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |         \--- org.springframework:spring-expression:5.2.15.RELEASE
-|    |    |    |    |    |    |              \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |    |    \--- org.springframework:spring-jcl:5.2.18.RELEASE -> 5.2.15.RELEASE
+|    |    |    |    |    |    |    \--- org.springframework:spring-context:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |         +--- org.springframework:spring-aop:5.2.18.RELEASE
+|    |    |    |    |    |    |         |    +--- org.springframework:spring-beans:5.2.18.RELEASE
+|    |    |    |    |    |    |         |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |         \--- org.springframework:spring-expression:5.2.18.RELEASE
+|    |    |    |    |    |    |              \--- org.springframework:spring-core:5.2.18.RELEASE (*)
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE
 |    |    |    |    |    |    |    \--- org.springframework.boot:spring-boot:2.3.12.RELEASE (*)
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter-logging:2.3.12.RELEASE
@@ -2231,13 +2406,13 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    |    |    \--- org.slf4j:jul-to-slf4j:1.7.30
 |    |    |    |    |    |    |         \--- org.slf4j:slf4j-api:1.7.30
 |    |    |    |    |    |    +--- jakarta.annotation:jakarta.annotation-api:1.3.5
-|    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |    |    |    |    |    \--- org.yaml:snakeyaml:1.26
 |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter-json:2.3.12.RELEASE
 |    |    |    |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE
-|    |    |    |    |    |    |    +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |    |    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.4 (*)
 |    |    |    |    |    |    +--- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.11.4
 |    |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.11.4
@@ -2255,14 +2430,32 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    |    |    \--- org.apache.tomcat:tomcat-annotations-api:9.0.54
 |    |    |    |    |    |    \--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.46 -> 9.0.54
 |    |    |    |    |    |         \--- org.apache.tomcat.embed:tomcat-embed-core:9.0.54 (*)
-|    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE (*)
-|    |    |    |    |    \--- org.springframework:spring-webmvc:5.2.15.RELEASE
-|    |    |    |    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    |    |    |    |         +--- org.springframework:spring-expression:5.2.15.RELEASE (*)
-|    |    |    |    |         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-web:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-webmvc:5.2.15.RELEASE -> 5.2.18.RELEASE
+|    |    |    |    |         +--- org.springframework:spring-aop:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |         +--- org.springframework:spring-expression:5.2.18.RELEASE (*)
+|    |    |    |    |         \--- org.springframework:spring-web:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-beans:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE
+|    |    |    |    |    +--- org.springframework:spring-context:5.2.18.RELEASE (*)
+|    |    |    |    |    +--- org.springframework:spring-core:5.2.18.RELEASE (*)
+|    |    |    |    |    \--- org.springframework:spring-web:5.2.18.RELEASE (*)
 |    |    |    |    \--- org.zowe.apiml.sdk:attls:1.21.3
 |    |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    |    |    +--- org.springframework.boot:spring-boot-starter-validation:2.3.12.RELEASE
@@ -2278,34 +2471,54 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    +--- org.codehaus.janino:janino:3.1.6 -> 3.1.4
 |    |    |    |    \--- org.codehaus.janino:commons-compiler:3.1.4
 |    |    |    +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
+|    |    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 |    |    |    \--- org.springframework.cloud:spring-cloud-commons:2.2.9.RELEASE
 |    |    |         \--- org.springframework.security:spring-security-crypto:5.3.9.RELEASE -> 5.3.11.RELEASE
 |    |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE
 |    |    |    +--- org.springframework.security:spring-security-core:5.3.11.RELEASE
-|    |    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    |    \--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    \--- org.springframework:spring-web:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    |    \--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-expression:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-web:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
 |    |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE
 |    |    |    +--- org.springframework.security:spring-security-core:5.3.11.RELEASE (*)
-|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
-|    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.15.RELEASE (*)
+|    |    |    +--- org.springframework:spring-aop:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-beans:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    +--- org.springframework:spring-context:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
+|    |    |    \--- org.springframework:spring-core:5.2.16.RELEASE -> 5.2.18.RELEASE (*)
 |    |    +--- org.apache.commons:commons-lang3:3.7
 |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
-|    |    \--- org.bouncycastle:bcpkix-jdk15on:1.69
-|    |         +--- org.bouncycastle:bcprov-jdk15on:1.69
-|    |         \--- org.bouncycastle:bcutil-jdk15on:1.69
-|    |              \--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    +--- org.bouncycastle:bcpkix-jdk15on:1.69
+|    |    |    +--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    |    \--- org.bouncycastle:bcutil-jdk15on:1.69
+|    |    |         \--- org.bouncycastle:bcprov-jdk15on:1.69
+|    |    +--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    +--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
+|    |    \--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 |    +--- org.springframework.security:spring-security-web:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
 |    +--- org.springframework.security:spring-security-config:{strictly 5.3.11.RELEASE} -> 5.3.11.RELEASE (*)
@@ -2317,13 +2530,8 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-websocket:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter-web:2.3.12.RELEASE (*)
-|    +--- org.springframework:spring-messaging:5.2.15.RELEASE
-|    |    +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    \--- org.springframework:spring-websocket:5.2.15.RELEASE
-|         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|         +--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|         \--- org.springframework:spring-web:5.2.15.RELEASE (*)
+|    +--- org.springframework:spring-messaging:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    \--- org.springframework:spring-websocket:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 +--- org.springframework.boot:spring-boot-starter-actuator:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
 |    +--- org.springframework.boot:spring-boot-actuator-autoconfigure:2.3.12.RELEASE
@@ -2349,7 +2557,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.3.12.RELEASE (*)
 |    |    \--- org.springframework.boot:spring-boot-starter-aop:2.3.12.RELEASE
 |    |         +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE (*)
+|    |         +--- org.springframework:spring-aop:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |         \--- org.aspectj:aspectjweaver:1.9.6
 |    +--- org.springframework.cloud:spring-cloud-netflix-eureka-client:2.2.9.RELEASE
 |    |    \--- org.springframework.cloud:spring-cloud-netflix-hystrix:2.2.9.RELEASE (*)
@@ -2374,7 +2582,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    +--- com.netflix.ribbon:ribbon:2.3.0
 |    |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0
 |    |    |    |    +--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0 -> 28.2-android (*)
+|    |    |    |    +--- com.google.guava:guava:16.0 -> 31.0.1-jre (*)
 |    |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
 |    |    |    |    +--- commons-lang:commons-lang:2.6
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
@@ -2387,7 +2595,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    +--- io.reactivex:rxjava:1.0.9 -> 1.3.8
 |    |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
 |    |    |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
-|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1
 |    |    |    |    |         \--- org.slf4j:slf4j-api:1.6.4 -> 1.7.30
@@ -2404,7 +2612,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    \--- com.netflix.servo:servo-core:0.7.5 -> 0.13.2 (*)
 |    |    |    |    +--- javax.inject:javax.inject:1
 |    |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
-|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    +--- com.netflix.hystrix:hystrix-core:1.4.3
 |    |    |    |    +--- com.netflix.archaius:archaius-core:0.4.1 -> 0.7.7 (*)
@@ -2414,7 +2622,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    +--- io.reactivex:rxjava:1.0.10 -> 1.3.8
 |    |    |    +--- io.reactivex:rxnetty:0.4.9 (*)
 |    |    |    +--- commons-configuration:commons-configuration:1.8 -> 1.10 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
 |    |    +--- com.netflix.ribbon:ribbon-httpclient:2.3.0
@@ -2426,7 +2634,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    +--- com.sun.jersey.contribs:jersey-apache-client4:1.19.1 (*)
 |    |    |    +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
 |    |    |    +--- com.netflix.servo:servo-core:0.10.1 -> 0.13.2 (*)
-|    |    |    +--- com.google.guava:guava:16.0.1 -> 28.2-android (*)
+|    |    |    +--- com.google.guava:guava:16.0.1 -> 31.0.1-jre (*)
 |    |    |    +--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 |    |    |    \--- com.netflix.netflix-commons:netflix-commons-util:0.1.1 (*)
 |    |    +--- com.netflix.ribbon:ribbon-loadbalancer:2.3.0 (*)
@@ -2443,10 +2651,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |         \--- io.projectreactor:reactor-core:3.3.16.RELEASE -> 3.3.17.RELEASE (*)
 |    |    +--- org.springframework.boot:spring-boot-starter-cache:2.3.12.RELEASE
 |    |    |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
-|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE
-|    |    |         +--- org.springframework:spring-beans:5.2.15.RELEASE (*)
-|    |    |         +--- org.springframework:spring-context:5.2.15.RELEASE (*)
-|    |    |         \--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    |    |    \--- org.springframework:spring-context-support:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    |    \--- com.stoyanr:evictor:1.0.0
 |    \--- com.netflix.ribbon:ribbon-eureka:2.3.0
 |         +--- com.netflix.ribbon:ribbon-core:2.3.0 (*)
@@ -2455,7 +2660,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |         +--- org.slf4j:slf4j-api:1.7.12 -> 1.7.30
 |         \--- com.netflix.archaius:archaius-core:0.7.6 -> 0.7.7 (*)
 +--- org.springframework.retry:spring-retry:1.2.4.RELEASE
-|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.15.RELEASE (*)
+|    \--- org.springframework:spring-core:4.3.22.RELEASE -> 5.2.18.RELEASE (*)
 +--- io.swagger:swagger-core:1.5.24
 |    +--- org.apache.commons:commons-lang3:3.2.1 -> 3.7
 |    +--- org.slf4j:slf4j-api:1.7.22 -> 1.7.30
@@ -2466,7 +2671,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    +--- org.yaml:snakeyaml:1.26
 |    |    \--- com.fasterxml.jackson.core:jackson-core:2.11.4
 |    +--- io.swagger:swagger-models:1.5.24 -> 1.6.2 (*)
-|    +--- com.google.guava:guava:27.0.1-android -> 28.2-android (*)
+|    +--- com.google.guava:guava:27.0.1-android -> 31.0.1-jre (*)
 |    \--- javax.validation:validation-api:1.1.0.Final -> 2.0.1.Final
 +--- io.swagger.core.v3:swagger-core:2.0.0
 |    +--- org.apache.commons:commons-lang3:3.7
@@ -2518,10 +2723,10 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    +--- io.swagger:swagger-core:1.6.1 -> 1.5.24 (*)
 |    |    |    |    +--- io.swagger:swagger-parser:1.0.54 (*)
 |    |    |    |    +--- com.github.java-json-tools:json-schema-validator:2.2.14
-|    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
-|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    \--- com.github.java-json-tools:jackson-coreutils:2.0
 |    |    |    |    |    |         +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
 |    |    |    |    |    |         +--- com.github.java-json-tools:msg-simple:1.2
@@ -2531,11 +2736,11 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    |    |    |    |         \--- com.google.code.findbugs:jsr305:3.0.2
 |    |    |    |    |    +--- com.github.java-json-tools:json-schema-core:1.2.14
 |    |    |    |    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.11.0 -> 2.11.4 (*)
-|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android (*)
+|    |    |    |    |    |    +--- com.google.guava:guava:28.2-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils:2.0 (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:jackson-coreutils-equivalence:1.0 (*)
 |    |    |    |    |    |    +--- com.github.java-json-tools:uri-template:0.10
-|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 28.2-android (*)
+|    |    |    |    |    |    |    +--- com.google.guava:guava:28.1-android -> 31.0.1-jre (*)
 |    |    |    |    |    |    |    +--- com.github.java-json-tools:msg-simple:1.2 (*)
 |    |    |    |    |    |    |    \--- com.google.code.findbugs:jsr305:2.0.1 -> 3.0.2
 |    |    |    |    |    |    +--- org.mozilla:rhino:1.7.7.2
@@ -2575,20 +2780,31 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 +--- org.apache.tomcat.embed:tomcat-embed-core:9.0.54 (*)
 +--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54 (*)
 +--- com.thoughtworks.xstream:xstream:{strictly 1.4.18} -> 1.4.18 (*)
-+--- commons-io:commons-io:2.7
++--- commons-io:commons-io:{strictly 2.7} -> 2.7
++--- com.google.guava:guava:31.0.1-jre (*)
++--- org.springframework:spring-aop:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-beans:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-context:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-context-support:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-core:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-expression:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-messaging:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-web:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-webmvc:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
++--- org.springframework:spring-websocket:{strictly 5.2.18.RELEASE} -> 5.2.18.RELEASE (*)
 +--- io.springfox:springfox-swagger2:2.9.2
 |    +--- io.swagger:swagger-annotations:1.5.20 -> 1.6.2
 |    +--- io.swagger:swagger-models:1.5.20 -> 1.6.2 (*)
 |    +--- io.springfox:springfox-spi:2.9.2
 |    |    \--- io.springfox:springfox-core:2.9.2
 |    |         +--- net.bytebuddy:byte-buddy:1.8.12 -> 1.10.22
-|    |         +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |         +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
 |    |         +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
 |    |         +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |         +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE
-|    |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
-|    |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
-|    |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.15.RELEASE (*)
+|    |         |    +--- org.springframework:spring-beans:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
+|    |         |    +--- org.springframework:spring-context:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
+|    |         |    +--- org.springframework:spring-aop:4.0.9.RELEASE -> 5.2.18.RELEASE (*)
 |    |         |    \--- org.slf4j:slf4j-api:1.7.10 -> 1.7.30
 |    |         \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE
 |    |              +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
@@ -2602,19 +2818,19 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    +--- io.springfox:springfox-spi:2.9.2 (*)
 |    |    +--- io.springfox:springfox-schema:2.9.2 (*)
 |    |    +--- io.springfox:springfox-spring-web:2.9.2
-|    |    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |    |    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
 |    |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
 |    |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
 |    |    |    +--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
 |    |    |    \--- io.springfox:springfox-spi:2.9.2 (*)
-|    |    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    |    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
 |    |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
 |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
 |    |    \--- org.springframework.plugin:spring-plugin-metadata:1.2.0.RELEASE (*)
 |    +--- io.springfox:springfox-spring-web:2.9.2 (*)
-|    +--- com.google.guava:guava:20.0 -> 28.2-android (*)
+|    +--- com.google.guava:guava:20.0 -> 31.0.1-jre (*)
 |    +--- com.fasterxml:classmate:1.4.0 -> 1.5.1
 |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.30
 |    +--- org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE (*)
@@ -2653,8 +2869,8 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 +--- io.rest-assured:spring-mock-mvc:3.0.7
 |    +--- io.rest-assured:rest-assured:3.0.7 (*)
 |    +--- org.springframework:spring-test:4.2.6.RELEASE -> 5.2.15.RELEASE
-|    |    \--- org.springframework:spring-core:5.2.15.RELEASE (*)
-|    \--- org.springframework:spring-webmvc:4.2.6.RELEASE -> 5.2.15.RELEASE (*)
+|    |    \--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
+|    \--- org.springframework:spring-webmvc:4.2.6.RELEASE -> 5.2.18.RELEASE (*)
 +--- org.projectlombok:lombok:1.18.20
 +--- org.springframework.boot:spring-boot-starter-test:2.3.12.RELEASE
 |    +--- org.springframework.boot:spring-boot-starter:2.3.12.RELEASE (*)
@@ -2717,7 +2933,7 @@ testRuntimeClasspath - Runtime classpath of source set 'test'.
 |    |    \--- org.junit.jupiter:junit-jupiter-api:5.1.1 -> 5.6.3 (*)
 |    +--- org.skyscreamer:jsonassert:1.5.0
 |    |    \--- com.vaadin.external.google:android-json:0.0.20131108.vaadin1
-|    +--- org.springframework:spring-core:5.2.15.RELEASE (*)
+|    +--- org.springframework:spring-core:5.2.15.RELEASE -> 5.2.18.RELEASE (*)
 |    +--- org.springframework:spring-test:5.2.15.RELEASE (*)
 |    \--- org.xmlunit:xmlunit-core:2.7.0
 +--- net.minidev:json-smart:{strictly 2.4.7} -> 2.4.7 (*)
@@ -2744,5 +2960,5 @@ Deprecated Gradle features were used in this build, making it incompatible with 
 Use '--warning-mode all' to show the individual deprecation warnings.
 See https://docs.gradle.org/6.8.3/userguide/command_line_interface.html#sec:command_line_warnings
 
-BUILD SUCCESSFUL in 12s
+BUILD SUCCESSFUL in 1m 47s
 1 actionable task: 1 executed

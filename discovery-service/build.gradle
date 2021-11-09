@@ -78,15 +78,24 @@ dependencies {
     implementation libraries.tomcat_embed_core
     implementation libraries.tomcat_embed_websocket
     implementation libraries.xstream
-    // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation "commons-io:commons-io:2.7!!"
+    implementation libraries.commons_io
+    implementation libraries.guava
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_context_support
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.spring_messaging
+    implementation libraries.spring_web
+    implementation libraries.spring_webmvc
+    implementation libraries.spring_websocket
 
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    // https://mvnrepository.com/artifact/com.netflix.servo/servo-core
-    implementation group: 'com.netflix.servo', name: 'servo-core', version: '0.12.28'
+    implementation libraries.netflix_servo
 
     testCompile libraries.lombok
     testAnnotationProcessor libraries.lombok

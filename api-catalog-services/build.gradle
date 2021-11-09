@@ -89,7 +89,18 @@ dependencies {
     implementation libraries.tomcat_embed_core
     implementation libraries.tomcat_embed_websocket
     implementation libraries.xstream
-    implementation "commons-io:commons-io:2.7!!"
+    implementation libraries.commons_io
+    implementation libraries.guava
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_context_support
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.spring_messaging
+    implementation libraries.spring_web
+    implementation libraries.spring_webmvc
+    implementation libraries.spring_websocket
 
 
     implementation libraries.springFox
