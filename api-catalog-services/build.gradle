@@ -73,6 +73,7 @@ dependencies {
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.apache_velocity
     implementation libraries.openapidiff
+    implementation libraries.http_client
     implementation libraries.jetty_client
     implementation libraries.jetty_http
     implementation libraries.jetty_io
