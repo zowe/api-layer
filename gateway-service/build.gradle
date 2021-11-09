@@ -88,6 +88,10 @@ dependencies {
     implementation libraries.jetty_websocket_api
     implementation libraries.jjwt
     implementation libraries.nimbusJoseJwt
+    implementation libraries.netty
+    implementation libraries.netty_transport_native_kqueue
+    implementation libraries.netty_resolver_dns_native_macos
+
     implementation libraries.eh_cache
     implementation libraries.spring_retry
     implementation libraries.awaitility

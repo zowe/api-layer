@@ -41,6 +41,7 @@ ext {
     lombokVersion = '1.18.20'
     mockitoCoreVersion = '2.23.4'
     netflixServoVersion = '0.13.2'
+    nettyVersion = '4.1.70.Final'
     nimbusJoseJwtVersion = '8.21.1'
     openApiDiffVersion = '2.0.0-beta.10'
     reactorTestVersion = '3.4.9'
@@ -135,6 +136,9 @@ ext {
         mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
         mockito_jupiter                    : "org.mockito:mockito-junit-jupiter:${mockitoCoreVersion}",
         netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
+        netty                              : "io.netty:netty-all:${nettyVersion}",
+        netty_transport_native_kqueue      : "io.netty:netty-transport-native-kqueue:${nettyVersion}",
+        netty_resolver_dns_native_macos    : "io.netty:netty-resolver-dns-native-macos:${nettyVersion}",
         nimbusJoseJwt                      : "com.nimbusds:nimbus-jose-jwt:${nimbusJoseJwtVersion}",
         openapidiff                        : "org.openapitools.openapidiff:openapi-diff-core:${openApiDiffVersion}",
         reactorTest                        : "io.projectreactor:reactor-test:${reactorTestVersion}",
