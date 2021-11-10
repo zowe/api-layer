@@ -1,13 +1,16 @@
-import { Component } from 'react';
-import { Button, FormField, TextInput } from 'mineral-ui';
-import { IconDanger } from 'mineral-ui-icons';
-
+import React from 'react';
+import { IconButton, InputAdornment, InputLabel, OutlinedInput } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import TextField from '@material-ui/core/TextField';
+import WarningIcon from '@material-ui/icons/Warning';
 import logoImage from '../../assets/images/api-catalog-logo.png';
-import './Login.css';
-import './LoginWebflow.css';
 import Spinner from '../Spinner/Spinner';
+import './Login.css';
 
-export default class Login extends Component {
+export default class Login extends React.Component {
     constructor(props) {
         super(props);
 
@@ -15,10 +18,18 @@ export default class Login extends Component {
             username: '',
             password: '',
             errorMessage: '',
+            showPassword: false,
         };
 
+        this.handleClickShowPassword = this.handleClickShowPassword.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleClickShowPassword(showPassword) {
+        this.setState({ showPassword: !showPassword });
+        /* eslint-disable no-console */
+        console.log(showPassword);
     }
 
     isDisabled = () => {
@@ -68,7 +79,7 @@ export default class Login extends Component {
     }
 
     render() {
-        const { username, password, errorMessage } = this.state;
+        const { username, password, errorMessage, showPassword } = this.state;
         const { authentication, isFetching } = this.props;
         let messageText;
         if (
@@ -105,61 +116,75 @@ export default class Login extends Component {
                                         className="form"
                                         onSubmit={this.handleSubmit}
                                     >
-                                        <FormField label="Username" className="formfield">
-                                            <TextInput
-                                                id="username"
-                                                data-testid="username"
-                                                name="username"
-                                                type="text"
-                                                size="jumbo"
-                                                value={username}
-                                                onChange={this.handleChange}
-                                                autocomplete
-                                            />
-                                        </FormField>
-                                        <FormField label="Password" className="formfield">
-                                            <TextInput
-                                                id="password"
-                                                data-testid="password"
-                                                name="password"
-                                                type="password"
-                                                size="jumbo"
-                                                value={password}
-                                                onChange={this.handleChange}
-                                                caption="Default: password"
-                                                autocomplete
-                                            />
-                                        </FormField>
-                                        <FormField className="formfield" label="">
-                                            <Button
-                                                type="submit"
-                                                data-testid="submit"
-                                                primary
-                                                fullWidth
-                                                disabled={this.isDisabled()}
-                                                size="jumbo"
-                                            >
-                                                Sign in
-                                            </Button>
-                                        </FormField>
-                                        <FormField className="formfield form-spinner" label="">
-                                            <Spinner
-                                                isLoading={isFetching}
-                                                css={{
-                                                    position: 'relative',
-                                                    top: '70px',
-                                                }}
-                                            />
-                                        </FormField>
+                                        <CssBaseline />
+                                        <TextField
+                                            label="Username"
+                                            data-testid="username"
+                                            className="formfield"
+                                            variant="outlined"
+                                            // margin="normal"
+                                            required
+                                            fullWidth
+                                            id="email"
+                                            name="username"
+                                            value={username}
+                                            onChange={this.handleChange}
+                                            autoComplete="on"
+                                            // autoFocus
+                                        />
+                                        <InputLabel className="formfield" htmlFor="outlined-adornment-password">
+                                            Password
+                                        </InputLabel>
+                                        <OutlinedInput
+                                            id="password"
+                                            data-testid="password"
+                                            name="password"
+                                            type={showPassword ? 'text' : 'password'}
+                                            value={password}
+                                            onChange={this.handleChange}
+                                            caption="Default: password"
+                                            autoComplete="on"
+                                            endAdornment={
+                                                <InputAdornment position="end">
+                                                    <IconButton
+                                                        aria-label="toggle password visibility"
+                                                        edge="end"
+                                                        onClick={() => this.handleClickShowPassword(showPassword)}
+                                                    >
+                                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            }
+                                            label="Password"
+                                        />
+                                        <Button
+                                            className="formfield"
+                                            label=""
+                                            type="submit"
+                                            data-testid="submit"
+                                            primary
+                                            fullWidth
+                                            disabled={this.isDisabled()}
+                                            style={{ size: 'jumbo' }}
+                                        >
+                                            Sign in
+                                        </Button>
+                                        <Spinner
+                                            className="formfield"
+                                            isLoading={isFetching}
+                                            css={{
+                                                position: 'relative',
+                                                top: '70px',
+                                            }}
+                                        />
                                         {messageText !== undefined &&
                                             messageText !== null && (
-                                                <FormField className="error-message" label="">
-                                                    <div id="error-message">
-                                                        <p className="error-message-content">
-                                                            <IconDanger color="#de1b1b" size="2rem" /> {messageText}
-                                                        </p>
-                                                    </div>
-                                                </FormField>
+                                                <div id="error-message">
+                                                    <p style={{ color: '#de1b1b' }} className="error-message-content">
+                                                        <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
+                                                        {messageText}
+                                                    </p>
+                                                </div>
                                             )}
                                     </form>
                                 </div>

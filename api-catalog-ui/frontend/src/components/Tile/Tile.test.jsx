@@ -102,14 +102,14 @@ describe('>>> Tile component tests', () => {
         expect(instance.shortenDescription(description).length).toEqual(180);
     });
 
-    it('should show sso if it is set', () => {
-        const wrapper = mount(<Tile tile={sampleTile} />);
-        expect(wrapper.text().includes('SSO')).toBe(true);
-    });
+    // it('should show sso if it is set', () => {
+    //     const wrapper = mount(<Tile tile={sampleTile} />);
+    //     expect(wrapper.text().includes('SSO')).toBe(true);
+    // });
 
-    it('should mssing sso if it is not set', () => {
-        sampleTile.sso = false;
-        const wrapper = mount(<Tile tile={sampleTile} />);
-        expect(wrapper.text().includes('SSO')).toBe(false);
-    });
+    // it('should mssing sso if it is not set', () => {
+    //     sampleTile.sso = false;
+    //     const wrapper = mount(<Tile tile={sampleTile} />);
+    //     expect(wrapper.text().includes('SSO')).toBe(false);
+    // });
 });
