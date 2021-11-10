@@ -90,7 +90,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
     @TestsNotMeantForZowe
     void wsRouteOfDiscoverableClient() {
         String wsRelativeUrl = "/ws";
-        String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
+        String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
         String transformedLocation = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, STATIC_WEBSOCKET);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
