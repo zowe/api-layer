@@ -42,7 +42,7 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
-    private final static String ZOSMF_ENDPOINT = "/api/" + ZOSMF_SERVICE_ID + "/zosmf/restfiles/ds";
+    private final static String ZOSMF_ENDPOINT = "/" + ZOSMF_SERVICE_ID + "api/zosmf/restfiles/ds";
     private List<NameValuePair> arguments;
 
     private String token;

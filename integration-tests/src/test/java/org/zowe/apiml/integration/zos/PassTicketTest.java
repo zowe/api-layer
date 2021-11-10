@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 /**
  * Verify integration of the API ML Passticket support with the zOS provider of the Passticket.
@@ -50,8 +51,6 @@ class PassTicketTest implements TestWithStartedInstances {
     private final static String USERNAME = ENVIRONMENT_CONFIGURATION.getCredentials().getUser();
     private final static String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
 
-    private final static String TICKET_ENDPOINT = "/gateway/api/v1/auth/ticket";
-    private final static String TICKET_ENDPOINT_OLD_PATH_FORMAT = "/api/v1/gateway/auth/ticket";
     private final static String COOKIE = "apimlAuthenticationToken";
 
     @BeforeEach
@@ -62,8 +61,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
     protected static URI[] passTicketUrls() {
         return new URI[]{
-            HttpRequestUtils.getUriFromGateway(TICKET_ENDPOINT),
-            HttpRequestUtils.getUriFromGateway(TICKET_ENDPOINT_OLD_PATH_FORMAT)
+            HttpRequestUtils.getUriFromGateway(ROUTED_PASSTICKET)
         };
     }
 

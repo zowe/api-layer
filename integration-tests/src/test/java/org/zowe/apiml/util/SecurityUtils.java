@@ -47,16 +47,12 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
 
-    public final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
-    public final static String GATEWAY_LOGOUT_ENDPOINT = "/auth/logout";
-    public final static String GATEWAY_QUERY_ENDPOINT = "/auth/query";
-
     public final static String GATEWAY_BASE_PATH = "/gateway/api/v1";
-    public final static String GATEWAY_BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
 
     private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();;
 
@@ -84,16 +80,8 @@ public class SecurityUtils {
         return String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, port, GATEWAY_BASE_PATH, path);
     }
 
-    public static String getGatewayUrlOldFormat(String path) {
-        return String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH_OLD_FORMAT, path);
-    }
-
     public static String getGatewayLogoutUrl() {
-        return getGatewayUrl(GATEWAY_LOGOUT_ENDPOINT);
-    }
-
-    public static String getGatewayLogoutUrlOldPath() {
-        return getGatewayUrlOldFormat(GATEWAY_LOGOUT_ENDPOINT);
+        return getGatewayUrl(ROUTED_LOGOUT);
     }
 
     public static String gatewayToken() {
@@ -105,7 +93,7 @@ public class SecurityUtils {
     }
 
     public static String gatewayToken(String username, String password) {
-        return gatewayToken(HttpRequestUtils.getUriFromGateway(GATEWAY_BASE_PATH + GATEWAY_LOGIN_ENDPOINT), username, password);
+        return gatewayToken(HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN), username, password);
     }
 
     public static String gatewayToken(URI gatewayLoginEndpoint, String username, String password) {
@@ -165,7 +153,7 @@ public class SecurityUtils {
         given()
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .when()
-            .get(HttpRequestUtils.getUriFromGateway(GATEWAY_BASE_PATH + GATEWAY_QUERY_ENDPOINT))
+            .get(HttpRequestUtils.getUriFromGateway(ROUTED_QUERY))
         .then()
             .statusCode(status.value());
     }

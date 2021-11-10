@@ -23,6 +23,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @DiscoverableClientDependentTest
 class DownloadApiIntegrationTest implements TestWithStartedInstances {
@@ -34,8 +35,7 @@ class DownloadApiIntegrationTest implements TestWithStartedInstances {
 
     protected static String[] discoverableClientSource() {
         return new String[]{
-            "/discoverableclient/api/v1/get-file",
-            "/api/v1/discoverableclient/get-file"
+            DISCOVERABLE_GET_FILE
         };
     }
 

@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @TestsNotMeantForZowe
 @WebsocketTest
@@ -119,7 +120,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                 @Nested
                 class ReturnSuccess {
                     @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#message {0}")
-                    @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+                    @ValueSource(strings = {DISCOVERABLE_WS_UPPERCASE})
                     void message(String path) throws Exception {
                         final StringBuilder response = new StringBuilder();
 
@@ -135,7 +136,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     }
 
                     @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#headers {0}")
-                    @ValueSource(strings = {"/discoverableclient/ws/v1/header", "/ws/v1/discoverableclient/header"})
+                    @ValueSource(strings = {DISCOVERABLE_WS_HEADER})
                     void headers(String path) throws Exception {
                         final StringBuilder response = new StringBuilder();
                         if (!VALID_AUTH_HEADERS.containsKey("X-Test")) {
@@ -159,7 +160,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                 @Nested
                 class ReturnError {
                     @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#headers {0}")
-                    @ValueSource(strings = {"/discoverableclient/ws/v1/bad", "/ws/v1/discoverableclient/bad"})
+                    @ValueSource(strings = {"/discoverableclient/ws/v1/bad"})
                     void whenPathIsNotCorrect(String path) throws Exception {
                         final StringBuilder response = new StringBuilder();
                         appendingWebSocketSession(discoverableClientGatewayUrl(path), VALID_AUTH_HEADERS, response, 1);
@@ -202,7 +203,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
             @Nested
             class WhenInvalid {
                 @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#message {0}")
-                @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+                @ValueSource(strings = {DISCOVERABLE_WS_UPPERCASE})
                 void returnError(String path) throws Exception {
                     final StringBuilder response = new StringBuilder();
 
@@ -224,7 +225,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     @Nested
     class WhenClosingSession {
         @ParameterizedTest(name = "WhenRoutingSession.Authentication.WhenValid.ReturnSuccess#message {0}")
-        @ValueSource(strings = {"/discoverableclient/ws/v1/uppercase", "/ws/v1/discoverableclient/uppercase"})
+        @ValueSource(strings = {DISCOVERABLE_WS_UPPERCASE})
         void getCorrectResponse(String path) throws Exception {
             final StringBuilder response = new StringBuilder();
             WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(path), VALID_AUTH_HEADERS, response, 2);

@@ -32,7 +32,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 class LogoutTest implements TestWithStartedInstances {
 
     protected static String[] logoutUrlsSource() {
-        return new String[]{SecurityUtils.getGatewayLogoutUrl(), SecurityUtils.getGatewayLogoutUrlOldPath()};
+        return new String[]{SecurityUtils.getGatewayLogoutUrl()};
     }
 
     @BeforeEach

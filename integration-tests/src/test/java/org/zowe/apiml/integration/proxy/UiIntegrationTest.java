@@ -19,13 +19,13 @@ import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static io.restassured.RestAssured.given;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @DiscoverableClientDependentTest
 class UiIntegrationTest implements TestWithStartedInstances {
     protected static String[] discoverableClientSource() {
         return new String[]{
-            "/discoverableclient/ui/v1",
-            "/ui/v1/discoverableclient"
+            STATIC_UI
         };
     }
 

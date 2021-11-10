@@ -22,6 +22,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @DiscoverableClientDependentTest
 @NotForMainframeTest
@@ -40,7 +41,7 @@ public class SafIdtSchemeTest {
         class ResultContainsSafIdtInHeader {
             @Test
             void givenJwtInCookie() {
-                JsonResponse response = gateway.authenticatedRoute("/api/v1/dcsafidt/request");
+                JsonResponse response = gateway.authenticatedRoute(SAF_IDT_REQUEST);
                 Map<String, String> headers = response.getJson().read("headers");
 
                 boolean safTokenIsPresent = headers.containsKey("x-saf-token");

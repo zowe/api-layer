@@ -33,10 +33,10 @@ import java.time.Duration;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @TestsNotMeantForZowe
 public class ServerSentEventsProxyTest {
-    private static final String SSE_ENDPOINT = "/discoverableclient/sse/v1/events";
     private static final GatewayServiceConfiguration gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
     private static WebTestClient webTestClient;
@@ -58,7 +58,7 @@ public class ServerSentEventsProxyTest {
     @Nested
     class WhenRoutingSession {
         @ParameterizedTest(name = "WhenRoutingSession.givenValidSsePaths_thenReturnEvents#message {0}")
-        @ValueSource(strings = {"/sse/v1/discoverableclient/events", SSE_ENDPOINT})
+        @ValueSource(strings = {DISCOVERABLE_SSE_EVENTS})
         void givenValidSsePaths_thenReturnEvents(String path) {
             FluxExchangeResult<String> fluxResult = webTestClient
                 .get()
@@ -78,7 +78,7 @@ public class ServerSentEventsProxyTest {
         @Nested
         class GivenIncorrectPath_thenReturnError {
             @ParameterizedTest(name = "WhenRoutingSession.GivenIncorrectPath_thenReturnError.givenInvalidServiceId#message {0}")
-            @ValueSource(strings = {"/sse/v1/bad/events", "/bad/sse/v1/events"})
+            @ValueSource(strings = {"/bad/sse/v1/events"})
             void givenInvalidServiceId(String path) {
                 FluxExchangeResult<String> fluxResult = webTestClient
                     .get()
@@ -93,7 +93,7 @@ public class ServerSentEventsProxyTest {
             }
 
             @ParameterizedTest(name = "WhenRoutingSession.GivenIncorrectPath_thenReturnError.givenInvalidVersion#message {0}")
-            @ValueSource(strings = {"/sse/bad/discoverableclient/events", "/discoverableclient/sse/bad/events"})
+            @ValueSource(strings = {"/discoverableclient/sse/bad/events"})
             void givenInvalidVersion(String path) {
                 FluxExchangeResult<String> fluxResult = webTestClient
                     .get()

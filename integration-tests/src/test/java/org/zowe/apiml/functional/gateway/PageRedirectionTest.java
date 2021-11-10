@@ -30,6 +30,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.core.Is.is;
 import static org.springframework.http.HttpHeaders.LOCATION;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 /**
  * This is an integration test class for PageRedirectionFilter.java
@@ -45,10 +46,8 @@ import static org.springframework.http.HttpHeaders.LOCATION;
  */
 @GatewayTest
 class PageRedirectionTest implements TestWithStartedInstances {
-    private final String EUREKA_APP = "/eureka/apps";
-    private final String SERVICE_ID = "staticclient";
+    // It's used for direct calls to the service instead of through gateway.
     private final String BASE_URL = "/discoverableclient";
-    private final String API_POSTFIX = "/api/v1";
 
     private String gatewayScheme;
     private String gatewayHost;
@@ -69,9 +68,8 @@ class PageRedirectionTest implements TestWithStartedInstances {
     @Test
     @TestsNotMeantForZowe
     void apiRouteOfDiscoverableClient() {
-        String apiRelativeUrl = "/api/v1";
-        String location = String.format("%s://%s:%d%s%s%s", dcScheme, dcHost, dcPort, BASE_URL, apiRelativeUrl, "/greeting");
-        String transformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, "/" + SERVICE_ID, API_POSTFIX, "/greeting");
+        String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, DISCOVERABLE_GREET);
+        String transformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, DISCOVERABLE_GREET);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -93,8 +91,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
     void wsRouteOfDiscoverableClient() {
         String wsRelativeUrl = "/ws";
         String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
-        String wsPostfix = "/ws/v1";
-        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, "/" + SERVICE_ID, wsPostfix);
+        String transformedLocation = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, STATIC_WEBSOCKET);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -115,8 +112,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
     @TestsNotMeantForZowe
     void uiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL);
-        String uiPostfix = "/ui/v1";
-        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, "/" + SERVICE_ID, uiPostfix);
+        String transformedLocation = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, STATIC_UI);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -141,7 +137,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
         RestAssured.port = gatewayPort;
         RestAssured.useRelaxedHTTPSValidation();
 
-        requestUrl = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, API_POSTFIX, "/" + SERVICE_ID, "/redirect");
+        requestUrl = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, STATIC_REDIRECT);
     }
 
     /**
@@ -156,7 +152,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
         final String password = discoveryServiceConfiguration.getPassword();
         final String host = discoveryServiceConfiguration.getHost();
         final int port = discoveryServiceConfiguration.getPort();
-        URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(EUREKA_APP).build();
+        URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(APPLICATIONS).build();
 
         RestAssured.config = RestAssured.config().sslConfig(SecurityUtils.getConfiguredSslConfig());
         String xml =

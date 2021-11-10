@@ -22,6 +22,7 @@ import org.zowe.apiml.util.config.Credentials;
 
 import java.io.IOException;
 import java.net.URI;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @UtilityClass
 public class HttpSecurityUtils {
@@ -31,7 +32,7 @@ public class HttpSecurityUtils {
         String user = credentials.getUser();
         String password = credentials.getPassword();
         URI uri = HttpRequestUtils
-                .getUriFromGateway(SecurityUtils.GATEWAY_BASE_PATH.concat(SecurityUtils.GATEWAY_LOGIN_ENDPOINT));
+                .getUriFromGateway(SecurityUtils.GATEWAY_BASE_PATH.concat(ROUTED_LOGIN));
         return getCookie(uri, user, password);
     }
 

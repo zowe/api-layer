@@ -25,11 +25,10 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @DiscoverableClientDependentTest
 class MultipartPutIntegrationTest implements TestWithStartedInstances {
-    private static final String MULTIPART_PATH = "/discoverableclient/api/v1/multipart";
-    private static final String MULTIPART_PATH_OLD_FORMAT = "/api/v1/discoverableclient/multipart";
     private final String configFileName = "example.txt";
     private final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 
@@ -40,8 +39,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
 
     protected static URI[] discoverableClientUrls() {
         return new URI[]{
-            HttpRequestUtils.getUriFromGateway(MULTIPART_PATH),
-            HttpRequestUtils.getUriFromGateway(MULTIPART_PATH_OLD_FORMAT)
+            HttpRequestUtils.getUriFromGateway(DISCOVERABLE_MULTIPART)
         };
     }
 

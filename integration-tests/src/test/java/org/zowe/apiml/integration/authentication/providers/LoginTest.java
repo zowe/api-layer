@@ -41,6 +41,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 /**
  * Basic set of login related tests that needs to pass against every valid authentication provider.
@@ -49,20 +50,15 @@ import static org.zowe.apiml.util.SecurityUtils.*;
 @SAFAuthTest
 @zOSMFAuthTest
 class LoginTest implements TestWithStartedInstances {
-    protected final static String BASE_PATH = "/gateway/api/v1";
-    protected final static String BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
-    protected final static String LOGIN_ENDPOINT = "/auth/login";
-
-    public static final URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(BASE_PATH + LOGIN_ENDPOINT);
-    public static final URI LOGIN_ENDPOINT_URL_OLD_FORMAT = HttpRequestUtils.getUriFromGateway(BASE_PATH_OLD_FORMAT + LOGIN_ENDPOINT);
-
+    public static final URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN);
+    
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
     protected static URI[] loginUrlsSource() {
-        return new URI[]{LOGIN_ENDPOINT_URL, LOGIN_ENDPOINT_URL_OLD_FORMAT};
+        return new URI[]{LOGIN_ENDPOINT_URL};
     }
 
     public String getUsername() {
@@ -237,30 +233,22 @@ class LoginTest implements TestWithStartedInstances {
     private static Stream<Arguments> testLoginFactCombinationsSource() {
 
         LoginRequest validLoginRequest = new LoginRequest(LoginTest.USERNAME, LoginTest.PASSWORD);
-        LoginRequest incorrectUser = new LoginRequest("aaa", "aaa");
         URI loginNew = LOGIN_ENDPOINT_URL;
-        URI loginOld = LOGIN_ENDPOINT_URL_OLD_FORMAT;
 
         return Stream.of(
             //URI loginUrl, RestAssuredConfig config, LoginRequest loginRequest, String user, String pw, HttpStatus rc, String loggedUser
 
             Arguments.of("Login with body no cert", loginNew, SslContext.tlsWithoutCert, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
-            Arguments.of("Login with body no cert", loginOld, SslContext.tlsWithoutCert, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
 
             Arguments.of("Login with basic and body (basic has precedence)", loginNew, SslContext.tlsWithoutCert, validLoginRequest, "aaaa", "aaaa", HttpStatus.UNAUTHORIZED, null),
-            Arguments.of("Login with basic and body (basic has precedence)", loginOld, SslContext.tlsWithoutCert, validLoginRequest, "aaaa", "aaaa", HttpStatus.UNAUTHORIZED, null),
 
             Arguments.of("Login with trusted cert and body (body or basic has precedence)", loginNew, SslContext.clientCertValid, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
-            Arguments.of("Login with trusted cert and body (body or basic has precedence)", loginOld, SslContext.clientCertValid, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
 
             Arguments.of("Login with aml cert (aml cert filtered out)", loginNew, SslContext.clientCertApiml, null, null, null, HttpStatus.BAD_REQUEST, null),
-            Arguments.of("Login with aml cert (aml cert filtered out)", loginOld, SslContext.clientCertApiml, null, null, null, HttpStatus.BAD_REQUEST, null),
 
             Arguments.of("Login with trusted cert", loginNew, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, "APIMTST"),
-            Arguments.of("Login with trusted cert", loginOld, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, "APIMTST"),
 
-            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginNew, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
-            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginOld, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME)
+            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginNew, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME)
             );
     }
 

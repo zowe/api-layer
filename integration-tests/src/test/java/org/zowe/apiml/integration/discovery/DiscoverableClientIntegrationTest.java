@@ -27,6 +27,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
+import static org.zowe.apiml.util.requests.Endpoints.MEDIATION_CLIENT;
 
 /**
  * Integration of
@@ -34,8 +35,7 @@ import static org.hamcrest.Matchers.is;
 @DiscoverableClientDependentTest
 @RegistrationTest
 class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
-    private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/apiMediationClient");
-    private static final URI MEDIATION_CLIENT_URI_OLD_FORMAT = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/apiMediationClient");
+    private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(MEDIATION_CLIENT);
 
     @BeforeAll
     static void beforeClass() {
@@ -43,7 +43,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
     }
 
     protected static URI[] discoverableClientUrls() {
-        return new URI[]{MEDIATION_CLIENT_URI, MEDIATION_CLIENT_URI_OLD_FORMAT};
+        return new URI[]{MEDIATION_CLIENT_URI};
     }
 
     @Nested

@@ -35,13 +35,11 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @DiscoverableClientDependentTest
 @GeneralAuthenticationTest
 public class PassticketSchemeTest implements TestWithStartedInstances {
-    private final static String REQUEST_INFO_ENDPOINT = "/api/v1/dcpassticket/request";
-    private final static String PASSTICKET_TEST_ENDPOINT = "/api/v1/dcpassticket/passticketTest";
-
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
 
