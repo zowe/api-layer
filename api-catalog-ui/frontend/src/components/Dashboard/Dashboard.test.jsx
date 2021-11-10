@@ -1,6 +1,4 @@
 /* eslint-disable no-undef */
-import * as React from 'react';
-// tslint:disable-next-line:no-implicit-dependencies
 import { shallow } from 'enzyme';
 import Dashboard from './Dashboard';
 import { categoryData } from '../Wizard/configs/wizard_categories';

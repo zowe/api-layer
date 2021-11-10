@@ -6,10 +6,11 @@ dependencies {
     compile libraries.jackson_databind
     compile libraries.apache_commons_lang3
     compile libraries.http_client
-    compile libraries.http_core
+    compile libraries.http_core 
     compile libraries.janino
     compile libraries.xstream
 
+    implementation libraries.spring_cloud_commons
 
     compileOnly libraries.spring_boot_configuration_processor
     compileOnly libraries.lombok

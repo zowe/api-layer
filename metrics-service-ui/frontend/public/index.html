@@ -11,6 +11,27 @@
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+
+      <!-- Load base JS and CSS -->
+    <script type="text/javascript" src="./hystrix-dashboard/monitor/monitor.js"></script>
+    <link rel="stylesheet" type="text/css" href="./hystrix-dashboard/monitor/monitor.css"/>
+    <link rel="stylesheet" type="text/css" href="./hystrix-dashboard/css/global.css"/>
+
+    <!-- Load javascript libraries for hystrix dashboard -->
+    <script type="text/javascript" src="./hystrix-dashboard/js/d3.v2.min.js"></script>
+    <script type="text/javascript" src="./hystrix-dashboard/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./hystrix-dashboard/js/jquery.tinysort.min.js"></script>
+    <script type="text/javascript" src="./hystrix-dashboard/js/tmpl.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+
+    <!-- HystrixCommand -->
+    <script type="text/javascript" src="./hystrix-dashboard/components/hystrixCommand/hystrixCommand.js"></script>
+    <link rel="stylesheet" type="text/css" href="./hystrix-dashboard/components/hystrixCommand/hystrixCommand.css"/>
+
+    <!-- HystrixThreadPool -->
+    <script type="text/javascript" src="./hystrix-dashboard/components/hystrixThreadPool/hystrixThreadPool.js"></script>
+    <link rel="stylesheet" type="text/css" href="./hystrix-dashboard/components/hystrixThreadPool/hystrixThreadPool.css"/>
+
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.

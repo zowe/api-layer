@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Button, Dialog, DialogActions, DialogBody, DialogFooter, DialogHeader, DialogTitle, Text } from 'mineral-ui';
 import * as YAML from 'yaml';
 

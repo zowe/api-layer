@@ -1,5 +1,5 @@
 /* eslint-disable react/destructuring-assignment */
-import React, { Component } from 'react';
+import { Component } from 'react';
 import Text from 'mineral-ui/Text';
 import '../BigShield/BigShield.css';
 

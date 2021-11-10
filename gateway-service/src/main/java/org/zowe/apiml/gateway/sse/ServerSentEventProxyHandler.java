@@ -26,6 +26,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
+import org.zowe.apiml.util.UrlUtils;
 import reactor.core.publisher.Flux;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,14 +59,14 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
         String uri = request.getRequestURI();
         List<String> uriParts = getUriParts(uri);
-        if (uriParts.size() < 5) {
+        if (uriParts.size() < 4) {
             writeError(response, SseErrorMessages.INVALID_ROUTE, uri);
             return null;
         }
 
         String serviceId = getServiceId(uriParts);
         String majorVersion = getMajorVersion(uriParts);
-        String path = uriParts.get(4);
+        String path = uriParts.size() < 5 ? "" : uriParts.get(4);
 
         ServiceInstance serviceInstance = findServiceInstance(serviceId);
         if (serviceInstance == null) {
@@ -119,9 +120,6 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
             return new ArrayList<>();
         }
 
-        if (!uri.endsWith("/")) {
-            uri += "/";
-        }
         return new ArrayList<>(Arrays.asList(uri.split("/", 5)));
     }
 
@@ -139,13 +137,13 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
     }
 
     private String getTargetUrl(ServiceInstance serviceInstance, String serviceUrl, String path, String queryParameterString) {
-        String parameters = queryParameterString == null ? "" : queryParameterString;
+        String parameters = queryParameterString == null ? "" : "?" + queryParameterString;
         String protocol = serviceInstance.isSecure() ? "https" : "http";
-        return String.format("%s://%s:%d%s%s%s",
+        return String.format("%s://%s:%d/%s/%s%s",
             protocol,
             serviceInstance.getHost(),
             serviceInstance.getPort(),
-            serviceUrl,
+            UrlUtils.removeFirstAndLastSlash(serviceUrl),
             path,
             parameters
         );

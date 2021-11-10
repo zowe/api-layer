@@ -206,6 +206,7 @@ public class CachedProductFamilyService {
         String instanceHomePage = instanceInfo.getHomePageUrl();
 
         if (hasHomePage(instanceInfo)) {
+            instanceHomePage = instanceHomePage.trim();
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
             try {
@@ -214,7 +215,7 @@ public class CachedProductFamilyService {
                     instanceInfo.getVIPAddress(),
                     instanceHomePage,
                     routes);
-            } catch (URLTransformationException e) {
+            } catch (URLTransformationException | IllegalArgumentException e) {
                 apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
             }
         }
@@ -326,12 +327,26 @@ public class CachedProductFamilyService {
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
         String apiBasePath = getApiBasePath(instanceInfo);
-        Map<String, String> apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
-            Collectors.toMap(
-                apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : "v" + apiInfo.getMajorVersion(),
-                ApiInfo::getApiId
-            )
-        );
+        Map<String, String> apiId = new HashMap<>();
+        Map<String, String> gatewayUrls = new HashMap<>();
+        try {
+            apiId = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
+                Collectors.toMap(
+                    apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : apiInfo.getApiId() + " v" + apiInfo.getVersion(),
+                    ApiInfo::getApiId
+                )
+            );
+
+            gatewayUrls = metadataParser.parseApiInfo(instanceInfo.getMetadata()).stream().filter(apiInfo -> apiInfo.getApiId() != null).collect(
+                Collectors.toMap(
+                    apiInfo -> (apiInfo.getMajorVersion() < 0) ? "default" : apiInfo.getApiId() + " v" + apiInfo.getVersion(),
+                    ApiInfo::getGatewayUrl
+                )
+            );
+        } catch (Exception ex) {
+            log.info("createApiServiceFromInstance#incorrectVersions {}", ex.getMessage());
+        }
+
         return new APIService.Builder(instanceInfo.getAppName().toLowerCase())
             .title(instanceInfo.getMetadata().get(SERVICE_TITLE))
             .description(instanceInfo.getMetadata().get(SERVICE_DESCRIPTION))
@@ -341,6 +356,7 @@ public class CachedProductFamilyService {
             .basePath(apiBasePath)
             .sso(isSso(instanceInfo))
             .apiId(apiId)
+            .gatewayUrls(gatewayUrls)
             .build();
     }
 

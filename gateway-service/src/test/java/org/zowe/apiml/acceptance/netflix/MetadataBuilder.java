@@ -10,7 +10,10 @@
 package org.zowe.apiml.acceptance.netflix;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static java.util.stream.Collectors.joining;
 
 public class MetadataBuilder {
     private Map<String, String> metadata;
@@ -57,6 +60,21 @@ public class MetadataBuilder {
 
     public MetadataBuilder withCompressionPath(String compressionPath) {
         metadata.put("apiml.response.compressRoutes", compressionPath);
+
+        return this;
+    }
+
+    public MetadataBuilder withIgnoredHeaders(List<String> headerNames) {
+        metadata.put("apiml.headersToIgnore", String.join(",", headerNames));
+
+        return this;
+    }
+
+    public MetadataBuilder withAddedHeaders(Map<String, String> headers) {
+        String headersToAdd = headers.entrySet().stream()
+            .map(e -> e.getKey() + ":" + e.getValue())
+            .collect(joining(","));
+        metadata.put("apiml.response.headers", headersToAdd);
 
         return this;
     }

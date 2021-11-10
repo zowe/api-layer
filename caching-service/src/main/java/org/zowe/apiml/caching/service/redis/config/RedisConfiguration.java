@@ -30,10 +30,11 @@ import java.time.Duration;
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(name = "caching.storage.mode", havingValue = "redis")
 public class RedisConfiguration {
     private final RedisConfig redisConfig;
 
-    @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "redis")
+
     @Bean
     public Storage redis(MessageService messageService) {
         log.info("Using redis configuration {}", redisConfig);

@@ -18,16 +18,22 @@ import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Stores {
 
     public static final String SAFKEYRING = "safkeyring";
     private KeyStore keyStore;
     private KeyStore trustStore;
-    private final ApimlConf conf;
+    private final Config conf;
+    private Map<String, Certificate> caList;
 
-    public Stores(ApimlConf conf) {
+    public Stores(Config conf) {
         this.conf = conf;
         init();
     }
@@ -86,6 +92,37 @@ public class Stores {
         }
     }
 
+    public Map<String, Certificate> getListOfCertificates() throws KeyStoreException {
+        if (this.caList != null) {
+            return this.caList;
+        }
+        this.caList = new HashMap<>();
+        Enumeration<String> aliases = trustStore.aliases();
+
+        while (aliases.hasMoreElements()) {
+            String certAuthAlias = aliases.nextElement();
+            this.caList.put(certAuthAlias, trustStore.getCertificate(certAuthAlias));
+        }
+        return this.caList;
+    }
+
+    public X509Certificate getX509Certificate(String alias) throws KeyStoreException {
+        Certificate[] certificate = getServerCertificateChain(alias);
+        if (certificate.length > 0) {
+            return (X509Certificate) certificate[0];
+        } else {
+            System.out.println("Alias \"" + alias + "\" is not available in keystore.");
+            throw new StoresNotInitializeException("No x509 certificate available in keystore");
+        }
+    }
+
+    public Certificate[] getServerCertificateChain(String alias) throws KeyStoreException {
+        if (alias == null) {
+            alias = keyStore.aliases().nextElement();
+        }
+        return keyStore.getCertificateChain(alias);
+    }
+
     public static KeyStore readKeyStore(InputStream is, char[] pass, String type) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
         KeyStore keyStore = KeyStore.getInstance(type);
         keyStore.load(is, pass);
@@ -100,7 +137,7 @@ public class Stores {
         return trustStore;
     }
 
-    public ApimlConf getConf() {
+    public Config getConf() {
         return conf;
     }
 

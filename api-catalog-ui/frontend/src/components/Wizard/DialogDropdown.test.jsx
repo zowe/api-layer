@@ -9,7 +9,6 @@
  */
 import * as enzyme from 'enzyme';
 import DialogDropdown from './DialogDropdown';
-import React from 'react'
 describe('>>> DialogDropdown tests', () => {
     it('should have "Onboard New API" button', () => {
         const wrapper = enzyme.shallow(

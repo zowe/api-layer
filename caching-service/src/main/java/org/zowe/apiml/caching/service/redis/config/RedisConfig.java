@@ -11,6 +11,7 @@ package org.zowe.apiml.caching.service.redis.config;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.caching.config.GeneralConfig;
@@ -22,6 +23,7 @@ import java.util.List;
 @Configuration
 @ConfigurationProperties(value = "caching.storage.redis")
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "caching.storage.mode", havingValue = "redis")
 public class RedisConfig {
     private static final int DEFAULT_PORT = 6379;
     private static final String DEFAULT_USER = "default";

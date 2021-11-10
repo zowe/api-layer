@@ -20,6 +20,7 @@ const mapStateToProps = state => ({
     yamlObject: state.wizardReducer.yamlObject,
     navsObj: state.wizardReducer.navsObj,
     serviceId: state.wizardReducer.serviceId,
+    userCanAutoOnboard: state.wizardReducer.userCanAutoOnboard,
 });
 const mapDispatchToProps = {
     wizardToggleDisplay,

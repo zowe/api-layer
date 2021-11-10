@@ -39,17 +39,18 @@ logging:
 apiml:
     service:
         id: apicatalog
-        hostname: ${apiml.service.hostname}
-        ipAddress: ${apiml.service.ipAddress}
-        port: ${apiml.service.port}
+        hostname: localhost
+        ipAddress: 0.0.0.0
+        port: 10014
         contextPath: /apicatalog
         scheme: https
 
-        discoveryServiceUrls: ${apiml.service.discoveryServiceUrls}
+        discoveryServiceUrls: https://localhost:10011/eureka/
         nonSecurePortEnabled: false
         securePortEnabled: true
-        eurekaUserName: ${apiml.service.eurekaUserId}
-        eurekaUserPassword: ${apiml.service.eurekaPassword}
+        #eurekaUserId: eureka
+        eurekaUserName: eureka
+        eurekaUserPassword: password
 
         apiDoc:
             title: API Catalog
@@ -60,9 +61,9 @@ apiml:
         ssl:
             sslEnabled: true
             protocol: TLSv1.2
-            trustStore: ${apiml.service.truststore}
-            trustStoreType: ${apiml.service.truststoreType}
-            trustStorePassword: ${apiml.service.truststorePassword}
+            trustStore: ${server.ssl.truststore}
+            trustStoreType: ${server.ssl.truststoreType}
+            trustStorePassword: ${server.ssl.truststorePassword}
 
     catalog:
         id: apimediationlayer
@@ -88,10 +89,17 @@ server:
         protocol: ${apiml.security.ssl.protocol}
         enabled-protocols: TLSv1.2
         ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-        trustStore: ${apiml.security.ssl.trustStore}
-        trustStoreType: ${apiml.security.ssl.trustStoreType}
-        trustStorePassword: ${apiml.security.ssl.trustStorePassword}
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStoreType: PKCS12
+        trustStorePassword: password
         clientAuth: want
+
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStoreType: PKCS12
+        keyStorePassword: password
+
     error:
         whitelabel:
             enabled: false
@@ -157,6 +165,7 @@ management:
         health:
             showDetails: always
 
+logbackServiceName: ZWEAAC1
 ---
 spring:
     profiles: debug
@@ -196,9 +205,6 @@ spring:
     profiles.include:
         - debug
         - diag
-
-
-logbackServiceName: ZWEAAC1
 
 ---
 spring:

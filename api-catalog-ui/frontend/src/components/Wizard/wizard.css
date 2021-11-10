@@ -63,6 +63,15 @@ label.wCheckBox {
 label.wCheckBox span:last-child {
     color: #58606e;
 }
+.wizardTooltip {
+    width: 100%;
+}
+.wizardTooltip > span {
+    width: 100%;
+}
+.wizardCategoryInfo {
+    white-space: pre-wrap;
+}
 
 .readyTab {
     font-weight: 800;

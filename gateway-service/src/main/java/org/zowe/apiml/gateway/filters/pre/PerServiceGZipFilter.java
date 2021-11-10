@@ -149,7 +149,7 @@ public class PerServiceGZipFilter extends OncePerRequestFilter {
         AntPathMatcher matcher = new AntPathMatcher();
         for (String pattern: setOfRoutesToMatch) {
             if (!pattern.startsWith("/")) {
-               pattern = "/" + pattern;
+                pattern = "/" + pattern;
             }
             if (matcher.match(pattern, requestUri)) {
                 return true;

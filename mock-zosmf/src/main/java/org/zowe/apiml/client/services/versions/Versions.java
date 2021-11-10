@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.client.services.versions;
 
+import lombok.ToString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@ToString
 public class Versions {
     private final AvailableApars availableApars;
     private final Map<String, List<Apar>> aparsAppliedForVersion = new HashMap<>();

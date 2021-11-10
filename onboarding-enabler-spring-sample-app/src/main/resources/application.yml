@@ -38,9 +38,9 @@ apiml:
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
 
         routes:
-            -   gateway-url: "api/v1"
+            -   gateway-url: "/api/v1"
                 service-url: ${apiml.service.contextPath}/api/v1
-            -   gateway-url: "api/v1/api-doc" # Intentionally using old format to retrieve Api-doc for testing purposes
+            -   gateway-url: "/api/v1/api-doc" # Intentionally using old format to retrieve Api-doc for testing purposes
                 service-url: ${apiml.service.contextPath}/api-doc
         apiInfo:
             -   apiId: zowe.apiml.discoverableclient

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { IconArrowDropDown } from 'mineral-ui-icons';
 import { Dropdown } from 'mineral-ui';
 import Button from 'mineral-ui/Button';
@@ -35,10 +35,7 @@ export default class DialogDropdown extends Component {
     openOnClick() {
         const { data } = this.state;
         if (Array.isArray(data)) {
-            let arr = data.map(item => ({ ...item, onClick: this.handleClick }));
-            if (!this.props.userCanAutoOnboard) {
-                arr = arr.filter(item => item.text !== 'Static Onboarding');
-            }
+            const arr = data.map(item => ({ ...item, onClick: this.handleClick }));
             this.setState({ data: arr });
         }
     }

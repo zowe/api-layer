@@ -1,4 +1,4 @@
-import { defaultMicronaut, defaultNode, defaultSpring } from './wizard_defaults';
+import { defaultMicronaut, defaultNode, defaultPJE, defaultSpring } from './wizard_defaults';
 
 /**
  * Define which categories each enabler needs. Properties indentation and multiple can be used here as well.(override)
@@ -15,12 +15,13 @@ export const enablerData = [
             { name: 'Prefer IP address', nav: 'IP info' },
             { name: 'URL' },
             { name: 'Discovery Service URL', indentation: 'discoveryServiceUrls', multiple: true },
-            { name: 'Routes', indentation: 'routes' },
+            { name: 'Routes', indentation: 'routes', minions: { 'API Info': ['gatewayUrl'] } },
             { name: 'Authentication', indentation: 'authentication' },
             { name: 'API Info', indentation: 'apiInfo', multiple: true },
-            { name: 'Catalog', indentation: 'catalog/tiles' },
+            { name: 'Catalog', indentation: 'catalog/tile' },
             { name: 'SSL', indentation: 'ssl' },
         ],
+        defaults: defaultPJE,
     },
     {
         text: 'Spring Enabler',
@@ -34,9 +35,14 @@ export const enablerData = [
             { name: 'IP address info', indentation: 'apiml/service', nav: 'IP & URL' },
             { name: 'URL', indentation: 'apiml/service', nav: 'IP & URL' },
             { name: 'Discovery Service URL', indentation: 'apiml/service/discoveryServiceUrls', multiple: true },
-            { name: 'Routes', indentation: 'apiml/service/routes', multiple: true },
+            {
+                name: 'Routes',
+                indentation: 'apiml/service/routes',
+                multiple: true,
+                minions: { 'API Info': ['gatewayUrl'] },
+            },
             { name: 'API Info', indentation: 'apiml/service/apiInfo', multiple: true },
-            { name: 'Catalog', indentation: 'apiml/service/catalog/tiles', nav: 'Catalog' },
+            { name: 'Catalog', indentation: 'apiml/service/catalog/tile', nav: 'Catalog' },
             { name: 'Authentication', indentation: 'apiml/service/authentication', nav: 'Auth & SSL' },
             { name: 'SSL', indentation: 'apiml/service/ssl', nav: 'Auth & SSL' },
         ],
@@ -45,14 +51,19 @@ export const enablerData = [
     {
         text: 'Micronaut Enabler',
         categories: [
-            // { name: 'Prefer IP address', indentation: 'apiml/service', nav: 'Basics' },
+            { name: 'Prefer IP address', indentation: 'apiml/service', nav: 'Basics' },
             { name: 'Basic info', indentation: 'apiml/service', nav: 'Basics' },
             { name: 'Description', indentation: 'apiml/service', nav: 'Basics' },
             { name: 'Discovery Service URL', indentation: 'apiml/service', nav: 'Scheme Info' },
             { name: 'Scheme info', indentation: 'apiml/service', nav: 'Scheme Info' },
             { name: 'Base URL', indentation: 'apiml/service', nav: 'URL' },
             { name: 'URL', indentation: 'apiml/service', nav: 'URL' },
-            { name: 'Routes', indentation: 'apiml/service/routes', multiple: true },
+            {
+                name: 'Routes',
+                indentation: 'apiml/service/routes',
+                multiple: true,
+                minions: { 'API Info': ['gatewayUrl'] },
+            },
             { name: 'API Info for Micronaut', indentation: 'apiml/service/apiInfo', nav: 'API info', multiple: true },
             {
                 name: 'Catalog',
@@ -124,7 +135,14 @@ export const enablerData = [
                 inArr: true,
             },
             { name: 'URL', nav: 'URL', inArr: true },
-            { name: 'Routes for Static & Node', indentation: 'routes', multiple: true, inArr: true },
+            {
+                name: 'Routes for Static & Node',
+                nav: 'Routes',
+                indentation: 'routes',
+                multiple: true,
+                inArr: true,
+                minions: { 'API Info': ['gatewayUrl'] },
+            },
             { name: 'Authentication', indentation: 'authentication', inArr: true },
             { name: 'API Info', indentation: 'apiInfo', multiple: true, inArr: true },
             { name: 'Catalog UI Tiles', indentation: 'catalogUiTiles' },

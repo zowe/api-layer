@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Button, Select, Text } from 'mineral-ui';
 import './ServiceVersionDiff.css';
 

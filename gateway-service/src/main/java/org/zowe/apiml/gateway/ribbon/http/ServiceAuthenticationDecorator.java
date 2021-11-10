@@ -31,8 +31,6 @@ public class ServiceAuthenticationDecorator {
     private final ServiceAuthenticationService serviceAuthenticationService;
     private final AuthenticationService authenticationService;
 
-    private static final String INVALID_JWT_MESSAGE = "Invalid JWT token";
-
     /**
      * If a service requires authentication,
      *   verify that the specific instance was selected upfront

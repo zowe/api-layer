@@ -1,5 +1,5 @@
 import { Text, Button } from 'mineral-ui';
-import React, { Component } from 'react';
+import { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import './Dashboard.css';
@@ -14,8 +14,7 @@ import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 
 export default class Dashboard extends Component {
     componentDidMount() {
-        const { fetchTilesStart, clearService, assertAuthorization } = this.props;
-        assertAuthorization();
+        const { fetchTilesStart, clearService } = this.props;
         clearService();
         fetchTilesStart();
     }
@@ -51,7 +50,6 @@ export default class Dashboard extends Component {
             fetchTilesStop,
             refreshedStaticApisError,
             clearError,
-            userCanAutoOnboard,
         } = this.props;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
@@ -66,7 +64,6 @@ export default class Dashboard extends Component {
                 <div id="dash-buttons">
                     <DialogDropdown
                         selectEnabler={this.props.selectEnabler}
-                        userCanAutoOnboard={userCanAutoOnboard}
                         data={enablerData}
                         toggleWizard={this.toggleWizard}
                         visible

@@ -1,4 +1,4 @@
-import React, { Component, Suspense } from 'react';
+import { Component, Suspense } from 'react';
 import { NavTab } from 'react-router-tabs';
 import { Button, Text, Tooltip } from 'mineral-ui';
 import { IconChevronLeft, IconSuccessSimple } from 'mineral-ui-icons';

@@ -1,3 +1,236 @@
+
+spring:
+    application:
+        name: ${apiml.service.id}
+    cloud:
+        client:
+            hostname: ${apiml.service.hostname}
+            ipAddress: ${apiml.service.ipAddress}
+    mvc:
+        throw-exception-if-no-handler-found: true
+    output:
+        ansi:
+            enabled: detect
+    main:
+        banner-mode: ${apiml.banner:"off"}
+
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: INFO
+        org.springframework: WARN
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery.DiscoveryClient: OFF
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        net.sf.ehcache: WARN
+
+        # New Config
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.eclipse.jetty: WARN
+        springfox: WARN
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+
+##############################################################################################
+# APIML configuration section
+##############################################################################################
 apiml:
     service:
+        id: apicatalog
+        hostname: localhost
+        ipAddress: 0.0.0.0
+        port: 10014
+        contextPath: /apicatalog
+        scheme: https
+
         discoveryServiceUrls: https://localhost2:10021/eureka/,https://localhost:10011/eureka/
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+        #eurekaUserId: eureka
+        eurekaUserName: eureka
+        eurekaUserPassword: password
+
+        apiDoc:
+            title: API Catalog
+            description: REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.
+            version: 1.0.0
+
+    security:
+        ssl:
+            sslEnabled: true
+            protocol: TLSv1.2
+            trustStore: ${server.ssl.truststore}
+            trustStoreType: ${server.ssl.truststoreType}
+            trustStorePassword: ${server.ssl.truststorePassword}
+
+    catalog:
+        id: apimediationlayer
+        title: API Mediation Layer API
+        description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+        version:  1.0.0
+
+    service-registry:
+        serviceFetchDelayInMillis:  20000
+        cacheRefreshUpdateThresholdInMillis: 30000
+        cacheRefreshInitialDelayInMillis: 30000
+        cacheRefreshRetryDelayInMillis: 30000
+
+##############################################################################################
+
+server:
+    address: ${apiml.service.ipAddress}
+    port: ${apiml.service.port}
+    servlet:
+        contextPath: ${apiml.service.contextPath}
+    ssl:
+        enabled: ${apiml.security.ssl.sslEnabled}
+        protocol: ${apiml.security.ssl.protocol}
+        enabled-protocols: TLSv1.2
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        trustStore: ../keystore/localhost/localhost.truststore.p12
+        trustStoreType: PKCS12
+        trustStorePassword: password
+        clientAuth: want
+
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: ../keystore/localhost/localhost.keystore.p12
+        keyStoreType: PKCS12
+        keyStorePassword: password
+
+    error:
+        whitelabel:
+            enabled: false
+
+eureka:
+    instance:
+        instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
+        hostname: ${apiml.service.hostname}
+        statusPageUrlPath: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/info
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
+        secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
+        homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}
+        port: ${apiml.service.port}
+        securePort: ${apiml.service.port}
+        nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
+        securePortEnabled: ${apiml.service.securePortEnabled}
+        metadata-map:
+            apiml:
+                catalog:
+                    tile:
+                        id: ${apiml.catalog.id}
+                        title: ${apiml.catalog.title}
+                        description: ${apiml.catalog.description}
+                        version: ${apiml.catalog.version}
+
+                routes:
+                    ui-v1:
+                        gatewayUrl: "/ui/v1"
+                        serviceUrl: /apicatalog
+                    api-v1:
+                        gatewayUrl: "/api/v1"
+                        serviceUrl: /apicatalog
+
+                apiInfo:
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+
+                service:
+                    title: API Catalog
+                    description: API Catalog service to display service details and API documentation for discovered API services.
+
+                authentication:
+                    sso: true
+    client:
+        healthcheck:
+            enabled: true
+        serviceUrl:
+            defaultZone: ${apiml.service.discoveryServiceUrls}
+        region: default
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info
+    health:
+        defaults:
+            enabled: false
+    endpoint:
+        health:
+            showDetails: always
+
+logbackServiceName: ZWEAAC1
+---
+spring:
+    profiles: debug
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,loggers
+
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: DEBUG
+        org.springframework: INFO
+        org.apache: INFO
+        org.apache.http: DEBUG
+        com.netflix: INFO
+        springfox: INFO
+        net.sf.ehcache: INFO
+
+---
+spring:
+    profiles: diag
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
+
+---
+spring:
+    profiles: dev
+    profiles.include:
+        - debug
+        - diag
+
+---
+spring:
+    profiles: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+eureka:
+    instance:
+        securePort: 0
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
+        metadata-map:
+            apiml:
+                corsEnabled: true
+                apiInfo:
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+apiml:
+    service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false

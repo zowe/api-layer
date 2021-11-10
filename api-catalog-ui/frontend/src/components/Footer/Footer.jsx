@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Link } from 'mineral-ui';
 
 import logo from '../../assets/images/ca-broadcom-logo.svg';
