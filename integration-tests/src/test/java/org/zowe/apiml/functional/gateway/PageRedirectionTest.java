@@ -69,7 +69,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
     @TestsNotMeantForZowe
     void apiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, DISCOVERABLE_GREET);
-        String transformedLocation = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, DISCOVERABLE_GREET);
+        String transformedLocation = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, STATIC_GREET);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
