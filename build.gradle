@@ -101,6 +101,7 @@ subprojects {
 
     configurations.all {
         exclude group: 'org.glassfish', module: 'jakarta.el'
+        exclude group: 'commons-httpclient', module: 'commons-httpclient'
     }
 }
 
