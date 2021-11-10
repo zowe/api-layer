@@ -77,7 +77,7 @@ public class SecurityUtils {
     }
 
     public static String getGatewayUrl(String path, int port) {
-        return String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, port, GATEWAY_BASE_PATH, path);
+        return String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, port, path);
     }
 
     public static String getGatewayLogoutUrl() {
