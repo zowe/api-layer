@@ -9,6 +9,7 @@ gatewayServiceConfiguration:
     internalPorts: 10017
     externalPort: 10010
     instances: 1
+    servicesEndpoint: gateway/api/v1/services
 discoveryServiceConfiguration:
     scheme: https
     user: user
@@ -18,6 +19,18 @@ discoveryServiceConfiguration:
     instances: 1
 discoverableClientConfiguration:
     applId: ZOWEAPPL
+    scheme: https
+    port: 10012
+    host: localhost
+    instances: 1
+apiCatalogServiceConfiguration:
+    scheme: https
+    url:
+    host: localhost
+    port: 10014
+    instances: 1
+cachingServiceConfiguration:
+    url:
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

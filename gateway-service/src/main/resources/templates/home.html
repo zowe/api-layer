@@ -165,13 +165,28 @@
                                    th:src="@{${'/images/icon-notification-intent-' + catalogIconName + '.png'}}"
                                    alt="API Catalog status icon"/>
                 <a class="active"
-                   th:if="${linkEnabled} == true"
+                   th:if="${catalogLinkEnabled} == true"
                    th:href="${catalogLink}"
                    title="Go to the API Catalog">
                     <p class="status-text" th:text="${catalogStatusText}"/>
                 </a>
-                <a class="disabled" th:if="${linkEnabled} == false">
+                <a class="disabled" th:if="${catalogLinkEnabled} == false">
                     <p class="status-text" th:text="${catalogStatusText}"/>
+                </a>
+            </div>
+        </li>
+        <li class="list-item" th:if="${metricsEnabled == true}">
+            <div class="wrap"><img class="status-icon"
+                                                                     th:src="@{${'/images/icon-notification-intent-' + metricsIconName + '.png'}}"
+                                                                     alt="Metrics service running icon"/>
+                <a class="active"
+                   th:if="${metricsLinkEnabled} == true"
+                   th:href="${metricsLink}"
+                   title="Go to the Metrics service">
+                    <p class="status-text" th:text="${metricsStatusText}"/>
+                </a>
+                <a class="disabled" th:if="${metricsLinkEnabled} == false">
+                    <p class="status-text" th:text="${metricsStatusText}"/>
                 </a>
             </div>
         </li>

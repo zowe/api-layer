@@ -9,14 +9,16 @@
  */
 package org.zowe.apiml.apicatalog.services.status.listeners;
 
-import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
-import org.zowe.apiml.product.gateway.GatewayLookupCompleteEvent;
-import org.zowe.apiml.product.registry.CannotRegisterServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
+import org.zowe.apiml.product.gateway.GatewayLookupCompleteEvent;
+import org.zowe.apiml.product.registry.CannotRegisterServiceException;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class fires on GatewayLookupCompleteEvent event
@@ -28,14 +30,13 @@ import org.springframework.stereotype.Component;
 public class GatewayLookupEventListener {
 
     private final InstanceInitializeService instanceInitializeService;
+    private final AtomicBoolean hasRun = new AtomicBoolean(false);
 
-    /**
-     * Retrieves and registers all instances known to Eureka
-     *
-     * @param event Spring event
-     */
-    @EventListener
-    public void onApplicationEvent(GatewayLookupCompleteEvent event) throws CannotRegisterServiceException {
-        instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+    @EventListener(GatewayLookupCompleteEvent.class)
+    public void onApplicationEvent() throws CannotRegisterServiceException {
+        if (!hasRun.get()) {
+            hasRun.set(true);
+            instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+        }
     }
 }

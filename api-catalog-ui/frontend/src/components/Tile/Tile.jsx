@@ -1,6 +1,6 @@
 import { CardStatus } from 'mineral-ui';
 import Card, { CardBlock, CardTitle } from 'mineral-ui/Card';
-import React, { Component } from 'react';
+import { Component } from 'react';
 
 import './Tile.css';
 

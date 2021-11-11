@@ -1,0 +1,8 @@
+dependencies {
+    compile libraries.spring_boot_starter_web
+    compile libraries.zowe_attls
+    testCompile libraries.mockito_core
+    testCompile libraries.mockito_jupiter
+    testCompile libraries.spring_boot_starter_test
+    testCompile libraries.json_smart
+}

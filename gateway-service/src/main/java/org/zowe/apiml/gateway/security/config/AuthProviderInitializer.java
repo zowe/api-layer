@@ -9,16 +9,22 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.login.dummy.DummyAuthenticationProvider;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
+import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 
 /**
  * Initialize authentication and authorization provider set by apiml.security.auth.provider parameter
+ *
+ * @deprecated ({@Link NewSecurityConfiguration} doesnt need this class and it should be decommissioned)
  */
 @Component
+@Deprecated
+@ConditionalOnProperty(name = "apiml.security.filterChainConfiguration", havingValue = "legacy", matchIfMissing = false)
 public class AuthProviderInitializer {
 
     private final CompoundAuthProvider loginAuthProvider;

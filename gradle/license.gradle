@@ -14,18 +14,22 @@ ext.projectsNeedLicense = [
     'gateway-service',
     'gateway-package',
     'integration-tests',
+    'metrics-service',
+    'metrics-service-package',
+    'metrics-service-ui',
     'security-module',
     'security-service-client-spring',
     'onboarding-enabler-java-sample-app',
     'onboarding-enabler-nodejs-sample-app',
-    'onboarding-enabler-spring-v1-sample-app',
+    'onboarding-enabler-spring-sample-app',
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
     'onboarding-enabler-micronaut',
     'onboarding-enabler-micronaut-sample-app',
     'onboarding-enabler-nodejs',
     'zaas-client',
-    'mock-zosmf'
+    'mock-zosmf',
+    'apiml-tomcat-common'
 ]
 
 configure(subprojects.findAll { it.name in projectsNeedLicense }) {

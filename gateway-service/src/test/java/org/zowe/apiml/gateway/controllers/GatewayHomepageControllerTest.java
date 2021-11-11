@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.controllers;
 
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
@@ -38,6 +39,7 @@ class GatewayHomepageControllerTest {
     private BuildInfo buildInfo;
 
     private final String API_CATALOG_ID = "apicatalog";
+    private final String METRICS_SERVICE_ID = "metrics-service";
     private final String AUTHORIZATION_SERVICE_ID = "zosmf";
 
     @BeforeEach
@@ -51,7 +53,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, providers, buildInfo, API_CATALOG_ID);
+            discoveryClient, providers, buildInfo, API_CATALOG_ID, METRICS_SERVICE_ID, true);
     }
 
     @Test
@@ -106,14 +108,14 @@ class GatewayHomepageControllerTest {
         Model model = new ConcurrentModel();
         underTest.home(model);
 
-        Map<String,Object> preparedModel = model.asMap();
+        Map<String, Object> preparedModel = model.asMap();
         assertThat(preparedModel, hasEntry("isAnyCatalogAvailable", false));
         assertThat(preparedModel, not(hasKey("catalogLink")));
     }
 
     @Test
     void givenApiCatalogInstanceWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
-        discoveryReturnValidApiCatalog();
+        discoveryReturnValidApiCatalog(1);
         when(providers.isZosfmUsed()).thenReturn(true);
         when(providers.isZosmfAvailable()).thenReturn(false);
 
@@ -146,27 +148,41 @@ class GatewayHomepageControllerTest {
     }
 
     @Test
-    void givenApiCatalogInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenOneApiCatalogInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
         discoveryReturnValidZosmfAuthorizationInstance();
-        discoveryReturnValidApiCatalog();
+        discoveryReturnValidApiCatalog(1);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
+
         assertCatalogIsUpMessageShown(model.asMap());
+        assertThat(model.asMap(), hasEntry("catalogStatusText", "The API Catalog is running"));
+    }
+
+    @Test
+    void givenApiCatalogInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
+        discoveryReturnValidZosmfAuthorizationInstance();
+        discoveryReturnValidApiCatalog(2);
+
+        Model model = new ConcurrentModel();
+        gatewayHomepageController.home(model);
+
+
+        assertCatalogIsUpMessageShown(model.asMap());
+        assertThat(model.asMap(), hasEntry("catalogStatusText", "2 API Catalog instances are running"));
     }
 
     private void assertCatalogIsDownMessageShown(Map<String, Object> preparedModelView) {
         assertThat(preparedModelView, hasEntry("catalogIconName", "warning"));
         assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog is not running"));
-        assertThat(preparedModelView, hasEntry("linkEnabled", false));
+        assertThat(preparedModelView, hasEntry("catalogLinkEnabled", false));
         assertThat(preparedModelView, not(hasKey("catalogLink")));
     }
 
     private void assertCatalogIsUpMessageShown(Map<String, Object> preparedModelView) {
         assertThat(preparedModelView, hasEntry("catalogIconName", "success"));
-        assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog is running"));
-        assertThat(preparedModelView, hasEntry("linkEnabled", true));
+        assertThat(preparedModelView, hasEntry("catalogLinkEnabled", true));
         assertThat(preparedModelView, hasEntry("catalogLink", "/apicatalog/ui/v1"));
     }
 
@@ -178,15 +194,19 @@ class GatewayHomepageControllerTest {
         );
     }
 
-    private void discoveryReturnValidApiCatalog() {
+    private void discoveryReturnValidApiCatalog(int numberOfInstances) {
         Map<String, String> metadataMap = new HashMap<>();
         metadataMap.put("apiml.routes.ui-v1.gatewayUrl", "/ui/v1");
         metadataMap.put("apiml.routes.ui-v1.serviceUrl", "/apicatalog");
-        ServiceInstance apiCatalogServiceInstance = new DefaultServiceInstance("instanceId", "serviceId",
-            "host", 10000, true, metadataMap);
+        ArrayList<ServiceInstance> apiCatalogServiceInstances = new ArrayList<>();
+        for (int n = 0; n < numberOfInstances; n++) {
+            apiCatalogServiceInstances.add(
+                new DefaultServiceInstance("instanceId" + n, "serviceId",
+                    "host", 10000 + n, true, metadataMap)
+            );
+        }
 
-        when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(
-            Collections.singletonList(apiCatalogServiceInstance));
+        when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(apiCatalogServiceInstances);
     }
 
     @Test
@@ -284,5 +304,76 @@ class GatewayHomepageControllerTest {
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "success"));
         assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication service is running"));
+    }
+
+    @Nested
+    class whenLoadMetricsServiceLink {
+        @Test
+        void givenMetricsServiceEnabledAndRunning_thenLinkEnabled() {
+            discoveryReturnValidMetricsService();
+
+            Model model = new ConcurrentModel();
+            gatewayHomepageController.home(model);
+
+            Map<String, Object> actualModelMap = model.asMap();
+            assertMetricsIsUpMessageShown(actualModelMap);
+        }
+
+        @Test
+        void givenMetricsServiceEnabledAndNotRunning_thenLinkNotEnabled() {
+            when(discoveryClient.getInstances(METRICS_SERVICE_ID)).thenReturn(Collections.EMPTY_LIST);
+
+            Model model = new ConcurrentModel();
+            gatewayHomepageController.home(model);
+
+            Map<String, Object> actualModelMap = model.asMap();
+            assertMetricsIsDownMessageShown(actualModelMap);
+        }
+
+        @Test
+        void givenMetricsServiceNotEnabled_thenNoLink() {
+            gatewayHomepageController = new GatewayHomepageController(
+                discoveryClient, providers, buildInfo, API_CATALOG_ID, METRICS_SERVICE_ID, false);
+            Model model = new ConcurrentModel();
+            gatewayHomepageController.home(model);
+
+            Map<String, Object> actualModelMap = model.asMap();
+            assertMetricsNotShown(actualModelMap);
+        }
+
+        private void discoveryReturnValidMetricsService() {
+            Map<String, String> metadataMap = new HashMap<>();
+            metadataMap.put("apiml.routes.ui-v1.gatewayUrl", "ui/v1");
+            metadataMap.put("apiml.routes.ui-v1.serviceUrl", "/metrics-service");
+            ServiceInstance apiCatalogServiceInstance = new DefaultServiceInstance("instanceId", "serviceId",
+                "host", 10000, true, metadataMap);
+
+            when(discoveryClient.getInstances(METRICS_SERVICE_ID)).thenReturn(
+                Collections.singletonList(apiCatalogServiceInstance));
+        }
+
+        private void assertMetricsIsDownMessageShown(Map<String, Object> preparedModelView) {
+            assertThat(preparedModelView, hasEntry("metricsEnabled", true));
+            assertThat(preparedModelView, hasEntry("metricsIconName", "warning"));
+            assertThat(preparedModelView, hasEntry("metricsStatusText", "The Metrics Service is not running"));
+            assertThat(preparedModelView, hasEntry("metricsLinkEnabled", false));
+            assertThat(preparedModelView, not(hasKey("metricsLink")));
+        }
+
+        private void assertMetricsIsUpMessageShown(Map<String, Object> preparedModelView) {
+            assertThat(preparedModelView, hasEntry("metricsEnabled", true));
+            assertThat(preparedModelView, hasEntry("metricsIconName", "success"));
+            assertThat(preparedModelView, hasEntry("metricsStatusText", "The Metrics Service is running"));
+            assertThat(preparedModelView, hasEntry("metricsLinkEnabled", true));
+            assertThat(preparedModelView, hasEntry("metricsLink", "/metrics-service/ui/v1"));
+        }
+
+        private void assertMetricsNotShown(Map<String, Object> preparedModelView) {
+            assertThat(preparedModelView, hasEntry("metricsEnabled", false));
+            assertThat(preparedModelView, hasEntry("metricsIconName", "warning"));
+            assertThat(preparedModelView, hasEntry("metricsStatusText", "The Metrics Service is not running"));
+            assertThat(preparedModelView, hasEntry("metricsLinkEnabled", false));
+            assertThat(preparedModelView, not(hasKey("metricsLink")));
+        }
     }
 }

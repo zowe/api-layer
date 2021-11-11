@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
+import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 
 import static org.mockito.Mockito.*;
 

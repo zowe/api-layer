@@ -9,14 +9,15 @@
  */
 package org.zowe.apiml.security.client.login;
 
-import org.zowe.apiml.security.client.service.GatewaySecurityService;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.security.client.service.GatewaySecurityService;
+import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
 
@@ -37,8 +38,15 @@ public class GatewayLoginProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         String username = authentication.getPrincipal().toString();
+        String password;
+        if (authentication.getCredentials() instanceof LoginRequest) {
+            LoginRequest credentials = (LoginRequest) authentication.getCredentials();
+            password = credentials.getPassword();
+        } else {
+            password = (String) authentication.getCredentials();
+        }
 
-        Optional<String> token = gatewaySecurityService.login(username, authentication.getCredentials().toString());
+        Optional<String> token = gatewaySecurityService.login(username, password);
 
         if (!token.isPresent()) {
             throw new BadCredentialsException("Username or password are invalid.");

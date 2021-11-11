@@ -8,11 +8,12 @@ The Integration tests can be run against specific setup and instance or they can
 
 ## The tests take care of the services. 
 
-In this setup the integration test suite starts and stops the service. It isaimed at all runs for testing the integrations off-platform. 
+In this setup the integration test suite starts and stops the service. It is aimed at all runs for testing the integrations off-platform. 
 
 **Follow these steps:**
 
-Perform a Localhost Quick start when you need to run the tests on your local machine.
+Perform a Localhost Quick start when you need to run the tests on your local machine. The setup won't work on the Windows machines as we use production shell scripts in this setup. In case of Window consult [Local run of services and then integration tests
+](#Local run of services and then integration tests) 
 
 1. Run the following shell script:
 
@@ -26,16 +27,46 @@ Perform a Localhost Quick start when you need to run the tests on your local mac
     ./gradlew runCITests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD> -Ddiscovery.host=<DS_HOST> -Ddiscovery.port=<DS_PORT>  -Dgateway.host=<GW_HOST> -Dgateway.port=<GW_PORT> -Dgateway.scheme=https
     ```
 
+## Local run of services and then integration tests
+
+In this case you are using either Windows machine or want to start services yourselves for any reason. 
+
+**Follow these steps:**
+
+1. Install `concurrently` globally:
+
+  ```sh
+   npm install -g concurrently
+   ```
+
+2. Build all modules:
+
+  ```sh
+   ./gradlew build
+   ```
+
+3. Run all service on your local machine:
+
+  ```sh
+   npm run api-layer-ci
+   ```
+
+4. Run integration tests
+
+   ```sh
+   ./gradlew runCITests -Denvironment.offPlatform=true
+   ```
+
 ## The services run elsewhere. 
 
-In this case the services are running somewhere and the integration tests verify that the services work well. 
+In this case the services are running somewhere, and the integration tests verify that the services work well. 
 
 **Follow these steps:**
 
 1. Run the following shell script:
 
     ```sh
-   ./gradlew runAllIntegrationTests -Dcredentials.user=${MF_USERID} -Dcredentials.password=${MF_PASSWORD}
+   ./gradlew runAllIntegrationTests -Dcredentials.user=${MF_USERID} -Dcredentials.password=${MF_PASSWORD} -Denvironment.offPlatform=true
     ```
 
 ## Manual testing of Discovery Service in HTTP mode

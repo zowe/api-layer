@@ -56,6 +56,7 @@ server:
 
 eureka:
     instance:
+        instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
         port: ${server.port}
@@ -78,10 +79,14 @@ management:
     endpoints:
         web:
             base-path: /application
+            exposure:
+                include: health,info,shutdown
     health:
         defaults:
             enabled: false
-
+    endpoint:
+        shutdown:
+            enabled: true
 ---
 spring:
     profiles: https
@@ -100,6 +105,12 @@ server:
         keyStoreType: PKCS12
         trustStoreType: PKCS12
         trustStoreRequired: true
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
 
 eureka:
     instance:
@@ -124,7 +135,10 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers
+                include: health,info,loggers,shutdown
+    endpoint:
+        shutdown:
+            enabled: true
 
 logging:
     level:
@@ -157,3 +171,19 @@ spring:
         - diag
 
 logbackServiceName: ZWEADS1
+
+---
+spring:
+    profiles: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+

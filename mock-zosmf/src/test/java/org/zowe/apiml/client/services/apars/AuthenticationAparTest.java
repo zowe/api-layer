@@ -49,7 +49,7 @@ class AuthenticationAparTest {
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();
-            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
         @Test
@@ -60,7 +60,7 @@ class AuthenticationAparTest {
             assertThat(result.isPresent(), is(true));
 
             ResponseEntity<?> response = result.get();
-            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
         @Test

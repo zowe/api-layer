@@ -1,19 +1,5 @@
 spring.profiles.include: diag
 
-environment:
-    discoveryLocations: https://localhost:10011/eureka/
-    dsIpAddress: 0.0.0.0
-    eurekaPassword: password
-    eurekaUserId: eureka
-    gatewayHostname: https://localhost:10010
-    hostname: localhost
-    ipAddress: 127.0.0.1
-    port: 10014
-    preferIpAddress: false
-    truststore: keystore/localhost/localhost.truststore.p12
-    truststorePassword: password
-    truststoreType: PKCS12
-
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
@@ -30,16 +16,33 @@ server:
         keyStore: keystore/localhost/localhost.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
 
 apiml:
+    service:
+        hostname: localhost
+        ipAddress: 127.0.0.1
+        port: 10014
+        discoveryServiceUrls: https://localhost:10011/eureka/
+        dsIpAddress: 0.0.0.0
+        eurekaPassword: password
+        eurekaUserName: eureka
+        gatewayHostname: https://localhost:10010
+        preferIpAddress: false
+
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
         cacheRefreshRetryDelayInMillis: 10000
         cacheRefreshUpdateThresholdInMillis: 120000
         serviceFetchDelayInMillis: 10000
     banner: console
+    discovery:
+        staticApiDefinitionsDirectories: config/local/api-defs
 
 spring:
     output:
         ansi:
             enabled: always
+

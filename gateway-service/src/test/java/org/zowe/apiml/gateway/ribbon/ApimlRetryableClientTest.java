@@ -27,7 +27,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.config.ribbon.IClientConfiguration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -59,5 +59,16 @@ class ApimlRetryableClientTest {
         ServiceInstance instance = client.choose("service1");
 
         assertThat(instance, instanceOf(EurekaDiscoveryClient.EurekaServiceInstance.class));
+    }
+
+    @Test
+    void givenServiceId_whenChooseAndNoInstanceAvailabe_thenReturnNull() {
+        ApimlRetryableClient client = new ApimlRetryableClient(
+            httpClient, config, introspector, retryFactory
+        );
+        doReturn(null).when(lb).chooseServer(any());
+        client.setLoadBalancer(lb);
+
+        assertThat(client.choose("service1"), is(nullValue()));
     }
 }

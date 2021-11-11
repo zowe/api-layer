@@ -9,7 +9,10 @@ buildscript {
     }
 }
 
-apply plugin: 'com.adarshr.test-logger'
+plugins {
+    id "com.adarshr.test-logger" version "3.0.0"
+    id "java-test-fixtures"
+}
 
 repositories {
     mavenCentral()
@@ -23,8 +26,11 @@ dependencies {
     testCompile libraries.json_path
     testCompile libraries.spring_boot_starter_websocket
     testCompile libraries.spring_boot_starter_actuator
+    testCompile libraries.spring_boot_starter_webflux
+    testCompile libraries.spring_web_test_client
     testCompile libraries.json
     testCompile libraries.jjwt
+    testCompile libraries.reactorTest
     testCompile(project(':apiml-security-common'))
     testCompile(project(':zaas-client'))
 
@@ -43,6 +49,13 @@ dependencies {
     testCompile libraries.nimbusJoseJwt
     runtime libraries.jjwt_impl
     runtime libraries.jjwt_jackson
+
+    testFixturesImplementation(project(':apiml-security-common'))
+    testFixturesImplementation libraries.rest_assured
+    testFixturesImplementation libraries.lombok
+    testFixturesImplementation libraries.http_client
+
+    testFixturesAnnotationProcessor libraries.lombok
 }
 
 jar {
@@ -83,6 +96,17 @@ task environmentCheck(type: Test) {
 }
 
 
+task runStartUpCheck(type: Test) {
+    group 'integration tests'
+    description "Check that the API Mediation Layer is up and running"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags 'StartupCheck'
+    }
+    outputs.upToDateWhen { false }
+}
+
 task runWebsocketTests(type: Test) {
     group "integration tests"
     description "Runs tests for WebSockets"
@@ -105,7 +129,9 @@ task runIntegrationTests(type: Test) {
             'StartupCheck',
             'EnvironmentCheck',
             'SlowTests',
-            'AdditionalLocalTest'
+            'AdditionalLocalTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
 }
@@ -122,7 +148,9 @@ task runLocalIntegrationTests(type: Test) {
             'EnvironmentCheck',
             'SlowTests',
             'MainframeDependentTests',
-            'AdditionalLocalTest'
+            'AdditionalLocalTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
     outputs.upToDateWhen { false }
@@ -139,7 +167,9 @@ task runAllLocalIntegrationTests(type: Test) {
             'StartupCheck',
             'EnvironmentCheck',
             'SlowTests',
-            'MainframeDependentTests'
+            'MainframeDependentTests',
+            'HATest',
+            'ChaoticHATest'
         )
     }
     outputs.upToDateWhen { false }
@@ -157,7 +187,10 @@ task runAllIntegrationTestsNormal(type: Test) {
             'AdditionalLocalTest',
             'NotForMainframeTest',
             'zOSMFAuthTest',
-            'SAFAuthTest'
+            'SAFAuthTest',
+            'HATest',
+            'ChaoticHATest',
+            'NotAttlsTest'
         )
 
     }
@@ -202,7 +235,10 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'StartupCheck',
             'EnvironmentCheck',
             'AdditionalLocalTest',
-            'TestsNotMeantForZowe'
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
     outputs.upToDateWhen { false }
@@ -222,19 +258,24 @@ task runCITests(type: Test) {
             'SlowTests',
             'AdditionalLocalTest',
             'MainframeDependentTests',
-            'SAFAuthTest'
+            'SAFAuthTest',
+            'AttlsTest',
+            'RegistrationTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
 }
 
-task runCITestsInternalPort(type: Test) {
+task runContainerTests(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
 
     outputs.cacheIf { false }
+    systemProperty "environment.config", "-docker"
+    systemProperty "environment.offPlatform", "true"
 
     systemProperties System.properties
-    systemProperty "gateway.port", System.getProperty("internal.gateway.port")
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
@@ -242,7 +283,12 @@ task runCITestsInternalPort(type: Test) {
             'SlowTests',
             'AdditionalLocalTest',
             'MainframeDependentTests',
-            'SAFAuthTest'
+            'SAFAuthTest',
+            'AttlsTest',
+            'RegistrationTest',
+            'NodeEnablerTest',
+            'HATest',
+            'ChaoticHATest'
         )
     }
 }
@@ -280,7 +326,27 @@ task runBaseTests(type: Test) {
             'CachingServiceTest',
             'WebsocketTest'
         )
-        excludeTags('MainframeDependentTests')
+        excludeTags(
+            'MainframeDependentTests',
+            'RegistrationTest',
+            'NodeEnablerTest',
+            'HATest',
+            'ChaoticHATest'
+        )
+    }
+}
+
+task runRegistrationTests(type: Test) {
+    group "integration tests"
+    description "Run tests verifying registration and deregistration"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'RegistrationTest'
+        )
     }
 }
 
@@ -348,5 +414,53 @@ task runBaseTestsInternalPort(type: Test) {
     dependsOn runBaseTests
     systemProperties System.properties
     systemProperty "gateway.port", System.getProperty("internal.gateway.port")
+
+}
+
+task runHATests(type: Test) {
+    group "Integration tests"
+    description "Run tests verifying High Availability"
+
+    outputs.cacheIf { false }
+
+    systemProperty "environment.ha", true
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'HATest'
+        )
+    }
+
+}
+
+task runLbHaTests(type: Test) {
+    group "Integration tests"
+    description "Run tests verifying Load balancing under High Availability"
+
+    outputs.cacheIf { false }
+
+    systemProperty "environment.ha", true
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'LbHaTest'
+        )
+    }
+
+}
+
+task runChaoticHATests(type: Test) {
+    group "Integration tests"
+    description "Run Chaotic tests verifying High Availability"
+
+    outputs.cacheIf { false }
+
+    systemProperty "environment.ha", true
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'ChaoticHATest'
+        )
+    }
 
 }

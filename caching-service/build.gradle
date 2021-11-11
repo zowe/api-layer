@@ -15,6 +15,13 @@ normalization {
 
 apply plugin: 'org.springframework.boot'
 apply plugin: 'com.gorylenko.gradle-git-properties'
+apply plugin: 'com.google.cloud.tools.jib'
+apply from: "../gradle/jib.gradle"
+
+def debugPort = 5126
+def componentName = "caching-service"
+
+setJib(componentName, debugPort)
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -39,9 +46,9 @@ gitProperties {
 
 dependencies {
     implementation project(':common-service-core')
-
+    implementation project(':apiml-tomcat-common')
     implementation project(':onboarding-enabler-spring')
-
+    implementation libraries.zowe_attls
     implementation libraries.jjwt
     implementation libraries.jjwt_impl
     implementation libraries.jjwt_jackson
@@ -54,13 +61,34 @@ dependencies {
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_retry
     implementation libraries.spring_boot_starter_aop
+    implementation libraries.lettuce
+    implementation libraries.spring_security_web
+    implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.tomcat_annotations_api
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
+    implementation libraries.xstream
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_context_support
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.spring_messaging
+    implementation libraries.spring_web
+    implementation libraries.spring_webmvc
+    implementation libraries.spring_websocket
 
     implementation libraries.gson
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
     testCompile libraries.hamcrest
+    testImplementation libraries.rest_assured
+    testImplementation(testFixtures(project(":integration-tests")))
 }
 
 

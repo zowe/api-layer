@@ -11,16 +11,18 @@
 package org.zowe.apiml.gateway.security.login.saf;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
+import org.zowe.apiml.security.common.error.ZosAuthenticationException;
+import org.zowe.apiml.security.common.login.LoginRequest;
 
 @Component
 @Slf4j
@@ -39,15 +41,21 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     @Override
     public Authentication authenticate(Authentication authentication) {
         String userid = authentication.getName();
-        String password = authentication.getCredentials().toString();
-        PlatformReturned returned = (PlatformReturned) getPlatformUser().authenticate(userid, password);
+        String password = LoginRequest.getPassword(authentication);
+        String newPassword = LoginRequest.getNewPassword(authentication);
+        PlatformReturned returned;
+        if (StringUtils.isNotEmpty(newPassword)) {
+            returned = (PlatformReturned) getPlatformUser().changePassword(userid, password, newPassword);
+        } else {
+            returned = (PlatformReturned) getPlatformUser().authenticate(userid, password);
+        }
 
         if ((returned == null) || (returned.isSuccess())) {
             final String domain = "security-domain";
             final String jwtToken = authenticationService.createJwtToken(userid, domain, null);
             return authenticationService.createTokenAuthentication(userid, jwtToken);
         } else {
-            throw new BadCredentialsException("Username or password are invalid.");
+            throw new ZosAuthenticationException(returned);
         }
     }
 

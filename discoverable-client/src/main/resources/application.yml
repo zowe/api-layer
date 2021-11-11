@@ -50,22 +50,31 @@ apiml:
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
 
         routes:
-            -   gateway-url: "ui/v1"
+            -   gateway-url: "/ui/v1"
                 service-url: ${apiml.service.contextPath}
-            -   gateway-url: "api/v1"
+            -   gateway-url: "/api/v1"
                 service-url: ${apiml.service.contextPath}/api/v1
-            -   gateway-url: "api/v2"
+            -   gateway-url: "/api/v2"
                 service-url: ${apiml.service.contextPath}/api/v2
-            -   gateway-url: "ws/v1"
+            -   gateway-url: "/ws/v1"
                 service-url: ${apiml.service.contextPath}/ws
+            -   gateway-url: "/sse/v1"
+                service-url: ${apiml.service.contextPath}/
+            -   gateway-url: "/graphql/v1"
+                service-url: ${apiml.service.contextPath}/
         apiInfo:
-            -   apiId: zowe.apiml.discoverableclient
+            -   apiId: zowe.apiml.discoverableclient.rest
                 version: 1.0.0
                 gatewayUrl: api/v1
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
                 documentationUrl: https://www.zowe.org
                 defaultApi: true
-            -   apiId: zowe.apiml.discoverableclient
+            -   apiId: zowe.apiml.discoverableclient.ws
+                version: 1.0.0
+                gatewayUrl: graphql/v1
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs?group=graphv1
+                documentationUrl: https://www.zowe.org
+            -   apiId: zowe.apiml.discoverableclient.rest
                 version: 2.0.0
                 gatewayUrl: api/v2
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs?group=apiv2
@@ -95,6 +104,8 @@ apiml:
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /api/v1/gateway/auth
                 corsEnabled: false
+                lb:
+                    type: headerRequest
 
 server:
     error:
@@ -131,10 +142,18 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,routes
+                include: hystrix.stream, health, info, routes, shutdown
     health:
         defaults:
-            enabled: false
+            enabled: true
+    endpoint:
+        shutdown:
+            enabled: true
+
+hystrix:
+    dashboard:
+        proxy-stream-allow-list: '*'
+    command.default.execution.timeout.enabled: false
 
 ---
 spring:
@@ -146,6 +165,9 @@ management:
             base-path: /application
             exposure:
                 include: "*"
+    endpoint:
+        shutdown:
+            enabled: true
 
 ---
 spring:
@@ -163,3 +185,14 @@ logging:
 
 logbackServiceName: ZWEADC1
 
+---
+spring:
+    profiles: attls
+
+apiml:
+    service:
+        scheme: http
+
+server:
+    ssl:
+        enabled: false

@@ -9,28 +9,19 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
-import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
-import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
-import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     excludeFilters = { @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class) },
     excludeAutoConfiguration = { SecurityAutoConfiguration.class}
 )
-@DirtiesContext
+@ContextConfiguration(classes = CatalogApiDocControllerServiceNotFoundTestContextConfiguration.class)
 class CatalogApiDocControllerServiceNotFoundTest {
 
     @Autowired
@@ -54,30 +45,5 @@ class CatalogApiDocControllerServiceNotFoundTest {
                 hasItem("Service not located, API Documentation not retrieved, The service is running.")));
     }
 
-    @Configuration
-    static class ContextConfiguration {
 
-        @MockBean
-        private APIServiceStatusService apiServiceStatusService;
-
-        @Bean
-        public CatalogApiDocController catalogApiDocController() {
-            when(apiServiceStatusService.getServiceCachedApiDocInfo("service1", "v1"))
-                .thenThrow(new ServiceNotFoundException("API Documentation not retrieved, The service is running."));
-
-            verify(apiServiceStatusService, never()).getServiceCachedApiDocInfo("service1", "v1");
-
-            return new CatalogApiDocController(apiServiceStatusService);
-        }
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService("/apicatalog-log-messages.yml");
-        }
-
-        @Bean
-        public CatalogApiDocControllerExceptionHandler catalogApiDocControllerExceptionHandler() {
-            return new CatalogApiDocControllerExceptionHandler(messageService());
-        }
-    }
 }

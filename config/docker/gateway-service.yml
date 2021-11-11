@@ -1,0 +1,47 @@
+apiml:
+    service:
+        hostname: gateway-service
+        discoveryServiceUrls: https://discovery-service:10011/eureka/
+    security:
+        allowTokenRefresh: true
+        auth:
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+            passTicket:
+                timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
+        ssl:
+            verifySslCertificatesOfServices: true
+        x509:
+            enabled: true
+        saf:
+            urls:
+                authenticate: https://mock-zosmf:10013/zss/saf/authenticate
+                verify: https://mock-zosmf:10013/zss/saf/verify
+    banner: console
+
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
+spring:
+    output:
+        ansi:
+            enabled: always
+    profiles:
+        include: diag
+
+server:
+    address: ${apiml.service.hostname}
+    max-http-header-size: 40000
+    internal:
+        enabled: true
+        port: 10017
+        ssl:
+            keyStore: /docker/all-services.keystore.p12
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: /docker/all-services.keystore.p12
+        keyStorePassword: password
+        trustStore: /docker/all-services.truststore.p12
+        trustStorePassword: password

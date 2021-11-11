@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.util.config;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
@@ -21,4 +23,5 @@ public class GatewayServiceConfiguration {
     private int externalPort;
     private int instances;
     private String internalPorts;
+    private String servicesEndpoint;
 }

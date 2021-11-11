@@ -32,6 +32,7 @@ buildscript {
         classpath 'net.researchgate:gradle-release:2.7.0'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
         classpath 'org.owasp:dependency-check-gradle:3.3.4'
+        classpath 'gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:3.1.1'
     }
 }
 
@@ -97,11 +98,11 @@ subprojects {
        testImplementation  'org.junit.platform:junit-platform-commons:1.6.0'
        testImplementation  'org.junit.platform:junit-platform-engine:1.6.0'
    }
-}
 
-configurations {
-    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    all*.exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-kotlin'
+    configurations.all {
+        exclude group: 'org.glassfish', module: 'jakarta.el'
+        exclude group: 'commons-httpclient', module: 'commons-httpclient'
+    }
 }
 
 task buildCore(dependsOn: [':gateway-service:build', ':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',
@@ -130,8 +131,18 @@ task runCITests(dependsOn: [":integration-tests:runCITests"]) {
     group "Integration tests"
 }
 
-task runCITestsInternalPort(dependsOn: [":integration-tests:runCITestsInternalPort"]) {
-    description "Run Integration Test Without MF Dependencies, this is meant to be run after runCITests so the apiml is not automatically started here"
+task runStartUpCheck(dependsOn: [":integration-tests:runStartUpCheck"]) {
+    description "Run Startup check"
+    group "Integration tests"
+}
+
+task runContainerTests(dependsOn: [":integration-tests:runContainerTests"]) {
+    description "Run Integration Test Without MF Dependencies"
+    group "Integration tests"
+}
+
+task runRegistrationTests(dependsOn: [":integration-tests:runRegistrationTests"]) {
+    description "Run Integration Test verifying registration and deregistration"
     group "Integration tests"
 }
 
@@ -152,6 +163,7 @@ task nodejsClean(type: Delete) {
     group = 'npm'
     if (cleanNode == 'true') {
         delete 'api-catalog-ui/tools/nodejs', 'api-catalog-ui/tools/npm', 'api-catalog-ui/tools/yarn'
+        delete 'metrics-service-ui/tools/nodejs', 'metrics-service-ui/tools/npm'
         delete 'onboarding-enabler-nodejs-sample-app/tools/nodejs', 'onboarding-enabler-nodejs-sample-app/tools/npm', 'onboarding-enabler-nodejs-sample-app/tools/yarn'
     }
 }
@@ -181,8 +193,14 @@ task runCachingServiceTests(dependsOn: ":integration-tests:runCachingServiceTest
     description "Run base tests on internal port"
     group "Integration tests"
 }
-
-
+task runHATests(dependsOn: ":integration-tests:runHATests") {
+    description "Run HA tests tests only"
+    group "Integration tests"
+}
+task runChaoticHATests(dependsOn: ":integration-tests:runChaoticHATests") {
+    description "Run Chaotic HA tests tests only"
+    group "Integration tests"
+}
 
 clean.dependsOn nodejsClean
 
@@ -226,7 +244,7 @@ release {
     ]
 
     git {
-        requireBranch = 'master'
+        requireBranch = ''
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = true

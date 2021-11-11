@@ -25,6 +25,12 @@
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
+if [[ -z "${LAUNCH_COMPONENT}" ]]
+then
+  # component should be started from component home directory
+  LAUNCH_COMPONENT=$(pwd)/bin
+fi
+
 JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
 # script assumes it's in the discovery component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]
@@ -32,6 +38,11 @@ then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
     COMMON_LIB=${CMMN_LB}
+fi
+
+if [[ -z ${LIBRARY_PATH} ]]
+then
+    LIBRARY_PATH="../common-java-lib/bin/"
 fi
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
@@ -55,6 +66,10 @@ fi
 if [ `uname` = "OS/390" ]; then
     QUICK_START=-Xquickstart
 fi
+
+EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
+DISCOVERY_SERVICE_PORT=${DISCOVERY_PORT:-7553}
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -70,31 +85,34 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
-    -Dspring.profiles.active=https \
+    -Dspring.profiles.active=${APIML_SPRING_PROFILES:-https} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dapiml.discovery.userid=eureka \
     -Dapiml.discovery.password=password \
-    -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
+    -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_SERVICE_PORT}/eureka/"} \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
-    -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
-    -Dapiml.service.port=${DISCOVERY_PORT} \
-    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
-    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
+    -Dapiml.service.hostname=${EXPLORER_HOST} \
+    -Dapiml.service.port=${DISCOVERY_SERVICE_PORT} \
+    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
-    -Dserver.ssl.enabled=true \
-    -Dserver.ssl.keyStore=${KEYSTORE} \
-    -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
-    -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
-    -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
-    -Dserver.ssl.trustStore=${TRUSTSTORE} \
-    -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
-    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
+    -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true} \
+    -Dserver.ssl.keyStore="${KEYSTORE}" \
+    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE:-PKCS12}" \
+    -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
+    -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.trustStore="${TRUSTSTORE}" \
+    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
+    -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
+    -Djava.library.path=${LIBRARY_PATH} \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"
+
+wait %1

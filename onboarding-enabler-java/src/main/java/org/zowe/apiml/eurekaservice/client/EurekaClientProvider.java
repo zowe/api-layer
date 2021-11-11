@@ -25,5 +25,5 @@ public interface EurekaClientProvider {
      * @param args Relevant filters for Eureka
      * @return Valid client for the Discovery service
      */
-    EurekaClient client(ApplicationInfoManager applicationInfoManager, final EurekaClientConfig config, AbstractDiscoveryClientOptionalArgs args);
+    EurekaClient client(ApplicationInfoManager applicationInfoManager, final EurekaClientConfig config, AbstractDiscoveryClientOptionalArgs<?> args);
 }

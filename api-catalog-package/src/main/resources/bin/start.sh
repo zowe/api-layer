@@ -25,6 +25,12 @@
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
+if [[ -z "${LAUNCH_COMPONENT}" ]]
+then
+  # component should be started from component home directory
+  LAUNCH_COMPONENT=$(pwd)/bin
+fi
+
 JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
 # script assumes it's in the catalog component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]
@@ -32,6 +38,11 @@ then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
     COMMON_LIB=${CMMN_LB}
+fi
+
+if [[ -z ${LIBRARY_PATH} ]]
+then
+    LIBRARY_PATH="../common-java-lib/bin/"
 fi
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
@@ -44,6 +55,20 @@ fi
 if [[ ! -z "${APIML_DIAG_MODE_ENABLED}" ]]
 then
     LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
+fi
+
+# If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
+export APIML_STATIC_DEF=${STATIC_DEF_CONFIG_DIR}
+if [[ ! -z "$ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES" ]]
+then
+  export APIML_STATIC_DEF="${APIML_STATIC_DEF};${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
+fi
+
+EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
+
+if [[ -z "${GATEWAY_HOST}" ]]
+then
+    GATEWAY_HOST=${EXPLORER_HOST}
 fi
 
 if [ `uname` = "OS/390" ]; then
@@ -66,30 +91,39 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
-    -Denvironment.hostname=${ZOWE_EXPLORER_HOST} \
-    -Denvironment.port=${CATALOG_PORT} \
-    -Denvironment.discoveryLocations=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
-    -Denvironment.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
-    -Denvironment.gatewayHostname=${ZOWE_EXPLORER_HOST} \
-    -Denvironment.eurekaUserId=eureka \
-    -Denvironment.eurekaPassword=password \
+    -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
+    -Dapiml.service.hostname=${EXPLORER_HOST} \
+    -Dapiml.service.port=${CATALOG_PORT:-7552} \
+    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_PORT:-7553}/eureka/"} \
+    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
+    -Dapiml.service.gatewayHostname=${GATEWAY_HOST} \
+    -Dapiml.service.eurekaUserName=eureka \
+    -Dapiml.service.eurekaPassword=password \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
+    -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
+    -Dapiml.security.authorization.provider=${APIML_SECURITY_AUTHORIZATION_PROVIDER:-} \
+    -Dapiml.security.authorization.endpoint.enabled=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_ENABLED:-false} \
+    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL:-"https://${EXPLORER_HOST}:${GATEWAY_SERVICE_PORT}/zss/api/v1/saf-auth"} \
+    -Dapiml.security.authorization.resourceClass=${RESOURCE_CLASS:-ZOWE} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
-    -Dserver.ssl.enabled=true \
-    -Dserver.ssl.keyStore=${KEYSTORE} \
-    -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
-    -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
-    -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
-    -Dserver.ssl.trustStore=${TRUSTSTORE} \
-    -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
-    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
+    -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true}  \
+    -Dserver.ssl.keyStore="${KEYSTORE}" \
+    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE:-PKCS12}" \
+    -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
+    -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.trustStore="${TRUSTSTORE}" \
+    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
+    -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
+    -Djava.library.path=${LIBRARY_PATH} \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"
+
+wait %1

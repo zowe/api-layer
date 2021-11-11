@@ -1,8 +1,7 @@
 /* eslint-disable no-undef */
-import * as React from 'react';
-// tslint:disable-next-line:no-implicit-dependencies
 import { shallow } from 'enzyme';
 import Dashboard from './Dashboard';
+import { categoryData } from '../Wizard/configs/wizard_categories';
 
 const ajaxError = {
     message: 'ajax Error 404',
@@ -14,6 +13,22 @@ const ajaxError = {
 };
 
 describe('>>> Dashboard component tests', () => {
+
+    it('should have "Refresh Static APIs" button', () => {
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                assertAuthorization={jest.fn()}
+            />
+        );
+        let button = wrapper.find('#refresh-api-button');
+        expect(button.length).toEqual(1);
+    });
+
     it('should display no results if search fails', () => {
         const dashboard = shallow(
             <Dashboard
@@ -24,6 +39,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clear={jest.fn()}
                 fetchTilesFailed={jest.fn()}
+                assertAuthorization={jest.fn()}
             />
         );
         expect(
@@ -44,6 +60,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clear={jest.fn()}
                 fetchTilesFailed={jest.fn()}
+                assertAuthorization={jest.fn()}
             />
         );
         expect(
@@ -65,6 +82,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={fetchTilesStop}
                 clearService={jest.fn()}
                 clear={clear}
+                assertAuthorization={jest.fn()}
             />
         );
         const instance = wrapper.instance();
@@ -83,11 +101,49 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
+                assertAuthorization={jest.fn()}
             />
         );
         const instance = wrapper.instance();
         instance.handleSearch();
         expect(filterText).toHaveBeenCalled();
+    });
+
+    it('should refresh static APIs on button click', () => {
+        const refreshedStaticApi = jest.fn();
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                refreshedStaticApi={refreshedStaticApi}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                inputData={categoryData}
+                assertAuthorization={jest.fn()}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.refreshStaticApis();
+        expect(refreshedStaticApi).toHaveBeenCalled();
+    });
+
+    it('should toggle display on button click', () => {
+        const wizardToggleDisplay = jest.fn();
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                wizardToggleDisplay={wizardToggleDisplay}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                assertAuthorization={jest.fn()}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.toggleWizard();
+        expect(wizardToggleDisplay).toHaveBeenCalled();
     });
 
     it('should create tile', () => {
@@ -121,6 +177,7 @@ describe('>>> Dashboard component tests', () => {
                 fetchTilesStop={jest.fn()}
                 clearService={jest.fn()}
                 clear={jest.fn()}
+                assertAuthorization={jest.fn()}
             />
         );
         const tile = dashboard.find('Tile');

@@ -17,6 +17,13 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
 apply from: "$projectDir/gradle/lite.gradle"
+apply plugin: 'com.google.cloud.tools.jib'
+apply from: "../gradle/jib.gradle"
+
+def debugPort = 5124
+def componentName = "api-catalog-services"
+
+setJib(componentName, debugPort)
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -41,7 +48,7 @@ gitProperties {
 
 configurations.all {
     resolutionStrategy {
-        force (libraries.jetty_websocket_client)
+        force (libraries.jetty_websocket_client, libraries.spring_security_web, libraries.spring_security_config)
     }
 }
 
@@ -62,11 +69,11 @@ dependencies {
     implementation libraries.swagger3_core
     implementation libraries.swagger3_parser
     implementation libraries.jackson_core
-    implementation libraries.json_path
     implementation libraries.apache_commons_lang3
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.apache_velocity
     implementation libraries.openapidiff
+    implementation libraries.http_client
     implementation libraries.jetty_client
     implementation libraries.jetty_http
     implementation libraries.jetty_io
@@ -74,6 +81,27 @@ dependencies {
     implementation libraries.jetty_websocket_api
     implementation libraries.jetty_websocket_client
     implementation libraries.jetty_websocket_common
+    implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_crypto
+    implementation libraries.spring_security_web
+    implementation libraries.tomcat_annotations_api
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
+    implementation libraries.xstream
+    implementation libraries.commons_io
+    implementation libraries.guava
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_context_support
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.spring_messaging
+    implementation libraries.spring_web
+    implementation libraries.spring_webmvc
+    implementation libraries.spring_websocket
+
 
     implementation libraries.springFox
 
@@ -84,6 +112,7 @@ dependencies {
     testAnnotationProcessor libraries.lombok
 
     testCompile libraries.spring_boot_starter_test
+    testCompile libraries.json_smart
 }
 
 bootJar {
@@ -91,6 +120,11 @@ bootJar {
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
+    archiveClassifier = "application"
+}
+
+jar {
+    enabled true
 }
 
 def uiModule = "${project(':api-catalog-ui').projectDir}"
@@ -120,7 +154,14 @@ bootRun {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenJavaLib(MavenPublication) {
+            artifact jar
+        }
+
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml.sdk'
+            artifactId = 'api-catalog-fat-jar'
+
             artifact bootJar
         }
     }

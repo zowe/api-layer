@@ -16,7 +16,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.zowe.apiml.gatewayservice.SecurityUtils;
+import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.Credentials;
 

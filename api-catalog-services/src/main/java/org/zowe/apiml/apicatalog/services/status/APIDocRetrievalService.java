@@ -32,6 +32,7 @@ import org.zowe.apiml.product.routing.RoutedServices;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Retrieves the API documentation for a registered service
@@ -67,11 +68,7 @@ public class APIDocRetrievalService {
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         List<String> apiVersions = new ArrayList<>();
         for (ApiInfo apiInfo : apiInfoList) {
-            int majorVersion = getMajorVersion(apiInfo);
-            if (majorVersion >= 0) {
-                // -1 indicates major version not found
-                apiVersions.add("v" + majorVersion);
-            }
+            apiVersions.add(apiInfo.getApiId() + " v" + apiInfo.getVersion());
         }
         return apiVersions;
     }
@@ -97,7 +94,11 @@ public class APIDocRetrievalService {
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         ApiInfo defaultApiInfo = getDefaultApiInfo(apiInfoList);
 
-        return "v" + getMajorVersion(defaultApiInfo);
+        if (defaultApiInfo == null) {
+            return "";
+        }
+
+        return defaultApiInfo.getApiId() + " v" + defaultApiInfo.getVersion();
     }
 
     /**
@@ -314,12 +315,25 @@ public class APIDocRetrievalService {
             return null;
         }
 
-        return apiInfos.stream()
+        if (apiVersion == null) {
+           return apiInfos.get(0);
+        }
+
+        String[] api = apiVersion.split(" ");
+        String apiId = api.length > 0 ? api[0] : "";
+        String version = api.length > 1 ? api[1].replace("v", "") : "";
+
+        Optional<ApiInfo> result = apiInfos.stream()
             .filter(
-                f -> f.getGatewayUrl().equals(apiVersion == null ? "api" : "api/" + apiVersion)
+                f -> apiId.equals(f.getApiId()) && (version == null || version.equals(f.getVersion()))
             )
-            .findFirst()
-            .orElse(apiInfos.get(0));
+            .findFirst();
+
+        if (!result.isPresent()) {
+            throw new ApiDocNotFoundException("There is no api doc for combination of apiId and version. " + apiId + " " + version);
+        } else {
+            return result.get();
+        }
     }
 
     private InstanceInfo getInstanceInfo(String serviceId) {

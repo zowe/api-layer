@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
@@ -26,12 +27,17 @@ public class ZaasClientImpl implements ZaasClient {
     private final PassTicketService passTickets;
 
     public ZaasClientImpl(ConfigProperties configProperties) throws ZaasConfigurationException {
+        if (!configProperties.isHttpOnly() && (configProperties.getKeyStorePath() == null)) {
+            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.KEY_STORE_NOT_PROVIDED);
+        }
+
         CloseableClientProvider httpClientProvider = getTokenProvider(configProperties);
+        CloseableClientProvider httpClientProviderWithoutCert = getTokenProviderWithoutCert(configProperties, httpClientProvider);
+
         String baseUrl = String.format("%s://%s:%s%s", getScheme(configProperties.isHttpOnly()), configProperties.getApimlHost(), configProperties.getApimlPort(),
             configProperties.getApimlBaseUrl());
-        tokens = new ZaasJwtService(httpClientProvider, baseUrl);
+        tokens = new ZaasJwtService(httpClientProviderWithoutCert, baseUrl);
         passTickets = new PassTicketServiceImpl(httpClientProvider, baseUrl);
-
     }
 
     private CloseableClientProvider getTokenProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
@@ -40,7 +46,16 @@ public class ZaasClientImpl implements ZaasClient {
         } else {
             return new ZaasHttpsClientProvider(configProperties);
         }
+    }
 
+    private CloseableClientProvider getTokenProviderWithoutCert (
+        ConfigProperties configProperties,
+        CloseableClientProvider defaultCloseableClientProvider) throws ZaasConfigurationException
+    {
+        if (configProperties.isHttpOnly()) {
+            return defaultCloseableClientProvider;
+        }
+        return getTokenProvider(configProperties.withoutKeyStore());
     }
 
     private Object getScheme(boolean httpOnly) {

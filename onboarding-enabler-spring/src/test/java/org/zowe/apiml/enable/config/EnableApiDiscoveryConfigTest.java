@@ -10,14 +10,14 @@
 package org.zowe.apiml.enable.config;
 
 import com.netflix.appinfo.EurekaInstanceConfig;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
@@ -27,15 +27,14 @@ import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @EnableAutoConfiguration
 @EnableApiDiscovery
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = {RegisterToApiLayer.class, EnableApiDiscoveryConfig.class})
-public class EnableApiDiscoveryConfigTest {
-
+class EnableApiDiscoveryConfigTest {
 
     @Autowired
     private ApiMediationServiceConfig apiMediationServiceConfig;
@@ -44,7 +43,7 @@ public class EnableApiDiscoveryConfigTest {
     private ApiMediationClient apiMediationClient;
 
     @Test
-    public void messageServiceDiscovery() {
+    void messageServiceDiscovery() {
         String baseUrl = "localhost";
         String ipAddress = "127.0.0.0";
         String discovery = "https://localhost:10011/discovery";
@@ -59,14 +58,13 @@ public class EnableApiDiscoveryConfigTest {
         assertTrue(message.mapToLogMessage().contains(correctMessage));
     }
 
-
     @Test
-    public void resolveServiceIpAddressIfNotProvidedInConfiguration() {
+    void resolveServiceIpAddressIfNotProvidedInConfiguration() {
         assertEquals("127.0.0.1", apiMediationServiceConfig.getServiceIpAddress());
     }
 
     @Test
-    public void givenYamlMetadata_whenIpAddressIsPreferred_thenUseIpAddress() throws ServiceDefinitionException {
+    void givenYamlMetadata_whenIpAddressIsPreferred_thenUseIpAddress() throws ServiceDefinitionException {
         EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
         EurekaInstanceConfig translatedConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(apiMediationServiceConfig);
         assertEquals("https://127.0.0.1:10043/discoverableclient2", translatedConfig.getHomePageUrl());

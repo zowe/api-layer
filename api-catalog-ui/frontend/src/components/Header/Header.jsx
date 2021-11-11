@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Button, Link, Text, Tooltip } from 'mineral-ui';
 import { IconPowerSettingsNew } from 'mineral-ui-icons';
 import productImage from '../../assets/images/api-catalog-logo.png';

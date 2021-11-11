@@ -24,8 +24,16 @@ public class PHBase extends FunctionalApar {
     }
 
     @Override
+    protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @Override
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        if (containsInvalidUser(headers) && noLtpaCookie(headers)) {
+        if (noAuthentication(headers)) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -40,7 +48,7 @@ public class PHBase extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleInformation(Map<String, String> headers, HttpServletResponse response) {
-        if (containsInvalidUser(headers)) {
+        if (containsInvalidOrNoUser(headers)) {
             return validInfo();
         }
 
@@ -57,7 +65,7 @@ public class PHBase extends FunctionalApar {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         } else {
-            if (noLtpaCookie(headers)) {
+            if (noLtpaCookie(headers) || !isValidJwtCookie(headers)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         }

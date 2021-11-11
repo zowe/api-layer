@@ -1,6 +1,6 @@
 ext {
     artifactName = 'gateway-package'
-    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
+    pullNo = project.hasProperty("pullRequest") && project.getProperty("pullRequest") != null ? "-" + project.getProperty("pullRequest") : ""
 }
 
 configurations {

@@ -1,167 +1,208 @@
 ext {
-    springBootVersion = '2.3.9.RELEASE'
-    springBootVersionV1 = '1.5.9.RELEASE'
-    springCloudVersion = '2.2.6.RELEASE'
-    springSecurityVersion = '5.1.2.RELEASE'
+    springBootVersion = '2.3.12.RELEASE'
+    springCloudVersion = '2.2.9.RELEASE'
+    springSecurityVersion = '5.3.11.RELEASE!!'
+    springFrameworkVersion = '5.2.18.RELEASE!!'
+    springRetryVersion = '1.2.4.RELEASE'
+    springWebTestClientVersion = '4.4.0'
 
-    lombokVersion = '1.18.16'
-    slf4jVersion = '1.7.25'
-    jsonVersion = '20180813'
-    jsonPathVersion = '2.4.0'
-    httpClientVersion = '4.5.3'
-    guavaVersion = '23.2-jre'
-    mockSpringRestVersion = '1.0.2'
-    reactorVersion = '3.0.7.RELEASE'
-    cucumberVersion = '1.2.5'
-    hamcrestVersion = '1.3'
-    javaxServletApiVersion = '3.1.0'
-    restAssuredVersion = '3.0.7'
-    commonsValidatorVersion = "1.7"
-    powerMockVersion = "2.0.4"
-    jacksonCoreVersion = "2.10.1"
-    javaxValidationApiVersion = "2.0.1.Final"
-    gsonVersion = '2.8.2'
-    mockitoCoreVersion = '2.23.4'
-    zsslVersion = '1.0.0'
-    tomcatVersion = '9.0.44' //8.5.33
-    commonsLang3Version = '3.7'
-    commonsTextVersion = '1.8'
-    gradleGitPropertiesVersion = '2.2.4'
-    jettyWebSocketClientVersion = '9.4.39.v20210325'
-    junitJupiterVersion = '5.5.2'
-    eurekaClientVersion = '1.9.13'
-    netflixServoVersion = '0.12.28'
-    logbackVersion = '1.2.3'
-    spring4Version = '4.3.7.RELEASE'
+    attlsVersion = '1.21.3'
     awaitilityVersion = '3.0.0'
-    jjwtVersion = '0.11.1'
-    nimbusJoseJwtVersion = '8.10'
-    velocityVersion = '2.0'
-    jsoupVersion = '1.8.3'
-    httpCoreVersion = '4.4.14'
-    snakeyamlVersion = '1.27'
-    springHateoasVersion = '0.23.0.RELEASE'
-    springRetryVersion = '1.2.2.RELEASE'
-    jsonUnitVersion = '1.25.0'
-    springFoxVersion = '2.9.2'
-    swaggerCoreVersion = "1.5.21"
-    swagger3CoreVersion = "2.0.0"
-    swagger3ParserVersion = "2.0.17"
-    swaggerJerseyJaxrsVersion = '1.5.10'
-    jacksonDataformatYamlVersion = '2.9.7'
-    jerseyVersion = '2.26'
-    ehCacheVersion = '2.10.6'
+    bouncyCastleVersion = '1.69'
     bootstrapVersion = '4.3.1'
-    jqueryVersion = '3.4.1'
-    jsr305Version = '3.0.1'
-    javaxInjectVersion = '1'
-    openApiDiffVersion = '2.0.0-beta.6'
+    commonsLang3Version = '3.7'
+    commonsTextVersion = '1.9'
+    commonsIoVersion = '2.7!!'
+    ehCacheVersion = '2.10.9.2'
+    eurekaClientVersion = '1.10.17'
+    gradleGitPropertiesVersion = '2.2.4' // Used in classpath dependencies
+    gradleNodeVersion = '3.0.1' // Used in classpath dependencies
+    gsonVersion = '2.8.7'
+    guavaVersion = '31.0.1-jre'
+    hamcrestVersion = '1.3'
+    httpClientVersion = '4.5.13'
+    httpCoreVersion = '4.4.14'
+    jacksonCoreVersion = '2.11.4'
+    jacksonDataformatYamlVersion = '2.9.10'
     javaxAnnotationVersion = '1.3.2'
+    javaxInjectVersion = '1'
+    javaxServletApiVersion = '3.1.0'
     jaxbApiVersion = '2.3.1'
+    jerseyVersion = '2.26'
+    jettyWebSocketClientVersion = '9.4.43.v20210629'
+    jjwtVersion = '0.11.2'
+    jsonPathVersion = '2.6.0'
+    jsonSmartVersion = '2.4.7!!'
+    jsonUnitVersion = '1.25.1'
+    jsonVersion = '20180813'
+    jsoupVersion = '1.8.3'
+    jsr305Version = '3.0.2'
+    junitJupiterVersion = '5.5.2'
+    jqueryVersion = '3.5.1!!'
+    lettuceVersion = '6.0.8.RELEASE'
+    logbackVersion = '1.2.3'
+    lombokVersion = '1.18.20'
+    mockitoCoreVersion = '2.23.4'
+    netflixServoVersion = '0.13.2'
+    nettyVersion = '4.1.70.Final'
+    nimbusJoseJwtVersion = '8.21.1'
+    openApiDiffVersion = '2.0.0-beta.10'
+    reactorTestVersion = '3.4.9'
+    restAssuredVersion = '3.0.7'
+    slf4jVersion = '1.7.31'
+    snakeyamlVersion = '1.27'
+    springFoxVersion = '2.9.2'
+    spring4Version = '4.3.7.RELEASE' // Used within PJE in tests
+    swagger3CoreVersion = '2.0.0'
+    swagger3ParserVersion = '2.0.17'
+    swaggerCoreVersion = '1.5.24'
+    swaggerJerseyJaxrsVersion = '1.5.10'
+    tomcatVersion = '9.0.54'
+    velocityVersion = '2.0'
+    xstreamVersion = '1.4.18!!'
 
     libraries = [
-        jaxb_api                           : "javax.xml.bind:jaxb-api:${jaxbApiVersion}",
-        javax_annotation                   : "javax.annotation:javax.annotation-api:${javaxAnnotationVersion}",
-        lombok                             : "org.projectlombok:lombok:${lombokVersion}",
-        slf4j_simple                       : "org.slf4j:slf4j-simple:${slf4jVersion}",
-        slf4j_api                          : "org.slf4j:slf4j-api:${slf4jVersion}",
-        spring_boot_gradle_plugin          : "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}",
+        zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
+        spring_boot_configuration_processor: "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}",
         spring_boot_starter                : "org.springframework.boot:spring-boot-starter:${springBootVersion}",
         spring_boot_starter_actuator       : "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}",
         spring_boot_starter_security       : "org.springframework.boot:spring-boot-starter-security:${springBootVersion}",
-            spring_boot_starter_validation     : "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}",
+        spring_boot_starter_validation     : "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}",
         spring_boot_starter_web            : "org.springframework.boot:spring-boot-starter-web:${springBootVersion}",
         spring_boot_starter_websocket      : "org.springframework.boot:spring-boot-starter-websocket:${springBootVersion}",
         spring_boot_starter_test           : "org.springframework.boot:spring-boot-starter-test:${springBootVersion}",
-        spring_boot_starter_mobile         : "org.springframework.boot:spring-boot-starter-mobile:${springBootVersion}",
-        spring_boot_starter_web_services   : "org.springframework.boot:spring-boot-starter-web-services:${springBootVersion}",
-        spring_boot_configuration_processor: "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}",
-        spring_boot_starter_webflux        : "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}",
         spring_boot_starter_aop            : "org.springframework.boot:spring-boot-starter-aop:${springBootVersion}",
-        spring_boot_starter_log4j2         : "org.springframework.boot:spring-boot-starter-log4j2:${springBootVersion}",
         spring_boot_starter_thymeleaf      : "org.springframework.boot:spring-boot-starter-thymeleaf:${springBootVersion}",
         spring_boot_starter_cache          : "org.springframework.boot:spring-boot-starter-cache:${springBootVersion}",
-        spring_boot_devtools               : "org.springframework.boot:spring-boot-devtools:${springBootVersion}",
-        spring_retry                       : "org.springframework.retry:spring-retry:${springRetryVersion}",
-        spring_hateoas                     : "org.springframework.hateoas:spring-hateoas:${springHateoasVersion}",
+        spring_boot_starter_webflux        : "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}",
 
-        spring_cloud_config_server         : "org.springframework.cloud:spring-cloud-config-server:${springCloudVersion}",
-        spring_cloud_starter_config        : "org.springframework.cloud:spring-cloud-starter-config:${springCloudVersion}",
+        spring_cloud_hystrix_dashboard     : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix-dashboard:${springCloudVersion}",
         spring_cloud_starter_zuul          : "org.springframework.cloud:spring-cloud-starter-netflix-zuul:${springCloudVersion}",
         spring_cloud_starter_eureka        : "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:${springCloudVersion}",
-        spring_cloud_starter_eureka_server : "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:${springCloudVersion}",
         spring_cloud_starter_ribbon        : "org.springframework.cloud:spring-cloud-starter-netflix-ribbon:${springCloudVersion}",
+        spring_cloud_starter_hystrix       : "org.springframework.cloud:spring-cloud-starter-netflix-hystrix:${springCloudVersion}",
+        spring_cloud_starter_turbine       : "org.springframework.cloud:spring-cloud-starter-netflix-turbine:${springCloudVersion}",
+        spring_cloud_commons               : "org.springframework.cloud:spring-cloud-commons:${springCloudVersion}",
 
-        spring_security_web                : "org.springframework.security:spring-security-web:${springSecurityVersion}",
         spring_security_config             : "org.springframework.security:spring-security-config:${springSecurityVersion}",
-        spring_security_test               : "org.springframework.security:spring-security-test:${springSecurityVersion}",
+        spring_security_core               : "org.springframework.security:spring-security-core:${springSecurityVersion}",
+        spring_security_crypto             : "org.springframework.security:spring-security-crypto:${springSecurityVersion}",
+        spring_security_web                : "org.springframework.security:spring-security-web:${springSecurityVersion}",
 
-        jsoup                              : "org.jsoup:jsoup:${jsoupVersion}",
-        json                               : "org.json:json:${jsonVersion}",
-        json_path                          : "com.jayway.jsonpath:json-path:${jsonPathVersion}",
-        springFox                          : "io.springfox:springfox-swagger2:${springFoxVersion}",
-        springFoxWeb                       : "io.springfox:springfox-spring-web:${springFoxVersion}",
-        swagger_core                       : "io.swagger:swagger-core:${swaggerCoreVersion}",
-        swagger3_core                      : "io.swagger.core.v3:swagger-core:${swagger3CoreVersion}",
-        swagger3_parser                    : "io.swagger.parser.v3:swagger-parser-v3:${swagger3ParserVersion}",
-        swagger_jersey2_jaxrs              : "io.swagger:swagger-jersey2-jaxrs:${swaggerJerseyJaxrsVersion}",
-        http_client                        : "org.apache.httpcomponents:httpclient:${httpClientVersion}",
-        http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",
-        eh_cache                           : "net.sf.ehcache:ehcache:${ehCacheVersion}",
-        openapidiff                        : "org.openapitools.openapidiff:openapi-diff-core:${openApiDiffVersion}",
+        spring_retry                       : "org.springframework.retry:spring-retry:${springRetryVersion}",
+        spring_web_test_client             : "io.rest-assured:spring-web-test-client:${springWebTestClientVersion}",
+        spring_aop                         : "org.springframework:spring-aop:${springFrameworkVersion}",
+        spring_beans                       : "org.springframework:spring-beans:${springFrameworkVersion}",
+        spring_context                     : "org.springframework:spring-context:${springFrameworkVersion}",
+        spring_context_support             : "org.springframework:spring-context-support:${springFrameworkVersion}",
+        spring_core                        : "org.springframework:spring-core:${springFrameworkVersion}",
+        spring_expression                  : "org.springframework:spring-expression:${springFrameworkVersion}",
+        spring_messaging                   : "org.springframework:spring-messaging:${springFrameworkVersion}",
+        spring_web                         : "org.springframework:spring-web:${springFrameworkVersion}",
+        spring_webmvc                      : "org.springframework:spring-webmvc:${springFrameworkVersion}",
+        spring_websocket                   : "org.springframework:spring-websocket:${springFrameworkVersion}",
 
-        mockSpringRest                     : "com.github.skjolber:mockito-rest-spring:${mockSpringRestVersion}",
-        reactorCore                        : "io.projectreactor:reactor-core:${reactorVersion}",
-        reactorTestSupport                 : "io.projectreactor.addons:reactor-test:${reactorVersion}",
-        hamcrest                           : "org.hamcrest:hamcrest-all:${hamcrestVersion}",
-        javax_servlet_api                  : "javax.servlet:javax.servlet-api:${javaxServletApiVersion}",
-        rest_assured                       : "io.rest-assured:rest-assured:${restAssuredVersion}",
-        spring_mock_mvc                    : "io.rest-assured:spring-mock-mvc:${restAssuredVersion}",
-        commons_validator                  : "commons-validator:commons-validator:${commonsValidatorVersion}",
-        jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
-        jackson_databind                   : "com.fasterxml.jackson.core:jackson-databind:${jacksonCoreVersion}",
-        jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
-        javax_validation                   : "javax.validation:validation-api:${javaxValidationApiVersion}",
-        gson                               : "com.google.code.gson:gson:${gsonVersion}",
-        tomcat_coyote                      : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
-        tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         apache_commons_lang3               : "org.apache.commons:commons-lang3:${commonsLang3Version}",
         apache_commons_text                : "org.apache.commons:commons-text:${commonsTextVersion}",
-        jetty_websocket_api                : "org.eclipse.jetty.websocket:websocket-api:${jettyWebSocketClientVersion}",
-        jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
-        jetty_websocket_common             : "org.eclipse.jetty.websocket:websocket-common:${jettyWebSocketClientVersion}",
+        apache_velocity                    : "org.apache.velocity:velocity-engine-core:${velocityVersion}",
+        awaitility                         : "org.awaitility:awaitility:${awaitilityVersion}",
+        bcprov                             : "org.bouncycastle:bcprov-jdk15on:${bouncyCastleVersion}",
+        bcpkix                             : "org.bouncycastle:bcpkix-jdk15on:${bouncyCastleVersion}",
+        bootstrap                          : "org.webjars:bootstrap:${bootstrapVersion}",
+        commons_io                         : "commons-io:commons-io:${commonsIoVersion}",
+        eh_cache                           : "net.sf.ehcache:ehcache:${ehCacheVersion}",
+        eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
+        gson                               : "com.google.code.gson:gson:${gsonVersion}",
+        guava                              : "com.google.guava:guava:${guavaVersion}",
+        hamcrest                           : "org.hamcrest:hamcrest-all:${hamcrestVersion}",
+        http_client                        : "org.apache.httpcomponents:httpclient:${httpClientVersion}",
+        http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",
+        jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
+        jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
+        jackson_databind                   : "com.fasterxml.jackson.core:jackson-databind:${jacksonCoreVersion}",
+        jackson_dataformat_yaml            : "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonDataformatYamlVersion}",
+        janino                             : "org.codehaus.janino:janino:3.1.6",
+        javax_annotation                   : "javax.annotation:javax.annotation-api:${javaxAnnotationVersion}",
+        javax_inject                       : "javax.inject:javax.inject:${javaxInjectVersion}",
+        javax_servlet_api                  : "javax.servlet:javax.servlet-api:${javaxServletApiVersion}",
+        jaxb_api                           : "javax.xml.bind:jaxb-api:${jaxbApiVersion}",
         jetty_client                       : "org.eclipse.jetty:jetty-client:${jettyWebSocketClientVersion}",
         jetty_http                         : "org.eclipse.jetty:jetty-http:${jettyWebSocketClientVersion}",
         jetty_io                           : "org.eclipse.jetty:jetty-io:${jettyWebSocketClientVersion}",
         jetty_util                         : "org.eclipse.jetty:jetty-util:${jettyWebSocketClientVersion}",
-        eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
-        netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
-
-        junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
-        mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
-        mockito_jupiter                    : "org.mockito:mockito-junit-jupiter:${mockitoCoreVersion}",
-
-        logback_classic                    : "ch.qos.logback:logback-classic:${logbackVersion}",
-        spring4Mvc                         : "org.springframework:spring-webmvc:${spring4Version}",
-        spring4Test                        : "org.springframework:spring-test:${spring4Version}",
-        awaitility                         : "org.awaitility:awaitility:${awaitilityVersion}",
+        jetty_websocket_api                : "org.eclipse.jetty.websocket:websocket-api:${jettyWebSocketClientVersion}",
+        jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
+        jetty_websocket_common             : "org.eclipse.jetty.websocket:websocket-common:${jettyWebSocketClientVersion}",
+        json_smart                         : "net.minidev:json-smart:${jsonSmartVersion}",
         jjwt                               : "io.jsonwebtoken:jjwt-api:${jjwtVersion}",
         jjwt_impl                          : "io.jsonwebtoken:jjwt-impl:${jjwtVersion}",
         jjwt_jackson                       : "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}",
-        nimbusJoseJwt                      : "com.nimbusds:nimbus-jose-jwt:${nimbusJoseJwtVersion}",
-        apache_velocity                    : "org.apache.velocity:velocity-engine-core:${velocityVersion}",
-        snakeyaml                          : "org.yaml:snakeyaml:${snakeyamlVersion}",
+        json                               : "org.json:json:${jsonVersion}",
+        json_path                          : "com.jayway.jsonpath:json-path:${jsonPathVersion}",
         json_unit                          : "net.javacrumbs.json-unit:json-unit:${jsonUnitVersion}",
         json_unit_fluent                   : "net.javacrumbs.json-unit:json-unit-fluent:${jsonUnitVersion}",
-        jackson_dataformat_yaml            : "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonDataformatYamlVersion}",
-        jersey_server                      : "org.glassfish.jersey.core:jersey-server:${jerseyVersion}",
-        jersey_hk2                         : "org.glassfish.jersey.inject:jersey-hk2:${jerseyVersion}",
-        jersey_container_servlet_core      : "org.glassfish.jersey.containers:jersey-container-servlet-core:${jerseyVersion}",
-        jersey_media_json_jackson          : "org.glassfish.jersey.media:jersey-media-json-jackson:${jerseyVersion}",
-        jersey_test_provider_jdk_http      : "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jdk-http:${jerseyVersion}",
-        bootstrap                          : "org.webjars:bootstrap:${bootstrapVersion}",
-        jquery                             : "org.webjars:jquery:${jqueryVersion}",
+        jsoup                              : "org.jsoup:jsoup:${jsoupVersion}",
         jsr305                             : "com.google.code.findbugs:jsr305:${jsr305Version}",
-        javax_inject                       : "javax.inject:javax.inject:${javaxInjectVersion}"
+        junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
+        jquery                             : "org.webjars:jquery:${jqueryVersion}",
+        lettuce                            : "io.lettuce:lettuce-core:${lettuceVersion}",
+        logback_classic                    : "ch.qos.logback:logback-classic:${logbackVersion}",
+        lombok                             : "org.projectlombok:lombok:${lombokVersion}",
+        mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
+        mockito_jupiter                    : "org.mockito:mockito-junit-jupiter:${mockitoCoreVersion}",
+        netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
+        netty                              : "io.netty:netty-all:${nettyVersion}",
+        netty_buffer                       : "io.netty:netty-buffer:${nettyVersion}",
+        netty_codec                        : "io.netty:netty-codec:${nettyVersion}",
+        netty_codec_dns                    : "io.netty:netty-codec-dns:${nettyVersion}",
+        netty_codec_haproxy                : "io.netty:netty-codec-haproxy:${nettyVersion}",
+        netty_codec_http                   : "io.netty:netty-codec-http:${nettyVersion}",
+        netty_codec_http2                  : "io.netty:netty-codec-http2:${nettyVersion}",
+        netty_codec_memcache               : "io.netty:netty-codec-memcache:${nettyVersion}",
+        netty_codec_mqtt                   : "io.netty:netty-codec-mqtt:${nettyVersion}",
+        netty_codec_redis                  : "io.netty:netty-codec-redis:${nettyVersion}",
+        netty_codec_socks                  : "io.netty:netty-codec-socks:${nettyVersion}",
+        netty_codec_smtp                   : "io.netty:netty-codec-smtp:${nettyVersion}",
+        netty_codec_stomp                  : "io.netty:netty-codec-stomp:${nettyVersion}",
+        netty_codec_xml                    : "io.netty:netty-codec-xml:${nettyVersion}",
+        netty_common                       : "io.netty:netty-common:${nettyVersion}",
+        netty_handler                      : "io.netty:netty-handler:${nettyVersion}",
+        netty_handler_proxy                : "io.netty:netty-handler-proxy:${nettyVersion}",
+        netty_resolver                     : "io.netty:netty-resolver:${nettyVersion}",
+        netty_resolver_dns                 : "io.netty:netty-resolver-dns:${nettyVersion}",
+        netty_resolver_dns_native_macos    : "io.netty:netty-resolver-dns-native-macos:${nettyVersion}",
+        netty_transport                    : "io.netty:netty-transport:${nettyVersion}",
+        netty_transport_native_epoll       : "io.netty:netty-transport-native-epoll:${nettyVersion}",
+        netty_transport_native_kqueue      : "io.netty:netty-transport-native-kqueue:${nettyVersion}",
+        netty_transport_native_unix_common : "io.netty:netty-transport-native-unix-common:${nettyVersion}",
+        netty_transport_rxtx               : "io.netty:netty-transport-rxtx:${nettyVersion}",
+        netty_transport_sctp               : "io.netty:netty-transport-sctp:${nettyVersion}",
+        netty_transport_udt                : "io.netty:netty-transport-udt:${nettyVersion}",
+        nimbusJoseJwt                      : "com.nimbusds:nimbus-jose-jwt:${nimbusJoseJwtVersion}",
+        openapidiff                        : "org.openapitools.openapidiff:openapi-diff-core:${openApiDiffVersion}",
+        reactorTest                        : "io.projectreactor:reactor-test:${reactorTestVersion}",
+        rest_assured                       : "io.rest-assured:rest-assured:${restAssuredVersion}",
+        slf4j_api                          : "org.slf4j:slf4j-api:${slf4jVersion}",
+        snakeyaml                          : "org.yaml:snakeyaml:${snakeyamlVersion}",
+        spring4Mvc                         : "org.springframework:spring-webmvc:${spring4Version}",
+        spring4Test                        : "org.springframework:spring-test:${spring4Version}",
+        springFox                          : "io.springfox:springfox-swagger2:${springFoxVersion}",
+        spring_mock_mvc                    : "io.rest-assured:spring-mock-mvc:${restAssuredVersion}",
+        swagger_core                       : "io.swagger:swagger-core:${swaggerCoreVersion}",
+        swagger3_core                      : "io.swagger.core.v3:swagger-core:${swagger3CoreVersion}",
+        swagger3_parser                    : "io.swagger.parser.v3:swagger-parser-v3:${swagger3ParserVersion}",
+        tomcat_annotations_api             : "org.apache.tomcat:tomcat-annotations-api:${tomcatVersion}",
+        tomcat_coyote                      : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
+        tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+        tomcat_embed_websocket             : "org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}",
+        xstream                            : "com.thoughtworks.xstream:xstream:${xstreamVersion}",
+
+        // Sample apps only
+        jersey_container_servlet_core      : "org.glassfish.jersey.containers:jersey-container-servlet-core:${jerseyVersion}",
+        jersey_hk2                         : "org.glassfish.jersey.inject:jersey-hk2:${jerseyVersion}",
+        jersey_media_json_jackson          : "org.glassfish.jersey.media:jersey-media-json-jackson:${jerseyVersion}",
+        jersey_server                      : "org.glassfish.jersey.core:jersey-server:${jerseyVersion}",
+        jersey_test_provider_jdk_http      : "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jdk-http:${jerseyVersion}"
+
     ]
 }

@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.acceptance.netflix;
 
+import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.MyDataCenterInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
@@ -38,12 +40,13 @@ public class ApplicationRegistry {
     }
 
     /**
-     * Add new route to a service.
+     * Add new application. The customization to the metadata are done via the MetadataBuilder.
      *
-     * @param service    Details of the service to be registered in the Gateway
-     * @param addTimeout Whether the custom metadata should be provided for given service.
+     * @param service           Details of the service to be registered in the Gateway
+     * @param builder           The builder pattern for metadata.
+     * @param multipleInstances Whether there are multiple instances of the service.
      */
-    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled) {
+    public void addApplication(Service service, MetadataBuilder builder, boolean multipleInstances) {
         String id = service.getId();
         String locationPattern = service.getLocationPattern();
         String serviceRoute = service.getServiceRoute();
@@ -51,9 +54,12 @@ public class ApplicationRegistry {
         Applications applications = new Applications();
         Application withMetadata = new Application(id);
 
-        Map<String, String> metadata = createMetadata(addTimeout, corsEnabled);
+        Map<String, String> metadata = builder.build();
 
-        withMetadata.addInstance(getStandardInstance(metadata, id));
+        withMetadata.addInstance(getStandardInstance(metadata, id, id));
+        if (multipleInstances) {
+            withMetadata.addInstance(getStandardInstance(metadata, id, id + "-copy"));
+        }
         applications.addApplication(withMetadata);
         ZuulProperties.ZuulRoute route = new ZuulProperties.ZuulRoute(locationPattern, service.getId());
         zuulRouteLinkedHashMap.put(locationPattern, route);
@@ -117,27 +123,18 @@ public class ApplicationRegistry {
         }
     }
 
-    private InstanceInfo getStandardInstance(Map<String, String> metadata, String serviceId) {
+    private InstanceInfo getStandardInstance(Map<String, String> metadata, String serviceId, String instanceId) {
         return InstanceInfo.Builder.newBuilder()
             .setAppName(serviceId)
+            .setInstanceId(instanceId)
             .setHostName("localhost")
             .setVIPAddress(serviceId)
             .setMetadata(metadata)
+            .setDataCenterInfo(new MyDataCenterInfo(DataCenterInfo.Name.MyOwn))
             .setStatus(InstanceInfo.InstanceStatus.UP)
+            .setSecurePort((int) (Math.random() * 10000))
+            .setPort((int) (Math.random() * 10000))
             .build();
-    }
-
-    private Map<String, String> createMetadata(boolean addRibbonConfig, boolean corsEnabled) {
-        Map<String, String> metadata = new HashMap<>();
-        if (addRibbonConfig) {
-            metadata.put("apiml.connectTimeout", "5000");
-            metadata.put("apiml.readTimeout", "5000");
-            metadata.put("apiml.connectionManagerTimeout", "5000");
-            metadata.put("apiml.okToRetryOnAllOperations", "true");
-        }
-        metadata.put("apiml.corsEnabled", String.valueOf(corsEnabled));
-        metadata.put("apiml.routes.gateway-url", "/");
-        return metadata;
     }
 
 

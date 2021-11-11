@@ -79,4 +79,26 @@ public class SwaggerConfiguration {
                 )
             );
     }
+
+    @Bean
+    public Docket graphv1() {
+        return new Docket(DocumentationType.SWAGGER_2)
+            .groupName("graphv1")
+            .select()
+            .apis(RequestHandlerSelectors.any())
+            .paths(PathSelectors.ant("/graphql/v1/**"))
+            .build()
+            .apiInfo(
+                new ApiInfo(
+                    apiTitle,
+                    apiDescription,
+                    apiVersion2,
+                    null,
+                    null,
+                    null,
+                    null,
+                    Collections.emptyList()
+                )
+            );
+    }
 }

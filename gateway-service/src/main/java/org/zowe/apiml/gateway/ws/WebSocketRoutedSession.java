@@ -10,20 +10,17 @@
 package org.zowe.apiml.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.eclipse.jetty.websocket.api.UpgradeException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketHttpHeaders;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,14 +36,12 @@ public class WebSocketRoutedSession {
     private final WebSocketSession webSocketClientSession;
     private final WebSocketSession webSocketServerSession;
 
-    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory.Server jettySslContextFactory) {
-        log.debug("Creating WebSocketRoutedSession jettySslContextFactory={}", jettySslContextFactory);
+    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
         this.webSocketServerSession = webSocketServerSession;
-        this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl, jettySslContextFactory);
+        this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl, webSocketClientFactory);
     }
 
     public WebSocketRoutedSession(WebSocketSession webSocketServerSession, WebSocketSession webSocketClientSession) {
-        log.debug("Creating WebSocketRoutedSession with provided server and client session.");
         this.webSocketClientSession = webSocketClientSession;
         this.webSocketServerSession = webSocketServerSession;
     }
@@ -70,12 +65,9 @@ public class WebSocketRoutedSession {
         return webSocketServerSession;
     }
 
-    private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory.Server sslContextFactory) {
+    private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
         try {
-            log.debug("createWebSocketClientSession(session={},targetUrl={},jettySslContextFactory={})",
-                webSocketClientSession, targetUrl, sslContextFactory);
-            JettyWebSocketClient client = new JettyWebSocketClient(new WebSocketClient(new HttpClient(sslContextFactory)));
-            client.start();
+            JettyWebSocketClient client = webSocketClientFactory.getClientInstance();
             URI targetURI = new URI(targetUrl);
             WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
             ListenableFuture<WebSocketSession> futureSession = client
@@ -83,8 +75,30 @@ public class WebSocketRoutedSession {
             return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (IllegalStateException e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, true);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
+        } catch (ExecutionException e) {
+            throw handleExecutionException(targetUrl, e, webSocketServerSession, false);
         } catch (Exception e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
+        }
+    }
+
+    private WebSocketProxyError handleExecutionException(String targetUrl, ExecutionException cause, WebSocketSession webSocketServerSession, boolean logError) {
+        if (cause.getCause() != null && cause.getCause().getCause() instanceof UpgradeException) {
+            UpgradeException upgradeException = (UpgradeException) cause.getCause().getCause();
+            if (upgradeException.getResponseStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
+                String message = "Invalid login credentials";
+                if (logError) {
+                    log.debug(message);
+                }
+                return new WebSocketProxyError(message, cause, webSocketServerSession);
+            } else {
+                return webSocketProxyException(targetUrl, cause, webSocketServerSession, logError);
+            }
+        } else {
+            return webSocketProxyException(targetUrl, cause, webSocketServerSession, logError);
         }
     }
 

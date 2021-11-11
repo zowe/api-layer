@@ -1,0 +1,15 @@
+{
+  "name": "release_docs",
+  "version": "1.0.0",
+  "description": "Script for automated generation of the Changelog",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "octokit": "^1.0.3"
+  }
+}

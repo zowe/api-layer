@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { shallow } from 'enzyme';
 import ServiceTab from './ServiceTab';
 
@@ -18,11 +17,15 @@ const selectedService = {
     status: 'UP',
     baseUrl: 'https://localhost:6000',
     homePageUrl: 'https://localhost:10010/',
-    basePath: '/service/api/v1',
+    basePath: '/gateway/api/v1',
     apiDoc: null,
-    apiVersions: ['v1', 'v2'],
-    defaultApiVersion: ['v1'],
+    apiVersions: ['org.zowe v1', 'org.zowe v2'],
+    defaultApiVersion: ['org.zowe v1'],
     ssoAllInstances: true,
+    gatewayUrls: {
+        'org.zowe v1': 'api/v1',
+        'org.zowe v2': 'api/v2'
+    }
 };
 
 const tiles = {
@@ -46,7 +49,7 @@ describe('>>> ServiceTab component tests', () => {
                 selectService={selectService}
             />
         );
-        serviceTab.setState({ selectedVersion: 'v1' });
+        serviceTab.setState({ selectedVersion: 'org.zowe v1' });
 
         expect(serviceTab.find('Tooltip').exists()).toEqual(true);
         expect(serviceTab.find('Link').exists()).toEqual(true);
@@ -69,7 +72,7 @@ describe('>>> ServiceTab component tests', () => {
             expect(row.find('span').prop('children')).toEqual(value);
         };
 
-        checkValueItem(serviceTab, 1, 'API Base Path:', '/service/api/v1');
+        checkValueItem(serviceTab, 1, 'API Base Path:', '/gateway/api/v1');
         checkValueItem(serviceTab, 2, 'Service ID:', 'gateway');
         checkValueItem(serviceTab, 3, 'SSO:', 'supported');
         expect(
@@ -85,13 +88,13 @@ describe('>>> ServiceTab component tests', () => {
                 .find('Text')
                 .at(5)
                 .prop('children')
-        ).toEqual('v1');
+        ).toEqual('org.zowe v1');
         expect(
             serviceTab
                 .find('Text')
                 .at(6)
                 .prop('children')
-        ).toEqual('v2');
+        ).toEqual('org.zowe v2');
     });
 
     it('should change selected version when clicking v2 api version', () => {
@@ -104,7 +107,7 @@ describe('>>> ServiceTab component tests', () => {
                 selectService={selectService}
             />
         );
-        serviceTab.setState({ selectedVersion: 'v1' });
+        serviceTab.setState({ selectedVersion: 'org.zowe v1' });
 
         let tabContainer = serviceTab.find('div').at(3);
         expect(

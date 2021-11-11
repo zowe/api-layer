@@ -13,13 +13,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -38,7 +35,7 @@ import java.util.Optional;
 /**
  * Filter to process authentication requests with the username and password in JSON format.
  */
-public class LoginFilter extends AbstractAuthenticationProcessingFilter {
+public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
@@ -73,15 +70,22 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         if (!request.getMethod().equals(HttpMethod.POST.name())) {
             throw new AuthMethodNotSupportedException(request.getMethod());
         }
-        Optional<LoginRequest> optionalLoginRequest = getCredentialFromAuthorizationHeader(request);
 
-        LoginRequest loginRequest = optionalLoginRequest.orElseGet(() -> getCredentialsFromBody(request));
+        Optional<LoginRequest> credentialFromHeader = getCredentialFromAuthorizationHeader(request);
+        Optional<LoginRequest> credentialsFromBody = getCredentialsFromBody(request);
+
+        LoginRequest loginRequest = credentialFromHeader.orElse(credentialsFromBody.orElse(null));
+
+        if (loginRequest == null) {
+            return null;
+        }
+
         if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
             throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
         }
 
         UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
+            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
 
         Authentication auth = null;
 
@@ -91,6 +95,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
             resourceAccessExceptionHandler.handleException(request, response, ex);
         }
         return auth;
+
     }
 
 
@@ -146,8 +151,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         if (i > 0) {
             return new LoginRequest(credentials.substring(0, i), credentials.substring(i + 1));
         }
-
-        return null;
+        throw new BadCredentialsException("Invalid basic authentication header");
     }
 
     /**
@@ -157,9 +161,12 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
      * @return the credentials in {@link LoginRequest}
      * @throws AuthenticationCredentialsNotFoundException if the login object has wrong format
      */
-    private LoginRequest getCredentialsFromBody(HttpServletRequest request) {
+    private Optional<LoginRequest> getCredentialsFromBody(HttpServletRequest request) {
         try {
-            return mapper.readValue(request.getInputStream(), LoginRequest.class);
+            if (request.getInputStream().available() == 0) {
+                return Optional.empty();
+            }
+            return Optional.of(mapper.readValue(request.getInputStream(), LoginRequest.class));
         } catch (IOException e) {
             logger.debug("Authentication problem: login object has wrong format");
             throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");

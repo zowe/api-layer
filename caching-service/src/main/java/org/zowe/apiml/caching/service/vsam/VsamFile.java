@@ -110,10 +110,10 @@ public class VsamFile implements Closeable {
         }
     }
 
-    public Optional<VsamRecord> create(VsamRecord record) {
-        log.info("Attempting to create record: {}", record);
+    public Optional<VsamRecord> create(VsamRecord vsamRec) {
+        log.info("Attempting to create record: {}", vsamRec);
 
-        return recordOperation(record, new RecordHandler() {
+        return recordOperation(vsamRec, new RecordHandler() {
             @Override
             public Optional<VsamRecord> handleRecordFound() {
                 log.info("The record already exists and will not be created. Use update instead.");
@@ -122,17 +122,17 @@ public class VsamFile implements Closeable {
 
             @Override
             public Optional<VsamRecord> handleNoRecordFound() throws VsamRecordException, ZFileException {
-                log.info("Writing Record: {}", record);
-                zfile.write(record.getBytes());
-                return Optional.of(record);
+                log.info("Writing Record: {}", vsamRec);
+                zfile.write(vsamRec.getBytes());
+                return Optional.of(vsamRec);
             }
         });
     }
 
-    public Optional<VsamRecord> read(VsamRecord record) {
-        log.info("Attempting to read record: {}", record);
+    public Optional<VsamRecord> read(VsamRecord vsamRec) {
+        log.info("Attempting to read record: {}", vsamRec);
 
-        return recordOperation(record, () -> {
+        return recordOperation(vsamRec, () -> {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
             zfile.read(recBuf);
             log.trace("RecBuf: {}", recBuf); //NOSONAR
@@ -143,24 +143,24 @@ public class VsamFile implements Closeable {
         });
     }
 
-    public Optional<VsamRecord> update(VsamRecord record) {
-        log.info("Attempting to update record: {}", record);
+    public Optional<VsamRecord> update(VsamRecord vsamRec) {
+        log.info("Attempting to update record: {}", vsamRec);
 
-        return recordOperation(record, () -> {
+        return recordOperation(vsamRec, () -> {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
             zfile.read(recBuf); //has to be read before update
             log.trace("Read found record: {}", new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE));
-            log.info("Will update record: {}", record);
-            int nUpdated = zfile.update(record.getBytes());
+            log.info("Will update record: {}", vsamRec);
+            int nUpdated = zfile.update(vsamRec.getBytes());
             log.info("ZFile.update return value: {}", nUpdated);
-            return Optional.of(record);
+            return Optional.of(vsamRec);
         });
     }
 
-    public Optional<VsamRecord> delete(VsamRecord record) {
-        log.info("Attempting to delete record: {}", record);
+    public Optional<VsamRecord> delete(VsamRecord vsamRec) {
+        log.info("Attempting to delete record: {}", vsamRec);
 
-        return recordOperation(record, () -> {
+        return recordOperation(vsamRec, () -> {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
             zfile.read(recBuf); //has to be read before delete
             VsamRecord returned = new VsamRecord(vsamConfig, recBuf);
@@ -170,13 +170,13 @@ public class VsamFile implements Closeable {
         });
     }
 
-    private Optional<VsamRecord> recordOperation(VsamRecord record, RecordHandler recordHandler) {
-        if (record == null) {
+    private Optional<VsamRecord> recordOperation(VsamRecord vsamRec, RecordHandler recordHandler) {
+        if (vsamRec == null) {
             throw new IllegalArgumentException(RECORD_CANNOT_BE_NULL_MESSAGE);
         }
 
         try {
-            boolean found = zfile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
+            boolean found = zfile.locate(vsamRec.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
             if (found) {
                 return recordHandler.handleRecordFound();
             } else {
@@ -198,16 +198,16 @@ public class VsamFile implements Closeable {
     public List<VsamRecord> readForService(String serviceId) {
         List<VsamRecord> returned = new ArrayList<>();
 
-        serviceWideOperation(serviceId, (zfile, record) -> {
+        serviceWideOperation(serviceId, (zfile, vsamRec) -> {
             log.debug("Retrieve the record");
-            returned.add(record);
+            returned.add(vsamRec);
         });
 
         return returned;
     }
 
     public void deleteForService(String serviceId) {
-        serviceWideOperation(serviceId, (zfile, record) -> {
+        serviceWideOperation(serviceId, (zfile, vsamRec) -> {
             log.debug("Delete the record");
             zfile.delrec();
         });
@@ -239,13 +239,13 @@ public class VsamFile implements Closeable {
 
                 String convertedStringValue = new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE);
 
-                VsamRecord record = new VsamRecord(vsamConfig, recBuf);
-                log.info("Read record: {}", record);
+                VsamRecord vsamRec = new VsamRecord(vsamConfig, recBuf);
+                log.info("Read record: {}", vsamRec);
 
                 if (nread < 0) {
                     log.info("nread is < 0, stopping the retrieval");
                     found = false;
-                    continue;
+                    continue;    //NOSONAR
                 }
 
                 log.trace("convertedStringValue: >{}<", convertedStringValue);
@@ -253,17 +253,17 @@ public class VsamFile implements Closeable {
                 if (!convertedStringValue.trim().startsWith(keyGe.trim())) {
                     log.info("read record does not start with serviceId's keyGe, stopping the retrieval");
                     found = false;
-                    continue;
+                    continue;   //NOSONAR
                 } else {
                     log.info("read record starts with serviceId's keyGe, retrieving this record");
                 }
 
-                operation.resolveValidRecord(zfile, record);
+                operation.resolveValidRecord(zfile, vsamRec);
 
                 overflowProtection--;
                 if (overflowProtection <= 0) {
                     log.info("Maximum number of records retrieved, stopping the retrieval");
-                    break;
+                    break;  //NOSONAR
                 }
             }
         } catch (UnsupportedEncodingException e) {
@@ -325,6 +325,6 @@ public class VsamFile implements Closeable {
 
     @FunctionalInterface
     private interface ServiceWideOperation {
-        void resolveValidRecord(ZFile zFile, VsamRecord record) throws ZFileException;
+        void resolveValidRecord(ZFile zFile, VsamRecord vsamRec) throws ZFileException;
     }
 }

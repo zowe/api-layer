@@ -10,13 +10,6 @@
 
 package org.zowe.apiml.discovery.config;
 
-import org.zowe.apiml.security.client.EnableApimlAuth;
-import org.zowe.apiml.security.client.login.GatewayLoginProvider;
-import org.zowe.apiml.security.client.token.GatewayTokenProvider;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.config.HandlerInitializer;
-import org.zowe.apiml.security.common.content.BasicContentFilter;
-import org.zowe.apiml.security.common.content.CookieContentFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -30,19 +23,29 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.filter.AttlsFilter;
+import org.zowe.apiml.security.client.EnableApimlAuth;
+import org.zowe.apiml.security.client.login.GatewayLoginProvider;
+import org.zowe.apiml.security.client.token.GatewayTokenProvider;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.CookieContentFilter;
 
 import java.util.Collections;
 
 /**
  * Main class configuring Spring security for Discovery Service
- *
+ * <p>
  * This configuration is applied if "https" Spring profile is active
  */
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
 @EnableApimlAuth
-@Profile("https")
+@Profile({"https", "attls"})
 public class HttpsWebSecurityConfig {
 
     private final HandlerInitializer handlerInitializer;
@@ -50,6 +53,8 @@ public class HttpsWebSecurityConfig {
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     /**
      * Filter chain for protecting endpoints with MF credentials (basic or token)
@@ -66,18 +71,21 @@ public class HttpsWebSecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
+
             baseConfigure(http.requestMatchers().antMatchers(
                 "/application/**",
                 "/*"
-                )
+            )
                 .and())
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
-                    .antMatchers("/application/health", "/application/info", "/favicon.ico").permitAll()
-                    .antMatchers("/**").authenticated()
+                .antMatchers("/**").authenticated()
                 .and()
                 .httpBasic().realmName(DISCOVERY_REALM);
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new SecureConnectionFilter(), CookieContentFilter.class);
+            }
         }
     }
 
@@ -94,13 +102,17 @@ public class HttpsWebSecurityConfig {
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
 
+
         @Override
         public void configure(WebSecurity web) {
             String[] noSecurityAntMatchers = {
                 "/eureka/css/**",
                 "/eureka/js/**",
                 "/eureka/fonts/**",
-                "/eureka/images/**"
+                "/eureka/images/**",
+                "/application/health",
+                "/application/info",
+                "/favicon.ico"
             };
             web.ignoring().antMatchers(noSecurityAntMatchers);
         }
@@ -112,6 +124,10 @@ public class HttpsWebSecurityConfig {
                 http.authorizeRequests()
                     .anyRequest().authenticated()
                     .and().x509().userDetailsService(x509UserDetailsService());
+                if (isAttlsEnabled) {
+                    http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                    http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+                }
             } else {
                 http.authorizeRequests().anyRequest().permitAll();
             }
@@ -131,6 +147,7 @@ public class HttpsWebSecurityConfig {
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
 
+
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
@@ -145,10 +162,15 @@ public class HttpsWebSecurityConfig {
                 .httpBasic().realmName(DISCOVERY_REALM);
             if (verifySslCertificatesOfServices || nonStrictVerifySslCertificatesOfServices) {
                 http.authorizeRequests().anyRequest().authenticated().and()
-                .x509().userDetailsService(x509UserDetailsService());
+                    .x509().userDetailsService(x509UserDetailsService());
+                if (isAttlsEnabled) {
+                    http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                    http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+                }
             }
         }
     }
+
 
     private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
         return new BasicContentFilter(

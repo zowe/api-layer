@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,8 @@ import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
@@ -46,8 +49,10 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.filter.ApimlX509Filter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
+import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
 
 import java.util.*;
 
@@ -56,7 +61,11 @@ import java.util.*;
  * <p>
  * 1. Adds Login and Query endpoints
  * 2. Allows basic and token (cookie) authentication
+ *
+ * @deprecated ({ @ Link NewSecurityConfiguration } to eventually replace this configuration)
  */
+@Deprecated
+@ConditionalOnProperty(name = "apiml.security.filterChainConfiguration", havingValue = "legacy", matchIfMissing = false)
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -91,6 +100,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final Set<String> publicKeyCertificatesBase64;
     private final ZuulProperties zuulProperties;
     private final X509AuthenticationProvider x509AuthenticationProvider;
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
@@ -171,16 +182,27 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // add filters - login, query, ticket
             .and()
-            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(x509Filter(authConfigurationProperties.getGatewayLoginEndpoint()), LoginFilter.class)
-            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(x509Filter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), LoginFilter.class)
+
+            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getGatewayLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpoint()), ShouldBeAlreadyAuthenticatedFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), X509AuthenticationFilter.class)
+
+            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), ShouldBeAlreadyAuthenticatedFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), X509AuthenticationFilter.class)
+
+
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        if (isAttlsEnabled) {
+            http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+            http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+        }
     }
 
     @Bean
@@ -230,7 +252,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getResourceAccessExceptionHandler());
     }
 
-    private X509AuthenticationFilter x509Filter(String loginEndpoint) {
+    private X509AuthenticationFilter x509AuthenticationFilter(String loginEndpoint) {
         return new X509AuthenticationFilter(loginEndpoint,
             handlerInitializer.getSuccessfulLoginHandler(),
             x509AuthenticationProvider);
@@ -334,6 +356,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         web.ignoring()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.PUBLIC_KEYS_PATH + "/**");
     }
-
 
 }

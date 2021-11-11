@@ -47,6 +47,7 @@ public class Authentication {
             case ZOWE_JWT:
             case X509:
             case HTTP_BASIC_PASSTICKET:
+            case SAF_IDT:
             case ZOSMF:
                 return supportsSso == null || supportsSso;
             case BYPASS:

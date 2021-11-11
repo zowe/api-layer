@@ -39,4 +39,16 @@ class SafPlatformUserTests {
         assertFalse(returned.isSuccess());
     }
 
+    @Test
+    void returnsNullForChangePassword() {
+        PlatformReturned returned = safPlatformUser.changePassword(VALID_USERID, VALID_PASSWORD, "newPassword" );
+        assertNull(returned);
+    }
+
+    @Test
+    void whenNewPasswordEqualsOld_thenReturnsNotSuccess() {
+        PlatformReturned returned = safPlatformUser.changePassword(VALID_USERID, VALID_PASSWORD, VALID_PASSWORD );
+        assertFalse(returned.isSuccess());
+    }
+
 }

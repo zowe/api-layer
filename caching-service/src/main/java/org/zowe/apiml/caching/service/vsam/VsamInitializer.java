@@ -50,12 +50,12 @@ public class VsamInitializer {
         log.info("Warming up the vsam file by writing and deleting a record");
         log.info("VSAM file being used: {}", zFile.getActualFilename());
 
-        VsamRecord record = new VsamRecord(vsamConfig, "delete", new KeyValue("me", "novalue"));
+        VsamRecord vsamRec = new VsamRecord(vsamConfig, "delete", new KeyValue("me", "novalue"));
 
-        log.info("Writing Record: {}", record);
-        zFile.write(record.getBytes());
+        log.info("Writing Record: {}", vsamRec);
+        zFile.write(vsamRec.getBytes());
 
-        boolean found = zFile.locate(record.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
+        boolean found = zFile.locate(vsamRec.getKeyBytes(), ZFileConstants.LOCATE_KEY_EQ);
 
         log.info("Test record for deletion found: {}", found);
         if (found) {

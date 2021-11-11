@@ -21,9 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.*;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -37,15 +34,14 @@ import org.zowe.apiml.product.registry.ApplicationWrapper;
 
 import java.util.*;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "/application.yml")
-@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
-@Import(InstanceRetrievalServiceTest.TestConfig.class)
+@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = InstanceServicesContextConfiguration.class)
 class InstanceRetrievalServiceTest {
 
     private static final String APPS_ENDPOINT = "apps/";
@@ -61,11 +57,40 @@ class InstanceRetrievalServiceTest {
     RestTemplate restTemplate;
 
     private String discoveryServiceAllAppsUrl;
+    private String[] discoveryServiceList;
 
     @BeforeEach
     void setup() {
+
         instanceRetrievalService = new InstanceRetrievalService(discoveryConfigProperties, restTemplate);
-        discoveryServiceAllAppsUrl = discoveryConfigProperties.getLocations() + APPS_ENDPOINT;
+        discoveryServiceList = discoveryConfigProperties.getLocations();
+        discoveryServiceAllAppsUrl = discoveryServiceList[0] + APPS_ENDPOINT;
+    }
+
+    @Test
+    void whenDiscoveryServiceIsNotAvailable_thenTryOthersFromTheList() {
+        when(
+            restTemplate.exchange(
+                discoveryServiceList[0] + APPS_ENDPOINT,
+                HttpMethod.GET,
+                getHttpEntity(),
+                String.class
+            )).thenThrow(RuntimeException.class);
+        when(
+            restTemplate.exchange(
+                discoveryServiceList[1] + APPS_ENDPOINT,
+                HttpMethod.GET,
+                getHttpEntity(),
+                String.class
+            )).thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
+        instanceRetrievalService.getAllInstancesFromDiscovery(false);
+        verify(restTemplate
+            , times(1)).exchange(
+            discoveryServiceList[1] + APPS_ENDPOINT,
+            HttpMethod.GET,
+            getHttpEntity(),
+            String.class
+        );
     }
 
     @Test
@@ -75,17 +100,17 @@ class InstanceRetrievalServiceTest {
     }
 
     @Test
-    void testGetInstanceInfo_whenResponseCodeIsNotSuccess() {
+    void providedNoInstanceInfoIsReturned_thenInstanceInitializationExceptionIsThrown() {
+        String serviceId = CoreService.API_CATALOG.getServiceId();
         when(
             restTemplate.exchange(
-                discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
+                discoveryServiceAllAppsUrl + serviceId,
                 HttpMethod.GET,
                 getHttpEntity(),
                 String.class
             )).thenReturn(new ResponseEntity<>(null, HttpStatus.FORBIDDEN));
+        assertThrows(InstanceInitializationException.class, () -> instanceRetrievalService.getInstanceInfo(serviceId));
 
-        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
-        assertNull(instanceInfo);
     }
 
     @Test
@@ -213,7 +238,7 @@ class InstanceRetrievalServiceTest {
 
     @Test
     void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithDeltaFilter() throws JsonProcessingException {
-        String discoveryServiceAppsUrl = discoveryConfigProperties.getLocations() + APPS_ENDPOINT + DELTA_ENDPOINT;
+        String discoveryServiceAppsUrl = this.discoveryServiceAllAppsUrl + DELTA_ENDPOINT;
 
         Map<String, InstanceInfo> instanceInfoMap = createInstances();
 
@@ -301,13 +326,4 @@ class InstanceRetrievalServiceTest {
             )).thenReturn(new ResponseEntity<>(body, HttpStatus.OK));
     }
 
-    @Configuration
-    public static class TestConfig {
-
-        @Bean
-        public DiscoveryConfigProperties discoveryConfigProperties() {
-            return new DiscoveryConfigProperties();
-        }
-
-    }
 }

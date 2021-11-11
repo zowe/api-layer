@@ -20,6 +20,10 @@ spring:
 
 ---
 spring.profiles: https
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
 
 server:
     ssl:

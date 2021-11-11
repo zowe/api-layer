@@ -39,7 +39,7 @@ class PetTest {
         Pet firstPet = new Pet(1L, "Falco");
         Pet secondPet = new Pet(2L, "Molly");
 
-        assertNotEquals(firstPet, secondPet);
-        assertNotEquals(firstPet, null);
+        assertNotEquals(secondPet, firstPet);
+        assertNotEquals(null, firstPet);
     }
 }

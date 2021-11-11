@@ -19,36 +19,37 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
-import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
-import org.zowe.apiml.security.common.error.ErrorType;
-import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
-import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.error.*;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
 class LoginFilterTest {
     private static final String VALID_JSON = "{\"username\": \"user\", \"password\": \"pwd\"}";
+    private static final String JSON_WITH_NEW_PW = "{\"username\": \"user\", \"password\": \"pwd\", \"newPassword\": \"newPwd\"}";
     private static final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";
     private static final String VALID_AUTH_HEADER = "Basic dXNlcjpwd2Q=";
     private static final String INVALID_AUTH_HEADER = "Basic dXNlcj11c2Vy";
+    private static final String INVALID_ENCODED_AUTH_HEADER = "Basic dXNlcj1";
+    private static final String USER = "user";
+    private static final String PASSWORD = "pwd";
+    private static final String NEW_PASSWORD = "newPwd";
 
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
@@ -87,7 +88,7 @@ class LoginFilterTest {
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken("user", "pwd");
+            = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
         verify(authenticationManager).authenticate(authentication);
     }
 
@@ -101,7 +102,21 @@ class LoginFilterTest {
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken("user", "pwd");
+            = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
+        verify(authenticationManager).authenticate(authentication);
+    }
+
+    @Test
+    void shouldCallAuthenticationManagerAuthenticateWithNewPasswordInJson() throws ServletException {
+        httpServletRequest = new MockHttpServletRequest();
+        httpServletRequest.setMethod(HttpMethod.POST.name());
+        httpServletRequest.setContent(JSON_WITH_NEW_PW.getBytes());
+        httpServletResponse = new MockHttpServletResponse();
+
+        loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+
+        UsernamePasswordAuthenticationToken authentication
+            = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD, NEW_PASSWORD));
         verify(authenticationManager).authenticate(authentication);
     }
 
@@ -119,15 +134,12 @@ class LoginFilterTest {
     }
 
     @Test
-    void shouldFailWithoutAuth() throws ServletException {
+    void shouldReturnNullWithoutAuth() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
 
-        Exception exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
-        });
-        assertEquals("Login object has wrong format.", exception.getMessage());
+        assertThat(loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse), is(nullValue()));
     }
 
     @Test
@@ -149,10 +161,23 @@ class LoginFilterTest {
         httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, INVALID_AUTH_HEADER);
         httpServletResponse = new MockHttpServletResponse();
 
-        Exception exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+        Exception exception = assertThrows(BadCredentialsException.class, () -> {
             loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
         });
-        assertEquals("Login object has wrong format.", exception.getMessage());
+        assertEquals("Invalid basic authentication header", exception.getMessage());
+    }
+
+    @Test
+    void shouldFailWithIncorrectlyEncodedBase64() throws ServletException {
+        httpServletRequest = new MockHttpServletRequest();
+        httpServletRequest.setMethod(HttpMethod.POST.name());
+        httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, INVALID_ENCODED_AUTH_HEADER);
+        httpServletResponse = new MockHttpServletResponse();
+
+        Exception exception = assertThrows(BadCredentialsException.class, () -> {
+            loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        });
+        assertEquals("Invalid basic authentication header", exception.getMessage());
     }
 
     @Test
@@ -173,7 +198,7 @@ class LoginFilterTest {
             authenticationFailureHandler, objectMapper, authenticationManager,
             resourceAccessExceptionHandler);
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("user", "pwd");
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
         when(authenticationManager.authenticate(authentication)).thenThrow(exception);
 
         httpServletRequest = new MockHttpServletRequest();

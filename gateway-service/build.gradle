@@ -17,6 +17,14 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
 apply from: "$projectDir/gradle/lite.gradle"
+apply plugin: 'com.google.cloud.tools.jib'
+apply from: "../gradle/jib.gradle"
+
+def debugPort = 5120
+def componentName = "gateway-service"
+
+setJib(componentName, debugPort)
+jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -47,6 +55,7 @@ configurations.all {
 
 dependencies {
     implementation(project(':apiml-security-common'))
+    implementation libraries.spring_boot_starter_webflux
     implementation libraries.spring_cloud_starter_zuul
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
@@ -56,11 +65,18 @@ dependencies {
     implementation libraries.spring_boot_starter_aop
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_crypto
+    implementation libraries.xstream
+    implementation libraries.json_smart
+
     implementation libraries.swagger3_core
     implementation libraries.swagger3_parser
     implementation libraries.jackson_core
     implementation libraries.tomcat_coyote
+    implementation libraries.tomcat_annotations_api
     implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
     implementation libraries.spring_cloud_starter_eureka
     implementation libraries.spring_cloud_starter_ribbon
     implementation libraries.jetty_websocket_common
@@ -72,6 +88,47 @@ dependencies {
     implementation libraries.jetty_websocket_api
     implementation libraries.jjwt
     implementation libraries.nimbusJoseJwt
+    implementation libraries.netty
+    implementation libraries.netty_buffer
+    implementation libraries.netty_codec
+    implementation libraries.netty_codec_dns
+    implementation libraries.netty_codec_haproxy
+    implementation libraries.netty_codec_http
+    implementation libraries.netty_codec_http2
+    implementation libraries.netty_codec_memcache
+    implementation libraries.netty_codec_mqtt
+    implementation libraries.netty_codec_redis
+    implementation libraries.netty_codec_socks
+    implementation libraries.netty_codec_smtp
+    implementation libraries.netty_codec_stomp
+    implementation libraries.netty_codec_xml
+    implementation libraries.netty_common
+    implementation libraries.netty_handler
+    implementation libraries.netty_handler_proxy
+    implementation libraries.netty_resolver
+    implementation libraries.netty_resolver_dns
+    implementation libraries.netty_resolver_dns_native_macos
+    implementation libraries.netty_transport
+    implementation libraries.netty_transport_native_epoll
+    implementation libraries.netty_transport_native_kqueue
+    implementation libraries.netty_transport_native_unix_common
+    implementation libraries.netty_transport_rxtx
+    implementation libraries.netty_transport_sctp
+    implementation libraries.netty_transport_udt
+   
+    implementation libraries.commons_io
+    implementation libraries.guava
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_context_support
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.spring_messaging
+    implementation libraries.spring_web
+    implementation libraries.spring_webmvc
+    implementation libraries.spring_websocket
+
     implementation libraries.eh_cache
     implementation libraries.spring_retry
     implementation libraries.awaitility
@@ -83,6 +140,7 @@ dependencies {
     implementation libraries.springFox
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
+    testCompile libraries.json_smart
     testRuntime libraries.http_client
     testCompile libraries.rest_assured
     testCompile libraries.javax_inject
@@ -100,6 +158,11 @@ bootJar {
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
+    archiveClassifier = "application"
+}
+
+jar {
+    enabled true
 }
 
 bootRun {
@@ -111,7 +174,14 @@ bootRun {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenJavaLib(MavenPublication) {
+            artifact jar
+        }
+
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml.sdk'
+            artifactId = 'gateway-fat-jar'
+
             artifact bootJar
         }
     }

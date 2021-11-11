@@ -1,3 +1,13 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
 /* eslint-disable no-undef */
 import userConstants from '../constants/user-constants';
 import authenticationReducer from './authentication-reducer';
@@ -70,7 +80,7 @@ describe('>>> Authentication reducer tests', () => {
         result.onCompleteHandling();
         expect(authenticationReducer()).toEqual({ sessionOn: false });
     });
-    
+
     it('should handle USERS_LOGOUT_FAILURE', () => {
         const action = {
             type: userConstants.USERS_LOGOUT_FAILURE,

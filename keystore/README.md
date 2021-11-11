@@ -71,12 +71,84 @@ Last section of this document shows how to import and trust the local CA certifi
   
   * `keystore/client_cert/openssl.conf`
     - openssl Configuration for certificate generation
-    
+
+### Certificates for NGINX proxy (for AT-TLS simulation):
+
+these files get used by NGINX proxy to simulate AT_TLS on CI server.
+
+    * `keystore/localhost/Zowe_Service_Zowe_Development_Instances_Certificate_Authority_.cer`
+    * `keystore/localhost/localca.cer`
+    * `keystore/localhost/trusted_CAs.cer`
+
 ##### How to generate additional client certs using OPENSSL
 
-    openssl req -newkey rsa:2048 -keyout PRIVATEKEY.key -out MYCSR.csr -config openssl.conf
-    openssl x509 -req -days 365 -in MYCSR.csr -CA APIML_External_Certificate_Authority.cer -CAkey APIML_External_Certificate_Authority.key -out server-cert.pem -CAcreateserial -extfile openssl.conf -extensions v3_clientauth
+Generate CSR
 
+    openssl req -newkey rsa:2048 -keyout PRIVATEKEY.key -out MYCSR.csr -config openssl.conf -outform PEM
+
+Display CSR to verify the content(it has to contain all extensions, e.g. Extended Key Usage)
+
+    openssl req -text -noout -verify -in MYCSR.csr
+    
+Example of valid CSR:
+
+    Certificate Request:
+    Data:
+    Version: 1 (0x0)
+    Subject: C = CZ, ST = Czechia, L = Prague, O = Broadcom Inc, OU = IT, CN = localhost
+    Subject Public Key Info:
+    Public Key Algorithm: rsaEncryption
+    RSA Public-Key: (2048 bit)
+    Modulus:
+    ...
+    Exponent: 65537 (0x10001)
+    Attributes:
+    Requested Extensions:
+    X509v3 Key Usage:
+    Key Encipherment, Data Encipherment
+    X509v3 Extended Key Usage:
+    TLS Web Client Authentication, TLS Web Server Authentication
+    X509v3 Subject Alternative Name:
+    DNS:localhost, DNS:127.0.0.1
+    Signature Algorithm: sha1WithRSAEncryption
+    ...
+
+Sign CSR with API ML CA
+
+    openssl x509 -req -days 500 -in MYCSR.csr -CA APIML_External_Certificate_Authority.cer -CAkey APIML_External_Certificate_Authority.key -out server-cert.pem -CAcreateserial -sha256 -outform PEM -extfile openssl.conf -extensions v3_req
+
+Display certificate content
+
+    openssl x509 -in server-cert.pem -text -noout
+
+Example of valid signed certificate
+
+    Certificate:
+    Data:
+    Version: 3 (0x2)
+    Serial Number:
+    66:ab:1e:0b:6f:f9:69:c5:45:1a:41:06:c6:de:ea:34:bf:d0:20:0f
+    Signature Algorithm: sha256WithRSAEncryption
+    Issuer: C = CZ, ST = Prague, L = Prague, O = Broadcom, OU = MFD, CN = APIML External         Certificate Authority
+    Validity
+    Not Before: Oct 11 11:04:06 2021 GMT
+    Not After : Feb 23 11:04:06 2023 GMT
+    Subject: C = CZ, ST = Czechia, L = Prague, O = Broadcom Inc, OU = IT, CN = localhost
+    Subject Public Key Info:
+    Public Key Algorithm: rsaEncryption
+    RSA Public-Key: (2048 bit)
+    Modulus:
+    ...
+    Exponent: 65537 (0x10001)
+    X509v3 extensions:
+    X509v3 Key Usage:
+    Key Encipherment, Data Encipherment
+    X509v3 Extended Key Usage:
+    TLS Web Client Authentication, TLS Web Server Authentication
+    X509v3 Subject Alternative Name:
+    DNS:localhost, DNS:127.0.0.1
+    Signature Algorithm: sha256WithRSAEncryption
+    ...
 
 ## Generating own certificates for localhost
 **!!! Note that apiml_cm.sh script has been moved to [zowe/zowe-install-packaging repo](https://github.com/zowe/zowe-install-packaging) !!!** 

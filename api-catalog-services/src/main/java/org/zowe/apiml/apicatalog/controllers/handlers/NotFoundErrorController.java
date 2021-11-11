@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 public class NotFoundErrorController implements ErrorController {
 
 
-    private static final String PATH = "/not_found";
+    private static final String PATH = "/not_found";    // NOSONAR
 
 
     @GetMapping(value = "/not_found")
