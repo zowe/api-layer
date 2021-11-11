@@ -23,7 +23,6 @@ import org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
 import javax.net.ssl.*;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +48,7 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     private final CookieStore cookieStore = new BasicCookieStore();
 
-    private CloseableHttpClient httpsClientWithKeyStoreAndTrustStore;
+    private CloseableHttpClient httpsClient;
 
     public ZaasHttpsClientProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
         this.requestConfig = this.buildCustomRequestConfig();
@@ -71,17 +70,13 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     @Override
     public synchronized CloseableHttpClient getHttpClient() throws ZaasConfigurationException {
-        if (keyStorePath == null) {
-            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.KEY_STORE_NOT_PROVIDED);
-        }
-        if (httpsClientWithKeyStoreAndTrustStore == null) {
+        if (httpsClient == null) {
             if (kmf == null) {
                 initializeKeyStoreManagerFactory();
             }
-            httpsClientWithKeyStoreAndTrustStore = sharedHttpClientConfiguration(getSSLContext())
-                .build();
+            httpsClient = sharedHttpClientConfiguration(getSSLContext()).build();
         }
-        return httpsClientWithKeyStoreAndTrustStore;
+        return httpsClient;
     }
 
     private void initializeTrustManagerFactory(String trustStorePath, String trustStoreType, char[] trustStorePassword)
@@ -100,8 +95,14 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     private void initializeKeyStoreManagerFactory() throws ZaasConfigurationException {
         try {
+            KeyStore keyStore;
+            if (keyStorePath != null) {
+                keyStore = getKeystore(keyStorePath, keyStoreType, keyStorePassword);
+            } else {
+                keyStore = getEmptyKeystore();
+            }
+
             kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            KeyStore keyStore = getKeystore(keyStorePath, keyStoreType, keyStorePassword);
             kmf.init(keyStore, keyStorePassword);
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e);
@@ -118,12 +119,20 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
         }
     }
 
+    // Necessary because IBM JDK will automatically add keyStore based on system variables when there is no keyStore
+    private KeyStore getEmptyKeystore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+        KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        emptyKeystore.load(null, null);
+
+        return emptyKeystore;
+    }
+
     private InputStream getCorrectInputStream(String uri) throws IOException {
         if (uri.startsWith(SAFKEYRING + ":////")) {
             URL url = new URL(replaceFourSlashes(uri));
             return url.openStream();
         }
-        return new FileInputStream(new File(uri));
+        return new FileInputStream(uri);
     }
 
     public static String replaceFourSlashes(String storeUri) {

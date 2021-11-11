@@ -2,13 +2,7 @@ buildscript {
     repositories mavenRepositories
 
     ext {
-        if (project.hasProperty('enabler')) {
-            if(enabler.contains('v1')) {
-                springBootVersion = rootProject.ext.springBootVersionV1
-            } else {
-                springBootVersion = rootProject.ext.springBootVersion
-            }
-        }
+        springBootVersion = rootProject.ext.springBootVersion
     }
 
     dependencies {
@@ -21,7 +15,7 @@ apply plugin: 'io.spring.dependency-management'
 publish {
     outputs.upToDateWhen { false }
     doLast {
-        println "onboarded-enabler-spring-${springBootVersion} has been successfully published"
+        println "onboarding-enabler-spring has been successfully published"
     }
 }
 
@@ -36,6 +30,7 @@ dependencies {
     compileOnly libraries.javax_inject
 
     testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testCompile libraries.json_smart
     testCompile libraries.mockito_core
 
     annotationProcessor libraries.spring_boot_configuration_processor
@@ -43,6 +38,6 @@ dependencies {
 }
 
 jar {
-    baseName = "enabler-springboot-${springBootVersion}"
+    baseName = "onboarding-enabler-spring"
     archiveName = "${baseName}.jar"
 }

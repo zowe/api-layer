@@ -1,3 +1,22 @@
+caching:
+    storage:
+        mode: inMemory
+        redis:
+            timeout: 60
+            masterNodeUri: default:heslo@localhost:6379
+            ssl:
+                enabled: true
+                keyStore: ${server.ssl.keyStore}
+                keyStorePassword: ${server.ssl.keyStorePassword}
+                trustStore: ${server.ssl.trustStore}
+                trustStorePassword: ${server.ssl.trustStorePassword}
+            sentinel:
+                masterInstance: redismaster
+                nodes:
+                    - sentinelpassword@localhost:26379
+                    - sentinelpassword@localhost:26380
+                    - sentinelpassword@localhost:26381
+
 logging:
     level:
         ROOT: WARN
@@ -42,7 +61,7 @@ apiml:
             scheme: x509
             headers: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         routes:
-            -   gateway-url: "api/v1"
+            -   gateway-url: "/api/v1"
                 service-url: ${apiml.service.contextPath}/api/v1
         apiInfo:
             -   apiId: zowe.apiml.cachingservice
@@ -139,3 +158,22 @@ spring:
         - diag
 
 logbackServiceName: ZWEACS1
+
+---
+spring:
+    profiles: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+apiml:
+    service:
+        scheme: http
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false

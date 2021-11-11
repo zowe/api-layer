@@ -13,6 +13,7 @@ import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -66,6 +67,9 @@ public class HttpConfig {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
+    @Value("${server.ssl.ciphers:.*}")
+    private String[] ciphers;
+
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
@@ -95,6 +99,9 @@ public class HttpConfig {
     private int readTimeout;
     @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
     private int timeToLive;
+
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
@@ -146,6 +153,7 @@ public class HttpConfig {
             factory.setSystemSslProperties();
 
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
+
         } catch (HttpsConfigError e) {
             System.exit(1); // NOSONAR
         } catch (Exception e) {
@@ -160,25 +168,23 @@ public class HttpConfig {
         return publicKeyCertificatesBase64;
     }
 
-    @Bean
-    public SslContextFactory.Server jettySslContextFactory() {
-        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-        if (keyStore != null) {
-            sslContextFactory.setKeyStorePath(SecurityUtils.replaceFourSlashes(keyStore));
-        }
-        sslContextFactory.setProtocol(protocol);
-        sslContextFactory.setKeyStorePassword(keyStorePassword == null ? null : String.valueOf(keyStorePassword));
-        sslContextFactory.setKeyStoreType(keyStoreType);
-        sslContextFactory.setCertAlias(keyAlias);
-        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$");
-
-        if (trustStore != null) {
+    private void setTruststore(SslContextFactory sslContextFactory) {
+        if (StringUtils.isNotEmpty(trustStore)) {
             sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
             sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
         }
-        log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
+    }
 
+    @Bean
+    @Qualifier("jettyClientSslContextFactory")
+    public SslContextFactory.Client jettyClientSslContextFactory() {
+        SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
+        sslContextFactory.setProtocol(protocol);
+        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$", "^TLS_RSA_.*$");
+        setTruststore(sslContextFactory);
+        log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
+        sslContextFactory.setHostnameVerifier(secureHostnameVerifier());
         if (!verifySslCertificatesOfServices) {
             sslContextFactory.setTrustAll(true);
         }

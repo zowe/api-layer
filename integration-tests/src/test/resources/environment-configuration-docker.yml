@@ -1,0 +1,50 @@
+credentials:
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: USER
+    password: validPassword
+gatewayServiceConfiguration:
+    scheme: https
+    host: gateway-service
+    port: 10010
+    internalPorts: 10017
+    externalPort: 10010
+    instances: 1
+    servicesEndpoint: gateway/api/v1/services
+discoveryServiceConfiguration:
+    scheme: https
+    user: user
+    password: user
+    host: discovery-service
+    port: 10011
+    instances: 1
+discoverableClientConfiguration:
+    scheme: https
+    port: 10012
+    applId: ZOWEAPPL
+    host: discoverable-client
+    instances: 1
+apiCatalogServiceConfiguration:
+    scheme: https
+    url:
+    host: api-catalog-services
+    port: 10014
+    instances: 1
+cachingServiceConfiguration:
+    url:
+tlsConfiguration:
+    keyAlias: localhost
+    keyPassword: password
+    keyStoreType: PKCS12
+    keyStore: ../keystore/docker/all-services.keystore.p12
+    clientKeystore: ../keystore/client_cert/client-certs.p12
+    keyStorePassword: password
+    trustStoreType: PKCS12
+    trustStore: ../keystore/docker/all-services.truststore.p12
+    trustStorePassword: password
+zosmfServiceConfiguration:
+    scheme: https
+    host: mock-zosmf
+    port: 10013
+    serviceId: mockzosmf
+auxiliaryUserList:
+    value: 'unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'

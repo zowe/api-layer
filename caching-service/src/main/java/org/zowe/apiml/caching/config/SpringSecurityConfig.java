@@ -19,6 +19,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.filter.AttlsFilter;
 
 import java.util.Collections;
 
@@ -31,6 +34,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifyCerts;
+
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -51,6 +57,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         if (verifyCertificates || nonStrictVerifyCerts) {
             http.authorizeRequests().anyRequest().authenticated().and()
                 .x509().userDetailsService(x509UserDetailsService());
+            if (isAttlsEnabled) {
+                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+            }
         } else {
             http.authorizeRequests().anyRequest().permitAll();
         }

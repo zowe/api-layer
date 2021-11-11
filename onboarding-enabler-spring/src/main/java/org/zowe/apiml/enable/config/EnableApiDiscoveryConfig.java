@@ -72,7 +72,7 @@ public class EnableApiDiscoveryConfig {
         }
     }
 
-    @ConfigurationProperties(prefix = "apiml.service")
+    @ConfigurationProperties(prefix = "apiml.service", ignoreInvalidFields = true)
     @Bean
     public ApiMediationServiceConfig apiMediationServiceConfig() {
         return new ApiMediationServiceConfig();

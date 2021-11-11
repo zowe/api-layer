@@ -35,13 +35,13 @@ public class MockedAuthenticationServiceContext {
     @Bean
     public AuthConfigurationProperties getAuthConfigurationProperties() {
         final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
         return authConfigurationProperties;
     }
 
     @Bean
-    public JwtSecurityInitializer getJwtSecurityInitializer() {
-        return mock(JwtSecurityInitializer.class);
+    public JwtSecurity getJwtSecurityInitializer() {
+        return mock(JwtSecurity.class);
     }
 
     @Bean

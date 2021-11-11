@@ -121,7 +121,10 @@ a {
     }
 }
 
-#refresh-api-button {
+#dash-buttons {
     margin: -48px 100px;
     float: right;
+}
+#dash-buttons > span {
+    margin-right: 10px;
 }

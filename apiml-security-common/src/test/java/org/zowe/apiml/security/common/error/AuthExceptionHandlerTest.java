@@ -9,12 +9,6 @@
  */
 package org.zowe.apiml.security.common.error;
 
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,11 +21,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authentication.*;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
+import org.zowe.apiml.security.common.token.*;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -176,6 +172,27 @@ class AuthExceptionHandlerTest {
     void testInvalidCertificateException() throws ServletException {
         authExceptionHandler.handleException(httpServletRequest, httpServletResponse, new InvalidCertificateException("method"));
         assertEquals(HttpStatus.FORBIDDEN.value(), httpServletResponse.getStatus());
+    }
+
+    @Test
+    void testZosAuthenticationExceptionException() throws ServletException {
+        PlatformReturned platformReturned = PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EACCES.errno).build();
+        authExceptionHandler.handleException(httpServletRequest, httpServletResponse, new ZosAuthenticationException(platformReturned));
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
+    }
+
+    @Test
+    void testTokenNotInResponseException() throws IOException, ServletException {
+        authExceptionHandler.handleException(
+            httpServletRequest,
+            httpServletResponse,
+            new InvalidTokenTypeException("ERROR"));
+
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
+
+        Message message = messageService.createMessage(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 
     @Test

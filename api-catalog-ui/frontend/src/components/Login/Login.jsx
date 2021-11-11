@@ -1,4 +1,4 @@
-import React from 'react';
+import { Component } from 'react';
 import { Button, FormField, TextInput } from 'mineral-ui';
 import { IconDanger } from 'mineral-ui-icons';
 
@@ -7,7 +7,7 @@ import './Login.css';
 import './LoginWebflow.css';
 import Spinner from '../Spinner/Spinner';
 
-export default class Login extends React.Component {
+export default class Login extends Component {
     constructor(props) {
         super(props);
 

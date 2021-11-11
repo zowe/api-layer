@@ -101,6 +101,7 @@ public class TransformService {
     public String retrieveApiBasePath(String serviceId,
                                       String serviceUrl,
                                       RoutedServices routes) throws URLTransformationException {
+        serviceUrl = serviceUrl.trim();
         URI serviceUri = URI.create(serviceUrl);
         String serviceUriPath = serviceUri.getPath();
         if (serviceUriPath == null) {

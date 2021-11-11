@@ -6,9 +6,11 @@ apiml:
         port: 10010
         discoveryServiceUrls: https://localhost:10011/eureka/
     security:
+        allowTokenRefresh: true
         auth:
             provider: zosmf
-            zosmfServiceId: mockzosmf  # Replace me with the correct z/OSMF service id
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
         ssl:
@@ -45,3 +47,19 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+
+---
+spring:
+    profiles: attls
+
+apiml:
+    service:
+        scheme: http
+        discoveryServiceUrls: http://localhost:10011/eureka/
+    security:
+        saf:
+            urls:
+                authenticate: http://localhost:10013/zss/saf/authenticate
+                verify: http://localhost:10013/zss/saf/verify
+
+

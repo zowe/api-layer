@@ -26,6 +26,9 @@ npm-debug.log
 api-catalog-services/src/main/resources/static/
 api-catalog-ui/tools
 api-catalog-ui/src/main/resources/static
+metrics-service/src/main/resources/static
+metrics-service-ui/tools
+metrics-service-ui/src/main/resources/static
 
 # Python
 *.py[cod]
@@ -47,6 +50,7 @@ bin
 !api-catalog-package/src/main/resources/bin
 !discovery-package/src/main/resources/bin
 !caching-service-package/src/main/resources/bin
+!metrics-service-package/src/main/resources/bin
 var
 sdist
 develop-eggs
@@ -72,6 +76,7 @@ scripts/test-results/xunit.xml
 
 # logs
 logs/
+*.log
 
 # pid files
 *.pid
@@ -88,10 +93,11 @@ logs/
 gradle/wrapper/gradle-wrapper.jar
 api-catalog-ui/frontend/test-results/*.xml
 api-catalog-ui/frontend/debug.log
+metrics-service-ui/frontend/test-results/*.xml
+metrics-service-ui/frontend/debug.log
 
 debug.log
 api-layer.tar.gz
-/*.log
 
 # EHCache
 gateway-service/**/*.data

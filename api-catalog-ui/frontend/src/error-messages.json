@@ -13,6 +13,10 @@
             "messageText": "Invalid username or password"
         },
         {
+            "messageKey": "ZWEAS123E",
+            "messageText": "Invalid token type in response from Authentication service"
+        },
+        {
             "messageKey": "ZWEAM700E",
             "messageText": "Request timeout, please try again later"
         },

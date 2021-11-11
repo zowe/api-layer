@@ -454,8 +454,8 @@ class ServiceDefinitionProcessorTest {
         assertThat(instances.size(), is(1));
         assertFalse(instances.get(0).isPortEnabled(InstanceInfo.PortType.SECURE));
         assertTrue(instances.get(0).isPortEnabled(InstanceInfo.PortType.UNSECURE));
-        assertEquals(instances.get(0).getSecurePort(), instances.get(0).getPort());
-        assertEquals(10019, instances.get(0).getSecurePort());
+        assertEquals(10019, instances.get(0).getPort());
+        assertEquals(0, instances.get(0).getSecurePort());
 
     }
 
@@ -485,7 +485,7 @@ class ServiceDefinitionProcessorTest {
         StaticRegistrationResult result = processServicesData(routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
-        assertEquals(10019, instances.get(0).getSecurePort());
+        assertEquals(0, instances.get(0).getSecurePort());
         assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
         assertEquals("api/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_GATEWAY_URL));
         assertEquals("/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_SERVICE_URL));

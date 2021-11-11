@@ -34,3 +34,4 @@ server:
         trustStoreType: PKCS12
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+

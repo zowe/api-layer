@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { debounce } from 'lodash';
 import { TextInput } from 'mineral-ui';
 import IconSearch from 'mineral-ui-icons/IconSearch';

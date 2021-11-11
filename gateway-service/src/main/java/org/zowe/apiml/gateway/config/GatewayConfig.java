@@ -10,10 +10,9 @@
 package org.zowe.apiml.gateway.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.cloud.commons.util.IdUtils;
 import org.springframework.cloud.commons.util.InetUtils;
 import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
@@ -37,6 +36,7 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 @EnableRetry
+@Slf4j
 public class GatewayConfig {
 
     private static final String SEPARATOR = ":";
@@ -68,12 +68,8 @@ public class GatewayConfig {
         boolean preferIpAddress = Boolean
             .parseBoolean(getProperty("eureka.instance.prefer-ip-address"));
         String ipAddress = getProperty("eureka.instance.ip-address");
-        boolean isSecurePortEnabled = Boolean
-            .parseBoolean(getProperty("eureka.instance.secure-port-enabled"));
 
         String serverContextPath = env.getProperty("server.servlet.context-path", "/");
-        int serverPort = Integer
-            .parseInt(env.getProperty("server.internal.port", env.getProperty("port", "8080")));
 
         Integer managementPort = env.getProperty("management.server.port", Integer.class);
 
@@ -81,18 +77,24 @@ public class GatewayConfig {
             .getProperty("management.server.servlet.context-path");
 
         EurekaInstanceConfigBean instance = new EurekaInstanceConfigBean(inetUtils);
-        instance.setNonSecurePort(serverPort);
+
+        int serverPort = Integer
+            .parseInt(getEnabledPort(env));
+
+        boolean isSecurePortEnabled = Boolean
+            .parseBoolean(getProperty("server.ssl.enabled"));
+        instance.setNonSecurePort(isSecurePortEnabled ? 0 : serverPort);
+        instance.setNonSecurePortEnabled(!isSecurePortEnabled);
+        instance.setSecurePort(isSecurePortEnabled ? serverPort : 0);
+        instance.setSecurePortEnabled(isSecurePortEnabled);
+
         instance.setInstanceId(getInstanceId(env));
 
         instance.setPreferIpAddress(preferIpAddress);
-        instance.setSecurePortEnabled(isSecurePortEnabled);
         if (StringUtils.hasText(ipAddress)) {
             instance.setIpAddress(ipAddress);
         }
 
-        if (isSecurePortEnabled) {
-            instance.setSecurePort(serverPort);
-        }
 
         if (StringUtils.hasText(hostname)) {
             instance.setHostname(hostname);
@@ -120,6 +122,9 @@ public class GatewayConfig {
             metadataMap.computeIfAbsent("management.port",
                 k -> String.valueOf(metadata.getManagementPort()));
         }
+
+        log.debug("Eureka Configuration Bean (Environment variables or externalized configuration overrides this configuration and produce different registration in Discovery): {}", instance);
+
         return instance;
     }
 
@@ -128,13 +133,21 @@ public class GatewayConfig {
     }
 
     public static String getInstanceId(PropertyResolver resolver) {
-        String hostname = resolver.getProperty("spring.cloud.client.hostname");
+        String hostname = resolver.getProperty("apiml.service.hostname");
         String appName = resolver.getProperty("spring.application.name");
 
         String namePart = IdUtils.combineParts(hostname, SEPARATOR, appName);
 
-        String indexPart = resolver.getProperty("server.internal.port");
+        String indexPart = getEnabledPort(resolver);
 
         return IdUtils.combineParts(namePart, SEPARATOR, indexPart);
+    }
+
+    public static String getEnabledPort(PropertyResolver resolver) {
+        if (Boolean.parseBoolean(resolver.getProperty("server.internal.enabled"))) {
+            return resolver.getProperty("server.internal.port");
+        } else {
+            return resolver.getProperty("apiml.service.port");
+        }
     }
 }

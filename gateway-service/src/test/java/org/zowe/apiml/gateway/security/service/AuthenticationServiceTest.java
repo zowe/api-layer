@@ -57,8 +57,7 @@ import static org.mockito.Mockito.*;
     CacheConfig.class,
     MockedAuthenticationServiceContext.class
 })
-
-public class AuthenticationServiceTest {
+public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     public static final String ZOSMF = "zosmf";
     private static final String ZOSMF_HOSTNAME = "zosmfhostname";
@@ -85,7 +84,7 @@ public class AuthenticationServiceTest {
     private AuthConfigurationProperties authConfigurationProperties;
 
     @Autowired
-    private JwtSecurityInitializer jwtSecurityInitializer;
+    private JwtSecurity jwtSecurityInitializer;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -175,6 +174,7 @@ public class AuthenticationServiceTest {
         );
     }
 
+
     @Test
     void shouldThrowExceptionWhenOccurUnexpectedException() {
         assertThrows(
@@ -254,28 +254,32 @@ public class AuthenticationServiceTest {
 
     @Test
     void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
+        String expiredJwtToken = createExpiredJwtToken(privateKey);
         assertThrows(
             TokenExpireException.class,
-            () -> authService.getLtpaTokenWithValidation(createExpiredJwtToken(privateKey))
+            () -> authService.getLtpaTokenWithValidation(expiredJwtToken)
         );
     }
 
     private String createExpiredJwtToken(Key secretKey) {
-        long expiredTimeMillis = System.currentTimeMillis() - 1000;
+        return createJwtTokenWithExpiry(secretKey,  System.currentTimeMillis() - 1000);
+    }
 
+    private String createJwtTokenWithExpiry(Key secretKey, long expireAt) {
         return Jwts.builder()
-            .setExpiration(new Date(expiredTimeMillis))
+            .setExpiration(new Date(expireAt))
             .setIssuer(authConfigurationProperties.getTokenProperties().getIssuer())
             .signWith(ALGORITHM, secretKey)
             .compact();
     }
 
-    private InstanceInfo createInstanceInfo(String instanceId, String hostName, int port, int securePort) {
+    private InstanceInfo createInstanceInfo(String instanceId, String hostName, int port, int securePort, boolean isSecureEnabled) {
         InstanceInfo out = mock(InstanceInfo.class);
         when(out.getInstanceId()).thenReturn(instanceId);
         when(out.getHostName()).thenReturn(hostName);
         when(out.getPort()).thenReturn(port);
         when(out.getSecurePort()).thenReturn(securePort);
+        when(out.isPortEnabled(InstanceInfo.PortType.SECURE)).thenReturn(isSecureEnabled);
         return out;
     }
 
@@ -372,9 +376,9 @@ public class AuthenticationServiceTest {
 
         Application application = mock(Application.class);
         List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("instance02", "hostname1", 10000, 10433),
-            createInstanceInfo("myInstance01", "localhost", 10000, 10433),
-            createInstanceInfo("instance03", "hostname2", 10001, 0)
+            createInstanceInfo("instance02", "hostname1", 10000, 10433, true),
+            createInstanceInfo("myInstance01", "localhost", 10000, 10433, true),
+            createInstanceInfo("instance03", "hostname2", 10001, 0, false)
         );
         when(application.getInstances()).thenReturn(instances);
         when(discoveryClient.getApplication("gateway")).thenReturn(application);
@@ -551,17 +555,17 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    void testCreateJwtTokenUserExpire() {
+    void testCreateJwtTokensAndCheckExpiration() {
         String jwt1 = authService.createJwtToken("user", "domain", "ltpaToken");
         String jwt2 = authService.createJwtToken("expire", "domain", "ltpaToken");
 
         QueryResponse qr1 = authService.parseJwtToken(jwt1);
         QueryResponse qr2 = authService.parseJwtToken(jwt2);
 
-        assertEquals(
-            qr1.getExpiration().getTime() - authConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000,
-            qr2.getExpiration().getTime() - authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds() * 1000
-        );
+        Date toBeExpired = DateUtils.addSeconds(qr1.getCreation(), authConfigurationProperties.getTokenProperties().getExpirationInSeconds());
+        Date toBeExpired2 = DateUtils.addSeconds(qr2.getCreation(), (int) authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds());
+        assertEquals(qr1.getExpiration(), toBeExpired);
+        assertEquals(qr2.getExpiration(), toBeExpired2);
     }
 
     @Test
@@ -614,7 +618,7 @@ public class AuthenticationServiceTest {
     void testDistributeInvalidateSuccess() {
         reset(restTemplate);
 
-        InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433);
+        InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433, true);
 
         Application application = mock(Application.class);
         when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);

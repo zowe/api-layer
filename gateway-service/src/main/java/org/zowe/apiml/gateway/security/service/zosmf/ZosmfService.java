@@ -14,39 +14,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
 import java.text.ParseException;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -287,7 +275,7 @@ public class ZosmfService extends AbstractZosmfService {
      */
     @Cacheable(value = "zosmfJwtEndpoint")
     public boolean jwtEndpointExists(HttpHeaders headers) {
-        String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmfJwtEndpoint();
+        String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
 
         try {
             restTemplateWithoutKeystore.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), String.class);
@@ -304,8 +292,12 @@ public class ZosmfService extends AbstractZosmfService {
             }
         } catch (HttpServerErrorException serverError) {
             log.warn("z/OSMF internal error", serverError);
+            return false;
+        } catch (Exception e) {
+            log.warn("z/OSMF JWT builder endpoint with HTTP method GET has failed with exception: {}", e);
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**
@@ -349,24 +341,20 @@ public class ZosmfService extends AbstractZosmfService {
             log.debug("Trying to validate token with strategy: {}", s.toString());
             try {
                 s.validate(request);
-                if (requestValidationIsDecided(request)) {
+                if (requestIsAuthenticated(request)) {
                     log.debug("Token validity has been successfully determined: {}", request.getAuthenticated());
-                    break;
+                    return true;
                 }
             } catch (RuntimeException re) {
                 log.debug("Exception during token validation:", re);
             }
         }
         log.debug("Token validation strategies exhausted, final validation status: {}", request.getAuthenticated());
-        return requestIsAuthenticated(request);
+        return false;
     }
 
     private boolean requestIsAuthenticated(TokenValidationRequest request) {
         return TokenValidationRequest.STATUS.AUTHENTICATED.equals(request.getAuthenticated());
-    }
-
-    private boolean requestValidationIsDecided(TokenValidationRequest request) {
-        return !TokenValidationRequest.STATUS.UNKNOWN.equals(request.getAuthenticated());
     }
 
     public Map<String, Boolean> getEndpointMap() {
@@ -420,7 +408,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public JWKSet getPublicKeys() {
-        final String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmfJwtEndpoint();
+        final String url = getURI(getZosmfServiceId()) + authConfigurationProperties.getZosmf().getJwtEndpoint();
 
         try {
             final String json = restTemplateWithoutKeystore.getForObject(url, String.class);

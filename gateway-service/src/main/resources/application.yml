@@ -25,6 +25,9 @@ apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
     routing:
         mode: new
+        instanceIdHeader: false
+    loadBalancer:
+        distribute: false
     service:
         # The `apiml.service` node contains information required by any APIML service
         id: gateway  # Service ID of this service. It is fixed for APIML API Gateway
@@ -38,6 +41,9 @@ apiml:
 
     catalog:
         serviceId: apicatalog
+    metrics:
+        serviceId: metrics-service
+        enabled: false
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
@@ -48,13 +54,21 @@ apiml:
                                              # properly.
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
+        filterChainConfiguration: new
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+        allowTokenRefresh: false
+        jwtInitializerTimeout: 5
         auth:
             provider: zosmf
             jwtKeyAlias: jwtsecret
         x509:
             enabled: false
             externalMapperUrl:
+        saf:
+            provider: rest
+            urls:
+                authenticate: https://localhost:10013/zss/saf/authenticate
+                verify: https://localhost:10013/zss/saf/verify
 
 spring:
     application:
@@ -87,7 +101,7 @@ server:
             keyStoreType: ${server.ssl.keyStoreType:PKCS12}
             keyStore: ${server.ssl.keyStore:keystore}
             trustStoreType: ${server.ssl.trustStoreType:PKCS12}
-            trustStore: ${server.ssl.trustStore:trustore}
+            trustStore: ${server.ssl.trustStore:truststore}
             keyStorePassword: ${server.ssl.keyStorePassword:password}
             trustStorePassword: ${server.ssl.trustStorePassword:password}
             clientAuth: ${server.ssl.clientAuth}
@@ -104,6 +118,8 @@ server:
         trustStoreType: PKCS12
     maxConnectionsPerRoute: 100
     maxTotalConnections: 1000
+    webSocket:
+        supportedProtocols: v12.stomp,v11.stomp
 
 zuul:
     sslHostnameValidationEnabled: false
@@ -112,13 +128,16 @@ zuul:
     ignoreSecurityHeaders: false
     includeDebugHeader: false
     sensitiveHeaders: Expires,Date
+    semaphore:
+        maxSemaphores: ${server.maxTotalConnections}
     ignoredPatterns:
-        - /ws/**
+        - /**/ws/**
+        - /**/sse/**
     host:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
-        maxTotalConnetions: ${server.maxConnectionsPerRoute}
-        maxPerRouteConnections: ${server.maxTotalConnections}
+        maxTotalConnections: ${server.maxTotalConnections}
+        maxPerRouteConnections: ${server.maxConnectionsPerRoute}
     forceOriginalQueryStringEncoding: true
     retryable: true
     decodeUrl: false # Flag to indicate whether to decode the matched URL or use it as is
@@ -163,22 +182,20 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info
+                include: health,info,shutdown
     health:
         defaults:
             enabled: false
     endpoint:
         health:
             showDetails: always
-
+        shutdown:
+            enabled: true
 eureka:
     instance:
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
-        port: ${server.internal.port}
-        securePort: ${server.internal.port}
-        nonSecurePortEnabled: false # must be set to false if you are using SSL
-        securePortEnabled: ${server.ssl.enabled}
+        #ports are computed in code
         preferIpAddress: ${apiml.service.preferIpAddress}
         homePageUrl: ${apiml.service.scheme}://${apiml.gateway.hostname}:${apiml.service.port}/
         statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
@@ -206,6 +223,7 @@ eureka:
                     description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
                 authentication:
                     sso: true
+
     client:
         fetchRegistry: true
         registerWithEureka: true
@@ -226,7 +244,10 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,routes,loggers
+                include: health,info,routes,loggers,shutdown
+    endpoint:
+        shutdown:
+            enabled: true
 
 logging:
     level:
@@ -252,6 +273,9 @@ management:
             exposure:
                 include: "*"
 
+server:
+    max-http-header-size: 40000
+
 zuul.debug.request: true
 ---
 spring:
@@ -261,3 +285,40 @@ spring:
         - diag
 
 logbackServiceName: ZWEAGW1
+
+---
+spring:
+    profiles: attls
+
+server:
+    internal:
+        ssl:
+            enabled: false
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+apiml:
+    service:
+        scheme: http
+eureka:
+    instance:
+        metadata-map:
+            apiml:
+                apiInfo:
+                    -   apiId: zowe.apiml.gateway
+                        gatewayUrl: api/v1
+                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                        documentationUrl: https://zowe.github.io/docs-site/
+---
+spring:
+    profiles: securityFilterchainDebug
+
+logging:
+    level:
+        org.springframework.security: DEBUG
+        org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter: DEBUG
+        org.zowe.apiml.gateway.security: DEBUG

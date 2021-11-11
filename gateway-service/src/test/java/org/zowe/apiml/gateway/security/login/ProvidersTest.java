@@ -43,6 +43,7 @@ class ProvidersTest {
     @BeforeEach
     void setUp() {
         authConfigurationProperties = mock(AuthConfigurationProperties.class);
+        when(authConfigurationProperties.getZosmf()).thenReturn(mock(AuthConfigurationProperties.Zosmf.class));
         compoundAuthProvider = mock(CompoundAuthProvider.class);
         discovery = mock(DiscoveryClient.class);
         zosmfService = mock(ZosmfService.class);
@@ -129,7 +130,7 @@ class ProvidersTest {
         void givenZosmfConfiguration_thenSupportJwtReturnsProperly(boolean loginEndpointExists, boolean jwtBuilderEndpointExists, boolean zosmfShouldSupportJwt) {
             when(zosmfService.loginEndpointExists()).thenReturn(loginEndpointExists);
             when(zosmfService.jwtBuilderEndpointExists()).thenReturn(jwtBuilderEndpointExists);
-            when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(AUTO);
+            when(authConfigurationProperties.getZosmf().getJwtAutoconfiguration()).thenReturn(AUTO);
 
             assertThat(underTest.zosmfSupportsJwt(), is(zosmfShouldSupportJwt));
         }
@@ -139,7 +140,7 @@ class ProvidersTest {
             underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider, zosmfService);
             when(zosmfService.loginEndpointExists()).thenReturn(true);
             when(zosmfService.jwtBuilderEndpointExists()).thenReturn(true);
-            when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(LTPA);
+            when(authConfigurationProperties.getZosmf().getJwtAutoconfiguration()).thenReturn(LTPA);
             assertThat(underTest.zosmfSupportsJwt(), is(false));
         }
 
@@ -148,7 +149,7 @@ class ProvidersTest {
             underTest = new Providers(discovery, authConfigurationProperties, compoundAuthProvider, zosmfService);
             when(zosmfService.loginEndpointExists()).thenReturn(false);
             when(zosmfService.jwtBuilderEndpointExists()).thenReturn(false);
-            when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(JWT);
+            when(authConfigurationProperties.getZosmf().getJwtAutoconfiguration()).thenReturn(JWT);
             assertThat(underTest.zosmfSupportsJwt(), is(true));
         }
 
@@ -170,13 +171,13 @@ class ProvidersTest {
 
         @Test
         void givenZosmfAuthConfigurationLtpa_thenReturnTrue() {
-            when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(LTPA);
+            when(authConfigurationProperties.getZosmf().getJwtAutoconfiguration()).thenReturn(LTPA);
             assertThat(underTest.isZosmfConfigurationSetToLtpa(), is(true));
         }
 
         @Test
         void givenZosmfAuthConfigurationNotLtpa_thenReturnFalse() {
-            when(authConfigurationProperties.getZosmfJwtAutoconfiguration()).thenReturn(JWT);
+            when(authConfigurationProperties.getZosmf().getJwtAutoconfiguration()).thenReturn(JWT);
             assertThat(underTest.isZosmfConfigurationSetToLtpa(), is(false));
         }
     }

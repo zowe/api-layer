@@ -1,20 +1,21 @@
 dependencies {
     compile(project(':common-service-core'))
 
-    implementation libraries.spring_boot_starter_web
-    compile libraries.commons_validator
     compile libraries.jackson_databind
     compile libraries.apache_commons_lang3
     compile libraries.http_client
     compile libraries.http_core
     compile libraries.jetty_websocket_client
 
+    compileOnly libraries.spring_boot_starter_web
+    
     compileOnly libraries.spring_boot_configuration_processor
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
     testCompile libraries.javax_servlet_api
     testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
 
     testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok

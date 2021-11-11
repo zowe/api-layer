@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.staticapi;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,6 +29,14 @@ class StaticAPIServiceTest {
 
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
+    private static final String DISCOVERY_LOCATION = "https://localhost:60004/eureka/";
+    private static final String DISCOVERY_LOCATION_2 = "https://localhost:60005/eureka/";
+    private static final String DISCOVERY_URL = "https://localhost:60004/";
+    private static final String DISCOVERY_URL_2 = "https://localhost:60005/";
+
+    private static final String DISCOVERY_LOCATION_HTTP = "http://localhost:60004/eureka/";
+    private static final String DISCOVERY_URL_HTTP = "http://localhost:60004/";
+
     @InjectMocks
     private StaticAPIService staticAPIService;
 
@@ -36,35 +45,86 @@ class StaticAPIServiceTest {
     @Mock
     private DiscoveryConfigProperties discoveryConfigProperties;
 
-    @Test
-    void givenRefreshAPIWithSecureDiscoveryService_whenRefreshEndpointPresentResponse_thenReturnApiResponseCodeWithBody() {
-        String discoveryUrl = "https://localhost:60004/";
-        when(discoveryConfigProperties.getLocations()).thenReturn("https://localhost:60004/eureka/");
+    @Nested
+    class WhenRefreshEndpointPresentsResponse {
 
-        when(restTemplate.exchange(
-            discoveryUrl + REFRESH_ENDPOINT,
-            HttpMethod.POST, getHttpEntity(discoveryUrl), String.class))
-            .thenReturn(new ResponseEntity<>("This is body", HttpStatus.OK));
+        @Test
+        void givenRefreshAPIWithSecureDiscoveryService_thenReturnApiResponseCodeWithBody() {
+            when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION});
 
+            mockRestTemplateExchange(DISCOVERY_URL, new ResponseEntity<>("This is body", HttpStatus.OK));
 
-        StaticAPIResponse actualResponse = staticAPIService.refresh();
-        StaticAPIResponse expectedResponse = new StaticAPIResponse(200, "This is body");
-        assertEquals(expectedResponse, actualResponse);
+            StaticAPIResponse actualResponse = staticAPIService.refresh();
+            StaticAPIResponse expectedResponse = new StaticAPIResponse(200, "This is body");
+            assertEquals(expectedResponse, actualResponse);
+        }
+
+        @Test
+        void givenRefreshAPIWithUnSecureDiscoveryService_thenReturnApiResponseCodeWithBody() {
+            when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION_HTTP});
+
+            mockRestTemplateExchange(DISCOVERY_URL_HTTP, new ResponseEntity<>("This is body", HttpStatus.OK));
+
+            StaticAPIResponse actualResponse = staticAPIService.refresh();
+            StaticAPIResponse expectedResponse = new StaticAPIResponse(200, "This is body");
+            assertEquals(expectedResponse, actualResponse);
+        }
+
+        @Nested
+        class GivenTwoDiscoveryUrls {
+            private final String[] discoveryLocations = {DISCOVERY_LOCATION, DISCOVERY_LOCATION_2};
+
+            @Test
+            void whenFirstFails_thenReturnResponseFromSecond() {
+                when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
+
+                mockRestTemplateExchange(DISCOVERY_URL, new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                mockRestTemplateExchange(DISCOVERY_URL_2, new ResponseEntity<>("body", HttpStatus.OK));
+
+                StaticAPIResponse actualResponse = staticAPIService.refresh();
+                StaticAPIResponse expectedResponse = new StaticAPIResponse(200, "body");
+                assertEquals(expectedResponse, actualResponse);
+            }
+
+            @Test
+            void whenFirstSucceeds_thenReturnResponseFromFirst() {
+                when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
+
+                mockRestTemplateExchange(DISCOVERY_URL, new ResponseEntity<>("body", HttpStatus.OK));
+
+                StaticAPIResponse actualResponse = staticAPIService.refresh();
+                StaticAPIResponse expectedResponse = new StaticAPIResponse(200, "body");
+                assertEquals(expectedResponse, actualResponse);
+            }
+
+            @Test
+            void whenBothFail_thenReturnResponseFromSecond() {
+                when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
+
+                mockRestTemplateExchange(DISCOVERY_URL, new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+                mockRestTemplateExchange(DISCOVERY_URL_2, new ResponseEntity<>("body", HttpStatus.NOT_FOUND));
+
+                StaticAPIResponse actualResponse = staticAPIService.refresh();
+                StaticAPIResponse expectedResponse = new StaticAPIResponse(404, "body");
+                assertEquals(expectedResponse, actualResponse);
+            }
+        }
     }
 
     @Test
-    void givenRefreshAPIWithUnSecureDiscoveryService_whenRefreshEndpointPresentResponse_thenReturnApiResponseCodeWithBody() {
-        String discoveryUrl = "http://localhost:60004/";
-        when(discoveryConfigProperties.getLocations()).thenReturn("http://localhost:60004/eureka/");
-
-        when(restTemplate.exchange(
-            discoveryUrl + REFRESH_ENDPOINT,
-            HttpMethod.POST, getHttpEntity(discoveryUrl), String.class))
-            .thenReturn(new ResponseEntity<>("This is body", HttpStatus.OK));
+    void givenNoDiscoveryLocations_whenAttemptRefresh_thenReturn500() {
+        when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{});
 
         StaticAPIResponse actualResponse = staticAPIService.refresh();
-        StaticAPIResponse expectedResponse = new StaticAPIResponse(200, "This is body");
+        StaticAPIResponse expectedResponse = new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
         assertEquals(expectedResponse, actualResponse);
+    }
+
+    private void mockRestTemplateExchange(String discoveryUrl, ResponseEntity expectedResponse) {
+        when(restTemplate.exchange(
+            discoveryUrl + REFRESH_ENDPOINT,
+            HttpMethod.POST, getHttpEntity(discoveryUrl), String.class
+        )).thenReturn(expectedResponse);
     }
 
     private HttpEntity<?> getHttpEntity(String discoveryServiceUrl) {
@@ -72,7 +132,7 @@ class StaticAPIServiceTest {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Accept", "application/json");
         if (isHttp) {
-            String basicToken = "Basic " + Base64.getEncoder().encodeToString( "null:null".getBytes());
+            String basicToken = "Basic " + Base64.getEncoder().encodeToString("null:null".getBytes());
             httpHeaders.add("Authorization", basicToken);
         }
 

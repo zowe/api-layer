@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.util.config;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
@@ -21,6 +23,8 @@ public class EnvironmentConfiguration {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private DiscoverableClientConfiguration discoverableClientConfiguration;
+    private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
+    private CachingServiceConfiguration cachingServiceConfiguration;
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
     private AuxiliaryUserList auxiliaryUserList;

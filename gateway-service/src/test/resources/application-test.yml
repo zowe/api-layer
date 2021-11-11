@@ -19,6 +19,8 @@ apiml:
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         corsEnabled: true
+    loadBalancer:
+        distribute: false
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
@@ -29,16 +31,24 @@ apiml:
         # properly.
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
+        filterChainConfiguration: new
+        allowTokenRefresh: true
         ssl:
             verifySslCertificatesOfServices: true
         auth:
             provider: dummy
-            zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id
+            zosmf:
+                serviceId: zosmf  # Replace me with the correct z/OSMF service id
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
             jwtKeyAlias: jwtSecret
         zosmf:
             useJwtToken: true # if true and z/OSMF returns JWT token use it, otherwise create Zowe JWT token with LTPA token from z/OSMF, default is true
+        saf:
+            provider: rest
+            urls:
+                authenticate: https://localhost:10013/zss/saf/authenticate
+                verify: https://localhost:10013/zss/saf/verify
 
 spring:
     application:
@@ -91,6 +101,7 @@ server:
         keyAlias: localhost
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+    max-http-header-size: 40000
 
 zuul:
     sslHostnameValidationEnabled: false
@@ -101,6 +112,7 @@ zuul:
     sensitiveHeaders: Expires,Date
     ignoredPatterns:
         - /ws/**
+        - /sse/**
     host:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
@@ -156,10 +168,7 @@ eureka:
     instance:
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
-        port: ${server.port}
-        securePort: ${server.port}
-        nonSecurePortEnabled: false # must be set to false if you are using SSL
-        securePortEnabled: ${server.ssl.enabled}
+        #ports are computed in code
         preferIpAddress: ${apiml.service.preferIpAddress}
         homePageUrl: ${apiml.service.scheme}://${apiml.gateway.hostname}:${apiml.service.port}/
         statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info

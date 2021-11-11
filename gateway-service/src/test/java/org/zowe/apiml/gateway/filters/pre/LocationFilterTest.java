@@ -9,17 +9,19 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.product.routing.RoutedServices;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PROXY_KEY;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.REQUEST_URI_KEY;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 class LocationFilterTest {
 
@@ -61,100 +63,30 @@ class LocationFilterTest {
         assertEquals("/service/v1/path", ctx.get(REQUEST_URI_KEY));
     }
 
-    @Test
-    void urlDefinedInMetadataIsModified_OldProxyFormat() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(PROXY_KEY, "api/v1/service");
-        this.filter.run();
-        assertEquals("/service/v1/path", ctx.get(REQUEST_URI_KEY));
+    static private Stream<Arguments> arguments_testContextKeyURLFiltering() {
+        return Stream.of(
+            Arguments.of(PROXY_KEY, "api/v1/service", "/service/v1/path"),
+            Arguments.of(REQUEST_URI_KEY, "path", "/service/v1/path"),
+            Arguments.of(PROXY_KEY, "/service/api/v2", "/service/v2/path"),
+            Arguments.of(PROXY_KEY, "/api/v2/service", "/service/v2/path"),
+            Arguments.of(PROXY_KEY, "service/api/v2/", "/service/v2/path"),
+            Arguments.of(PROXY_KEY, "api/v2/service/", "/service/v2/path"),
+            Arguments.of(SERVICE_ID_KEY, "", "/path"),
+            Arguments.of(SERVICE_ID_KEY, null, "/path"),
+            Arguments.of(PROXY_KEY, "", "/path"),
+            Arguments.of(PROXY_KEY, null, "/path"),
+            Arguments.of(REQUEST_URI_KEY, "", "/service/v1/"),
+            Arguments.of(REQUEST_URI_KEY, null, null)
+        );
     }
 
-    @Test
-    void requestURIStartsWithoutSlash() {
+    @ParameterizedTest
+    @MethodSource("arguments_testContextKeyURLFiltering")
+    void testContextKeyURLFiltering(String contextKey, String contextUrl, String requestUrl) {
         final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(REQUEST_URI_KEY, "path");
+        ctx.set(contextKey, contextUrl);
         this.filter.run();
-        assertEquals("/service/v1/path", ctx.get(REQUEST_URI_KEY));
-    }
-
-    @Test
-    void proxyStartsWithSlash() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(PROXY_KEY, "/service/api/v2");
-        this.filter.run();
-        assertEquals("/service/v2/path", ctx.get(REQUEST_URI_KEY));
-    }
-
-    @Test
-    void proxyStartsWithSlash_OldProxyFormat() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(PROXY_KEY, "/api/v2/service");
-        this.filter.run();
-        assertEquals("/service/v2/path", ctx.get(REQUEST_URI_KEY));
-    }
-
-    @Test
-    void proxyEndsWithSlash() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(PROXY_KEY, "service/api/v2/");
-        this.filter.run();
-        assertEquals("/service/v2/path", ctx.get(REQUEST_URI_KEY));
-    }
-
-    @Test
-    void proxyEndsWithSlash_OldProxyFormat() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(PROXY_KEY, "api/v2/service/");
-        this.filter.run();
-        assertEquals("/service/v2/path", ctx.get(REQUEST_URI_KEY));
-    }
-
-    @Test
-    void serviceIdIsEmpty() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(SERVICE_ID_KEY, "");
-        this.filter.run();
-        assertEquals("/path", ctx.get(REQUEST_URI_KEY));
-    }
-
-    @Test
-    void serviceIdIsNull() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(SERVICE_ID_KEY, null);
-        this.filter.run();
-        assertEquals("/path", ctx.get(REQUEST_URI_KEY));
-    }
-
-    @Test
-    void proxyIsEmpty() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(PROXY_KEY, "");
-        this.filter.run();
-        assertEquals("/path", ctx.get(REQUEST_URI_KEY));
-    }
-
-    @Test
-    void proxyIsNull() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(PROXY_KEY, null);
-        this.filter.run();
-        assertEquals("/path", ctx.get(REQUEST_URI_KEY));
-    }
-
-    @Test
-    void requestPathIsEmpty() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(REQUEST_URI_KEY, "");
-        this.filter.run();
-        assertEquals("/service/v1/", ctx.get(REQUEST_URI_KEY));
-    }
-
-    @Test
-    void requestPathIsNull() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(REQUEST_URI_KEY, null);
-        this.filter.run();
-        assertNull(ctx.get(REQUEST_URI_KEY));
+        assertEquals(requestUrl, ctx.get(REQUEST_URI_KEY));
     }
 
     @Test

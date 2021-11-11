@@ -47,8 +47,8 @@ class LocalApiDocServiceTest {
     private static final int SERVICE_PORT = 8080;
     private static final String SERVICE_VERSION = "1.0.0";
     private static final String HIGHER_SERVICE_VERSION = "2.0.0";
-    private static final String SERVICE_VERSION_V = "v1";
-    private static final String HIGHER_SERVICE_VERSION_V = "v2";
+    private static final String SERVICE_VERSION_V = "test.app v1.0.0";
+    private static final String HIGHER_SERVICE_VERSION_V = "test.app v2.0.0";
     private static final String GATEWAY_SCHEME = "http";
     private static final String GATEWAY_HOST = "gateway:10000";
     private static final String GATEWAY_URL = "api/v1";
@@ -83,7 +83,7 @@ class LocalApiDocServiceTest {
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
         assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
         assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
@@ -109,7 +109,7 @@ class LocalApiDocServiceTest {
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION);
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION_V);
 
         assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
         assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
@@ -134,14 +134,14 @@ class LocalApiDocServiceTest {
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
-        ApiDocInfo result = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION);
+        ApiDocInfo result = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION_V);
         assertThat(result.getApiDocContent(), is(notNullValue()));
     }
 
     @Test
     void testFailedRetrievalOfAPIDocWhenServiceNotFound() {
         Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
-            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
         });
         assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
     }
@@ -158,7 +158,7 @@ class LocalApiDocServiceTest {
             .thenReturn(expectedResponse);
 
         Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
-            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
         });
         assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
     }
@@ -175,7 +175,7 @@ class LocalApiDocServiceTest {
             .thenReturn(expectedResponse);
 
         Exception exception = assertThrows(ApiDocNotFoundException.class, () -> {
-            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+            apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
         });
         assertEquals("No API Documentation defined for service " + SERVICE_ID + ".", exception.getMessage());
     }
@@ -220,7 +220,7 @@ class LocalApiDocServiceTest {
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
         assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
         assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
@@ -245,7 +245,7 @@ class LocalApiDocServiceTest {
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
         assertNotNull(actualResponse);
         assertNotNull(actualResponse.getApiDocContent());
@@ -264,7 +264,7 @@ class LocalApiDocServiceTest {
         when(restTemplate.exchange("http://service:8080/service/api-doc", HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
-        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
         assertNotNull(actualResponse);
         assertNotNull(actualResponse.getApiDocContent());
@@ -375,7 +375,7 @@ class LocalApiDocServiceTest {
             .thenReturn(getStandardInstance(getStandardMetadata(), false));
 
         List<String> actualVersions = apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
-        assertEquals(Collections.singletonList("v1"), actualVersions);
+        assertEquals(Collections.singletonList(SERVICE_VERSION_V), actualVersions);
     }
 
     @Test
@@ -394,7 +394,7 @@ class LocalApiDocServiceTest {
             .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfo(), false));
 
         String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
-        assertEquals("v1", defaultVersion);
+        assertEquals(SERVICE_VERSION_V, defaultVersion);
     }
 
     @Test
@@ -406,7 +406,7 @@ class LocalApiDocServiceTest {
             .thenReturn(getStandardInstance(metadata, false));
 
         String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
-        assertEquals("v2", defaultVersion);
+        assertEquals(HIGHER_SERVICE_VERSION_V, defaultVersion);
     }
 
     @Test

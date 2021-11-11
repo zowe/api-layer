@@ -1,5 +1,5 @@
 import { Text, Button } from 'mineral-ui';
-import React, { Component } from 'react';
+import { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import './Dashboard.css';
@@ -7,6 +7,10 @@ import Tile from '../Tile/Tile';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ErrorDialog from '../Error/ErrorDialog';
+import WizardContainer from '../Wizard/WizardContainer';
+import DialogDropdown from '../Wizard/DialogDropdown';
+import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
+import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 
 export default class Dashboard extends Component {
     componentDidMount() {
@@ -31,6 +35,11 @@ export default class Dashboard extends Component {
         refreshedStaticApi();
     };
 
+    toggleWizard = () => {
+        const { wizardToggleDisplay } = this.props;
+        wizardToggleDisplay();
+    };
+
     render() {
         const {
             tiles,
@@ -52,9 +61,19 @@ export default class Dashboard extends Component {
 
         return (
             <div>
-                <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
-                    Refresh Static APIs
-                </Button>
+                <div id="dash-buttons">
+                    <DialogDropdown
+                        selectEnabler={this.props.selectEnabler}
+                        data={enablerData}
+                        toggleWizard={this.toggleWizard}
+                        visible
+                    />
+                    <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
+                        Refresh Static APIs
+                    </Button>
+                </div>
+                <WizardContainer />
+                <ConfirmDialogContainer />
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">

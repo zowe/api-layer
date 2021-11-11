@@ -9,13 +9,6 @@
  */
 package org.zowe.apiml.security.client.handler;
 
-import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
-import org.zowe.apiml.security.common.error.ErrorType;
-import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -25,6 +18,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
+import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
+import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
+import org.zowe.apiml.security.common.error.ErrorType;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -63,6 +63,12 @@ class RestResponseHandlerTest {
         assertThrows(TokenNotProvidedException.class, () -> {
             handler.handleBadResponse(unauthorizedException, ErrorType.TOKEN_NOT_PROVIDED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
         });
+    }
+
+    @Test
+    void handleBadResponseWithTokenNotInResponse() {
+        assertThrows(InvalidTokenTypeException.class,
+            () -> handler.handleBadResponse(unauthorizedException, ErrorType.INVALID_TOKEN_TYPE, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
     }
 
     @Test
@@ -129,7 +135,7 @@ class RestResponseHandlerTest {
     @Test
     void handleBadResponseWithHttpServerError() {
         HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Some server error");
-        assertThrows(HttpServerErrorException.class, () -> {
+        assertThrows(ServiceNotAccessibleException.class, () -> {
             handler.handleBadResponse(exception, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
         });
     }

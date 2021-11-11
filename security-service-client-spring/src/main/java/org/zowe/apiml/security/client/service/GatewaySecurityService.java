@@ -14,10 +14,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.security.client.handler.RestResponseHandler;
@@ -34,6 +31,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class GatewaySecurityService {
+    private static final String MESSAGE_KEY_STRING = "messageKey\":\"";
+
     private final GatewayClient gatewayClient;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final RestTemplate restTemplate;
@@ -68,8 +67,9 @@ public class GatewaySecurityService {
 
             return extractToken(response.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
         } catch (HttpClientErrorException | ResourceAccessException | HttpServerErrorException e) {
-            responseHandler.handleBadResponse(e, ErrorType.BAD_CREDENTIALS,
-                "Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
+            ErrorType errorType = getErrorType(e);
+            responseHandler.handleBadResponse(e, errorType,
+                "Cannot access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
         }
         return Optional.empty();
     }
@@ -102,6 +102,28 @@ public class GatewaySecurityService {
                 "Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
         }
         return null;
+    }
+
+    private ErrorType getErrorType(RestClientException ex) {
+        String detailMessage = ex.getMessage();
+        if (detailMessage == null) {
+            return ErrorType.AUTH_GENERAL;
+        }
+
+        int indexOfMessageKey = detailMessage.indexOf(MESSAGE_KEY_STRING);
+        if (indexOfMessageKey < 0) {
+            return ErrorType.AUTH_GENERAL;
+        }
+
+        // substring from `messageKey":"` to next `"` - this is the messageKey value
+        String messageKeyToEndOfExceptionMessage = detailMessage.substring(indexOfMessageKey + MESSAGE_KEY_STRING.length());
+        String messageKey = messageKeyToEndOfExceptionMessage.substring(0, messageKeyToEndOfExceptionMessage.indexOf("\""));
+
+        try {
+            return ErrorType.fromMessageKey(messageKey);
+        } catch (IllegalArgumentException e) {
+            return ErrorType.AUTH_GENERAL;
+        }
     }
 
     private Optional<String> extractToken(String cookies) {

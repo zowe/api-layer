@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Cert Analyser" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.zowe.apiml.Analyser" />
+    <module name="api-layer.certificate-analyser.main" />
+    <option name="PROGRAM_PARAMETERS" value="-t keystore/localhost/localhost.truststore.p12 --keypasswd password -l -k keystore/localhost/localhost.keystore.p12" />
+    <option name="VM_PARAMETERS" value="-Djavax.net.debug=ssl:handshake:verbose" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.zowe.apiml.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -1,0 +1,45 @@
+spring.profiles.include: diag
+
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
+    instance:
+        leaseExpirationDurationInSeconds: 6
+        leaseRenewalIntervalInSeconds: 1
+
+server:
+    address: ${apiml.service.hostname}
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: /docker/all-services.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        clientAuth: want
+        trustStore: /docker/all-services.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+apiml:
+    service:
+        hostname: api-catalog-services
+        port: 10014
+        discoveryServiceUrls: https://discovery-service:10011/eureka/
+        eurekaPassword: password
+        eurekaUserName: eureka
+        gatewayHostname: https://gateway-service:10010
+        preferIpAddress: false
+    service-registry:
+        cacheRefreshInitialDelayInMillis: 10000
+        cacheRefreshRetryDelayInMillis: 10000
+        cacheRefreshUpdateThresholdInMillis: 120000
+        serviceFetchDelayInMillis: 10000
+    banner: console
+    discovery:
+        staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
+
+spring:
+    output:
+        ansi:
+            enabled: always

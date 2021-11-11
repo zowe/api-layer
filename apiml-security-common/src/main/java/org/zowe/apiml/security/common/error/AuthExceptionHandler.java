@@ -9,12 +9,6 @@
  */
 package org.zowe.apiml.security.common.error;
 
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,6 +17,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.security.common.token.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -66,15 +63,23 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleTokenExpire(request, response, ex);
         } else if (ex instanceof TokenFormatNotValidException) {
             handleTokenFormatException(request, response, ex);
-        }
-        else if (ex instanceof InvalidCertificateException) {
+        } else if (ex instanceof InvalidCertificateException) {
             handleInvalidCertificate(response, ex);
+        } else if (ex instanceof ZosAuthenticationException) {
+            handleZosAuthenticationException(response, (ZosAuthenticationException) ex);
+        } else if (ex instanceof InvalidTokenTypeException) {
+            handleInvalidTokenTypeException(request, response, ex);
         } else if (ex instanceof AuthenticationException) {
             handleAuthenticationException(request, response, ex);
-        }
-        else {
+        } else {
             throw new ServletException(ex);
         }
+    }
+
+    private void handleZosAuthenticationException(HttpServletResponse response, ZosAuthenticationException ex) throws ServletException {
+        final ApiMessageView message = messageService.createMessage(ex.getPlatformError().errorMessage, ex.getMessage()).mapToView();
+        final HttpStatus status = ex.getPlatformError().responseCode;
+        writeErrorResponse(message, status, response);
     }
 
     // 400
@@ -123,6 +128,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleTokenFormatException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(ERROR_MESSAGE_400, ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.BAD_REQUEST, request, response);
+    }
+
+    private void handleInvalidTokenTypeException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        writeErrorResponse(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
     //500

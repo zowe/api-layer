@@ -73,6 +73,15 @@ class ZaasHttpsClientProviderTests {
     }
 
     @Test
+    void giveNoKeyStorePath_whenTheClientIsConstructed_thenEmptyKeyStoreIsUsed() throws ZaasConfigurationException, IOException {
+        ConfigProperties config = getConfigProperties();
+        config.setKeyStorePath(null);
+        ZaasHttpsClientProvider provider = new ZaasHttpsClientProvider(config);
+
+        assertNotNull(provider.getHttpClient());
+    }
+
+    @Test
     void whenGetHttpsClientWithKeyStoreAndTrustStore_thenIdenticalClientReturned() throws ZaasConfigurationException {
         CloseableHttpClient client1 = zaasHttpsClientProvider.getHttpClient();
         CloseableHttpClient client2 = zaasHttpsClientProvider.getHttpClient();
@@ -100,18 +109,6 @@ class ZaasHttpsClientProviderTests {
         });
 
         assertThat(zaasException.getErrorCode().getId(), is("ZWEAS503E"));
-    }
-
-    @Test
-    void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
-        ConfigProperties config = new ConfigProperties();
-        config.setTrustStorePassword(PASSWORD);
-        config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
-        config.setTrustStoreType("PKCS12");
-        ZaasHttpsClientProvider provider = new ZaasHttpsClientProvider(config);
-        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, provider::getHttpClient);
-
-        assertThat(zaasException.getErrorCode().getId(), is("ZWEAS501E"));
     }
 
     @Test

@@ -29,8 +29,25 @@ eureka:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
 zosmf:
+    enableMock: true
     username: USER,APIMTST,USER1,USER2
     password: validPassword,PASSTICKET
     baseVersion: 2.4
     appliedApars: PH12143
     jwtKeyStorePath: keystore/localhost/localhost.keystore.p12
+
+
+---
+spring:
+    profiles: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+apiml:
+    service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false

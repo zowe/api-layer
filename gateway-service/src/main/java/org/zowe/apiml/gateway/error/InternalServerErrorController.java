@@ -35,7 +35,7 @@ import java.util.List;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Primary
 public class InternalServerErrorController implements ErrorController {
-    private static final String ERROR_ENDPOINT = "/internal_error";
+    public static final String ERROR_ENDPOINT = "/internal_error";
 
     private final MessageService messageService;
     private final List<ErrorCheck> errorChecks = new ArrayList<>();
@@ -50,6 +50,7 @@ public class InternalServerErrorController implements ErrorController {
         errorChecks.add(new SecurityErrorCheck(messageService));
         errorChecks.add(new ServiceErrorCheck(messageService));
         errorChecks.add(new RibbonRetryErrorCheck(messageService));
+        errorChecks.add(new LoadBalancerErrorCheck(messageService));
     }
 
     @Override

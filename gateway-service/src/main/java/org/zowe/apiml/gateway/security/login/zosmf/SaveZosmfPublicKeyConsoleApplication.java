@@ -40,15 +40,15 @@ public class SaveZosmfPublicKeyConsoleApplication {
     public static boolean saveJWTSecretWithJWKFromZosmf(RestTemplate restTemplate, String[] args) {
         String jwkUrl = args[0];
         String filename = args[1];
-        String zosmfJwtBuilderPath = System.getProperty("apiml.security.auth.zosmfJwtEndpoint", "/jwt/ibm/api/zOSMFBuilder/jwk");
+        String zosmfJwtBuilderPath = System.getProperty("apiml.security.auth.zosmf.jwtEndpoint", "/jwt/ibm/api/zOSMFBuilder/jwk");
         ZosmfJwkToPublicKey zosmfJwkToPublicKey = new ZosmfJwkToPublicKey(restTemplate, zosmfJwtBuilderPath);
 
-        System.out.printf("Loading public key of z/OSMF at %s%n", jwkUrl);
+        System.out.printf("Loading public key of z/OSMF at %s%n", jwkUrl); // NOSONAR
         try {
             if (zosmfJwkToPublicKey.updateJwtPublicKeyFile(
                 jwkUrl, filename, args[2], args[3], args[4], args[5].toCharArray(), args[6].toCharArray())
             ) {
-                System.out.printf("Public key of z/OSMF at stored as a certificate to %s%n", filename);
+                System.out.printf("Public key of z/OSMF at stored as a certificate to %s%n", filename); // NOSONAR
                 return true;
             }
         } catch (FileNotFoundException e) {

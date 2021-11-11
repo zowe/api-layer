@@ -10,6 +10,7 @@
 package org.zowe.apiml.security.common.config;
 
 import lombok.Data;
+import org.apache.tomcat.util.http.SameSiteCookies;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
@@ -41,21 +42,21 @@ public class AuthConfigurationProperties {
     private String gatewayQueryEndpointOldFormat = "/api/v1/gateway/auth/query";
     private String gatewayTicketEndpointOldFormat = "/api/v1/gateway/auth/ticket";
 
+    private String gatewayRefreshEndpointOldFormat = "/api/v1/gateway/auth/refresh";
+    private String gatewayRefreshEndpointNewFormat = "/gateway/api/v1/auth/refresh";
+
     private String serviceLoginEndpoint = "/auth/login";
     private String serviceLogoutEndpoint = "/auth/logout";
 
     private AuthConfigurationProperties.TokenProperties tokenProperties;
     private AuthConfigurationProperties.CookieProperties cookieProperties;
 
-    private String zosmfServiceId;
     private String provider = "zosmf";
 
     private AuthConfigurationProperties.PassTicket passTicket;
 
+    private AuthConfigurationProperties.Zosmf zosmf = new AuthConfigurationProperties.Zosmf();
     private String jwtKeyAlias;
-    private String zosmfJwtEndpoint = "/jwt/ibm/api/zOSMFBuilder/jwk";
-
-    private JWT_AUTOCONFIGURATION_MODE zosmfJwtAutoconfiguration = JWT_AUTOCONFIGURATION_MODE.AUTO;
 
     public enum JWT_AUTOCONFIGURATION_MODE {
         AUTO,
@@ -79,12 +80,20 @@ public class AuthConfigurationProperties {
         private boolean cookieSecure = true;
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
-        private Integer cookieMaxAge = -1;
+        private Integer cookieMaxAge = null;
+        private SameSiteCookies cookieSameSite = SameSiteCookies.STRICT;
     }
 
     @Data
     public static class PassTicket {
         private Integer timeout = 540;
+    }
+
+    @Data
+    public static class Zosmf {
+        private String serviceId;
+        private String jwtEndpoint = "/jwt/ibm/api/zOSMFBuilder/jwk";
+        private JWT_AUTOCONFIGURATION_MODE jwtAutoconfiguration = JWT_AUTOCONFIGURATION_MODE.AUTO;
     }
 
     public AuthConfigurationProperties() {
@@ -101,10 +110,10 @@ public class AuthConfigurationProperties {
      */
     public String validatedZosmfServiceId() {
         if (provider.equalsIgnoreCase(AuthenticationScheme.ZOSMF.getScheme())
-            && ((zosmfServiceId == null) || zosmfServiceId.isEmpty())) {
+            && ((zosmf.getServiceId() == null) || zosmf.getServiceId().isEmpty())) {
             apimlLog.log("org.zowe.apiml.security.zosmfNotFound");
-            throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
+            throw new AuthenticationServiceException("The parameter 'apiml.security.auth.zosmf.serviceId' is not configured.");
         }
-        return zosmfServiceId;
+        return zosmf.getServiceId();
     }
 }

@@ -24,6 +24,7 @@ import io.swagger.v3.oas.models.tags.Tag;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
 import org.zowe.apiml.apicatalog.swagger.SecuritySchemeSerializer;
@@ -40,6 +41,8 @@ import java.util.Map;
 
 @Slf4j
 public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
+    @Value("${gateway.scheme.external:https}")
+    private String scheme;
 
     public ApiDocV3Service(GatewayClient gatewayClient) {
         super(gatewayClient);
@@ -75,12 +78,12 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
     private void updateServerAndLink(OpenAPI openAPI, String serviceId, boolean hidden) {
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, gatewayConfigProperties);
+        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, gatewayConfigProperties, scheme);
 
         if (openAPI.getServers() != null) {
             openAPI.getServers()
                 .forEach(server -> server.setUrl(
-                    String.format("%s://%s/%s", gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname(), server.getUrl())));
+                    String.format("%s://%s/%s", scheme, gatewayConfigProperties.getHostname(), server.getUrl())));
         }
         if (!hidden) {
             openAPI.getInfo().setDescription(openAPI.getInfo().getDescription() + swaggerLink);
