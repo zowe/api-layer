@@ -46,13 +46,13 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
         @Nested
         class GivenValidService {
             @Test
-            void verifyRegistrationAndUnregistration(URI url) {
+            void verifyRegistrationAndUnregistration() {
                 isRegistered(false, MEDIATION_CLIENT_URI);
 
-                register(url);
+                register(MEDIATION_CLIENT_URI);
                 isRegistered(true, MEDIATION_CLIENT_URI);
 
-                unregister(url);
+                unregister(MEDIATION_CLIENT_URI);
                 isRegistered(false, MEDIATION_CLIENT_URI);
             }
         }
