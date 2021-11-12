@@ -10,22 +10,16 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.gateway.security.service.PassTicketException;
-import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
-import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
@@ -34,11 +28,7 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
 
 class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
@@ -154,9 +144,9 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         RequestContext requestContext = new RequestContext();
         requestContext.addZuulRequestHeader("cookie",
             authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
-            "abc=def"
+                "abc=def"
         );
-        RequestContext.testSetCurrentContext(requestContext);AuthenticationCommand
+        RequestContext.testSetCurrentContext(requestContext);
 
         command.apply(null);
 
