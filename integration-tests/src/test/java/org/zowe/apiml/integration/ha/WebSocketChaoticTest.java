@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.ha;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -131,6 +132,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                 }
 
                 @Nested
+                @Order(3)
                 class WhenAGatewayInstanceIsOff {
                     @ParameterizedTest(name = "WhenRoutingSessionGivenHA.OpeningASession.WhenAnInstanceIsOff.WhenAGatewayInstanceIsOff#newSessionCanBeCreated {0}")
                     @ValueSource(strings = {DISCOVERABLE_WS_UPPERCASE})
