@@ -103,29 +103,6 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenRequest_whenApplyToRequest_thenSetsAuthorizationBasic() throws IRRPassTicketGenerationException {
-        PassTicketService passTicketService = mock(PassTicketService.class);
-        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
-
-        Calendar calendar = Calendar.getInstance();
-        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
-        QueryResponse queryResponse = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
-        HttpRequest httpRequest = new HttpGet("/test/request");
-
-        RequestContext requestContext = new RequestContext();
-        RequestContext.testSetCurrentContext(requestContext);
-
-        doReturn("HI").when(passTicketService).generate(ArgumentMatchers.any(), ArgumentMatchers.any());
-
-        AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, () -> queryResponse);
-        ac.applyToRequest(httpRequest);
-        assertThat(httpRequest.getHeaders(HttpHeaders.AUTHORIZATION).length, is(not(0)));
-        assertThat(httpRequest.getHeaders(HttpHeaders.AUTHORIZATION), hasItemInArray(hasToString(
-            "Authorization: Basic VVNFUk5BTUU6SEk=" // USERNAME:HI
-        )));
-    }
-
-    @Test
     void returnsCorrectScheme() {
         assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, httpBasicPassTicketScheme.getScheme());
     }
@@ -185,33 +162,6 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
         String cookies = requestContext.getZuulRequestHeaders().get("cookie");
         assertEquals("abc=def", cookies);
-    }
-
-    @Test
-    void givenNoCookie_whenApplyToRequest_thenNoCookies() {
-        AuthenticationCommand command = getPassTicketCommand();
-        HttpRequest httpRequest = new HttpGet();
-
-        command.applyToRequest(httpRequest);
-
-        assertEquals(0, httpRequest.getHeaders("cookie").length);
-    }
-
-    @Test
-    void givenJwtInCookie_whenApplyToRequest_thenJwtIsRemoved() {
-        AuthenticationCommand command = getPassTicketCommand();
-        HttpRequest httpRequest = new HttpGet();
-        httpRequest.setHeader("cookie",
-            authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
-            "abc=def"
-        );
-
-        command.applyToRequest(httpRequest);
-
-        Header[] headers = httpRequest.getHeaders("cookie");
-        assertNotNull(headers);
-        assertEquals(1, headers.length);
-        assertEquals("abc=def", headers[0].getValue());
     }
 
 }

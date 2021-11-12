@@ -120,32 +120,6 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
         }
 
         @Override
-        public void applyToRequest(HttpRequest request) {
-            Cookies cookies = Cookies.of(request);
-            final RequestContext context = RequestContext.getCurrentContext();
-
-            Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
-            jwtToken.ifPresent(token -> {
-                // parse JWT token to detect the source (z/OSMF / Zowe)
-                QueryResponse queryResponse = authenticationService.parseJwtToken(token);
-                switch (queryResponse.getSource()) {
-                    case ZOSMF:
-                        cookies.remove(authConfigurationProperties.getCookieProperties().getCookieName());
-                        createCookie(cookies, ZosmfService.TokenType.JWT.getCookieName(), token);
-                        break;
-                    case ZOWE:
-                        final String ltpaToken = authenticationService.getLtpaTokenWithValidation(token);
-                        createCookie(cookies, ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken);
-                        break;
-                    default:
-                        return;
-                }
-                // remove authentication part
-                request.removeHeaders(HttpHeaders.AUTHORIZATION);
-            });
-        }
-
-        @Override
         public boolean isExpired() {
             if (expireAt == null) return false;
 

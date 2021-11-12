@@ -35,11 +35,6 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
         }
 
         @Override
-        public void applyToRequest(HttpRequest request) {
-            // do nothing
-        }
-
-        @Override
         public boolean isExpired() {
             return false;
         }
@@ -68,14 +63,4 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
 
     public abstract boolean isRequiredValidJwt();
 
-    /**
-     * Used for deferred processing of command during Ribbon Retry.
-     * There exists case when {@link org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter} cannot
-     * decide which command to apply, when there are service instances with multiple security schemas.
-     * In that case, the filter applies {@link org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand}
-     * and defers the processing to happen during Ribbon's Retry.
-     */
-    public void applyToRequest(HttpRequest request) {
-        throw new UnsupportedOperationException();
-    }
 }

@@ -42,11 +42,6 @@ public class ByPassScheme implements AbstractAuthenticationScheme {
         }
 
         @Override
-        public void applyToRequest(HttpRequest request) {
-            // do nothing
-        }
-
-        @Override
         public boolean isRequiredValidJwt() {
             return false;
         }
