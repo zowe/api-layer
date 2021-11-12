@@ -64,8 +64,6 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private static final String CACHE_BY_SERVICE_ID = "serviceAuthenticationByServiceId";
     private static final String CACHE_BY_AUTHENTICATION = "serviceAuthenticationByAuthentication";
 
-    private final LoadBalancerAuthenticationCommand loadBalancerCommand = new LoadBalancerAuthenticationCommand();
-
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
@@ -98,9 +96,9 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Override
     @RetryIfExpired
     @CacheEvict(
-            value = CACHE_BY_SERVICE_ID,
-            condition = "#result != null && #result.isExpired()",
-            keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
+        value = CACHE_BY_SERVICE_ID,
+        condition = "#result != null && #result.isExpired()",
+        keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
     public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
@@ -108,24 +106,17 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         if (application == null) return AuthenticationCommand.EMPTY;
 
         final List<InstanceInfo> instances = application.getInstances();
-
-        Authentication found = null;
-        for (final InstanceInfo instance : instances) {
-            final Authentication auth = getAuthentication(instance);
-
-            if (found == null) {
-                // this is the first record
-                found = auth;
-            } else if (!found.equals(auth)) {
-                // if next record is different, authentication cannot be determined before load balancer
-                return loadBalancerCommand;
+        Authentication auth = null;
+//        If any instance is specifying which authentication it wants, then use the first found.
+        for (InstanceInfo instance : instances) {
+            auth = getAuthentication(instance);
+            if (auth != null && !auth.isEmpty()) {
+                break;
             }
         }
+        if (auth == null || auth.isEmpty()) return AuthenticationCommand.EMPTY;
+        return getAuthenticationCommand(auth, jwtToken);
 
-        // if no instance exist or no metadata found, do nothing
-        if (found == null || found.isEmpty()) return AuthenticationCommand.EMPTY;
-
-        return getAuthenticationCommand(found, jwtToken);
     }
 
     @Override

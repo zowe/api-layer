@@ -213,15 +213,11 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     void testGetAuthenticationCommandByServiceId() {
         AuthenticationCommand ok = new AuthenticationCommandTest(false);
         Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
-        Authentication a2 = new Authentication(AuthenticationScheme.ZOWE_JWT, null);
-        Authentication a3 = new Authentication(AuthenticationScheme.ZOWE_JWT, "applid01");
-        Authentication a4 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid02");
+        Authentication a2 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
         Authentication a5 = new Authentication(null, null);
 
         InstanceInfo ii1 = createInstanceInfo("inst01", a1);
         InstanceInfo ii2 = createInstanceInfo("inst01", a2);
-        InstanceInfo ii3 = createInstanceInfo("inst01", a3);
-        InstanceInfo ii4 = createInstanceInfo("inst01", a4);
         InstanceInfo ii5 = createInstanceInfo("inst02", a5);
 
         Application application;
@@ -250,22 +246,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         reset(discoveryClient);
         application = createApplication(ii1, ii2);
         when(discoveryClient.getApplication("svr03")).thenReturn(application);
-        assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
-
-        reset(discoveryClient);
-        application = createApplication(ii1, ii3);
-        when(discoveryClient.getApplication("svr03")).thenReturn(application);
-        assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
-
-        reset(discoveryClient);
-        application = createApplication(ii1, ii4);
-        when(discoveryClient.getApplication("svr03")).thenReturn(application);
-        assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
-
-        reset(discoveryClient);
-        application = createApplication(ii1, ii2, ii3, ii4);
-        when(discoveryClient.getApplication("svr03")).thenReturn(application);
-        assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
+        assertSame(ok, sas.getAuthenticationCommand("svr03", "jwt03"));
 
         reset(discoveryClient);
         when(discoveryClient.getInstancesById("svr03")).thenReturn(Collections.singletonList(ii5));
