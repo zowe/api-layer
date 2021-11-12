@@ -12,8 +12,7 @@ package org.zowe.apiml.integration.discovery;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.RegistrationTest;
@@ -42,24 +41,19 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    protected static URI[] discoverableClientUrls() {
-        return new URI[]{MEDIATION_CLIENT_URI};
-    }
-
     @Nested
     class WhenIntegratingWithDiscoveryService {
         @Nested
         class GivenValidService {
-            @ParameterizedTest(name = "verifyRegistrationAndUnregistration {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.discovery.DiscoverableClientIntegrationTest#discoverableClientUrls")
+            @Test
             void verifyRegistrationAndUnregistration(URI url) {
-                isRegistered(false, url);
+                isRegistered(false, MEDIATION_CLIENT_URI);
 
                 register(url);
-                isRegistered(true, url);
+                isRegistered(true, MEDIATION_CLIENT_URI);
 
                 unregister(url);
-                isRegistered(false, url);
+                isRegistered(false, MEDIATION_CLIENT_URI);
             }
         }
     }

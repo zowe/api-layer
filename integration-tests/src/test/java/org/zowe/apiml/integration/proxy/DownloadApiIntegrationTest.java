@@ -13,8 +13,7 @@ import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -33,22 +32,15 @@ class DownloadApiIntegrationTest implements TestWithStartedInstances {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    protected static String[] discoverableClientSource() {
-        return new String[]{
-            DISCOVERABLE_GET_FILE
-        };
-    }
-
     @Nested
     class WhenDownloadingCompressedImage {
         @Nested
         class VerifyGzippedAttachment {
-            @ParameterizedTest(name = "givenValidPathAndHeaders {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.proxy.DownloadApiIntegrationTest#discoverableClientSource")
+            @Test
             @TestsNotMeantForZowe
             void givenValidPathAndHeaders(String url) {
                 RestAssured.registerParser("image/png", Parser.JSON);
-                URI uri = HttpRequestUtils.getUriFromGateway(url);
+                URI uri = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_GET_FILE);
                 given().
                     contentType("application/octet-stream").
                     accept("image/png").

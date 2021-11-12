@@ -57,10 +57,6 @@ class LoginTest implements TestWithStartedInstances {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
-    protected static URI[] loginUrlsSource() {
-        return new URI[]{LOGIN_ENDPOINT_URL};
-    }
-
     public String getUsername() {
         return USERNAME;
     }
@@ -83,16 +79,15 @@ class LoginTest implements TestWithStartedInstances {
     class WhenUserAuthenticates {
         @Nested
         class ReturnsValidToken {
-            @ParameterizedTest(name = "givenValidCredentialsInBody {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenValidCredentialsInBody(URI loginUrl) {
+            @Test
+            void givenValidCredentialsInBody() {
                 LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
                 Cookie cookie = given()
                     .contentType(JSON)
                     .body(loginRequest)
                 .when()
-                    .post(loginUrl)
+                    .post(LOGIN_ENDPOINT_URL)
                 .then()
                     .statusCode(is(SC_NO_CONTENT))
                     // RestAssured version in use doesn't have SameSite attribute in cookie so validate using the Set-Cookie header
@@ -103,14 +98,13 @@ class LoginTest implements TestWithStartedInstances {
                 assertValidAuthToken(cookie);
             }
 
-            @ParameterizedTest(name = "givenValidCredentialsInHeader {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenValidCredentialsInHeader(URI loginUrl) {
+            @Test
+            void givenValidCredentialsInHeader() {
                 String token = given()
                     .auth().preemptive().basic(getUsername(), getPassword())
                     .contentType(JSON)
                 .when()
-                    .post(loginUrl)
+                    .post(LOGIN_ENDPOINT_URL)
                 .then()
                     .statusCode(is(SC_NO_CONTENT))
                     // RestAssured version in use doesn't have SameSite attribute in cookie so validate using the Set-Cookie header
@@ -127,10 +121,9 @@ class LoginTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnsUnauthorized {
-            @ParameterizedTest(name = "givenInvalidCredentialsInBody {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenInvalidCredentialsInBody(URI loginUrl) {
-                String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
+            @Test
+            void givenInvalidCredentialsInBody() {
+                String expectedMessage = "Invalid username or password for URL '" + getPath(LOGIN_ENDPOINT_URL) + "'";
 
                 LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
@@ -138,7 +131,7 @@ class LoginTest implements TestWithStartedInstances {
                     .contentType(JSON)
                     .body(loginRequest)
                 .when()
-                    .post(loginUrl)
+                    .post(LOGIN_ENDPOINT_URL)
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
@@ -146,10 +139,9 @@ class LoginTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest(name = "givenInvalidCredentialsInHeader {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenInvalidCredentialsInHeader(URI loginUrl) {
-                String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
+            @Test
+            void givenInvalidCredentialsInHeader() {
+                String expectedMessage = "Invalid username or password for URL '" + getPath(LOGIN_ENDPOINT_URL) + "'";
 
                 LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
@@ -157,7 +149,7 @@ class LoginTest implements TestWithStartedInstances {
                     .contentType(JSON)
                     .body(loginRequest)
                 .when()
-                    .post(loginUrl)
+                    .post(LOGIN_ENDPOINT_URL)
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
@@ -168,10 +160,9 @@ class LoginTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnsBadRequest {
-            @ParameterizedTest(name = "givenCredentialsInTheWrongJsonFormat {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenCredentialsInTheWrongJsonFormat(URI loginUrl) {
-                String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + getPath(loginUrl) + "'";
+            @Test
+            void givenCredentialsInTheWrongJsonFormat() {
+                String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + getPath(LOGIN_ENDPOINT_URL) + "'";
 
                 JSONObject loginRequest = new JSONObject()
                     .put("user", getUsername())
@@ -181,7 +172,7 @@ class LoginTest implements TestWithStartedInstances {
                     .contentType(JSON)
                     .body(loginRequest.toString())
                 .when()
-                    .post(loginUrl)
+                    .post(LOGIN_ENDPOINT_URL)
                 .then()
                     .statusCode(is(SC_BAD_REQUEST))
                     .body(
@@ -189,13 +180,12 @@ class LoginTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest(name = "givenApimlsCert {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenApimlsCert(URI loginUrl) {
+            @Test
+            void givenApimlsCert() {
                 given()
                     .config(SslContext.clientCertApiml)
                 .when()
-                    .post(loginUrl)
+                    .post(LOGIN_ENDPOINT_URL)
                 .then()
                     .statusCode(is(SC_BAD_REQUEST));
             }
@@ -208,10 +198,9 @@ class LoginTest implements TestWithStartedInstances {
         @Nested
         class ReturnMethodNotAllowed {
 
-            @ParameterizedTest(name = "givenValidCredentialsInJsonBody {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenValidCredentialsInJsonBody(URI loginUrl) {
-                String expectedMessage = "Authentication method 'GET' is not supported for URL '" + getPath(loginUrl) + "'";
+            @Test
+            void givenValidCredentialsInJsonBody() {
+                String expectedMessage = "Authentication method 'GET' is not supported for URL '" + getPath(LOGIN_ENDPOINT_URL) + "'";
 
                 LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
@@ -219,7 +208,7 @@ class LoginTest implements TestWithStartedInstances {
                     .contentType(JSON)
                     .body(loginRequest)
                 .when()
-                    .get(loginUrl)
+                    .get(LOGIN_ENDPOINT_URL)
                 .then()
                     .statusCode(is(SC_METHOD_NOT_ALLOWED))
                     .body(
@@ -233,22 +222,22 @@ class LoginTest implements TestWithStartedInstances {
     private static Stream<Arguments> testLoginFactCombinationsSource() {
 
         LoginRequest validLoginRequest = new LoginRequest(LoginTest.USERNAME, LoginTest.PASSWORD);
-        URI loginNew = LOGIN_ENDPOINT_URL;
+        URI login = LOGIN_ENDPOINT_URL;
 
         return Stream.of(
             //URI loginUrl, RestAssuredConfig config, LoginRequest loginRequest, String user, String pw, HttpStatus rc, String loggedUser
 
-            Arguments.of("Login with body no cert", loginNew, SslContext.tlsWithoutCert, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
+            Arguments.of("Login with body no cert", login, SslContext.tlsWithoutCert, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
 
-            Arguments.of("Login with basic and body (basic has precedence)", loginNew, SslContext.tlsWithoutCert, validLoginRequest, "aaaa", "aaaa", HttpStatus.UNAUTHORIZED, null),
+            Arguments.of("Login with basic and body (basic has precedence)", login, SslContext.tlsWithoutCert, validLoginRequest, "aaaa", "aaaa", HttpStatus.UNAUTHORIZED, null),
 
-            Arguments.of("Login with trusted cert and body (body or basic has precedence)", loginNew, SslContext.clientCertValid, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
+            Arguments.of("Login with trusted cert and body (body or basic has precedence)", login, SslContext.clientCertValid, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
 
-            Arguments.of("Login with aml cert (aml cert filtered out)", loginNew, SslContext.clientCertApiml, null, null, null, HttpStatus.BAD_REQUEST, null),
+            Arguments.of("Login with aml cert (aml cert filtered out)", login, SslContext.clientCertApiml, null, null, null, HttpStatus.BAD_REQUEST, null),
 
-            Arguments.of("Login with trusted cert", loginNew, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, "APIMTST"),
+            Arguments.of("Login with trusted cert", login, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, "APIMTST"),
 
-            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginNew, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME)
+            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", login, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME)
             );
     }
 

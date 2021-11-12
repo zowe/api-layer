@@ -16,8 +16,6 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.web.reactive.server.FluxExchangeResult;
@@ -57,12 +55,11 @@ public class ServerSentEventsProxyTest {
 
     @Nested
     class WhenRoutingSession {
-        @ParameterizedTest(name = "WhenRoutingSession.givenValidSsePaths_thenReturnEvents#message {0}")
-        @ValueSource(strings = {DISCOVERABLE_SSE_EVENTS})
-        void givenValidSsePaths_thenReturnEvents(String path) {
+        @Test
+        void givenValidSsePaths_thenReturnEvents() {
             FluxExchangeResult<String> fluxResult = webTestClient
                 .get()
-                .uri(path)
+                .uri(DISCOVERABLE_SSE_EVENTS)
                 .exchange()
                 .expectStatus()
                 .isOk()
@@ -77,9 +74,9 @@ public class ServerSentEventsProxyTest {
 
         @Nested
         class GivenIncorrectPath_thenReturnError {
-            @ParameterizedTest(name = "WhenRoutingSession.GivenIncorrectPath_thenReturnError.givenInvalidServiceId#message {0}")
-            @ValueSource(strings = {"/bad/sse/v1/events"})
-            void givenInvalidServiceId(String path) {
+            @Test
+            void givenInvalidServiceId() {
+                String path = "/bad/sse/v1/events";
                 FluxExchangeResult<String> fluxResult = webTestClient
                     .get()
                     .uri(path)
@@ -92,9 +89,9 @@ public class ServerSentEventsProxyTest {
                 assertThat(response, is("ZWEAG700E No instance of the service 'bad' found. Routing will not be available."));
             }
 
-            @ParameterizedTest(name = "WhenRoutingSession.GivenIncorrectPath_thenReturnError.givenInvalidVersion#message {0}")
-            @ValueSource(strings = {"/discoverableclient/sse/bad/events"})
-            void givenInvalidVersion(String path) {
+            @Test
+            void givenInvalidVersion() {
+                String path = "/discoverableclient/sse/bad/events";
                 FluxExchangeResult<String> fluxResult = webTestClient
                     .get()
                     .uri(path)

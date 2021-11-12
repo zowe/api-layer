@@ -111,14 +111,8 @@ public class PerServiceGZipFilter extends OncePerRequestFilter {
         if (uriParts.length < 2) {
             return Optional.empty();
         }
-        if ("api".equals(uriParts[1]) || "ui".equals(uriParts[1])) {
-            if (uriParts.length < 4) {
-                return Optional.empty();
-            }
-            instances = discoveryClient.getInstances(uriParts[3]);
-        } else {
-            instances = discoveryClient.getInstances(uriParts[1]);
-        }
+
+        instances = discoveryClient.getInstances(uriParts[1]);
         if (instances == null || instances.isEmpty()) {
             return Optional.empty();
         }
@@ -145,6 +139,7 @@ public class PerServiceGZipFilter extends OncePerRequestFilter {
             return true;
         }
 
+        System.out.println("Requests URL: " + requestUri);
         String[] setOfRoutesToMatch = routesToCompress.split(",");
         AntPathMatcher matcher = new AntPathMatcher();
         for (String pattern: setOfRoutesToMatch) {

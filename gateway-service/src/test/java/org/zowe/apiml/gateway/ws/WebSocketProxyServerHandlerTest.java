@@ -13,8 +13,6 @@ package org.zowe.apiml.gateway.ws;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.socket.CloseStatus;
@@ -100,9 +98,9 @@ class WebSocketProxyServerHandlerTest {
              * The service associated with given URI is retrieved
              * Proper WebSocketSession is stored.
              */
-            @ParameterizedTest(name = "WhenTheConnectionIsEstablished.ThenTheValidSessionIsStoredInternally#givenValidRoute {0}")
-            @ValueSource(strings = {"wss://gatewayHost:1443/valid-service/ws/v1/valid-path"})
-            void givenValidRoute(String path) throws Exception {
+            @Test
+             void givenValidRoute() throws Exception {
+                String path = "wss://gatewayHost:1443/valid-service/ws/v1/valid-path";
                 when(webSocketRoutedSessionFactory.session(any(), any(), any())).thenReturn(mock(WebSocketRoutedSession.class));
 
                 String establishedSessionId = "validAndUniqueId";

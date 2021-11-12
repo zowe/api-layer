@@ -13,8 +13,7 @@ import io.restassured.RestAssured;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
@@ -47,11 +46,7 @@ class QueryTest implements TestWithStartedInstances {
     public static final String QUERY_ENDPOINT_URL = String.format("%s://%s:%d%s", SCHEME, HOST, PORT, ROUTED_QUERY);
     
     private String token;
-
-    private static String[] queryUrlsSource() {
-        return new String[]{QUERY_ENDPOINT_URL};
-    }
-
+    
     @BeforeEach
     void setUp() {
         RestAssured.port = PORT;
@@ -65,25 +60,23 @@ class QueryTest implements TestWithStartedInstances {
         @Nested
         class ReturnInfo {
             //@formatter:off
-            @ParameterizedTest(name = "givenValidTokenInHeader {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
-            void givenValidTokenInHeader(String queryUrl) {
+            @Test
+            void givenValidTokenInHeader() {
                 given()
                     .header("Authorization", "Bearer " + token)
                 .when()
-                    .get(queryUrl)
+                    .get(QUERY_ENDPOINT_URL)
                 .then()
                     .statusCode(is(SC_OK))
                     .body("userId", equalTo(USERNAME));
             }
 
-            @ParameterizedTest(name = "givenValidTokenInCookie {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
-            void givenValidTokenInCookie(String queryUrl) {
+            @Test
+            void givenValidTokenInCookie() {
                 given()
                     .cookie(COOKIE, token)
                 .when()
-                    .get(queryUrl)
+                    .get(QUERY_ENDPOINT_URL)
                 .then()
                     .statusCode(is(SC_OK))
                     .body("userId", equalTo(USERNAME));
@@ -92,10 +85,10 @@ class QueryTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnUnauthorized {
-            @ParameterizedTest(name = "givenInvalidTokenInBearerHeader {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
-            void givenInvalidTokenInBearerHeader(String queryUrl) {
+            @Test
+            void givenInvalidTokenInBearerHeader() {
                 String invalidToken = "1234";
+                String queryUrl = QUERY_ENDPOINT_URL;
                 String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
                 String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
 
@@ -111,10 +104,10 @@ class QueryTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest(name = "givenInvalidTokenInCookie {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
-            void givenInvalidTokenInCookie(String queryUrl) {
+            @Test
+            void givenInvalidTokenInCookie() {
                 String invalidToken = "1234";
+                String queryUrl = QUERY_ENDPOINT_URL;
                 String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
                 String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
 
@@ -129,9 +122,9 @@ class QueryTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest(name = "givenNoToken {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
-            void givenNoToken(String queryUrl) {
+            @Test
+            void givenNoToken() {
+                String queryUrl = QUERY_ENDPOINT_URL;
                 String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
                 String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
@@ -145,10 +138,10 @@ class QueryTest implements TestWithStartedInstances {
                     );
             }
 
-            @ParameterizedTest(name = "givenValidTokenInWrongCookie {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
-            void givenValidTokenInWrongCookie(String queryUrl) {
+            @Test
+            void givenValidTokenInWrongCookie() {
                 String invalidCookie = "badCookie";
+                String queryUrl = QUERY_ENDPOINT_URL;
                 String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
                 String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
@@ -169,9 +162,9 @@ class QueryTest implements TestWithStartedInstances {
     class WhenUserQueriesViaPostMethod {
         @Nested
         class ReturnMethodNotAllowed {
-            @ParameterizedTest(name = "givenValidCredentials {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
-            void givenValidToken(String queryUrl) {
+            @Test
+            void givenValidToken() {
+                String queryUrl = QUERY_ENDPOINT_URL;
                 String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
                 String expectedMessage = "Authentication method 'POST' is not supported for URL '" + queryPath + "'";
 
