@@ -13,6 +13,10 @@ import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+
+
+
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -172,7 +176,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     @Test
                     void whenServiceIsNotCorrect() throws Exception {
                         final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl("/ws/v1/wrong-service/uppercase"), VALID_AUTH_HEADERS, response, 1);
+                        appendingWebSocketSession(discoverableClientGatewayUrl("/wrong-service/ws/v1/uppercase"), VALID_AUTH_HEADERS, response, 1);
 
                         synchronized (response) {
                             response.wait(WAIT_TIMEOUT_MS);
