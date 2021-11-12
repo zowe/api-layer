@@ -64,7 +64,7 @@ public class ConvertAuthTokenInUriToCookieFilter extends ZuulFilter {
 
             String url = context.getRequest().getRequestURL().toString();
             String newUrl;
-            if (url.endsWith("/apicatalog/")) {
+            if (url.endsWith("/apicatalog/ui/v1/")) {
                 newUrl = url + "#/dashboard";
             } else {
                 newUrl = url;

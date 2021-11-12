@@ -52,8 +52,6 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
 
-    public final static String GATEWAY_BASE_PATH = "/gateway/api/v1";
-
     private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();;
 
     private final static String gatewayScheme = serviceConfiguration.getScheme();

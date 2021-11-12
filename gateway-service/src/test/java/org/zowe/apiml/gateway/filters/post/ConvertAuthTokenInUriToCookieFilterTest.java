@@ -58,7 +58,7 @@ class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContext
 
     @Test
     void setsLocationToDashboardForApiCatalog() {
-        ctx.setRequest(new MockHttpServletRequest("GET", "/api/v1/apicatalog/"));
+        ctx.setRequest(new MockHttpServletRequest("GET", "/apicatalog/ui/v1/"));
         Map<String, List<String>> params = new HashMap<>();
         params.put(authConfigurationProperties.getCookieProperties().getCookieName(),
                 Collections.singletonList("token"));
@@ -66,6 +66,6 @@ class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContext
         this.filter.run();
         assertTrue(ctx.getResponse().getHeaders("Set-Cookie").toString().contains("apimlAuthenticationToken=token"));
         assertEquals("Location", ctx.getZuulResponseHeaders().get(0).first());
-        assertEquals("http://localhost/api/v1/apicatalog/#/dashboard", ctx.getZuulResponseHeaders().get(0).second());
+        assertEquals("http://localhost/apicatalog/ui/v1/#/dashboard", ctx.getZuulResponseHeaders().get(0).second());
     }
 }

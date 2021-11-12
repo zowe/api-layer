@@ -18,7 +18,7 @@
         }
     ],
     "paths": {
-        "/api/v1/apicatalog/containers": {
+        "/apicatalog/api/v1/containers": {
             "get": {
                 "tags": [
                     "API Catalog"
@@ -52,7 +52,7 @@
                 }
             }
         },
-        "/api/v1/apicatalog/containers/{id}": {
+        "/apicatalog/api/v1/containers/{id}": {
             "get": {
                 "tags": [
                     "API Catalog"
@@ -94,7 +94,7 @@
                 }
             }
         },
-        "/api/v1/apicatalog/apidoc/{serviceId}/{apiVersion}": {
+        "/apicatalog/api/v1/apidoc/{serviceId}/{apiVersion}": {
             "get": {
                 "tags": [
                     "API Documentation"

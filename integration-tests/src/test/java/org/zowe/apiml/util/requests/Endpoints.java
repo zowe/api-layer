@@ -13,10 +13,11 @@ public class Endpoints {
     public final static String SHUTDOWN = "/application/shutdown";
     public final static String HEALTH = "/application/health";
     public final static String APPLICATIONS = "/eureka/apps";
-    
+
     public final static String STATIC_WEBSOCKET = "/staticclient/ws/v1";
     public final static String STATIC_UI = "/staticclient/ui/v1";
     public final static String STATIC_REDIRECT = "/staticclient/api/v1/redirect";
+    public final static String STATIC_GREET = "/staticclient/api/v1/greeting";
 
     public final static String ROUTED_AUTH = "/gateway/api/v1/auth";
     public final static String ROUTED_LOGIN = "/gateway/api/v1/auth/login";
