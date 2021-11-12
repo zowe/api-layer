@@ -131,8 +131,11 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                     session.close();
                 }
 
+                /**
+                 * The issue here proves that we don't actually correctly route. 
+                 * TODO: Introduce HA capabailities for the WebSocket connections.
+                 */
                 @Nested
-                @Order(3)
                 class WhenAGatewayInstanceIsOff {
                     @ParameterizedTest(name = "WhenRoutingSessionGivenHA.OpeningASession.WhenAnInstanceIsOff.WhenAGatewayInstanceIsOff#newSessionCanBeCreated {0}")
                     @ValueSource(strings = {DISCOVERABLE_WS_UPPERCASE})
@@ -143,6 +146,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                         if (path.equals(DISCOVERABLE_WS_UPPERCASE)) {
                             haGatewayRequests.shutdown(0);
                         }
+                        
                         // create websocket session using the second alive instance of Gateway
                         WebSocketSession session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 1, path), VALID_AUTH_HEADERS, response, 1);
 
