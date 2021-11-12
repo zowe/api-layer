@@ -1,5 +1,5 @@
 #login-form {
-    display: flex;
+    /*display: flex;*/
     flex-direction: column;
 }
 
@@ -33,19 +33,9 @@
     height: 100vh;
 }
 
-.error-message {
-    display: flex;
-    align-items: center;
-}
-
 .error-message-content {
     display: inline-flex;
     align-items: center;
-}
-
-.error-message > * {
-    padding: 0;
-    margin: 0;
 }
 
 @media only screen and (max-width: 1315px) {
@@ -55,5 +45,107 @@
 }
 
 #error-message {
+    margin-bottom: 20px;
     align-self: baseline;
+}
+
+.w-form {
+    display: inline-table;
+    resize: inherit;
+    position: static;
+    margin-top: 60px;
+    /*margin-left: auto;*/
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding: 24px;
+
+    width: 344px;
+    height: 420px;
+    left: 428px;
+    top: calc(50% - 420px/2 - 0.29px);
+
+    background: #FFFFFF;
+    /* 16 dp */
+    box-shadow: 0px 16px 24px rgba(0, 0, 0, 0.14), 0px 6px 30px rgba(0, 0, 0, 0.12), 0px 8px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.username-input {
+    resize: inherit;
+    margin-left: 48px;
+}
+
+form#login-form {
+    width: 294px;
+}
+
+.product-title {
+    margin: 150px 0px;
+}
+
+
+.MuiButton-label {
+    display: inline-block;
+    /*display: flex;*/
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 6px 6px 6px 8px;
+    font-family: inherit;
+    font-style: normal;
+    font-weight: 500;
+    background: #0052CC;
+    font-size: 12px;
+    width: 50%;
+    height: 36px;
+    left: 218px;
+    ine-height: 16px;
+    /* identical to box height, or 114% */
+    letter-spacing: 1.25px;
+    text-transform: uppercase;
+    top: 0px;
+    color: #FFFFFF;
+    border-radius: 4px;
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+    margin: 25px -14px 20px 0px;
+    position: static;
+}
+
+.MuiTypography-gutterBottom {
+    color: #57606E;
+}
+
+.login-typo {
+    color: black;
+}
+
+.text-block-4 {
+    color: black;
+}
+
+.loginButton {
+    display: inline-block;
+    width: 100px;
+    /*margin: 25px 0px 0px 15px;*/
+    /*float: right;*/
+    float: right;
+    margin-right: 10px;
+    position: relative;
+}
+
+#error-message {
+    display: inline-block;
+    color: #B71C1C;
+    background-color: #FCE4EC;
+}
+
+.login-inputs-container {
+    display: inline-block;
+}
+
+.MuiButton-root {
+    /*margin-bottom: -20px;*/
+
 }

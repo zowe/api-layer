@@ -1,10 +1,7 @@
 import React from 'react';
-import { IconButton, InputAdornment, InputLabel, OutlinedInput } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
+import { IconButton, InputAdornment, Typography, Button, CssBaseline, TextField } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
 import WarningIcon from '@material-ui/icons/Warning';
 import logoImage from '../../assets/images/api-catalog-logo.png';
 import Spinner from '../Spinner/Spinner';
@@ -100,9 +97,6 @@ export default class Login extends React.Component {
                         <div className="logo-container">
                             <img src={logoImage} alt="" />
                         </div>
-                        <div className="product-title">
-                            <div className="text-block-2">API Catalog</div>
-                        </div>
                     </div>
                     <div className="login-inputs-container">
                         <div className="username-container">
@@ -117,6 +111,23 @@ export default class Login extends React.Component {
                                         onSubmit={this.handleSubmit}
                                     >
                                         <CssBaseline />
+                                        <div className="text-block-4">API Catalog</div>
+                                        <br />
+                                        {messageText !== undefined &&
+                                            messageText !== null && (
+                                                <div id="error-message">
+                                                    <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
+                                                    {messageText}
+                                                </div>
+                                            )}
+                                        <Typography className="login-typo" variant="h7" gutterBottom component="div">
+                                            Login
+                                        </Typography>
+                                        <br />
+                                        <Typography variant="h7" gutterBottom component="div">
+                                            Please enter your mainframe username and password to access this resource
+                                        </Typography>
+                                        <br />
                                         <TextField
                                             label="Username"
                                             data-testid="username"
@@ -125,67 +136,66 @@ export default class Login extends React.Component {
                                             // margin="normal"
                                             required
                                             fullWidth
-                                            id="email"
+                                            id="username"
                                             name="username"
                                             value={username}
                                             onChange={this.handleChange}
                                             autoComplete="on"
                                             // autoFocus
                                         />
-                                        <InputLabel className="formfield" htmlFor="outlined-adornment-password">
-                                            Password
-                                        </InputLabel>
-                                        <OutlinedInput
+                                        <br />
+                                        <br />
+                                        <TextField
                                             id="password"
+                                            htmlFor="outlined-adornment-password"
+                                            label="Password"
                                             data-testid="password"
+                                            className="formfield"
+                                            variant="outlined"
+                                            // margin="normal"
+                                            required
+                                            fullWidth
                                             name="password"
                                             type={showPassword ? 'text' : 'password'}
                                             value={password}
                                             onChange={this.handleChange}
                                             caption="Default: password"
                                             autoComplete="on"
-                                            endAdornment={
-                                                <InputAdornment position="end">
-                                                    <IconButton
-                                                        aria-label="toggle password visibility"
-                                                        edge="end"
-                                                        onClick={() => this.handleClickShowPassword(showPassword)}
-                                                    >
-                                                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            }
-                                            label="Password"
+                                            InputProps={{
+                                                endAdornment: (
+                                                    <InputAdornment position="end">
+                                                        <IconButton
+                                                            aria-label="toggle password visibility"
+                                                            edge="end"
+                                                            onClick={() => this.handleClickShowPassword(showPassword)}
+                                                        >
+                                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                        </IconButton>
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            // autoFocus
                                         />
                                         <Button
-                                            className="formfield"
+                                            className="loginButton"
                                             label=""
                                             type="submit"
                                             data-testid="submit"
-                                            primary
-                                            fullWidth
+                                            // primary
+                                            // fullWidth
                                             disabled={this.isDisabled()}
-                                            style={{ size: 'jumbo' }}
                                         >
-                                            Sign in
+                                            Log in
                                         </Button>
                                         <Spinner
-                                            className="formfield"
+                                            className="formfield form-spinner"
+                                            label=""
                                             isLoading={isFetching}
                                             css={{
                                                 position: 'relative',
                                                 top: '70px',
                                             }}
                                         />
-                                        {messageText !== undefined &&
-                                            messageText !== null && (
-                                                <div id="error-message">
-                                                    <p style={{ color: '#de1b1b' }} className="error-message-content">
-                                                        <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
-                                                        {messageText}
-                                                    </p>
-                                                </div>
-                                            )}
                                     </form>
                                 </div>
                             </div>
