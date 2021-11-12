@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.apache.http.HttpRequest;
 import org.zowe.apiml.cache.EntryExpiration;
 
 import java.io.Serializable;
@@ -18,7 +17,7 @@ import java.io.Serializable;
 /**
  * This command represented a code, which distribute right access right to a service. Gateway translates requests
  * to a service and by login in there generate or translate authentication to the service.
- *
+ * <p>
  * Responsible for this translation is filter {@link org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter}
  */
 public abstract class AuthenticationCommand implements EntryExpiration, Serializable {
@@ -50,6 +49,7 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
      * Apply the command, if it is necessary, it is possible to use a specific instance for execution. This is
      * using for loadBalancer command, where are not available all information in step of command creation.
      * In all other case call apply(null).
+     *
      * @param instanceInfo Specific instanceIf if it is needed
      */
     public abstract void apply(InstanceInfo instanceInfo);
@@ -58,6 +58,7 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
      * This method identify if for this authentication command, schema is required to be logged. Main purpose is
      * to make differences between bypass and other schema's type. Schema shouldn't change anything, but for some other
      * it is required be logged and send valid JWT token.
+     *
      * @return true is valid token is required, otherwise false
      */
 

@@ -156,7 +156,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
             authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
             "abc=def"
         );
-        RequestContext.testSetCurrentContext(requestContext);
+        RequestContext.testSetCurrentContext(requestContext);AuthenticationCommand
 
         command.apply(null);
 
