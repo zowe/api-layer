@@ -92,7 +92,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
         @Nested
         class ReturnValidToken {
             @Test
-            void givenClientX509Cert(URI loginUrl) {
+            void givenClientX509Cert() {
                 Cookie cookie =
                     given()
                         .config(SslContext.clientCertValid)
@@ -108,7 +108,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
             }
 
             @Test
-            void givenValidClientCertAndInvalidBasic(URI loginUrl) {
+            void givenValidClientCertAndInvalidBasic() {
                 Cookie cookie =
                     given()
                         .config(SslContext.clientCertValid)

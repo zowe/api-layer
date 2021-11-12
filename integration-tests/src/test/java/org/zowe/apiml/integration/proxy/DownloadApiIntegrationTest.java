@@ -38,7 +38,7 @@ class DownloadApiIntegrationTest implements TestWithStartedInstances {
         class VerifyGzippedAttachment {
             @Test
             @TestsNotMeantForZowe
-            void givenValidPathAndHeaders(String url) {
+            void givenValidPathAndHeaders() {
                 RestAssured.registerParser("image/png", Parser.JSON);
                 URI uri = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_GET_FILE);
                 given().

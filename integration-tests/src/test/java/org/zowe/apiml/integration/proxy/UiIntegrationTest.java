@@ -28,7 +28,7 @@ class UiIntegrationTest implements TestWithStartedInstances {
         class GivenUiUrl {
             @Test
             @TestsNotMeantForZowe
-            void returnUi(String url) {
+            void returnUi() {
                 given()
                 .when()
                     .get(HttpRequestUtils.getUriFromGateway(STATIC_UI + "/"))
