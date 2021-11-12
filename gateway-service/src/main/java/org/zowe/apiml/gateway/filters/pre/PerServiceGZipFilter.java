@@ -139,7 +139,6 @@ public class PerServiceGZipFilter extends OncePerRequestFilter {
             return true;
         }
 
-        System.out.println("Requests URL: " + requestUri);
         String[] setOfRoutesToMatch = routesToCompress.split(",");
         AntPathMatcher matcher = new AntPathMatcher();
         for (String pattern: setOfRoutesToMatch) {
