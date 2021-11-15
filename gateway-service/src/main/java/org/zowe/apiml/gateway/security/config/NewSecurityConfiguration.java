@@ -478,7 +478,7 @@ public class NewSecurityConfiguration {
         // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
         web.ignoring()
             .antMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
-                "/application/health", "/application/info", "/application/version",
+                "/application/health", "/application/info", "/application/version", "/application/hystrix.stream",
                 AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
                 AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
 

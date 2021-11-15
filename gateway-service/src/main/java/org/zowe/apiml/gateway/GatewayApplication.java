@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway;
 
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.zowe.apiml.gateway.ribbon.GatewayRibbonConfig;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
@@ -31,7 +32,8 @@ import javax.annotation.Nonnull;
 
 @EnableZuulProxy
 @EnableWebSecurity
-@SpringBootApplication(exclude = HystrixAutoConfiguration.class)
+@SpringBootApplication
+@EnableCircuitBreaker
 @ComponentScan(
     value = {
         "org.zowe.apiml.gateway",
