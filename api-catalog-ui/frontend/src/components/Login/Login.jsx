@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconButton, InputAdornment, Typography, Button, CssBaseline, TextField } from '@material-ui/core';
+import { IconButton, InputAdornment, Typography, Button, CssBaseline, TextField, Link } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import WarningIcon from '@material-ui/icons/Warning';
@@ -22,7 +22,21 @@ export default class Login extends React.Component {
         this.handleClickShowPassword = this.handleClickShowPassword.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
     }
+
+    /**
+     * Detect caps lock being on when typing.
+     * @param keyEvent On key down event.
+     */
+    onKeyDown = keyEvent => {
+        this.setState({ warning: false });
+        if (keyEvent.getModifierState('CapsLock')) {
+            this.setState({ warning: true });
+        } else {
+            this.setState({ warning: false });
+        }
+    };
 
     handleClickShowPassword(showPassword) {
         this.setState({ showPassword: !showPassword });
@@ -77,7 +91,7 @@ export default class Login extends React.Component {
     }
 
     render() {
-        const { username, password, errorMessage, showPassword } = this.state;
+        const { username, password, errorMessage, showPassword, warning } = this.state;
         const { authentication, isFetching } = this.props;
         let messageText;
         if (
@@ -161,6 +175,7 @@ export default class Login extends React.Component {
                                             name="password"
                                             type={showPassword ? 'text' : 'password'}
                                             value={password}
+                                            onKeyDown={this.onKeyDown}
                                             onChange={this.handleChange}
                                             caption="Default: password"
                                             autoComplete="on"
@@ -180,6 +195,7 @@ export default class Login extends React.Component {
                                             }}
                                             // autoFocus
                                         />
+                                        {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
                                         <Button
                                             className="loginButton"
                                             label=""

@@ -136,6 +136,7 @@ form#login-form {
 }
 
 #error-message {
+    padding: 20px;
     display: inline-block;
     color: #B71C1C;
     background-color: #FCE4EC;
