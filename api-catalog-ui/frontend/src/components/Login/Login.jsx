@@ -40,8 +40,6 @@ export default class Login extends React.Component {
 
     handleClickShowPassword(showPassword) {
         this.setState({ showPassword: !showPassword });
-        /* eslint-disable no-console */
-        console.log(showPassword);
     }
 
     isDisabled = () => {
@@ -148,7 +146,6 @@ export default class Login extends React.Component {
                                             data-testid="username"
                                             className="formfield"
                                             variant="outlined"
-                                            // margin="normal"
                                             required
                                             error={messageText}
                                             fullWidth
@@ -157,7 +154,7 @@ export default class Login extends React.Component {
                                             value={username}
                                             onChange={this.handleChange}
                                             autoComplete="on"
-                                            // autoFocus
+                                            autoFocus
                                         />
                                         <br />
                                         <br />
@@ -168,7 +165,6 @@ export default class Login extends React.Component {
                                             data-testid="password"
                                             className="formfield"
                                             variant="outlined"
-                                            // margin="normal"
                                             required
                                             error={messageText}
                                             fullWidth
@@ -193,7 +189,6 @@ export default class Login extends React.Component {
                                                     </InputAdornment>
                                                 ),
                                             }}
-                                            // autoFocus
                                         />
                                         {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
                                         <Button
@@ -201,8 +196,6 @@ export default class Login extends React.Component {
                                             label=""
                                             type="submit"
                                             data-testid="submit"
-                                            // primary
-                                            // fullWidth
                                             disabled={this.isDisabled()}
                                         >
                                             Log in
