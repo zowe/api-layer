@@ -1,5 +1,4 @@
 #login-form {
-    /*display: flex;*/
     flex-direction: column;
 }
 
@@ -54,12 +53,10 @@
     resize: inherit;
     position: static;
     margin-top: 60px;
-    /*margin-left: auto;*/
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
-    padding: 24px;
-
+    padding: 24px 24px 2px;
     width: 344px;
     height: 420px;
     left: 428px;
@@ -86,8 +83,6 @@ form#login-form {
 
 
 .MuiButton-label {
-    display: inline-block;
-    /*display: flex;*/
     flex-direction: row;
     align-items: flex-start;
     padding: 6px 6px 6px 8px;
@@ -128,8 +123,6 @@ form#login-form {
 .loginButton {
     display: inline-block;
     width: 100px;
-    /*margin: 25px 0px 0px 15px;*/
-    /*float: right;*/
     float: right;
     margin-right: 10px;
     position: relative;
@@ -144,10 +137,6 @@ form#login-form {
 
 .login-inputs-container {
     display: inline-block;
-}
-
-.MuiButton-root {
-    /*margin-bottom: -20px;*/
 }
 
 .errorIcon {
