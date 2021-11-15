@@ -147,5 +147,8 @@ form#login-form {
 
 .MuiButton-root {
     /*margin-bottom: -20px;*/
+}
 
+.errorIcon {
+    color: #B71C1C;
 }
