@@ -165,11 +165,6 @@ management:
         health:
             showDetails: always
 
-hystrix:
-    dashboard:
-        proxy-stream-allow-list: '*'
-    command.default.execution.timeout.enabled: false
-
 logbackServiceName: ZWEAAC1
 ---
 spring:
