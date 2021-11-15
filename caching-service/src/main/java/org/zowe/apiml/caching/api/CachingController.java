@@ -9,13 +9,18 @@
  */
 package org.zowe.apiml.caching.api;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.caching.model.KeyValue;
-import org.zowe.apiml.caching.service.*;
+import org.zowe.apiml.caching.service.Messages;
+import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 
@@ -34,6 +39,7 @@ public class CachingController {
     @ApiOperation(value = "Retrieves all values in the cache",
         notes = "Values returned for the calling service")
     @ResponseBody
+    @HystrixCommand
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
@@ -50,6 +56,7 @@ public class CachingController {
     @ApiOperation(value = "Delete all values for service from the cache",
         notes = "Will delete all key-value pairs for specific service")
     @ResponseBody
+    @HystrixCommand
     public ResponseEntity<Object> deleteAllValues(HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
@@ -73,6 +80,7 @@ public class CachingController {
     @ApiOperation(value = "Retrieves a specific value in the cache",
         notes = "Value returned is for the provided {key}")
     @ResponseBody
+    @HystrixCommand
     public ResponseEntity<Object> getValue(@PathVariable String key, HttpServletRequest request) {
         return keyRequest(storage::read,
             key, request, HttpStatus.OK);
@@ -82,6 +90,7 @@ public class CachingController {
     @ApiOperation(value = "Delete key from the cache",
         notes = "Will delete key-value pair for the provided {key}")
     @ResponseBody
+    @HystrixCommand
     public ResponseEntity<Object> delete(@PathVariable String key, HttpServletRequest request) {
         return keyRequest(storage::delete,
             key, request, HttpStatus.NO_CONTENT);
@@ -91,6 +100,7 @@ public class CachingController {
     @ApiOperation(value = "Create a new key in the cache",
         notes = "A new key-value pair will be added to the cache")
     @ResponseBody
+    @HystrixCommand
     public ResponseEntity<Object> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
         return keyValueRequest(storage::create,
             keyValue, request, HttpStatus.CREATED);
@@ -100,6 +110,7 @@ public class CachingController {
     @ApiOperation(value = "Update key in the cache",
         notes = "Value at the key in the provided key-value pair will be updated to the provided value")
     @ResponseBody
+    @HystrixCommand
     public ResponseEntity<Object> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
         return keyValueRequest(storage::update,
             keyValue, request, HttpStatus.NO_CONTENT);

@@ -61,6 +61,7 @@ dependencies {
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_retry
     implementation libraries.spring_boot_starter_aop
+    implementation libraries.spring_cloud_starter_hystrix
     implementation libraries.lettuce
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config

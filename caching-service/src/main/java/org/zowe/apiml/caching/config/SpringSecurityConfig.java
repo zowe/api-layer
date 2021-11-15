@@ -43,6 +43,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         String[] noSecurityAntMatchers = {
             "/application/health",
             "/application/info",
+            "/application/hystrix.stream",
             "/v2/api-docs"
         };
         web.ignoring().antMatchers(noSecurityAntMatchers);
@@ -64,7 +65,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         } else {
             http.authorizeRequests().anyRequest().permitAll();
         }
-
     }
 
     private UserDetailsService x509UserDetailsService() {
