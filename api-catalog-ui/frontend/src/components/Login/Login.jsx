@@ -207,6 +207,7 @@ export default class Login extends React.Component {
                                             css={{
                                                 position: 'relative',
                                                 top: '70px',
+                                                marginLeft: '-64px',
                                             }}
                                         />
                                     </form>
