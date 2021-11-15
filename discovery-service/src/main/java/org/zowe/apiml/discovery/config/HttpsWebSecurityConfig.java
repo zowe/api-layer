@@ -112,6 +112,7 @@ public class HttpsWebSecurityConfig {
                 "/eureka/images/**",
                 "/application/health",
                 "/application/info",
+                "/application/hystrix.stream",
                 "/favicon.ico"
             };
             web.ignoring().antMatchers(noSecurityAntMatchers);

@@ -70,7 +70,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .httpBasic().realmName(DISCOVERY_REALM)
             .and()
             .authorizeRequests()
-            .antMatchers("/application/info", "/application/health").permitAll()
+            .antMatchers("/application/info", "/application/health", "/application/hystrix.stream").permitAll()
             .antMatchers("/**").authenticated();
     }
 

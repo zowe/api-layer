@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.discovery;
 
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
@@ -24,7 +25,8 @@ import org.springframework.context.annotation.ComponentScan;
 import javax.annotation.Nonnull;
 
 @EnableEurekaServer
-@SpringBootApplication(exclude = HystrixAutoConfiguration.class)
+@SpringBootApplication
+@EnableCircuitBreaker
 @ComponentScan({
     "org.zowe.apiml.discovery",
     "org.zowe.apiml.product.security",
