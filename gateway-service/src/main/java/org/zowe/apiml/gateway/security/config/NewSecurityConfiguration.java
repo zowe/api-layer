@@ -35,15 +35,21 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
-import org.zowe.apiml.gateway.controllers.*;
+import org.zowe.apiml.gateway.controllers.AuthController;
+import org.zowe.apiml.gateway.controllers.CacheServiceController;
+import org.zowe.apiml.gateway.controllers.SafResourceAccessController;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
-import org.zowe.apiml.gateway.security.query.*;
+import org.zowe.apiml.gateway.security.query.QueryFilter;
+import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
+import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 import org.zowe.apiml.gateway.security.refresh.SuccessfulRefreshHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
-import org.zowe.apiml.security.common.config.*;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
+import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.filter.ApimlX509Filter;
@@ -88,6 +94,9 @@ public class NewSecurityConfiguration {
     private final X509AuthenticationProvider x509AuthenticationProvider;
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
+
+    @Value("${apiml.metrics.enabled:false}")
+    private boolean isMetricsEnabled;
 
     /**
      * Login and Logout endpoints
@@ -478,10 +487,13 @@ public class NewSecurityConfiguration {
         // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
         web.ignoring()
             .antMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
-                "/application/health", "/application/info", "/application/version", "/application/hystrix.stream",
+                "/application/health", "/application/info", "/application/version",
                 AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
                 AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
 
+        if (isMetricsEnabled) {
+            web.ignoring().antMatchers("/application/hystrix.stream");
+        }
     }
 
 

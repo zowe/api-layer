@@ -38,15 +38,21 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
+    @Value("${apiml.metrics.enabled:false}")
+    private boolean isMetricsEnabled;
+
     @Override
     public void configure(WebSecurity web) throws Exception {
         String[] noSecurityAntMatchers = {
             "/application/health",
             "/application/info",
-            "/application/hystrix.stream",
             "/v2/api-docs"
         };
         web.ignoring().antMatchers(noSecurityAntMatchers);
+
+        if (isMetricsEnabled) {
+            web.ignoring().antMatchers("/application/hystrix.stream");
+        }
     }
 
     @Override

@@ -24,8 +24,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
-import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.filter.AttlsFilter;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
@@ -73,9 +73,9 @@ public class HttpsWebSecurityConfig {
         protected void configure(HttpSecurity http) throws Exception {
 
             baseConfigure(http.requestMatchers().antMatchers(
-                "/application/**",
-                "/*"
-            )
+                    "/application/**",
+                    "/*"
+                )
                 .and())
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
@@ -102,6 +102,8 @@ public class HttpsWebSecurityConfig {
         @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
         private boolean nonStrictVerifySslCertificatesOfServices;
 
+        @Value("${apiml.metrics.enabled:false}")
+        private boolean isMetricsEnabled;
 
         @Override
         public void configure(WebSecurity web) {
@@ -112,10 +114,13 @@ public class HttpsWebSecurityConfig {
                 "/eureka/images/**",
                 "/application/health",
                 "/application/info",
-                "/application/hystrix.stream",
                 "/favicon.ico"
             };
             web.ignoring().antMatchers(noSecurityAntMatchers);
+
+            if (isMetricsEnabled) {
+                web.ignoring().antMatchers("/application/hystrix.stream");
+            }
         }
 
         @Override

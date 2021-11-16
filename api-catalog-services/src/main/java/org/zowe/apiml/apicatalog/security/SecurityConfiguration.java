@@ -59,7 +59,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 @EnableApimlAuth
 public class SecurityConfiguration {
-    private static final String HYSTRIX_STREAM_ROUTE = "/application/hystrix.stream";
     private static final String APIDOC_ROUTES = "/apidoc/**";
     private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
 
@@ -72,6 +71,9 @@ public class SecurityConfiguration {
     private final Set<String> publicKeyCertificatesBase64;
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
+
+    @Value("${apiml.metrics.enabled:false}")
+    private boolean isMetricsEnabled;
 
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
@@ -165,8 +167,15 @@ public class SecurityConfiguration {
                 .antMatchers("/static-api/**").authenticated()
                 .antMatchers("/containers/**").authenticated()
                 .antMatchers(APIDOC_ROUTES).authenticated()
-                .antMatchers("/application/health", "/application/info", HYSTRIX_STREAM_ROUTE).permitAll()
-                .antMatchers("/application/**").authenticated();
+                .antMatchers("/application/health", "/application/info").permitAll();
+
+            if (isMetricsEnabled) {
+                http.authorizeRequests().antMatchers("/application/hystrix.stream").permitAll();
+            }
+
+
+            http.authorizeRequests().antMatchers("/application/**").authenticated();
+
             if (isAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), BasicContentFilter.class);
             }
