@@ -34,7 +34,7 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
-export LIBPATH="$LIBPATH":
+export LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
@@ -91,7 +91,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -Djava.library.path=${LIBRARY_PATH} \
     -jar ${ROOT_DIR}"/components/api-mediation/gateway-service-lite.jar" &
 
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERABLECLIENT_CODE} java -Xms32m -Xmx256m -Xquickstart \
@@ -142,7 +141,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
-    -Djava.library.path=${LIBRARY_PATH} \
     -jar ${ROOT_DIR}"/components/api-mediation/discovery-service-lite.jar" &
 
 _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
@@ -176,7 +174,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
-    -Djava.library.path=${LIBRARY_PATH} \
     -jar ${ROOT_DIR}"/components/api-mediation/api-catalog-services-lite.jar" &
 
 _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
@@ -209,7 +206,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
   -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-  -Djava.library.path=${LIBRARY_PATH} \
   -jar ${ROOT_DIR}"/components/api-mediation/caching-service.jar"
 
 echo "Done"
