@@ -22,9 +22,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.CookieUtil;
-import org.zowe.apiml.util.Cookies;
 
-import java.net.HttpCookie;
 import java.util.Date;
 import java.util.Optional;
 import java.util.function.Supplier;
