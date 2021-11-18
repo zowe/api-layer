@@ -65,7 +65,7 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
-export LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
+LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 CACHING_CODE=CS
 _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
@@ -98,6 +98,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
   -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+  -Djava.library.path=${LIBPATH} \
   -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

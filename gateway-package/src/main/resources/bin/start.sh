@@ -100,7 +100,7 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
-export LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
+LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
@@ -157,6 +157,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID:-IZUDFLT} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
+    -Djava.library.path=${LIBPATH} \
     -jar ${JAR_FILE} &
 
 pid=$!
