@@ -16,7 +16,7 @@ import AuthRoute from '../AuthRoute/AuthRouteContainer';
 import { AsyncLoginContainer } from './AsyncModules';
 import Spinner from '../Spinner/Spinner';
 import HeaderContainer from '../Header/HeaderContainer';
-import DashboardContainter from '../Dashboard/DashboardContainer';
+import DashboardContainer from '../Dashboard/DashboardContainer';
 import theme from '../../helpers/theme';
 
 class App extends Component {
@@ -36,13 +36,13 @@ class App extends Component {
                                 </Switch>
 
                                 <Switch>
-                                    <AuthRoute path="/" exact render={() => <Redirect replace to="/dashboard" />} />
+                                    <Route path="/" exact render={() => <Redirect replace to="/dashboard" />} />
                                     <Route
                                         path="/login"
                                         exact
                                         render={(props, state) => <AsyncLoginContainer {...props} {...state} />}
                                     />
-                                    <AuthRoute path="/dashboard" component={DashboardContainter} />
+                                    <Route path="/dashboard" component={DashboardContainer} />
                                 </Switch>
                             </div>
                         </Router>

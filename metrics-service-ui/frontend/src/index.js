@@ -29,6 +29,7 @@ import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
 import { rootReducer } from './reducers';
 import { sendError } from './actions/error-actions';
+import { userActions } from './actions/user-actions';
 
 function errorHandler(error, getState, lastAction, dispatch) {
     log.error(error);
@@ -51,11 +52,11 @@ const epicMiddleware = createEpicMiddleware({
     dependencies: { ajax },
 });
 const composeEnhancers = compose;
-const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler)];
+const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler), userActions.checkAuthenticated];
 
-if (process.env.NODE_ENV !== 'production') {
-    middlewares.push(logger);
-}
+// if (process.env.NODE_ENV !== 'production') {
+middlewares.push(logger);
+// }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 const store = createStore(persistedReducer, composeEnhancers(applyMiddleware(...middlewares)));
