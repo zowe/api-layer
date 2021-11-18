@@ -65,32 +65,8 @@ function logout() {
     };
 }
 
-const checkAuthenticated = (store) => (next) => (action) => {
-    // eslint-disable-next-line
-    console.log('checkAuthenticated');
-    userService
-        .checkAuthentication()
-        .then(() => next(action))
-        .catch((error) => {
-            // eslint-disable-next-line
-            console.log('checkAuthenticated error');
-            // eslint-disable-next-line
-            console.log(error);
-            // eslint-disable-next-line
-            console.log(window.location.href);
-            if (!window.location.href.endsWith('/login')) {
-                // eslint-disable-next-line
-                console.log('checkAuthenticated catch block');
-                history.push('/login');
-                // return store.dispatch(history.push('/login'));
-            }
-            return next(action);
-        });
-};
-
 // eslint-disable-next-line
 export const userActions = {
     login,
     logout,
-    checkAuthenticated,
 };

@@ -29,7 +29,8 @@ import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
 import { rootReducer } from './reducers';
 import { sendError } from './actions/error-actions';
-import { userActions } from './actions/user-actions';
+import { userService } from './services';
+import history from './helpers/history';
 
 function errorHandler(error, getState, lastAction, dispatch) {
     log.error(error);
@@ -52,7 +53,30 @@ const epicMiddleware = createEpicMiddleware({
     dependencies: { ajax },
 });
 const composeEnhancers = compose;
-const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler), userActions.checkAuthenticated];
+
+const checkAuthenticated = (mstore) => (next) => (action) => {
+    // eslint-disable-next-line
+    console.log('checkAuthenticated');
+    userService
+        .checkAuthentication()
+        .then(() => next(action))
+        .catch((error) => {
+            // eslint-disable-next-line
+            console.log('checkAuthenticated error');
+            // eslint-disable-next-line
+            console.log(error);
+            // eslint-disable-next-line
+            console.log(window.location.href);
+            if (!window.location.href.endsWith('/login')) {
+                // eslint-disable-next-line
+                console.log('checkAuthenticated push to login');
+                history.push('/login');
+            }
+            return next(action);
+        });
+};
+
+const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler), checkAuthenticated];
 
 // if (process.env.NODE_ENV !== 'production') {
 middlewares.push(logger);
