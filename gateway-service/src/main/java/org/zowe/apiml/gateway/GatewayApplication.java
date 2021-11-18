@@ -9,29 +9,30 @@
  */
 package org.zowe.apiml.gateway;
 
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.zowe.apiml.gateway.ribbon.GatewayRibbonConfig;
-import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
-import org.zowe.apiml.product.service.ServiceStartupEventHandler;
-import org.zowe.apiml.product.version.BuildInfo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.zowe.apiml.gateway.ribbon.GatewayRibbonConfig;
+import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
+import org.zowe.apiml.product.service.ServiceStartupEventHandler;
+import org.zowe.apiml.product.version.BuildInfo;
 
 import javax.annotation.Nonnull;
 
 @EnableZuulProxy
 @EnableWebSecurity
-@SpringBootApplication(exclude = HystrixAutoConfiguration.class)
+@SpringBootApplication
+@EnableCircuitBreaker
 @ComponentScan(
     value = {
         "org.zowe.apiml.gateway",

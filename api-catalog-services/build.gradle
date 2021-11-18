@@ -64,6 +64,7 @@ dependencies {
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_configuration_processor
     implementation libraries.spring_cloud_starter_eureka
+    implementation libraries.spring_cloud_starter_hystrix
     implementation libraries.spring_retry
     implementation libraries.swagger_core
     implementation libraries.swagger3_core
@@ -73,6 +74,7 @@ dependencies {
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.apache_velocity
     implementation libraries.openapidiff
+    implementation libraries.http_client
     implementation libraries.jetty_client
     implementation libraries.jetty_http
     implementation libraries.jetty_io
@@ -84,7 +86,23 @@ dependencies {
     implementation libraries.spring_security_core
     implementation libraries.spring_security_crypto
     implementation libraries.spring_security_web
+    implementation libraries.tomcat_annotations_api
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
     implementation libraries.xstream
+    implementation libraries.commons_io
+    implementation libraries.guava
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_context_support
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.spring_messaging
+    implementation libraries.spring_web
+    implementation libraries.spring_webmvc
+    implementation libraries.spring_websocket
+
 
     implementation libraries.springFox
 

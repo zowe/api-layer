@@ -29,25 +29,25 @@ public class Analyser {
             }
 
             Stores stores = new Stores(conf);
-            VerifierSSLContext verifierSslContext = VerifierSSLContext.initSSLContextWithoutKeystore(stores);
+            SSLContextFactory sslContextFactory = SSLContextFactory.initSSLContextWithoutKeystore(stores);
             List<Verifier> verifiers = new ArrayList<>();
             HttpClient client;
             if (conf.getRemoteUrl() != null) {
                 if (conf.isClientCertAuth()) {
-                    verifierSslContext = VerifierSSLContext.initSSLContextWithKeystore(stores);
-                    client = new HttpClient(verifierSslContext.getSslContextWithKeystore());
+                    sslContextFactory = SSLContextFactory.initSSLContextWithKeystore(stores);
+                    client = new HttpClient(sslContextFactory.getSslContextWithKeystore());
                 } else {
-                    client = new HttpClient(verifierSslContext.getSslContext());
+                    client = new HttpClient(sslContextFactory.getSslContext());
                 }
-                verifiers.add(new RemoteHandshake(verifierSslContext, client));
+                verifiers.add(new RemoteHandshake(sslContextFactory, client));
             } else {
                 System.out.println("No remote will be verified. Specify \"-r\" or \"--remoteurl\" if you wish to verify the trust.");
             }
 
             if (conf.isDoLocalHandshake()) {
-                verifierSslContext = VerifierSSLContext.initSSLContextWithKeystore(stores);
-                client = new HttpClient(verifierSslContext.getSslContextWithKeystore());
-                verifiers.add(new LocalHandshake(verifierSslContext, client));
+                sslContextFactory = SSLContextFactory.initSSLContextWithKeystore(stores);
+                client = new HttpClient(sslContextFactory.getSslContextWithKeystore());
+                verifiers.add(new LocalHandshake(sslContextFactory, client));
             }
             if (conf.getKeyStore() != null) {
                 verifiers.add(new LocalVerifier(stores));

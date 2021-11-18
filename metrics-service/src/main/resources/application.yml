@@ -26,6 +26,8 @@ eureka:
 apiml:
     enabled: true
     service:
+        preferIpAddress: false
+
         serviceId: metrics-service
         title: Metrics Service.
         description: Service to display metrics for APIML services.
@@ -63,7 +65,7 @@ apiml:
                 version: 1.0.0
         ssl:
             enabled: true
-            verifySslCertificatesOfServices: false
+            verifySslCertificatesOfServices: true
             protocol: ${server.ssl.protocol}
             keyStoreType: ${server.ssl.keyStoreType}
             trustStoreType: ${server.ssl.trustStoreType}
@@ -93,6 +95,7 @@ server:
 
     ssl:
         enabled: true
+        clientAuth: want
         protocol: TLSv1.2
         enabled-protocols: TLSv1.2
         ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
@@ -115,11 +118,14 @@ management:
 
 turbine:
     aggregator:
-        clusterConfig: DISCOVERABLECLIENT,APICATALOG # uppercase serviceId
+        clusterConfig: DISCOVERABLECLIENT,APICATALOG,CACHINGSERVICE,GATEWAY,DISCOVERY # uppercase serviceId
     instanceUrlSuffix:
         DISCOVERABLECLIENT: /discoverableclient/application/hystrix.stream
         APICATALOG: /apicatalog/application/hystrix.stream
-    appConfig: discoverableclient,apicatalog
+        CACHINGSERVICE: /cachingservice/application/hystrix.stream
+        GATEWAY: /application/hystrix.stream
+        DISCOVERY: /application/hystrix.stream
+    appConfig: discoverableclient,apicatalog,cachingservice,gateway,discovery # lowercase serviceId
 
 ---
 spring:
@@ -150,3 +156,22 @@ spring:
         - diag
 
 logbackServiceName: ZWEAMS1
+
+---
+spring:
+    profiles: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+apiml:
+    service:
+        scheme: http
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false

@@ -59,6 +59,7 @@ dependencies {
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_security
     implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_cloud_starter_hystrix
     implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE')  {
         exclude group: "javax.servlet", module: "servlet-api"
     }
@@ -74,13 +75,28 @@ dependencies {
     implementation libraries.spring_security_core
     implementation libraries.spring_security_crypto
     implementation libraries.spring_security_web
+    implementation libraries.tomcat_annotations_api
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
     implementation libraries.xstream
+    implementation libraries.commons_io
+    implementation libraries.guava
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_context_support
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.spring_messaging
+    implementation libraries.spring_web
+    implementation libraries.spring_webmvc
+    implementation libraries.spring_websocket
+
 
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    // https://mvnrepository.com/artifact/com.netflix.servo/servo-core
-    implementation group: 'com.netflix.servo', name: 'servo-core', version: '0.12.28'
+    implementation libraries.netflix_servo
 
     testCompile libraries.lombok
     testAnnotationProcessor libraries.lombok

@@ -9,8 +9,10 @@
  */
 package org.zowe.apiml.client.services.apars;
 
+import com.nimbusds.jose.jwk.JWKSet;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.client.services.JwtTokenService;
 
 import java.util.List;
 
@@ -21,6 +23,12 @@ public class JwtKeys extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleJwtKeys() {
-        return new ResponseEntity<>(HttpStatus.OK);
+        try {
+            JWKSet jwkSet = JwtTokenService.getKeySet();
+            return new ResponseEntity<>(jwkSet, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 }

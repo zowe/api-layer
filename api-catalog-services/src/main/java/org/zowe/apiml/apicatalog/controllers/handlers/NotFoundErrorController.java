@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.controllers.handlers;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -32,6 +33,7 @@ public class NotFoundErrorController implements ErrorController {
 
 
     @GetMapping(value = "/not_found")
+    @HystrixCommand
     public String handleError(HttpServletRequest request) {
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
 

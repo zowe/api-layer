@@ -48,12 +48,16 @@ dependencies {
     compile libraries.jjwt
     compile libraries.jjwt_impl
     compile libraries.jjwt_jackson
+    implementation libraries.nimbusJoseJwt
 
     implementation libraries.springFox
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
+    implementation libraries.tomcat_annotations_api
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
 
     implementation libraries.bootstrap
     implementation libraries.jquery

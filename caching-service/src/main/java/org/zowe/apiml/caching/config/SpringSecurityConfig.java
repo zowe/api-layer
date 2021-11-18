@@ -38,6 +38,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
+    @Value("${apiml.metrics.enabled:false}")
+    private boolean isMetricsEnabled;
+
     @Override
     public void configure(WebSecurity web) throws Exception {
         String[] noSecurityAntMatchers = {
@@ -46,6 +49,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
             "/v2/api-docs"
         };
         web.ignoring().antMatchers(noSecurityAntMatchers);
+
+        if (isMetricsEnabled) {
+            web.ignoring().antMatchers("/application/hystrix.stream");
+        }
     }
 
     @Override
@@ -64,7 +71,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         } else {
             http.authorizeRequests().anyRequest().permitAll();
         }
-
     }
 
     private UserDetailsService x509UserDetailsService() {

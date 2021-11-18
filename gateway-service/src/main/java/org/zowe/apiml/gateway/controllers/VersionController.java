@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,6 +32,7 @@ public class VersionController {
     private VersionService versionService;
 
     @GetMapping(value = "/version", produces = MediaType.APPLICATION_JSON_VALUE)
+    @HystrixCommand
     public ResponseEntity<VersionInfo> getVersion() {
         return new ResponseEntity<>(versionService.getVersion(), HttpStatus.OK);
     }
