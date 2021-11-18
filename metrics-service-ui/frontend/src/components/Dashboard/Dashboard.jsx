@@ -13,9 +13,13 @@ import Container from '@material-ui/core/Container';
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Box from '@material-ui/core/Box';
 import axios from 'axios';
 
 const useStyles = makeStyles((theme) => ({
@@ -71,8 +75,8 @@ export default function Dashboard() {
         }, 30000);
     });
 
-    const handleChange = (event) => {
-        setMetricsDisplay(event.target.value);
+    const handleChange = (event, newValue) => {
+        setMetricsDisplay(newValue);
     };
 
     return (
@@ -81,19 +85,15 @@ export default function Dashboard() {
                 Metrics Service
             </Typography>
             {availableClusters.length > 0 && (
-                <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-simple-select-label">Stream</InputLabel>
-                    <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        value={currentCluster}
-                        onChange={handleChange}
-                    >
-                        {availableClusters.map((stream) => (
-                            <MenuItem value={stream}>{stream}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+                <Box sx={{ width: '100%' }}>
+                    <Box sx={{ borderBottom: 1 }}>
+                        <Tabs value={currentCluster} onChange={handleChange} aria-label="service tabs" centered>
+                            {availableClusters.map((stream) => (
+                                <Tab label={stream} value={stream} />
+                            ))}
+                        </Tabs>
+                    </Box>
+                </Box>
             )}
             <Container maxWidth="lg" id="content" className="dependencies" />
         </React.Fragment>
