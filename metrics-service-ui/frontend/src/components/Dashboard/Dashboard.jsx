@@ -68,13 +68,17 @@ export default function Dashboard() {
             </Typography>
             {availableClusters.length > 0 && (
                 <Box sx={{ width: '100%' }}>
-                    <Box sx={{ borderBottom: 1 }}>
-                        <Tabs value={currentCluster} onChange={handleChange} aria-label="service tabs" centered>
-                            {availableClusters.map((stream) => (
-                                <Tab label={stream} value={stream} />
-                            ))}
-                        </Tabs>
-                    </Box>
+                    <Tabs
+                        value={currentCluster}
+                        onChange={handleChange}
+                        aria-label="service tabs"
+                        centered
+                        indicatorColor="primary"
+                    >
+                        {availableClusters.map((stream) => (
+                            <Tab label={stream} value={stream} />
+                        ))}
+                    </Tabs>
                 </Box>
             )}
             <Container maxWidth="lg" id="content" className="dependencies" />
