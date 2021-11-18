@@ -12,15 +12,11 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import com.netflix.loadbalancer.reactive.ExecutionListener;
-import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
@@ -32,7 +28,6 @@ import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactor
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.util.CacheUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -136,82 +131,5 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         cacheUtils.evictSubset(cacheManager, CACHE_BY_SERVICE_ID, x -> StringUtils.equalsIgnoreCase((String) x.get(0), serviceId));
     }
 
-    public class UniversalAuthenticationCommand extends AuthenticationCommand {
-
-        private static final long serialVersionUID = -2980076158001292742L;
-
-        private static final String INVALID_JWT_MESSAGE = "Invalid JWT token";
-
-        protected UniversalAuthenticationCommand() {
-        }
-
-        @Override
-        public void apply(InstanceInfo instanceInfo) {
-            if (instanceInfo == null) throw new NullPointerException("Argument instanceInfo is required");
-
-            final Authentication auth = getAuthentication(instanceInfo);
-            final RequestContext requestContext = RequestContext.getCurrentContext();
-            final HttpServletRequest request = requestContext.getRequest();
-
-            AuthenticationCommand cmd = null;
-
-            boolean rejected = false;
-            try {
-                final String jwtToken = getAuthenticationService().getJwtTokenFromRequest(request).orElse(null);
-                cmd = getAuthenticationCommand(auth, jwtToken);
-
-                // if authentication schema required valid JWT, check it
-                if (cmd.isRequiredValidJwt()) {
-                    rejected = (jwtToken == null) || !authenticationService.validateJwtToken(jwtToken).isAuthenticated();
-                }
-
-            } catch (AuthenticationException ae) {
-                rejected = true;
-            }
-
-            if (rejected) {
-                throw new ExecutionListener.AbortExecutionException(INVALID_JWT_MESSAGE, new BadCredentialsException(INVALID_JWT_MESSAGE));
-            }
-
-            cmd.apply(null);
-        }
-
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
-        public boolean isRequiredValidJwt() {
-            return false;
-        }
-
-    }
-
-    public class LoadBalancerAuthenticationCommand extends AuthenticationCommand {
-
-        private static final long serialVersionUID = 3363375706967769113L;
-
-        private final UniversalAuthenticationCommand universal = new UniversalAuthenticationCommand();
-
-        protected LoadBalancerAuthenticationCommand() {
-        }
-
-        @Override
-        public void apply(InstanceInfo instanceInfo) {
-            RequestContext.getCurrentContext().put(AUTHENTICATION_COMMAND_KEY, universal);
-        }
-
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
-        public boolean isRequiredValidJwt() {
-            return false;
-        }
-
-    }
 
 }
