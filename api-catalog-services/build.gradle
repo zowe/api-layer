@@ -64,6 +64,7 @@ dependencies {
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_configuration_processor
     implementation libraries.spring_cloud_starter_eureka
+    implementation libraries.spring_cloud_starter_hystrix
     implementation libraries.spring_retry
     implementation libraries.swagger_core
     implementation libraries.swagger3_core

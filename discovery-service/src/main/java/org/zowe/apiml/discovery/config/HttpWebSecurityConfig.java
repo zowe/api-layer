@@ -9,8 +9,6 @@
  */
 package org.zowe.apiml.discovery.config;
 
-import org.zowe.apiml.security.common.config.HandlerInitializer;
-import org.zowe.apiml.security.common.content.BasicContentFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,10 +21,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.content.BasicContentFilter;
 
 /**
  * Main class configuring Spring security for Discovery Service
- *
+ * <p>
  * This configuration is applied if "https" Spring profile is not active
  */
 @Configuration
@@ -35,7 +35,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 })
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Profile({"!https","!attls"})
+@Profile({"!https", "!attls"})
 public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
@@ -45,10 +45,14 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.discovery.password:password}")
     private String eurekaPassword;
 
+    @Value("${apiml.metrics.enabled:false}")
+    private boolean isMetricsEnabled;
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication().withUser(eurekaUserid).password("{noop}" + eurekaPassword).roles("EUREKA");
     }
+
     private final HandlerInitializer handlerInitializer;
 
     @Override
@@ -72,6 +76,10 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .authorizeRequests()
             .antMatchers("/application/info", "/application/health").permitAll()
             .antMatchers("/**").authenticated();
+
+        if (isMetricsEnabled) {
+            http.authorizeRequests().antMatchers("/application/hystrix.stream").permitAll();
+        }
     }
 
     private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {

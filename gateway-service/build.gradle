@@ -63,6 +63,7 @@ dependencies {
     implementation libraries.spring_boot_starter_thymeleaf
     implementation libraries.spring_boot_starter_cache
     implementation libraries.spring_boot_starter_aop
+    implementation libraries.spring_cloud_starter_hystrix
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
     implementation libraries.spring_security_core
@@ -115,7 +116,7 @@ dependencies {
     implementation libraries.netty_transport_rxtx
     implementation libraries.netty_transport_sctp
     implementation libraries.netty_transport_udt
-   
+
     implementation libraries.commons_io
     implementation libraries.guava
     implementation libraries.spring_aop
