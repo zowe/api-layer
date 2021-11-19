@@ -10,9 +10,7 @@ The changes are largely simply taking the monitor.html script elements and provi
 // from: http://jquery-howto.blogspot.com/2009/09/get-url-parameters-values-with-jquery.html
 function getUrlVars() {
     var vars = [], hash;
-    // CHANGE: currently using hardcoded URL for PoC to set hystrix stream URL
-    const url = 'https://localhost:10012/discoverableclient/hystrix/monitor?stream=https%3A%2F%2Flocalhost%3A10012%2Fdiscoverabledasclient%2Fapplication%2Fhystrix.stream&title=Discoverable%20Client%20Service';
-    var hashes = url.slice(url.indexOf('?') + 1).split('&');
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
     for(var i = 0; i < hashes.length; i++) {
         hash = hashes[i].split('=');
         vars.push(hash[0]);
@@ -23,8 +21,16 @@ function getUrlVars() {
 
 var hystrixStreams = [];
 
-function addStreams(proxyStream) {
-    var urlVars = getUrlVars();
+function addStreams(proxyStream, title) {
+    // CHANGE: rely on function parameters instead of parsing window.location.href
+    // var urlVars = getUrlVars();
+
+    urlVars = {
+        stream: proxyStream,
+        title: title
+    };
+
+    // END OF CHANGE
 
     var streams = urlVars.streams ? JSON.parse(decodeURIComponent(urlVars.streams)) :
         urlVars.stream ? [{

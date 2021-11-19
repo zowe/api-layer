@@ -157,7 +157,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info
+                include: health,info,hystrix.stream
     health:
         defaults:
             enabled: false
@@ -175,7 +175,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers
+                include: health,info,loggers,hystrix.stream
 
 logging:
     level:

@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
@@ -75,6 +76,7 @@ public class ApiCatalogController {
             @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
         }
     )
+    @HystrixCommand
     public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalThrowable {
         try {
             Iterable<APIContainer> allContainers = cachedProductFamilyService.getAllContainers();
@@ -104,6 +106,7 @@ public class ApiCatalogController {
             @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
         }
     )
+    @HystrixCommand
     public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
         try {
             List<APIContainer> apiContainers = new ArrayList<>();
