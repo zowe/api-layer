@@ -12,15 +12,19 @@
     text-decoration: none;
 }
 
-.logout-container button.css-1upkw8q-Button {
-    background-color: #1d5bbf;
-    transition: background-color .3s ease-in-out;
-}
+/*.logout-container button.css-1upkw8q-Button {*/
+/*    background-color: #1d5bbf;*/
+/*    transition: background-color .3s ease-in-out;*/
+/*}*/
 
 .logout-container button.css-1upkw8q-Button:hover {
+    transition: background-color .3s ease-in-out;
     background-color: #5691f0;
 }
 
+button.MuiButtonBase-root.MuiButton-root.MuiButton-text:hover {
+    background-color: #5691f0;
+}
 
 .logout-container svg {
     transition: color .3s ease-in-out;
@@ -32,4 +36,8 @@
 
 .css-1i58psh:hover {
     background-color: #5691f0;
+}
+
+span.MuiTypography-root {
+    color: #ffffff;
 }
