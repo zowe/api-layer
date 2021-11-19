@@ -10,10 +10,18 @@
 
 import React from 'react';
 import { IconButton, Tooltip, Link } from '@material-ui/core';
-import { withStyles } from '@material-ui/core/styles';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 
 import MetricsIconButton from '../Icons/MetricsIconButton';
+
+const useStyles = makeStyles((theme) => ({
+    metricsHeaderDiv: {
+        height: 65,
+        backgroundColor: theme.palette.primary.main,
+        display: 'flex',
+    },
+}));
 
 const LogoutIconButton = withStyles((theme) => ({
     root: {
@@ -44,6 +52,8 @@ const ServiceNameHeader = withStyles((theme) => ({
 }))(Link);
 
 const Header = (props) => {
+    const classes = useStyles();
+
     const handleLogout = () => {
         const { logout } = props;
         logout();
@@ -52,7 +62,7 @@ const Header = (props) => {
     const dashboard = '/metrics-service/ui/v1/#/dashboard';
 
     return (
-        <div className="login-header">
+        <div className={classes.metricsHeaderDiv}>
             <MetricsIconButton />
             <ServiceNameHeader id="name" variant="h6" align="left" underline="none" href={dashboard}>
                 Metrics Service

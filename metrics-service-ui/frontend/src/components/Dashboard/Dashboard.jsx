@@ -11,34 +11,54 @@
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import React, { useEffect, useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import InputLabel from '@material-ui/core/InputLabel';
-
-const useStyles = makeStyles((theme) => ({
-    formControl: {
-        margin: theme.spacing(1),
-        minWidth: 120,
-    },
-    selectEmpty: {
-        marginTop: theme.spacing(2),
-    },
-}));
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Box from '@material-ui/core/Box';
+import axios from 'axios';
 
 export default function Dashboard() {
-    const classes = useStyles();
-    const [currentStream, setCurrentStream] = useState('DISCOVERABLECLIENT');
+    const [availableClusters, setAvailableClusters] = useState([]);
+    const [currentCluster, setCurrentCluster] = useState(null);
+    const [haveGottenClusters, setHaveGottenClusters] = useState(false);
+
+    function setMetricsDisplay(cluster) {
+        setCurrentCluster(cluster);
+        window.addStreams(
+            `${window.location.origin}/metrics-service/sse/v1/turbine.stream?cluster=${cluster}`,
+            cluster
+        );
+    }
+
+    function retrieveAvailableClusters(callback) {
+        axios.get(`${window.location.origin}/metrics-service/api/v1/clusters`).then((res) => {
+            callback(res);
+        });
+    }
 
     useEffect(() => {
-        setTimeout(() => {
-            window.addStreams(`https://localhost:10010/metrics-service/sse/v1/turbine.stream?cluster=${currentStream}`);
-        }, 0);
-    }, [currentStream]);
+        if (!haveGottenClusters && availableClusters.length === 0) {
+            retrieveAvailableClusters((res) => {
+                setHaveGottenClusters(true);
 
-    const handleChange = (event) => {
-        setCurrentStream(event.target.value);
+                const clusters = res.data.map((d) => d.name);
+                setAvailableClusters(clusters);
+
+                if (clusters.length > 0) {
+                    setMetricsDisplay(clusters[0]);
+                }
+            });
+        }
+
+        setTimeout(() => {
+            retrieveAvailableClusters((res) => {
+                const clusters = res.data.map((d) => d.name);
+                setAvailableClusters(clusters);
+            });
+        }, 30000);
+    });
+
+    const handleChange = (event, newValue) => {
+        setMetricsDisplay(newValue);
     };
 
     return (
@@ -46,18 +66,21 @@ export default function Dashboard() {
             <Typography id="name" variant="h2" component="h1" gutterBottom align="center">
                 Metrics Service
             </Typography>
-            <FormControl className={classes.formControl}>
-                <InputLabel id="demo-simple-select-label">Stream</InputLabel>
-                <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={currentStream}
-                    onChange={handleChange}
-                >
-                    <MenuItem value="DISCOVERABLECLIENT">DISCOVERABLECLIENT</MenuItem>
-                    <MenuItem value="APICATALOG">APICATALOG</MenuItem>
-                </Select>
-            </FormControl>
+            {availableClusters.length > 0 && (
+                <Box sx={{ width: '100%' }}>
+                    <Tabs
+                        value={currentCluster}
+                        onChange={handleChange}
+                        aria-label="service tabs"
+                        centered
+                        indicatorColor="primary"
+                    >
+                        {availableClusters.map((stream) => (
+                            <Tab label={stream} value={stream} />
+                        ))}
+                    </Tabs>
+                </Box>
+            )}
             <Container maxWidth="lg" id="content" className="dependencies" />
         </React.Fragment>
     );
