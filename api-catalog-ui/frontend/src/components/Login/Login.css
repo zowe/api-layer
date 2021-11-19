@@ -142,3 +142,8 @@ form#login-form {
 .errorIcon {
     color: #de1b1b;
 }
+
+.logo-container {
+    margin: 24px;
+    width: 71px;
+}
