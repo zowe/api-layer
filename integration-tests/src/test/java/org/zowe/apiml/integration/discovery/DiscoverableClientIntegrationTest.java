@@ -12,8 +12,7 @@ package org.zowe.apiml.integration.discovery;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.RegistrationTest;
@@ -27,6 +26,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
+import static org.zowe.apiml.util.requests.Endpoints.MEDIATION_CLIENT;
 
 /**
  * Integration of
@@ -34,32 +34,26 @@ import static org.hamcrest.Matchers.is;
 @DiscoverableClientDependentTest
 @RegistrationTest
 class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
-    private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/apiMediationClient");
-    private static final URI MEDIATION_CLIENT_URI_OLD_FORMAT = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/apiMediationClient");
+    private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(MEDIATION_CLIENT);
 
     @BeforeAll
     static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    protected static URI[] discoverableClientUrls() {
-        return new URI[]{MEDIATION_CLIENT_URI, MEDIATION_CLIENT_URI_OLD_FORMAT};
-    }
-
     @Nested
     class WhenIntegratingWithDiscoveryService {
         @Nested
         class GivenValidService {
-            @ParameterizedTest(name = "verifyRegistrationAndUnregistration {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.discovery.DiscoverableClientIntegrationTest#discoverableClientUrls")
-            void verifyRegistrationAndUnregistration(URI url) {
-                isRegistered(false, url);
+            @Test
+            void verifyRegistrationAndUnregistration() {
+                isRegistered(false, MEDIATION_CLIENT_URI);
 
-                register(url);
-                isRegistered(true, url);
+                register(MEDIATION_CLIENT_URI);
+                isRegistered(true, MEDIATION_CLIENT_URI);
 
-                unregister(url);
-                isRegistered(false, url);
+                unregister(MEDIATION_CLIENT_URI);
+                isRegistered(false, MEDIATION_CLIENT_URI);
             }
         }
     }

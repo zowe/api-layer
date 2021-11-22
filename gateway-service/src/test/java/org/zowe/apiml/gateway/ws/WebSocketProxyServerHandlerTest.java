@@ -13,8 +13,6 @@ package org.zowe.apiml.gateway.ws;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.socket.CloseStatus;
@@ -100,9 +98,9 @@ class WebSocketProxyServerHandlerTest {
              * The service associated with given URI is retrieved
              * Proper WebSocketSession is stored.
              */
-            @ParameterizedTest(name = "WhenTheConnectionIsEstablished.ThenTheValidSessionIsStoredInternally#givenValidRoute {0}")
-            @ValueSource(strings = {"wss://gatewayHost:1443/valid-service/ws/v1/valid-path", "wss://gatewayHost:1443/ws/v1/valid-service/valid-path"})
-            void givenValidRoute(String path) throws Exception {
+            @Test
+             void givenValidRoute() throws Exception {
+                String path = "wss://gatewayHost:1443/valid-service/ws/v1/valid-path";
                 when(webSocketRoutedSessionFactory.session(any(), any(), any())).thenReturn(mock(WebSocketRoutedSession.class));
 
                 String establishedSessionId = "validAndUniqueId";
@@ -152,7 +150,7 @@ class WebSocketProxyServerHandlerTest {
              */
             @Test
             void givenInvalidRoute() throws Exception {
-                when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/ws/v1/non_existent_service/valid-path"));
+                when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/non_existent_service/ws/v1/valid-path"));
 
                 underTest.afterConnectionEstablished(establishedSession);
 

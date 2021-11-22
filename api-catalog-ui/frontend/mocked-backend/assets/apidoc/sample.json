@@ -18,7 +18,7 @@
         }
     ],
     "paths": {
-        "/api/v1/sampleservice/pets": {
+        "/sampleservice/api/v1/pets": {
             "get": {
                 "tags": [
                     "The pet API"
@@ -114,7 +114,7 @@
                 ]
             }
         },
-        "/api/v1/sampleservice/pets/{id}": {
+        "/sampleservice/api/v1/pets/{id}": {
             "get": {
                 "tags": [
                     "The pet API"
@@ -281,7 +281,7 @@
                 ]
             }
         },
-        "/api/v1/sampleservice/echo": {
+        "/sampleservice/api/v1/echo": {
             "get": {
                 "tags": [
                     "The assembler endpoint"

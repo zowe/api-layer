@@ -39,7 +39,7 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
-    private final static URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(CATALOG_PREFIX + CATALOG_SERVICE_ID + LOGIN_ENDPOINT);
+    private final static URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(CATALOG_SERVICE_ID + CATALOG_PREFIX + LOGIN_ENDPOINT);
 
     @BeforeEach
     void setUp() {

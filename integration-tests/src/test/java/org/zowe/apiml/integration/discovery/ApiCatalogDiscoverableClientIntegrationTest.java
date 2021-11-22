@@ -32,6 +32,7 @@ import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 /**
  * Verify integration of the API Catalog with Discoverable client to make sure that the discovery service and gateways
@@ -40,14 +41,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @CatalogTest
 @DiscoverableClientDependentTest
 class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInstances {
-    private static final String GET_DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containers/cademoapps";
-    private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0";
-    private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2 = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v2.0.0";
-
-    private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0/zowe.apiml.discoverableclient.rest v2.0.0";
-    private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0/zowe.apiml.discoverableclient.rest v3.0.0";
-    private static final String GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE = "/apicatalog/api/v1/apidoc/invalidService/v1/v2";
-
 
     @Nested
     class WhenGettingApiDoc {
@@ -55,7 +48,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
         class ReturnRelevantApiDoc {
             @Test
             void givenV1ApiDocPath() throws Exception {
-                final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT, HttpStatus.SC_OK);
+                final HttpResponse response = getResponse(DISCOVERABLE_CLIENT_API_DOC_ENDPOINT, HttpStatus.SC_OK);
                 String jsonResponse = EntityUtils.toString(response.getEntity());
                 DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
@@ -64,7 +57,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
 
             @Test
             void givenV2ApiDocPath() throws IOException {
-                final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2, HttpStatus.SC_OK);
+                final HttpResponse response = getResponse(DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2, HttpStatus.SC_OK);
                 final String jsonResponse = EntityUtils.toString(response.getEntity());
 
                 String apiCatalogSwagger = "\n**************************\n" +
@@ -94,7 +87,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
             // Verify that by default v1 swagger is returned.
             @Test
             void givenUrlForContainer() throws IOException {
-                HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT, HttpStatus.SC_OK);
+                HttpResponse response = getResponse(DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT, HttpStatus.SC_OK);
                 String containerJsonResponse = EntityUtils.toString(response.getEntity());
                 DocumentContext containerJsonContext = JsonPath.parse(containerJsonResponse);
 
@@ -118,7 +111,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
         class ReturnDifference {
             @Test
             void givenValidServiceAndVersions() throws Exception {
-                final HttpResponse response = getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT, HttpStatus.SC_OK);
+                final HttpResponse response = getResponse(API_SERVICE_VERSION_DIFF_ENDPOINT, HttpStatus.SC_OK);
 
                 //When
                 final String textResponse = EntityUtils.toString(response.getEntity());
@@ -135,12 +128,12 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
         class ReturnNotFound {
             @Test
             void givenWrongVersion() throws Exception {
-                getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION, HttpStatus.SC_NOT_FOUND);
+                getResponse(API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION, HttpStatus.SC_NOT_FOUND);
             }
 
             @Test
             void givenWrongService() throws Exception {
-                getResponse(GET_API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE, HttpStatus.SC_NOT_FOUND);
+                getResponse(API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE, HttpStatus.SC_NOT_FOUND);
             }
         }
     }

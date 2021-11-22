@@ -23,7 +23,7 @@ class ZaasClientImplHttpTests {
         configProperties.setHttpOnly(true);
         configProperties.setApimlHost("hostname");
         configProperties.setApimlPort("10010");
-        configProperties.setApimlBaseUrl("/api/v1/gateway/auth");
+        configProperties.setApimlBaseUrl("/gateway/api/v1/auth");
         configProperties.setNonStrictVerifySslCertificatesOfServices(false);
         configProperties.setKeyStorePath("keystorePath");
         ZaasClient client = new ZaasClientImpl(configProperties);

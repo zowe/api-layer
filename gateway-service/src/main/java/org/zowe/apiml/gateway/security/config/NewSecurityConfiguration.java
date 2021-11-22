@@ -124,10 +124,8 @@ public class NewSecurityConfiguration {
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                 authConfigurationProperties.getGatewayLoginEndpoint(),
-                authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
-                authConfigurationProperties.getGatewayLogoutEndpoint(),
-                authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
-            ).and())
+                authConfigurationProperties.getGatewayLogoutEndpoint()
+                ).and())
                 .authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
@@ -139,11 +137,7 @@ public class NewSecurityConfiguration {
 
                 .and()
                 .logout()
-                .logoutRequestMatcher(new RegexRequestMatcher(
-                    String.format("(%s|%s)",
-                        authConfigurationProperties.getGatewayLogoutEndpoint(),
-                        authConfigurationProperties.getGatewayLogoutEndpointOldFormat())
-                    , HttpMethod.POST.name()))
+                .logoutRequestMatcher(new RegexRequestMatcher(authConfigurationProperties.getGatewayLogoutEndpoint(), HttpMethod.POST.name()))
                 .addLogoutHandler(logoutHandler())
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                 .and()
@@ -201,10 +195,8 @@ public class NewSecurityConfiguration {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers(
-                authConfigurationProperties.getGatewayQueryEndpoint(),
-                authConfigurationProperties.getGatewayQueryEndpointOldFormat()
-            ).and()).authorizeRequests()
+            baseConfigure(http.requestMatchers().antMatchers(authConfigurationProperties.getGatewayQueryEndpoint())
+                .and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable() // logout filter in this chain not needed
@@ -242,10 +234,8 @@ public class NewSecurityConfiguration {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers(
-                authConfigurationProperties.getGatewayTicketEndpoint(),
-                authConfigurationProperties.getGatewayTicketEndpointOldFormat()
-            ).and()).authorizeRequests()
+            baseConfigure(http.requestMatchers().antMatchers(authConfigurationProperties.getGatewayTicketEndpoint())
+                .and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable() // logout filter in this chain not needed
@@ -288,10 +278,8 @@ public class NewSecurityConfiguration {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.requestMatchers().antMatchers(
-                authConfigurationProperties.getGatewayRefreshEndpointNewFormat(),
-                authConfigurationProperties.getGatewayRefreshEndpointOldFormat()
-            ).and()).authorizeRequests()
+            baseConfigure(http.requestMatchers().antMatchers(authConfigurationProperties.getGatewayRefreshEndpoint())
+                .and()).authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
                 .logout().disable() // logout filter in this chain not needed

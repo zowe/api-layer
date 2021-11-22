@@ -124,11 +124,11 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
     }
 
     private String getServiceId(List<String> uriParts) {
-        return "sse".equals(uriParts.get(1)) ? uriParts.get(3) : uriParts.get(1);
+        return uriParts.get(1);
     }
 
     private String getMajorVersion(List<String> uriParts) {
-        return "sse".equals(uriParts.get(1)) ? uriParts.get(2) : uriParts.get(3);
+        return uriParts.get(3);
     }
 
     private ServiceInstance findServiceInstance(String serviceId) {
