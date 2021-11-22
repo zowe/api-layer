@@ -19,11 +19,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.MapPropertySource;
 import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
 import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
-import org.zowe.apiml.gateway.ribbon.loadbalancer.*;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.InstanceInfoExtractor;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerConstants;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerRuleAdapter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,21 +66,20 @@ public class GatewayRibbonConfig {
     }
 
     /**
-     *
      * Main place where load balancer is constructed. Here is where we plug in the {@link LoadBalancerRuleAdapter}
      * to act as a rule for selecting servers.
-     *
+     * <p>
      * The factory for predicates is also initialized here with information fom InstanceInfo
-     *
+     * <p>
      * Called at first request's invocation and bean is service-scoped (1 bean per serviceId)
      *
-     * @param config Ribbon's client config
-     * @param serverList List of available servers
-     * @param serverListFilter Not sure
-     * @param ping Server probing mechanism (initialized as server list from Discovery)
-     * @param serverListUpdater Not sure
+     * @param config               Ribbon's client config
+     * @param serverList           List of available servers
+     * @param serverListFilter     Not sure
+     * @param ping                 Server probing mechanism (initialized as server list from Discovery)
+     * @param serverListUpdater    Not sure
      * @param loadBalancerRegistry Keeps track of all load balancer beans
-     * @param predicateFactory Factory for creating predicates for server filtering
+     * @param predicateFactory     Factory for creating predicates for server filtering
      * @return Initialized load balancer bean
      */
     @Bean
@@ -101,7 +104,7 @@ public class GatewayRibbonConfig {
 
         predicateFactory.addInitializer(randomInstanceInfo.getAppName(), context ->
             context.getEnvironment().getPropertySources()
-                .addFirst( new MapPropertySource("InstanceInfoMetadata", metadataMap))
+                .addFirst(new MapPropertySource("InstanceInfoMetadata", metadataMap))
         );
 
         IRule rule = new LoadBalancerRuleAdapter(
