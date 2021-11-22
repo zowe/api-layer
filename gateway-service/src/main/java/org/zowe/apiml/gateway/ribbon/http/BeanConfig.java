@@ -14,8 +14,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 
 /**
  * Bean construction for HttpClientProxy
@@ -32,11 +30,4 @@ public class BeanConfig {
         return new HttpClientChooser(withoutCertificate, withCertificate);
     }
 
-    @Bean
-    public ServiceAuthenticationDecorator serviceAuthenticationDecorator(
-        ServiceAuthenticationService serviceAuthenticationService,
-        AuthenticationService authenticationService
-    ) {
-        return new ServiceAuthenticationDecorator(serviceAuthenticationService, authenticationService);
-    }
 }
