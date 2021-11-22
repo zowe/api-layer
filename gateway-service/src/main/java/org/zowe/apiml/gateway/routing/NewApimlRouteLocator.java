@@ -70,19 +70,13 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
     }
 
     private Map<String, ZuulProperties.ZuulRoute> buildRoute(String serviceId, RoutedService routedService) {
-        // Currently support two API path formats. Old: /{typeOfService}/{version}/{serviceId}. New: /{serviceId}/{version}/{typeOfService} //NOSONAR
-
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>();
 
-        String routeKeyOldFormat = "/" + routedService.getGatewayUrl() + "/" + serviceId + "/**";
-        ZuulProperties.ZuulRoute routeOldFormat = new ZuulProperties.ZuulRoute(routeKeyOldFormat, serviceId);
+        String routeKey = "/" + serviceId + "/" + routedService.getGatewayUrl() + "/**";
+        ZuulProperties.ZuulRoute routeFormat = new ZuulProperties.ZuulRoute(routeKey, serviceId);
 
-        String routeKeyNewFormat = "/" + serviceId + "/" + routedService.getGatewayUrl() + "/**";
-        ZuulProperties.ZuulRoute routeNewFormat = new ZuulProperties.ZuulRoute(routeKeyNewFormat, serviceId);
-
-        routesMap.put(routeKeyOldFormat, routeOldFormat);
-        routesMap.put(routeKeyNewFormat, routeNewFormat);
-        log.debug("ServiceId: {}, RouteId: {}, Created Routes: New Format: {} | Old Format: {}", serviceId, routedService.getSubServiceId(), routeNewFormat, routeOldFormat);
+        routesMap.put(routeKey, routeFormat);
+        log.debug("ServiceId: {}, RouteId: {}, Created Routes: {}", serviceId, routedService.getSubServiceId(), routeFormat);
 
         return routesMap;
     }

@@ -25,6 +25,7 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 /**
  * This test suite must be run with HTTPS profile
@@ -52,7 +53,7 @@ class DiscoveryAuthIntegrationTest implements TestWithStartedInstances {
     }
 
     @ParameterizedTest(name = "testApplicationInfoEndpoints_Cookie {index} {0} ")
-    @ValueSource(strings = {"/discovery/api/v1/staticApi", "/"})
+    @ValueSource(strings = {DISCOVERY_STATIC_API, "/"})
     void testApplicationInfoEndpoints_Cookie(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);

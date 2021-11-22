@@ -58,12 +58,12 @@ class ApiDocControllerTest {
             .andExpect(jsonPath("$.info.title", is("Service title")))
             .andExpect(jsonPath("$.info.description", is("Service description")))
             .andExpect(jsonPath("$.info.version", is("1.0.0")))
-            .andExpect(jsonPath("$.servers[0].url", is("/api/v1/gateway/auth")));
+            .andExpect(jsonPath("$.servers[0].url", is("/gateway/api/v1/auth")));
     }
 
     private OpenAPI getDummyOpenApiObject() {
         List<Server> servers = new ArrayList<>();
-        servers.add(0, new Server().url("/api/v1/apicatalog"));
+        servers.add(0, new Server().url("/apicatalog/api/v1"));
         OpenAPI openAPI = new OpenAPI();
         openAPI.setPaths(new Paths());
         openAPI.setTags(new ArrayList<>());

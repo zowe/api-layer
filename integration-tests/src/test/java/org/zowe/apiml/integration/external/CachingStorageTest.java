@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 /**
  * This test is verifying integration with the different Storage mechanisms for the Caching service. If these tests pass,
@@ -43,7 +44,7 @@ import static org.hamcrest.core.IsNot.not;
 @CachingServiceTest
 class CachingStorageTest implements TestWithStartedInstances {
 
-    private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway("/cachingservice/api/v1/cache");
+    private static final URI CACHING_PATH = HttpRequestUtils.getUriFromGateway(CACHING_CACHE);
     private static final String SPECIFIC_SERVICE_HEADER = "X-CS-Service-ID";
 
     @BeforeAll
