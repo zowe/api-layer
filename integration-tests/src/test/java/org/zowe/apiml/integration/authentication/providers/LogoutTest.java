@@ -12,8 +12,7 @@ package org.zowe.apiml.integration.authentication.providers;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
@@ -31,10 +30,6 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 @zOSMFAuthTest
 class LogoutTest implements TestWithStartedInstances {
 
-    protected static String[] logoutUrlsSource() {
-        return new String[]{SecurityUtils.getGatewayLogoutUrl(), SecurityUtils.getGatewayLogoutUrlOldPath()};
-    }
-
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
@@ -45,16 +40,15 @@ class LogoutTest implements TestWithStartedInstances {
     class WhenUserLogOut {
         @Nested
         class InvalidateTheToken {
-            @ParameterizedTest(name = "givenValidCredentials {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
-            void givenValidCredentials(String logoutUrl) {
+            @Test
+            void givenValidCredentials() {
                 // make login
                 String jwt = SecurityUtils.gatewayToken();
 
                 // check if it is logged in
                 assertIfLogged(jwt, true);
 
-                SecurityUtils.logoutOnGateway(logoutUrl, jwt);
+                SecurityUtils.logoutOnGateway(SecurityUtils.getGatewayLogoutUrl(), jwt);
 
                 // check if it is logged out
                 assertIfLogged(jwt, false);

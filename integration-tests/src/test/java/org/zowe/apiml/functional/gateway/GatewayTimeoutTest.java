@@ -24,13 +24,12 @@ import java.util.Collections;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Slf4j
 @DiscoverableClientDependentTest
 @Disabled("Test fails as timeout happens after far more time")
 class GatewayTimeoutTest implements TestWithStartedInstances {
-    private static final String API_V1_GREETING_URI = "/api/v1/discoverableclient/greeting";
-
     private static final int SECOND = 1000;
     private static final int DEFAULT_TIMEOUT = 30 * SECOND;
 
@@ -43,7 +42,7 @@ class GatewayTimeoutTest implements TestWithStartedInstances {
                 assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT + (5 * SECOND)), () -> {
                     given()
                     .when()
-                        .get(getUriFromGateway(API_V1_GREETING_URI,
+                        .get(getUriFromGateway(DISCOVERABLE_GREET,
                             Collections.singletonList(
                                 new BasicNameValuePair("delayMs", String.valueOf(DEFAULT_TIMEOUT + SECOND)))
                             )

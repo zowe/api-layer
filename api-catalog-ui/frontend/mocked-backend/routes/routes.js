@@ -24,7 +24,7 @@ const appRouter = app => {
         res.sendFile(path.join(`${__dirname}/../assets/hello/hello.html`));
     });
 
-    app.post('/api/v1/apicatalog/auth/login', async (req, res) => {
+    app.post('/apicatalog/api/v1/auth/login', async (req, res) => {
         const credentials = req.body;
 
         if (validateCredentials(credentials)) {
@@ -36,11 +36,11 @@ const appRouter = app => {
         }
     });
 
-    app.post('/api/v1/apicatalog/auth/logout', (req, res) => {
+    app.post('/apicatalog/api/v1/auth/logout', (req, res) => {
         res.status(200).send(loginSuccess);
     });
 
-    app.get('/api/v1/apicatalog/containers', async (req, res) => {
+    app.get('/apicatalog/api/v1/containers', async (req, res) => {
         const data = containers;
         // await setTimeout(() => {res.status(200).send(data);}, 2000); // TODO can we externalise timeouts to dynamically simulate long running processes ?
         res.status(200).send(data);
@@ -49,7 +49,7 @@ const appRouter = app => {
     /**
      * Toggle containers json
      */
-    app.get('/api/v1/apicatalog/containers/some-down', (req, res) => {
+    app.get('/apicatalog/api/v1/containers/some-down', (req, res) => {
         if (allUP) {
             containers = require('../assets/containers.json'); // eslint-disable-line global-require
             res.status(200).send({ message: 'Some tiles are down now' });
@@ -60,7 +60,7 @@ const appRouter = app => {
         allUP = !allUP;
     });
 
-    app.get('/api/v1/apicatalog/containers/:serviceID', (req, res) => {
+    app.get('/apicatalog/api/v1/containers/:serviceID', (req, res) => {
         const ApiCatalog = apicatalog;
         const caDemoApps = cademoapps;
         const Testinson = testinson;
@@ -81,7 +81,7 @@ const appRouter = app => {
         }
     });
 
-    app.get('/api/v1/apicatalog/apidoc/:serviceID/:version', (req, res) => {
+    app.get('/apicatalog/api/v1/apidoc/:serviceID/:version', (req, res) => {
         switch (req.params.serviceID) {
             case 'apicatalog':
                 res.status(200).send(apiCatalog);

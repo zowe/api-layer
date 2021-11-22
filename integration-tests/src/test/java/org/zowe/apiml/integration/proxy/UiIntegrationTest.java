@@ -11,35 +11,27 @@ package org.zowe.apiml.integration.proxy;
 
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static io.restassured.RestAssured.given;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @DiscoverableClientDependentTest
 class UiIntegrationTest implements TestWithStartedInstances {
-    protected static String[] discoverableClientSource() {
-        return new String[]{
-            "/discoverableclient/ui/v1",
-            "/ui/v1/discoverableclient"
-        };
-    }
-
     @Nested
     class WhenCallingUiRoute {
         @Nested
         class GivenUiUrl {
-            @ParameterizedTest(name = "returnUi {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.proxy.UiIntegrationTest#discoverableClientSource")
+            @Test
             @TestsNotMeantForZowe
-            void returnUi(String url) {
+            void returnUi() {
                 given()
                 .when()
-                    .get(HttpRequestUtils.getUriFromGateway(url + "/"))
+                    .get(HttpRequestUtils.getUriFromGateway(STATIC_UI + "/"))
                 .then()
                     .statusCode(HttpStatus.SC_OK);
             }
@@ -47,13 +39,12 @@ class UiIntegrationTest implements TestWithStartedInstances {
 
         @Nested
         class GivenRedirectUrl {
-            @ParameterizedTest(name = "returnRedirect {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.proxy.UiIntegrationTest#discoverableClientSource")
+            @Test
             @TestsNotMeantForZowe
-            void returnRedirect(String url) {
+            void returnRedirect() {
                 given()
                 .when()
-                    .get(HttpRequestUtils.getUriFromGateway(url))
+                    .get(HttpRequestUtils.getUriFromGateway(STATIC_UI))
                 .then()
                     .statusCode(HttpStatus.SC_OK);
             }

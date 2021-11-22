@@ -45,36 +45,22 @@ class NewApimlRouteLocatorTest {
     }
 
     @Test
-    void givenOneServiceWithMultipleRoutes_whenLocateRoutes_thenTwoRoutesLocatedWithBothPathFormats() {
+    void givenOneServiceWithMultipleRoutes_whenLocateRoutes_thenRoutesLocatedWithOneFormat() {
         //given
         Map<String, String> metadata = new HashMap<>();
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
 
         ZuulProperties.ZuulRoute expectedRoute = new ZuulProperties.ZuulRoute();
-        expectedRoute.setId("api/v1/service");
-        expectedRoute.setPath("/api/v1/service/**");
-        expectedRoute.setServiceId("service");
-
-        LinkedHashMap<String, ZuulProperties.ZuulRoute> expectedRoutesMap = new LinkedHashMap<>();
-        expectedRoutesMap.put("/api/v1/service/**", expectedRoute);
-
-        expectedRoute = new ZuulProperties.ZuulRoute();
         expectedRoute.setId("service/api/v1");
         expectedRoute.setPath("/service/api/v1/**");
         expectedRoute.setServiceId("service");
 
+        LinkedHashMap<String, ZuulProperties.ZuulRoute> expectedRoutesMap = new LinkedHashMap<>();
         expectedRoutesMap.put("/service/api/v1/**", expectedRoute);
 
         metadata.put(ROUTES + ".ws-v1." + ROUTES_GATEWAY_URL, "ws/v1");
         metadata.put(ROUTES + ".ws-v1." + ROUTES_SERVICE_URL, "/");
-
-        expectedRoute = new ZuulProperties.ZuulRoute();
-        expectedRoute.setId("ws/v1/service");
-        expectedRoute.setPath("/ws/v1/service/**");
-        expectedRoute.setServiceId("service");
-
-        expectedRoutesMap.put("/ws/v1/service/**", expectedRoute);
 
         expectedRoute = new ZuulProperties.ZuulRoute();
         expectedRoute.setId("service/ws/v1");

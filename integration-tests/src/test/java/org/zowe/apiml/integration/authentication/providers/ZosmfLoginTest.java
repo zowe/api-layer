@@ -15,8 +15,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.*;
@@ -34,11 +33,13 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.assertValidAuthToken;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @zOSMFAuthTest
 class ZosmfLoginTest implements TestWithStartedInstances {
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
-    private final static String ZOSMF_ENDPOINT = "/api/" + ZOSMF_SERVICE_ID + "/zosmf/restfiles/ds";
+    private final static String ZOSMF_ENDPOINT = "/" + ZOSMF_SERVICE_ID + "/api/zosmf/restfiles/ds";
+    private URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN);
 
     @BeforeAll
     static void setupClients() throws Exception {
@@ -51,14 +52,13 @@ class ZosmfLoginTest implements TestWithStartedInstances {
     class WhenCallingZosmfAfterAuthentication {
         @Nested
         class ReturnExistingDatasets {
-            @ParameterizedTest(name = "givenValidCertificate {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenValidCertificate(URI loginUrl) {
+            @Test
+            void givenValidCertificate() {
                 Cookie cookie =
                     given()
                         .config(SslContext.clientCertValid)
                     .when()
-                        .post(loginUrl)
+                        .post(LOGIN_ENDPOINT_URL)
                     .then()
                         .statusCode(is(SC_NO_CONTENT))
                         .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -91,14 +91,13 @@ class ZosmfLoginTest implements TestWithStartedInstances {
     class WhenUserAuthenticates {
         @Nested
         class ReturnValidToken {
-            @ParameterizedTest(name = "givenClientX509Cert {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenClientX509Cert(URI loginUrl) {
+            @Test
+            void givenClientX509Cert() {
                 Cookie cookie =
                     given()
                         .config(SslContext.clientCertValid)
                     .when()
-                        .post(loginUrl)
+                        .post(LOGIN_ENDPOINT_URL)
                     .then()
                         .statusCode(is(SC_NO_CONTENT))
                         .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -108,15 +107,14 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                 assertValidAuthToken(cookie, Optional.of("APIMTST"));
             }
 
-            @ParameterizedTest(name = "givenValidClientCertAndInvalidBasic {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenValidClientCertAndInvalidBasic(URI loginUrl) {
+            @Test
+            void givenValidClientCertAndInvalidBasic() {
                 Cookie cookie =
                     given()
                         .config(SslContext.clientCertValid)
                         .auth().basic("Bob", "The Builder")
                     .when()
-                        .post(loginUrl)
+                        .post(LOGIN_ENDPOINT_URL)
                     .then()
                         .statusCode(is(SC_NO_CONTENT))
                         .cookie(COOKIE_NAME, not(isEmptyString()))
