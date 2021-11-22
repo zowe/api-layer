@@ -165,6 +165,8 @@ management:
         health:
             showDetails: always
 
+hystrix.command.default.execution.timeout.enabled: false
+
 logbackServiceName: ZWEAAC1
 ---
 spring:
