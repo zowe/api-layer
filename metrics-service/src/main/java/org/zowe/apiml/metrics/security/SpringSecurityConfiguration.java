@@ -63,8 +63,8 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
         String[] noSecurityAntMatchers = {
             "/application/health",
             "/application/info",
-            "/",
-            "/static/**"
+            "/static/**",
+            "/"
         };
         web.ignoring().antMatchers(noSecurityAntMatchers);
     }
@@ -111,7 +111,8 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
-            .antMatchers("/application/health", "/application/info").permitAll();
+            .antMatchers("/application/health", "/application/info").permitAll()
+            .antMatchers("/hystrix-dashboard/**").authenticated();
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
