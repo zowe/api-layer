@@ -1,10 +1,10 @@
 dependencies {
     annotationProcessor libraries.lombok
 
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.11'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.4'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
-    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+    compile libraries.http_client
+    compile libraries.jackson_databind
+    compile libraries.slf4j_api
+    compile libraries.jaxb_api
     compile(libraries.spring_boot_starter_web) {
         exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-core'
     }
@@ -13,7 +13,7 @@ dependencies {
 
     testCompile libraries.spring_boot_starter_test
     testCompile libraries.json_smart
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
-    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    testCompile libraries.junitJupiter
+    testCompile libraries.jjwt_full
+    testCompile libraries.logback_classic
 }
