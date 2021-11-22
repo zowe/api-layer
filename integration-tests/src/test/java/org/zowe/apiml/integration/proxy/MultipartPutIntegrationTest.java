@@ -14,8 +14,7 @@ import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -25,33 +24,25 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @DiscoverableClientDependentTest
 class MultipartPutIntegrationTest implements TestWithStartedInstances {
-    private static final String MULTIPART_PATH = "/discoverableclient/api/v1/multipart";
-    private static final String MULTIPART_PATH_OLD_FORMAT = "/api/v1/discoverableclient/multipart";
     private final String configFileName = "example.txt";
     private final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+    private URI url = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_MULTIPART);
 
     @BeforeAll
     static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    protected static URI[] discoverableClientUrls() {
-        return new URI[]{
-            HttpRequestUtils.getUriFromGateway(MULTIPART_PATH),
-            HttpRequestUtils.getUriFromGateway(MULTIPART_PATH_OLD_FORMAT)
-        };
-    }
-
     @Nested
     class WhenSendingMultipartData {
         @Nested
         class VerifyBodyMatches {
-            @ParameterizedTest(name = "givenPutRequest {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.proxy.MultipartPutIntegrationTest#discoverableClientUrls")
-            void givenPutRequest(URI url) {
+            @Test
+            void givenPutRequest() {
                 RestAssured.registerParser("text/plain", Parser.JSON);
 
                 given().
@@ -65,9 +56,8 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
                     put(url);
             }
 
-            @ParameterizedTest(name = "givenPostRequest {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.proxy.MultipartPutIntegrationTest#discoverableClientUrls")
-            void givenPostRequest(URI url) {
+            @Test
+            void givenPostRequest() {
                 RestAssured.registerParser("text/plain", Parser.JSON);
 
                 given().

@@ -74,12 +74,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {
         "/gateway/api/v1",
-        "/api/v1/gateway",
         "/application",
         "/gateway/services"
     };
 
-    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/api/v1/gateway/**", "/gateway/version");
+    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/gateway/api/v1/**", "/gateway/version");
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
@@ -127,23 +126,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpoint()).permitAll()
-            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpointOldFormat()).permitAll()
 
             // ticket endpoint
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
-            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpointOldFormat()).authenticated()
             .and().x509()
             .userDetailsService(x509UserDetailsService())
 
             // logout endpoint
             .and()
             .logout()
-            .logoutRequestMatcher(new RegexRequestMatcher(
-                String.format("(%s|%s)",
-                    authConfigurationProperties.getGatewayLogoutEndpoint(),
-                    authConfigurationProperties.getGatewayLogoutEndpointOldFormat())
+            .logoutRequestMatcher(new RegexRequestMatcher(authConfigurationProperties.getGatewayLogoutEndpoint()
                 , HttpMethod.POST.name()))
             .addLogoutHandler(logoutHandler())
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
@@ -187,15 +181,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpoint()), ShouldBeAlreadyAuthenticatedFilter.class)
             .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), X509AuthenticationFilter.class)
 
-            .addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(x509AuthenticationFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), ShouldBeAlreadyAuthenticatedFilter.class)
-            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpointOldFormat()), X509AuthenticationFilter.class)
-
-
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpointOldFormat()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
 

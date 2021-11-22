@@ -29,6 +29,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 /**
  * Verify it's possible to retrieve information about services onboarded to the gateway if the user requesting the
@@ -47,9 +48,6 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
     private final static String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getUser();
     private final static String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getPassword();
-
-    private static final String SERVICES_ENDPOINT = "gateway/api/v1/services";
-    private static final String SERVICES_ENDPOINT_NOT_VERSIONED = "gateway/services";
 
     private static final String API_CATALOG_SERVICE_ID = "apicatalog";
     private static final String API_CATALOG_SERVICE_API_ID = "zowe.apiml.apicatalog";
@@ -71,10 +69,10 @@ class ServicesInfoTest implements TestWithStartedInstances {
         class ReturnUnauthorized {
             Stream<String> endpoints() {
                 return Stream.of(
-                    SERVICES_ENDPOINT,
-                    SERVICES_ENDPOINT_NOT_VERSIONED,
-                    SERVICES_ENDPOINT + "/" + API_CATALOG_SERVICE_ID,
-                    SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
+                    ROUTED_SERVICE,
+                    ROUTED_SERVICE_NOT_VERSIONED,
+                    ROUTED_SERVICE + "/" + API_CATALOG_SERVICE_ID,
+                    ROUTED_SERVICE_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
                 );
             }
 
@@ -95,8 +93,8 @@ class ServicesInfoTest implements TestWithStartedInstances {
         class GivenClientCertificateCallDirectlyTowardsGateway {
             @ParameterizedTest(name = "givenClientCertificate_returns200WithoutSafCheck {index} {0} ")
             @ValueSource(strings = {
-                SERVICES_ENDPOINT_NOT_VERSIONED,
-                SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
+                ROUTED_SERVICE_NOT_VERSIONED,
+                ROUTED_SERVICE_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
             })
             void returns200WithoutSafCheck(String endpoint) {
                 given().config(SslContext.clientCertValid)
@@ -108,8 +106,8 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
             @ParameterizedTest(name = "givenClientCertificate_returns401WithUntrustedCert {index} {0} ")
             @ValueSource(strings = {
-                SERVICES_ENDPOINT_NOT_VERSIONED,
-                SERVICES_ENDPOINT_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
+                ROUTED_SERVICE_NOT_VERSIONED,
+                ROUTED_SERVICE_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
             })
             void returns401WithUntrustedCert(String endpoint) {
                 given().config(SslContext.selfSignedUntrusted)
@@ -137,7 +135,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
                     .when()
-                    .get(getUriFromGateway(SERVICES_ENDPOINT))
+                    .get(getUriFromGateway(ROUTED_SERVICE))
                     .then()
                     .statusCode(is(SC_OK))
                     .header(VERSION_HEADER, CURRENT_VERSION)
@@ -157,7 +155,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 given()
                     .auth().basic(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD)
                     .when()
-                    .get(getUriFromGateway(SERVICES_ENDPOINT))
+                    .get(getUriFromGateway(ROUTED_SERVICE))
                     .then()
                     .statusCode(is(SC_FORBIDDEN))
                     .body("messages.find { it.messageNumber == 'ZWEAT403E' }.messageContent", startsWith(expectedMessage));
@@ -168,8 +166,8 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
     protected static Stream<Arguments> serviceSpecificUrls() {
         return Stream.of(
-            Arguments.of(getUriFromGateway(SERVICES_ENDPOINT + "/" + API_CATALOG_SERVICE_ID), API_CATALOG_SERVICE_ID, API_CATALOG_SERVICE_API_ID, API_CATALOG_PATH),
-            Arguments.of(getUriFromGateway(SERVICES_ENDPOINT + "/gateway"), "gateway", "zowe.apiml.gateway", "/gateway/api/v1")
+            Arguments.of(getUriFromGateway(ROUTED_SERVICE + "/" + API_CATALOG_SERVICE_ID), API_CATALOG_SERVICE_ID, API_CATALOG_SERVICE_API_ID, API_CATALOG_PATH),
+            Arguments.of(getUriFromGateway(ROUTED_SERVICE + "/gateway"), "gateway", "zowe.apiml.gateway", "/gateway/api/v1")
         );
     }
 
@@ -215,7 +213,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
                     .when()
-                    .get(getUriFromGateway(SERVICES_ENDPOINT, Collections.singletonList(new BasicNameValuePair("apiId", API_CATALOG_SERVICE_API_ID))))
+                    .get(getUriFromGateway(ROUTED_SERVICE, Collections.singletonList(new BasicNameValuePair("apiId", API_CATALOG_SERVICE_API_ID))))
                     .then()
                     .statusCode(is(SC_OK))
                     .header(VERSION_HEADER, CURRENT_VERSION)

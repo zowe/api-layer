@@ -12,8 +12,7 @@ package org.zowe.apiml.integration.authentication.providers;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 
@@ -35,15 +34,14 @@ class ZosmfLogoutTest implements TestWithStartedInstances {
     class WhenUserLogsOutTwice {
         @Nested
         class SecondCallReturnUnauthorized {
-            @ParameterizedTest(name = "givenValidToken {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
-            void givenValidToken(String logoutUrl) {
+            @Test
+            void givenValidToken() {
                 String jwt = gatewayToken();
 
                 assertIfLogged(jwt, true);
 
-                assertLogout(logoutUrl, jwt, SC_NO_CONTENT);
-                assertLogout(logoutUrl, jwt, SC_UNAUTHORIZED);
+                assertLogout(getGatewayLogoutUrl(), jwt, SC_NO_CONTENT);
+                assertLogout(getGatewayLogoutUrl(), jwt, SC_UNAUTHORIZED);
             }
         }
     }

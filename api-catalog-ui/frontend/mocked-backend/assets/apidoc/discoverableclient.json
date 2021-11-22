@@ -18,7 +18,7 @@
         "http"
     ],
     "paths": {
-        "/api/v1/discoverableclient/greeting": {
+        "/discoverableclient/api/v1/greeting": {
             "get": {
                 "tags": [
                     "Other Operations"

@@ -29,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 /**
  * The goal of this test is to verify that we actually properly handle the concurrent connections on the Gateway.
@@ -39,7 +40,7 @@ class GatewayConcurrentRequestsTest implements TestWithStartedInstances {
 
     @Test
     void givenGatewayWithConcurrentConnections_whenMakeThreeConnections_thenThreeConcurrentConnections() throws Exception {
-        URI uri = new URIBuilder(getUriFromGateway("/api/v1/discoverableclient/greeting"))
+        URI uri = new URIBuilder(getUriFromGateway(DISCOVERABLE_GREET))
             .setParameter("delayMs", "10000").build();
         HttpGet request1 = new HttpGet(uri);
         HttpGet request2 = new HttpGet(uri);

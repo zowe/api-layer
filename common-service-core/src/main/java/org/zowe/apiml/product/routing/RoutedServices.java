@@ -96,9 +96,7 @@ public class RoutedServices {
     }
 
     private boolean isMatchingApiRoute(String serviceUrl, String routeServiceUrl) {
-        serviceUrl = serviceUrl.toLowerCase();
-        return serviceUrl.startsWith(routeServiceUrl)
-            || routeServiceUrl.startsWith(serviceUrl); // Allow serviceUrl of /serviceId to map to /serviceId/{type}/{version} NOSONAR
+        return routeServiceUrl.startsWith(serviceUrl.toLowerCase());
     }
 
     @Override
