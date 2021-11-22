@@ -87,6 +87,8 @@ management:
     endpoint:
         shutdown:
             enabled: true
+
+hystrix.command.default.execution.timeout.enabled: false
 ---
 spring:
     profiles: https
