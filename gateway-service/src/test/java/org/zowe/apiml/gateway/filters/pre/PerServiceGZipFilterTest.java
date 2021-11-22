@@ -12,8 +12,6 @@ package org.zowe.apiml.gateway.filters.pre;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -68,6 +66,7 @@ class PerServiceGZipFilterTest {
 
         @Nested
         class ServiceAcceptsGZip {
+            private String url = "/" + SERVICE_WITH_COMPRESSION + "/api/v1";
 
             @Nested
             class OnAllPaths {
@@ -75,23 +74,18 @@ class PerServiceGZipFilterTest {
                 void setup() {
                     when(discoveryClient.getInstances(SERVICE_WITH_COMPRESSION)).thenReturn(instances);
                     filter = new PerServiceGZipFilter(discoveryClient);
+                    request.setRequestURI(url);
                 }
 
-                @ParameterizedTest(name = "whenResponseIsEmpty_thenLengthIsZero {index} {0} ")
-                @ValueSource(strings = {"/api/v1/" + SERVICE_WITH_COMPRESSION, "/" + SERVICE_WITH_COMPRESSION + "/api/v1"})
-                void whenResponseIsEmpty_thenLengthIsZero(String url) throws ServletException, IOException {
-                    request.setRequestURI(url);
-
+                @Test
+                void whenResponseIsEmpty_thenLengthIsZero() throws ServletException, IOException {                    
                     MockHttpServletResponse response = new MockHttpServletResponse();
                     filter.doFilterInternal(request, response, chain);
                     assertEquals(0, response.getContentLength());
                 }
 
-                @ParameterizedTest(name = "whenResponseContainsData_thenCompress {index} {0} ")
-                @ValueSource(strings = {"/api/v1/" + SERVICE_WITH_COMPRESSION, "/" + SERVICE_WITH_COMPRESSION + "/api/v1"})
-                void whenResponseContainsData_thenCompress(String url) throws ServletException, IOException {
-                    request.setRequestURI(url);
-
+                @Test
+                void whenResponseContainsData_thenCompress() throws ServletException, IOException {
                     MockHttpServletResponse response = new MockHttpServletResponse();
 
                     filter.doFilterInternal(request, response, (request, response1) -> {
@@ -102,11 +96,8 @@ class PerServiceGZipFilterTest {
                     assertEquals("gzip", response.getHeader("Content-Encoding"));
                 }
 
-                @ParameterizedTest(name = "whenStatusIsNoContent_thenContentIsNotCompressed {index} {0} ")
-                @ValueSource(strings = {"/api/v1/" + SERVICE_WITH_COMPRESSION, "/" + SERVICE_WITH_COMPRESSION + "/api/v1"})
-                void whenStatusIsNoContent_thenContentIsNotCompressed(String url) throws ServletException, IOException {
-                    request.setRequestURI(url);
-
+                @Test
+                void whenStatusIsNoContent_thenContentIsNotCompressed() throws ServletException, IOException {
                     MockHttpServletResponse response = new MockHttpServletResponse();
 
                     filter.doFilterInternal(request, response, (request, response1) -> {
@@ -121,7 +112,7 @@ class PerServiceGZipFilterTest {
             class OnCompressedPath {
                 @BeforeEach
                 void setup() {
-                    request.setRequestURI("/api/v1/" + SERVICE_WITH_COMPRESSION + "/compressed");
+                    request.setRequestURI("/" + SERVICE_WITH_COMPRESSION + "/api/v1/compressed");
                     metadata.put("apiml.response.compressRoutes", "/**/compressed,/api/v1/,**/" + SERVICE_WITH_COMPRESSION + "/comp2ress");
 
                     when(discoveryClient.getInstances(SERVICE_WITH_COMPRESSION)).thenReturn(instances);

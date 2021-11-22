@@ -13,8 +13,7 @@ import io.restassured.RestAssured;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.ticket.TicketRequest;
 import org.zowe.apiml.security.common.ticket.TicketResponse;
 import org.zowe.apiml.util.TestWithStartedInstances;
@@ -35,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 /**
  * Verify integration of the API ML Passticket support with the zOS provider of the Passticket.
@@ -50,21 +50,13 @@ class PassTicketTest implements TestWithStartedInstances {
     private final static String USERNAME = ENVIRONMENT_CONFIGURATION.getCredentials().getUser();
     private final static String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
 
-    private final static String TICKET_ENDPOINT = "/gateway/api/v1/auth/ticket";
-    private final static String TICKET_ENDPOINT_OLD_PATH_FORMAT = "/api/v1/gateway/auth/ticket";
     private final static String COOKIE = "apimlAuthenticationToken";
+    private URI url = HttpRequestUtils.getUriFromGateway(ROUTED_PASSTICKET);
 
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    }
-
-    protected static URI[] passTicketUrls() {
-        return new URI[]{
-            HttpRequestUtils.getUriFromGateway(TICKET_ENDPOINT),
-            HttpRequestUtils.getUriFromGateway(TICKET_ENDPOINT_OLD_PATH_FORMAT)
-        };
     }
 
     @Nested
@@ -85,9 +77,8 @@ class PassTicketTest implements TestWithStartedInstances {
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
             }
 
-            @ParameterizedTest(name = "givenValidTokenInCookieAndCertificate {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.zos.PassTicketTest#passTicketUrls")
-            void givenValidTokenInCookieAndCertificate(URI url) {
+            @Test
+            void givenValidTokenInCookieAndCertificate() {
                 TicketResponse ticketResponse = given()
                     .contentType(JSON)
                     .body(ticketRequest)
@@ -101,9 +92,8 @@ class PassTicketTest implements TestWithStartedInstances {
                 assertPassTicketIsValid(ticketResponse, jwt);
             }
 
-            @ParameterizedTest(name = "givenValidTokenInHeaderAndCertificate {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.zos.PassTicketTest#passTicketUrls")
-            void givenValidTokenInHeaderAndCertificate(URI url) {
+            @Test
+            void givenValidTokenInHeaderAndCertificate() {
                 TicketResponse ticketResponse = given()
                     .contentType(JSON)
                     .body(ticketRequest)
@@ -125,9 +115,8 @@ class PassTicketTest implements TestWithStartedInstances {
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
             }
 
-            @ParameterizedTest(name = "givenNoToken {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.zos.PassTicketTest#passTicketUrls")
-            void givenNoToken(URI url) {
+            @Test
+            void givenNoToken() {
                 String expectedMessage = "No authorization token provided for URL '" + url.getPath() + "'";
 
                 given()
@@ -140,9 +129,8 @@ class PassTicketTest implements TestWithStartedInstances {
                     .body("messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage));
             }
 
-            @ParameterizedTest(name = "givenInvalidTokenInCookie {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.zos.PassTicketTest#passTicketUrls")
-            void givenInvalidTokenInCookie(URI url) {
+            @Test
+            void givenInvalidTokenInCookie() {
                 String jwt = "invalidToken";
                 String expectedMessage = "Token is not valid for URL '" + url.getPath() + "'";
 
@@ -157,9 +145,8 @@ class PassTicketTest implements TestWithStartedInstances {
                     .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
             }
 
-            @ParameterizedTest(name = "givenInvalidTokenInHeader {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.zos.PassTicketTest#passTicketUrls")
-            void givenInvalidTokenInHeader(URI url) {
+            @Test
+            void givenInvalidTokenInHeader() {
                 String jwt = "invalidToken";
                 String expectedMessage = "Token is not valid for URL '" + url.getPath() + "'";
 
@@ -182,9 +169,8 @@ class PassTicketTest implements TestWithStartedInstances {
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
             }
 
-            @ParameterizedTest(name = "givenNoApplicationName {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.zos.PassTicketTest#passTicketUrls")
-            void givenNoApplicationName(URI url) {
+            @Test
+            void givenNoApplicationName() {
                 String expectedMessage = "The 'applicationName' parameter name is missing.";
 
                 given()
@@ -197,9 +183,8 @@ class PassTicketTest implements TestWithStartedInstances {
 
             }
 
-            @ParameterizedTest(name = "givenInvalidApplicationName {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.zos.PassTicketTest#passTicketUrls")
-            void givenInvalidApplicationName(URI url) {
+            @Test
+            void givenInvalidApplicationName() {
                 String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
                 TicketRequest ticketRequest = new TicketRequest(UNKNOWN_APPLID);
 
@@ -218,9 +203,8 @@ class PassTicketTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnForbidden {
-            @ParameterizedTest(name = "givenNoCertificate {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.zos.PassTicketTest#passTicketUrls")
-            void givenNoCertificate(URI url) {
+            @Test
+            void givenNoCertificate() {
                 given()
                     .contentType(JSON)
                     .body(ticketRequest)
@@ -234,9 +218,8 @@ class PassTicketTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnMethodNotAllowed {
-            @ParameterizedTest(name = "givenInvalidHttpMethod {index} {0} ")
-            @MethodSource("org.zowe.apiml.integration.zos.PassTicketTest#passTicketUrls")
-            void givenInvalidHttpMethod(URI url) {
+            @Test
+            void givenInvalidHttpMethod() {
                 String expectedMessage = "Authentication method 'GET' is not supported for URL '" + url.getPath() + "'";
 
                 given()

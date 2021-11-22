@@ -17,7 +17,7 @@ Example:
                             gatewayUrl: "/ws/v1"
                             serviceUrl: /discoverableclient/ws
 
-This maps requests `wss://gatewayHost:port/ws/v1/serviceId/path` to `ws://serviceHost:port/discoverableclient/ws/path` 
+This maps requests `wss://gatewayHost:port/serviceId/ws/v1/path` to `ws://serviceHost:port/discoverableclient/ws/path` 
 where:
 
 * `serviceId` is the service ID of the service

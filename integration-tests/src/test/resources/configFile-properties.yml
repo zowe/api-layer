@@ -6,6 +6,6 @@ KEYSTORETYPE: PKCS12
 TRUSTSTORETYPE: PKCS12
 APIML_HOST: localhost
 APIML_PORT: 10010
-APIML_BASE_URL: /api/v1/gateway/auth
+APIML_BASE_URL: /gateway/api/v1/auth
 
 

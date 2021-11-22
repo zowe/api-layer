@@ -77,7 +77,7 @@ To run onboarding-enabler-nodejs-sample-app, follow the steps below:
        * [https://localhost:10020/api/v1/hello](https://localhost:10020/api/v1/hello) for the greeting endpoint.
        * [https://localhost:10010/hwexpress/api/v1/hello](https://localhost:10010/hwexpress/api/v1/hello) for the greeting endpoint, routed through API Gateway.
        
-       Go to the [API Catalog](https://localhost:10010/ui/v1/apicatalog) and check if the API documentation of the service is retrieved.
+       Go to the [API Catalog](https://localhost:10010/apicatalog/ui/v1) and check if the API documentation of the service is retrieved.
 
 
 ### Sample Application - onboarding-enabler-java-sample-app
@@ -95,9 +95,9 @@ If you need debug information about SSL configuration while deploying, use this 
     * [https://localhost:10016/enablerJavaSampleApp/application/info](https://localhost:10016/enablerJavaSampleApp/application/info) for the service information such as hostname, port etc.
     * [https://localhost:10016](https://localhost:10016) for the homepage .
     * [https://localhost:10016/enablerJavaSampleApp/api/v1/greeting](https://localhost:10016/enablerJavaSampleApp/api/v1/greeting) for the greeting endpoint.
-    * [https://localhost:10010/api/v1/enablerjavasampleapp/greeting](https://localhost:10010/api/v1/enablerjavasampleapp/greeting) for the greeting endpoint, routed through API Gateway.
+    * [https://localhost:10010/api/v1/enablerjavasampleapp/greeting](https://localhost:10010/enablerjavasampleapp/api/v1/greeting) for the greeting endpoint, routed through API Gateway.
     
-    Go to the [API Catalog](https://localhost:10010/ui/v1/apicatalog) and check if the API documentation of the service is retrieved.
+    Go to the [API Catalog](https://localhost:10010/apicatalog/ui/v1) and check if the API documentation of the service is retrieved.
 
 ### Default Discovery Timing Settings 
 

@@ -65,12 +65,9 @@ class LocationFilterTest {
 
     static private Stream<Arguments> arguments_testContextKeyURLFiltering() {
         return Stream.of(
-            Arguments.of(PROXY_KEY, "api/v1/service", "/service/v1/path"),
             Arguments.of(REQUEST_URI_KEY, "path", "/service/v1/path"),
             Arguments.of(PROXY_KEY, "/service/api/v2", "/service/v2/path"),
-            Arguments.of(PROXY_KEY, "/api/v2/service", "/service/v2/path"),
             Arguments.of(PROXY_KEY, "service/api/v2/", "/service/v2/path"),
-            Arguments.of(PROXY_KEY, "api/v2/service/", "/service/v2/path"),
             Arguments.of(SERVICE_ID_KEY, "", "/path"),
             Arguments.of(SERVICE_ID_KEY, null, "/path"),
             Arguments.of(PROXY_KEY, "", "/path"),

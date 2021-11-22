@@ -111,7 +111,7 @@ public class GatewayRequests {
             return given()
                 .cookie(COOKIE_NAME, token)
             .when()
-                .post(getGatewayUriWithPath(authConfigurationProperties.getGatewayRefreshEndpointNewFormat()))
+                .post(getGatewayUriWithPath(authConfigurationProperties.getGatewayRefreshEndpoint()))
             .then()
                 .statusCode(is(SC_NO_CONTENT))
                 .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))

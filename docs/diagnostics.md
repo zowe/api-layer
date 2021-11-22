@@ -33,7 +33,7 @@ It is also printed to the log as the very first messsage:
 
 ## Version Information
 
-It is also possible to know the version of API ML and Zowe (if API ML used as part of Zowe), using the `/api/v1/gateway/version` endpoint in the API Gateway service. E.g.:
+It is also possible to know the version of API ML and Zowe (if API ML used as part of Zowe), using the `/gateway/api/v1/version` endpoint in the API Gateway service. E.g.:
 
     https://localhost:10010/gateway/api/v1/version
 

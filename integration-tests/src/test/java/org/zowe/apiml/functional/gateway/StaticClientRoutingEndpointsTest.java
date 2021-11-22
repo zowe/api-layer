@@ -23,8 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @GatewayTest
 @TestsNotMeantForZowe
 class StaticClientRoutingEndpointsTest implements TestWithStartedInstances {
-    private static final String GREET = "/api/v1/discoverableclient/greeting";
-    private static final String STATIC_GREET = "/api/v1/staticclient/greeting";
+    private static final String GREET = "/discoverableclient/api/v1/greeting";
+    private static final String STATIC_GREET = "/staticclient/api/v1/greeting";
 
     @Test
     void whenStaticAndDynamicRoutedThenProducesSameResponse() throws Exception {
