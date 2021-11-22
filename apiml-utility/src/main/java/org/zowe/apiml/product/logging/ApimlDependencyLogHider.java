@@ -43,7 +43,6 @@ public class ApimlDependencyLogHider extends TurboFilter {
         ".*Error during filtering.*Token is not valid.*",
         ".*Endpoint ID .* contains invalid characters.*",
         "org.zowe.apiml.gateway.error.NotFound",
-        "Weak cipher suite", // https://github.com/zowe/api-layer/issues/1663
         "HV000001: Hibernate Validator",
         "You already have RibbonLoadBalancerClient on your classpath.*"); // Known fact, fix in Zowe V2
 
