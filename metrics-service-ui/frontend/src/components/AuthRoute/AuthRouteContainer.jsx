@@ -13,6 +13,7 @@ import { connect } from 'react-redux';
 import AuthRoute from './AuthRoute';
 
 const mapStateToProps = (state) => {
+    // TODO will we use this state? Need to set redux state in AuthRoute component instead of using component state
     const authenticated = !!state.authenticationReducer.sessionOn;
     return { authenticated };
 };

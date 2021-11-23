@@ -36,13 +36,13 @@ class App extends Component {
                                 </Switch>
 
                                 <Switch>
-                                    <Route path="/" exact render={() => <Redirect replace to="/dashboard" />} />
+                                    <AuthRoute path="/" exact render={() => <Redirect replace to="/dashboard" />} />
                                     <Route
                                         path="/login"
                                         exact
                                         render={(props, state) => <AsyncLoginContainer {...props} {...state} />}
                                     />
-                                    <Route path="/dashboard" component={DashboardContainer} />
+                                    <AuthRoute path="/dashboard" component={DashboardContainer} />
                                 </Switch>
                             </div>
                         </Router>
