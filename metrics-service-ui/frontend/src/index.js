@@ -29,7 +29,6 @@ import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
 import { rootReducer } from './reducers';
 import { sendError } from './actions/error-actions';
-import { userService } from './services';
 import history from './helpers/history';
 
 function errorHandler(error, getState, lastAction, dispatch) {
@@ -54,29 +53,7 @@ const epicMiddleware = createEpicMiddleware({
 });
 const composeEnhancers = compose;
 
-const checkAuthenticated = (mstore) => (next) => (action) => {
-    // eslint-disable-next-line
-    console.log('checkAuthenticated');
-    userService
-        .checkAuthentication()
-        .then(() => next(action))
-        .catch((error) => {
-            // eslint-disable-next-line
-            console.log('checkAuthenticated error');
-            // eslint-disable-next-line
-            console.log(error);
-            // eslint-disable-next-line
-            console.log(window.location.href);
-            if (!window.location.href.endsWith('/login')) {
-                // eslint-disable-next-line
-                console.log('checkAuthenticated push to login');
-                history.push('/login');
-            }
-            return next(action);
-        });
-};
-
-const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler), checkAuthenticated];
+const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler)];
 
 // if (process.env.NODE_ENV !== 'production') {
 middlewares.push(logger);
@@ -86,6 +63,7 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 const store = createStore(persistedReducer, composeEnhancers(applyMiddleware(...middlewares)));
 const persistor = persistStore(store);
 
+// TODO Spinner isLoading not used?
 ReactDOM.render(
     <HashRouter>
         <Provider store={store}>
