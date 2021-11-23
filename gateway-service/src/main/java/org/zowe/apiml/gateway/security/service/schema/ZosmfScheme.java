@@ -14,18 +14,15 @@ import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpRequest;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.CookieUtil;
-import org.zowe.apiml.util.Cookies;
 
-import java.net.HttpCookie;
 import java.util.Date;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -63,14 +60,6 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
         public static final String COOKIE_HEADER = "cookie";
 
         private final Long expireAt;
-
-        private void createCookie(Cookies cookies, String name, String token) {
-            HttpCookie jwtCookie = new HttpCookie(name, token);
-            jwtCookie.setSecure(true);
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setVersion(0);
-            cookies.set(jwtCookie);
-        }
 
         private void setCookie(RequestContext context, String name, String value) {
             context.addZuulRequestHeader(COOKIE_HEADER,
@@ -116,32 +105,6 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
                 // remove authentication part
                 context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, null);
-            });
-        }
-
-        @Override
-        public void applyToRequest(HttpRequest request) {
-            Cookies cookies = Cookies.of(request);
-            final RequestContext context = RequestContext.getCurrentContext();
-
-            Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
-            jwtToken.ifPresent(token -> {
-                // parse JWT token to detect the source (z/OSMF / Zowe)
-                QueryResponse queryResponse = authenticationService.parseJwtToken(token);
-                switch (queryResponse.getSource()) {
-                    case ZOSMF:
-                        cookies.remove(authConfigurationProperties.getCookieProperties().getCookieName());
-                        createCookie(cookies, ZosmfService.TokenType.JWT.getCookieName(), token);
-                        break;
-                    case ZOWE:
-                        final String ltpaToken = authenticationService.getLtpaTokenWithValidation(token);
-                        createCookie(cookies, ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken);
-                        break;
-                    default:
-                        return;
-                }
-                // remove authentication part
-                request.removeHeaders(HttpHeaders.AUTHORIZATION);
             });
         }
 

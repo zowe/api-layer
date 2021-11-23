@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 
 import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Slf4j
 public class ConfigReaderZaasClient {
@@ -24,7 +25,7 @@ public class ConfigReaderZaasClient {
 
             configProperties.setApimlHost(environmentConfiguration().getGatewayServiceConfiguration().getHost());
             configProperties.setApimlPort(environmentConfiguration().getGatewayServiceConfiguration().getPort() + "");
-            configProperties.setApimlBaseUrl("/api/v1/gateway/auth");
+            configProperties.setApimlBaseUrl(ROUTED_AUTH);
             configProperties.setKeyStorePath(environmentConfiguration().getTlsConfiguration().getKeyStore());
             configProperties.setKeyStorePassword(environmentConfiguration().getTlsConfiguration().getKeyStorePassword());
             configProperties.setKeyStoreType(environmentConfiguration().getTlsConfiguration().getKeyStoreType());

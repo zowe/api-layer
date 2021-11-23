@@ -12,52 +12,45 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.stubbing.Stubber;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.service.security.MockedSecurityContext;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
-import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
-import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -96,12 +89,12 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         serviceAuthenticationService.evictCacheAllService();
 
         serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(
-                discoveryClient,
-                new EurekaMetadataParser(),
-                authenticationSchemeFactory,
-                authenticationService,
-                cacheManager,
-                new CacheUtils());
+            discoveryClient,
+            new EurekaMetadataParser(),
+            authenticationSchemeFactory,
+            authenticationService,
+            cacheManager,
+            new CacheUtils());
     }
 
     @AfterEach
@@ -213,15 +206,11 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     void testGetAuthenticationCommandByServiceId() {
         AuthenticationCommand ok = new AuthenticationCommandTest(false);
         Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
-        Authentication a2 = new Authentication(AuthenticationScheme.ZOWE_JWT, null);
-        Authentication a3 = new Authentication(AuthenticationScheme.ZOWE_JWT, "applid01");
-        Authentication a4 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid02");
+        Authentication a2 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
         Authentication a5 = new Authentication(null, null);
 
         InstanceInfo ii1 = createInstanceInfo("inst01", a1);
         InstanceInfo ii2 = createInstanceInfo("inst01", a2);
-        InstanceInfo ii3 = createInstanceInfo("inst01", a3);
-        InstanceInfo ii4 = createInstanceInfo("inst01", a4);
         InstanceInfo ii5 = createInstanceInfo("inst02", a5);
 
         Application application;
@@ -250,22 +239,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         reset(discoveryClient);
         application = createApplication(ii1, ii2);
         when(discoveryClient.getApplication("svr03")).thenReturn(application);
-        assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
-
-        reset(discoveryClient);
-        application = createApplication(ii1, ii3);
-        when(discoveryClient.getApplication("svr03")).thenReturn(application);
-        assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
-
-        reset(discoveryClient);
-        application = createApplication(ii1, ii4);
-        when(discoveryClient.getApplication("svr03")).thenReturn(application);
-        assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
-
-        reset(discoveryClient);
-        application = createApplication(ii1, ii2, ii3, ii4);
-        when(discoveryClient.getApplication("svr03")).thenReturn(application);
-        assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
+        assertSame(ok, sas.getAuthenticationCommand("svr03", "jwt03"));
 
         reset(discoveryClient);
         when(discoveryClient.getInstancesById("svr03")).thenReturn(Collections.singletonList(ii5));
@@ -301,48 +275,6 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         verify(discoveryClient, times(3)).getApplication("s1");
         assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
         verify(discoveryClient, times(3)).getApplication("s1");
-    }
-
-    @Test
-    void testUniversalAuthenticationCommand() {
-        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand uac = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
-        assertFalse(uac.isExpired());
-
-        try {
-            uac.apply(null);
-            fail();
-        } catch (NullPointerException e) {
-            // this command cannot be applied without parameter (null)
-        }
-
-        AuthenticationCommand ac = mock(AuthenticationCommand.class);
-        InstanceInfo ii = createInstanceInfo("inst0001", AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid0001");
-        RequestContext requestContext = mock(RequestContext.class);
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        when(requestContext.getRequest()).thenReturn(request);
-        RequestContext.testSetCurrentContext(requestContext);
-        when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken01"));
-        AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
-        when(scheme.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid0001")), any())).thenReturn(ac);
-        when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(scheme);
-
-        uac.apply(ii);
-
-        verify(ac, times(1)).apply(null);
-    }
-
-    @Test
-    void testLoadBalancerAuthenticationCommand() {
-        ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand lbac = serviceAuthenticationServiceImpl.new LoadBalancerAuthenticationCommand();
-        assertFalse(lbac.isExpired());
-
-        RequestContext requestContext = new RequestContext();
-        RequestContext.testSetCurrentContext(requestContext);
-
-        assertNull(requestContext.get(AUTHENTICATION_COMMAND_KEY));
-        lbac.apply(null);
-        assertTrue(requestContext.get(AUTHENTICATION_COMMAND_KEY) instanceof ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand);
-        assertFalse(lbac.isRequiredValidJwt());
     }
 
     @Test
@@ -390,88 +322,14 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", "jwtToken"));
     }
 
-    @Test
-    void testIsRequiredValidJwt() {
-        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
-        assertFalse(universalAuthenticationCommand.isRequiredValidJwt());
-    }
 
     private <T> T getUnProxy(T springClass) throws Exception {
-        if (springClass instanceof  Advised) {
+        if (springClass instanceof Advised) {
             return (T) ((Advised) springClass).getTargetSource().getTarget();
         }
         return springClass;
     }
 
-    private AuthenticationCommand testRequiredAuthentication(boolean requiredJwtValidation, String jwtToken) throws Exception {
-        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
-        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand =
-            serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
-
-        AuthenticationCommand ac = mock(AuthenticationCommand.class);
-        QueryResponse queryResponse = mock(QueryResponse.class);
-        AbstractAuthenticationScheme schema = mock(AbstractAuthenticationScheme.class);
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        RequestContext.getCurrentContext().setRequest(request);
-
-        Stubber stubber;
-        if (StringUtils.equals(jwtToken, "validJwt")) {
-            stubber = doReturn(Optional.of(jwtToken));
-        } else {
-            stubber = doThrow(new TokenNotValidException("Token is not valid."));
-        }
-        stubber.when(getUnProxy(authenticationService)).getJwtTokenFromRequest(request);
-        doReturn(ac).when(schema).createCommand(eq(authentication), argThat(x -> Objects.equals(x.get(), queryResponse)));
-        doReturn(schema).when(getUnProxy(authenticationSchemeFactory)).getSchema(authentication.getScheme());
-        doReturn(queryResponse).when(getUnProxy(authenticationService)).parseJwtToken("validJwt");
-        doReturn(requiredJwtValidation).when(ac).isRequiredValidJwt();
-
-        universalAuthenticationCommand.apply(createInstanceInfo("id", authentication));
-
-        return ac;
-    }
-
-    @Test
-    void givenMissingJwt_whenCommandRequiredAuthentication_thenReject() throws Exception {
-        try {
-            testRequiredAuthentication(true, null);
-            fail();
-        } catch (ExecutionListener.AbortExecutionException aee) {
-            assertTrue(aee.getMessage().contains("Invalid JWT token"));
-        }
-    }
-
-    @Test
-    void givenInvalidJwt_whenCommandRequiredAuthentication_thenReject() throws Exception {
-        try {
-            testRequiredAuthentication(true, "invalidJwt");
-            fail();
-        } catch (ExecutionListener.AbortExecutionException aee) {
-            assertTrue(aee.getMessage().contains("Invalid JWT token"));
-        }
-    }
-
-    @Test
-    void givenValidExpiredJwt_whenCommandRequiredAuthentication_thenCall() throws Exception {
-        doThrow(new TokenExpireException("Token is expired."))
-            .when(getUnProxy(authenticationService)).validateJwtToken("validJwt");
-
-        try {
-            testRequiredAuthentication(true, "validJwt");
-            fail();
-        } catch (ExecutionListener.AbortExecutionException aee) {
-            assertTrue(aee.getMessage().contains("Invalid JWT token"));
-        }
-    }
-
-    @Test
-    void givenValidJwt_whenCommandRequiredAuthentication_thenCall() throws Exception {
-        doReturn(TokenAuthentication.createAuthenticated("user", "pass"))
-            .when(getUnProxy(authenticationService)).validateJwtToken("validJwt");
-
-        AuthenticationCommand ac = testRequiredAuthentication(true, "validJwt");
-        verify(ac, times(1)).apply(any());
-    }
 
     @Test
     void givenServiceIdAndJwt_whenExpiringCommand_thenReturnNewOne() {

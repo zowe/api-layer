@@ -13,5 +13,43 @@ public class Endpoints {
     public final static String SHUTDOWN = "/application/shutdown";
     public final static String HEALTH = "/application/health";
     public final static String APPLICATIONS = "/eureka/apps";
-    public final static String DISCOVERABLE_GREET = "/api/v1/discoverableclient/greeting";
+
+    public final static String STATIC_WEBSOCKET = "/staticclient/ws/v1";
+    public final static String STATIC_UI = "/staticclient/ui/v1";
+    public final static String STATIC_REDIRECT = "/staticclient/api/v1/redirect";
+    public final static String STATIC_GREET = "/staticclient/api/v1/greeting";
+
+    public final static String ROUTED_AUTH = "/gateway/api/v1/auth";
+    public final static String ROUTED_LOGIN = "/gateway/api/v1/auth/login";
+    public final static String ROUTED_LOGOUT = "/gateway/api/v1/auth/logout";
+    public final static String ROUTED_QUERY = "/gateway/api/v1/auth/query";
+    public final static String ROUTED_PASSTICKET = "/gateway/api/v1/auth/ticket";
+    public final static String ROUTED_SERVICE = "/gateway/api/v1/services";
+    public final static String ROUTED_SERVICE_NOT_VERSIONED = "/gateway/services";
+
+    public final static String DISCOVERY_STATIC_API = "/discovery/api/v1/staticApi";
+
+    public final static String CACHING_CACHE = "/cachingservice/api/v1/cache";
+
+    public final static String DISCOVERABLE_GREET = "/discoverableclient/api/v1/greeting";
+    public final static String DISCOVERABLE_WS_HEADER = "/discoverableclient/ws/v1/header";
+    public final static String DISCOVERABLE_WS_UPPERCASE = "/discoverableclient/ws/v1/uppercase";
+    public final static String DISCOVERABLE_GET_FILE = "/discoverableclient/api/v1/get-file";
+    public final static String DISCOVERABLE_MULTIPART = "/discoverableclient/api/v1/multipart";
+    public final static String DISCOVERABLE_SSE_EVENTS = "/discoverableclient/sse/v1/events";
+    public final static String X509_ENDPOINT = "/discoverableclient/api/v1/x509";
+    public final static String MEDIATION_CLIENT = "/discoverableclient/api/v1/apiMediationClient";
+
+    public final static String REQUEST_INFO_ENDPOINT = "/dcpassticket/api/v1/request";
+    public final static String PASSTICKET_TEST_ENDPOINT = "/dcpassticket/api/v1/passticketTest";
+
+    public final static String SAF_IDT_REQUEST = "/dcsafidt/api/v1/request";
+
+    public final static String DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containers/cademoapps";
+    public final static String DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0";
+    public final static String DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2 = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v2.0.0";
+
+    public final static String API_SERVICE_VERSION_DIFF_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0/zowe.apiml.discoverableclient.rest v2.0.0";
+    public final static String API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0/zowe.apiml.discoverableclient.rest v3.0.0";
+    public final static String API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE = "/apicatalog/api/v1/apidoc/invalidService/v1/v2";
 }

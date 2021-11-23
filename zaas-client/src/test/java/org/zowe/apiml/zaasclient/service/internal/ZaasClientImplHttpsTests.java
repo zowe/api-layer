@@ -104,7 +104,7 @@ class ZaasClientImplHttpsTests {
         when(closeableHttpResponse.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
-        String baseUrl = "/api/v1/gateway/auth";
+        String baseUrl = "/gateway/api/v1/auth";
         tokenService = new ZaasJwtService(zaasHttpsClientProvider, baseUrl);
         passTicketService = new PassTicketServiceImpl(zaasHttpsClientProvider, baseUrl);
     }

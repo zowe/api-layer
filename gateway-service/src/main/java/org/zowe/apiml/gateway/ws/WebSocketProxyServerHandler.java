@@ -100,13 +100,8 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         String serviceId;
         String path = uriParts[4];
 
-        if (uriParts[1].equals("ws")) {
-            majorVersion = uriParts[2];
-            serviceId = uriParts[3];
-        } else {
-            majorVersion = uriParts[3];
-            serviceId = uriParts[1];
-        }
+        majorVersion = uriParts[3];
+        serviceId = uriParts[1];
 
         routeToService(webSocketSession, serviceId, majorVersion, path);
     }
