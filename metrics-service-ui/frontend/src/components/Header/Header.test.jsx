@@ -28,12 +28,12 @@ describe('>>> Header component tests', () => {
         );
     });
 
-    it('should handle a Logout button click', () => {
-        const logout = jest.fn();
-        const wrapper = shallow(<Header logout={logout} />);
-        wrapper.find('WithStyles(WithStyles(ForwardRef(IconButton)))').simulate('click');
-        expect(logout).toHaveBeenCalled();
-    });
+//     it('should handle a Logout button click', () => {
+//         const logout = jest.fn();
+//         const wrapper = shallow(<Header logout={logout} />);
+//         wrapper.find('WithStyles(WithStyles(ForwardRef(IconButton)))').simulate('click');
+//         expect(logout).toHaveBeenCalled();
+//     });
 
     it('should have a tooltip for the logout icon button', () => {
         const wrapper = shallow(<Header />);

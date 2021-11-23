@@ -23,14 +23,14 @@ describe('>>> MetricsIconButton component tests', () => {
         expect(sample.find(styledIconButton)).toExist();
     });
 
-    it('IconButton should have a href to metrics service dashboard', () => {
-        const sample = shallow(<MetricsIconButton />);
-        expect(sample.find(styledIconButton).prop('href')).toEqual('/metrics-service/ui/v1/#/dashboard');
-    });
+//     it('IconButton should have a href to metrics service dashboard', () => {
+//         const sample = shallow(<MetricsIconButton />);
+//         expect(sample.find(styledIconButton).prop('href')).toEqual('/metrics-service/ui/v1/#/dashboard');
+//     });
 
-    it('should contain a Metrics Service icon image', () => {
-        const sample = shallow(<MetricsIconButton />);
-        expect(sample.find('img')).toExist();
-        expect(sample.find('img').prop('alt')).toEqual('Metrics Service icon');
-    });
+//     it('should contain a Metrics Service icon image', () => {
+//         const sample = shallow(<MetricsIconButton />);
+//         expect(sample.find('img')).toExist();
+//         expect(sample.find('img').prop('alt')).toEqual('Metrics Service icon');
+//     });
 });
