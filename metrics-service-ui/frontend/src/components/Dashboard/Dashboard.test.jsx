@@ -11,13 +11,25 @@
 /* eslint-disable no-undef */
 
 import React from 'react';
-import { shallow } from 'enzyme';
-
+import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
 import Dashboard from './Dashboard';
+import {act} from "react-dom/test-utils";
+import {render} from 'react-dom';
 
 describe('>>> Dashboard component tests', () => {
-    it('should display the service name ', () => {
-        const sample = shallow(<Dashboard />);
-        expect(sample.find('[id="name"]').first().text()).toEqual('Metrics Service');
+
+
+    it('should display the service name ', async () => {
+
+        window.addStreams = jest.fn().mockReturnValue(()=>{});
+        const mock = new MockAdapter(axios);
+        mock.onGet().reply(200, [{name:"GATEWAY",link:"https://127.0.0.1:10010/turbine.stream?cluster=GATEWAY"}]);
+
+        let container = document.createElement("div");
+        document.body.appendChild(container);
+
+        await act(async () => render(<Dashboard/>,container));
+        expect(container.textContent).toBe("Metrics ServiceGATEWAY");
     });
 });
