@@ -1,32 +1,36 @@
-ext.springBootEnabler = 'onboarding-enabler-spring'
-ext.javaEnabler = 'onboarding-enabler-java'
-ext.micronautEnabler = 'onboarding-enabler-micronaut'
+ext.enablers = [
+    'onboarding-enabler-spring', 
+    'onboarding-enabler-java', 
+    'onboarding-enabler-micronaut'
+]
 
 ext.javaLibraries = [
-    'api-catalog-services',
-    'common-service-core',
     'apiml-utility',
     'apiml-common',
     'apiml-security-common',
-    'caching-service',
-    'metrics-service',
-    'discovery-service',
-    'gateway-service',
-    'security-service-client-spring',
-    'zaas-client',
-    'discoverable-client',
+    'apiml-tomcat-common',
     'certificate-analyser',
-    'apiml-tomcat-common'
+    'common-service-core',
+    'security-service-client-spring',
+    'zaas-client'
 ]
 
-ext.serviceJars = ['api-catalog-package', 'discovery-package', 'gateway-package', 'caching-service-package', 'metrics-service-package', 'apiml-common-lib-package']
+ext.servicesToPublish = [
+    'apiml-common-lib-package',
+    'api-catalog-services',
+    'api-catalog-package',
+    'caching-service',
+    'caching-service-package',
+    'metrics-service',
+    'metrics-service-package',
+    'discovery-service',
+    'discovery-package',
+    'gateway-service',
+    'gateway-package'
+]
 
-ext.enablers = [ext.javaEnabler, ext.springBootEnabler, ext.micronautEnabler]
-ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
-
-ext.publishTasksList = projectsToPublish.collect {
-    ":" + it + ":publish"
-}
+ext.sdksToPublish = ext.enablers + ext.javaLibraries
+ext.projectsToPublish = ext.servicesToPublish + ext.sdksToPublish
 
 configure(subprojects.findAll { it.name in projectsToPublish }) {
     apply plugin: "maven"
@@ -46,7 +50,9 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
             }
         }
     }
+}
 
+configure(subprojects.findAll { it.name in sdksToPublish }) {
     publishing {
         publications {
             mavenJava(MavenPublication) {
@@ -71,15 +77,47 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
         manifest {
             attributes "Specification-Title": project.name
             attributes "Specification-Version": rootProject.version
-            attributes "Specification-Vendor": "Broadcom Inc."
+            attributes "Specification-Vendor": "Zowe org"
 
             attributes "Implementation-Title": project.name
             attributes "Implementation-Version": rootProject.version
-            attributes "Implementation-Vendor": "Broadcom Inc."
+            attributes "Implementation-Vendor": "Zowe org"
             attributes "Implementation-Vendor-Id": "org.zowe.apiml.sdk"
         }
     }
 
+}
+
+configure(subprojects.findAll { it.name in servicesToPublish }) {
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId 'org.zowe.apiml'
+                version rootProject.version
+                artifactId "${project.name}"
+
+                from components.java
+            }
+        }
+    }
+
+    tasks.withType(Jar) {
+        manifest {
+            attributes "Specification-Title": project.name
+            attributes "Specification-Version": rootProject.version
+            attributes "Specification-Vendor": "Zowe org"
+
+            attributes "Implementation-Title": project.name
+            attributes "Implementation-Version": rootProject.version
+            attributes "Implementation-Vendor": "Zowe org"
+            attributes "Implementation-Vendor-Id": "org.zowe.apiml"
+        }
+    }
+
+}
+
+ext.publishTasksList = projectsToPublish.collect {
+    ":" + it + ":publish"
 }
 
 //noinspection GroovyAssignabilityCheck
