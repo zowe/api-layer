@@ -25,6 +25,9 @@
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 # - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
+if [[ ! -z ${APIML_METRICS_ENABLED} && ${APIML_METRICS_ENABLED} == true ]]
+then
+
 JAR_FILE="${LAUNCH_COMPONENT}/metrics-service.jar"
 
 # API Mediation Layer Debug Mode
@@ -79,3 +82,5 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${METRICS_CODE} java -Xms16m -Xmx512m \
   -jar ${JAR_FILE} &
 pid=$!
 echo "pid=${pid}"
+
+fi
