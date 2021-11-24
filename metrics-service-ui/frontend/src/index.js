@@ -29,7 +29,6 @@ import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
 import { rootReducer } from './reducers';
 import { sendError } from './actions/error-actions';
-import history from './helpers/history';
 
 function errorHandler(error, getState, lastAction, dispatch) {
     log.error(error);
