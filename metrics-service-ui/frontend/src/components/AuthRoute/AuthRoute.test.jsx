@@ -36,6 +36,7 @@ describe('>>> AuthRoute component tests', () => {
           </Router>
       );
 
+        // awaits response from mocked fetch call
         await act(async () => {
             await new Promise(setImmediate);
             wrapper.update();
@@ -52,8 +53,9 @@ describe('>>> AuthRoute component tests', () => {
           <Router history={history}>
               <AuthRoute />
           </Router>
-      );
+        );
 
+        // awaits response from mocked fetch call
         await act(async () => {
             await new Promise(setImmediate);
             wrapper.update();
