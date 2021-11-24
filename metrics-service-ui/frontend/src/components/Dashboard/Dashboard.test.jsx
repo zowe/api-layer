@@ -22,14 +22,15 @@ describe('>>> Dashboard component tests', () => {
 
     it('should display the service name ', async () => {
 
-        window.addStreams = jest.fn().mockReturnValue(()=>{});
+        window.addStreams = jest.fn().mockReturnValue(() => {
+        });
         const mock = new MockAdapter(axios);
-        mock.onGet().reply(200, [{name:"GATEWAY",link:"https://127.0.0.1:10010/turbine.stream?cluster=GATEWAY"}]);
+        mock.onGet().reply(200, [{name: "GATEWAY", link: "localhost/turbine.stream?cluster=GATEWAY"}]);
 
         let container = document.createElement("div");
         document.body.appendChild(container);
 
-        await act(async () => render(<Dashboard/>,container));
+        await act(async () => render(<Dashboard/>, container));
         expect(container.textContent).toBe("Metrics ServiceGATEWAY");
     });
 });
