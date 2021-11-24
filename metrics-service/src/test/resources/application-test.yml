@@ -1,9 +1,0 @@
-spring:
-    main:
-        allow-bean-definition-overriding: true
-
-server:
-    ssl:
-        keyStore: ../keystore/localhost/localhost.keystore.p12
-        trustStore: ../keystore/localhost/localhost.truststore.p12
-        
