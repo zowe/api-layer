@@ -65,8 +65,19 @@ function logout() {
     };
 }
 
+function authenticationFailure(error) {
+    function failure(err) {
+        return { type: userConstants.AUTHENTICATION_FAILURE, err };
+    }
+    return (dispatch) => {
+        dispatch(failure(error));
+        history.push('/login');
+    };
+}
+
 // eslint-disable-next-line
 export const userActions = {
     login,
     logout,
+    authenticationFailure,
 };
