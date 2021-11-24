@@ -11,7 +11,7 @@
 import React from 'react';
 import { IconButton, Tooltip, Link } from '@material-ui/core';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { makeStyles, withStyles, useTheme } from '@material-ui/core/styles';
 
 import MetricsIconButton from '../Icons/MetricsIconButton';
 
@@ -52,6 +52,7 @@ const ServiceNameHeader = withStyles((theme) => ({
 }))(Link);
 
 const Header = (props) => {
+    const theme = useTheme();
     const classes = useStyles();
 
     const handleLogout = () => {
@@ -63,7 +64,7 @@ const Header = (props) => {
 
     return (
         <div className={classes.metricsHeaderDiv}>
-            <MetricsIconButton />
+            <MetricsIconButton color={theme.palette.background.main} />
             <ServiceNameHeader id="name" variant="h6" align="left" underline="none" href={dashboard}>
                 Metrics Service
             </ServiceNameHeader>
