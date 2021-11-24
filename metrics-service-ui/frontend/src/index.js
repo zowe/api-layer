@@ -55,15 +55,14 @@ const composeEnhancers = compose;
 
 const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler)];
 
-// if (process.env.NODE_ENV !== 'production') {
-middlewares.push(logger);
-// }
+if (process.env.NODE_ENV !== 'production') {
+    middlewares.push(logger);
+}
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 const store = createStore(persistedReducer, composeEnhancers(applyMiddleware(...middlewares)));
 const persistor = persistStore(store);
 
-// TODO Spinner isLoading not used?
 ReactDOM.render(
     <HashRouter>
         <Provider store={store}>
