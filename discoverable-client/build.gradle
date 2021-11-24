@@ -23,7 +23,7 @@ def componentName = "discoverable-client"
 
 setJib(componentName, debugPort)
 
-springBoot {
+springBoot {    
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
     // via /info endpoint
