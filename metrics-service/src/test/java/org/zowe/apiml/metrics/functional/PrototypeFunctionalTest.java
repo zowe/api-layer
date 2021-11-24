@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-public class PrototypeFunctionalTest extends MetricsFunctionalTest {
+class PrototypeFunctionalTest extends MetricsFunctionalTest {
     @Test
     void testContextStarts() {
         assertTrue(true);
