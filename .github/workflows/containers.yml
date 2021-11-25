@@ -70,6 +70,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
+            metrics-service:
+                image: ghcr.io/balhar-jakub/metrics-service:${{ github.event.pull_request.number || 'latest' }}
 
         steps:
             -   uses: actions/checkout@v2
@@ -487,6 +489,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
             mock-zosmf:
                 image: ghcr.io/balhar-jakub/mock-zosmf:${{ github.event.pull_request.number || 'latest' }}
+            metrics-service:
+                image: ghcr.io/balhar-jakub/metrics-service:${{ github.event.pull_request.number || 'latest' }}
 
         steps:
             -   uses: actions/checkout@v2
