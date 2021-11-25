@@ -8,7 +8,9 @@ apiml:
         ssl:
             verifySslCertificatesOfServices: true
     banner: console
-
+    metrics:
+        serviceId: metrics-service
+        enabled: true
 spring:
     output:
         ansi:
