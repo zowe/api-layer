@@ -52,7 +52,7 @@ ext {
     restAssuredVersion = '3.0.7'
     slf4jVersion = '1.7.31'
     snakeyamlVersion = '1.27'
-    springFoxVersion = '2.10.5'
+    springFoxVersion = '3.0.0'
     spring4Version = '4.3.7.RELEASE' // Used within PJE in tests
     swagger3CoreVersion = '2.0.0'
     swagger3ParserVersion = '2.0.17'
@@ -189,6 +189,7 @@ ext {
         spring4Mvc                         : "org.springframework:spring-webmvc:${spring4Version}",
         spring4Test                        : "org.springframework:spring-test:${spring4Version}",
         springFox                          : "io.springfox:springfox-swagger2:${springFoxVersion}",
+        spring_fox_boot_starter            : "io.springfox:springfox-boot-starter:${springFoxVersion}"
         spring_mock_mvc                    : "io.rest-assured:spring-mock-mvc:${restAssuredVersion}",
         swagger_core                       : "io.swagger:swagger-core:${swaggerCoreVersion}",
         swagger3_core                      : "io.swagger.core.v3:swagger-core:${swagger3CoreVersion}",

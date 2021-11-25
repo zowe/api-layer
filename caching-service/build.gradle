@@ -54,6 +54,7 @@ dependencies {
     implementation libraries.jjwt_jackson
 
     implementation libraries.springFox
+    implementation libraries.spring_fox_boot_starter
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web

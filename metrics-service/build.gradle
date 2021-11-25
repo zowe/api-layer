@@ -51,6 +51,7 @@ dependencies {
     implementation(project(':security-service-client-spring'))
 
     implementation libraries.springFox
+    implementation libraries.spring_fox_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_cloud_starter_eureka
     implementation libraries.spring_cloud_starter_turbine

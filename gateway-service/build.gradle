@@ -139,6 +139,7 @@ dependencies {
     annotationProcessor libraries.lombok
 
     implementation libraries.springFox
+    implementation libraries.spring_fox_boot_starter
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
     testCompile libraries.json_smart
