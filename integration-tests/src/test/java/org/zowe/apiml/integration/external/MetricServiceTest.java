@@ -17,9 +17,10 @@ import org.zowe.apiml.util.categories.MetricsServiceTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
-import static org.zowe.apiml.util.SecurityUtils.*;
+
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItems;
+import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 
 @TestsNotMeantForZowe
 @MetricsServiceTest
@@ -32,11 +33,11 @@ public class MetricServiceTest {
     }
 
     @Test
-    void allClustersAraAvailable(){
-        String jwt = gatewayToken("user","user");
+    void allClustersAraAvailable() {
+        String jwt = gatewayToken("user", "user");
         given().header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
             .get("https://localhost:10010/metrics-service/api/v1/clusters")
             .then()
-            .body("name",hasItems("GATEWAY","DISCOVERY"));
+            .body("name", hasItems("GATEWAY", "DISCOVERY"));
     }
 }
