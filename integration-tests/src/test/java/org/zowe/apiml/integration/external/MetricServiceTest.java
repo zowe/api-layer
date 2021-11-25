@@ -27,7 +27,7 @@ import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 
 @TestsNotMeantForZowe
 @MetricsServiceTest
-public class MetricServiceTest {
+class MetricServiceTest {
 
     private static final URI METRICS_PATH = HttpRequestUtils.getUriFromGateway("/metrics-service/api/v1/clusters");
 
