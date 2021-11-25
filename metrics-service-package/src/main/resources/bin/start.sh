@@ -28,6 +28,12 @@
 if [[ ! -z ${APIML_METRICS_ENABLED} && ${APIML_METRICS_ENABLED} == true ]]
 then
 
+if [[ -z "${LAUNCH_COMPONENT}" ]]
+then
+  # component should be started from component home directory
+  LAUNCH_COMPONENT=$(pwd)/bin
+fi
+
 JAR_FILE="${LAUNCH_COMPONENT}/metrics-service-lite.jar"
 # script assumes it's in the catalog component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]
