@@ -189,7 +189,7 @@ ext {
         spring4Mvc                         : "org.springframework:spring-webmvc:${spring4Version}",
         spring4Test                        : "org.springframework:spring-test:${spring4Version}",
         springFox                          : "io.springfox:springfox-swagger2:${springFoxVersion}",
-        spring_fox_boot_starter            : "io.springfox:springfox-boot-starter:${springFoxVersion}"
+        spring_fox_boot_starter            : "io.springfox:springfox-boot-starter:${springFoxVersion}",
         spring_mock_mvc                    : "io.rest-assured:spring-mock-mvc:${restAssuredVersion}",
         swagger_core                       : "io.swagger:swagger-core:${swaggerCoreVersion}",
         swagger3_core                      : "io.swagger.core.v3:swagger-core:${swagger3CoreVersion}",
