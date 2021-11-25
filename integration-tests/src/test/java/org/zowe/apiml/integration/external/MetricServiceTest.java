@@ -34,7 +34,7 @@ public class MetricServiceTest {
 
     @Test
     void allClustersAraAvailable() {
-        String jwt = gatewayToken("user", "user");
+        String jwt = gatewayToken();
         given().header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
             .get("https://localhost:10010/metrics-service/api/v1/clusters")
             .then()
