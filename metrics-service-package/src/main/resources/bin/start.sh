@@ -42,6 +42,7 @@ if [ `uname` = "OS/390" ]
 then
     QUICK_START=-Xquickstart
 fi
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -59,7 +60,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${METRICS_CODE} java -Xms16m -Xmx512m \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=/tmp \
   -Dspring.profiles.include=$LOG_LEVEL \
-  -Dapiml.service.port=${ZWE_METRICS_SERVICE_PORT} \
+  -Dapiml.service.port=${METRICS_PORT:-7551} \
   -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
   -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
   -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
