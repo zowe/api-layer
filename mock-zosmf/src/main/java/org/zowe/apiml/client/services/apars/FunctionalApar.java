@@ -31,11 +31,16 @@ public class FunctionalApar implements Apar {
 
     private final List<String> usernames;
     private final List<String> passwords;
-    private final JwtTokenService jwtTokenService = new JwtTokenService(60);
+    private JwtTokenService jwtTokenService;
 
     protected FunctionalApar(List<String> usernames, List<String> passwords) {
+        this(usernames, passwords, new JwtTokenService(60));
+    }
+
+    protected FunctionalApar(List<String> usernames, List<String> passwords, JwtTokenService tokenService) {
         this.usernames = usernames;
         this.passwords = passwords;
+        this.jwtTokenService = tokenService;
     }
 
     @Override
