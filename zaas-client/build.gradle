@@ -8,7 +8,6 @@ dependencies {
     implementation libraries.javax_servlet_api
     implementation libraries.spring_context
 
-    compile libraries.tomcat_embed_core
     compileOnly libraries.lombok
 
     testCompile libraries.spring_boot_starter_test
