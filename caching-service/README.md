@@ -1,8 +1,8 @@
 # Caching Service
 
-To support the High Availability of all components within Zowe, components either need to be stateless, or offload the state to a location accessible by all instances of the service, including those which just started. At the current time, some services are not, and cannot be stateless. For these services, we introduce the Caching service. 
+To support the High Availability of all components within Zowe, components either need to be stateless, or offload the state to a location accessible by all instances of the service, including those which just started. At the current time, some services are not, and cannot be stateless. For these services, we introduce the Caching Service. 
 
-The Caching service aims to provide an API which offers the possibility to store, retrieve and delete data associated with keys. The service will be used only by internal Zowe applications and will not be exposed to the internet. The Caching service needs to support a hot-reload scenario in which a client service requests all available service data. 
+The Caching Service aims to provide an API which offers the possibility to store, retrieve and delete data associated with keys. The service will be used only by internal Zowe applications and will not be exposed to the internet. The Caching Service needs to support a hot-reload scenario in which a client service requests all available service data. 
 
 There are two production implementations offered directly by Zowe: VSAM storage running on Z and Redis running off Z. The other service providers may provide further storage solutions.  
 
@@ -32,7 +32,7 @@ won't persist.
 
 ### VSAM
 
-VSAM is a first solution as a storage for running the Caching Service on Z (on platform). As the VSAM is specific for the zOS there is no way to run it in a standard development environment. To run this scenario the cachnig service needs to be deployed on platform. More information on how to achieve this are in the [Ad hoc mainframe Deployment](../docs/ad-hoc-mainframe-deployment.md)
+VSAM is a first solution as a storage for running the Caching Service on Z (on platform). As the VSAM is specific for the zOS there is no way to run it in a standard development environment. To run this scenario the Caching Service needs to be deployed on platform. More information on how to achieve this is in the [Ad hoc mainframe Deployment](../docs/ad-hoc-mainframe-deployment.md)
 
 Further documentation on how to use the VSAM are here
 - https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-vsam/
@@ -54,22 +54,22 @@ Tests are run with 3 scenarios:
 Low load: 5 threads, Medium load: 15 threads, High load: 50 threads
 
 Test subjects:
-Single caching service with VSAM storage
-Two caching services with shared VSAM storage
+- Single Caching Service with VSAM storage
+- Two Caching Services with shared VSAM storage
 
 Results
-- Most important operation is READ
-- Two caching services achieve better READ performance than single CS
-- Based on data, the read performance seems acceptable, ranging from 300 ms to 1000 ms
-- With two caching services and high load, the read performance is significantly better.
+- Most important operation is READ.
+- Two Caching Services achieve better READ performance than a single CS.
+- Based on data, the read performance seems acceptable, ranging from 300 ms to 1000 ms.
+- With two Caching Services and high load, the read performance is significantly better.
 - Response times of other operations are also acceptable, yet error rates increase with higher concurrency.
-- Two caching services produce higher load on shared resource (VSAM) and have higher error rate
-- It seems to us that for User based workloads, the VSAM implementation will suffice. For light automation workloads it might do as well. For heavy workloads it might not be enough.
-- VSAM does not scale very well beyond 1000 RPM on a node
+- Two Caching Services produce higher load on shared resource (VSAM) and have higher error rate.
+- It seems to us that for user-based workloads, the VSAM implementation will suffice. For light automation workloads it might be acceptable as well. For heavy workloads it might not be enough.
+- VSAM does not scale very well beyond 1000 RPM on a node.
 
 ### Redis
 
-Redis is another valid option for the storage to use. The main goal for redis is the running of the storage, and the caching service off platform. 
+Redis is another valid option for the storage to use. The main goal for Redis is the running of the storage, and the Caching Service off platform. 
 
 For development the repository contains docker compose scripts. There are two setups provided.  
 
@@ -78,7 +78,7 @@ For development the repository contains docker compose scripts. There are two se
 3) redis/docker-compose-sentinel.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails.
 4) redis/docker-compose-sentinel-tls.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails. TLS is enabled.
 
-The first setup works well for testing. In order to properly configure the caching service following configuration is needed either in application.yml in the caching service or passed in via command line parameters.
+The first setup works well for testing. In order to properly configure the Caching Service following configuration is needed either in application.yml in the Caching Service or passed in via command line parameters.
 
     caching:
         storage:
@@ -130,10 +130,10 @@ The first setup works well for testing. In order to properly configure the cachi
                            password: sentinelpassword
                            
 The library used to connect to Redis, Lettuce, uses node registration information to automatically discover instances downstream from
-the master (in master/replica topology) or the sentinels (in sentinel topology). This means the IP address used to connect from the Caching service
-is the IP address used to register, which with the above docker compose files is the container IP address. This means the Caching service tries to
+the master (in master/replica topology) or the sentinels (in sentinel topology). This means the IP address used to connect from the Caching Service
+is the IP address used to register, which with the above docker compose files is the container IP address. This means the Caching Service tries to
 connect using the container IP address, which does not resolve properly. The ports are published, however, so if the container IP addresses are aliased
-to localhost, the Caching service can connect. Another option, if running on Linux, is to use a host network in the docker compose file.
+to localhost, the Caching Service can connect. Another option, if running on Linux, is to use a host network in the docker compose file.
 
 ### Additional Storage Support
 
@@ -151,7 +151,7 @@ of the Storage.class and properly configure the Spring with the used implementat
 
 The example above shows the Configuration within the library that will use different storage than the default InMemory one. 
 
-It is possible to provide the custom implementation via the -Dloader.path property provided on startup of the Caching service. 
+It is possible to provide the custom implementation via the -Dloader.path property provided on startup of the Caching Service. 
 
 ## How do you run for local development
 
