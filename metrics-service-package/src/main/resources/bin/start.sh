@@ -50,6 +50,8 @@ then
     QUICK_START=-Xquickstart
 fi
 
+EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -68,22 +70,22 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${METRICS_CODE} java -Xms16m -Xmx512m \
   -Djava.io.tmpdir=/tmp \
   -Dspring.profiles.include=$LOG_LEVEL \
   -Dapiml.service.port=${METRICS_PORT:-7551} \
-  -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
-  -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-  -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
-  -Dapiml.service.customMetadata.apiml.gatewayPort=${GATEWAY_PORT} \
+  -Dapiml.service.hostname=${EXPLORER_HOST} \
+  -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_PORT:-7553}/eureka/"} \
+  -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+  -Dapiml.service.customMetadata.apiml.gatewayPort=${GATEWAY_PORT:-7554} \
   -Dapiml.service.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
   -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
   -Dserver.address=0.0.0.0 \
-  -Dserver.ssl.enabled=true \
+  -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true} \
   -Dserver.ssl.keyStore="${KEYSTORE}" \
-  -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE}" \
+  -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE-PKCS12}" \
   -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
   -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
   -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
   -Dserver.ssl.trustStore="${TRUSTSTORE}" \
-  -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
+  -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE-PKCS12}" \
   -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -Dloader.path=${COMMON_LIB} \
