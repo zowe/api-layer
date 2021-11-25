@@ -52,7 +52,7 @@ ext {
     restAssuredVersion = '3.0.7'
     slf4jVersion = '1.7.31'
     snakeyamlVersion = '1.27'
-    springFoxVersion = '2.9.2'
+    springFoxVersion = '2.10.5'
     spring4Version = '4.3.7.RELEASE' // Used within PJE in tests
     swagger3CoreVersion = '2.0.0'
     swagger3ParserVersion = '2.0.17'
