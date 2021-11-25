@@ -5,10 +5,9 @@ dependencies {
     compile libraries.jackson_databind
     compile libraries.slf4j_api
     compile libraries.jaxb_api
-    compile(libraries.spring_boot_starter_web) {
-        exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-core'
-    }
-    compile libraries.tomcat_embed_core
+    implementation libraries.javax_servlet_api
+    implementation libraries.spring_context
+
     compileOnly libraries.lombok
 
     testCompile libraries.spring_boot_starter_test
