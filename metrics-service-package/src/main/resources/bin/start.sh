@@ -28,7 +28,7 @@
 if [[ ! -z ${APIML_METRICS_ENABLED} && ${APIML_METRICS_ENABLED} == true ]]
 then
 
-JAR_FILE="${LAUNCH_COMPONENT}/metrics-service.jar"
+JAR_FILE="${LAUNCH_COMPONENT}/metrics-service-lite.jar"
 
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
