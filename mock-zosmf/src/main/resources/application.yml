@@ -35,6 +35,7 @@ zosmf:
     baseVersion: 2.4
     appliedApars: PH12143
     jwtKeyStorePath: keystore/localhost/localhost.keystore.p12
+    timeout: 60
 
 
 ---
