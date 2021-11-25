@@ -4,7 +4,7 @@ The goal for this application is to provide mock for the external services to ma
 
 ## How do you run the zOSMF
 
-It is a Spring Boot application. So you either add it as a run configuration and run it together with other services or the npm command to run API ML also runs the mock. 
+It is a Spring Boot application. So you either add it as a run configuration and run it together with other services or the npm command to run API ML also runs the mock zOSMF. 
 
 Command to run full set of api-layer `npm run api-layer`
 

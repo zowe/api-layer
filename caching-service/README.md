@@ -4,7 +4,7 @@ To support the High Availability of all components within Zowe, components eithe
 
 The Caching service aims to provide an API which offers the possibility to store, retrieve and delete data associated with keys. The service will be used only by internal Zowe applications and will not be exposed to the internet. The Caching service needs to support a hot-reload scenario in which a client service requests all available service data. 
 
-The initial implementation of the service will depend on VSAM to store the key/value pairs, as VSAM is a native z/OS solution to storing key/value pairs.  Eventually, there will be other implementations for solutions such as MQs. As such, this needs to be taken into account for the initial design document. 
+There are two production implementations offered directly by Zowe: VSAM storage running on Z and Redis running off Z. The other service providers may provide further storage solutions.  
 
 ## Architecture
 
@@ -32,7 +32,40 @@ won't persist.
 
 ### VSAM
 
-TO BE DONE
+VSAM is a first solution as a storage for running the Caching Service on Z (on platform). As the VSAM is specific for the zOS there is no way to run it in a standard development environment. To run this scenario the cachnig service needs to be deployed on platform. More information on how to achieve this are in the [Ad hoc mainframe Deployment](../docs/ad-hoc-mainframe-deployment.md)
+
+Further documentation on how to use the VSAM are here
+- https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-vsam/
+- https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-caching-service/#vsam
+- https://docs.zowe.org/stable/user-guide/configure-caching-service-ha/
+
+#### Performance
+
+Due to the Java access to the VSAM there are performance limitation to this approach. We have been testing in a few scenarios. 
+
+Test process:
+1) Load 1000 records into cache concurrently (5 threads)
+2) Update all records for 120 seconds with increasing thread count, up to <x> amount of threads
+3) Read all records for 120 seconds with increasing thread count, up to <x> amount of threads
+4) Read and update all records for 120 seconds with increasing thread count, up to <x> amount of threads
+5) Delete all loaded records from cache concurrently (5 threads)
+
+Tests are run with 3 scenarios: 
+Low load: 5 threads, Medium load: 15 threads, High load: 50 threads
+
+Test subjects:
+Single caching service with VSAM storage
+Two caching services with shared VSAM storage
+
+Results
+- Most important operation is READ
+- Two caching services achieve better READ performance than single CS
+- Based on data, the read performance seems acceptable, ranging from 300 ms to 1000 ms
+- With two caching services and high load, the read performance is significantly better.
+- Response times of other operations are also acceptable, yet error rates increase with higher concurrency.
+- Two caching services produce higher load on shared resource (VSAM) and have higher error rate
+- It seems to us that for User based workloads, the VSAM implementation will suffice. For light automation workloads it might do as well. For heavy workloads it might not be enough.
+- VSAM does not scale very well beyond 1000 RPM on a node
 
 ### Redis
 
@@ -122,7 +155,7 @@ It is possible to provide the custom implementation via the -Dloader.path proper
 
 ## How do you run for local development
 
-The Caching Service is a Spring Boot application. You can either add it as a run configuration and run it together with other services, or the npm command to run API ML also runs the mock. 
+The Caching Service is a Spring Boot application. You can either add it as a run configuration and run it together with other services, or the npm command to run API ML also runs the caching service with in memory storage. 
 
 Command to run full set of api-layer: `npm run api-layer`. If you are looking for the Continuous Integration set up run: `npm run api-layer-ci`
 
