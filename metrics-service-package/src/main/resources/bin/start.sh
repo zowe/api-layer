@@ -29,6 +29,13 @@ if [[ ! -z ${APIML_METRICS_ENABLED} && ${APIML_METRICS_ENABLED} == true ]]
 then
 
 JAR_FILE="${LAUNCH_COMPONENT}/metrics-service-lite.jar"
+# script assumes it's in the catalog component directory and common_lib needs to be relative path
+if [[ -z ${CMMN_LB} ]]
+then
+    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
+else
+    COMMON_LIB=${CMMN_LB}
+fi
 
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
@@ -79,6 +86,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${METRICS_CODE} java -Xms16m -Xmx512m \
   -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
   -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+  -Dloader.path=${COMMON_LIB} \
   -Djava.library.path=${LIBPATH} \
   -jar ${JAR_FILE} &
 pid=$!
