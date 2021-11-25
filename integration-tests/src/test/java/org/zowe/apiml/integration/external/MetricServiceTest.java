@@ -43,6 +43,6 @@ class MetricServiceTest {
         given().header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
             .get(METRICS_PATH)
             .then()
-            .body("name", hasItems("GATEWAY", "DISCOVERY"));
+            .body("name", hasItems("GATEWAY", "DISCOVERY","APICATALOG"));
     }
 }
