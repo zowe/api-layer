@@ -84,6 +84,8 @@ function preparePackage {
     cd "${BASE_DIR}/${WORK_DIR}/${subdirectory}"
     unzip "${REPO_ROOT_DIR}/${service_package}/build/distributions/${service_package}.zip"
     chmod +x bin/*
+    echo "$(ls -la)"
+    echo "$(pwd)"
 }
 
 function prepareBasicFiles {

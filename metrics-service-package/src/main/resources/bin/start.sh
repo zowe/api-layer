@@ -35,7 +35,7 @@ then
 fi
 
 JAR_FILE="${LAUNCH_COMPONENT}/metrics-service-lite.jar"
-# script assumes it's in the catalog component directory and common_lib needs to be relative path
+# script assumes it's in the metrics component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]
 then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
@@ -67,6 +67,9 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
+
+echo "HERE"
+echo "JAR_FILE=${JAR_FILE}"
 
 METRICS_CODE=MS
 _BPX_JOBNAME=${ZOWE_PREFIX}${METRICS_CODE} java -Xms16m -Xmx512m \
