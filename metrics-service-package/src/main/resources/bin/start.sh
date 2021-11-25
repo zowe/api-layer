@@ -100,4 +100,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${METRICS_CODE} java -Xms16m -Xmx512m \
 pid=$!
 echo "pid=${pid}"
 
+wait %1
+
 fi
