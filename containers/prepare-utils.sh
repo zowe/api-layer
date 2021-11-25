@@ -84,7 +84,9 @@ function preparePackage {
     cd "${BASE_DIR}/${WORK_DIR}/${subdirectory}"
     unzip "${REPO_ROOT_DIR}/${service_package}/build/distributions/${service_package}.zip"
     chmod +x bin/*
+    echo "Carson debug"
     echo "$(ls -la)"
+    echo "$(ls -la bin)"
     echo "$(pwd)"
 }
 
