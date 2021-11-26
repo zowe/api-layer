@@ -79,7 +79,6 @@ function addStreams(proxyStream, title) {
         // CHANGE: add filter for adding listener so listener is only added for streams that match the selected stream to display
         source.addEventListener('message', (m) => {
             if (m.currentTarget && m.currentTarget.url && m.currentTarget.url.endsWith(urlVars.title)) {
-                console.log('Adding ' + m.currentTarget.url + ' with title ' + urlVars.title);
                 hystrixMonitor.eventSourceMessageListener(m);
             }
         }, false);
@@ -90,10 +89,6 @@ function addStreams(proxyStream, title) {
         }, false);
         // END OF CHANGE
 
-        //	source.addEventListener('open', function(e) {
-        //		console.console.log(">>> opened connection, phase: " + e.eventPhase);
-        //		// Connection was opened.
-        //	}, false);
         source.addEventListener('error', function(e) {
             $("#" + dependenciesId + " .loading").html("Unable to connect to Command Metric Stream.");
             $("#" + dependenciesId + " .loading").addClass("failed");
@@ -111,8 +106,6 @@ function addStreams(proxyStream, title) {
 
 function addMonitors() {
     $("#content").html(_.reduce(hystrixStreams, function(html, s, i) {
-        console.log('hystrix streams');
-        console.log(hystrixStreams);
         var hystrixMonitor = 'hystrixStreams[' + i + '].hystrixMonitor';
         var dependencyThreadPoolMonitor = 'hystrixStreams[' + i + '].dependencyThreadPoolMonitor';
         var dependenciesId = 'dependencies_' + i;
