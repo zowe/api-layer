@@ -87,7 +87,7 @@
         "react-testing-library": "5.3.0",
         "rimraf": "3.0.2",
         "source-map-explorer": "2.3.1",
-        "start-server-and-test": "^1.14.0",
+        "start-server-and-test": "1.14.0",
         "yaml": "1.10.2"
     },
     "jest": {
