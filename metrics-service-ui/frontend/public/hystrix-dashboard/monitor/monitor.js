@@ -20,6 +20,8 @@ function getUrlVars() {
 }
 
 var hystrixStreams = [];
+// CHANGE: make source a global variable so it can be closed when set a new stream
+var source = null; // EventSource that holds SSE connection
 
 function addStreams(proxyStream, title) {
     // CHANGE: rely on function parameters instead of parsing window.location.href
@@ -72,8 +74,13 @@ function addStreams(proxyStream, title) {
 
         // CHANGE: removed proxyStream variable declaration in favour of function parameter
 
+        // CHANGE: make source a global variable so it can be closed when set a new stream
+        if (source !== null ) {
+            source.close();
+        }
         // start the EventSource which will open a streaming connection to the server
-        var source = new EventSource(proxyStream);
+        source = new EventSource(proxyStream);
+        // END OF CHANGE
 
         // add the listener that will process incoming events
         // CHANGE: add filter for adding listener so listener is only added for streams that match the selected stream to display
