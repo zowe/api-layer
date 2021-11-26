@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-import React from 'react';
 import * as enzyme from 'enzyme';
 import Shield from './Shield';
 

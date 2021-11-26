@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Button, Text } from 'mineral-ui';
 import IconChevronLeft from 'mineral-ui-icons/IconChevronLeft';
 

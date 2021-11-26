@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Slf4j
 public class ConfigReader {
@@ -46,7 +47,7 @@ public class ConfigReader {
                         log.warn("Can't read service configuration from resource file, using default: http://localhost:10010", e);
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
-                            = new GatewayServiceConfiguration("https", "localhost", 10010, 10017, 1, "10010", "gateway/api/v1/services");
+                            = new GatewayServiceConfiguration("https", "localhost", 10010, 10017, 1, "10010", ROUTED_SERVICE);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
                         DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("https", "ZOWEAPPL", "localhost", 10012, 1);
 

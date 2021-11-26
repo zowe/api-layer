@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-import React from 'react';
 import { shallow, mount } from 'enzyme/build';
 import { MemoryRouter } from 'react-router-dom';
 import App from './App';

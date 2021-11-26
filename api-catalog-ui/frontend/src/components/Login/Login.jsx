@@ -1,11 +1,9 @@
 import React from 'react';
-import { IconButton, InputAdornment, InputLabel, OutlinedInput } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
+import { IconButton, InputAdornment, Typography, Button, CssBaseline, TextField, Link } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
 import WarningIcon from '@material-ui/icons/Warning';
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import logoImage from '../../assets/images/api-catalog-logo.png';
 import Spinner from '../Spinner/Spinner';
 import './Login.css';
@@ -24,12 +22,24 @@ export default class Login extends React.Component {
         this.handleClickShowPassword = this.handleClickShowPassword.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
     }
+
+    /**
+     * Detect caps lock being on when typing.
+     * @param keyEvent On key down event.
+     */
+    onKeyDown = keyEvent => {
+        this.setState({ warning: false });
+        if (keyEvent.getModifierState('CapsLock')) {
+            this.setState({ warning: true });
+        } else {
+            this.setState({ warning: false });
+        }
+    };
 
     handleClickShowPassword(showPassword) {
         this.setState({ showPassword: !showPassword });
-        /* eslint-disable no-console */
-        console.log(showPassword);
     }
 
     isDisabled = () => {
@@ -79,7 +89,7 @@ export default class Login extends React.Component {
     }
 
     render() {
-        const { username, password, errorMessage, showPassword } = this.state;
+        const { username, password, errorMessage, showPassword, warning } = this.state;
         const { authentication, isFetching } = this.props;
         let messageText;
         if (
@@ -100,9 +110,6 @@ export default class Login extends React.Component {
                         <div className="logo-container">
                             <img src={logoImage} alt="" />
                         </div>
-                        <div className="product-title">
-                            <div className="text-block-2">API Catalog</div>
-                        </div>
                     </div>
                     <div className="login-inputs-container">
                         <div className="username-container">
@@ -117,75 +124,93 @@ export default class Login extends React.Component {
                                         onSubmit={this.handleSubmit}
                                     >
                                         <CssBaseline />
+                                        <div className="text-block-4">API Catalog</div>
+                                        <br />
+                                        {messageText !== undefined &&
+                                            messageText !== null && (
+                                                <div id="error-message">
+                                                    <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
+                                                    {messageText}
+                                                </div>
+                                            )}
+                                        <Typography className="login-typo" variant="h7" gutterBottom component="div">
+                                            Login
+                                        </Typography>
+                                        <br />
+                                        <Typography variant="h7" gutterBottom component="div">
+                                            Please enter your mainframe username and password to access this resource
+                                        </Typography>
+                                        <br />
                                         <TextField
                                             label="Username"
                                             data-testid="username"
                                             className="formfield"
                                             variant="outlined"
-                                            // margin="normal"
                                             required
+                                            error={messageText}
                                             fullWidth
-                                            id="email"
+                                            id="username"
                                             name="username"
                                             value={username}
                                             onChange={this.handleChange}
                                             autoComplete="on"
-                                            // autoFocus
+                                            autoFocus
                                         />
-                                        <InputLabel className="formfield" htmlFor="outlined-adornment-password">
-                                            Password
-                                        </InputLabel>
-                                        <OutlinedInput
+                                        <br />
+                                        <br />
+                                        <br />
+                                        <TextField
                                             id="password"
+                                            htmlFor="outlined-adornment-password"
+                                            label="Password"
                                             data-testid="password"
+                                            className="formfield"
+                                            variant="outlined"
+                                            required
+                                            error={messageText}
+                                            fullWidth
                                             name="password"
                                             type={showPassword ? 'text' : 'password'}
                                             value={password}
+                                            onKeyDown={this.onKeyDown}
                                             onChange={this.handleChange}
                                             caption="Default: password"
                                             autoComplete="on"
-                                            endAdornment={
-                                                <InputAdornment position="end">
-                                                    <IconButton
-                                                        aria-label="toggle password visibility"
-                                                        edge="end"
-                                                        onClick={() => this.handleClickShowPassword(showPassword)}
-                                                    >
-                                                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            }
-                                            label="Password"
+                                            InputProps={{
+                                                endAdornment: (
+                                                    <InputAdornment position="end">
+                                                        <IconButton
+                                                            aria-label="toggle password visibility"
+                                                            edge="end"
+                                                            onClick={() => this.handleClickShowPassword(showPassword)}
+                                                        >
+                                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                        </IconButton>
+                                                        {messageText && <ErrorOutlineIcon className="errorIcon" />}
+                                                    </InputAdornment>
+                                                ),
+                                            }}
                                         />
+                                        {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
                                         <Button
-                                            className="formfield"
+                                            className="loginButton"
                                             label=""
                                             type="submit"
                                             data-testid="submit"
-                                            primary
-                                            fullWidth
                                             disabled={this.isDisabled()}
-                                            style={{ size: 'jumbo' }}
                                         >
-                                            Sign in
+                                            Log in
                                         </Button>
                                         <Spinner
-                                            className="formfield"
+                                            className="formfield form-spinner"
+                                            label=""
                                             isLoading={isFetching}
                                             css={{
                                                 position: 'relative',
                                                 top: '70px',
+                                                marginLeft: '-64px',
                                             }}
                                         />
-                                        {messageText !== undefined &&
-                                            messageText !== null && (
-                                                <div id="error-message">
-                                                    <p style={{ color: '#de1b1b' }} className="error-message-content">
-                                                        <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
-                                                        {messageText}
-                                                    </p>
-                                                </div>
-                                            )}
                                     </form>
                                 </div>
                             </div>

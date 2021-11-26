@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @LbHaTest
 class DistributedLoadBalancingTest {
@@ -50,7 +51,7 @@ class DistributedLoadBalancingTest {
 
         String routedInstanceId = given()
             .cookie(COOKIE_NAME, jwt)
-            .get("https://gateway-service:10010/api/v1/discoverableclient/greeting")
+            .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
             .header("X-InstanceId");
 
         assertThat(routedInstanceId, is(notNullValue()));
@@ -60,7 +61,7 @@ class DistributedLoadBalancingTest {
         for (int i = 0; i < 10; i++) {
             String routedInstanceIdOnOtherGateway = given()
                 .cookie(COOKIE_NAME, jwt)
-                .get("https://gateway-service:10010/api/v1/discoverableclient/greeting")
+                .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
                 .header("X-InstanceId");
             results1[i] = routedInstanceId.equals(routedInstanceIdOnOtherGateway) ? "match" : "nomatch";
         }
@@ -74,7 +75,7 @@ class DistributedLoadBalancingTest {
         for (int i = 0; i < 10; i++) {
             String routedInstanceIdOnOtherGateway = given()
                 .cookie(COOKIE_NAME, jwt)
-                .get("https://gateway-service-2:10010/api/v1/discoverableclient/greeting")
+                .get("https://gateway-service-2:10010" + DISCOVERABLE_GREET)
                 .header("X-InstanceId");
             results2[i] = routedInstanceId.equals(routedInstanceIdOnOtherGateway) ? "match" : "nomatch";
         }

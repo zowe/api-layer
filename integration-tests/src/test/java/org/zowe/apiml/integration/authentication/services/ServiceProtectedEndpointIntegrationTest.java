@@ -34,7 +34,7 @@ import static org.hamcrest.core.Is.is;
  * This test suite verifies integration between the API ML and the service instance. Especially it verifies that gateway
  * properly accepts and translates the token.
  * The expectation is that the call to the service instance will be authenticated.
- * The tests depends on the availability of either the zOSMF or the mock.
+ * The tests depend on the availability of either zOSMF or the mock.
  */
 @zOSMFAuthTest
 class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstances {
@@ -42,7 +42,7 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
-    private final static String ZOSMF_ENDPOINT = "/api/" + ZOSMF_SERVICE_ID + "/zosmf/restfiles/ds";
+    private final static String ZOSMF_ENDPOINT = "/" + ZOSMF_SERVICE_ID + "/api/zosmf/restfiles/ds";
     private List<NameValuePair> arguments;
 
     private String token;

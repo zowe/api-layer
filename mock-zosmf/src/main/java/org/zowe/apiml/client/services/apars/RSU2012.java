@@ -38,7 +38,7 @@ public class RSU2012 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers) && noJwtCookie(headers)) {
+        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers) && !isValidJwtCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -48,7 +48,7 @@ public class RSU2012 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
-        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers) && noJwtCookie(headers)) {
+        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers) && !isValidJwtCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

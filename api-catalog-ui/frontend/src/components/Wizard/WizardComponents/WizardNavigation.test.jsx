@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import React from 'react';
 import * as enzyme from 'enzyme';
 import WizardNavigation from './WizardNavigation';
 import { IconDanger } from 'mineral-ui-icons';

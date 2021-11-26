@@ -74,7 +74,9 @@ dependencies {
     implementation libraries.swagger3_parser
     implementation libraries.jackson_core
     implementation libraries.tomcat_coyote
+    implementation libraries.tomcat_annotations_api
     implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
     implementation libraries.spring_cloud_starter_eureka
     implementation libraries.spring_cloud_starter_ribbon
     implementation libraries.jetty_websocket_common
@@ -86,6 +88,47 @@ dependencies {
     implementation libraries.jetty_websocket_api
     implementation libraries.jjwt
     implementation libraries.nimbusJoseJwt
+    implementation libraries.netty
+    implementation libraries.netty_buffer
+    implementation libraries.netty_codec
+    implementation libraries.netty_codec_dns
+    implementation libraries.netty_codec_haproxy
+    implementation libraries.netty_codec_http
+    implementation libraries.netty_codec_http2
+    implementation libraries.netty_codec_memcache
+    implementation libraries.netty_codec_mqtt
+    implementation libraries.netty_codec_redis
+    implementation libraries.netty_codec_socks
+    implementation libraries.netty_codec_smtp
+    implementation libraries.netty_codec_stomp
+    implementation libraries.netty_codec_xml
+    implementation libraries.netty_common
+    implementation libraries.netty_handler
+    implementation libraries.netty_handler_proxy
+    implementation libraries.netty_resolver
+    implementation libraries.netty_resolver_dns
+    implementation libraries.netty_resolver_dns_native_macos
+    implementation libraries.netty_transport
+    implementation libraries.netty_transport_native_epoll
+    implementation libraries.netty_transport_native_kqueue
+    implementation libraries.netty_transport_native_unix_common
+    implementation libraries.netty_transport_rxtx
+    implementation libraries.netty_transport_sctp
+    implementation libraries.netty_transport_udt
+   
+    implementation libraries.commons_io
+    implementation libraries.guava
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_context_support
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.spring_messaging
+    implementation libraries.spring_web
+    implementation libraries.spring_webmvc
+    implementation libraries.spring_websocket
+
     implementation libraries.eh_cache
     implementation libraries.spring_retry
     implementation libraries.awaitility
@@ -131,12 +174,8 @@ bootRun {
 
 publishing {
     publications {
-        mavenJavaLib(MavenPublication) {
-            artifact jar
-        }
-
         mavenJavaFat(MavenPublication) {
-            groupId = 'org.zowe.apiml.sdk'
+            groupId = 'org.zowe.apiml'
             artifactId = 'gateway-fat-jar'
 
             artifact bootJar

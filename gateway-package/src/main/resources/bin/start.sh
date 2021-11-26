@@ -81,6 +81,12 @@ else
     GATEWAY_LOADER_PATH=${COMMON_LIB}
 fi
 
+# Check if the directory containing the Gateway shared JARs was set and append it to the GW loader path
+if [[ ! -z ${ZWE_GATEWAY_SHARED_LIBS} ]]
+then
+    GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS},${GATEWAY_LOADER_PATH}
+fi
+
 EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
 GATEWAY_SERVICE_PORT=${GATEWAY_PORT:-7554}
 

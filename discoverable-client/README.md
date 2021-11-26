@@ -15,6 +15,6 @@ This service includes a simple greeting as well as a basic petstore example for 
 
 To access the service directly from your browser go to 
 [https://localhost:10012/discoverableclient/](https://localhost:10012/discoverableclient/),
-and via the gateway to [https://localhost:10010/ui/v1/discoverableclient/](https://localhost:10010/ui/v1/discoverableclient/).
+and via the gateway to [https://localhost:10010/discoverableclient/ui/v1/](https://localhost:10010/discoverableclient/ui/v1/).
 
 

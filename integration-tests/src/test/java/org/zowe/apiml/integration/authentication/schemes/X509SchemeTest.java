@@ -23,6 +23,7 @@ import java.net.URI;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 /**
  * Use Discoverable Client to verify that when the x509 certificate is used for the call to the southbound service
@@ -31,7 +32,6 @@ import static org.hamcrest.core.Is.is;
 @X509Test
 @DiscoverableClientDependentTest
 class X509SchemeTest implements TestWithStartedInstances {
-    private static final String X509_ENDPOINT = "/api/v1/discoverableclient/x509";
     private static URI URL;
 
     @BeforeAll

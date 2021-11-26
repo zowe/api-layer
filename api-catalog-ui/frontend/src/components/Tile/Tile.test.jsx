@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-import * as React from 'react';
 import { shallow } from 'enzyme';
 import { mount } from 'enzyme';
 import Tile from './Tile';
@@ -108,9 +107,9 @@ describe('>>> Tile component tests', () => {
     //     expect(wrapper.text().includes('SSO')).toBe(true);
     // });
 
-    // it('should mssing sso if it is not set', () => {
-    //     sampleTile.sso = false;
-    //     const wrapper = mount(<Tile tile={sampleTile} />);
-    //     expect(wrapper.text().includes('SSO')).toBe(false);
-    // });
+    it('should mssing sso if it is not set', () => {
+        sampleTile.sso = false;
+        const wrapper = shallow(<Tile tile={sampleTile} />);
+        expect(wrapper.text().includes('SSO')).toBe(false);
+    });
 });

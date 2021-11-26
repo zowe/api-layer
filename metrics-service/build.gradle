@@ -53,12 +53,29 @@ dependencies {
     implementation libraries.springFox
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_cloud_starter_eureka
+    implementation libraries.spring_cloud_starter_turbine
     implementation libraries.spring_security_web
     implementation libraries.spring_security_config
     implementation libraries.spring_security_core
     implementation libraries.spring_security_crypto
+    implementation libraries.tomcat_annotations_api
+    implementation libraries.tomcat_embed_core
+    implementation libraries.tomcat_embed_websocket
     implementation libraries.gson
     implementation libraries.xstream
+    implementation libraries.commons_io
+    implementation libraries.guava
+    implementation libraries.spring_aop
+    implementation libraries.spring_beans
+    implementation libraries.spring_context
+    implementation libraries.spring_context_support
+    implementation libraries.spring_core
+    implementation libraries.spring_expression
+    implementation libraries.spring_messaging
+    implementation libraries.spring_web
+    implementation libraries.spring_webmvc
+    implementation libraries.spring_websocket
+
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
@@ -101,11 +118,8 @@ jar {
 
 publishing {
     publications {
-        mavenJavaLib(MavenPublication) {
-            artifact jar
-        }
         mavenJavaFat(MavenPublication) {
-            groupId = 'org.zowe.apiml.sdk'
+            groupId = 'org.zowe.apiml'
             artifactId = 'metrics-service-fat-jar'
             artifact bootJar
         }

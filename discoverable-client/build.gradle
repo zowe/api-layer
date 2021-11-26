@@ -76,11 +76,3 @@ dependencies {
 
 
 bootJar.archiveName = "${bootJar.baseName}.jar"
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact bootJar
-        }
-    }
-}

@@ -55,7 +55,6 @@ class ServerSentEventProxyHandlerTest {
     private static final String ENDPOINT = "/endpoint/";
     private static final String MAJOR_VERSION = "v1";
     private static final String GATEWAY_PATH = "/" + SERVICE_ID + "/sse/" + MAJOR_VERSION + ENDPOINT;
-    private static final String GATEWAY_PATH_OLD_FORMAT = "/sse/" + MAJOR_VERSION + "/" + SERVICE_ID + ENDPOINT;
 
     private ServerSentEventProxyHandler underTest;
     private DiscoveryClient mockDiscoveryClient;
@@ -253,7 +252,6 @@ class ServerSentEventProxyHandlerTest {
     private static Stream<Arguments> endpoints() {
         return Stream.of(
             Arguments.of(GATEWAY_PATH, ENDPOINT),
-            Arguments.of(GATEWAY_PATH_OLD_FORMAT, ENDPOINT),
             Arguments.of(GATEWAY_PATH + "anotherendpoint", ENDPOINT + "anotherendpoint"),
             Arguments.of(GATEWAY_PATH + "anotherendpoint/", ENDPOINT + "anotherendpoint/"),
             Arguments.of("/serviceid/sse/v1", "/"),

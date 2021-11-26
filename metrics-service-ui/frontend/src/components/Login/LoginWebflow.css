@@ -12,7 +12,7 @@
    /* ==========================================================================
       Start of custom Webflow CSS
       ========================================================================== */
-   .header {
+   .login-header {
        display: -webkit-box;
        display: -webkit-flex;
        display: -ms-flexbox;
@@ -434,6 +434,11 @@
        flex: 0 0 auto;
    }
    
+   #content {
+       width: 100%;
+       max-width: none;
+   }
+
    @media (max-width: 991px) {
        .container {
            width: 100%;

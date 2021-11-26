@@ -1,6 +1,4 @@
 /* eslint-disable no-undef */
-import * as React from 'react';
-// tslint:disable-next-line:no-implicit-dependencies
 import * as enzyme from 'enzyme';
 import jest from 'jest-mock';
 import Login from './Login';
@@ -10,31 +8,31 @@ describe('>>> Login page component tests', () => {
         const loginMock = jest.fn();
 
         const page = enzyme.shallow(<Login login={loginMock} />);
-        // page.find('TextInput')
-        //     .first()
-        //     .simulate('change', { target: { name: 'username', value: 'user' } });
-        //
-        // page.find('TextInput')
-        //     .last()
-        //     .simulate('change', { target: { name: 'password', value: 'password' } });
+        page.find('[data-testid="username"]')
+            .first()
+            .simulate('change', { target: { name: 'username', value: 'user' } });
+
+        page.find('[data-testid="password"]')
+            .last()
+            .simulate('change', { target: { name: 'password', value: 'password' } });
 
         page.find('form').simulate('submit', {
             preventDefault: () => {},
         });
 
-        // expect(loginMock).toHaveBeenCalled();
+        expect(loginMock).toHaveBeenCalled();
     });
 
     it('should display message if username and password are empty and submited', () => {
         const page = enzyme.shallow(<Login />);
 
-        // page.find('TextInput')
-        //     .first()
-        //     .simulate('change', { target: { name: 'username', value: '' } });
-        //
-        // page.find('TextInput')
-        //     .last()
-        //     .simulate('change', { target: { name: 'password', value: '' } });
+        page.find('[data-testid="username"]')
+            .first()
+            .simulate('change', { target: { name: 'username', value: '' } });
+
+        page.find('[data-testid="password"]')
+            .last()
+            .simulate('change', { target: { name: 'password', value: '' } });
 
         const button = page.find('[data-testid="submit"]');
         button.simulate('click');
@@ -46,13 +44,13 @@ describe('>>> Login page component tests', () => {
     it('should enable login button if username and password are populated', () => {
         const page = enzyme.shallow(<Login />);
 
-        // page.find('TextInput')
-        //     .first()
-        //     .simulate('change', { target: { name: 'username', value: 'user' } });
-        //
-        // page.find('TextInput')
-        //     .last()
-        //     .simulate('change', { target: { name: 'password', value: 'password' } });
+        page.find('[data-testid="username"]')
+            .first()
+            .simulate('change', { target: { name: 'username', value: 'user' } });
+
+        page.find('[data-testid="password"]')
+            .last()
+            .simulate('change', { target: { name: 'password', value: 'password' } });
 
         const button = page.find('[data-testid="submit"]');
         expect(button).toBeDefined();
