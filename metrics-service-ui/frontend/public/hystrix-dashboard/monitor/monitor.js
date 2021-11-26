@@ -76,13 +76,18 @@ function addStreams(proxyStream, title) {
         var source = new EventSource(proxyStream);
 
         // add the listener that will process incoming events
-        source.addEventListener('message', hystrixMonitor.eventSourceMessageListener, false);
-        source.addEventListener('message', dependencyThreadPoolMonitor.eventSourceMessageListener, false);
-
-        //	source.addEventListener('open', function(e) {
-        //		console.console.log(">>> opened connection, phase: " + e.eventPhase);
-        //		// Connection was opened.
-        //	}, false);
+        // CHANGE: add filter for adding listener so listener is only added for streams that match the selected stream to display
+        source.addEventListener('message', (m) => {
+            if (m.currentTarget && m.currentTarget.url && m.currentTarget.url.endsWith(urlVars.title)) {
+                hystrixMonitor.eventSourceMessageListener(m);
+            }
+        }, false);
+        source.addEventListener('message', (m) => {
+            if (m.currentTarget && m.currentTarget.url && m.currentTarget.url.endsWith(urlVars.title)) {
+                dependencyThreadPoolMonitor.eventSourceMessageListener(m);
+            }
+        }, false);
+        // END OF CHANGE
 
         source.addEventListener('error', function(e) {
             $("#" + dependenciesId + " .loading").html("Unable to connect to Command Metric Stream.");
