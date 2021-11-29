@@ -9,8 +9,14 @@ function transformSwaggerToCurrentHost(swagger) {
 
     if (swagger.servers !== null && swagger.servers !== undefined) {
         for (let i = 0; i < swagger.servers.length; i += 1) {
-            const url = `${window.location.protocol}//${window.location.host}/${swagger.servers[i].url}`;
-            swagger.servers[i].url = url;
+            const location = `${window.location.protocol}//${window.location.host}`;
+            try {
+                const swaggerUrl = new URL(swagger.servers[i].url);
+                swagger.servers[i].url = location + swaggerUrl.pathname;
+            } catch (e) {
+                // not a proper url, assume it is an endpoint
+                swagger.servers[i].url = location + swagger.servers[i];
+            }
         }
     }
 
