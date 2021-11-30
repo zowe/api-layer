@@ -184,14 +184,17 @@ public class HttpsFactory {
         }
         log.info("Loading key store file: " + config.getKeyStore());
         File keyStoreFile = new File(config.getKeyStore());
-        sslContextBuilder.loadKeyMaterial(keyStoreFile, config.getKeyStorePassword(), config.getKeyPassword());
+        sslContextBuilder.loadKeyMaterial(
+            keyStoreFile, config.getKeyStorePassword(), config.getKeyPassword(),
+            (aliases, socket) -> config.getKeyAlias()
+        );
     }
 
     private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
         NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         log.info("Loading trust key ring: " + config.getKeyStore());
         sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()), config.getKeyStorePassword(),
-            config.getKeyPassword(), null);
+            config.getKeyPassword(), (aliases, socket) -> config.getKeyAlias());
     }
 
     private synchronized SSLContext createSecureSslContext() {
