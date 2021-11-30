@@ -9,7 +9,6 @@
  */
 
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import Login from './Login';
 import { userActions } from '../../actions/user-actions';
 import { createLoadingSelector } from '../../selectors';
@@ -26,4 +25,4 @@ const mapDispatchToProps = {
     logout: () => userActions.logout(),
 };
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Login));
+export default connect(mapStateToProps, mapDispatchToProps)(Login);

@@ -39,7 +39,7 @@
         "api-catalog-service-1": "java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local-multi/api-catalog-service-1.yml",
         "api-catalog-service-2": "java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local-multi/api-catalog-service-2.yml",
         "discoverable-client-1": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local-multi/discoverable-client.yml",
-        "mock-zosmf": "java -jar mock-zosmf/build/libs/mock-zosmf.jar",
+        "mock-zosmf": "java -jar mock-zosmf/build/libs/mock-zosmf.jar --spring.config.additional-location=file:./config/local/mock-zosmf.yml",
         "mock-zosmf-1": "java -jar mock-zosmf/build/libs/mock-zosmf.jar --spring.config.additional-location=file:./config/local-multi/mock-zosmf.yml",
         "test": "./gradlew runAllIntegrationTests",
         "test:local": "./gradlew runLocalIntegrationTests",

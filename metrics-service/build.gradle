@@ -83,6 +83,7 @@ dependencies {
     testAnnotationProcessor libraries.lombok
     testCompile libraries.spring_boot_starter_test
     testCompile libraries.json_smart
+    testCompile libraries.rest_assured
 }
 
 def uiModule = "${project(':metrics-service-ui').projectDir}"

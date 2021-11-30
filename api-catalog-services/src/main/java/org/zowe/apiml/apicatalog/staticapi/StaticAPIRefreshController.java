@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.staticapi;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ public class StaticAPIRefreshController {
     private final StaticAPIService staticAPIService;
 
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
+    @HystrixCommand
     public ResponseEntity<String> refreshStaticApis() {
         StaticAPIResponse staticAPIResponse = staticAPIService.refresh();
         return ResponseEntity

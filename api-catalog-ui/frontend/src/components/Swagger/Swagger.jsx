@@ -9,8 +9,14 @@ function transformSwaggerToCurrentHost(swagger) {
 
     if (swagger.servers !== null && swagger.servers !== undefined) {
         for (let i = 0; i < swagger.servers.length; i += 1) {
-            const url = `${window.location.protocol}//${window.location.host}/${swagger.servers[i].url}`;
-            swagger.servers[i].url = url;
+            const location = `${window.location.protocol}//${window.location.host}`;
+            try {
+                const swaggerUrl = new URL(swagger.servers[i].url);
+                swagger.servers[i].url = location + swaggerUrl.pathname;
+            } catch (e) {
+                // not a proper url, assume it is an endpoint
+                swagger.servers[i].url = location + swagger.servers[i];
+            }
         }
     }
 
@@ -71,7 +77,7 @@ export default class SwaggerUI extends Component {
         try {
             // If no version selected use the default apiDoc
             if (
-                selectedVersion === null &&
+                (selectedVersion === null || selectedVersion === undefined) &&
                 selectedService.apiDoc !== null &&
                 selectedService.apiDoc !== undefined &&
                 selectedService.apiDoc.length !== 0
@@ -85,7 +91,7 @@ export default class SwaggerUI extends Component {
                     plugins: [this.customPlugins],
                 });
             }
-            if (selectedVersion !== null) {
+            if (selectedVersion !== null && selectedVersion !== undefined) {
                 const url = `${process.env.REACT_APP_GATEWAY_URL +
                     process.env.REACT_APP_CATALOG_HOME +
                     process.env.REACT_APP_APIDOC_UPDATE}/${selectedService.serviceId}/${selectedVersion}`;

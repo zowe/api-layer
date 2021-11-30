@@ -59,6 +59,7 @@ dependencies {
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_security
     implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_cloud_starter_hystrix
     implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE')  {
         exclude group: "javax.servlet", module: "servlet-api"
     }

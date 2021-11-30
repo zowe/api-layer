@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.discovery;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.zowe.apiml.util.EurekaUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceCanceledEvent;
@@ -28,6 +29,7 @@ public class EurekaInstanceCanceledListener {
      * Translates service instance Eureka metadata from older versions to the current version
      */
     @EventListener
+    @HystrixCommand
     public void listen(EurekaInstanceCanceledEvent event) {
         gatewayNotifier.serviceCancelledRegistration(EurekaUtils.getServiceIdFromInstanceId(event.getServerId()));
     }
