@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,7 @@ public class CatalogApiDocController {
         @ApiResponse(code = 404, message = "URI not found"),
         @ApiResponse(code = 500, message = "An unexpected condition occurred"),
     })
+    @HystrixCommand
     public ResponseEntity<String> getApiDocInfo(
         @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId,
@@ -89,6 +91,7 @@ public class CatalogApiDocController {
         @ApiResponse(code = 404, message = "URI not found"),
         @ApiResponse(code = 500, message = "An unexpected condition occurred"),
     })
+    @HystrixCommand
     public ResponseEntity<String> getApiDiff(
         @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId,

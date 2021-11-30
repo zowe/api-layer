@@ -3,6 +3,9 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
+        classpath ("org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r") {
+            force = true
+        }
     }
 }
 
@@ -59,6 +62,7 @@ dependencies {
     implementation libraries.spring_boot_starter_websocket
     implementation libraries.spring_boot_starter_security
     implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_cloud_starter_hystrix
     implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.2.9.RELEASE')  {
         exclude group: "javax.servlet", module: "servlet-api"
     }

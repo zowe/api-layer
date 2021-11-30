@@ -28,9 +28,8 @@ describe('>>> MetricsIconButton component tests', () => {
         expect(sample.find(styledIconButton).prop('href')).toEqual('/metrics-service/ui/v1/#/dashboard');
     });
 
-    it('should contain a Metrics Service icon image', () => {
+    it('should contain a Metrics Service icon svg', () => {
         const sample = shallow(<MetricsIconButton />);
-        expect(sample.find('img')).toExist();
-        expect(sample.find('img').prop('alt')).toEqual('Metrics Service icon');
+        expect(sample.find('svg')).toExist();
     });
 });

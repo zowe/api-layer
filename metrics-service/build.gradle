@@ -3,6 +3,9 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
+        classpath ("org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r") {
+            force = true
+        }
     }
 }
 
@@ -83,6 +86,7 @@ dependencies {
     testAnnotationProcessor libraries.lombok
     testCompile libraries.spring_boot_starter_test
     testCompile libraries.json_smart
+    testCompile libraries.rest_assured
 }
 
 def uiModule = "${project(':metrics-service-ui').projectDir}"

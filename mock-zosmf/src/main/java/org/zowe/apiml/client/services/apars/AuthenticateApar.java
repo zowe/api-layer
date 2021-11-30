@@ -11,14 +11,15 @@ package org.zowe.apiml.client.services.apars;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.client.services.JwtTokenService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
 public class AuthenticateApar extends FunctionalApar {
-    public AuthenticateApar(List<String> usernames, List<String> passwords) {
-        super(usernames, passwords);
+    public AuthenticateApar(List<String> usernames, List<String> passwords, Integer timeout) {
+        super(usernames, passwords, new JwtTokenService(timeout));
     }
 
     @Override

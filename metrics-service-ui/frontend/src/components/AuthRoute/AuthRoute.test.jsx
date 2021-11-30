@@ -12,36 +12,54 @@
 
 import { Router } from 'react-router-dom';
 import { mount } from 'enzyme';
-import { createStore } from 'redux';
+import {act} from "react-dom/test-utils";
 
 import history from '../../helpers/history';
-import { rootReducer } from '../../reducers';
 import AuthRoute from './AuthRoute';
 
 describe('>>> AuthRoute component tests', () => {
-    let store;
-
-    beforeEach(() => {
-        store = createStore(rootReducer);
+    it('should contain a Spinner component when waiting for authentication result', () => {
+        const wrapper = mount(
+          <Router history={history}>
+              <AuthRoute />
+          </Router>
+      );
+        expect(wrapper.find('Spinner')).toExist();
     });
 
-    it('should contain a Redirect component when not authenticated', () => {
+    it('should contain a Redirect component when not authenticated', async () => {
+        jest.spyOn(global, 'fetch').mockImplementation(() => Promise.reject({}));
+
         const wrapper = mount(
-            <Router history={history}>
-                <AuthRoute store={store} />
-            </Router>
-        );
-        expect(wrapper.find('AuthRoute').prop('authenticated')).toBeFalsy();
+          <Router history={history}>
+              <AuthRoute />
+          </Router>
+      );
+
+        // awaits response from mocked fetch call
+        await act(async () => {
+            await new Promise(setImmediate);
+            wrapper.update();
+        });
+
         expect(wrapper.find('Redirect')).toExist();
     });
 
-    it('should contain a Route component when authenticated', () => {
+    it('should contain a Route component when authenticated', async () => {
+        const mockResponse = {ok: true, text: () => Promise.resolve()};
+        jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve(mockResponse));
+
         const wrapper = mount(
-            <Router history={history}>
-                <AuthRoute store={store} authenticated />
-            </Router>
+          <Router history={history}>
+              <AuthRoute />
+          </Router>
         );
-        expect(wrapper.find('AuthRoute').prop('authenticated')).toBeTruthy();
+
+        // awaits response from mocked fetch call
+        await act(async () => {
+            await new Promise(setImmediate);
+            wrapper.update();
+        });
         expect(wrapper.find('Route')).toExist();
     });
 });

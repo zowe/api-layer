@@ -36,7 +36,7 @@ class AuthenticationAparTest {
         List<String> usernames = Collections.singletonList("USER");
         List<String> passwords = Collections.singletonList("validPassword");
 
-        underTest = new AuthenticateApar(usernames, passwords);
+        underTest = new AuthenticateApar(usernames, passwords, 60);
         headers = new HashMap<>();
         mockResponse = mock(HttpServletResponse.class);
     }

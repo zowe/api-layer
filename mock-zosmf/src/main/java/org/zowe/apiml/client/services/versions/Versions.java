@@ -30,8 +30,8 @@ public class Versions {
 
     @Autowired
     public Versions(@Value("${zosmf.username}") List<String> usernames, @Value("${zosmf.password}") List<String> passwords,
-                    @Value("${zosmf.jwtKeyStorePath}") String jwtKeyStorePath) {
-        this.availableApars = new AvailableApars(usernames, passwords, jwtKeyStorePath);
+                    @Value("${zosmf.jwtKeyStorePath}") String jwtKeyStorePath, @Value("${zosmf.timeout}") Integer timeout) {
+        this.availableApars = new AvailableApars(usernames, passwords, jwtKeyStorePath, timeout);
 
         ArrayList<Apar> baseApars = new ArrayList<>();
         baseApars.add(new PHBase(usernames, passwords));

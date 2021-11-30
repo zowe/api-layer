@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.apicatalog.staticapi;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ public class StaticDefinitionController {
      * @return the response entity
      */
     @PostMapping(value = "/generate", produces = MediaType.APPLICATION_JSON_VALUE)
+    @HystrixCommand
     public ResponseEntity<String> generateStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.generateFile(payload, serviceId);
         return ResponseEntity
@@ -50,6 +52,7 @@ public class StaticDefinitionController {
      * @return the response entity
      */
     @PostMapping(value = "/override", produces = MediaType.APPLICATION_JSON_VALUE)
+    @HystrixCommand
     public ResponseEntity<String> overrideStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.overrideFile(payload, serviceId);
         return ResponseEntity
@@ -59,6 +62,7 @@ public class StaticDefinitionController {
 
 
     @DeleteMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
+    @HystrixCommand
     public ResponseEntity<String> deleteStaticDef(@RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.deleteFile(serviceId);
         return ResponseEntity.status(staticAPIResponse.getStatusCode()).body(staticAPIResponse.getBody());

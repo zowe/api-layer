@@ -41,7 +41,7 @@ class RSU2012Test {
         List<String> usernames = Collections.singletonList(USERNAME);
         List<String> passwords = Collections.singletonList(PASSWORD);
 
-        underTest = new RSU2012(usernames, passwords, "../keystore/localhost/localhost.keystore.p12");
+        underTest = new RSU2012(usernames, passwords, "../keystore/localhost/localhost.keystore.p12", 60);
         mockResponse = mock(HttpServletResponse.class);
         headers = new HashMap<>();
     }

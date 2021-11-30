@@ -95,6 +95,9 @@ public class NewSecurityConfiguration {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
+    @Value("${apiml.metrics.enabled:false}")
+    private boolean isMetricsEnabled;
+
     /**
      * Login and Logout endpoints
      * <p>
@@ -476,6 +479,9 @@ public class NewSecurityConfiguration {
                 AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
                 AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
 
+        if (isMetricsEnabled) {
+            web.ignoring().antMatchers("/application/hystrix.stream");
+        }
     }
 
 

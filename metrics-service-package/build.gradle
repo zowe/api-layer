@@ -9,7 +9,7 @@ configurations {
 }
 
 dependencies {
-    metricsServiceJar(project(path: ":metrics-service", configuration: "bootArchives"))
+    metricsServiceJar(project(path: ":metrics-service", configuration: "liteJarConfiguration"))
 }
 
 task packageMetricsService(type: Zip) {
