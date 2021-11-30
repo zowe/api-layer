@@ -29,7 +29,7 @@ public class SecurityTestUtils {
     public static HttpsConfig.HttpsConfigBuilder correctHttpsKeyStoreSettings() {
         return HttpsConfig.builder().protocol("TLSv1.2")
             .keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost.keystore.p12"))
-            .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD).keyAlias("localhost");
+            .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD);
     }
 
     public static String pathFromRepository(String path) {
