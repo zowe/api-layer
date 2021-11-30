@@ -1,6 +1,9 @@
 /* eslint-disable no-undef */
 import * as enzyme from 'enzyme';
 import Shield from './Shield';
+import React from "react";
+import { render } from "react-dom";
+import { act } from "react-dom/test-utils";
 
 const Child = () => {
     throw 'error';
@@ -16,14 +19,13 @@ const pauseErrorLogging = codeToRun => {
 };
 describe('>>> Shield component tests', () => {
     it('Should catches error and renders message', () => {
-//         const errorMessage = 'Display the error stack';
-//         pauseErrorLogging(() => {
-//             const wrapper = enzyme.mount(
-//                 <Shield>
-//                     <Child />
-//                 </Shield>
-//             );
-//             expect(wrapper.text()).toBe(errorMessage);
-//         });
+        const errorMessage = 'Display the error stack';
+        let container = document.createElement("div");
+        act(()=>{
+            render( <Shield>
+                <Child />
+            </Shield>,container)
+        })
+        expect(container.textContent).toBe(errorMessage);
     });
 });
