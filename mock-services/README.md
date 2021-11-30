@@ -5,7 +5,7 @@ The main perceived benefit is in the local development and in CICD pipeline bein
 
 ## How do you run the mock
 
-It is a Spring Boot application. So you either add it as a run configuration and run it together with other services or the npm command to run API ML also runs the mock. 
+It is a Spring Boot application. So you either add it as a run configuration and run it together with other services or the npm command to run API ML also runs the mock zOSMF. 
 
 Command to run full set of api-layer: `npm run api-layer`.
 Review [IDE setup](../docs/ide-setup.md) to see how to set run configurations.
