@@ -62,7 +62,13 @@ export default class Login extends React.Component {
             const filter = errorMessages.messages.filter(
                 x => x.messageKey != null && x.messageKey === error.messageNumber
             );
-            if (filter.length !== 0) messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
+            if (filter.length !== 0) {
+                if (filter[0].messageKey === 'ZWEAS120E') {
+                    messageText = `${filter[0].messageText}`;
+                } else {
+                    messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
+                }
+            }
         } else if (error.status === 401 && authentication.sessionOn) {
             messageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
             authentication.onCompleteHandling();
@@ -133,11 +139,16 @@ export default class Login extends React.Component {
                                                     {messageText}
                                                 </div>
                                             )}
-                                        <Typography className="login-typo" variant="h7" gutterBottom component="div">
+                                        <Typography
+                                            className="login-typo"
+                                            variant="subtitle1"
+                                            gutterBottom
+                                            component="div"
+                                        >
                                             Login
                                         </Typography>
                                         <br />
-                                        <Typography variant="h7" gutterBottom component="div">
+                                        <Typography variant="subtitle2" gutterBottom component="div">
                                             Please enter your mainframe username and password to access this resource
                                         </Typography>
                                         <br />
@@ -147,7 +158,7 @@ export default class Login extends React.Component {
                                             className="formfield"
                                             variant="outlined"
                                             required
-                                            error={messageText}
+                                            error={!!messageText}
                                             fullWidth
                                             id="username"
                                             name="username"
@@ -167,7 +178,7 @@ export default class Login extends React.Component {
                                             className="formfield"
                                             variant="outlined"
                                             required
-                                            error={messageText}
+                                            error={!!messageText}
                                             fullWidth
                                             name="password"
                                             type={showPassword ? 'text' : 'password'}
