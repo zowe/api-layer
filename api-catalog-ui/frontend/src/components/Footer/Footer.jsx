@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Link } from 'mineral-ui';
+import { Link } from '@material-ui/core';
 
 import logo from '../../assets/images/ca-broadcom-logo.svg';
 import './footer.css';
