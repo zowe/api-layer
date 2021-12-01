@@ -34,6 +34,7 @@ jobs:
               with:
                   node-version: '14'
             - run: npm install -g npm@8.1.0
+            - run: npm -i
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
             - name: Cache Gradle packages
@@ -55,6 +56,10 @@ jobs:
                   restore-keys: |
                       ${{ runner.OS }}-node-
                       ${{ runner.OS }}-
+
+            - name: Print npm version
+              run: npm -v
+
             - name: Build with Gradle
               run: ./gradlew build
 
@@ -83,9 +88,6 @@ jobs:
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
                   DIST_REGISTRY: https://registry.npmjs.org/
-
-            - name: Print npm version
-              run: npm -v
 
             - name: Release with Gradle automatic
               run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.new_version }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
