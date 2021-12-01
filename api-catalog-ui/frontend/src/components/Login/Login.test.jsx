@@ -73,7 +73,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'org.zowe.apiml.security.invalidUsername',
         });
-        expect(messageText).toEqual('(ZWEAS120E) Invalid username or password');
+        expect(messageText).toEqual('Invalid username or password');
     });
 
     it('should display authetication service not available message', () => {
