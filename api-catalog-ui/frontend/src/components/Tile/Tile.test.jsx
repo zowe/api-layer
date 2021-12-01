@@ -104,8 +104,12 @@ describe('>>> Tile component tests', () => {
     });
 
     it('should show sso if it is set', () => {
-        const wrapper = mount(<Tile tile={sampleTile} />);
-        expect(wrapper.text().includes('SSO')).toBe(true);
+        let container = document.createElement('div');
+        act(()=>{
+            render(<Tile tile={sampleTile} />, container)
+        })
+
+        expect(container.textContent).toEqual(expect.stringContaining("SSO"));
     });
 
     it('should mssing sso if it is not set', () => {

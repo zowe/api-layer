@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Button, Link, Typography, Tooltip } from '@material-ui/core';
+import { IconButton, Link, Typography, Tooltip } from '@material-ui/core';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
 import productImage from '../../assets/images/api-catalog-logo.png';
 import './Header.css';
@@ -11,7 +11,7 @@ export default class Header extends Component {
     };
 
     render() {
-        const iconLogout = <PowerSettingsNewIcon style={{ color: 'white' }} />;
+        const iconLogout = <PowerSettingsNewIcon id="logoutIcon" style={{ color: 'white' }} />;
         const dashboard = 'ui/v1/apicatalog/#/dashboard';
         return (
             <div className="header">
@@ -27,11 +27,11 @@ export default class Header extends Component {
                 </div>
                 <div className="right-icons">
                     <div className="logout-container">
-                        <Button data-testid="logout" primary circular onClick={this.handleLogout}>
-                            <Tooltip circular title="Logout">
+                        <Tooltip title="Logout">
+                            <IconButton data-testid="logout" onClick={this.handleLogout}>
                                 {iconLogout}
-                            </Tooltip>
-                        </Button>
+                            </IconButton>
+                        </Tooltip>
                     </div>
                 </div>
             </div>

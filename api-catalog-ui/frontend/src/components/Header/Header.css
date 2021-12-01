@@ -12,32 +12,41 @@
     text-decoration: none;
 }
 
-/*.logout-container button.css-1upkw8q-Button {*/
-/*    background-color: #1d5bbf;*/
-/*    transition: background-color .3s ease-in-out;*/
-/*}*/
-
 .logout-container button.css-1upkw8q-Button:hover {
+    border-radius: 50px;
     transition: background-color .3s ease-in-out;
     background-color: #5691f0;
 }
 
 button.MuiButtonBase-root.MuiButton-root.MuiButton-text:hover {
+    border-radius: 50px;
     background-color: #5691f0;
 }
 
 .logout-container svg {
+    border-radius: 50px;
     transition: color .3s ease-in-out;
 }
 
 .logout-container button.css-1upkw8q-Button:hover svg {
+    border-radius: 50px;
     color: #111111;
 }
 
 .css-1i58psh:hover {
+    border-radius: 50px;
     background-color: #5691f0;
 }
 
 span.MuiTypography-root {
+    border-radius: 50px;
     color: #ffffff;
+}
+
+.right-icon {
+    border-radius: 50px;
+}
+
+button.MuiButtonBase-root.MuiIconButton-root:hover {
+    background-color: #5691f0;
 }
