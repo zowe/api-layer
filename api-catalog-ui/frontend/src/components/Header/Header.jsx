@@ -16,7 +16,7 @@ export default class Header extends Component {
         return (
             <div className="header">
                 <div className="product-name">
-                    <Link href={dashboard}>
+                    <Link data-testid="link" href={dashboard}>
                         <div className="app-icon-container">
                             <img id="logo" alt="API Catalog Product Name" src={productImage} />
                         </div>

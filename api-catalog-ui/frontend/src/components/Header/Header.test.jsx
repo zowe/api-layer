@@ -8,15 +8,14 @@ describe('>>> Header component tests', () => {
         expect(sample.find('Link')).toBeDefined();
     });
 
-    // it('should have link href to itself', () => {
-    //     const sample = enzyme.shallow(<Header />);
-    //     expect(
-    //         sample
-    //             .find('Link')
-    //             .first()
-    //             .props().href
-    //     ).toEqual('/ui/v1/apicatalog/#/dashboard');
-    // });
+    it('should have link href to itself', () => {
+        const sample = enzyme.shallow(<Header />);
+        expect(
+            sample
+                .find('[data-testid="link"]')
+                .props().href
+        ).toEqual('ui/v1/apicatalog/#/dashboard');
+    });
 
     it('should handle a Logout button click', () => {
         const logout = jest.fn();
