@@ -59,7 +59,7 @@ ext {
     swaggerCoreVersion = '1.5.24'
     swaggerJerseyJaxrsVersion = '1.5.10'
     tomcatVersion = '9.0.54'
-    velocityVersion = '2.0'
+    velocityVersion = '2.3'
     xstreamVersion = '1.4.18!!'
 
     libraries = [
