@@ -46,6 +46,16 @@ jobs:
                   key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                   restore-keys: |
                       ${{ runner.os }}-gradle-
+            - name: Cache Node.js modules
+              uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      **/node_modules
+                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                  restore-keys: |
+                      ${{ runner.OS }}-node-
+                      ${{ runner.OS }}-
 
             - name: Print npm version
               run: npm -v
