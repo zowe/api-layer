@@ -19,8 +19,7 @@ describe('>>> Footer component tests', () => {
         const footer = enzyme.shallow(<Footer />);
         expect(
             footer
-                .find('Link')
-                .first()
+                .find('[data-testid="link"]')
                 .props().href
         ).toEqual('https://support.ca.com/us.html');
     });

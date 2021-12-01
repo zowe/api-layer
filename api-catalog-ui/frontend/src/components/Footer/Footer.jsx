@@ -19,7 +19,9 @@ export default class Footer extends Component {
                     </p>
                 </div>
                 <div className="right">
-                    <Link href="https://support.ca.com/us.html">CA Support</Link>
+                    <Link data-testid="link" href="https://support.ca.com/us.html">
+                        CA Support
+                    </Link>
                 </div>
             </footer>
         );
