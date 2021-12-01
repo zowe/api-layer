@@ -1,13 +1,14 @@
-import { Component } from 'react';
-import { Button, FormField, TextInput } from 'mineral-ui';
-import { IconDanger } from 'mineral-ui-icons';
-
+import React from 'react';
+import { IconButton, InputAdornment, Typography, Button, CssBaseline, TextField, Link } from '@material-ui/core';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import WarningIcon from '@material-ui/icons/Warning';
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import logoImage from '../../assets/images/api-catalog-logo.png';
-import './Login.css';
-import './LoginWebflow.css';
 import Spinner from '../Spinner/Spinner';
+import './Login.css';
 
-export default class Login extends Component {
+export default class Login extends React.Component {
     constructor(props) {
         super(props);
 
@@ -15,10 +16,30 @@ export default class Login extends Component {
             username: '',
             password: '',
             errorMessage: '',
+            showPassword: false,
         };
 
+        this.handleClickShowPassword = this.handleClickShowPassword.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
+    }
+
+    /**
+     * Detect caps lock being on when typing.
+     * @param keyEvent On key down event.
+     */
+    onKeyDown = keyEvent => {
+        this.setState({ warning: false });
+        if (keyEvent.getModifierState('CapsLock')) {
+            this.setState({ warning: true });
+        } else {
+            this.setState({ warning: false });
+        }
+    };
+
+    handleClickShowPassword(showPassword) {
+        this.setState({ showPassword: !showPassword });
     }
 
     isDisabled = () => {
@@ -41,7 +62,13 @@ export default class Login extends Component {
             const filter = errorMessages.messages.filter(
                 x => x.messageKey != null && x.messageKey === error.messageNumber
             );
-            if (filter.length !== 0) messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
+            if (filter.length !== 0) {
+                if (filter[0].messageKey === 'ZWEAS120E') {
+                    messageText = `${filter[0].messageText}`;
+                } else {
+                    messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
+                }
+            }
         } else if (error.status === 401 && authentication.sessionOn) {
             messageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
             authentication.onCompleteHandling();
@@ -68,7 +95,7 @@ export default class Login extends Component {
     }
 
     render() {
-        const { username, password, errorMessage } = this.state;
+        const { username, password, errorMessage, showPassword, warning } = this.state;
         const { authentication, isFetching } = this.props;
         let messageText;
         if (
@@ -89,9 +116,6 @@ export default class Login extends Component {
                         <div className="logo-container">
                             <img src={logoImage} alt="" />
                         </div>
-                        <div className="product-title">
-                            <div className="text-block-2">API Catalog</div>
-                        </div>
                     </div>
                     <div className="login-inputs-container">
                         <div className="username-container">
@@ -105,62 +129,99 @@ export default class Login extends Component {
                                         className="form"
                                         onSubmit={this.handleSubmit}
                                     >
-                                        <FormField label="Username" className="formfield">
-                                            <TextInput
-                                                id="username"
-                                                data-testid="username"
-                                                name="username"
-                                                type="text"
-                                                size="jumbo"
-                                                value={username}
-                                                onChange={this.handleChange}
-                                                autocomplete
-                                            />
-                                        </FormField>
-                                        <FormField label="Password" className="formfield">
-                                            <TextInput
-                                                id="password"
-                                                data-testid="password"
-                                                name="password"
-                                                type="password"
-                                                size="jumbo"
-                                                value={password}
-                                                onChange={this.handleChange}
-                                                caption="Default: password"
-                                                autocomplete
-                                            />
-                                        </FormField>
-                                        <FormField className="formfield" label="">
-                                            <Button
-                                                type="submit"
-                                                data-testid="submit"
-                                                primary
-                                                fullWidth
-                                                disabled={this.isDisabled()}
-                                                size="jumbo"
-                                            >
-                                                Sign in
-                                            </Button>
-                                        </FormField>
-                                        <FormField className="formfield form-spinner" label="">
-                                            <Spinner
-                                                isLoading={isFetching}
-                                                css={{
-                                                    position: 'relative',
-                                                    top: '70px',
-                                                }}
-                                            />
-                                        </FormField>
+                                        <CssBaseline />
+                                        <div className="text-block-4">API Catalog</div>
+                                        <br />
                                         {messageText !== undefined &&
                                             messageText !== null && (
-                                                <FormField className="error-message" label="">
-                                                    <div id="error-message">
-                                                        <p className="error-message-content">
-                                                            <IconDanger color="#de1b1b" size="2rem" /> {messageText}
-                                                        </p>
-                                                    </div>
-                                                </FormField>
+                                                <div id="error-message">
+                                                    <WarningIcon style={{ color: '#de1b1b' }} size="2rem" />
+                                                    {messageText}
+                                                </div>
                                             )}
+                                        <Typography
+                                            className="login-typo"
+                                            variant="subtitle1"
+                                            gutterBottom
+                                            component="div"
+                                        >
+                                            Login
+                                        </Typography>
+                                        <br />
+                                        <Typography variant="subtitle2" gutterBottom component="div">
+                                            Please enter your mainframe username and password to access this resource
+                                        </Typography>
+                                        <br />
+                                        <TextField
+                                            label="Username"
+                                            data-testid="username"
+                                            className="formfield"
+                                            variant="outlined"
+                                            required
+                                            error={!!messageText}
+                                            fullWidth
+                                            id="username"
+                                            name="username"
+                                            value={username}
+                                            onChange={this.handleChange}
+                                            autoComplete="on"
+                                            autoFocus
+                                        />
+                                        <br />
+                                        <br />
+                                        <br />
+                                        <TextField
+                                            id="password"
+                                            htmlFor="outlined-adornment-password"
+                                            label="Password"
+                                            data-testid="password"
+                                            className="formfield"
+                                            variant="outlined"
+                                            required
+                                            error={!!messageText}
+                                            fullWidth
+                                            name="password"
+                                            type={showPassword ? 'text' : 'password'}
+                                            value={password}
+                                            onKeyDown={this.onKeyDown}
+                                            onChange={this.handleChange}
+                                            caption="Default: password"
+                                            autoComplete="on"
+                                            InputProps={{
+                                                endAdornment: (
+                                                    <InputAdornment position="end">
+                                                        <IconButton
+                                                            aria-label="toggle password visibility"
+                                                            edge="end"
+                                                            onClick={() => this.handleClickShowPassword(showPassword)}
+                                                        >
+                                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                        </IconButton>
+                                                        {messageText && <ErrorOutlineIcon className="errorIcon" />}
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                        />
+                                        {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
+                                        <Button
+                                            className="loginButton"
+                                            label=""
+                                            type="submit"
+                                            data-testid="submit"
+                                            disabled={this.isDisabled()}
+                                        >
+                                            Log in
+                                        </Button>
+                                        <Spinner
+                                            className="formfield form-spinner"
+                                            label=""
+                                            isLoading={isFetching}
+                                            css={{
+                                                position: 'relative',
+                                                top: '70px',
+                                                marginLeft: '-64px',
+                                            }}
+                                        />
                                     </form>
                                 </div>
                             </div>

@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 
 import * as enzyme from 'enzyme';
-import { AjaxError } from 'rxjs/ajax/index';
+import { AjaxError } from 'rxjs/ajax';
 import Error from './Error';
 import { ApiError, MessageType } from '../../constants/error-constants';
 

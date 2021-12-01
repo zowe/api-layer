@@ -68,6 +68,9 @@
     background: #07bc0c; }
   .Toastify__toast--warning {
     background: #f1c40f; }
+  .Toastify__toast-icon {
+    height: 4%;
+    width: 4%; }
   .Toastify__toast--error {
     background: #e74c3c; }
   .Toastify__toast-body {
