@@ -34,7 +34,7 @@ jobs:
               with:
                   node-version: '14'
             - run: npm install -g npm@8.1.0
-            - run: npm -i
+            - run: npm
             - name: Grant execute permission for gradlew
               run: chmod +x gradlew
             - name: Cache Gradle packages
