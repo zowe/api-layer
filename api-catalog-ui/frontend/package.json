@@ -9,7 +9,7 @@
         "@emotion/styled": "10.0.27",
         "agentkeepalive": "4.1.4",
         "emotion-theming": "10.0.27",
-        "eslint": "^7.32.0",
+        "eslint": "7.32.0",
         "eslint-config-airbnb": "16.1.0",
         "eslint-plugin-jsx-a11y": "6.1.2",
         "exception-formatter": "1.0.7",
@@ -63,6 +63,7 @@
         "includeFailureMsg": true
     },
     "devDependencies": {
+        "ansi-regex": "5.0.1",
         "body-parser": "1.18.3",
         "concurrently": "5.3.0",
         "cors": "2.8.5",
