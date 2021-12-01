@@ -84,6 +84,9 @@ jobs:
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
                   DIST_REGISTRY: https://registry.npmjs.org/
 
+            - name: Print npm version
+              run: npm -v
+
             - name: Release with Gradle automatic
               run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.new_version }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
               env:
