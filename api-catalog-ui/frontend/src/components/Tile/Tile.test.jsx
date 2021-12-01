@@ -1,7 +1,8 @@
 /* eslint-disable no-undef */
 import { shallow } from 'enzyme';
-import { mount } from 'enzyme';
+import { render } from 'react-dom';
 import Tile from './Tile';
+import {act} from "react-dom/test-utils";
 
 const match = {
     params: {
@@ -102,10 +103,14 @@ describe('>>> Tile component tests', () => {
         expect(instance.shortenDescription(description).length).toEqual(180);
     });
 
-    // it('should show sso if it is set', () => {
-    //     const wrapper = mount(<Tile tile={sampleTile} />);
-    //     expect(wrapper.text().includes('SSO')).toBe(true);
-    // });
+    it('should show sso if it is set', () => {
+        let container = document.createElement('div');
+        act(()=>{
+            render(<Tile tile={sampleTile} />, container)
+        })
+
+        expect(container.textContent).toEqual(expect.stringContaining("SSO"));
+    });
 
     it('should mssing sso if it is not set', () => {
         sampleTile.sso = false;
