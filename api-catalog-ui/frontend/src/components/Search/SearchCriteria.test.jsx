@@ -6,7 +6,7 @@ import SearchCriteria from './SearchCriteria';
 
 describe('>>> Search bar component tests', () => {
     it('should render all fields with initial state', () => {
-        const wrapper = enzyme.mount(
+        const wrapper = enzyme.shallow(
             <ThemeProvider>
                 <SearchCriteria />
             </ThemeProvider>

@@ -12,7 +12,7 @@ describe('>>> App component tests', () => {
     });
 
     it('should not show header on login route', () => {
-        const wrapper = mount(
+        const wrapper = shallow(
             <MemoryRouter initialEntries={['/login']}>
                 <App />
             </MemoryRouter>
