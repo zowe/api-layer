@@ -1,0 +1,83 @@
+buildscript {
+    repositories mavenRepositories
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
+        classpath ("org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r") {
+            force = true
+        }
+    }
+}
+
+normalization {
+    runtimeClasspath {
+        ignore("**/*git.properties*")
+        ignore("**/*build-info.properties*")
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+apply plugin: 'com.gorylenko.gradle-git-properties'
+apply plugin: 'com.google.cloud.tools.jib'
+apply from: "../gradle/jib.gradle"
+
+def componentName = "apiml-sample-extension"
+
+
+springBoot {
+    // This statement tells the Gradle Spring Boot plugin to generate a file
+    // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
+    // via /info endpoint
+    buildInfo {
+        properties {
+            // Generate extra build info:
+            additionalProperties = [
+                by: System.properties['user.name'],
+                operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
+                number: System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
+                machine: InetAddress.localHost.hostName
+            ]
+        }
+    }
+}
+
+gitProperties {
+    gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
+}
+
+dependencies {
+
+    implementation libraries.springFox
+    implementation libraries.spring_boot_starter
+    implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_boot_starter_web
+    implementation libraries.spring_boot_starter_webflux
+    implementation libraries.spring_boot_starter_websocket
+    implementation libraries.spring_boot_starter_validation
+    implementation libraries.spring_boot_starter_security
+    implementation libraries.spring_security_web
+    implementation libraries.spring_security_config
+    implementation libraries.spring_security_core
+    implementation libraries.spring_security_crypto
+
+    implementation libraries.bootstrap
+    implementation libraries.jquery
+
+    implementation libraries.gson
+    compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
+
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.json_smart
+}
+
+
+bootJar.archiveName = "${bootJar.baseName}.jar"
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact bootJar
+        }
+    }
+}

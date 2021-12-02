@@ -127,6 +127,13 @@ project(":apiml-common-lib-package") {
 }
 
 // Packaging project; sonar does not apply
+project(":apiml-sample-extension-package") {
+    sonarqube {
+        skipProject = true
+    }
+}
+
+// Packaging project; sonar does not apply
 project(":mock-zosmf") {
     sonarqube {
         skipProject = true
