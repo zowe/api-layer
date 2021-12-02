@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Link } from 'mineral-ui';
+import { Link } from '@material-ui/core';
 
 import logo from '../../assets/images/ca-broadcom-logo.svg';
 import './footer.css';
@@ -19,7 +19,9 @@ export default class Footer extends Component {
                     </p>
                 </div>
                 <div className="right">
-                    <Link href="https://support.ca.com/us.html">CA Support</Link>
+                    <Link data-testid="link" href="https://support.broadcom.com">
+                        Broadcom Support
+                    </Link>
                 </div>
             </footer>
         );

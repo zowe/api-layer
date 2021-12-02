@@ -12,10 +12,9 @@ describe('>>> Header component tests', () => {
         const sample = enzyme.shallow(<Header />);
         expect(
             sample
-                .find('Link')
-                .first()
+                .find('[data-testid="link"]')
                 .props().href
-        ).toEqual('/ui/v1/apicatalog/#/dashboard');
+        ).toEqual('ui/v1/apicatalog/#/dashboard');
     });
 
     it('should handle a Logout button click', () => {
