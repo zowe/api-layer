@@ -19,7 +19,7 @@ configurations {
 }
 
 dependencies {
-    sampleExtensionJar(project(path: ":apiml-sample-extension", configuration: "bootArchives"))
+    sampleExtensionJar(project(path: ":apiml-sample-extension", configuration: "liteJarConfiguration"))
 }
 
 task packageSampleExtension(type: Zip) {
