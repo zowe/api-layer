@@ -94,6 +94,10 @@
     line-height: 130%;
 }
 
+#service-tab {
+    display: inline-block;
+}
+
 .no-tiles-container {
     margin-top: 2rem;
     margin-left: 2rem;

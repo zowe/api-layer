@@ -51,7 +51,7 @@ describe('>>> ServiceTab component tests', () => {
         );
         serviceTab.setState({ selectedVersion: 'org.zowe v1' });
 
-        expect(serviceTab.find('Tooltip').exists()).toEqual(true);
+        expect(serviceTab.find('#MuiTooltip-popper').exists()).toEqual(true);
         expect(serviceTab.find('Link').exists()).toEqual(true);
         expect(
             serviceTab

@@ -1,7 +1,9 @@
 import { Component, Suspense } from 'react';
 import { NavTab } from 'react-router-tabs';
-import { Button, Text, Tooltip } from 'mineral-ui';
-import { IconChevronLeft, IconSuccessSimple } from 'mineral-ui-icons';
+import { Button, Typography, Tooltip } from '@material-ui/core';
+import { IconSuccessSimple } from 'mineral-ui-icons';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import DoneIcon from '@material-ui/icons/Done';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 
 import './DetailPage.css';
@@ -53,7 +55,7 @@ export default class DetailPage extends Component {
             fetchTilesStart,
             history,
         } = this.props;
-        const iconBack = <IconChevronLeft />;
+        const iconBack = <ChevronLeftIcon />;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
@@ -68,26 +70,23 @@ export default class DetailPage extends Component {
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">
-                        <div className="link-block w-inline-block back-button-container">
-                            <br />
-                            <Button
-                                id="go-back-dashboard-button"
-                                primary
-                                onClick={this.handleGoBack}
-                                size="medium"
-                                iconStart={iconBack}
-                            >
-                                Back
-                            </Button>
-                        </div>
+                        <br />
+                        <Button
+                            id="go-back-dashboard-button"
+                            onClick={this.handleGoBack}
+                            size="medium"
+                            startIcon={<ChevronLeftIcon />}
+                        >
+                            Back
+                        </Button>
                         <br />
                         <br />
                         <br />
                         <br />
-                        <Text data-testid="detail-page-error" element="h3">
+                        <Typography data-testid="detail-page-error" variant="subtitle2">
                             Tile details for "{match.params.tileID}" could not be retrieved, the following error was
                             returned:
-                        </Text>
+                        </Typography>
                         {error}
                     </div>
                 )}
@@ -99,10 +98,10 @@ export default class DetailPage extends Component {
                                     <Button
                                         id="go-back-button"
                                         data-testid="go-back-button"
-                                        primary
+                                        color="primary"
                                         onClick={this.handleGoBack}
                                         size="medium"
-                                        iconStart={iconBack}
+                                        startIcon={<ChevronLeftIcon />}
                                     >
                                         Back
                                     </Button>
@@ -155,21 +154,23 @@ export default class DetailPage extends Component {
                                                             tiles[0].services.map(({ serviceId, title, status }) => (
                                                                 <Tooltip
                                                                     key={serviceId}
-                                                                    content={this.setTitle(title, status)}
+                                                                    title={this.setTitle(title, status)}
                                                                     placement="bottom"
                                                                 >
-                                                                    <div>
+                                                                    <div id="service-tab">
                                                                         {status === 'UP' && (
                                                                             <NavTab to={`${match.url}/${serviceId}`}>
-                                                                                <Text element="h4">{serviceId}</Text>
+                                                                                <Typography variant="h6">
+                                                                                    {serviceId}
+                                                                                </Typography>
                                                                             </NavTab>
                                                                         )}
                                                                         {status === 'DOWN' && (
                                                                             <NavTab to={`${match.url}/${serviceId}`}>
-                                                                                <Text element="h4" color="#de1b1b">
+                                                                                <Typography variant="h6">
                                                                                     {serviceId}
-                                                                                </Text>
-                                                                                <IconSuccessSimple color="#de1b1b" />
+                                                                                </Typography>
+                                                                                <DoneIcon />
                                                                             </NavTab>
                                                                         )}
                                                                     </div>
