@@ -41,18 +41,15 @@ jobs:
                       ~/.gradle/caches
                       ~/.gradle/wrapper
                   key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle-
+
             - name: Cache Node.js modules
               uses: actions/cache@v2
               with:
                   path: |
                       ~/.npm
                       **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
+                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             - name: Build with Gradle
               run: ./gradlew build
 
@@ -94,17 +91,15 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             -   uses: zowe-actions/shared-actions/prepare-workflow@main
 
@@ -174,17 +169,15 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             -   uses: zowe-actions/shared-actions/prepare-workflow@main
 
