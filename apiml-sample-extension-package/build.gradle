@@ -22,7 +22,7 @@ dependencies {
     sampleExtensionJar(project(path: ":apiml-sample-extension", configuration: "bootArchives"))
 }
 
-task packageCommonLib(type: Zip) {
+task packageSampleExtension(type: Zip) {
     archiveName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
     def resourceDir = 'src/main/resources/'
