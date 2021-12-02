@@ -45,10 +45,8 @@ jobs:
                   path: |
                       ~/.npm
                       **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                  restore-keys: |
-                      ${{ runner.OS }}-node-
-                      ${{ runner.OS }}-
+                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             - name: Release with Gradle
               run: ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
               env:

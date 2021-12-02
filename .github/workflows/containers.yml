@@ -40,9 +40,9 @@ jobs:
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew jib -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ github.event.pull_request.number || 'latest' }}
