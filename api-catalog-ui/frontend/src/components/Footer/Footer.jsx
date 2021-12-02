@@ -19,8 +19,8 @@ export default class Footer extends Component {
                     </p>
                 </div>
                 <div className="right">
-                    <Link data-testid="link" href="https://support.ca.com/us.html">
-                        CA Support
+                    <Link data-testid="link" href="https://support.broadcom.com">
+                        Broadcom Support
                     </Link>
                 </div>
             </footer>

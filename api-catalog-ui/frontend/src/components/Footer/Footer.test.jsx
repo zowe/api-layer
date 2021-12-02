@@ -21,7 +21,7 @@ describe('>>> Footer component tests', () => {
             footer
                 .find('[data-testid="link"]')
                 .props().href
-        ).toEqual('https://support.ca.com/us.html');
+        ).toEqual('https://support.broadcom.com');
     });
 
     it('should show the copyright', () => {
