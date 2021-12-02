@@ -53,7 +53,7 @@ jobs:
                   path: |
                       ~/.npm
                       **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json, **/package.json') }}
+                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             - name: Generate Prime Numbers
               if: steps.node-cache.outputs.cache-hit != 'true'
