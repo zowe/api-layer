@@ -50,3 +50,7 @@ span.MuiTypography-root {
 button.MuiButtonBase-root.MuiIconButton-root:hover {
     background-color: #5691f0;
 }
+
+h6.MuiTypography-root.MuiTypography-subtitle2 {
+    color: white;
+}

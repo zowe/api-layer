@@ -22,7 +22,7 @@ export default class Header extends Component {
                         </div>
                     </Link>
                     <Link href={dashboard}>
-                        <Typography variant="h7">API Catalog</Typography>
+                        <Typography variant="subtitle2">API Catalog</Typography>
                     </Link>
                 </div>
                 <div className="right-icons">
