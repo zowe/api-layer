@@ -94,7 +94,9 @@ export default class ServiceTab extends Component {
                             this.setState({ selectedVersion: version });
                         }}
                     >
-                        <Typography className="version-text">{version}</Typography>
+                        <Typography data-testid="version" className="version-text">
+                            {version}
+                        </Typography>
                     </span>
                 );
             });
@@ -189,7 +191,11 @@ export default class ServiceTab extends Component {
                                         title="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
                                         placement="bottom"
                                     >
-                                        <Typography data-testid="text" variant="subtitle2" style={{ color: 'black' }}>
+                                        <Typography
+                                            data-testid="base-path"
+                                            variant="subtitle2"
+                                            style={{ color: 'black' }}
+                                        >
                                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                             <label htmlFor="apiBasePath">API Base Path:</label>
                                             <span id="apiBasePath">{basePath}</span>
@@ -201,7 +207,11 @@ export default class ServiceTab extends Component {
                                         title="The identifier for this service"
                                         placement="bottom"
                                     >
-                                        <Typography variant="subtitle2" style={{ color: 'black' }}>
+                                        <Typography
+                                            data-testid="service-id"
+                                            variant="subtitle2"
+                                            style={{ color: 'black' }}
+                                        >
                                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                             <label htmlFor="serviceId">Service ID:</label>
                                             <span id="serviceId">{selectedService.serviceId}</span>
@@ -213,7 +223,7 @@ export default class ServiceTab extends Component {
                                         title="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
                                         placement="bottom"
                                     >
-                                        <Typography variant="subtitle2" style={{ color: 'black' }}>
+                                        <Typography data-testid="sso" variant="subtitle2" style={{ color: 'black' }}>
                                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                             <label htmlFor="sso">SSO:</label>
                                             <span id="sso">{sso}</span>
@@ -221,7 +231,11 @@ export default class ServiceTab extends Component {
                                     </Tooltip>
                                 </div>
 
-                                <Typography variant="subtitle2" style={{ marginTop: '15px', color: 'black' }}>
+                                <Typography
+                                    data-testid="description"
+                                    variant="subtitle2"
+                                    style={{ marginTop: '15px', color: 'black' }}
+                                >
                                     {selectedService.description}
                                 </Typography>
                             </div>

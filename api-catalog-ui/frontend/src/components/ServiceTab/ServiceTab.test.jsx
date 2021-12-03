@@ -39,7 +39,7 @@ const tiles = {
 };
 
 describe('>>> ServiceTab component tests', () => {
-    xit('should display service tab information', () => {
+    it('should display service tab information', () => {
         const selectService = jest.fn();
         const serviceTab = shallow(
             <ServiceTab
@@ -64,35 +64,32 @@ describe('>>> ServiceTab component tests', () => {
                 .prop('children')
         ).toEqual('API Gateway');
 
-        const checkValueItem = function(serviceTab, order, title, value) {
-            const row = serviceTab.find('selector').at(order);
-            // expect(row).toExist();
-            console.log(row.debug())
+        const checkValueItem = function(serviceTab, selector, title, value) {
+            const row = serviceTab.find(selector);
             expect(row.find('label').prop('children')).toEqual(title);
             expect(row.find('span').prop('children')).toEqual(value);
         };
 
-        checkValueItem(serviceTab, 1, 'API Base Path:', '/gateway/api/v1');
-        checkValueItem(serviceTab, 2, 'Service ID:', 'gateway');
-        checkValueItem(serviceTab, 3, 'SSO:', 'supported');
+        checkValueItem(serviceTab, '[data-testid="base-path"]', 'API Base Path:', '/gateway/api/v1');
+        checkValueItem(serviceTab, '[data-testid="service-id"]', 'Service ID:', 'gateway');
+        checkValueItem(serviceTab, '[data-testid="sso"]', 'SSO:', 'supported');
         expect(
             serviceTab
-                .find('Text')
-                .at(4)
+                .find('[data-testid="description"]')
                 .prop('children')
         ).toEqual(
             'API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.'
         );
         expect(
             serviceTab
-                .find('Text')
-                .at(5)
+                .find('[data-testid="version"]')
+                .first()
                 .prop('children')
         ).toEqual('org.zowe v1');
         expect(
             serviceTab
-                .find('Text')
-                .at(6)
+                .find('[data-testid="version"]')
+                .at(1)
                 .prop('children')
         ).toEqual('org.zowe v2');
     });
