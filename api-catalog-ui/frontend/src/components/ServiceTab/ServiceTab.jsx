@@ -238,6 +238,7 @@ export default class ServiceTab extends Component {
                                 >
                                     {selectedService.description}
                                 </Typography>
+                                <br />
                             </div>
                             <div className="tabs-container" style={{ width: '100%' }}>
                                 {apiVersions}
