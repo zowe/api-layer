@@ -82,7 +82,7 @@ export default class DetailPage extends Component {
                         <br />
                         <br />
                         <br />
-                        <Typography data-testid="detail-page-error" variant="subtitle2">
+                        <Typography style={{ color: '#de1b1b' }} data-testid="detail-page-error" variant="subtitle2">
                             Tile details for "{match.params.tileID}" could not be retrieved, the following error was
                             returned:
                         </Typography>
