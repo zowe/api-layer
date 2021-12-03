@@ -94,7 +94,7 @@ export default class ServiceTab extends Component {
                             this.setState({ selectedVersion: version });
                         }}
                     >
-                        <Typography data-testid="version" className="version-text">
+                        <Typography style={{ marginBottom: '12px' }} data-testid="version" className="version-text">
                             {version}
                         </Typography>
                     </span>
