@@ -18,7 +18,6 @@ normalization {
 
 apply plugin: 'org.springframework.boot'
 apply plugin: 'com.gorylenko.gradle-git-properties'
-apply plugin: 'com.google.cloud.tools.jib'
 apply from: "$projectDir/gradle/lite.gradle"
 
 def componentName = "apiml-sample-extension"
@@ -49,26 +48,10 @@ dependencies {
 
     implementation libraries.springFox
     implementation libraries.spring_boot_starter
-    implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
-    implementation libraries.spring_boot_starter_webflux
-    implementation libraries.spring_boot_starter_websocket
-    implementation libraries.spring_boot_starter_validation
-    implementation libraries.spring_boot_starter_security
-    implementation libraries.spring_security_web
-    implementation libraries.spring_security_config
-    implementation libraries.spring_security_core
-    implementation libraries.spring_security_crypto
 
-    implementation libraries.bootstrap
-    implementation libraries.jquery
-
-    implementation libraries.gson
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
-
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.json_smart
 }
 
 
