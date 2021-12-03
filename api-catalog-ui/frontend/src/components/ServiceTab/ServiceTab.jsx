@@ -150,16 +150,20 @@ export default class ServiceTab extends Component {
                     <Fragment>
                         <div className="serviceTab">
                             <div className="header">
-                                <Typography variant="h2">{selectedService.title}</Typography>
+                                <Typography data-testid="service" variant="subtitle2" style={{ color: 'black' }}>
+                                    {selectedService.title}
+                                </Typography>
+                                <br />
                                 {hasHomepage && (
                                     <Fragment>
                                         {selectedService.status === 'UP' && (
                                             <Tooltip
+                                                data-testid="tooltip"
                                                 key={selectedService.serviceId}
                                                 title="Open Service Homepage"
                                                 placement="bottom"
                                             >
-                                                <Link href={selectedService.homePageUrl}>
+                                                <Link data-testid="link" href={selectedService.homePageUrl}>
                                                     <strong>Service Homepage</strong>
                                                 </Link>
                                             </Tooltip>
@@ -185,7 +189,7 @@ export default class ServiceTab extends Component {
                                         title="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
                                         placement="bottom"
                                     >
-                                        <Typography>
+                                        <Typography data-testid="text" variant="subtitle2" style={{ color: 'black' }}>
                                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                             <label htmlFor="apiBasePath">API Base Path:</label>
                                             <span id="apiBasePath">{basePath}</span>
@@ -197,7 +201,7 @@ export default class ServiceTab extends Component {
                                         title="The identifier for this service"
                                         placement="bottom"
                                     >
-                                        <Typography>
+                                        <Typography variant="subtitle2" style={{ color: 'black' }}>
                                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                             <label htmlFor="serviceId">Service ID:</label>
                                             <span id="serviceId">{selectedService.serviceId}</span>
@@ -209,7 +213,7 @@ export default class ServiceTab extends Component {
                                         title="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
                                         placement="bottom"
                                     >
-                                        <Typography>
+                                        <Typography variant="subtitle2" style={{ color: 'black' }}>
                                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                             <label htmlFor="sso">SSO:</label>
                                             <span id="sso">{sso}</span>
@@ -217,7 +221,9 @@ export default class ServiceTab extends Component {
                                     </Tooltip>
                                 </div>
 
-                                <Typography style={{ marginTop: '15px' }}>{selectedService.description}</Typography>
+                                <Typography variant="subtitle2" style={{ marginTop: '15px', color: 'black' }}>
+                                    {selectedService.description}
+                                </Typography>
                             </div>
                             <div className="tabs-container" style={{ width: '100%' }}>
                                 {apiVersions}

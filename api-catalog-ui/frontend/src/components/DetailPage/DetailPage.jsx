@@ -1,9 +1,8 @@
 import { Component, Suspense } from 'react';
 import { NavTab } from 'react-router-tabs';
 import { Button, Typography, Tooltip } from '@material-ui/core';
-import { IconSuccessSimple } from 'mineral-ui-icons';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import DoneIcon from '@material-ui/icons/Done';
+import ErrorIcon from '@material-ui/icons/Error';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 
 import './DetailPage.css';
@@ -75,7 +74,7 @@ export default class DetailPage extends Component {
                             id="go-back-dashboard-button"
                             onClick={this.handleGoBack}
                             size="medium"
-                            startIcon={<ChevronLeftIcon />}
+                            startIcon={iconBack}
                         >
                             Back
                         </Button>
@@ -101,7 +100,7 @@ export default class DetailPage extends Component {
                                         color="primary"
                                         onClick={this.handleGoBack}
                                         size="medium"
-                                        startIcon={<ChevronLeftIcon />}
+                                        startIcon={iconBack}
                                     >
                                         Back
                                     </Button>
@@ -160,17 +159,26 @@ export default class DetailPage extends Component {
                                                                     <div id="service-tab">
                                                                         {status === 'UP' && (
                                                                             <NavTab to={`${match.url}/${serviceId}`}>
-                                                                                <Typography variant="h6">
+                                                                                <Typography
+                                                                                    id="serviceIdTabs"
+                                                                                    variant="subtitle2"
+                                                                                    style={{ color: 'black' }}
+                                                                                >
                                                                                     {serviceId}
                                                                                 </Typography>
                                                                             </NavTab>
                                                                         )}
                                                                         {status === 'DOWN' && (
                                                                             <NavTab to={`${match.url}/${serviceId}`}>
-                                                                                <Typography variant="h6">
+                                                                                <Typography
+                                                                                    variant="subtitle2"
+                                                                                    style={{ color: '#de1b1b' }}
+                                                                                >
                                                                                     {serviceId}
                                                                                 </Typography>
-                                                                                <DoneIcon />
+                                                                                <ErrorIcon
+                                                                                    style={{ color: '#de1b1b' }}
+                                                                                />
                                                                             </NavTab>
                                                                         )}
                                                                     </div>

@@ -48,3 +48,9 @@ a.nav-tab > svg {
     margin-left: .3rem;
     padding-top: .3rem;
 }
+
+p.MuiTypography-root.version-text.MuiTypography-body1 {
+    color: black;
+    font-size: 14px;
+    font-weight: bold;
+}
