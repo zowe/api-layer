@@ -162,7 +162,10 @@ export default class DetailPage extends Component {
                                                                                 <Typography
                                                                                     id="serviceIdTabs"
                                                                                     variant="subtitle2"
-                                                                                    style={{ color: 'black' }}
+                                                                                    style={{
+                                                                                        color: 'black',
+                                                                                        marginBottom: '12px',
+                                                                                    }}
                                                                                 >
                                                                                     {serviceId}
                                                                                 </Typography>
