@@ -132,4 +132,6 @@ div.content-description-container > div > div:nth-child(2) > div {
     font-weight: bold;
 }
 
-
+.MuiIconButton-label {
+    font-size: 13px;
+}

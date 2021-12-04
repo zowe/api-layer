@@ -1,6 +1,6 @@
 import { Component, Suspense } from 'react';
 import { NavTab } from 'react-router-tabs';
-import { Button, Typography, Tooltip } from '@material-ui/core';
+import { IconButton, Typography, Tooltip } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ErrorIcon from '@material-ui/icons/Error';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
@@ -70,14 +70,10 @@ export default class DetailPage extends Component {
                 {fetchTilesError && (
                     <div className="no-tiles-container">
                         <br />
-                        <Button
-                            id="go-back-dashboard-button"
-                            onClick={this.handleGoBack}
-                            size="medium"
-                            startIcon={iconBack}
-                        >
+                        <IconButton id="go-back-button" onClick={this.handleGoBack} size="medium">
+                            {iconBack}
                             Back
-                        </Button>
+                        </IconButton>
                         <br />
                         <br />
                         <br />
@@ -92,20 +88,16 @@ export default class DetailPage extends Component {
                 {!isLoading &&
                     !fetchTilesError && (
                         <div className="api-description-container">
-                            <div className="description-container">
-                                <div className="link-block w-inline-block back-button-container">
-                                    <Button
-                                        id="go-back-button"
-                                        data-testid="go-back-button"
-                                        color="primary"
-                                        onClick={this.handleGoBack}
-                                        size="medium"
-                                        startIcon={iconBack}
-                                    >
-                                        Back
-                                    </Button>
-                                </div>
-                            </div>
+                            <IconButton
+                                id="go-back-button"
+                                data-testid="go-back-button"
+                                color="primary"
+                                onClick={this.handleGoBack}
+                                size="medium"
+                            >
+                                {iconBack}
+                                Back
+                            </IconButton>
                             <div className="detailed-description-container">
                                 <div className="title-api-container">
                                     {tiles !== undefined &&
