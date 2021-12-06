@@ -1,7 +1,6 @@
 buildscript {
     repositories mavenRepositories
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
         classpath ("org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r") {
             force = true
@@ -16,29 +15,7 @@ normalization {
     }
 }
 
-apply plugin: 'org.springframework.boot'
 apply plugin: 'com.gorylenko.gradle-git-properties'
-apply from: "$projectDir/gradle/lite.gradle"
-
-def componentName = "apiml-sample-extension"
-
-
-springBoot {
-    // This statement tells the Gradle Spring Boot plugin to generate a file
-    // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
-    // via /info endpoint
-    buildInfo {
-        properties {
-            // Generate extra build info:
-            additionalProperties = [
-                by: System.properties['user.name'],
-                operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
-                number: System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
-                machine: InetAddress.localHost.hostName
-            ]
-        }
-    }
-}
 
 gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
@@ -47,27 +24,17 @@ gitProperties {
 dependencies {
 
     implementation libraries.springFox
-    implementation libraries.spring_boot_starter
-    implementation libraries.spring_boot_starter_web
+    implementation libraries.spring_webmvc
 
-    compileOnly libraries.lombok
-    annotationProcessor libraries.lombok
 }
 
-
-bootJar.archiveName = "${bootJar.baseName}.jar"
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact bootJar
+            artifact jar
         }
     }
-}
-
-
-bootJar {
-    enabled false
 }
 
 jar {  enabled = true }
