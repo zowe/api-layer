@@ -1,6 +1,6 @@
 spring:
     application:
-        name: zosmf
+        name: Mock services
 
 server:
     port: 10013

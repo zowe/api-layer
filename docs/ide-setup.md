@@ -18,7 +18,7 @@ These are the application main classes and their corresponding service names for
     3. DiscoveryServiceApplication - discovery-service
     4. EnablerV1SampleApplication - onboarding-enabler-spring-sample-app
     5. GatewayApplication - gateway-service
-    6. MockServicesApplication - mock-zosmf
+    6. MockServicesApplication - mock-services
 
 #### If using IDEA Ultimate Edition
 - Go to 'Services', it is available via alt+8 or on the bottom line of the IDEA.

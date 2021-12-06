@@ -54,7 +54,7 @@ npm run caching-service
 ### Mock Services
 
 ```shell
-npm run mock-zosmf
+npm run mock-services
 ```
 
 ### Sample Application - Discoverable Client
