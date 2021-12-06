@@ -51,6 +51,12 @@ npm run api-catalog-service-thin
 npm run caching-service
 ```
 
+### Mock Services
+
+```shell
+npm run mock-zosmf
+```
+
 ### Sample Application - Discoverable Client
 
 ```shell
@@ -232,6 +238,7 @@ If your editor of choice happens to be Idea and you want to use its 'Run Dashboa
 |  Gateway               | 10010 |
 |  Discovery Service     | 10011 |
 |  Discoverable client   | 10012 |
+|  Mock Services         | 10013 |
 |  API Catalog           | 10014 |
 |  EnablerJavaSampleApp  | 10016 |
 |  Metrics Service       | 10019 |
