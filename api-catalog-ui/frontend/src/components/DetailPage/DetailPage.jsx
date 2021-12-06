@@ -1,7 +1,8 @@
 import { Component, Suspense } from 'react';
 import { NavTab } from 'react-router-tabs';
-import { Button, Text, Tooltip } from 'mineral-ui';
-import { IconChevronLeft, IconSuccessSimple } from 'mineral-ui-icons';
+import { IconButton, Typography, Tooltip } from '@material-ui/core';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ErrorIcon from '@material-ui/icons/Error';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 
 import './DetailPage.css';
@@ -53,7 +54,7 @@ export default class DetailPage extends Component {
             fetchTilesStart,
             history,
         } = this.props;
-        const iconBack = <IconChevronLeft />;
+        const iconBack = <ChevronLeftIcon />;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
@@ -68,46 +69,35 @@ export default class DetailPage extends Component {
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">
-                        <div className="link-block w-inline-block back-button-container">
-                            <br />
-                            <Button
-                                id="go-back-dashboard-button"
-                                primary
-                                onClick={this.handleGoBack}
-                                size="medium"
-                                iconStart={iconBack}
-                            >
-                                Back
-                            </Button>
-                        </div>
+                        <br />
+                        <IconButton id="go-back-button" onClick={this.handleGoBack} size="medium">
+                            {iconBack}
+                            Back
+                        </IconButton>
                         <br />
                         <br />
                         <br />
                         <br />
-                        <Text data-testid="detail-page-error" element="h3">
+                        <Typography style={{ color: '#de1b1b' }} data-testid="detail-page-error" variant="subtitle2">
                             Tile details for "{match.params.tileID}" could not be retrieved, the following error was
                             returned:
-                        </Text>
+                        </Typography>
                         {error}
                     </div>
                 )}
                 {!isLoading &&
                     !fetchTilesError && (
                         <div className="api-description-container">
-                            <div className="description-container">
-                                <div className="link-block w-inline-block back-button-container">
-                                    <Button
-                                        id="go-back-button"
-                                        data-testid="go-back-button"
-                                        primary
-                                        onClick={this.handleGoBack}
-                                        size="medium"
-                                        iconStart={iconBack}
-                                    >
-                                        Back
-                                    </Button>
-                                </div>
-                            </div>
+                            <IconButton
+                                id="go-back-button"
+                                data-testid="go-back-button"
+                                color="primary"
+                                onClick={this.handleGoBack}
+                                size="medium"
+                            >
+                                {iconBack}
+                                Back
+                            </IconButton>
                             <div className="detailed-description-container">
                                 <div className="title-api-container">
                                     {tiles !== undefined &&
@@ -155,21 +145,35 @@ export default class DetailPage extends Component {
                                                             tiles[0].services.map(({ serviceId, title, status }) => (
                                                                 <Tooltip
                                                                     key={serviceId}
-                                                                    content={this.setTitle(title, status)}
+                                                                    title={this.setTitle(title, status)}
                                                                     placement="bottom"
                                                                 >
-                                                                    <div>
+                                                                    <div id="service-tab">
                                                                         {status === 'UP' && (
                                                                             <NavTab to={`${match.url}/${serviceId}`}>
-                                                                                <Text element="h4">{serviceId}</Text>
+                                                                                <Typography
+                                                                                    id="serviceIdTabs"
+                                                                                    variant="subtitle2"
+                                                                                    style={{
+                                                                                        color: 'black',
+                                                                                        marginBottom: '12px',
+                                                                                    }}
+                                                                                >
+                                                                                    {serviceId}
+                                                                                </Typography>
                                                                             </NavTab>
                                                                         )}
                                                                         {status === 'DOWN' && (
                                                                             <NavTab to={`${match.url}/${serviceId}`}>
-                                                                                <Text element="h4" color="#de1b1b">
+                                                                                <Typography
+                                                                                    variant="subtitle2"
+                                                                                    style={{ color: '#de1b1b' }}
+                                                                                >
                                                                                     {serviceId}
-                                                                                </Text>
-                                                                                <IconSuccessSimple color="#de1b1b" />
+                                                                                </Typography>
+                                                                                <ErrorIcon
+                                                                                    style={{ color: '#de1b1b' }}
+                                                                                />
                                                                             </NavTab>
                                                                         )}
                                                                     </div>

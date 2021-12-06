@@ -1,4 +1,4 @@
-import { Link, Text, Tooltip } from 'mineral-ui';
+import { Link, Typography, Tooltip } from '@material-ui/core';
 import { Fragment, Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import '../Swagger/Swagger.css';
@@ -94,7 +94,9 @@ export default class ServiceTab extends Component {
                             this.setState({ selectedVersion: version });
                         }}
                     >
-                        <Text className="version-text">{version}</Text>
+                        <Typography style={{ marginBottom: '12px' }} data-testid="version" className="version-text">
+                            {version}
+                        </Typography>
                     </span>
                 );
             });
@@ -109,7 +111,7 @@ export default class ServiceTab extends Component {
                         style={selectedVersion === 'diff' ? { backgroundColor: '#fff' } : {}}
                         key="diff"
                     >
-                        <Text className="version-text">Compare</Text>
+                        <Typography className="version-text">Compare</Typography>
                     </span>
                 );
             }
@@ -140,26 +142,30 @@ export default class ServiceTab extends Component {
         return (
             <Fragment>
                 {currentService === null && (
-                    <Text element="h3" style={{ margin: '0 auto', background: '#ffff', width: '100vh' }}>
+                    <Typography variant="h3" style={{ margin: '0 auto', background: '#ffff', width: '100vh' }}>
                         <br />
                         <br />
                         <p style={{ marginLeft: '122px' }}>This tile does not contain service "{serviceId}"</p>
-                    </Text>
+                    </Typography>
                 )}
                 <Shield title={message}>
                     <Fragment>
                         <div className="serviceTab">
                             <div className="header">
-                                <Text element="h2">{selectedService.title}</Text>
+                                <Typography data-testid="service" variant="subtitle2" style={{ color: 'black' }}>
+                                    {selectedService.title}
+                                </Typography>
+                                <br />
                                 {hasHomepage && (
                                     <Fragment>
                                         {selectedService.status === 'UP' && (
                                             <Tooltip
+                                                data-testid="tooltip"
                                                 key={selectedService.serviceId}
-                                                content="Open Service Homepage"
+                                                title="Open Service Homepage"
                                                 placement="bottom"
                                             >
-                                                <Link href={selectedService.homePageUrl}>
+                                                <Link data-testid="link" href={selectedService.homePageUrl}>
                                                     <strong>Service Homepage</strong>
                                                 </Link>
                                             </Tooltip>
@@ -167,7 +173,7 @@ export default class ServiceTab extends Component {
                                         {selectedService.status === 'DOWN' && (
                                             <Tooltip
                                                 key={selectedService.serviceId}
-                                                content="API Homepage navigation is disabled as the service is not running"
+                                                title="API Homepage navigation is disabled as the service is not running"
                                                 placement="bottom"
                                             >
                                                 <Link variant="danger">
@@ -182,42 +188,57 @@ export default class ServiceTab extends Component {
                                 <div className="apiInfo-item">
                                     <Tooltip
                                         key={basePath}
-                                        content="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
+                                        title="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
                                         placement="bottom"
                                     >
-                                        <Text>
+                                        <Typography
+                                            data-testid="base-path"
+                                            variant="subtitle2"
+                                            style={{ color: 'black' }}
+                                        >
                                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                             <label htmlFor="apiBasePath">API Base Path:</label>
                                             <span id="apiBasePath">{basePath}</span>
-                                        </Text>
+                                        </Typography>
                                     </Tooltip>
                                     <br />
                                     <Tooltip
                                         key={selectedService.serviceId}
-                                        content="The identifier for this service"
+                                        title="The identifier for this service"
                                         placement="bottom"
                                     >
-                                        <Text>
+                                        <Typography
+                                            data-testid="service-id"
+                                            variant="subtitle2"
+                                            style={{ color: 'black' }}
+                                        >
                                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                             <label htmlFor="serviceId">Service ID:</label>
                                             <span id="serviceId">{selectedService.serviceId}</span>
-                                        </Text>
+                                        </Typography>
                                     </Tooltip>
                                     <br />
                                     <Tooltip
                                         key={selectedService.ssoAllInstances}
-                                        content="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
+                                        title="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
                                         placement="bottom"
                                     >
-                                        <Text>
+                                        <Typography data-testid="sso" variant="subtitle2" style={{ color: 'black' }}>
                                             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                             <label htmlFor="sso">SSO:</label>
                                             <span id="sso">{sso}</span>
-                                        </Text>
+                                        </Typography>
                                     </Tooltip>
                                 </div>
 
-                                <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
+                                <Typography
+                                    data-testid="description"
+                                    variant="subtitle2"
+                                    style={{ marginTop: '15px', color: 'black' }}
+                                >
+                                    {selectedService.description}
+                                </Typography>
+                                <br />
                             </div>
                             <div className="tabs-container" style={{ width: '100%' }}>
                                 {apiVersions}

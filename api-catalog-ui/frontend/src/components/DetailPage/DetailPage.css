@@ -66,6 +66,7 @@
 }
 
 #go-back-button {
+    font-weight: bold;
     width: fit-content;
     padding-left: .6rem;
     padding-right: .6rem;
@@ -90,8 +91,13 @@
 }
 
 #description {
+    font-size: 16px;
     color: #58606e;
     line-height: 130%;
+}
+
+#service-tab {
+    display: inline-block;
 }
 
 .no-tiles-container {
@@ -119,3 +125,13 @@ div.content-description-container > div > div:nth-child(2) > div {
         background-image: url(../../assets/images/detail-Illustration.svg);
     }
 /*}*/
+
+#serviceIdTabs {
+    color: black;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.MuiIconButton-label {
+    font-size: 13px;
+}
