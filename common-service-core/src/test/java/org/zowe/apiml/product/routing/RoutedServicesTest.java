@@ -107,6 +107,7 @@ class RoutedServicesTest {
 
         RoutedService routedService1 = new RoutedService("api_v2", "api/v2", "/test2/api/v2");
         RoutedService routedService2 = new RoutedService("ui_v2", "ui/v2", "/test2/ui/v2");
+
         routedServices.addRoutedService(routedService1);
         routedServices.addRoutedService(routedService2);
 
@@ -115,5 +116,16 @@ class RoutedServicesTest {
         assertEquals("api_v2", routedService.getSubServiceId());
         assertEquals("api/v2", routedService.getGatewayUrl());
         assertEquals("/test2/api/v2", routedService.getServiceUrl());
+
+
+    }
+
+    @Test
+    void givenServiceWithoutContextPath_thenReturnCorrectPath() {
+        RoutedService routedService3 = new RoutedService("api_v3", "api/v2", "/");
+        RoutedServices routedServ = new RoutedServices();
+        routedServ.addRoutedService(routedService3);
+        RoutedService routedService = routedServ.getBestMatchingApiUrl("/");
+        assertEquals("/", routedService.getServiceUrl());
     }
 }

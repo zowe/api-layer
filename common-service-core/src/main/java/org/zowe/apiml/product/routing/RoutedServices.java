@@ -78,7 +78,12 @@ public class RoutedServices {
                 RoutedService value = serviceEntry.getValue();
                 int size = value.getServiceUrl().length();
                 //Remove last slash for service url
-                String routeServiceUrl = UrlUtils.removeLastSlash(value.getServiceUrl().toLowerCase());
+                String routeServiceUrl;
+                if ("/".equals(value.getServiceUrl())) {
+                    routeServiceUrl = value.getServiceUrl();
+                } else {
+                    routeServiceUrl = UrlUtils.removeLastSlash(value.getServiceUrl().toLowerCase());
+                }
                 if (size > maxSize && isMatchingApiRoute(serviceUrl, routeServiceUrl)) {
                     result = value;
                     maxSize = size;
