@@ -23,6 +23,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.PrivateKeyStrategy;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -184,14 +185,21 @@ public class HttpsFactory {
         }
         log.info("Loading key store file: " + config.getKeyStore());
         File keyStoreFile = new File(config.getKeyStore());
-        sslContextBuilder.loadKeyMaterial(keyStoreFile, config.getKeyStorePassword(), config.getKeyPassword());
+        sslContextBuilder.loadKeyMaterial(
+            keyStoreFile, config.getKeyStorePassword(), config.getKeyPassword(),
+            getPrivateKeyStrategy()
+        );
+    }
+
+    private PrivateKeyStrategy getPrivateKeyStrategy() {
+        return config.getKeyAlias() != null ? (aliases, socket) -> config.getKeyAlias() : null;
     }
 
     private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
         NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         log.info("Loading trust key ring: " + config.getKeyStore());
         sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()), config.getKeyStorePassword(),
-            config.getKeyPassword(), null);
+            config.getKeyPassword(), getPrivateKeyStrategy());
     }
 
     private synchronized SSLContext createSecureSslContext() {

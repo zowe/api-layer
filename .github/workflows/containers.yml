@@ -19,6 +19,11 @@ jobs:
                 uses: actions/setup-java@v1
                 with:
                     java-version: 1.8
+            - name: Set up Node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '14'
+            - run: npm install -g npm@8.1.0
             -   name: Grant execute permission for gradlew
                 run: chmod +x gradlew
             -   name: Cache Gradle packages
@@ -27,17 +32,16 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew jib -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ github.event.pull_request.number || 'latest' }}
@@ -89,17 +93,16 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Run CI Tests
                 run: >
                     ./gradlew :integration-tests:runContainerTests --info
@@ -157,17 +160,16 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Run CI Tests
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
@@ -227,17 +229,16 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
@@ -297,17 +298,16 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
@@ -367,17 +367,16 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
@@ -438,17 +437,16 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
@@ -508,17 +506,16 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runBaseTestsInternalPort --info -Denvironment.config=-docker -Denvironment.offPlatform=true
@@ -591,17 +588,16 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
@@ -679,17 +675,16 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
@@ -773,17 +768,15 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             -   name: Run HA Tests
                 run: >
@@ -883,17 +876,15 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             -   name: Run HA Tests
                 run: >
@@ -976,17 +967,15 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             -   name: Run Discovery Service Chaotic HA Tests
                 run: >
@@ -1066,17 +1055,15 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             -   name: Run Gateway Service Chaotic HA Tests
                 run: >
@@ -1160,17 +1147,15 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             -   name: Run Discoverable Client Chaotic HA Tests
                 run: >
@@ -1254,17 +1239,15 @@ jobs:
                     path: |
                         ~/.gradle/caches
                         ~/.gradle/wrapper
-                    key: ${{ runner.os }}-gradle001-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                    restore-keys: |
-                        ${{ runner.os }}-gradle001-
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
             -   name: Cache Node.js modules
                 uses: actions/cache@v2
                 with:
                     path: |
                         ~/.npm
-                    key: ${{ runner.OS }}-node001-${{ hashFiles('**/package-lock.json, **/package.json') }}
-                    restore-keys: |
-                        ${{ runner.OS }}-node001-
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             -   name: Run WebSocket Chaotic HA Tests
                 run: >
