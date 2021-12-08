@@ -28,7 +28,13 @@ export default class Error extends Component {
                                 <IconButton
                                     size="medium"
                                     variant="outlined"
-                                    style={{ border: '1px solid #de1b1b', color: '#de1b1b', borderRadius: '0' }}
+                                    style={{
+                                        border: '1px solid #de1b1b',
+                                        backgroundColor: '#de1b1b',
+                                        borderRadius: '0.1875em',
+                                        fontSize: '15px',
+                                        color: 'white',
+                                    }}
                                     onClick={this.closeDialog}
                                 >
                                     Close
