@@ -26,7 +26,7 @@ export default class Error extends Component {
                             isOpen={errors.length > 0}
                         >
                             <DialogTitle>Error</DialogTitle>
-                            <DialogContent>
+                            <DialogContent data-testid="dialog-content">
                                 {errors !== null && errors !== undefined && errors.length > 0 ? (
                                     errors.map(error => formatError(error))
                                 ) : (

@@ -40,7 +40,7 @@ export default class ErrorDialog extends Component {
                     (refreshedStaticApisError.status || typeof refreshedStaticApisError === 'object') && (
                         <Dialog variant="danger" open={refreshedStaticApisError !== null}>
                             <DialogTitle style={{ color: '#de1b1b' }}>Error</DialogTitle>
-                            <DialogContent>
+                            <DialogContent data-testid="dialog-content">
                                 <DialogContentText style={{ color: 'black' }}>{refreshError}</DialogContentText>
                             </DialogContent>
                             <DialogActions>
