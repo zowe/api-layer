@@ -43,7 +43,7 @@ tlsConfiguration:
     trustStorePassword: password
 zosmfServiceConfiguration:
     scheme: https
-    host: mock-services
+    host: mock-zosmf
     port: 10013
     serviceId: mockzosmf
 auxiliaryUserList:
