@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
+import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, Button } from '@material-ui/core';
 
 export default class ErrorDialog extends Component {
     // eslint-disable-next-line react/sort-comp
@@ -38,27 +38,20 @@ export default class ErrorDialog extends Component {
             <div>
                 {refreshedStaticApisError &&
                     (refreshedStaticApisError.status || typeof refreshedStaticApisError === 'object') && (
-                        <Dialog
-                            variant="danger"
-                            appSelector="#App"
-                            closeOnClickOutside={isFalse}
-                            hideOverlay={isTrue}
-                            modeless={isFalse}
-                            isOpen={refreshedStaticApisError !== null}
-                        >
-                            <DialogHeader>
-                                <DialogTitle>Error</DialogTitle>
-                            </DialogHeader>
-                            <DialogBody>
-                                <Text>{refreshError}</Text>
-                            </DialogBody>
-                            <DialogFooter>
-                                <DialogActions>
-                                    <Button size="medium" variant="danger" onClick={this.closeDialog}>
-                                        Close
-                                    </Button>
-                                </DialogActions>
-                            </DialogFooter>
+                        <Dialog variant="danger" open={refreshedStaticApisError !== null}>
+                            <DialogTitle style={{ color: '#de1b1b' }}>Error</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText style={{ color: 'black' }}>{refreshError}</DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    variant="outlined"
+                                    style={{ border: '1px solid #de1b1b', color: '#de1b1b' }}
+                                    onClick={this.closeDialog}
+                                >
+                                    Close
+                                </Button>
+                            </DialogActions>
                         </Dialog>
                     )}
             </div>

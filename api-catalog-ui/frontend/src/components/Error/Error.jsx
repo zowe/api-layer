@@ -1,5 +1,6 @@
 import { Component } from 'react';
-import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
+import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, Button } from '@material-ui/core';
+
 import formatError from './ErrorFormatter';
 
 export default class Error extends Component {
@@ -24,23 +25,24 @@ export default class Error extends Component {
                             modeless={isFalse}
                             isOpen={errors.length > 0}
                         >
-                            <DialogHeader>
-                                <DialogTitle>Error</DialogTitle>
-                            </DialogHeader>
-                            <DialogBody>
+                            <DialogTitle>Error</DialogTitle>
+                            <DialogContent>
                                 {errors !== null && errors !== undefined && errors.length > 0 ? (
                                     errors.map(error => formatError(error))
                                 ) : (
-                                    <Text>No Errors Found</Text>
+                                    <DialogContentText style={{ color: 'black' }}>No Errors Found</DialogContentText>
                                 )}
-                            </DialogBody>
-                            <DialogFooter>
-                                <DialogActions>
-                                    <Button size="medium" variant="danger" onClick={this.closeDialog}>
-                                        Close
-                                    </Button>
-                                </DialogActions>
-                            </DialogFooter>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    size="medium"
+                                    variant="outlined"
+                                    style={{ border: '1px solid #de1b1b', color: '#de1b1b' }}
+                                    onClick={this.closeDialog}
+                                >
+                                    Close
+                                </Button>
+                            </DialogActions>
                         </Dialog>
                     )}
             </div>
