@@ -11,20 +11,11 @@ export default class Error extends Component {
 
     render() {
         const { errors } = this.props;
-        const isTrue = true;
-        const isFalse = false;
         return (
             <div>
                 {errors &&
                     errors.length > 0 && (
-                        <Dialog
-                            variant="danger"
-                            appSelector="#App"
-                            closeOnClickOutside={isFalse}
-                            hideOverlay={isTrue}
-                            modeless={isFalse}
-                            isOpen={errors.length > 0}
-                        >
+                        <Dialog variant="danger" open={errors.length > 0}>
                             <DialogTitle>Error</DialogTitle>
                             <DialogContent data-testid="dialog-content">
                                 {errors !== null && errors !== undefined && errors.length > 0 ? (
