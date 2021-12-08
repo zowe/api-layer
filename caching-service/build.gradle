@@ -48,6 +48,9 @@ gitProperties {
 }
 
 dependencies {
+    implementation(group: 'org.infinispan', name: 'infinispan-core', version: '13.0.2.Final')
+    implementation group: 'org.infinispan', name: 'infinispan-jboss-marshalling', version: '13.0.2.Final'
+
     implementation project(':common-service-core')
     implementation project(':apiml-tomcat-common')
     implementation project(':onboarding-enabler-spring')

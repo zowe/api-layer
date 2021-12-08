@@ -16,7 +16,8 @@ caching:
                     - sentinelpassword@localhost:26379
                     - sentinelpassword@localhost:26380
                     - sentinelpassword@localhost:26381
-
+        infinispan:
+            initialHosts: localhost[7098]
 logging:
     level:
         ROOT: WARN
@@ -138,6 +139,7 @@ spring:
 logging:
     level:
         ROOT: INFO
+        org.jgroups: TRACE
         org.zowe.apiml: DEBUG
         org.springframework: INFO
         org.apache: INFO
@@ -179,3 +181,5 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
+
+
