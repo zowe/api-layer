@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, Button } from '@material-ui/core';
+import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, IconButton } from '@material-ui/core';
 
 export default class ErrorDialog extends Component {
     // eslint-disable-next-line react/sort-comp
@@ -32,8 +32,6 @@ export default class ErrorDialog extends Component {
     render() {
         const { refreshedStaticApisError } = this.props;
         const refreshError = this.getCorrectRefreshMessage(refreshedStaticApisError);
-        const isTrue = true;
-        const isFalse = false;
         return (
             <div>
                 {refreshedStaticApisError &&
@@ -44,13 +42,13 @@ export default class ErrorDialog extends Component {
                                 <DialogContentText style={{ color: 'black' }}>{refreshError}</DialogContentText>
                             </DialogContent>
                             <DialogActions>
-                                <Button
+                                <IconButton
                                     variant="outlined"
-                                    style={{ border: '1px solid #de1b1b', color: '#de1b1b' }}
+                                    style={{ border: '1px solid #de1b1b', color: '#de1b1b', borderRadius: '0' }}
                                     onClick={this.closeDialog}
                                 >
                                     Close
-                                </Button>
+                                </IconButton>
                             </DialogActions>
                         </Dialog>
                     )}
