@@ -25,11 +25,11 @@ export default class Tile extends Component {
         const status = this.getStatusFromServiceTotals(tile);
         switch (status) {
             case 'UP':
-                return <Brightness1RoundedIcon id="success" style={{ color: 'rgb(42, 133, 78)' }} />;
+                return <Brightness1RoundedIcon id="success" style={{ color: 'rgb(42, 133, 78)', fontSize: '12px' }} />;
             case 'DOWN':
-                return <ReportProblemIcon id="danger" style={{ color: 'rgb(222, 27, 27)' }} />;
+                return <ReportProblemIcon id="danger" style={{ color: 'rgb(222, 27, 27)', fontSize: '12px' }} />;
             case 'WARNING':
-                return <WarningIcon id="warning" style={{ color: 'rgb(173, 95, 0)' }} />;
+                return <WarningIcon id="warning" style={{ color: 'rgb(173, 95, 0)', fontSize: '12px' }} />;
             default:
                 return 'Status unknown';
         }
