@@ -53,6 +53,8 @@ describe('>>> Tile component tests', () => {
         resetSampleTile();
         const wrapper = shallow(<Tile tile={sampleTile} />);
         const instance = wrapper.instance();
+        expect(instance.getTileStatus(null).props.id).toBe('unknown');
+        expect(instance.getTileStatus(undefined).props.id).toBe('unknown');
         expect(instance.getTileStatus(sampleTile).props.id).toBe('success');
         sampleTile.status = 'DOWN';
         expect(instance.getTileStatus(sampleTile).props.id).toBe('danger');

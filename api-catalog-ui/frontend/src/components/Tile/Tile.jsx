@@ -20,8 +20,9 @@ export default class Tile extends Component {
     getStatusTextFromServiceTotals = tile => `${tile.activeServices} of ${tile.totalServices} services are running`;
 
     getTileStatus = tile => {
+        const unknownIcon = <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;
         if (tile === null || tile === undefined) {
-            return <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;
+            return unknownIcon;
         }
         const status = this.getStatusFromServiceTotals(tile);
         switch (status) {
@@ -32,7 +33,7 @@ export default class Tile extends Component {
             case 'WARNING':
                 return <WarningIcon id="warning" style={{ color: 'rgb(173, 95, 0)', fontSize: '12px' }} />;
             default:
-                return <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;
+                return unknownIcon;
         }
     };
 
