@@ -1,6 +1,6 @@
 /* eslint-disable react/destructuring-assignment */
 import { Component } from 'react';
-import Text from 'mineral-ui/Text';
+import { Typography } from '@material-ui/core';
 import '../BigShield/BigShield.css';
 
 export default class Shield extends Component {
@@ -34,11 +34,11 @@ export default class Shield extends Component {
                     </label>
                     <div className="collapsible-content">
                         <div className="content-inner">
-                            <Text element="h5">
+                            <Typography variant="h5">
                                 <pre style={{ textAlign: 'left' }}>
                                     <code>{this.state.error.stack}</code>
                                 </pre>
-                            </Text>
+                            </Typography>
                         </div>
                     </div>
                 </div>

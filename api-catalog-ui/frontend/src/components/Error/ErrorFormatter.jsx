@@ -1,4 +1,4 @@
-import { Text } from 'mineral-ui';
+import { Typography } from '@material-ui/core';
 import renderHTML from 'react-render-html';
 import uuidv4 from 'uuid/v4';
 
@@ -24,9 +24,9 @@ function extractAjaxError(error) {
 
 function formaHtmlError(message, color) {
     return (
-        <Text key={uuidv4()} element="h5" fontWeight="semiBold" color={color}>
+        <Typography key={uuidv4()} variant="h5" style={{ color, fontWeight: 'semiBold' }}>
             {renderHTML(message)}
-        </Text>
+        </Typography>
     );
 }
 

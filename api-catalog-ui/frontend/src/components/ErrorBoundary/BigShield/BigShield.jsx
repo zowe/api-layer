@@ -1,8 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 import { Component } from 'react';
-import Text from 'mineral-ui/Text';
-import { Button } from 'mineral-ui';
-import IconChevronLeft from 'mineral-ui-icons/IconChevronLeft';
+import { Typography, Button } from '@material-ui/core';
+import ArrowBackIosNewIcon from '@material-ui/icons/ArrowBackIos';
 import '../../Dashboard/Dashboard.css';
 import './BigShield.css';
 
@@ -29,7 +28,7 @@ export default class BigShield extends Component {
     };
 
     render() {
-        const iconBack = <IconChevronLeft />;
+        const iconBack = <ArrowBackIosNewIcon />;
         const { history } = this.props;
         let disableButton = true;
         if (history !== undefined && history !== null) {
@@ -61,11 +60,11 @@ export default class BigShield extends Component {
                         )}
                         <br />
                         <div className="local-dev-debug">
-                            <Text element="h2" style={{ color: '#de1b1b' }}>
+                            <Typography variant="h4" style={{ color: '#de1b1b' }}>
                                 An unexpected browser error occurred
-                            </Text>
+                            </Typography>
                             <br />
-                            <Text element="h3" fontWeight="semiBold" color="black">
+                            <Typography variant="h6" style={{ color: 'black', fontWeight: 'semiBold' }}>
                                 You are seeing this page because an unexpected error occurred while rendering your page.
                                 <br />
                                 <br />
@@ -75,12 +74,12 @@ export default class BigShield extends Component {
                                 {!disableButton && (
                                     <b>You can return to the Dashboard by clicking on the button above.</b>
                                 )}
-                            </Text>
-                            <Text element="h4" color="#de1b1b">
+                            </Typography>
+                            <Typography variant="h6" color="#de1b1b">
                                 <pre>
                                     <code>{this.state.error.message}</code>
                                 </pre>
-                            </Text>
+                            </Typography>
 
                             <div className="wrap-collabsible">
                                 <input id="collapsible" className="toggle" type="checkbox" />
@@ -90,11 +89,11 @@ export default class BigShield extends Component {
                                 </label>
                                 <div className="collapsible-content">
                                     <div className="content-inner">
-                                        <Text element="h5">
+                                        <Typography variant="h5">
                                             <pre>
                                                 <code>{stack}</code>
                                             </pre>
-                                        </Text>
+                                        </Typography>
                                     </div>
                                 </div>
                             </div>
@@ -108,11 +107,11 @@ export default class BigShield extends Component {
                                 </label>
                                 <div className="collapsible-content2">
                                     <div className="content-inner2">
-                                        <Text element="h5">
+                                        <Typography variant="h5">
                                             <pre>
                                                 <code>{componentStack}</code>
                                             </pre>
-                                        </Text>
+                                        </Typography>
                                     </div>
                                 </div>
                             </div>
