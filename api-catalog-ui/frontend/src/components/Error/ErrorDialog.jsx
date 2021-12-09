@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
+import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, IconButton } from '@material-ui/core';
 
 export default class ErrorDialog extends Component {
     // eslint-disable-next-line react/sort-comp
@@ -32,33 +32,30 @@ export default class ErrorDialog extends Component {
     render() {
         const { refreshedStaticApisError } = this.props;
         const refreshError = this.getCorrectRefreshMessage(refreshedStaticApisError);
-        const isTrue = true;
-        const isFalse = false;
         return (
             <div>
                 {refreshedStaticApisError &&
                     (refreshedStaticApisError.status || typeof refreshedStaticApisError === 'object') && (
-                        <Dialog
-                            variant="danger"
-                            appSelector="#App"
-                            closeOnClickOutside={isFalse}
-                            hideOverlay={isTrue}
-                            modeless={isFalse}
-                            isOpen={refreshedStaticApisError !== null}
-                        >
-                            <DialogHeader>
-                                <DialogTitle>Error</DialogTitle>
-                            </DialogHeader>
-                            <DialogBody>
-                                <Text>{refreshError}</Text>
-                            </DialogBody>
-                            <DialogFooter>
-                                <DialogActions>
-                                    <Button size="medium" variant="danger" onClick={this.closeDialog}>
-                                        Close
-                                    </Button>
-                                </DialogActions>
-                            </DialogFooter>
+                        <Dialog variant="danger" open={refreshedStaticApisError !== null}>
+                            <DialogTitle style={{ color: '#de1b1b' }}>Error</DialogTitle>
+                            <DialogContent data-testid="dialog-content">
+                                <DialogContentText style={{ color: 'black' }}>{refreshError}</DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <IconButton
+                                    variant="outlined"
+                                    style={{
+                                        border: '1px solid #de1b1b',
+                                        backgroundColor: '#de1b1b',
+                                        borderRadius: '0.1875em',
+                                        fontSize: '15px',
+                                        color: 'white',
+                                    }}
+                                    onClick={this.closeDialog}
+                                >
+                                    Close
+                                </IconButton>
+                            </DialogActions>
                         </Dialog>
                     )}
             </div>
