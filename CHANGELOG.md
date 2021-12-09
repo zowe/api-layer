@@ -4,19 +4,19 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `1.26.0 (apiml: 1.26.16 2021-13-12)`
 
-* Bugfix:  Choose correct key from keystore by alias (#1939) ([6ea7a62](https://github.com/zowe/api-layer/commit/6ea7a62)), closes [#1939](https://github.com/zowe/api-layer/issues/1939)
-* Bugfix:  Release Metrics Service connection when change stream (#1931) ([5dcf55e](https://github.com/zowe/api-layer/commit/5dcf55e)), closes [#1931](https://github.com/zowe/api-layer/issues/1931)
-* Bugfix:  Remove duplicated hystrix streams in Metrics Service dashboard (#1924) ([4dfd4e1](https://github.com/zowe/api-layer/commit/4dfd4e1)), closes [#1924](https://github.com/zowe/api-layer/issues/1924)
-* Bugfix:  Transformation of swagger server url in API Catalog (#1934) ([1b8844c](https://github.com/zowe/api-layer/commit/1b8844c)), closes [#1934](https://github.com/zowe/api-layer/issues/1934)
-* Bugfix:  Add proper icons to Metrics Service (#1912) ([517105f](https://github.com/zowe/api-layer/commit/517105f)), closes [#1912](https://github.com/zowe/api-layer/issues/1912)
-* Bugfix:  Disable hystrix timeout (#1906) ([7fb1301](https://github.com/zowe/api-layer/commit/7fb1301)), closes [#1906](https://github.com/zowe/api-layer/issues/1906)
-* Bugfix:  Fix GW start script (#1898) ([a4363ad](https://github.com/zowe/api-layer/commit/a4363ad)), closes [#1898](https://github.com/zowe/api-layer/issues/1898)
-* Bugfix:  Remove hardcoded values from metrics service ui (#1902) ([bd6f8d2](https://github.com/zowe/api-layer/commit/bd6f8d2)), closes [#1902](https://github.com/zowe/api-layer/issues/1902)
-* Bugfix:  Metrics Service verifies certificates (#1868) ([8fcf46c](https://github.com/zowe/api-layer/commit/8fcf46c)), closes [#1868](https://github.com/zowe/api-layer/issues/1868)
-* Bugfix:  API catalog will use URL from browser window to access swagger (#1841) ([37cbfbc](https://github.com/zowe/api-layer/commit/37cbfbc)), closes [#1841](https://github.com/zowe/api-layer/issues/1841)
-* Bugfix:  Correct error message when wrong jwtConfigurationMode used (#1830) ([990426d](https://github.com/zowe/api-layer/commit/990426d)), closes [#1830](https://github.com/zowe/api-layer/issues/1830)
-* Bugfix:  Handle JWT token expiration correctly (#1836) ([90a887d](https://github.com/zowe/api-layer/commit/90a887d)), closes [#1836](https://github.com/zowe/api-layer/issues/1836)
-* Bugfix:  SSE no longer adds trailing slash to endpoint (#1839) ([5f7ba56](https://github.com/zowe/api-layer/commit/5f7ba56)), closes [#1839](https://github.com/zowe/api-layer/issues/1839)
+* Bugfix: The correct key from the keystore by alias is now chosen, rather than the first key certificate pair returned from the keyring (#1939) ([6ea7a62](https://github.com/zowe/api-layer/commit/6ea7a62)), closes [#1939](https://github.com/zowe/api-layer/issues/1939)
+* Bugfix:  The Metrics service connection is nw released when the stream is changed, thereby stopping leaky connections that fill connection pools and memory (#1931) ([5dcf55e](https://github.com/zowe/api-layer/commit/5dcf55e)), closes [#1931](https://github.com/zowe/api-layer/issues/1931)
+* Bugfix:  Removes duplicated hystrix streams in Metrics Service dashboard (#1924) ([4dfd4e1](https://github.com/zowe/api-layer/commit/4dfd4e1)), closes [#1924](https://github.com/zowe/api-layer/issues/1924)
+* Bugfix:  Fixes transformation of swagger server URLs in API Catalog to be the location of the current browser location (#1934) ([1b8844c](https://github.com/zowe/api-layer/commit/1b8844c)), closes [#1934](https://github.com/zowe/api-layer/issues/1934)
+* Bugfix:  Adds proper icons to Metrics Service (#1912) ([517105f](https://github.com/zowe/api-layer/commit/517105f)), closes [#1912](https://github.com/zowe/api-layer/issues/1912)
+* Bugfix:  Disables hystrix timeout (#1906) ([7fb1301](https://github.com/zowe/api-layer/commit/7fb1301)), closes [#1906](https://github.com/zowe/api-layer/issues/1906)
+* Bugfix:  Fixes GW start script (#1898) ([a4363ad](https://github.com/zowe/api-layer/commit/a4363ad)), closes [#1898](https://github.com/zowe/api-layer/issues/1898)
+* Bugfix:  Removes hardcoded values from the Metrics Service UI, thereby facilitating PoC work (#1902) ([bd6f8d2](https://github.com/zowe/api-layer/commit/bd6f8d2)), closes [#1902](https://github.com/zowe/api-layer/issues/1902)
+* Bugfix:  The Metrics Service now verifies certificates enabling the service to register to the Discovery Service properly (#1868) ([8fcf46c](https://github.com/zowe/api-layer/commit/8fcf46c)), closes [#1868](https://github.com/zowe/api-layer/issues/1868)
+* Bugfix:  The API Catalog now uses the URL from the browser window to access swagger, thereby preventing failure when using a kubernetes environment (#1841) ([37cbfbc](https://github.com/zowe/api-layer/commit/37cbfbc)), closes [#1841](https://github.com/zowe/api-layer/issues/1841)
+* Bugfix:  Displays the correct error message when the wrong jwtConfigurationMode is used (#1830) ([990426d](https://github.com/zowe/api-layer/commit/990426d)), closes [#1830](https://github.com/zowe/api-layer/issues/1830)
+* Bugfix:  Handles the JWT token expiration correctly (#1836) ([90a887d](https://github.com/zowe/api-layer/commit/90a887d)), closes [#1836](https://github.com/zowe/api-layer/issues/1836)
+* Bugfix:  SSE no longer adds a trailing slash to an endpoint provided after the Gateway route (#1839) ([5f7ba56](https://github.com/zowe/api-layer/commit/5f7ba56)), closes [#1839](https://github.com/zowe/api-layer/issues/1839)
 
 ## `1.25.0 (apiml: 1.25.4 2021-10-25)`
 
