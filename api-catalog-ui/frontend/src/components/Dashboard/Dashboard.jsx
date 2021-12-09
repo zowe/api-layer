@@ -85,7 +85,7 @@ export default class Dashboard extends Component {
                     <div className="no-tiles-container">
                         <br />
                         <br />
-                        <Typography data-testid="error" variant="h3">
+                        <Typography data-testid="error" variant="subtitle1">
                             Tile details could not be retrieved, the following error was returned:
                         </Typography>
                         {error}
