@@ -1,6 +1,8 @@
-import { CardStatus } from 'mineral-ui';
 import { Card, CardContent, Typography } from '@material-ui/core';
 import { Component } from 'react';
+import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
+import WarningIcon from '@material-ui/icons/Warning';
+import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 
 import './Tile.css';
 
@@ -23,11 +25,11 @@ export default class Tile extends Component {
         const status = this.getStatusFromServiceTotals(tile);
         switch (status) {
             case 'UP':
-                return 'success';
+                return <Brightness1RoundedIcon id="success" style={{ color: 'rgb(42, 133, 78)' }} />;
             case 'DOWN':
-                return 'danger';
+                return <ReportProblemIcon id="danger" style={{ color: 'rgb(222, 27, 27)' }} />;
             case 'WARNING':
-                return 'warning';
+                return <WarningIcon id="warning" style={{ color: 'rgb(173, 95, 0)' }} />;
             default:
                 return 'Status unknown';
         }
@@ -83,13 +85,14 @@ export default class Tile extends Component {
                     </Typography>
                     <br />
                     {this.shortenDescription(tile.description)}
-                    <CardStatus variant={this.getTileStatus(tile)} className="grid-tile-status">
+                    <Typography id="tileLabel" className="grid-tile-status">
+                        {this.getTileStatus(tile)}
                         {this.getTileStatusText(tile)}
-                    </CardStatus>
+                    </Typography>
                     {tile.sso && (
-                        <CardStatus variant="sso" className="grid-tile-sso">
+                        <Typography variant="h6" className="grid-tile-sso">
                             SSO
-                        </CardStatus>
+                        </Typography>
                     )}
                 </CardContent>
             </Card>
