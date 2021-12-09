@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { IconButton, Typography } from '@material-ui/core';
-import IconChevronLeft from 'mineral-ui-icons/IconChevronLeft';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 
 import './PageNotFound.css';
 
@@ -11,7 +11,7 @@ export default class PageNotFound extends Component {
     };
 
     render() {
-        const iconBack = <IconChevronLeft />;
+        const iconBack = <ChevronLeftIcon />;
         return (
             <div>
                 <br />
