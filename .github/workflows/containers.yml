@@ -72,7 +72,7 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
             metrics-service:
                 image: ghcr.io/balhar-jakub/metrics-service:${{ github.event.pull_request.number || 'latest' }}
@@ -141,7 +141,7 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
 
         steps:
@@ -208,7 +208,7 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012
@@ -277,7 +277,7 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
@@ -346,7 +346,7 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZOSMF_APPLIEDAPARS: ''
@@ -416,7 +416,7 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
@@ -485,7 +485,7 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
             metrics-service:
                 image: ghcr.io/balhar-jakub/metrics-service:${{ github.event.pull_request.number || 'latest' }}
@@ -558,7 +558,7 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
@@ -645,7 +645,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     VERIFY_CERTIFICATES: false
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
@@ -727,7 +727,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
@@ -821,7 +821,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
@@ -926,7 +926,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
@@ -1014,7 +1014,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
@@ -1106,7 +1106,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
@@ -1198,7 +1198,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
-            mock-zosmf:
+            mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
