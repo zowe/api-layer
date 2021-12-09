@@ -10,6 +10,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Fixes transformation of swagger server URLs in API Catalog to be the location of the current browser location (#1934) ([1b8844c](https://github.com/zowe/api-layer/commit/1b8844c)), closes [#1934](https://github.com/zowe/api-layer/issues/1934)
 * Bugfix:  Adds proper icons to Metrics Service (#1912) ([517105f](https://github.com/zowe/api-layer/commit/517105f)), closes [#1912](https://github.com/zowe/api-layer/issues/1912)
 * Bugfix:  Disables hystrix timeout (#1906) ([7fb1301](https://github.com/zowe/api-layer/commit/7fb1301)), closes [#1906](https://github.com/zowe/api-layer/issues/1906)
+* Feature: Enable hystrix metrics stream for core APIML services (#1899) ([0734f4d8](https://github.com/zowe/api-layer/commit/0734f4d8)), closes [#1858](https://github.com/zowe/api-layer/issues/1858)
 * Bugfix:  Fixes the GW start script (#1898) ([a4363ad](https://github.com/zowe/api-layer/commit/a4363ad)), closes [#1898](https://github.com/zowe/api-layer/issues/1898)
 * Bugfix:  Removes hardcoded values from the Metrics Service UI, thereby facilitating PoC work (#1902) ([bd6f8d2](https://github.com/zowe/api-layer/commit/bd6f8d2)), closes [#1902](https://github.com/zowe/api-layer/issues/1902)
 * Bugfix:  The Metrics Service now verifies certificates enabling the service to register to the Discovery Service properly (#1868) ([8fcf46c](https://github.com/zowe/api-layer/commit/8fcf46c)), closes [#1868](https://github.com/zowe/api-layer/issues/1868)
