@@ -1,5 +1,5 @@
 import { CardStatus } from 'mineral-ui';
-import Card, { CardBlock, CardTitle } from 'mineral-ui/Card';
+import { Card, CardContent, Typography } from '@material-ui/core';
 import { Component } from 'react';
 
 import './Tile.css';
@@ -70,16 +70,28 @@ export default class Tile extends Component {
 
         return (
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
-                <CardTitle data-testid="tile-title">{tile.title}</CardTitle>
-                <CardBlock className="tile">{this.shortenDescription(tile.description)}</CardBlock>
-                <CardStatus variant={this.getTileStatus(tile)} className="grid-tile-status">
-                    {this.getTileStatusText(tile)}
-                </CardStatus>
-                {tile.sso && (
-                    <CardStatus variant="sso" className="grid-tile-sso">
-                        SSO
+                <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
+                    <Typography
+                        variant="subtitle1"
+                        style={{
+                            color: 'rgb(88, 96, 110)',
+                            fontWeight: 'bold',
+                            fontSize: '1.125em',
+                        }}
+                    >
+                        {tile.title}
+                    </Typography>
+                    <br />
+                    {this.shortenDescription(tile.description)}
+                    <CardStatus variant={this.getTileStatus(tile)} className="grid-tile-status">
+                        {this.getTileStatusText(tile)}
                     </CardStatus>
-                )}
+                    {tile.sso && (
+                        <CardStatus variant="sso" className="grid-tile-sso">
+                            SSO
+                        </CardStatus>
+                    )}
+                </CardContent>
             </Card>
         );
     }
