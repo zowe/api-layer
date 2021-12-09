@@ -59,9 +59,8 @@ describe('>>> Tile component tests', () => {
         sampleTile.totalServices = 2;
         sampleTile.status = 'UP';
         expect(instance.getTileStatus(sampleTile).props.id).toBe('warning');
-        expect(instance.getTileStatus()).toBe('Status unknown');
         sampleTile.status = 'UNKNOWN';
-        expect(instance.getTileStatus()).toBe('Status unknown');
+        expect(instance.getTileStatus(sampleTile).props.id).toBe('unknown');
     });
 
     it('method getTileStatusText() should return correct values', () => {

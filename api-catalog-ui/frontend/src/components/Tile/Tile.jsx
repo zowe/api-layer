@@ -3,6 +3,7 @@ import { Component } from 'react';
 import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
 import WarningIcon from '@material-ui/icons/Warning';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 import './Tile.css';
 
@@ -20,7 +21,7 @@ export default class Tile extends Component {
 
     getTileStatus = tile => {
         if (tile === null || tile === undefined) {
-            return 'Status unknown';
+            return <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;
         }
         const status = this.getStatusFromServiceTotals(tile);
         switch (status) {
@@ -31,7 +32,7 @@ export default class Tile extends Component {
             case 'WARNING':
                 return <WarningIcon id="warning" style={{ color: 'rgb(173, 95, 0)', fontSize: '12px' }} />;
             default:
-                return 'Status unknown';
+                return <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;
         }
     };
 
