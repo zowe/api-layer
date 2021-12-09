@@ -88,7 +88,7 @@ describe('>>> Tile component tests', () => {
     it('should handle tile click', () => {
         const historyMock = { push: jest.fn() };
         const wrapper = shallow(<Tile tile={sampleTile} history={historyMock} match={match} />);
-        wrapper.find('Card').simulate('click');
+        wrapper.find('[data-testid="tile"]').simulate('click');
         expect(historyMock.push.mock.calls[0]).toEqual([`/tile/${sampleTile.id}`]);
     });
 

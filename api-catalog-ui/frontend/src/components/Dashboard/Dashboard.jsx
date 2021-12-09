@@ -104,7 +104,7 @@ export default class Dashboard extends Component {
                             {hasTiles && tiles.map(tile => <Tile key={tile.id} tile={tile} history={history} />)}
                             {!hasTiles &&
                                 hasSearchCriteria && (
-                                    <Typography id="search_no_results" variant="h4" color="#1d5bbf">
+                                    <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
                                         No tiles found matching search criteria
                                     </Typography>
                                 )}
