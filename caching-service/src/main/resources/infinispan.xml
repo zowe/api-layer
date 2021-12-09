@@ -82,6 +82,7 @@
         <serialization marshaller="org.infinispan.jboss.marshalling.commons.GenericJBossMarshaller">
             <allow-list>
                 <class>org.zowe.apiml.caching.model.KeyValue</class>
+                <class>java.util.HashMap</class>
             </allow-list>
         </serialization>
 
