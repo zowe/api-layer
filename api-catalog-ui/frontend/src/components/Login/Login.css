@@ -81,7 +81,6 @@ form#login-form {
     margin: 150px 0px;
 }
 
-
 .MuiButton-label {
     flex-direction: row;
     align-items: flex-start;
@@ -94,7 +93,7 @@ form#login-form {
     width: 50%;
     height: 36px;
     left: 218px;
-    ine-height: 16px;
+    line-height: 16px;
     /* identical to box height, or 114% */
     letter-spacing: 1.25px;
     text-transform: uppercase;
@@ -104,8 +103,13 @@ form#login-form {
     flex: none;
     order: 0;
     flex-grow: 0;
-    margin: 25px -14px 20px 0px;
+    margin: 25px -14px 10px 14px;
     position: static;
+}
+
+.MuiButton-label:hover {
+    background-color: rgb(50, 114, 217);
+    border: none;
 }
 
 .MuiTypography-gutterBottom {

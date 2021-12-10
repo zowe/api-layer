@@ -1,4 +1,4 @@
-import { Text, Button } from 'mineral-ui';
+import { Typography, IconButton } from '@material-ui/core';
 import { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -68,9 +68,15 @@ export default class Dashboard extends Component {
                         toggleWizard={this.toggleWizard}
                         visible
                     />
-                    <Button id="refresh-api-button" size="medium" onClick={this.refreshStaticApis}>
+                    <IconButton
+                        id="refresh-api-button"
+                        size="medium"
+                        variant="outlined"
+                        onClick={this.refreshStaticApis}
+                        style={{ borderRadius: '0.1875em' }}
+                    >
                         Refresh Static APIs
-                    </Button>
+                    </IconButton>
                 </div>
                 <WizardContainer />
                 <ConfirmDialogContainer />
@@ -79,7 +85,9 @@ export default class Dashboard extends Component {
                     <div className="no-tiles-container">
                         <br />
                         <br />
-                        <Text element="h3">Tile details could not be retrieved, the following error was returned:</Text>
+                        <Typography data-testid="error" variant="subtitle1">
+                            Tile details could not be retrieved, the following error was returned:
+                        </Typography>
                         {error}
                     </div>
                 )}
@@ -96,9 +104,9 @@ export default class Dashboard extends Component {
                             {hasTiles && tiles.map(tile => <Tile key={tile.id} tile={tile} history={history} />)}
                             {!hasTiles &&
                                 hasSearchCriteria && (
-                                    <Text id="search_no_results" element="h4" color="#1d5bbf">
+                                    <Typography id="search_no_results" variant="subtitle2" style={{ color: '#1d5bbf' }}>
                                         No tiles found matching search criteria
-                                    </Text>
+                                    </Typography>
                                 )}
                         </div>
                     </div>

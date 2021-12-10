@@ -128,3 +128,16 @@ a {
 #dash-buttons > span {
     margin-right: 10px;
 }
+
+#refresh-api-button {
+    font-size: 16px;
+    height: 2em;
+    color: #3272d9;
+    background-color: #ffffff;
+}
+
+#refresh-api-button:hover {
+    background-color: #F4F7FA;
+    border: none;
+}
+

@@ -1,6 +1,9 @@
-import { CardStatus } from 'mineral-ui';
-import Card, { CardBlock, CardTitle } from 'mineral-ui/Card';
+import { Card, CardContent, Typography } from '@material-ui/core';
 import { Component } from 'react';
+import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
+import WarningIcon from '@material-ui/icons/Warning';
+import ReportProblemIcon from '@material-ui/icons/ReportProblem';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 import './Tile.css';
 
@@ -17,19 +20,20 @@ export default class Tile extends Component {
     getStatusTextFromServiceTotals = tile => `${tile.activeServices} of ${tile.totalServices} services are running`;
 
     getTileStatus = tile => {
+        const unknownIcon = <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;
         if (tile === null || tile === undefined) {
-            return 'Status unknown';
+            return unknownIcon;
         }
         const status = this.getStatusFromServiceTotals(tile);
         switch (status) {
             case 'UP':
-                return 'success';
+                return <Brightness1RoundedIcon id="success" style={{ color: 'rgb(42, 133, 78)', fontSize: '12px' }} />;
             case 'DOWN':
-                return 'danger';
+                return <ReportProblemIcon id="danger" style={{ color: 'rgb(222, 27, 27)', fontSize: '12px' }} />;
             case 'WARNING':
-                return 'warning';
+                return <WarningIcon id="warning" style={{ color: 'rgb(173, 95, 0)', fontSize: '12px' }} />;
             default:
-                return 'Status unknown';
+                return unknownIcon;
         }
     };
 
@@ -70,16 +74,29 @@ export default class Tile extends Component {
 
         return (
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
-                <CardTitle data-testid="tile-title">{tile.title}</CardTitle>
-                <CardBlock className="tile">{this.shortenDescription(tile.description)}</CardBlock>
-                <CardStatus variant={this.getTileStatus(tile)} className="grid-tile-status">
-                    {this.getTileStatusText(tile)}
-                </CardStatus>
-                {tile.sso && (
-                    <CardStatus variant="sso" className="grid-tile-sso">
-                        SSO
-                    </CardStatus>
-                )}
+                <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
+                    <Typography
+                        variant="subtitle1"
+                        style={{
+                            color: 'rgb(88, 96, 110)',
+                            fontWeight: 'bold',
+                            fontSize: '1.125em',
+                        }}
+                    >
+                        {tile.title}
+                    </Typography>
+                    <br />
+                    {this.shortenDescription(tile.description)}
+                    <Typography id="tileLabel" className="grid-tile-status">
+                        {this.getTileStatus(tile)}
+                        {this.getTileStatusText(tile)}
+                    </Typography>
+                    {tile.sso && (
+                        <Typography variant="h6" className="grid-tile-sso">
+                            SSO
+                        </Typography>
+                    )}
+                </CardContent>
             </Card>
         );
     }

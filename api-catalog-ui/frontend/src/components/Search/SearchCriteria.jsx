@@ -1,8 +1,8 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { debounce } from 'lodash';
-import { TextInput } from 'mineral-ui';
-import IconSearch from 'mineral-ui-icons/IconSearch';
-import { IconClear } from 'mineral-ui-icons';
+import { InputAdornment, TextField } from '@material-ui/core';
+import SearchIcon from '@material-ui/icons/Search';
+import ClearIcon from '@material-ui/icons/Clear';
 import './search.css';
 
 export default class SearchCriteria extends Component {
@@ -37,16 +37,18 @@ export default class SearchCriteria extends Component {
     render() {
         const { criteria } = this.state;
         const { placeholder } = this.props;
-        const iconSearch = <IconSearch />;
+        const iconSearch = <SearchIcon />;
         const iconClear = (
-            <IconClear data-testid="clear-button" className="clear-text-search" onClick={this.clearSearch} />
+            <ClearIcon data-testid="clear-button" className="clear-text-search" onClick={this.clearSearch} />
         );
         const icon = criteria.length === 0 ? iconSearch : iconClear;
         return (
-            <TextInput
+            <TextField
                 className="search-bar"
                 data-testid="search-bar"
-                iconEnd={icon}
+                InputProps={{
+                    endAdornment: <InputAdornment position="end">{icon}</InputAdornment>,
+                }}
                 placeholder={placeholder}
                 value={criteria}
                 onChange={this.handleCriteriaChange}
