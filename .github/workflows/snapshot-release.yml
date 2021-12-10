@@ -4,7 +4,8 @@ name: Release new version (snapshot)
 
 on:
     push:
-        branches: [ master, v2.x.x ]
+#        branches: [ master, v2.x.x ]
+        branches: [ apiml/GH1067/create_sample_ext ]
 
 env:
     IMAGE_BASE_DIR: ./containers
