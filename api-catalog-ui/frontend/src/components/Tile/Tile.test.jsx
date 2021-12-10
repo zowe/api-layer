@@ -53,16 +53,16 @@ describe('>>> Tile component tests', () => {
         resetSampleTile();
         const wrapper = shallow(<Tile tile={sampleTile} />);
         const instance = wrapper.instance();
-        expect(instance.getTileStatus(sampleTile)).toBe('success');
+        expect(instance.getTileStatus(null).props.id).toBe('unknown');
+        expect(instance.getTileStatus(undefined).props.id).toBe('unknown');
+        expect(instance.getTileStatus(sampleTile).props.id).toBe('success');
         sampleTile.status = 'DOWN';
-        expect(instance.getTileStatus(sampleTile)).toBe('danger');
+        expect(instance.getTileStatus(sampleTile).props.id).toBe('danger');
         sampleTile.totalServices = 2;
         sampleTile.status = 'UP';
-        expect(instance.getTileStatus(sampleTile)).toBe('warning');
-        expect(instance.getTileStatus()).toBe('Status unknown');
+        expect(instance.getTileStatus(sampleTile).props.id).toBe('warning');
         sampleTile.status = 'UNKNOWN';
-        expect(instance.getTileStatus(sampleTile)).toBe('Status unknown');
-        expect(instance.getTileStatus()).toBe('Status unknown');
+        expect(instance.getTileStatus(sampleTile).props.id).toBe('unknown');
     });
 
     it('method getTileStatusText() should return correct values', () => {
@@ -88,7 +88,7 @@ describe('>>> Tile component tests', () => {
     it('should handle tile click', () => {
         const historyMock = { push: jest.fn() };
         const wrapper = shallow(<Tile tile={sampleTile} history={historyMock} match={match} />);
-        wrapper.find('Card').simulate('click');
+        wrapper.find('[data-testid="tile"]').simulate('click');
         expect(historyMock.push.mock.calls[0]).toEqual([`/tile/${sampleTile.id}`]);
     });
 

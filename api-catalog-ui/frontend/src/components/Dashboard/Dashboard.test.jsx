@@ -65,7 +65,7 @@ describe('>>> Dashboard component tests', () => {
         );
         expect(
             dashboard
-                .find('Text')
+                .find('[data-testid="error"]')
                 .first()
                 .children()
                 .text()
