@@ -7,31 +7,46 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-# Copyright IBM Corporation 2019, 2020
+# Copyright IBM Corporation 2021
 ################################################################################
 
 # Variables required on shell:
-# - ZOWE_PREFIX
-# - DISCOVERY_PORT - the port the discovery service will use
-# - CATALOG_PORT - the port the api catalog service will use
-# - GATEWAY_PORT - the port the api gateway service will use
-# - VERIFY_CERTIFICATES - boolean saying if we accept only verified certificates
-# - DISCOVERY_PORT - The port the data sets server will use
-# - KEY_ALIAS
-# - KEYSTORE - The keystore to use for SSL certificates
-# - KEYSTORE_TYPE - The keystore type to use for SSL certificates
-# - KEYSTORE_PASSWORD - The password to access the keystore supplied by KEYSTORE
-# - KEY_ALIAS - The alias of the key within the keystore
-# - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
-# - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
+# - JAVA_HOME
+# - ZWE_STATIC_DEFINITIONS_DIR
+# - ZWE_zowe_certificate_keystore_alias - The default alias of the key within the keystore
+# - ZWE_zowe_certificate_keystore_file - The default keystore to use for SSL certificates
+# - ZWE_zowe_certificate_keystore_password - The default password to access the keystore supplied by KEYSTORE
+# - ZWE_zowe_certificate_truststore_file
+# - ZWE_zowe_job_prefix
+# - ZWE_zowe_logDirectory
 
-if [[ -z "${LAUNCH_COMPONENT}" ]]
-then
-  # component should be started from component home directory
-  LAUNCH_COMPONENT=$(pwd)/bin
-fi
+# Optional variables:
+# - CMMN_LB
+# - LIBPATH
+# - LIBRARY_PATH
+# - ZWE_components_discovery_port - the port the discovery service will use
+# - ZWE_components_gateway_apiml_security_authorization_endpoint_enabled
+# - ZWE_components_gateway_apiml_security_authorization_endpoint_url
+# - ZWE_components_gateway_apiml_security_authorization_provider
+# - ZWE_components_gateway_apiml_security_authorization_resourceClass
+# - ZWE_components_gateway_port - the port the api gateway service will use
+# - ZWE_components_gateway_server_ssl_enabled
+# - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
+# - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
+# - ZWE_configs_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
+# - ZWE_configs_certificate_keystore_type - The keystore type to use for SSL certificates
+# - ZWE_configs_certificate_truststore_file
+# - ZWE_configs_certificate_truststore_type
+# - ZWE_configs_debug
+# - ZWE_configs_port - the port the api catalog service will use
+# - ZWE_configs_spring_profiles_active
+# - ZWE_DISCOVERY_SERVICES_LIST
+# - ZWE_GATEWAY_HOST
+# - ZWE_haInstance_hostname
+# - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
+# - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 
-JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
+JAR_FILE="$(pwd)/bin/api-catalog-services-lite.jar"
 # script assumes it's in the catalog component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]
 then
@@ -47,28 +62,39 @@ fi
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
-if [[ ! -z ${APIML_DEBUG_MODE_ENABLED} && ${APIML_DEBUG_MODE_ENABLED} == true ]]
+if [[ ! -z ${ZWE_configs_debug} && ${ZWE_configs_debug} == true ]]
 then
   export LOG_LEVEL="debug"
 fi
 
-if [[ ! -z "${APIML_DIAG_MODE_ENABLED}" ]]
-then
-    LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
-fi
+# FIXME: APIML_DIAG_MODE_ENABLED is not officially mentioned. We can still use it behind the scene,
+# or we can define configs.diagMode in manifest, then use "$ZWE_configs_diagMode".
+# if [[ ! -z "${APIML_DIAG_MODE_ENABLED}" ]]
+# then
+#     LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
+# fi
 
-# If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
-export APIML_STATIC_DEF=${STATIC_DEF_CONFIG_DIR}
-if [[ ! -z "$ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES" ]]
-then
-  export APIML_STATIC_DEF="${APIML_STATIC_DEF};${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
-fi
+# NOTE: ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES is not defined in Zowe level any more, never heard anyone use it.
+#        will just use $ZWE_STATIC_DEFINITIONS_DIR directly.
+# If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $ZWE_STATIC_DEFINITIONS_DIR
+# export APIML_STATIC_DEF=${ZWE_STATIC_DEFINITIONS_DIR}
+# if [[ ! -z "$ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES" ]]
+# then
+#   export APIML_STATIC_DEF="${APIML_STATIC_DEF};${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
+# fi
 
-EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
-
-if [[ -z "${GATEWAY_HOST}" ]]
-then
-    GATEWAY_HOST=${EXPLORER_HOST}
+# how to verifyCertificates
+verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | upper_case)
+if [ "${verify_certificates_config}" = "DISABLED" ]; then
+  verifySslCertificatesOfServices=false
+  nonStrictVerifySslCertificatesOfServices=false
+elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
+  verifySslCertificatesOfServices=false
+  nonStrictVerifySslCertificatesOfServices=true
+else
+  # default value is STRICT
+  verifySslCertificatesOfServices=true
+  nonStrictVerifySslCertificatesOfServices=true
 fi
 
 if [ `uname` = "OS/390" ]; then
@@ -84,41 +110,43 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
+# NOTE: these are moved from below
+#    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+#    -Dapiml.service.preferIpAddress=false \
+
 CATALOG_CODE=AC
-_BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Xms16m -Xmx512m \
     ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
-    -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
-    -Dapiml.service.hostname=${EXPLORER_HOST} \
-    -Dapiml.service.port=${CATALOG_PORT:-7552} \
-    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_PORT:-7553}/eureka/"} \
-    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
-    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
-    -Dapiml.service.gatewayHostname=${GATEWAY_HOST} \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
+    -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
+    -Dapiml.service.port=${ZWE_configs_port:-7552} \
+    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"} \
+    -Dapiml.service.gatewayHostname=${ZWE_GATEWAY_HOST:-${ZWE_haInstance_hostname:-localhost}} \
     -Dapiml.service.eurekaUserName=eureka \
     -Dapiml.service.eurekaPassword=password \
-    -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
-    -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
-    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
-    -Dapiml.security.authorization.provider=${APIML_SECURITY_AUTHORIZATION_PROVIDER:-} \
-    -Dapiml.security.authorization.endpoint.enabled=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_ENABLED:-false} \
-    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL:-"https://${EXPLORER_HOST}:${GATEWAY_SERVICE_PORT}/zss/api/v1/saf-auth"} \
-    -Dapiml.security.authorization.resourceClass=${RESOURCE_CLASS:-ZOWE} \
+    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.authorization.provider=${ZWE_components_gateway_apiml_security_authorization_provider:-} \
+    -Dapiml.security.authorization.endpoint.enabled=${ZWE_components_gateway_apiml_security_authorization_endpoint_enabled:-false} \
+    -Dapiml.security.authorization.endpoint.url=${ZWE_components_gateway_apiml_security_authorization_endpoint_url:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port}/zss/api/v1/saf-auth"} \
+    -Dapiml.security.authorization.resourceClass=${ZWE_components_gateway_apiml_security_authorization_resourceClass:-ZOWE} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
-    -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true}  \
-    -Dserver.ssl.keyStore="${KEYSTORE}" \
-    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE:-PKCS12}" \
-    -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
-    -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
-    -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
-    -Dserver.ssl.trustStore="${TRUSTSTORE}" \
-    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
-    -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true}  \
+    -Dserver.ssl.keyStore="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}" \
+    -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
+    -Dserver.ssl.keyStorePassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+    -Dserver.ssl.keyAlias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}" \
+    -Dserver.ssl.keyPassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+    -Dserver.ssl.trustStore="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}" \
+    -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
+    -Dserver.ssl.trustStorePassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -Djava.library.path=${LIBPATH} \

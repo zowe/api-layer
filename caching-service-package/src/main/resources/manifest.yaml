@@ -21,8 +21,24 @@ commands:
   validate: bin/validate.sh
 # if we need to automatically tag file encoding on z/OS during installation
 autoEncoding:
-# tag all files
-- "."
+  # tag all files
+  - "."
 apimlServices:
   dynamic:
     - serviceId: cachingservice
+configs:
+  port: 7555
+  debug: false
+
+  storage:
+    evictionStrategy: reject
+    # can be inMemory, VSAM
+    mode: inMemory
+    size: 10000
+    vsam:
+      # this is required if storage mode is VSAM
+      name:
+
+  spring:
+    profiles:
+      active:

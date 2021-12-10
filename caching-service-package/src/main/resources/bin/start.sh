@@ -7,36 +7,48 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-# Copyright IBM Corporation 2019, 2020
+# Copyright IBM Corporation 2021
 ################################################################################
 
 # Variables required on shell:
-# - ZOWE_PREFIX
-# - DISCOVERY_PORT - the port the discovery service will use
-# - CATALOG_PORT - the port the api catalog service will use
-# - GATEWAY_PORT - the port the api gateway service will use
-# - VERIFY_CERTIFICATES - boolean saying if we accept only verified certificates
-# - DISCOVERY_PORT - The port the data sets server will use
-# - KEY_ALIAS
-# - KEYSTORE - The keystore to use for SSL certificates
-# - KEYSTORE_TYPE - The keystore type to use for SSL certificates
-# - KEYSTORE_PASSWORD - The password to access the keystore supplied by KEYSTORE
-# - KEY_ALIAS - The alias of the key within the keystore
-# - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
-# - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
+# - JAVA_HOME
+# - ZWE_STATIC_DEFINITIONS_DIR
+# - ZWE_zowe_certificate_keystore_alias - The default alias of the key within the keystore
+# - ZWE_zowe_certificate_keystore_file - The default keystore to use for SSL certificates
+# - ZWE_zowe_certificate_keystore_password - The default password to access the keystore supplied by KEYSTORE
+# - ZWE_zowe_certificate_truststore_file
+# - ZWE_zowe_job_prefix
 
-if [[ -z "${LAUNCH_COMPONENT}" ]]
-then
-  # component should be started from component home directory
-  LAUNCH_COMPONENT=$(pwd)/bin
-fi
+# Optional variables:
+# - LIBPATH
+# - LIBRARY_PATH
+# - ZWE_components_discovery_port - the port the discovery service will use
+# - ZWE_components_gateway_port - the port the api gateway service will use
+# - ZWE_components_gateway_server_ssl_enabled
+# - ZWE_configs_storage_evictionStrategy
+# - ZWE_configs_storage_mode
+# - ZWE_configs_storage_size
+# - ZWE_configs_storage_vsam_name
+# - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
+# - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
+# - ZWE_configs_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
+# - ZWE_configs_certificate_keystore_type - The keystore type to use for SSL certificates
+# - ZWE_configs_certificate_truststore_file
+# - ZWE_configs_certificate_truststore_type
+# - ZWE_configs_debug
+# - ZWE_configs_port - the port the caching service will use
+# - ZWE_configs_spring_profiles_active
+# - ZWE_DISCOVERY_SERVICES_LIST
+# - ZWE_haInstance_hostname
+# - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
+# - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 
-JAR_FILE="${LAUNCH_COMPONENT}/caching-service.jar"
+JAR_FILE="$(pwd)/bin/caching-service.jar"
 
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
-if [[ ! -z ${APIML_DEBUG_MODE_ENABLED} && ${APIML_DEBUG_MODE_ENABLED} == true ]]
+if [[ ! -z ${ZWE_configs_debug} && ${ZWE_configs_debug} == true ]]
 then
   export LOG_LEVEL="debug"
 fi
@@ -46,12 +58,24 @@ then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
-if [ ! -z ${ZWE_CACHING_SERVICE_VSAM_DATASET} ]
+if [ ! -z ${ZWE_configs_storage_vsam_name} ]
 then
-    VSAM_FILE_NAME=//\'${ZWE_CACHING_SERVICE_VSAM_DATASET}\'
+    VSAM_FILE_NAME=//\'${ZWE_configs_storage_vsam_name}\'
 fi
 
-EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
+# how to verifyCertificates
+verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | upper_case)
+if [ "${verify_certificates_config}" = "DISABLED" ]; then
+  verifySslCertificatesOfServices=false
+  nonStrictVerifySslCertificatesOfServices=false
+elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
+  verifySslCertificatesOfServices=false
+  nonStrictVerifySslCertificatesOfServices=true
+else
+  # default value is STRICT
+  verifySslCertificatesOfServices=true
+  nonStrictVerifySslCertificatesOfServices=true
+fi
 
 if [ `uname` = "OS/390" ]
 then
@@ -67,36 +91,38 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
+# NOTE: these are moved from below
+#   -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+#   -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
+
 CACHING_CODE=CS
-_BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java -Xms16m -Xmx512m \
    ${QUICK_START} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=/tmp \
   -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
   -Dspring.profiles.include=$LOG_LEVEL \
-  -Dapiml.service.port=${ZWE_CACHING_SERVICE_PORT:-7555} \
-  -Dapiml.service.hostname=${EXPLORER_HOST} \
-  -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_PORT:-7553}/eureka/"} \
-  -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
-  -Dapiml.service.customMetadata.apiml.gatewayPort=${GATEWAY_PORT:-7554} \
-  -Dapiml.service.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
-  -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
-  -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY:-reject} \
-  -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE:-10000} \
-  -Dcaching.storage.mode=${ZWE_CACHING_SERVICE_PERSISTENT:-inMemory} \
+  -Dapiml.service.port=${ZWE_configs_port:-7555} \
+  -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
+  -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"} \
+  -Dapiml.service.customMetadata.apiml.gatewayPort=${ZWE_components_gateway_port:-7554} \
+  -Dapiml.service.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
+  -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+  -Dcaching.storage.evictionStrategy=${ZWE_configs_storage_evictionStrategy:-reject} \
+  -Dcaching.storage.size=${ZWE_configs_storage_size:-10000} \
+  -Dcaching.storage.mode=${ZWE_configs_storage_mode:-inMemory} \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
-  -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
   -Dserver.address=0.0.0.0 \
-  -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true}  \
-  -Dserver.ssl.keyStore="${KEYSTORE}" \
-  -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE:-PKCS12}" \
-  -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
-  -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
-  -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
-  -Dserver.ssl.trustStore="${TRUSTSTORE}" \
-  -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
-  -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
+  -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true}  \
+  -Dserver.ssl.keyStore="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}" \
+  -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
+  -Dserver.ssl.keyStorePassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+  -Dserver.ssl.keyAlias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}" \
+  -Dserver.ssl.keyPassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+  -Dserver.ssl.trustStore="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}" \
+  -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
+  -Dserver.ssl.trustStorePassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -Djava.library.path=${LIBPATH} \
   -jar "${JAR_FILE}" &

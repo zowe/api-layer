@@ -21,8 +21,58 @@ commands:
   validate: bin/validate.sh
 # if we need to automatically tag file encoding on z/OS during installation
 autoEncoding:
-# tag all files
-- "."
+  # tag all files
+  - "."
 apimlServices:
   dynamic:
     - serviceId: gateway
+configs:
+  port: 7554
+  debug: false
+
+  apiml:
+    catalog:
+      serviceId: apicatalog
+    gateway:
+      timeoutMillis: 600000
+    security:
+      auth:
+        provider: zosmf
+        zosmf:
+          jwtAutoconfiguration: auto
+          serviceId: zosmf
+      authorization:
+        endpoint:
+          enabled: false
+          # default value is https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port}/zss/api/v1/saf-auth
+          url:
+        provider: zosmf
+        resourceClass: ZOWE
+        resourceNamePrefix: "APIML."
+      jwtInitializerTimeout: 5
+      x509:
+        enabled: false
+        # default value is https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port}/zss/api/v1/certificate/x509/map
+        externalMapperUrl:
+        # default value is Zowe runtime user defined in zowe.yaml "zowe.setup.security.users.zowe"
+        externalMapperUser:
+      zosmf:
+        applid: IZUDFLT
+    service:
+      allowEncodedSlashes: true
+      corsEnabled: false
+
+  server:
+    internal:
+      enabled: false
+      port: 10017
+      ssl:
+        enabled: true
+    maxConnectionsPerRoute: 100
+    maxTotalConnections: 1000
+    ssl:
+      enabled: true
+
+  spring:
+    profiles:
+      active:

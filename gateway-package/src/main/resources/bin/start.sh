@@ -7,31 +7,67 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-# Copyright IBM Corporation 2019, 2020
+# Copyright IBM Corporation 2021
 ################################################################################
 
 # Variables required on shell:
-# - ZOWE_PREFIX
-# - DISCOVERY_PORT - the port the discovery service will use
-# - CATALOG_PORT - the port the api catalog service will use
-# - GATEWAY_PORT - the port the api gateway service will use
-# - VERIFY_CERTIFICATES - boolean saying if we accept only verified certificates
-# - DISCOVERY_PORT - The port the data sets server will use
-# - KEY_ALIAS
-# - KEYSTORE - The keystore to use for SSL certificates
-# - KEYSTORE_TYPE - The keystore type to use for SSL certificates
-# - KEYSTORE_PASSWORD - The password to access the keystore supplied by KEYSTORE
-# - KEY_ALIAS - The alias of the key within the keystore
-# - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
-# - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
+# - JAVA_HOME
+# - ZWE_STATIC_DEFINITIONS_DIR
+# - ZWE_zowe_certificate_keystore_alias - The default alias of the key within the keystore
+# - ZWE_zowe_certificate_keystore_file - The default keystore to use for SSL certificates
+# - ZWE_zowe_certificate_keystore_password - The default password to access the keystore supplied by KEYSTORE
+# - ZWE_zowe_certificate_truststore_file
+# - ZWE_zowe_job_prefix
+# - ZWE_zowe_logDirectory
+# - ZWE_zowe_runtimeDirectory
+# - ZWE_zowe_workspaceDirectory
 
-if [[ -z "${LAUNCH_COMPONENT}" ]]
-then
-  # component should be started from component home directory
-  LAUNCH_COMPONENT=$(pwd)/bin
-fi
+# Optional variables:
+# - CMMN_LB
+# - LIBPATH
+# - LIBRARY_PATH
+# - ZWE_components_discovery_port - the port the discovery service will use
+# - ZWE_configs_apiml_catalog_serviceId
+# - ZWE_configs_apiml_gateway_timeoutMillis
+# - ZWE_configs_apiml_security_auth_provider
+# - ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration
+# - ZWE_configs_apiml_security_auth_zosmf_serviceId
+# - ZWE_configs_apiml_security_authorization_endpoint_enabled
+# - ZWE_configs_apiml_security_authorization_endpoint_url
+# - ZWE_configs_apiml_security_authorization_provider
+# - ZWE_configs_apiml_security_authorization_resourceClass
+# - ZWE_configs_apiml_security_authorization_resourceNamePrefix
+# - ZWE_configs_apiml_security_jwtInitializerTimeout
+# - ZWE_configs_apiml_security_x509_enabled
+# - ZWE_configs_apiml_security_x509_externalMapperUrl
+# - ZWE_configs_apiml_security_x509_externalMapperUser
+# - ZWE_configs_apiml_security_zosmf_applid
+# - ZWE_configs_apiml_service_allowEncodedSlashes - Allows encoded slashes on on URLs through gateway
+# - ZWE_configs_apiml_service_corsEnabled
+# - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
+# - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
+# - ZWE_configs_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
+# - ZWE_configs_certificate_keystore_type - The keystore type to use for SSL certificates
+# - ZWE_configs_certificate_truststore_file
+# - ZWE_configs_certificate_truststore_type
+# - ZWE_configs_debug
+# - ZWE_configs_port - the port the api gateway service will use
+# - ZWE_configs_server_internal_certificate_keystore_alias
+# - ZWE_configs_server_internal_certificate_keystore_file
+# - ZWE_configs_server_internal_enabled
+# - ZWE_configs_server_internal_port
+# - ZWE_configs_server_internal_ssl_enabled
+# - ZWE_configs_server_maxConnectionsPerRoute
+# - ZWE_configs_server_maxTotalConnections
+# - ZWE_configs_server_ssl_enabled
+# - ZWE_configs_spring_profiles_active
+# - ZWE_DISCOVERY_SERVICES_LIST
+# - ZWE_GATEWAY_SHARED_LIBS
+# - ZWE_haInstance_hostname
+# - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
+# - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 
-JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
+JAR_FILE="$(pwd)/bin/gateway-service-lite.jar"
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]
 then
@@ -48,28 +84,39 @@ fi
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
-if [[ ! -z ${APIML_DEBUG_MODE_ENABLED} && ${APIML_DEBUG_MODE_ENABLED} == true ]]
+if [[ ! -z ${ZWE_configs_debug} && ${ZWE_configs_debug} == true ]]
 then
   export LOG_LEVEL="debug"
 fi
 
-DIAG_MODE=${APIML_DIAG_MODE_ENABLED}
-if [ ! -z "$DIAG_MODE" ]
-then
-    LOG_LEVEL=$DIAG_MODE
+# FIXME: APIML_DIAG_MODE_ENABLED is not officially mentioned. We can still use it behind the scene,
+# or we can define configs.diagMode in manifest, then use "$ZWE_configs_diagMode".
+# DIAG_MODE=${APIML_DIAG_MODE_ENABLED}
+# if [ ! -z "$DIAG_MODE" ]
+# then
+#     LOG_LEVEL=$DIAG_MODE
+# fi
+
+# how to verifyCertificates
+verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | upper_case)
+if [ "${verify_certificates_config}" = "DISABLED" ]; then
+  verifySslCertificatesOfServices=false
+  nonStrictVerifySslCertificatesOfServices=false
+elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
+  verifySslCertificatesOfServices=false
+  nonStrictVerifySslCertificatesOfServices=true
+else
+  # default value is STRICT
+  verifySslCertificatesOfServices=true
+  nonStrictVerifySslCertificatesOfServices=true
 fi
 
-if [[ -z ${PKCS11_TOKEN_LABEL} && ! -z ${APIML_SECURITY_AUTH_JWTKEYALIAS} ]]
-then
-    PKCS11_TOKEN_LABEL=${APIML_SECURITY_AUTH_JWTKEYALIAS}
-fi
-
-if [[ -z ${APIML_GATEWAY_CATALOG_ID} ]]
+if [[ -z ${ZWE_configs_apiml_catalog_serviceId} ]]
 then
     APIML_GATEWAY_CATALOG_ID="apicatalog"
 fi
 
-if [ ${APIML_GATEWAY_CATALOG_ID} = "none" ]
+if [ ${ZWE_configs_apiml_catalog_serviceId} = "none" ]
 then
     APIML_GATEWAY_CATALOG_ID=""
 fi
@@ -87,9 +134,6 @@ then
     GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS},${GATEWAY_LOADER_PATH}
 fi
 
-EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
-GATEWAY_SERVICE_PORT=${GATEWAY_PORT:-7554}
-
 echo "Setting loader path: "${GATEWAY_LOADER_PATH}
 
 LIBPATH="$LIBPATH":"/lib"
@@ -102,59 +146,62 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
+# NOTE: these are moved from below
+#    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
+#    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+#    -Dapiml.security.auth.jwtKeyAlias=${PKCS11_TOKEN_LABEL:-jwtsecret} \
+
 GATEWAY_CODE=AG
-_BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Xms32m -Xmx256m \
     ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
-    -Dspring.profiles.active=${APIML_SPRING_PROFILES:-} \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dspring.profiles.include=$LOG_LEVEL \
-    -Dapiml.service.hostname=${EXPLORER_HOST} \
-    -Dapiml.service.port=${GATEWAY_SERVICE_PORT} \
-    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${EXPLORER_HOST}:${DISCOVERY_PORT:-7553}/eureka/"} \
-    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
-    -Dapiml.service.allowEncodedSlashes=${APIML_ALLOW_ENCODED_SLASHES:-true} \
-    -Dapiml.service.corsEnabled=${APIML_CORS_ENABLED:-false} \
+    -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
+    -Dapiml.service.port=${ZWE_configs_port:-7554} \
+    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"} \
+    -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
+    -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID:-apicatalog} \
-    -Dapiml.cache.storage.location=${WORKSPACE_DIR}/api-mediation/ \
-    -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
-    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
-    -Dapiml.gateway.timeoutMillis=${APIML_GATEWAY_TIMEOUT_MILLIS:-600000} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
-    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
-    -Dapiml.security.auth.zosmf.serviceId=${APIML_ZOSMF_ID:-zosmf} \
-    -Dapiml.security.auth.provider=${APIML_SECURITY_AUTH_PROVIDER:-zosmf} \
-    -Dapiml.security.auth.jwtKeyAlias=${PKCS11_TOKEN_LABEL:-jwtsecret} \
-    -Dapiml.zoweManifest=${ZOWE_MANIFEST} \
+    -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/ \
+    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.gateway.timeoutMillis=${ZWE_configs_apiml_gateway_timeoutMillis:-600000} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.auth.zosmf.serviceId=${ZWE_configs_apiml_security_auth_zosmf_serviceId:-zosmf} \
+    -Dapiml.security.auth.provider=${ZWE_configs_apiml_security_auth_provider:-zosmf} \
+    -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dserver.address=0.0.0.0 \
-    -Dserver.maxConnectionsPerRoute=${APIML_MAX_CONNECTIONS_PER_ROUTE:-100} \
-    -Dserver.maxTotalConnections=${APIML_MAX_TOTAL_CONNECTIONS:-1000} \
-    -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true} \
-    -Dserver.ssl.keyStore="${KEYSTORE}" \
-    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE:-PKCS12}" \
-    -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
-    -Dserver.ssl.keyAlias="${KEY_ALIAS}" \
-    -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
-    -Dserver.ssl.trustStore="${TRUSTSTORE}" \
-    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
-    -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
-    -Dserver.internal.enabled=${APIML_GATEWAY_INTERNAL_ENABLED:-false} \
-    -Dserver.internal.ssl.enabled=${APIML_SSL_ENABLED:-true} \
-    -Dserver.internal.port=${APIML_GATEWAY_INTERNAL_PORT:-10017} \
-    -Dserver.internal.ssl.keyAlias=${APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS:-localhost-multi} \
-    -Dserver.internal.ssl.keyStore=${APIML_GATEWAY_INTERNAL_SSL_KEYSTORE:-keystore/localhost/localhost-multi.keystore.p12} \
-    -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${APIML_SECURITY_ZOSMF_JWT_AUTOCONFIGURATION_MODE:-auto} \
-    -Dapiml.security.x509.enabled=${APIML_SECURITY_X509_ENABLED:-false} \
-    -Dapiml.security.x509.externalMapperUrl=${APIML_GATEWAY_EXTERNAL_MAPPER:-"https://${EXPLORER_HOST}:${GATEWAY_SERVICE_PORT}/zss/api/v1/certificate/x509/map"} \
-    -Dapiml.security.x509.externalMapperUser=${APIML_GATEWAY_MAPPER_USER:-ZWESVUSR} \
-    -Dapiml.security.authorization.provider=${APIML_SECURITY_AUTHORIZATION_PROVIDER:-} \
-    -Dapiml.security.authorization.endpoint.enabled=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_ENABLED:-false} \
-    -Dapiml.security.authorization.endpoint.url=${APIML_SECURITY_AUTHORIZATION_ENDPOINT_URL:-"https://${EXPLORER_HOST}:${GATEWAY_SERVICE_PORT}/zss/api/v1/saf-auth"} \
-    -Dapiml.security.authorization.resourceClass=${RESOURCE_CLASS:-ZOWE} \
-    -Dapiml.security.authorization.resourceNamePrefix=${RESOURCE_NAME_PREFIX:-APIML.} \
-    -Dapiml.security.zosmf.applid=${APIML_SECURITY_ZOSMF_APPLID:-IZUDFLT} \
+    -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
+    -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \
+    -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
+    -Dserver.ssl.keyStore="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}" \
+    -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
+    -Dserver.ssl.keyStorePassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+    -Dserver.ssl.keyAlias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}" \
+    -Dserver.ssl.keyPassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+    -Dserver.ssl.trustStore="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}" \
+    -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
+    -Dserver.ssl.trustStorePassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+    -Dserver.internal.enabled=${ZWE_configs_server_internal_enabled:-false} \
+    -Dserver.internal.ssl.enabled=${ZWE_configs_server_internal_ssl_enabled:-true} \
+    -Dserver.internal.port=${ZWE_configs_server_internal_port:-10017} \
+    -Dserver.internal.ssl.keyAlias=${ZWE_configs_server_internal_certificate_keystore_alias:-localhost-multi} \
+    -Dserver.internal.ssl.keyStore=${ZWE_configs_server_internal_certificate_keystore_file:-keystore/localhost/localhost-multi.keystore.p12} \
+    -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration:-auto} \
+    -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-5} \
+    -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
+    -Dapiml.security.x509.externalMapperUrl=${ZWE_configs_apiml_security_x509_externalMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/certificate/x509/map"} \
+    -Dapiml.security.x509.externalMapperUser=${ZWE_configs_apiml_security_x509_externalMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}} \
+    -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-} \
+    -Dapiml.security.authorization.endpoint.enabled=${ZWE_configs_apiml_security_authorization_endpoint_enabled:-false} \
+    -Dapiml.security.authorization.endpoint.url=${ZWE_configs_apiml_security_authorization_endpoint_url:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/saf-auth"} \
+    -Dapiml.security.authorization.resourceClass=${ZWE_configs_apiml_security_authorization_resourceClass:-ZOWE} \
+    -Dapiml.security.authorization.resourceNamePrefix=${ZWE_configs_apiml_security_authorization_resourceNamePrefix:-APIML.} \
+    -Dapiml.security.zosmf.applid=${ZWE_configs_apiml_security_zosmf_applid:-IZUDFLT} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
