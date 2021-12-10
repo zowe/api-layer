@@ -68,6 +68,8 @@ configs:
       port: 10017
       ssl:
         enabled: true
+        # you can customize certificate for internal usage
+        # certificate:
     maxConnectionsPerRoute: 100
     maxTotalConnections: 1000
     ssl:

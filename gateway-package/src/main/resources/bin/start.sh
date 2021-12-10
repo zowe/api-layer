@@ -52,8 +52,8 @@
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_debug
 # - ZWE_configs_port - the port the api gateway service will use
-# - ZWE_configs_server_internal_certificate_keystore_alias
-# - ZWE_configs_server_internal_certificate_keystore_file
+# - ZWE_configs_server_internal_ssl_certificate_keystore_alias
+# - ZWE_configs_server_internal_ssl_certificate_keystore_file
 # - ZWE_configs_server_internal_enabled
 # - ZWE_configs_server_internal_port
 # - ZWE_configs_server_internal_ssl_enabled
@@ -189,8 +189,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dserver.internal.enabled=${ZWE_configs_server_internal_enabled:-false} \
     -Dserver.internal.ssl.enabled=${ZWE_configs_server_internal_ssl_enabled:-true} \
     -Dserver.internal.port=${ZWE_configs_server_internal_port:-10017} \
-    -Dserver.internal.ssl.keyAlias=${ZWE_configs_server_internal_certificate_keystore_alias:-localhost-multi} \
-    -Dserver.internal.ssl.keyStore=${ZWE_configs_server_internal_certificate_keystore_file:-keystore/localhost/localhost-multi.keystore.p12} \
+    -Dserver.internal.ssl.keyAlias=${ZWE_configs_server_internal_ssl_certificate_keystore_alias:-localhost-multi} \
+    -Dserver.internal.ssl.keyStore=${ZWE_configs_server_internal_ssl_certificate_keystore_file:-keystore/localhost/localhost-multi.keystore.p12} \
     -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration:-auto} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-5} \
     -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
