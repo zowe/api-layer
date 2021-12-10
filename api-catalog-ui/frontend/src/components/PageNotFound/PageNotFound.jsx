@@ -1,6 +1,8 @@
 import { Component } from 'react';
-import { Button, Text } from 'mineral-ui';
-import IconChevronLeft from 'mineral-ui-icons/IconChevronLeft';
+import { IconButton, Typography } from '@material-ui/core';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+
+import './PageNotFound.css';
 
 export default class PageNotFound extends Component {
     handleGoToHome = () => {
@@ -9,20 +11,23 @@ export default class PageNotFound extends Component {
     };
 
     render() {
-        const iconBack = <IconChevronLeft />;
+        const iconBack = <ChevronLeftIcon />;
         return (
             <div>
-                <Text element="h1">Page Not Found</Text>
+                <br />
+                <Typography id="label" variant="h5">
+                    Page Not Found
+                </Typography>
                 <div>
-                    <Button
-                        primary
+                    <IconButton
+                        id="go-back-button"
                         data-testid="go-home-button"
                         onClick={this.handleGoToHome}
                         size="medium"
-                        iconStart={iconBack}
                     >
+                        {iconBack}
                         Go to Dashboard
-                    </Button>
+                    </IconButton>
                 </div>
             </div>
         );

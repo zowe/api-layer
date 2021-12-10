@@ -50,10 +50,27 @@
     left: 0;
 }
 
+.MuiSvgIcon-root {
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.MuiTypography-root {
+    margin: 5px;
+    margin-bottom: 11px;
+}
+
+h6.MuiTypography-root.MuiTypography-subtitle1 {
+    margin-bottom: 11px;
+    margin: 1px;
+}
+
 .grid-tile-sso {
     position: absolute;
     right: 0;
     bottom: 0;
+    font-size: 16px;
+    margin-right: 12px;
     font-weight: 700;
 }
 
