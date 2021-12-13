@@ -55,7 +55,10 @@ jobs:
                   key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             - name: Release with Gradle
-              run: ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=PR-1963
+              run: |
+                  BRANCH_NAME=PR-1963
+                  sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
+                  ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=$BRANCH_NAME
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
