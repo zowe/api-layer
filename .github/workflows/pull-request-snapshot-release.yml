@@ -2,12 +2,17 @@
 
 name: Release new version for specific pull request (snapshot)
 
+# Uncomment when merging ${{ github.event.inputs.pull_request }}
+#on:
+#    workflow_dispatch:
+#        inputs:
+#            pull_request:
+#                description: 'The pull request snapshot that is going to be released'
+#                required: true
+
 on:
-    workflow_dispatch:
-        inputs:
-            pull_request:
-                description: 'The pull request snapshot that is going to be released'
-                required: true
+    push:
+        branches: [ apiml/publish_pr_snapshots ]
 
 env:
     IMAGE_BASE_DIR: ./containers
@@ -50,7 +55,7 @@ jobs:
                   key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
 
             - name: Release with Gradle
-              run: ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=${{ github.event.inputs.pull_request }}
+              run: ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=PR-1947
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
