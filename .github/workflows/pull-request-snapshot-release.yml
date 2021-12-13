@@ -2,17 +2,12 @@
 
 name: Release new version for specific pull request (snapshot)
 
-# Uncomment when merging ${{ github.event.inputs.pull_request }}
-#on:
-#    workflow_dispatch:
-#        inputs:
-#            pull_request:
-#                description: 'The pull request snapshot that is going to be released'
-#                required: true
-
 on:
-    push:
-        branches: [ apiml/publish_pr_snapshots ]
+    workflow_dispatch:
+        inputs:
+            pull_request:
+                description: 'The pull request snapshot that is going to be released (i.e PR-XXXX)'
+                required: true
 
 env:
     IMAGE_BASE_DIR: ./containers
@@ -56,7 +51,7 @@ jobs:
 
             - name: Release with Gradle
               run: |
-                  BRANCH_NAME=PR-1963
+                  BRANCH_NAME=${{ github.event.inputs.pull_request }}
                   sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
                   ./gradlew build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=$BRANCH_NAME
               env:
