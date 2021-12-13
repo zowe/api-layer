@@ -9,7 +9,7 @@ ext.javaProjectsWithUnitTests = [
     'apiml-utility',
     'caching-service',
     'gateway-service',
-    'mock-zosmf',
+    'mock-services',
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
     'onboarding-enabler-java-sample-app',
