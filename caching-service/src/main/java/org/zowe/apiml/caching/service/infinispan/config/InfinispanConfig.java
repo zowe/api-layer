@@ -21,12 +21,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.ResourceUtils;
+import org.springframework.core.io.ResourceLoader;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -37,25 +36,32 @@ public class InfinispanConfig {
 
     @Value("${caching.storage.infinispan.initialHosts}")
     private String initialHosts;
+    @Value("${caching.storage.infinispan.persistence.dataLocation}")
+    private String dataLocation;
+
 
     @Bean
-    DefaultCacheManager cacheManager() {
+    DefaultCacheManager cacheManager(ResourceLoader resourceLoader) {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         ConfigurationBuilderHolder holder;
-        try (InputStream configurationStream = new FileInputStream(ResourceUtils.getFile("classpath:infinispan.xml"))) {
+
+        try (InputStream configurationStream = resourceLoader.getResource(
+            "classpath:infinispan.xml").getInputStream()) {
             holder = new ParserRegistry().parse(configurationStream, null, MediaType.APPLICATION_XML);
         } catch (IOException e) {
             throw new InfinispanConfigException("Can't read configuration file", e);
         }
+
         DefaultCacheManager cacheManager = new DefaultCacheManager(holder, true);
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.clustering().cacheMode(CacheMode.DIST_SYNC)
             .encoding().mediaType("application/x-jboss-marshalling");
-//        builder.persistence().passivation(true)
-//            .addSoftIndexFileStore()
-//            .shared(false)
-//            .dataLocation("data").indexLocation("index");
+
+        builder.persistence().passivation(true)
+            .addSoftIndexFileStore()
+            .shared(false)
+            .dataLocation(dataLocation).indexLocation("index");
         cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache("myCache", builder.build());

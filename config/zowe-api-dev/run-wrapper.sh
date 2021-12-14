@@ -7,7 +7,7 @@ export PATH=$PATH:$JAVA_HOME/bin
 # sorted alphabetically for easier maintenance where possible
 export APIML_ALLOW_ENCODED_SLASHES=true
 export APIML_CORS_ENABLED=true
-export APIML_DEBUG_MODE_ENABLED=false
+export APIML_DEBUG_MODE_ENABLED=true
 export APIML_DIAG_MODE_ENABLED=false
 export APIML_GATEWAY_CATALOG_ID=apicatalog
 #export APIML_GATEWAY_EXTERNAL_MAPPER
@@ -32,7 +32,7 @@ export APIML_SECURITY_ZOSMF_APPLID=IZUDFLT
 #export APIML_SPRING_PROFILES:-https THIS NEEDS CHANGING ${APIML_SPRING_PROFILES:-https}
 #export APIML_SSL_ENABLED:-true
 export APIML_ZOSMF_ID=zosmf
-export CACHING_CODE=CS
+export CACHING_CODE=IC
 export CATALOG_CODE=AC
 export CATALOG_PORT=$((basePort+2))
 #export CMMN_LB=
@@ -66,7 +66,7 @@ export ZOWE_IP_ADDRESS=0.0.0.0
 export ZOWE_MANIFEST=$dir/zowe-manifest.json
 export ZOWE_PREFIX=ZOWEJ
 export ZWE_CACHING_EVICTION_STRATEGY=reject
-export ZWE_CACHING_SERVICE_PERSISTENT=inMemory
+export ZWE_CACHING_SERVICE_PERSISTENT=infinispan
 export ZWE_CACHING_SERVICE_PORT=$((basePort+4))
 #export ZWE_CACHING_SERVICE_VSAM_DATASET
 #export ZWE_CACHING_STORAGE_SIZE

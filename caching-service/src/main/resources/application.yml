@@ -18,6 +18,8 @@ caching:
                     - sentinelpassword@localhost:26381
         infinispan:
             initialHosts: localhost[7098]
+            persistence:
+                dataLocation: data
 logging:
     level:
         ROOT: WARN
