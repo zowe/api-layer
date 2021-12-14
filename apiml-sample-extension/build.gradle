@@ -28,6 +28,9 @@ dependencies {
 
 }
 
+jar {
+    enabled true
+}
 
 publishing {
     publications {
@@ -37,4 +40,3 @@ publishing {
     }
 }
 
-jar {  enabled = true }
