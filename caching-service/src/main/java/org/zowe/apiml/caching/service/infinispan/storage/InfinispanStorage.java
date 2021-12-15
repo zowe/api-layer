@@ -27,7 +27,7 @@ public class InfinispanStorage implements Storage {
     private final Cache<String, Map<String, KeyValue>> cache;
 
     public InfinispanStorage(DefaultCacheManager defaultCacheManager) {
-        cache = defaultCacheManager.getCache("myCache");
+        this.cache = defaultCacheManager.getCache("myCache");
     }
 
     @Override

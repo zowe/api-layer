@@ -70,7 +70,10 @@ public class InfinispanConfig {
         DefaultCacheManager cacheManager = new DefaultCacheManager(holder, true);
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.clustering().cacheMode(CacheMode.DIST_SYNC)
+        builder.clustering().cacheMode(CacheMode.DIST_SYNC).hash()
+            .numOwners(2)
+            .numSegments(100)
+            .capacityFactor(2)
             .encoding().mediaType("application/x-jboss-marshalling");
 
         builder.persistence().passivation(true)
