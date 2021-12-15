@@ -4,7 +4,7 @@ services:
       title: Statically Defined API Service  # Title of the service in the API catalog
       description: Mock ZOSMF service  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://mock-zosmf:10013/  # scheme://hostname:port/contextPath
+          - https://mock-services:10013/  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       routes:
           - gatewayUrl: api # [api/ui/ws]/v{majorVersion}
