@@ -72,7 +72,7 @@ jobs:
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "localhost[7098]"
                     CACHING_STORAGE_MODE: "infinispan"
                     APIML_SERVICE_PORT: "10022"
-                    JGROUPS_BIND_ADDRESS: "localhost"
+                    JGROUPS_BIND_ADDRESS: "caching-service"
 
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
@@ -83,7 +83,8 @@ jobs:
                     CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "localhost[7099]"
                     CACHING_STORAGE_MODE: "infinispan"
-                    JGROUPS_BIND_ADDRESS: "localhost"
+                    JGROUPS_BIND_ADDRESS: "caching-service-2"
+                    APIML_SERVICE_HOSTNAME: "caching-service-2"
 
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
