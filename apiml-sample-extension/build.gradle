@@ -36,7 +36,7 @@ jar {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenJavaLib(MavenPublication) {
             artifact jar
         }
     }
