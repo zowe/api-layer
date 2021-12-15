@@ -38,11 +38,26 @@ public class InfinispanConfig {
     private String initialHosts;
     @Value("${caching.storage.infinispan.persistence.dataLocation}")
     private String dataLocation;
+    @Value("${server.ssl.keyStoreType}")
+    private String keyStoreType;
+    @Value("${server.ssl.keyStore}")
+    private String keyStore;
+    @Value("${server.ssl.keyStorePassword}")
+    private String keyStorePass;
+    @Value("${jgroups.bind.port}")
+    private String port;
+    @Value("${jgroups.bind.address}")
+    private String address;
 
 
     @Bean
     DefaultCacheManager cacheManager(ResourceLoader resourceLoader) {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
+        System.setProperty("jgroups.bind.port", port);
+        System.setProperty("jgroups.bind.address", address);
+        System.setProperty("server.ssl.keyStoreType", keyStoreType);
+        System.setProperty("server.ssl.keyStore", keyStore);
+        System.setProperty("server.ssl.keyStorePassword", keyStorePass);
         ConfigurationBuilderHolder holder;
 
         try (InputStream configurationStream = resourceLoader.getResource(

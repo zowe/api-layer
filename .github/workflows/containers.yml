@@ -66,6 +66,23 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
                 env:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
+                    JGROUPS_BIND_PORT: "7099"
+                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
+                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "localhost[7098]"
+                    CACHING_STORAGE_MODE: "infinispan"
+                    APIML_SERVICE_PORT: "10022"
+
+            caching-service-2:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
+                    JGROUPS_BIND_PORT: "7098"
+                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
+                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "localhost[7099]"
+                    CACHING_STORAGE_MODE: "infinispan"
+
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
             discovery-service:
@@ -113,7 +130,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: ContainerCITestsWithRedis
+                    name: CITestsWithInfinispan
                     path: |
                         integration-tests/build/reports/**
             -   name: Cleanup Gradle Cache
