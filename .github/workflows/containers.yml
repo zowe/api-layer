@@ -69,7 +69,7 @@ jobs:
                     JGROUPS_BIND_PORT: "7099"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
                     CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7098]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service-2[7098]"
                     CACHING_STORAGE_MODE: "infinispan"
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
