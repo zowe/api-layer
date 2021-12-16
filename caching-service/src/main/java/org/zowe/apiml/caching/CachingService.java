@@ -34,7 +34,7 @@ public class CachingService implements ApplicationListener<ApplicationReadyEvent
         SpringApplication app = new SpringApplication(CachingService.class);
         app.setLogStartupInfo(false);
 
-            app.run(args);
+        app.run(args);
 
     }
 
