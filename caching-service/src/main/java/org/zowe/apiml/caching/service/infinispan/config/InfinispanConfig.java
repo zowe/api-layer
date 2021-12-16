@@ -70,10 +70,7 @@ public class InfinispanConfig {
         DefaultCacheManager cacheManager = new DefaultCacheManager(holder, true);
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.clustering().cacheMode(CacheMode.DIST_SYNC).hash()
-            .numOwners(2)
-            .numSegments(100)
-            .capacityFactor(2)
+        builder.clustering().cacheMode(CacheMode.DIST_SYNC)
             .encoding().mediaType("application/x-jboss-marshalling");
 
         builder.persistence().passivation(true)
@@ -82,14 +79,14 @@ public class InfinispanConfig {
             .dataLocation(dataLocation).indexLocation("index");
         cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-            .getOrCreateCache("myCache", builder.build());
+            .getOrCreateCache("zoweCache", builder.build());
         return cacheManager;
     }
 
 
     @Bean
     public Storage storage(DefaultCacheManager cacheManager) {
-        return new InfinispanStorage(cacheManager.getCache("myCache"));
+        return new InfinispanStorage(cacheManager.getCache("zoweCache"));
     }
 
 }

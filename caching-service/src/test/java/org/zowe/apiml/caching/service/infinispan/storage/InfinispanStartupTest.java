@@ -25,6 +25,6 @@ class InfinispanStartupTest {
 
     @Test
     void whenCacheIsRequested_thenReturnNotNull() {
-        assertNotNull(cacheManager.getCache("myCache"));
+        assertNotNull(cacheManager.getCache("zoweCache"));
     }
 }

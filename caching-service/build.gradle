@@ -48,8 +48,6 @@ gitProperties {
 }
 
 dependencies {
-    implementation(group: 'org.infinispan', name: 'infinispan-core', version: '13.0.2.Final')
-    implementation group: 'org.infinispan', name: 'infinispan-jboss-marshalling', version: '13.0.2.Final'
 
     implementation project(':common-service-core')
     implementation project(':apiml-tomcat-common')
@@ -58,6 +56,8 @@ dependencies {
     implementation libraries.jjwt
     implementation libraries.jjwt_impl
     implementation libraries.jjwt_jackson
+    implementation libraries.infinispan_core
+    implementation libraries.infinispan_jboss_marshalling
 
     implementation libraries.springFox
     implementation libraries.spring_boot_starter
