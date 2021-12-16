@@ -19,4 +19,5 @@ build:
 # The following block contains all the extensions directory path
 # (or file path) that will be included in the API ML
 gatewaySharedLibs:
-    - ../../../../apiml-sample-extension/build/libs/
+    - ../../../build/distributions/apiml-sample-extension-package/bin/apiml-sample-extension-*.jar
+
