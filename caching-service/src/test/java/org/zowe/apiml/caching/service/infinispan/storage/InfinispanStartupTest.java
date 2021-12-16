@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(properties = {"caching.storage.mode=infinispan",
     "jgroups.bind.port=7099", "jgroups.bind.address=localhost", "apiml.enabled=false"})
-public class InfinispanStartupTest {
+class InfinispanStartupTest {
 
     @Autowired
     DefaultCacheManager cacheManager;
