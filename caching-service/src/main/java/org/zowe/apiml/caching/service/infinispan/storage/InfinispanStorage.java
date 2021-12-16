@@ -11,7 +11,6 @@ package org.zowe.apiml.caching.service.infinispan.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.infinispan.Cache;
-import org.infinispan.manager.DefaultCacheManager;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -26,21 +25,21 @@ public class InfinispanStorage implements Storage {
 
     private final Cache<String, Map<String, KeyValue>> cache;
 
-    public InfinispanStorage(DefaultCacheManager defaultCacheManager) {
-        this.cache = defaultCacheManager.getCache("myCache");
+    public InfinispanStorage(Cache<String, Map<String, KeyValue>> cache) {
+        this.cache = cache;
     }
 
     @Override
     public KeyValue create(String serviceId, KeyValue toCreate) {
         log.info("Writing record: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
 
-        Map<String, KeyValue> storage = cache.computeIfAbsent(serviceId, k -> new HashMap<>());
+        Map<String, KeyValue> serviceCache = cache.computeIfAbsent(serviceId, k -> new HashMap<>());
 
-        if (storage.containsKey(toCreate.getKey())) {
+        if (serviceCache.containsKey(toCreate.getKey())) {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
         }
-        KeyValue entry = storage.put(toCreate.getKey(), toCreate);
-        cache.put(serviceId, storage);
+        KeyValue entry = serviceCache.put(toCreate.getKey(), toCreate);
+        cache.put(serviceId, serviceCache);
         return entry;
     }
 

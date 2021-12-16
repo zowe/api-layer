@@ -84,14 +84,12 @@ public class InfinispanConfig {
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache("myCache", builder.build());
         return cacheManager;
-
-
     }
 
 
     @Bean
     public Storage storage(DefaultCacheManager cacheManager) {
-        return new InfinispanStorage(cacheManager);
+        return new InfinispanStorage(cacheManager.getCache("myCache"));
     }
 
 }
