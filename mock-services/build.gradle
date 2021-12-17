@@ -22,7 +22,7 @@ apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
 def debugPort = 5123
-def componentName = "mock-zosmf"
+def componentName = "mock-services"
 
 setJib(componentName, debugPort)
 

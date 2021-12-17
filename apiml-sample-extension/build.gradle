@@ -28,13 +28,17 @@ dependencies {
 
 }
 
+jar {
+    enabled true
+    baseName = "apiml-sample-extension"
+    archiveName = "${baseName}.jar"
+}
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenJavaLib(MavenPublication) {
             artifact jar
         }
     }
 }
 
-jar {  enabled = true }

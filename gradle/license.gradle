@@ -28,7 +28,7 @@ ext.projectsNeedLicense = [
     'onboarding-enabler-micronaut-sample-app',
     'onboarding-enabler-nodejs',
     'zaas-client',
-    'mock-zosmf',
+    'mock-services',
     'apiml-tomcat-common',
     'apiml-sample-extension'
 ]
