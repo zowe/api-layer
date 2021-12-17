@@ -45,6 +45,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public KeyValue read(String serviceId, String key) {
+        log.info("Reading record for service {} under key {}", serviceId, key);
         Map<String, KeyValue> serviceCache = cache.get(serviceId);
         if (serviceCache != null && serviceCache.containsKey(key)) {
             return serviceCache.get(key);
@@ -55,6 +56,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public KeyValue update(String serviceId, KeyValue toUpdate) {
+        log.info("Updating record for service {} under key {}", serviceId, toUpdate);
         Map<String, KeyValue> serviceCache = cache.get(serviceId);
         if (serviceCache == null || !serviceCache.containsKey(toUpdate.getKey())) {
             throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
@@ -67,6 +69,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public KeyValue delete(String serviceId, String toDelete) {
+        log.info("Removing record for service {} under key {}", serviceId, toDelete);
         Map<String, KeyValue> serviceCache = cache.get(serviceId);
         KeyValue entry;
         if (serviceCache.containsKey(toDelete)) {
@@ -80,11 +83,13 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public Map<String, KeyValue> readForService(String serviceId) {
+        log.info("Reading all records for service {} ", serviceId);
         return cache.get(serviceId);
     }
 
     @Override
     public void deleteForService(String serviceId) {
+        log.info("Removing all records for service {} ", serviceId);
         cache.remove(serviceId);
     }
 }
