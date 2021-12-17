@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.client.api;
+package org.zowe.apiml.gateway.api;
 
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
