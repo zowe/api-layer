@@ -1271,4 +1271,95 @@ jobs:
                     rm -f ~/.gradle/caches/modules-2/gc.properties
                     rm -rf ~/.gradle/caches/build-cache-1
 
+    CITestsWithInfinispan:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 10
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
+                    JGROUPS_BIND_PORT: "7099"
+                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
+                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service-2[7098]"
+                    CACHING_STORAGE_MODE: "infinispan"
+                    APIML_SERVICE_PORT: "10022"
+                    JGROUPS_BIND_ADDRESS: "caching-service"
+
+            caching-service-2:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
+                    JGROUPS_BIND_PORT: "7098"
+                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
+                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7099]"
+                    CACHING_STORAGE_MODE: "infinispan"
+                    JGROUPS_BIND_ADDRESS: "caching-service-2"
+                    APIML_SERVICE_HOSTNAME: "caching-service-2"
+
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.event.pull_request.number || 'latest' }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.event.pull_request.number || 'latest' }}
+                volumes:
+                    - /api-defs:/api-defs
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.event.pull_request.number || 'latest' }}
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
+                env:
+                    ZOSMF_APPLIEDAPARS: AuthenticateApar
+
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: CITestsWithInfinispan
+                    path: |
+                        integration-tests/build/reports/**
+            -   name: Cleanup Gradle Cache
+                run: |
+                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                    rm -f ~/.gradle/caches/modules-2/gc.properties
+                    rm -rf ~/.gradle/caches/build-cache-1
+
 
