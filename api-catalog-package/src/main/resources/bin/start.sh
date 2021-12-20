@@ -45,9 +45,15 @@
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
-
-JAR_FILE="$(pwd)/bin/api-catalog-services-lite.jar"
+if [[ -n ${LAUNCH_COMPONENT} ]]
+then
+    JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
+else
+    JAR_FILE="$(pwd)/api-catalog-services-lite.jar"
+fi
+echo "jar file: "${JAR_FILE}
 # script assumes it's in the catalog component directory and common_lib needs to be relative path
+
 if [[ -z ${CMMN_LB} ]]
 then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
@@ -146,7 +152,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Dserver.ssl.keyPassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
     -Dserver.ssl.trustStore="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}" \
     -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
-    -Dserver.ssl.trustStorePassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+    -Dserver.ssl.trustStorePassword="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -Djava.library.path=${LIBPATH} \

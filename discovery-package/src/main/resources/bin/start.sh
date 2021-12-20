@@ -38,8 +38,14 @@
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
+if [[ -n ${LAUNCH_COMPONENT} ]]
+then
+    JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
+else
+    JAR_FILE="$(pwd)/discovery-service-lite.jar"
+fi
 
-JAR_FILE="$(pwd)/bin/discovery-service-lite.jar"
+echo "jar file: "${JAR_FILE}
 # script assumes it's in the discovery component directory and common_lib needs to be relative path
 if [[ -z ${CMMN_LB} ]]
 then
@@ -133,7 +139,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUI
     -Dserver.ssl.keyPassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
     -Dserver.ssl.trustStore="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}" \
     -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
-    -Dserver.ssl.trustStorePassword="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}" \
+    -Dserver.ssl.trustStorePassword="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${COMMON_LIB} \
     -Djava.library.path=${LIBPATH} \
