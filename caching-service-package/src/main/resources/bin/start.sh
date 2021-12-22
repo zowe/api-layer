@@ -42,7 +42,7 @@
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
-if [[ -n ${LAUNCH_COMPONENT} ]]
+if [ ${LAUNCH_COMPONENT} ]
 then
     JAR_FILE="${LAUNCH_COMPONENT}/caching-service.jar"
 else
