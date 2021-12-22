@@ -73,7 +73,6 @@ then
 else
     JAR_FILE="$(pwd)/bin/gateway-service-lite.jar"
 fi
-echo "launch component"${LAUNCH_COMPONENT}
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
 
