@@ -62,6 +62,9 @@ public class RunningService {
         Map<String, String> envVariables = builder1.environment();
         envVariables.putAll(env);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
+        for (Map.Entry<String, String> entry : envVariables.entrySet()) {
+            log.info("Key: {} ,value: {}", entry.getKey(), entry.getValue());
+        }
         File binFolder = new File("../");
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         builder1.directory(binFolder);

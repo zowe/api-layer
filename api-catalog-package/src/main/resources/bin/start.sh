@@ -49,7 +49,7 @@ if [[ -n ${LAUNCH_COMPONENT} ]]
 then
     JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
 else
-    JAR_FILE="$(pwd)/api-catalog-services-lite.jar"
+    JAR_FILE="$(pwd)/bin/api-catalog-services-lite.jar"
 fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the catalog component directory and common_lib needs to be relative path

@@ -46,7 +46,7 @@ if [[ -n ${LAUNCH_COMPONENT} ]]
 then
     JAR_FILE="${LAUNCH_COMPONENT}/caching-service.jar"
 else
-    JAR_FILE="$(pwd)/caching-service.jar"
+    JAR_FILE="$(pwd)/bin/caching-service.jar"
 fi
 
 echo "jar file: "${JAR_FILE}

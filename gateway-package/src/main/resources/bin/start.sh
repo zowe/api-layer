@@ -71,8 +71,9 @@ if [[ -n ${LAUNCH_COMPONENT} ]]
 then
     JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
 else
-    JAR_FILE="$(pwd)/gateway-service-lite.jar"
+    JAR_FILE="$(pwd)/bin/gateway-service-lite.jar"
 fi
+echo "launch component"${LAUNCH_COMPONENT}
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
 

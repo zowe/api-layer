@@ -42,7 +42,7 @@ if [[ -n ${LAUNCH_COMPONENT} ]]
 then
     JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
 else
-    JAR_FILE="$(pwd)/discovery-service-lite.jar"
+    JAR_FILE="$(pwd)/bin/discovery-service-lite.jar"
 fi
 
 echo "jar file: "${JAR_FILE}
