@@ -7,15 +7,8 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-# Copyright IBM Corporation 2019, 2020
+# Copyright IBM Corporation 2021
 ################################################################################
 
-INITIAL_ERRORS_FOUND=$ERRORS_FOUND
-
-# Source main utils script
-. ${ROOT_DIR}/bin/utils/utils.sh
-
-validate_port_is_available ${ZWE_CACHING_SERVICE_PORT}
-validate_variables_are_set "KEYSTORE,KEYSTORE_PASSWORD,KEY_ALIAS,VERIFY_CERTIFICATES"
-
-return $(($ERRORS_FOUND-$INITIAL_ERRORS_FOUND))
+print_formatted_debug "ZWELS" "caching-service,bin/validate.sh:${LINENO}" "- Checking Caching Service port ${ZWE_configs_port}"
+validate_this "is_port_available \"${ZWE_configs_port}\" 2>&1" "caching-service,bin/validate.sh:${LINENO}"
