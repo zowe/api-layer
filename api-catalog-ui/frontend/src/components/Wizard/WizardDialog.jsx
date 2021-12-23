@@ -9,7 +9,7 @@
  */
 import * as YAML from 'yaml';
 import { Component } from 'react';
-import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
+import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, IconButton } from '@material-ui/core';
 import './wizard.css';
 import WizardNavigationContainer from './WizardComponents/WizardNavigationContainer';
 
@@ -89,24 +89,22 @@ export default class WizardDialog extends Component {
         const disable = selectedCategory !== Object.keys(navsObj).length;
         return (
             <div className="dialog">
-                <Dialog id="wizard-dialog" isOpen={wizardIsOpen} size={size} closeOnClickOutside={false}>
-                    <DialogHeader>
-                        <DialogTitle>Onboard a New API Using {enablerName}</DialogTitle>
-                    </DialogHeader>
-                    <DialogBody>
-                        <Text>This wizard will guide you through creating a correct YAML for your application.</Text>
+                <Dialog id="wizard-dialog" open={wizardIsOpen} size={size}>
+                    <DialogTitle>Onboard a New API Using {enablerName}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            This wizard will guide you through creating a correct YAML for your application.
+                        </DialogContentText>
                         <WizardNavigationContainer />
-                    </DialogBody>
-                    <DialogFooter className="dialog-footer">
-                        <DialogActions>
-                            <Button size="medium" onClick={this.closeWizard}>
-                                Cancel
-                            </Button>
-                            <Button size="medium" onClick={this.nextSave} disabled={disable}>
-                                {this.renderDoneButtonText()}
-                            </Button>
-                        </DialogActions>
-                    </DialogFooter>
+                    </DialogContent>
+                    <DialogActions>
+                        <IconButton size="medium" onClick={this.closeWizard}>
+                            Cancel
+                        </IconButton>
+                        <IconButton size="medium" onClick={this.nextSave} disabled={disable}>
+                            {this.renderDoneButtonText()}
+                        </IconButton>
+                    </DialogActions>
                 </Dialog>
             </div>
         );

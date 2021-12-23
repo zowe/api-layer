@@ -8,9 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component } from 'react';
-import { Checkbox, FormField, Select, Tooltip } from 'mineral-ui';
+import { FormField, Select, Tooltip } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
-import Button from 'mineral-ui/Button';
+import { Button, Checkbox } from '@material-ui/core';
 import { IconDelete } from 'mineral-ui-icons';
 
 class WizardInputs extends Component {
