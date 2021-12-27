@@ -10,8 +10,8 @@
 import { Component } from 'react';
 import { FormField, Select, Tooltip } from 'mineral-ui';
 import TextInput from 'mineral-ui/TextInput';
-import { Button, Checkbox } from '@material-ui/core';
-import { IconDelete } from 'mineral-ui-icons';
+import { Button, Checkbox, FormControlLabel } from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 class WizardInputs extends Component {
     constructor(props) {
@@ -27,11 +27,11 @@ class WizardInputs extends Component {
      * When users fills out an input the inputData object is updated with the new information
      * @param event object containing input's name, value and its data-index attr.
      */
-    handleInputChange = event => {
+    handleInputChange = (event, index) => {
         const { name, checked } = event.target;
         let { value } = event.target;
         const objectToChange = this.props.data;
-        const arrIndex = parseInt(event.target.getAttribute('data-index'));
+        const arrIndex = typeof index !== 'undefined' ? index : parseInt(event.target.getAttribute('data-index'));
         const { maxLength, lowercase, regexRestriction, validUrl } = objectToChange.content[arrIndex][name];
         const prevValue = objectToChange.content[arrIndex][name].value;
         if (name === 'serviceId') {
@@ -336,7 +336,7 @@ class WizardInputs extends Component {
                 variant="danger"
                 minimal
                 size="medium"
-                iconStart={!this.state[`delBtn${index}`] ? <IconDelete /> : undefined}
+                iconStart={!this.state[`delBtn${index}`] ? <DeleteIcon /> : undefined}
                 name={index}
                 onClick={this.handleDelete}
             >
@@ -411,13 +411,16 @@ class WizardInputs extends Component {
         const variant = error ? 'danger' : undefined;
         if (typeof value === 'boolean') {
             return (
-                <Checkbox
-                    className="wCheckBox"
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            className="wCheckBox"
+                            checked={value}
+                            onChange={event => this.handleInputChange(event, index)}
+                            name={itemKey}
+                        />
+                    }
                     label={question}
-                    checked={value}
-                    onChange={this.handleInputChange}
-                    name={itemKey}
-                    data-index={index}
                 />
             );
         }
