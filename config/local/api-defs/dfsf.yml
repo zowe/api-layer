@@ -1,0 +1,20 @@
+services:
+  - serviceId: dfsf
+    title: dsfs
+    description: test
+    instanceBaseUrls:
+      - https://localhost:10010
+    routes:
+      - gatewayUrl: /api/v1
+        serviceRelativeUrl: /
+    authentication:
+      scheme: bypass
+    apiInfo:
+      - apiId: test
+        version: 1.0.0
+        gatewayUrl: /api/v1
+catalogUiTiles:
+  static:
+    title: Static API Services
+    description: Services which demonstrate how to make an API service discoverable
+      in the APIML ecosystem using YAML definitions

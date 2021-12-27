@@ -31,6 +31,7 @@ export default class DialogDropdown extends Component {
     handleClick(event) {
         this.props.selectEnabler(event.target.innerText);
         this.props.toggleWizard();
+        this.closeMenu();
     }
 
     openOnClick() {
@@ -66,7 +67,7 @@ export default class DialogDropdown extends Component {
                 </IconButton>
                 <Menu id="wizard-menu" keepMounted open={this.state.isOpen} onClose={this.closeMenu}>
                     {this.state.data.map(itemType => (
-                        <MenuItem onClick={this.closeMenu}>{itemType.text}</MenuItem>
+                        <MenuItem onClick={this.handleClick}>{itemType.text}</MenuItem>
                     ))}
                 </Menu>
             </div>
