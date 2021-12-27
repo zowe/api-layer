@@ -9,9 +9,7 @@
  */
 
 import { Component } from 'react';
-import { IconArrowDropDown } from 'mineral-ui-icons';
-import { Dropdown } from 'mineral-ui';
-import Button from 'mineral-ui/Button';
+import { IconButton, Menu, MenuItem } from '@material-ui/core';
 import './wizard.css';
 
 export default class DialogDropdown extends Component {
@@ -19,8 +17,11 @@ export default class DialogDropdown extends Component {
         super(props);
         this.state = {
             data: this.props.data,
+            isOpen: false,
         };
         this.handleClick = this.handleClick.bind(this);
+        this.openMenu = this.openMenu.bind(this);
+        this.closeMenu = this.closeMenu.bind(this);
     }
 
     componentDidMount() {
@@ -40,16 +41,35 @@ export default class DialogDropdown extends Component {
         }
     }
 
+    openMenu() {
+        this.setState({ isOpen: true });
+    }
+
+    closeMenu() {
+        this.setState({ isOpen: false });
+    }
+
     renderDropdown() {
         if (!this.props.visible || !Array.isArray(this.state.data)) {
             return null;
         }
         return (
-            <Dropdown data={this.state.data}>
-                <Button id="wizard-YAML-button" size="medium" iconEnd={<IconArrowDropDown />}>
+            <div>
+                <IconButton
+                    aria-controls="wizard-menu"
+                    aria-haspopup="true"
+                    onClick={this.openMenu}
+                    size="medium"
+                    variant="outlined"
+                >
                     Onboard New API
-                </Button>
-            </Dropdown>
+                </IconButton>
+                <Menu id="wizard-menu" keepMounted open={this.state.isOpen} onClose={this.closeMenu}>
+                    {this.state.data.map(itemType => (
+                        <MenuItem onClick={this.closeMenu}>{itemType.text}</MenuItem>
+                    ))}
+                </Menu>
+            </div>
         );
     }
 
