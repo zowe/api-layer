@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import * as YAML from 'yaml';
-import { Button } from 'mineral-ui';
-import { IconContentCopy } from 'mineral-ui-icons';
+import { Button } from '@material-ui/core';
+import FileCopy from '@material-ui/icons/FileCopy';
 
 class YAMLVisualizer extends Component {
     componentDidMount() {
@@ -35,7 +35,7 @@ class YAMLVisualizer extends Component {
         return (
             <div className="yamlContainer">
                 <div id="copyButtonContainer">
-                    <Button onClick={this.copy} size="small" iconStart={<IconContentCopy />}>
+                    <Button onClick={this.copy} size="small" startIcon={<FileCopy />}>
                         Copy
                     </Button>
                 </div>
