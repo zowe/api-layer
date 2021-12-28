@@ -8,9 +8,18 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component } from 'react';
-import { FormField, Select, Tooltip } from 'mineral-ui';
-import TextInput from 'mineral-ui/TextInput';
-import { Button, Checkbox, FormControlLabel } from '@material-ui/core';
+import {
+    Button,
+    Checkbox,
+    FormControl,
+    FormControlLabel,
+    FormHelperText,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Tooltip,
+} from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 
 class WizardInputs extends Component {
@@ -426,21 +435,14 @@ class WizardInputs extends Component {
         }
         if (Array.isArray(options)) {
             return (
-                <FormField
-                    className="formField"
-                    input={Select}
-                    size="large"
-                    placeholder={itemKey}
-                    selectedItem={{ text: value }}
-                    label={question}
-                    variant={variant}
-                    caption={caption}
-                    data={options.map(entry => ({
-                        text: entry,
-                        onClick: () => this.handleSelect({ name: itemKey, index, value: entry }),
-                    }))}
-                    disabled={disabled}
-                />
+                <FormControl className="formField" disabled={disabled}>
+                    <InputLabel htmlFor={itemKey}>{question}</InputLabel>
+                    <Select id={itemKey} value={value} onChange={this.handleSelect}>
+                        {options.map(entry => (
+                            <MenuItem value={entry}>{entry}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
             );
         }
         const disableTooltip = false;
@@ -448,23 +450,20 @@ class WizardInputs extends Component {
         if (tooltip === undefined) {
             finalTooltip = 'filler';
         }
+        const captionId = `my-helper${itemKey}`;
         return (
-            <Tooltip className="wizardTooltip" content={finalTooltip} disabled={disableTooltip}>
-                <FormField
-                    type={type}
-                    className="wizardFormFields"
-                    input={TextInput}
-                    size="large"
-                    name={itemKey}
-                    onChange={this.handleInputChange}
-                    data-index={index}
-                    placeholder={itemKey}
-                    value={value}
-                    label={question}
-                    variant={variant}
-                    caption={caption}
-                    disabled={disabled}
-                />
+            <Tooltip className="wizardTooltip" title={finalTooltip}>
+                <FormControl className="wizardFormFields" disabled={disabled} data-index={index}>
+                    <InputLabel htmlFor={itemKey}>{question}</InputLabel>
+                    <TextField
+                        id={itemKey}
+                        name={itemKey}
+                        value={value}
+                        onChange={this.handleInputChange}
+                        aria-describedby={captionId}
+                    />
+                    <FormHelperText id={captionId}>{caption}</FormHelperText>
+                </FormControl>
             </Tooltip>
         );
     }
