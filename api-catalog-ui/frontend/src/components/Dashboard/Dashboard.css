@@ -129,14 +129,14 @@ a {
     margin-right: 10px;
 }
 
-#refresh-api-button, #onboard-wizard-button, button.MuiButtonBase-root.MuiIconButton-root {
+#refresh-api-button, #onboard-wizard-button, #wizard-done-button, #wizard-cancel-button {
     font-size: 16px;
     height: 2em;
     color: #3272d9;
     background-color: #ffffff;
 }
 
-#refresh-api-button:hover, #onboard-wizard-button:hover, button.MuiButtonBase-root.MuiIconButton-root {
+#refresh-api-button:hover, #onboard-wizard-button:hover, #wizard-done-button:hover, #wizard-cancel-button:hover {
     background-color: #F4F7FA;
     border: none;
 }

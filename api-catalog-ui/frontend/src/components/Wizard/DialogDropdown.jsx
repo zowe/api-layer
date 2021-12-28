@@ -74,6 +74,15 @@ export default class DialogDropdown extends Component {
                     open={this.state.isOpen}
                     onClose={this.closeMenu}
                     anchorEl={this.state.anchorEl}
+                    getContentAnchorEl={null}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'center',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center',
+                    }}
                 >
                     {this.state.data.map(itemType => (
                         <MenuItem onClick={this.handleClick}>{itemType.text}</MenuItem>
