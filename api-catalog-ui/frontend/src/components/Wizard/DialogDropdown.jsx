@@ -18,6 +18,7 @@ export default class DialogDropdown extends Component {
         this.state = {
             data: this.props.data,
             isOpen: false,
+            anchorEl: null,
         };
         this.handleClick = this.handleClick.bind(this);
         this.openMenu = this.openMenu.bind(this);
@@ -42,8 +43,8 @@ export default class DialogDropdown extends Component {
         }
     }
 
-    openMenu() {
-        this.setState({ isOpen: true });
+    openMenu(event) {
+        this.setState({ isOpen: true, anchorEl: event.target });
     }
 
     closeMenu() {
@@ -55,22 +56,30 @@ export default class DialogDropdown extends Component {
             return null;
         }
         return (
-            <div>
+            <span>
                 <IconButton
                     aria-controls="wizard-menu"
                     aria-haspopup="true"
                     onClick={this.openMenu}
                     size="medium"
                     variant="outlined"
+                    id="onboard-wizard-button"
+                    style={{ borderRadius: '0.1875em' }}
                 >
                     Onboard New API
                 </IconButton>
-                <Menu id="wizard-menu" keepMounted open={this.state.isOpen} onClose={this.closeMenu}>
+                <Menu
+                    id="wizard-menu"
+                    keepMounted
+                    open={this.state.isOpen}
+                    onClose={this.closeMenu}
+                    anchorEl={this.state.anchorEl}
+                >
                     {this.state.data.map(itemType => (
                         <MenuItem onClick={this.handleClick}>{itemType.text}</MenuItem>
                     ))}
                 </Menu>
-            </div>
+            </span>
         );
     }
 

@@ -129,14 +129,14 @@ a {
     margin-right: 10px;
 }
 
-#refresh-api-button {
+#refresh-api-button, #onboard-wizard-button {
     font-size: 16px;
     height: 2em;
     color: #3272d9;
     background-color: #ffffff;
 }
 
-#refresh-api-button:hover {
+#refresh-api-button:hover, #onboard-wizard-button:hover {
     background-color: #F4F7FA;
     border: none;
 }
