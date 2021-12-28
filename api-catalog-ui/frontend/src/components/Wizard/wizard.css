@@ -76,3 +76,14 @@ label.wCheckBox span:last-child {
 .readyTab {
     font-weight: 800;
 }
+
+#wizard-done-button:disabled {
+    cursor: none;
+    color: rgb(175, 186, 204);
+    outline: currentcolor none 0px;
+    background-color: rgb(235, 239, 245);
+    border-color: transparent;
+    border-radius: 0.1875em;
+    border-style: solid;
+    border-width: 1px;
+}

@@ -98,10 +98,21 @@ export default class WizardDialog extends Component {
                         <WizardNavigationContainer />
                     </DialogContent>
                     <DialogActions>
-                        <IconButton size="medium" onClick={this.closeWizard}>
+                        <IconButton
+                            id="wizard-cancel-button"
+                            size="medium"
+                            onClick={this.closeWizard}
+                            style={{ borderRadius: '0.1875em' }}
+                        >
                             Cancel
                         </IconButton>
-                        <IconButton size="medium" onClick={this.nextSave} disabled={disable}>
+                        <IconButton
+                            id="wizard-done-button"
+                            size="medium"
+                            onClick={this.nextSave}
+                            disabled={disable}
+                            style={{ borderRadius: '0.1875em' }}
+                        >
                             {this.renderDoneButtonText()}
                         </IconButton>
                     </DialogActions>
