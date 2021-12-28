@@ -129,15 +129,18 @@ a {
     margin-right: 10px;
 }
 
-#refresh-api-button, #onboard-wizard-button, #wizard-done-button, #wizard-cancel-button {
+#refresh-api-button, #onboard-wizard-button, #wizard-done-button, #wizard-cancel-button, #onboard-wizard-button.MuiButton-label {
     font-size: 16px;
     height: 2em;
     color: #3272d9;
     background-color: #ffffff;
 }
 
-#refresh-api-button:hover, #onboard-wizard-button:hover, #wizard-done-button:hover, #wizard-cancel-button:hover {
+#refresh-api-button:hover, #onboard-wizard-button:hover, #wizard-done-button:hover, #wizard-cancel-button:hover, #onboard-wizard-button.MuiButton-label:hover {
     background-color: #F4F7FA;
     border: none;
 }
 
+.MuiButton-root, .MuiButton-label, #onboard-wizard-button.MuiButton-label {
+    text-transform: capitalize;
+}

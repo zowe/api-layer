@@ -9,7 +9,8 @@
  */
 
 import { Component } from 'react';
-import { IconButton, Menu, MenuItem } from '@material-ui/core';
+import { Button, Menu, MenuItem } from '@material-ui/core';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import './wizard.css';
 
 export default class DialogDropdown extends Component {
@@ -57,7 +58,7 @@ export default class DialogDropdown extends Component {
         }
         return (
             <span>
-                <IconButton
+                <Button
                     aria-controls="wizard-menu"
                     aria-haspopup="true"
                     onClick={this.openMenu}
@@ -65,9 +66,10 @@ export default class DialogDropdown extends Component {
                     variant="outlined"
                     id="onboard-wizard-button"
                     style={{ borderRadius: '0.1875em' }}
+                    endIcon={<KeyboardArrowDownIcon />}
                 >
                     Onboard New API
-                </IconButton>
+                </Button>
                 <Menu
                     id="wizard-menu"
                     keepMounted

@@ -81,7 +81,7 @@ form#login-form {
     margin: 150px 0px;
 }
 
-.MuiButton-label {
+.login-object .MuiButton-label {
     flex-direction: row;
     align-items: flex-start;
     padding: 6px 6px 6px 8px;
@@ -107,7 +107,7 @@ form#login-form {
     position: static;
 }
 
-.MuiButton-label:hover {
+.login-object .MuiButton-label:hover {
     background-color: rgb(50, 114, 217);
     border: none;
 }
