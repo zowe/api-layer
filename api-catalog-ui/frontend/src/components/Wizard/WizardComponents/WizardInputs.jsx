@@ -475,7 +475,9 @@ class WizardInputs extends Component {
             <div className="wizardForm">
                 {this.loadInputs()}
                 {multiple && typeof isMinion === 'undefined' ? (
-                    <Button onClick={this.addFieldsToCurrentCategory}>Add more fields</Button>
+                    <Button onClick={this.addFieldsToCurrentCategory} style={{ borderRadius: '0.1875em' }}>
+                        Add more fields
+                    </Button>
                 ) : null}
             </div>
         );

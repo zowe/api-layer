@@ -87,3 +87,10 @@ label.wCheckBox span:last-child {
     border-style: solid;
     border-width: 1px;
 }
+
+.entry span.MuiTypography-root {
+    color: #58606e;
+    font-size: 0.875em;
+    font-family: "Open Sans",-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}
+
