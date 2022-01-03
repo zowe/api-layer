@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -28,6 +29,7 @@ import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.product.version.BuildInfo;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 
 @EnableZuulProxy
 @EnableWebSecurity
@@ -46,9 +48,22 @@ import javax.annotation.Nonnull;
 @EnableEurekaClient
 @EnableWebSocket
 @EnableAspectJAutoProxy
+@Slf4j
 public class GatewayApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
+        String s = System.getProperty("loader.path");
+        String[] loaderPaths = s.split(",");
+        s = loaderPaths[0];
+        File extensionDir = new File(s);
+        log.error("Extension dir {} exists: {}", s, extensionDir.exists());
+        File currentDir = new File(".");
+        log.error("Current directory: " + currentDir.getAbsolutePath());
+        if (currentDir.getParentFile() != null && currentDir.getParentFile().listFiles() != null) {
+            for (File levelUp : currentDir.getParentFile().listFiles()) {
+                log.error("In parent dir : " + levelUp.getAbsolutePath());
+            }
+        }
         SpringApplication app = new SpringApplication(GatewayApplication.class);
         app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
