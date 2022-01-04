@@ -160,7 +160,9 @@ messages:
         - Message: Certificate does not match any of the subject alternative names.\n
           Action: Verify that the hostname which the certificate is issued for matches the hostname of the service.\n
         - Message: Unable to find the valid certification path to the requested target.\n
-          Action: Import the root CA that issued services' certificate to API Gateway truststore.
+          Action: Import the root CA that issued services' certificate to API Gateway truststore.\n
+        - Message: Verify the requested service supports TLS.\n
+          Action: Ensure the requested service is running with TLS enabled.\n
         - Message: Review the APIML debug log for more information.\n
           Action: Enable APIML debug mode and retry the request, then review the APIML log for TLS errors."
 
