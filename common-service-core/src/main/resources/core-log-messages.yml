@@ -152,13 +152,17 @@ messages:
     - key: org.zowe.apiml.common.tlsError
       number: ZWEAM511
       type: ERROR
-      text: "The certificate of the service accessed using URL '%s' is not trusted by the API Gateway: %s"
-      reason: "The Gateway does not trust the requested service and refuses to communicate with it."
+      text: "There was a TLS request error accessing the URL '%s': '%s'"
+      reason: "The Gateway refuses to communicate with the requested service."
       action: "Possible actions regarding to message content:\n
+        - Message: The certificate is not trusted by the API Gateway.\n
+          Action: Verify trust of the certificate is the issue by disabling certificate verification and retry the request.\n
         - Message: Certificate does not match any of the subject alternative names.\n
-          Action: Verify that the hostname which the certificate is issued for matches the hostname of the service. \n
+          Action: Verify that the hostname which the certificate is issued for matches the hostname of the service.\n
         - Message: Unable to find the valid certification path to the requested target.\n
-          Action: Import the root CA that issued services's certificate to API Gateway truststore "
+          Action: Import the root CA that issued services' certificate to API Gateway truststore.
+        - Message: Review the APIML debug log for more information.\n
+          Action: Enable APIML debug mode and retry the request, then review the APIML log for TLS errors."
 
     # Various messages
     # 600-699
