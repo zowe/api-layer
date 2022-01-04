@@ -190,6 +190,7 @@ export default class Login extends React.Component {
                                             InputProps={{
                                                 endAdornment: (
                                                     <InputAdornment position="end">
+                                                        {messageText && <ErrorOutlineIcon className="errorIcon" />}
                                                         <IconButton
                                                             aria-label="toggle password visibility"
                                                             edge="end"
@@ -197,15 +198,16 @@ export default class Login extends React.Component {
                                                         >
                                                             {showPassword ? <VisibilityOff /> : <Visibility />}
                                                         </IconButton>
-                                                        {messageText && <ErrorOutlineIcon className="errorIcon" />}
                                                     </InputAdornment>
                                                 ),
                                             }}
                                         />
                                         {warning && <Link underline="hover"> Caps Lock is ON! </Link>}
                                         <Button
+                                            variant="outlined"
                                             className="loginButton"
                                             label=""
+                                            style={{ border: 'none' }}
                                             type="submit"
                                             data-testid="submit"
                                             disabled={this.isDisabled()}

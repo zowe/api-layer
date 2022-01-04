@@ -26,6 +26,6 @@ services:
             - "10010:10010"
             - "10017:10017"
     mock-zosmf:
-        image: ghcr.io/zowe/mock-zosmf:latest
+        image: ghcr.io/zowe/mock-services:latest
         ports:
             - "10013:10013"

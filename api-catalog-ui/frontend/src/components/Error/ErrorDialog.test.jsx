@@ -12,7 +12,7 @@ describe('>>> ErrorDialog component tests', () => {
             messageType: 'ERROR',
         };
         const wrapper = shallow(<ErrorDialog refreshedStaticApisError={messageText} clearError={jest.fn()} />);
-        expect(wrapper.find('DialogBody').exists()).toEqual(true);
+        expect(wrapper.find('[data-testid="dialog-content"]').exists()).toEqual(true);
     });
 
     it('should not render the ErrorDialog if there is not an error while refreshing apis', () => {

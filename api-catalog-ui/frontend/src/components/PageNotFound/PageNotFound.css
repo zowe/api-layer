@@ -2,3 +2,31 @@
     color: #58606e ;
     text-align: left;
 }
+
+#go-back-button {
+    font-weight: bold;
+    font-size: 14px;
+    width: fit-content;
+    padding-left: .6rem;
+    padding-right: .6rem;
+    height: 32px;
+    margin-left: 20px;
+    border-radius: 3px;
+    background-color: #fff;
+    cursor: pointer;
+    color: #0c7bb3;
+    transition: .3s background-color;
+}
+
+#go-back-button:hover {
+    background-color: #f5f7fa;
+}
+
+#go-back-button > span > svg {
+    margin: 0;
+}
+
+#label {
+    margin-left: 20px;
+    margin-bottom: 20px;
+}

@@ -21,10 +21,16 @@ commands:
   validate: bin/validate.sh
 # if we need to automatically tag file encoding on z/OS during installation
 autoEncoding:
-# tag all files
-- "."
+  # tag all files
+  - "."
 apimlServices:
   dynamic:
     - serviceId: apicatalog
 appfwPlugins:
-- path: "plugin"
+  - path: "plugin"
+configs:
+  port: 7552
+  debug: false
+  spring:
+    profiles:
+      active:

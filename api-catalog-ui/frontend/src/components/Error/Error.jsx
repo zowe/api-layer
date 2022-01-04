@@ -1,5 +1,6 @@
 import { Component } from 'react';
-import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions, Button, Text } from 'mineral-ui';
+import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, IconButton } from '@material-ui/core';
+
 import formatError from './ErrorFormatter';
 
 export default class Error extends Component {
@@ -10,37 +11,35 @@ export default class Error extends Component {
 
     render() {
         const { errors } = this.props;
-        const isTrue = true;
-        const isFalse = false;
         return (
             <div>
                 {errors &&
                     errors.length > 0 && (
-                        <Dialog
-                            variant="danger"
-                            appSelector="#App"
-                            closeOnClickOutside={isFalse}
-                            hideOverlay={isTrue}
-                            modeless={isFalse}
-                            isOpen={errors.length > 0}
-                        >
-                            <DialogHeader>
-                                <DialogTitle>Error</DialogTitle>
-                            </DialogHeader>
-                            <DialogBody>
+                        <Dialog variant="danger" open={errors.length > 0}>
+                            <DialogTitle>Error</DialogTitle>
+                            <DialogContent data-testid="dialog-content">
                                 {errors !== null && errors !== undefined && errors.length > 0 ? (
                                     errors.map(error => formatError(error))
                                 ) : (
-                                    <Text>No Errors Found</Text>
+                                    <DialogContentText style={{ color: 'black' }}>No Errors Found</DialogContentText>
                                 )}
-                            </DialogBody>
-                            <DialogFooter>
-                                <DialogActions>
-                                    <Button size="medium" variant="danger" onClick={this.closeDialog}>
-                                        Close
-                                    </Button>
-                                </DialogActions>
-                            </DialogFooter>
+                            </DialogContent>
+                            <DialogActions>
+                                <IconButton
+                                    size="medium"
+                                    variant="outlined"
+                                    style={{
+                                        border: '1px solid #de1b1b',
+                                        backgroundColor: '#de1b1b',
+                                        borderRadius: '0.1875em',
+                                        fontSize: '15px',
+                                        color: 'white',
+                                    }}
+                                    onClick={this.closeDialog}
+                                >
+                                    Close
+                                </IconButton>
+                            </DialogActions>
                         </Dialog>
                     )}
             </div>

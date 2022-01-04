@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.util.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -22,6 +23,7 @@ import java.util.Map;
 //TODO this class doesn't lend itself well to switching of configurations.
 //attls is integrated in a kludgy way, and deserves a rewrite
 
+@Slf4j
 public class FullApiMediationLayer {
     private RunningService discoveryService;
     private RunningService gatewayService;
@@ -47,7 +49,7 @@ public class FullApiMediationLayer {
         prepareCatalog();
         prepareDiscoverableClient();
         prepareGateway();
-        prepareMockZosmf();
+        prepareMockServices();
         prepareDiscovery();
         if (!attlsEnabled) {
             prepareNodeJsSampleApp();
@@ -80,13 +82,13 @@ public class FullApiMediationLayer {
         cachingService = new RunningService("cachingservice", "caching-service/build/libs", null, null);
     }
 
-    private void prepareMockZosmf() {
+    private void prepareMockServices() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
         if (attlsEnabled) {
             before.put("-Dspring.profiles.active", "attls");
         }
-        mockZosmfService = new RunningService("zosmf", "mock-zosmf/build/libs/mock-zosmf.jar", before, after);
+        mockZosmfService = new RunningService("zosmf", "mock-services/build/libs/mock-services.jar", before, after);
     }
 
     private void prepareDiscoverableClient() {
@@ -107,19 +109,25 @@ public class FullApiMediationLayer {
 
     public void start() {
         try {
-            discoveryService.startWithScript("discovery-package/src/main/resources/bin/start.sh", env);
-            gatewayService.startWithScript("gateway-package/src/main/resources/bin/start.sh", env);
-            mockZosmfService.start();
-
-            apiCatalogService.startWithScript("api-catalog-package/src/main/resources/bin/start.sh", env);
-            discoverableClientService.start();
-
+            Map<String, String> discoveryEnv = new HashMap<>(env);
+            discoveryEnv.put("ZWE_configs_port", "10011");
+            discoveryService.startWithScript("discovery-package/src/main/resources/bin", discoveryEnv);
+            Map<String, String> gatewayEnv = new HashMap<>(env);
+            gatewayEnv.put("ZWE_configs_port", "10010");
+            gatewayService.startWithScript("gateway-package/src/main/resources/bin", gatewayEnv);
+            Map<String, String> catalogEnv = new HashMap<>(env);
+            catalogEnv.put("ZWE_configs_port", "10014");
+            apiCatalogService.startWithScript("api-catalog-package/src/main/resources/bin", catalogEnv);
+            Map<String, String> cachingEnv = new HashMap<>(env);
+            cachingEnv.put("ZWE_configs_port", "10016");
+            cachingService.startWithScript("caching-service-package/src/main/resources/bin", cachingEnv);
             if (!attlsEnabled) {
                 nodeJsSampleApp = nodeJsBuilder.start();
             }
-            cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
+            discoverableClientService.start();
+            mockZosmfService.start();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error("error while starting services: " + ex.getMessage(), ex.getCause());
         }
     }
 

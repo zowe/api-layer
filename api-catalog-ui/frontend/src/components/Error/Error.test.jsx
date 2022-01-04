@@ -10,8 +10,8 @@ describe('>>> Error component tests', () => {
         const errorResponse = 'Could not determine error';
         const apiError = new ApiError('ABC123', 123, new MessageType(40, 'ERROR', 'E'), 'Bad stuff happened');
         const wrapper = enzyme.shallow(<Error errors={[apiError]} />);
-        expect(wrapper.find('DialogBody').exists()).toEqual(true);
-        expect(wrapper.find('Text').prop('children')).toBe(errorResponse);
+        expect(wrapper.find('[data-testid="dialog-content"]').exists()).toEqual(true);
+        expect(wrapper.find('[data-testid="dialog-content"]').children().text()).toBe(errorResponse);
     });
 
     it('Should display the dialog and the error message for Ajax error', () => {
@@ -26,8 +26,8 @@ describe('>>> Error component tests', () => {
             null
         );
         const wrapper = enzyme.shallow(<Error errors={[ajaxError]} />);
-        expect(wrapper.find('DialogBody').exists()).toEqual(true);
-        expect(wrapper.find('Text').prop('children')).toBe(errorResponse);
+        expect(wrapper.find('[data-testid="dialog-content"]').exists()).toEqual(true);
+        expect(wrapper.find('[data-testid="dialog-content"]').children().text()).toBe(errorResponse);
     });
 
     it('Should not display the dialog if there are no errors', () => {

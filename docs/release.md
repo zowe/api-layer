@@ -17,6 +17,7 @@
 ## GitHub actions
 
 - Snapshot release - https://github.com/zowe/api-layer/actions/workflows/snapshot-release.yml
+- PR Snapshot release - https://github.com/zowe/api-layer/actions/workflows/pull-request-snapshot-release.yml
 - Automated release (patch, minor, major) - https://github.com/zowe/api-layer/actions/workflows/release.yml
 - Specific release - https://github.com/zowe/api-layer/actions/workflows/specific-release.yml
 
