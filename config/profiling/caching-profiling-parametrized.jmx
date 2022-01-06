@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4">
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.3">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
@@ -126,6 +126,10 @@
                   <stringProp name="Header.name">Content-Type</stringProp>
                   <stringProp name="Header.value">text/xml; charset=utf-8</stringProp>
                 </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                  <stringProp name="Header.value">test-service</stringProp>
+                </elementProp>
               </collectionProp>
             </HeaderManager>
             <hashTree/>
@@ -185,6 +189,10 @@
                 <elementProp name="" elementType="Header">
                   <stringProp name="Header.name">thread</stringProp>
                   <stringProp name="Header.value">${__threadNum}</stringProp>
+                </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                  <stringProp name="Header.value">test-service</stringProp>
                 </elementProp>
               </collectionProp>
             </HeaderManager>
@@ -263,6 +271,10 @@
                   <stringProp name="Header.name">Content-Type</stringProp>
                   <stringProp name="Header.value">text/xml; charset=utf-8</stringProp>
                 </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                  <stringProp name="Header.value">test-service</stringProp>
+                </elementProp>
               </collectionProp>
             </HeaderManager>
             <hashTree/>
@@ -322,6 +334,10 @@
                 <elementProp name="" elementType="Header">
                   <stringProp name="Header.name">thread</stringProp>
                   <stringProp name="Header.value">${__threadNum}</stringProp>
+                </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                  <stringProp name="Header.value">test-service</stringProp>
                 </elementProp>
               </collectionProp>
             </HeaderManager>
@@ -400,6 +416,10 @@
                   <stringProp name="Header.name">Content-Type</stringProp>
                   <stringProp name="Header.value">text/xml; charset=utf-8</stringProp>
                 </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                  <stringProp name="Header.value">test-service</stringProp>
+                </elementProp>
               </collectionProp>
             </HeaderManager>
             <hashTree/>
@@ -445,6 +465,10 @@
                 <elementProp name="" elementType="Header">
                   <stringProp name="Header.name">Content-Type</stringProp>
                   <stringProp name="Header.value">application/json</stringProp>
+                </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                  <stringProp name="Header.value">test-service</stringProp>
                 </elementProp>
               </collectionProp>
             </HeaderManager>
@@ -523,6 +547,10 @@
                   <stringProp name="Header.name">Content-Type</stringProp>
                   <stringProp name="Header.value">text/xml; charset=utf-8</stringProp>
                 </elementProp>
+                <elementProp name="X-CS-Service-ID" elementType="Header">
+                  <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                  <stringProp name="Header.value">test-service</stringProp>
+                </elementProp>
               </collectionProp>
             </HeaderManager>
             <hashTree/>
@@ -573,6 +601,10 @@
                     <stringProp name="Header.name">Content-Type</stringProp>
                     <stringProp name="Header.value">application/json</stringProp>
                   </elementProp>
+                  <elementProp name="X-CS-Service-ID" elementType="Header">
+                    <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                    <stringProp name="Header.value">test-service</stringProp>
+                  </elementProp>
                 </collectionProp>
               </HeaderManager>
               <hashTree/>
@@ -622,6 +654,10 @@
                   <elementProp name="" elementType="Header">
                     <stringProp name="Header.name">Content-Type</stringProp>
                     <stringProp name="Header.value">application/json</stringProp>
+                  </elementProp>
+                  <elementProp name="X-CS-Service-ID" elementType="Header">
+                    <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                    <stringProp name="Header.value">test-service</stringProp>
                   </elementProp>
                 </collectionProp>
               </HeaderManager>
@@ -701,6 +737,10 @@
                   <stringProp name="Header.name">Content-Type</stringProp>
                   <stringProp name="Header.value">text/xml; charset=utf-8</stringProp>
                 </elementProp>
+                <elementProp name="X-CS-Service-ID" elementType="Header">
+                  <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                  <stringProp name="Header.value">test-service</stringProp>
+                </elementProp>
               </collectionProp>
             </HeaderManager>
             <hashTree/>
@@ -757,6 +797,10 @@
                 <elementProp name="" elementType="Header">
                   <stringProp name="Header.name">thread</stringProp>
                   <stringProp name="Header.value">${__threadNum}</stringProp>
+                </elementProp>
+                <elementProp name="X-CS-Service-ID" elementType="Header">
+                  <stringProp name="Header.name">X-CS-Service-ID</stringProp>
+                  <stringProp name="Header.value">test-service</stringProp>
                 </elementProp>
               </collectionProp>
             </HeaderManager>
