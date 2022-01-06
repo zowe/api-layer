@@ -23,17 +23,12 @@ import java.security.cert.CertificateException;
 import java.util.Base64;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SecurityUtilsTest {
 
     private static final String KEY_ALIAS = "localhost";
-    private static final String JWT_KEY_ALIAS = "jwtsecret";
+    private static final String JWT_KEY_ALIAS = "localhost";
     private static final String WRONG_PARAMETER = "wrong";
     private static final String PUBLIC_KEY_FILE = "jwt-public-key.pub";
 
@@ -117,10 +112,11 @@ class SecurityUtilsTest {
         byte[] publicKey = null;
         try {
             String keyInBase64 = new String(Files.readAllBytes(Paths.get(ClassLoader.getSystemResource(PUBLIC_KEY_FILE).toURI())));
+            keyInBase64 = keyInBase64.replace("\n", "");
             publicKey = Base64.getDecoder().decode(keyInBase64);
         } catch (IOException | URISyntaxException e) {
             fail("Error reading secret key from file " + PUBLIC_KEY_FILE + ": " + e.getMessage());
-    }
+        }
         return publicKey;
     }
 
