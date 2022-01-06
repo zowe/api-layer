@@ -1,0 +1,44 @@
+buildscript {
+    repositories mavenRepositories
+    dependencies {
+        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
+        classpath ("org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r") {
+            force = true
+        }
+    }
+}
+
+normalization {
+    runtimeClasspath {
+        ignore("**/*git.properties*")
+        ignore("**/*build-info.properties*")
+    }
+}
+
+apply plugin: 'com.gorylenko.gradle-git-properties'
+
+gitProperties {
+    gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
+}
+
+dependencies {
+
+    implementation libraries.springFox
+    implementation libraries.spring_webmvc
+
+}
+
+jar {
+    enabled true
+    baseName = "apiml-sample-extension"
+    archiveName = "${baseName}.jar"
+}
+
+publishing {
+    publications {
+        mavenJavaLib(MavenPublication) {
+            artifact jar
+        }
+    }
+}
+

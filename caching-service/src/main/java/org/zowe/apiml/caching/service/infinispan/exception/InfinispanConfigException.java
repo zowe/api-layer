@@ -7,12 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.login.zosmf;
+package org.zowe.apiml.caching.service.infinispan.exception;
 
-public class JwkConversionError extends RuntimeException {
-    private static final long serialVersionUID = -8854148780170907565L;
+public class InfinispanConfigException extends RuntimeException {
 
-    public JwkConversionError(Throwable e) {
-        super(e);
+    public InfinispanConfigException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

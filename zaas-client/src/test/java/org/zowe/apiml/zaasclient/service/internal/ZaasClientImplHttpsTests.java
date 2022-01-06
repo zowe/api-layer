@@ -129,7 +129,7 @@ class ZaasClientImplHttpsTests {
         inputStream = new FileInputStream(keyStoreFile);
         ks.load(inputStream, configProperties.getKeyStorePassword());
 
-        return ks.getKey("jwtsecret", configProperties.getKeyStorePassword());
+        return ks.getKey("localhost", configProperties.getKeyStorePassword());
     }
 
     // TODO: Change to the way used in enablers.

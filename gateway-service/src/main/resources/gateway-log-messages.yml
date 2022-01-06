@@ -47,14 +47,14 @@ messages:
     - key: org.zowe.apiml.gateway.jwtInitConfigError
       number: ZWEAG704
       type: ERROR
-      text: "Configuration error '%s' when trying to read jwt secret: %s"
-      reason: "A problem occurred while trying to read the JWT secret key from the keystore."
+      text: "Configuration error '%s' when trying to read the public and private key for signing JWT: %s"
+      reason: "A problem occurred while trying to read the certificate-key pair from the keystore."
       action: "Review the mandatory fields used in the configuration such as the keystore location path, the keystore and key password, and the keystore type."
 
     - key: org.zowe.apiml.gateway.jwtKeyMissing
       number: ZWEAG705
       type: ERROR
-      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'. The Gateway is shutting down."
+      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'. Gateway is shutting down."
       reason: "Failed to load a public or private key from the keystore during JWT Token initialization."
       action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
 
