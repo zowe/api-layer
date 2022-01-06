@@ -1,7 +1,12 @@
 spring:
     application:
         name: Caching service
-
+caching:
+    storage:
+        infinispan:
+            initialHosts: localhost[7098]
+            persistence:
+                dataLocation: data
 apiml:
     enabled: true
     service:

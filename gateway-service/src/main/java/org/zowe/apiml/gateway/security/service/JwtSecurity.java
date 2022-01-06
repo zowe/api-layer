@@ -64,7 +64,7 @@ public class JwtSecurity {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
-    @Value("${apiml.security.auth.jwtKeyAlias:}")
+    @Value("${server.ssl.keyAlias:#{null}}")
     private String keyAlias;
 
     @Value("${apiml.security.jwtInitializerTimeout:5}")
