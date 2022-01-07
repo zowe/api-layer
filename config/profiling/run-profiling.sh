@@ -5,11 +5,12 @@ threads_flag=
 threads=
 dataset="mock_csv.csv"
 dir_flag=
-dirName="output"
+dir="output"
 host=
 port=
+force=0
 
-while getopts "d:h:p:t:o:HML" flag; do
+while getopts "d:h:p:t:o:HMLf" flag; do
     case $flag in
         H) load_flag="high" ;;
         M) load_flag="medium" ;;
@@ -19,6 +20,7 @@ while getopts "d:h:p:t:o:HML" flag; do
         p) port=$OPTARG ;;
         t) threads_flag=$OPTARG ;;
         o) dir_flag=./$OPTARG ;; # use current directory to reduce change of accidentally deleted dir
+        f) force=1 ;;
     esac
 done
 
@@ -46,23 +48,32 @@ then
 elif [ -n "$threads_flag" ]
 then
     threads=$threads_flag
-fi
-
-
-if [ -z "$threads" ]
-then
+else
     echo "Threads value must be set with a valid load flag (-H, -M, -L) or valid value in -t flag"
     exit 1
 fi
 
-dirName="$dirName-threads-$threads"
+dir="$dir-threads-$threads"
 
 if [ -n "$dir_flag" ]
 then
-    dirName=$dir_flag
+    dir=$dir_flag
 fi
 
-# TODO check if exists and confirm delete
-rm -rf $dirName # jmeter fails if output directory already exists
+ # jmeter fails if output directory already exists so check for it and delete if appropriate
+if [ -d $dir ]
+then
+    if [ $force -eq 1 ]
+    then
+        echo "Force deleting existing output directory '$dir'"
+        rm -rf $dir
+    else
+        read -p "Output directory '$dir' already exists, do you wish to delete this directory? (yn) " yn
+        case $yn in
+            [Yy]*) rm -rf $dir ;;
+            *) echo "Directory already exists and won't be overwritten, exiting"; exit 1 ;;
+        esac
+    fi
+fi
 
-jmeter -Jhost=$host -Jport=$port -Jthreads=$threads -Jdataset=$dataset -Jjmeter.reportgenerator.overall_granularity=1000 -n -t caching-profiling-parametrized.jmx -l $dirName/result -e -o $dirName/test-results -j $dirName/result.log
+jmeter -Jhost=$host -Jport=$port -Jthreads=$threads -Jdataset=$dataset -Jjmeter.reportgenerator.overall_granularity=1000 -n -t caching-profiling-parametrized.jmx -l $dir/result -e -o $dir/test-results -j $dir/result.log
