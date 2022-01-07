@@ -2,7 +2,7 @@
 
 load_flag=
 threads_flag=
-threads=50
+threads=
 dataset="mock_csv.csv"
 dir_flag=
 dirName="output"
@@ -22,12 +22,6 @@ while getopts "d:h:p:t:o:HML" flag; do
     esac
 done
 
-if [ -z "$load_flag" ]
-then
-    echo "Load parameter must be set with -H for high load, -M for medium load, or -L for low load"
-    exit 1
-fi
-
 if [ -z "$host" ]
 then
     echo "Host parameter must be set with -h flag"
@@ -40,30 +34,28 @@ then
     exit 1
 fi
 
-if [ $load_flag == "high" ]
+if [ "$load_flag" == "high" ]
 then
-    dirName="$dirName-high"
     threads=50
-elif [ $load_flag == "medium" ]
+elif [ "$load_flag" == "medium" ]
 then
-    dirName="$dirName-medium"
     threads=15
-elif [ $load_flag == "low" ]
+elif [ "$load_flag" == "low" ]
 then
-    dirName="$dirName-low"
     threads=5
-fi
-
-if [ -n "$threads_flag" ]
+elif [ -n "$threads_flag" ]
 then
     threads=$threads_flag
 fi
+
 
 if [ -z "$threads" ]
 then
     echo "Threads value must be set with a valid load flag (-H, -M, -L) or valid value in -t flag"
     exit 1
 fi
+
+dirName="$dirName-threads-$threads"
 
 if [ -n "$dir_flag" ]
 then
