@@ -31,7 +31,7 @@ One of the below is required:
 * `-H` - run tests with a "high" load - 50 threads
 * `-M` - run tests with a "medium" load - 15 threads
 * `-L` - run tests with a "low" load - 5 threads
-* `-t` ${number of threads}` - run the provided number of threads
+* `-t ${number of threads}` - run the provided number of threads
 
 The following arguments are optional:
 * `-d ${dataset file}` - set the CSV file containing records for use in the Caching Service requests - defaults to `mock_csv.cs`
