@@ -2,12 +2,6 @@
 
 jmeter -Jusername=USER -Jpassword=validPassword -Jhost=localhost -Jport=10010 -Jthreads=10 -Jdataset=mock_csv_small.csv -Jjmeter.reportgenerator.overall_granularity=1000 -n -t caching-profiling-parametrized.jmx -l output/result -e -o output/test-results -j output/result.log
 
-## jmeter using taurus
-
-* not working at the moment
-
-bzt taurus/taurus_config.yml
-
 ### Actual performance test
 
 1) Caching service with InMemmory impl.
