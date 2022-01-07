@@ -34,6 +34,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 class JwtSecurityTest {
+    public static final String keyAlias = "localhost";
     private JwtSecurity underTest;
     private Providers providers;
 
@@ -52,7 +53,7 @@ class JwtSecurityTest {
     class WhenInitializedWithValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
         }
 
         @Test
@@ -122,7 +123,7 @@ class JwtSecurityTest {
 
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
         }
 
         @Test
@@ -189,7 +190,7 @@ class JwtSecurityTest {
     class GetJwkPublicKey {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, "jwtsecret", "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
 
             when(providers.isZosfmUsed()).thenReturn(false);
         }

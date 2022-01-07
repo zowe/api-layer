@@ -59,11 +59,6 @@ then
     LOG_LEVEL=$DIAG_MODE
 fi
 
-if [[ -z ${PKCS11_TOKEN_LABEL} && ! -z ${APIML_SECURITY_AUTH_JWTKEYALIAS} ]]
-then
-    PKCS11_TOKEN_LABEL=${APIML_SECURITY_AUTH_JWTKEYALIAS}
-fi
-
 if [[ -z ${APIML_GATEWAY_CATALOG_ID} ]]
 then
     APIML_GATEWAY_CATALOG_ID="apicatalog"
@@ -126,7 +121,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.auth.zosmf.serviceId=${APIML_ZOSMF_ID:-zosmf} \
     -Dapiml.security.auth.provider=${APIML_SECURITY_AUTH_PROVIDER:-zosmf} \
-    -Dapiml.security.auth.jwtKeyAlias=${PKCS11_TOKEN_LABEL:-jwtsecret} \
     -Dapiml.zoweManifest=${ZOWE_MANIFEST} \
     -Dserver.address=0.0.0.0 \
     -Dserver.maxConnectionsPerRoute=${APIML_MAX_CONNECTIONS_PER_ROUTE:-100} \
