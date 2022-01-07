@@ -3,8 +3,11 @@
 name: Release new version for specific pull request (snapshot)
 
 on:
-    pull_request:
-        branches: [ master, v2.x.x ]
+    workflow_dispatch:
+        inputs:
+            pull_request:
+                description: 'The pull request snapshot that is going to be released (i.e PR-XXXX)'
+                required: true
 
 env:
     PR_NUMBER: ${{ github.event.number }}
