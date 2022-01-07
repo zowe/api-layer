@@ -19,7 +19,7 @@ while getopts "HMLt:h:p:d:o:f" flag; do
         h) host=$OPTARG ;;
         p) port=$OPTARG ;;
         d) dataset=$OPTARG ;;
-        o) dir_flag=./$OPTARG ;; # use current directory to reduce change of accidentally deleted dir
+        o) dir_flag=./$OPTARG ;; # use current directory to reduce chance of accidentally deleted dir
         f) force=1 ;;
     esac
 done
