@@ -10,15 +10,15 @@ host=
 port=
 force=0
 
-while getopts "d:h:p:t:o:HMLf" flag; do
+while getopts "HMLt:h:p:d:o:f" flag; do
     case $flag in
         H) load_flag="high" ;;
         M) load_flag="medium" ;;
         L) load_flag="low" ;;
-        d) dataset=$OPTARG ;;
+        t) threads_flag=$OPTARG ;;
         h) host=$OPTARG ;;
         p) port=$OPTARG ;;
-        t) threads_flag=$OPTARG ;;
+        d) dataset=$OPTARG ;;
         o) dir_flag=./$OPTARG ;; # use current directory to reduce change of accidentally deleted dir
         f) force=1 ;;
     esac
