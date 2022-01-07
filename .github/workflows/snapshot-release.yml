@@ -118,7 +118,7 @@ jobs:
                 uses: zowe-actions/shared-actions/docker-build-local@main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
-                timeout-minutes: 5
+                timeout-minutes: 15
 
             -   name: Build s390x
                 if: matrix.arch == 's390x'
@@ -133,7 +133,7 @@ jobs:
                     redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
                     redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
                     redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
-                timeout-minutes: 10
+                timeout-minutes: 15
 
     define-manifests:
         needs:
