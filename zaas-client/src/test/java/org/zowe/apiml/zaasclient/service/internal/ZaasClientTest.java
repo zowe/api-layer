@@ -39,6 +39,7 @@ class ZaasClientTest {
 
     private static final String VALID_PASSWORD = "password";
     private static final String VALID_USERNAME = "username";
+    private static final String VALID_NEW_PASSWORD = "username";
     private static final String VALID_APPLICATION_ID = "APPLID";
     private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
@@ -59,10 +60,17 @@ class ZaasClientTest {
 
     private static Stream<Arguments> provideInvalidUsernamePassword() {
         return Stream.of(
-            Arguments.of(null, VALID_PASSWORD),
-            Arguments.of("", VALID_PASSWORD),
-            Arguments.of(VALID_USERNAME, null),
-            Arguments.of(VALID_USERNAME, "")
+            Arguments.of(null, VALID_PASSWORD, null),
+            Arguments.of("", VALID_PASSWORD, null),
+            Arguments.of(VALID_USERNAME, null, null),
+            Arguments.of(VALID_USERNAME, "", null)
+        );
+    }
+
+    private static Stream<Arguments> provideValidUsernamePasswordWithInvalidNewPassword() {
+        return Stream.of(
+            Arguments.of(VALID_USERNAME, VALID_PASSWORD, null),
+            Arguments.of(VALID_USERNAME, VALID_PASSWORD, "")
         );
     }
 
@@ -70,6 +78,14 @@ class ZaasClientTest {
     @MethodSource("provideInvalidUsernamePassword")
     void givenFullyInvalidCredentials_whenLoggingIn_thenExceptionIsRaised(String username, String password) {
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> underTest.login(username, password));
+
+        assertThatExceptionContainValidCode(exception, EMPTY_NULL_USERNAME_PASSWORD);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideValidUsernamePasswordWithInvalidNewPassword")
+    void givenFullyInvalidCredentials_whenLoggingInWithPasswordChange_thenExceptionIsRaised(String username, String password, String newPassword) {
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> underTest.login(username, password, newPassword));
 
         assertThatExceptionContainValidCode(exception, EMPTY_NULL_USERNAME_PASSWORD);
     }
@@ -110,6 +126,13 @@ class ZaasClientTest {
         when(tokens.login(anyString(), anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
 
         assertThrows(ZaasClientException.class, () -> underTest.login(VALID_USERNAME, VALID_PASSWORD));
+    }
+
+    @Test
+    void givenValidCredentials_whenLoginWithPasswordChangeApiIsCalled_thenRaisedExceptionIsRethrown() throws Exception {
+        when(tokens.login(anyString(), anyString(), anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
+
+        assertThrows(ZaasClientException.class, () -> underTest.login(VALID_USERNAME, VALID_PASSWORD, VALID_NEW_PASSWORD));
     }
 
     @Test

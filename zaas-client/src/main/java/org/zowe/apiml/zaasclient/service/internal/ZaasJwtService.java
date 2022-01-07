@@ -55,17 +55,24 @@ class ZaasJwtService implements TokenService {
     }
 
     @Override
-    public String login(String userId, String password) throws ZaasClientException {
+    public String login(String userId, String password, String newPassword) throws ZaasClientException {
         return (String) doRequest(
-            () -> loginWithCredentials(userId, password),
+            () -> loginWithCredentials(userId, password, newPassword),
             this::extractToken);
     }
 
-    private ClientWithResponse loginWithCredentials(String userId, String password) throws ZaasConfigurationException, IOException {
+    @Override
+    public String login(String userId, String password) throws ZaasClientException {
+        return (String) doRequest(
+            () -> loginWithCredentials(userId, password, null),
+            this::extractToken);
+    }
+
+    private ClientWithResponse loginWithCredentials(String userId, String password, String newPassword) throws ZaasConfigurationException, IOException {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(new Credentials(userId, password));
+        String json = mapper.writeValueAsString(new Credentials(userId, password, newPassword));
         StringEntity entity = new StringEntity(json);
         httpPost.setEntity(entity);
         httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
@@ -274,6 +281,7 @@ class ZaasJwtService implements TokenService {
     static class Credentials {
         String username;
         String password;
+        String newPassword;
     }
 
     @Data
