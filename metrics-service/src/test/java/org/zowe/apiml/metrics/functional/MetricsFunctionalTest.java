@@ -28,12 +28,8 @@ public abstract class MetricsFunctionalTest {
     protected String hostname;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    }
-
-    protected String getDiscoveryUriWithPath(String path) {
-        return String.format("https://%s:%d", hostname, port) + path;
     }
 
 }
