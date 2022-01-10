@@ -32,4 +32,8 @@ public abstract class MetricsFunctionalTest {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
+    protected String getDiscoveryUriWithPath(String path) {
+        return String.format("https://%s:%d", hostname, port) + path;
+    }
+
 }
