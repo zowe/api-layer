@@ -451,7 +451,7 @@ public class AuthenticationService {
      * @return the calculated expiration time
      */
     private long calculateExpiration(long now, String username) {
-        long expiration = now + (authConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000);
+        long expiration = now + (authConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000L);
 
         // calculate time for short TTL user
         if (authConfigurationProperties.getTokenProperties().getShortTtlUsername() != null
