@@ -64,7 +64,7 @@ jobs:
 #        needs: TODO re-enable
 #            - build
         if: ${{ github.event.inputs.service == 'all' }}
-        uses: zowe/api-layer/.github/workflows/create-conformant-containers.yml@apiml/GH1988/concurrent_container_builds # TODO need to use head_ref I think
+        uses: zowe/api-layer/.github/workflows/create-conformant-images.yml@apiml/GH1988/concurrent_container_builds # TODO need to use head_ref I think
 
     build-containers-single-service:
 #        needs:

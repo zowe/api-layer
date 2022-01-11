@@ -1,4 +1,4 @@
-name: Reusable workflow to create Zowe conformant containers
+name: Reusable workflow to create Zowe conformant images
 
 on:
     workflow_call:
@@ -7,7 +7,7 @@ env:
     IMAGE_BASE_DIR: ./containers
 
 jobs:
-    create-containers-all-services:
+    create-images-all-services:
         strategy:
             max-parallel: 5 # TODO this is only a problem for s390x arch, could we split up the code so amd64 isn't blocked by parallelizaiton?
             matrix:
