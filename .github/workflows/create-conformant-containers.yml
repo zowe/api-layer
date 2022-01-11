@@ -3,6 +3,9 @@ name: Reusable workflow to create Zowe conformant containers
 on:
     workflow_call:
 
+env:
+    IMAGE_BASE_DIR: ./containers
+
 jobs:
     create-containers-all-services:
         strategy:
@@ -42,12 +45,6 @@ jobs:
                         ~/.npm
                         **/node_modules
                     key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
-
-            - name: log stuff
-              run: |
-                  pwd
-                  echo "~~~~~"
-                  ls
 
             -   uses: zowe-actions/shared-actions/prepare-workflow@main
 
