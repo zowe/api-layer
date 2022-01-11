@@ -2,6 +2,11 @@ name: Reusable workflow to create Zowe conformant images
 
 on:
     workflow_call:
+        inputs:
+            release:
+                type: boolean
+                default: false
+                required: false
         secrets:
             registry-user:
                 required: true
@@ -69,7 +74,7 @@ jobs:
                 with:
                     registry-user: ${{ secrets.registry-user }}
                     registry-password: ${{ secrets.registry-password }}
-                    release: false
+                    release: ${{ inputs.release }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
@@ -100,3 +105,38 @@ jobs:
                     redhat-registry-user: ${{ secrets.redhat-registry-user }}
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
                 timeout-minutes: 15
+
+    define-manifests-all-services:
+        needs:
+            - create-images-all-services
+        strategy:
+            matrix:
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
+                os: [ ubuntu, ubi ]
+        runs-on: ubuntu-latest
+        if: ${{ github.event.inputs.service == 'all' }}
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.registry-user }}
+                    registry-password: ${{ secrets.registry-password }}
+                    release: ${{ inputs.release }}
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
+                    image-name: ${{ matrix.service }}
+                    linux-distro: ${{ matrix.os }}
+
+            -   uses: zowe-actions/shared-actions/docker-manifest@main
+                with:
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch-list: "amd64 s390x"
+                timeout-minutes: 2

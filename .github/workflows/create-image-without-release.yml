@@ -13,58 +13,11 @@ env:
     IMAGE_BASE_DIR: ./containers
 
 jobs:
-#    build:
-#
-#        runs-on: ubuntu-latest
-#        timeout-minutes: 20
-#
-#        steps:
-#            - uses: actions/checkout@v2
-#              with:
-#                  ref: ${{ github.head_ref }}
-#                  token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
-#            - name: Set up JDK 1.8
-#              uses: actions/setup-java@v1
-#              with:
-#                  java-version: 1.8
-#            - name: Set up Node
-#              uses: actions/setup-node@v2
-#              with:
-#                  node-version: '14'
-#            - run: npm install -g npm@8.1.0
-#            - name: Grant execute permission for gradlew
-#              run: chmod +x gradlew
-#            - name: Cache Gradle packages
-#              uses: actions/cache@v2
-#              with:
-#                  path: |
-#                      ~/.gradle/caches
-#                      ~/.gradle/wrapper
-#                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-#
-#            - name: Cache Node.js modules
-#              uses: actions/cache@v2
-#              with:
-#                  path: |
-#                      ~/.npm
-#                      **/node_modules
-#                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
-#
-#            - name: Build with Gradle
-#              run: ./gradlew build
-#
-#            - name: Cleanup Gradle Cache
-#                # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
-#                # Restoring these files from a GitHub Actions cache might cause problems for future builds.
-#              run: |
-#                  rm -f ~/.gradle/caches/modules-2/modules-2.lock
-#                  rm -f ~/.gradle/caches/modules-2/gc.properties
-
-    build-containers-all-services:
-#        needs: TODO re-enable
-#            - build
+    build-images-all-services:
         if: ${{ github.event.inputs.service == 'all' }}
-        uses: zowe/api-layer/.github/workflows/create-conformant-images.yml@apiml/GH1988/concurrent_container_builds # TODO need to use head_ref I think
+        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@apiml/GH1988/concurrent_container_builds # TODO switch to master
+        with:
+            release: false
         secrets:
             registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
             registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
@@ -76,8 +29,6 @@ jobs:
             zlinux-ssh-passphrase: ${{ secrets.ZLINUX_SSH_PASSPHRASE }}
 
     build-containers-single-service:
-#        needs:
-#            - build
         strategy:
             matrix:
                 arch: [ amd64, s390x ]
@@ -152,42 +103,6 @@ jobs:
                     redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
                     redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
                 timeout-minutes: 15
-
-    define-manifests-all-services:
-        needs:
-            - build-containers-all-services
-
-        strategy:
-            matrix:
-                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
-                os: [ ubuntu, ubi ]
-        runs-on: ubuntu-latest
-        if: ${{ github.event.inputs.service == 'all' }}
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-            -   name: Set up JDK 1.8
-                uses: actions/setup-java@v1
-                with:
-                    java-version: 1.8
-
-            -   uses: zowe-actions/shared-actions/prepare-workflow@main
-
-            -   uses: zowe-actions/shared-actions/docker-prepare@main
-                with:
-                    registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
-                    registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
-                    release: false
-                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
-                    image-name: ${{ matrix.service }}
-                    linux-distro: ${{ matrix.os }}
-
-            -   uses: zowe-actions/shared-actions/docker-manifest@main
-                with:
-                    linux-distro: ${{ matrix.os }}
-                    cpu-arch-list: "amd64 s390x"
-                timeout-minutes: 2
 
     define-manifests-single-service:
         needs:
