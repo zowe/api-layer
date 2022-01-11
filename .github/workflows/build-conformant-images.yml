@@ -7,6 +7,11 @@ on:
                 type: boolean
                 default: false
                 required: false
+            service:
+                description: 'Enter a service name for which to create an image. The name must match a directory in /containers. E.g. gateway-service or discovery-service. If skipped, images will be created for all services.'
+                type: string
+                default: 'all'
+                required: false
         secrets:
             registry-user:
                 required: true
@@ -29,9 +34,9 @@ env:
     IMAGE_BASE_DIR: ./containers
 
 jobs:
-    create-images-all-services:
+    create-image-all-services:
         strategy:
-            max-parallel: 5 # TODO this is only a problem for s390x arch, could we split up the code so amd64 isn't blocked by parallelizaiton?
+            #max-parallel: 5 # TODO this is only a problem for s390x arch, could we split up the code so amd64 isn't blocked by parallelizaiton?
             matrix:
                 arch: [ amd64, s390x ]
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
@@ -42,6 +47,7 @@ jobs:
                     -   os: ubi
                         BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
         runs-on: ubuntu-latest
+        if: ${{ inputs.service == 'all' }}
         steps:
             -   uses: actions/checkout@v2
                 with:
@@ -106,15 +112,15 @@ jobs:
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
                 timeout-minutes: 15
 
-    define-manifests-all-services:
+    define-manifest-all-services:
         needs:
-            - create-images-all-services
+            - create-image-all-services
         strategy:
             matrix:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
-        if: ${{ github.event.inputs.service == 'all' }}
+        if: ${{ inputs.service == 'all' }}
         steps:
             -   uses: actions/checkout@v2
                 with:
@@ -133,6 +139,117 @@ jobs:
                     release: ${{ inputs.release }}
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
+                    linux-distro: ${{ matrix.os }}
+
+            -   uses: zowe-actions/shared-actions/docker-manifest@main
+                with:
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch-list: "amd64 s390x"
+                timeout-minutes: 2
+
+    create-image-one-service:
+        strategy:
+            matrix:
+                arch: [ amd64, s390x ]
+                os: [ ubuntu, ubi ]
+                include:
+                    -   os: ubuntu
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
+                    -   os: ubi
+                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
+        runs-on: ubuntu-latest
+        if: ${{ github.event.inputs.service != 'all' }}
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -   name: Cache Gradle packages
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.gradle/caches
+                        ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+            -   name: Cache Node.js modules
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ~/.npm
+                        **/node_modules
+                    key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.registry-user }}
+                    registry-password: ${{ secrets.registry-password }}
+                    release: ${{ inputs.release }}
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ inputs.service }}
+                    image-name: ${{ inputs.service }}
+                    linux-distro: ${{ matrix.os }}
+                    cpu-arch: ${{ matrix.arch }}
+                    # Used only for UBI
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.redhat-registry-user }}
+                    redhat-registry-password: ${{ secrets.redhat-registry-password }}
+
+            -   name: Build amd64
+                if: matrix.arch == 'amd64'
+                uses: zowe-actions/shared-actions/docker-build-local@main
+                with:
+                    build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
+                timeout-minutes: 15
+
+            -   name: Build s390x
+                if: matrix.arch == 's390x'
+                uses: zowe-actions/shared-actions/docker-build-zlinux@main
+                with:
+                    zlinux-host: ${{ secrets.zlinux-host }}
+                    zlinux-ssh-user: ${{ secrets.zlinux-ssh-user }}
+                    zlinux-ssh-key: ${{ secrets.zlinux-ssh-key }}
+                    zlinux-ssh-passphrase: ${{ secrets.zlinux-ssh-passphrase }}
+                    build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
+                    ### Only for UBI
+                    redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
+                    redhat-registry-user: ${{ secrets.redhat-registry-user }}
+                    redhat-registry-password: ${{ secrets.redhat-registry-password }}
+                timeout-minutes: 15
+
+    define-manifest-single-service:
+        needs:
+            - create-image-one-service
+        strategy:
+            matrix:
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
+                os: [ ubuntu, ubi ]
+        runs-on: ubuntu-latest
+        if: ${{ inputs.service != 'all' }}
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+
+            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+
+            -   uses: zowe-actions/shared-actions/docker-prepare@main
+                with:
+                    registry-user: ${{ secrets.registry-user }}
+                    registry-password: ${{ secrets.registry-password }}
+                    release: ${{ inputs.release }}
+                    base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ inputs.service }}
+                    image-name: ${{ inputs.service }}
                     linux-distro: ${{ matrix.os }}
 
             -   uses: zowe-actions/shared-actions/docker-manifest@main
