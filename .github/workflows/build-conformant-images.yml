@@ -161,7 +161,7 @@ jobs:
                     redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
                     redhat-registry-user: ${{ secrets.redhat-registry-user }}
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
-                timeout-minutes: 20
+                timeout-minutes: 30
 
     define-manifest-all-services:
         needs:
@@ -273,7 +273,7 @@ jobs:
                     redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
                     redhat-registry-user: ${{ secrets.redhat-registry-user }}
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
-                timeout-minutes: 20
+                timeout-minutes: 30
 
     define-manifest-single-service:
         needs:
