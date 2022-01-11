@@ -11,7 +11,7 @@ on:
                 default: 'all'
 
 jobs:
-    build-images-all-services:
+    build-images:
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@apiml/GH1988/concurrent_container_builds # TODO switch to master
         with:
             service: ${{ github.event.inputs.service }}

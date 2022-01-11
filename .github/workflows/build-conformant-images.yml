@@ -95,7 +95,7 @@ jobs:
                 uses: zowe-actions/shared-actions/docker-build-local@main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
-                timeout-minutes: 15
+                timeout-minutes: 20
 
             -   name: Build s390x
                 if: matrix.arch == 's390x'
@@ -110,7 +110,7 @@ jobs:
                     redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
                     redhat-registry-user: ${{ secrets.redhat-registry-user }}
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
-                timeout-minutes: 15
+                timeout-minutes: 20
 
     define-manifest-all-services:
         needs:
@@ -206,7 +206,7 @@ jobs:
                 uses: zowe-actions/shared-actions/docker-build-local@main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
-                timeout-minutes: 15
+                timeout-minutes: 20
 
             -   name: Build s390x
                 if: matrix.arch == 's390x'
@@ -221,7 +221,7 @@ jobs:
                     redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
                     redhat-registry-user: ${{ secrets.redhat-registry-user }}
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
-                timeout-minutes: 15
+                timeout-minutes: 20
 
     define-manifest-single-service:
         needs:
