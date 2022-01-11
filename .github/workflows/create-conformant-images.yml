@@ -2,6 +2,23 @@ name: Reusable workflow to create Zowe conformant images
 
 on:
     workflow_call:
+        secrets:
+            registry-user:
+                required: true
+            registry-password:
+                required: true
+            redhat-registry-user:
+                required: true
+            redhat-registry-password:
+                required: true
+            zlinux-host:
+                required: true
+            zlinux-ssh-user:
+                required: true
+            zlinux-ssh-key:
+                required: true
+            zlinux-ssh-passphrase:
+                required: true
 
 env:
     IMAGE_BASE_DIR: ./containers
@@ -50,8 +67,8 @@ jobs:
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
-                    registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
-                    registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
+                    registry-user: ${{ secrets.registry-user }}
+                    registry-password: ${{ secrets.registry-password }}
                     release: false
                     base-directory: ${{ env.IMAGE_BASE_DIR }}/${{ matrix.service }}
                     image-name: ${{ matrix.service }}
@@ -59,8 +76,8 @@ jobs:
                     cpu-arch: ${{ matrix.arch }}
                     # Used only for UBI
                     redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
-                    redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
-                    redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
+                    redhat-registry-user: ${{ secrets.redhat-registry-user }}
+                    redhat-registry-password: ${{ secrets.redhat-registry-password }}
 
             -   name: Build amd64
                 if: matrix.arch == 'amd64'
@@ -73,13 +90,13 @@ jobs:
                 if: matrix.arch == 's390x'
                 uses: zowe-actions/shared-actions/docker-build-zlinux@main
                 with:
-                    zlinux-host: ${{ secrets.ZLINUX_HOST }}
-                    zlinux-ssh-user: ${{ secrets.ZLINUX_SSH_USER }}
-                    zlinux-ssh-key: ${{ secrets.ZLINUX_SSH_KEY }}
-                    zlinux-ssh-passphrase: ${{ secrets.ZLINUX_SSH_PASSPHRASE }}
+                    zlinux-host: ${{ secrets.zlinux-host }}
+                    zlinux-ssh-user: ${{ secrets.zlinux-ssh-user }}
+                    zlinux-ssh-key: ${{ secrets.zlinux-ssh-key }}
+                    zlinux-ssh-passphrase: ${{ secrets.zlinux-ssh-passphrase }}
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
                     ### Only for UBI
                     redhat-registry: ${{ env.DEFAULT_REDHAT_DOCKER_REGISTRY }}
-                    redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
-                    redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
+                    redhat-registry-user: ${{ secrets.redhat-registry-user }}
+                    redhat-registry-password: ${{ secrets.redhat-registry-password }}
                 timeout-minutes: 15

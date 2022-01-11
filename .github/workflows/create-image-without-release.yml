@@ -65,6 +65,15 @@ jobs:
 #            - build
         if: ${{ github.event.inputs.service == 'all' }}
         uses: zowe/api-layer/.github/workflows/create-conformant-images.yml@apiml/GH1988/concurrent_container_builds # TODO need to use head_ref I think
+        secrets:
+            registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
+            registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
+            redhat-registry-user: ${{ secrets.REDHAT_DEVELOPER_USER }}
+            redhat-registry-password: ${{ secrets.REDHAT_DEVELOPER_PASSWORD }}
+            zlinux-host: ${{ secrets.ZLINUX_HOST }}
+            zlinux-ssh-user: ${{ secrets.ZLINUX_SSH_USER }}
+            zlinux-ssh-key: ${{ secrets.ZLINUX_SSH_KEY }}
+            zlinux-ssh-passphrase: ${{ secrets.ZLINUX_SSH_PASSPHRASE }}
 
     build-containers-single-service:
 #        needs:
