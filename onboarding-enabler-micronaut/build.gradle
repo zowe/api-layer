@@ -6,7 +6,12 @@ plugins {
 version "0.1"
 group "org.zowe.apiml"
 
-repositories mavenRepositories
+repositories {
+    mavenRepositories
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
+}
 
 micronaut {
     version = "2.5.13"
