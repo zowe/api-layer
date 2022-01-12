@@ -92,7 +92,7 @@ jobs:
                 uses: zowe-actions/shared-actions/docker-build-local@main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
-                timeout-minutes: 20
+                timeout-minutes: 30
 
     create-image-all-services-s390x:
         strategy:
