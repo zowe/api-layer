@@ -96,7 +96,7 @@ jobs:
 
     create-image-all-services-s390x:
         strategy:
-            max-parallel: 5 # server used to build s390x can only handle up to 5 concurrent requests
+            max-parallel: 4
             matrix:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
                 os: [ ubuntu, ubi ]
