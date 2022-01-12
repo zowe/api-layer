@@ -17,7 +17,7 @@ import {
     InputLabel,
     MenuItem,
     Select,
-    TextField,
+    Input,
     Tooltip,
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -212,9 +212,10 @@ class WizardInputs extends Component {
      * Select's onChange event contains only the changed value, so we create a usable event ourselves
      * @param entry each item's basic info - name value and index - we create event from that
      */
-    handleSelect = entry => {
-        const { name, value, index } = entry;
-        this.interferenceInjection({ title: value, name, index });
+    handleSelect = (entry, values) => {
+        const { index, itemKey } = values;
+        const { value } = entry.target;
+        this.interferenceInjection({ title: value, name: itemKey, index });
     };
 
     /**
@@ -430,14 +431,15 @@ class WizardInputs extends Component {
                         />
                     }
                     label={question}
+                    labelPlacement="bottom"
                 />
             );
         }
         if (Array.isArray(options)) {
             return (
                 <FormControl className="formField" disabled={disabled}>
-                    <InputLabel htmlFor={itemKey}>{question}</InputLabel>
-                    <Select id={itemKey} value={value} onChange={this.handleSelect}>
+                    <InputLabel shrink>{question}</InputLabel>
+                    <Select id={itemKey} value={value} onChange={event => this.handleSelect(event, { index, itemKey })}>
                         {options.map(entry => (
                             <MenuItem value={entry}>{entry}</MenuItem>
                         ))}
@@ -445,7 +447,6 @@ class WizardInputs extends Component {
                 </FormControl>
             );
         }
-        const disableTooltip = false;
         let finalTooltip = tooltip;
         if (tooltip === undefined) {
             finalTooltip = 'filler';
@@ -453,13 +454,13 @@ class WizardInputs extends Component {
         const captionId = `my-helper${itemKey}`;
         return (
             <Tooltip className="wizardTooltip" title={finalTooltip}>
-                <FormControl className="wizardFormFields" disabled={disabled} data-index={index}>
-                    <InputLabel htmlFor={itemKey}>{question}</InputLabel>
-                    <TextField
+                <FormControl className="wizardFormFields" disabled={disabled}>
+                    <InputLabel shrink>{question}</InputLabel>
+                    <Input
                         id={itemKey}
                         name={itemKey}
                         value={value}
-                        onChange={this.handleInputChange}
+                        onChange={event => this.handleInputChange(event, index)}
                         aria-describedby={captionId}
                     />
                     <FormHelperText id={captionId}>{caption}</FormHelperText>

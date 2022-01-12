@@ -1,34 +1,36 @@
 import { Component } from 'react';
-import Tabs, { Tab } from 'mineral-ui/Tabs';
+import { Tab, Tabs, Card, CardContent, Link, Box } from '@material-ui/core';
 import { IconDanger } from 'mineral-ui-icons';
-import { Card, CardBlock, Link } from 'mineral-ui';
 import WizardInputsContainer from './WizardInputsContainer';
 import YAMLVisualizerContainer from '../YAML/YAMLVisualizerContainer';
 
 class WizardNavigation extends Component {
+
     constructor(props) {
         super(props);
         this.handleChange = this.handleChange.bind(this);
         this.returnNavs = this.returnNavs.bind(this);
+        this.state = {value: 0};
     }
 
     /**
      * React on navTab click
      * @param event number - index of the tab to be switched to
      */
-    handleChange = event => {
-        if (typeof event === 'number') {
+    handleChange = (event, value) => {
+        if (typeof value === 'number') {
+            this.setState({value})
             const navNamesArr = Object.keys(this.props.navsObj);
             if (this.props.selectedCategory < navNamesArr.length) {
                 this.props.validateInput(navNamesArr[this.props.selectedCategory], false);
             }
-            if (event === navNamesArr.length) {
+            if (value === navNamesArr.length) {
                 this.props.assertAuthorization();
                 navNamesArr.forEach(navName => {
                     this.props.validateInput(navName, false);
                 });
             }
-            this.props.changeWizardCategory(event);
+            this.props.changeWizardCategory(value);
         }
     };
 
@@ -46,13 +48,13 @@ class WizardNavigation extends Component {
             if (category.help) {
                 navs[category.nav].push(
                     <Card key={`card#${index}`} className="wizardCategoryInfo">
-                        <CardBlock>{category.help}</CardBlock>
+                        <CardContent>{category.help}</CardContent>
                         {category.helpUrl ? (
-                            <CardBlock>
+                            <CardContent>
                                 <Link target="_blank" href={category.helpUrl.link}>
                                     {category.helpUrl.title}
                                 </Link>
-                            </CardBlock>
+                            </CardContent>
                         ) : null}
                     </Card>
                 );
@@ -62,13 +64,19 @@ class WizardNavigation extends Component {
         });
         return navs;
     }
+    a11yProps = (index) => {
+        return {
+            id: `vertical-tab-${index}`,
+            'aria-controls': `vertical-tabpanel-${index}`,
+        };
+    }
 
     /**
      * Creates a tab for the category/categories
      * @returns {unknown[]} a Tab to be rendered
      */
     loadTabs = () => {
-        let index = 0;
+        let index = -1;
         const categories = Object.entries(this.returnNavs()).map(entry => {
             const name = entry[0];
             const categoryArr = entry[1];
@@ -77,36 +85,81 @@ class WizardNavigation extends Component {
             return (
                 <Tab
                     className={done ? 'readyTab' : undefined}
-                    key={index}
-                    title={name}
+                    label={name}
                     icon={this.props.navsObj[name].warn ? <IconDanger style={{ color: 'red' }} /> : undefined}
-                >
-                    {categoryArr}
-                </Tab>
+                    {...this.a11yProps(index)}
+                />
             );
         });
         const yamlTab = [];
+
         yamlTab.push(
-            <Tab key={0} title="YAML result">
-                <YAMLVisualizerContainer />
-            </Tab>
+            <Tab label="YAML result" />
+        );
+        return categories.concat(yamlTab);
+    };
+
+    loadWizard = () => {
+        let index = -1;
+        const categories = Object.entries(this.returnNavs()).map(entry => {
+            const categoryArr = entry[1];
+            index += 1;
+            return (
+                <div
+                    role="tabpanel"
+                    hidden={this.state.value !== index}
+                    id={`vertical-tabpanel-${index}`}
+                    aria-labelledby={`vertical-tab-${index}`}
+                >
+                    {this.state.value === index && (
+                        <Box sx={{ width: 400 }}>
+                            {categoryArr}
+                        </Box>
+                    )}
+
+                </div>
+            );
+        });
+        const yamlTab = [];
+        index += 1;
+        yamlTab.push(
+            <div
+                role="tabpanel"
+                hidden={this.state.value !== index}
+                id={`vertical-tabpanel-${index}`}
+                aria-labelledby={`vertical-tab-${index}`}
+            >
+                {this.state.value === index && (
+                    <Box sx={{ width: 400, wordWrap: 'break-word' }}>
+                        <YAMLVisualizerContainer />
+                    </Box>
+                )}
+
+            </div>
         );
         return categories.concat(yamlTab);
     };
 
     render() {
+
         return (
-            <div>
+            <Box
+                sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex', height: 500 }}
+            >
                 <Tabs
                     id="wizard-navigation"
                     position="start"
-                    selectedTabIndex={this.props.selectedCategory}
+                    value={this.state.value}
                     onChange={this.handleChange}
                     label="Categories"
+                    orientation="vertical"
+                    variant="scrollable"
+                    sx={{ borderRight: 1, borderColor: 'divider' }}
                 >
                     {this.loadTabs()}
                 </Tabs>
-            </div>
+                {this.loadWizard()}
+            </Box>
         );
     }
 }
