@@ -418,7 +418,6 @@ class WizardInputs extends Component {
             caption = undefined;
         }
         const error = empty || problem;
-        const variant = error ? 'danger' : undefined;
         if (typeof value === 'boolean') {
             return (
                 <FormControlLabel

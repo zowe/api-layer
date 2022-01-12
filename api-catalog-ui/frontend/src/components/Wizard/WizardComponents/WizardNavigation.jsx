@@ -1,16 +1,15 @@
 import { Component } from 'react';
 import { Tab, Tabs, Card, CardContent, Link, Box } from '@material-ui/core';
-import { IconDanger } from 'mineral-ui-icons';
+import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import WizardInputsContainer from './WizardInputsContainer';
 import YAMLVisualizerContainer from '../YAML/YAMLVisualizerContainer';
 
 class WizardNavigation extends Component {
-
     constructor(props) {
         super(props);
         this.handleChange = this.handleChange.bind(this);
         this.returnNavs = this.returnNavs.bind(this);
-        this.state = {value: 0};
+        this.state = { value: 0 };
     }
 
     /**
@@ -19,7 +18,7 @@ class WizardNavigation extends Component {
      */
     handleChange = (event, value) => {
         if (typeof value === 'number') {
-            this.setState({value})
+            this.setState({ value });
             const navNamesArr = Object.keys(this.props.navsObj);
             if (this.props.selectedCategory < navNamesArr.length) {
                 this.props.validateInput(navNamesArr[this.props.selectedCategory], false);
@@ -64,12 +63,12 @@ class WizardNavigation extends Component {
         });
         return navs;
     }
-    a11yProps = (index) => {
+    a11yProps = index => {
         return {
             id: `vertical-tab-${index}`,
             'aria-controls': `vertical-tabpanel-${index}`,
         };
-    }
+    };
 
     /**
      * Creates a tab for the category/categories
@@ -79,23 +78,23 @@ class WizardNavigation extends Component {
         let index = -1;
         const categories = Object.entries(this.returnNavs()).map(entry => {
             const name = entry[0];
-            const categoryArr = entry[1];
             index += 1;
             const done = !this.props.navsObj[name].silent && !this.props.navsObj[name].warn;
             return (
                 <Tab
+                    width="80px"
                     className={done ? 'readyTab' : undefined}
+                    icon={this.props.navsObj[name].warn ? <ReportProblemIcon style={{ color: 'red' }} /> : undefined}
+                    iconPosition="start"
                     label={name}
-                    icon={this.props.navsObj[name].warn ? <IconDanger style={{ color: 'red' }} /> : undefined}
+                    wrapped
                     {...this.a11yProps(index)}
                 />
             );
         });
         const yamlTab = [];
 
-        yamlTab.push(
-            <Tab label="YAML result" />
-        );
+        yamlTab.push(<Tab label="YAML result" />);
         return categories.concat(yamlTab);
     };
 
@@ -106,17 +105,11 @@ class WizardNavigation extends Component {
             index += 1;
             return (
                 <div
-                    role="tabpanel"
                     hidden={this.state.value !== index}
                     id={`vertical-tabpanel-${index}`}
                     aria-labelledby={`vertical-tab-${index}`}
                 >
-                    {this.state.value === index && (
-                        <Box sx={{ width: 400 }}>
-                            {categoryArr}
-                        </Box>
-                    )}
-
+                    {this.state.value === index && <Box sx={{ width: 400 }}>{categoryArr}</Box>}
                 </div>
             );
         });
@@ -134,18 +127,14 @@ class WizardNavigation extends Component {
                         <YAMLVisualizerContainer />
                     </Box>
                 )}
-
             </div>
         );
         return categories.concat(yamlTab);
     };
 
     render() {
-
         return (
-            <Box
-                sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex', height: 500 }}
-            >
+            <Box sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex', height: 500 }}>
                 <Tabs
                     id="wizard-navigation"
                     position="start"
