@@ -96,7 +96,7 @@ jobs:
 
     create-image-all-services-s390x:
         strategy:
-            max-parallel: 4
+            max-parallel: 2
             matrix:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
                 os: [ ubuntu, ubi ]
