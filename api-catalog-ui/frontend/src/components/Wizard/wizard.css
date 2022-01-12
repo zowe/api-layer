@@ -102,13 +102,8 @@ label.wCheckBox span:last-child {
     flex-direction: row;
     justify-content: end;
     max-width: 100%;
-    /*overflow: hidden;*/
-    /*text-overflow: ellipsis;*/
-    /*white-space: nowrap;*/
-    /*overflow-wrap: normal;*/
     font-size: 0.875em;
-    /*width: 100px;*/
-    /*display: block;*/
+    text-align: right;
 }
 
 .MuiTab-labelIcon {
