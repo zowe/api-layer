@@ -6,10 +6,7 @@ plugins {
 version "0.1"
 group "org.zowe.apiml"
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+repositories mavenRepositories
 
 micronaut {
     version = "2.5.13"
