@@ -7,7 +7,7 @@ version "0.1"
 group "org.zowe.apiml"
 
 repositories {
-    mavenRepositories
+    mavenCentral()
     maven {
         url "https://plugins.gradle.org/m2/"
     }
