@@ -1,5 +1,7 @@
 buildscript {
-    repositories mavenRepositories
+    repositories {
+        mavenCentral()
+    }
     dependencies {
         classpath 'com.adarshr:gradle-test-logger-plugin:1.4.0'
     }

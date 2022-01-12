@@ -1,3 +1,17 @@
+buildscript {
+    repositories {
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+            metadataSources {
+                mavenPom()
+                ignoreGradleMetadataRedirection()
+            }
+        }
+    }
+    dependencies {
+        classpath "io.micronaut.gradle:micronaut-gradle-plugin:1.0.5"
+    }
+}
 
 plugins {
     id "io.micronaut.application" version '1.0.5'
