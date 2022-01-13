@@ -21,7 +21,7 @@ public class MaskingLogPatternLayout extends PatternLayout {
         return maskMessage(super.doLayout(event));
     }
 
-    private String maskMessage(String message) {
+    protected String maskMessage(String message) {
         StringBuilder sb = new StringBuilder(message);
         Matcher matcher = maskPatterns.matcher(sb);
         while (matcher.find()) {
@@ -34,7 +34,7 @@ public class MaskingLogPatternLayout extends PatternLayout {
         return sb.toString();
     }
 
-    private static class MaskPatternBuilder {
+    public static class MaskPatternBuilder {
         private final List<String> maskPatterns = new ArrayList<>();
 
         public MaskPatternBuilder add(String prefix, String capture) {
