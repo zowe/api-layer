@@ -10,13 +10,11 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 public class MaskingLogPatternLayout extends PatternLayout {
-    private Pattern multilinePattern;
-    private final List<String> maskPatterns = new ArrayList<>();
-
-    public void addMaskPattern(String maskPattern) {
-        maskPatterns.add(maskPattern);
-        multilinePattern = Pattern.compile(String.join("|", maskPatterns), Pattern.MULTILINE);
-    }
+    private static final String MASK_VALUE = "***";
+    private static final Pattern maskPatterns = new MaskPatternBuilder()
+        .add("\\\"password\\\"\\s*:\\s*", "\\\".*?\\\"")
+        .add("\\\"newPassword\\\"\\s*:\\s*", "\\\".*?\\\"")
+        .build();
 
     @Override
     public String doLayout(ILoggingEvent event) {
@@ -24,19 +22,32 @@ public class MaskingLogPatternLayout extends PatternLayout {
     }
 
     private String maskMessage(String message) {
-        if (multilinePattern == null) {
-            return message;
-        }
         StringBuilder sb = new StringBuilder(message);
-        Matcher matcher = multilinePattern.matcher(sb);
+        Matcher matcher = maskPatterns.matcher(sb);
         while (matcher.find()) {
             IntStream.rangeClosed(1, matcher.groupCount()).forEach(group -> {
                 if (matcher.group(group) != null) {
-                    sb.replace(matcher.start(group), matcher.end(group), "***");
-                    //IntStream.range(matcher.start(group), matcher.end(group)).forEach(i -> sb.setCharAt(i, '*'));
+                    sb.replace(matcher.start(group), matcher.end(group), MASK_VALUE);
                 }
             });
         }
         return sb.toString();
+    }
+
+    private static class MaskPatternBuilder {
+        private final List<String> maskPatterns = new ArrayList<>();
+
+        public MaskPatternBuilder add(String prefix, String capture) {
+            return add(prefix, capture, "");
+        }
+
+        public MaskPatternBuilder add(String prefix, String capture, String postfix) {
+            maskPatterns.add(prefix + "(" + capture + ")" + postfix);
+            return this;
+        }
+
+        public Pattern build() {
+            return Pattern.compile(String.join("|", maskPatterns), Pattern.MULTILINE);
+        }
     }
 }
