@@ -8,7 +8,6 @@ group "org.zowe.apiml"
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 micronaut {
