@@ -95,7 +95,7 @@ jobs:
                   rm -f ~/.gradle/caches/modules-2/gc.properties
 
     build-images:
-        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@apiml/GH1988/concurrent_container_builds # TODO switch to master
+        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
         with:
             release: true
         secrets:
