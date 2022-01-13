@@ -12,8 +12,8 @@ import java.util.stream.IntStream;
 public class MaskingLogPatternLayout extends PatternLayout {
     private static final String MASK_VALUE = "***";
     private static final Pattern maskPatterns = new MaskPatternBuilder()
-        .add("\\\"password\\\"\\s*:\\s*", "\\\".*?\\\"")
-        .add("\\\"newPassword\\\"\\s*:\\s*", "\\\".*?\\\"")
+        .addJsonValue("password")
+        .addJsonValue("newPassword")
         .build();
 
     @Override
@@ -35,6 +35,7 @@ public class MaskingLogPatternLayout extends PatternLayout {
     }
 
     private static class MaskPatternBuilder {
+        private static final String JSON_VALUE = "\\\".*?\\\"";
         private final List<String> maskPatterns = new ArrayList<>();
 
         public MaskPatternBuilder add(String prefix, String capture) {
@@ -43,6 +44,15 @@ public class MaskingLogPatternLayout extends PatternLayout {
 
         public MaskPatternBuilder add(String prefix, String capture, String postfix) {
             maskPatterns.add(prefix + "(" + capture + ")" + postfix);
+            return this;
+        }
+
+        public MaskPatternBuilder addJsonValue(String jsonKey, String... keys) {
+            // add \" around key and value
+            add("\\\"" + jsonKey + "\\\"s*:\\s*", JSON_VALUE);
+            for (String k : keys) {
+                add(k, JSON_VALUE);
+            }
             return this;
         }
 
