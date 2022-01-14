@@ -25,14 +25,6 @@ jobs:
 
             - uses: ./.github/actions/setup
 
-            - name: Cache Node.js modules
-              uses: actions/cache@v2
-              with:
-                  path: |
-                      ~/.npm
-                      **/node_modules
-                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
-
             - name: Release with Gradle
               run: |
                   BRANCH_NAME=PR-${{ env.PR_NUMBER }}
