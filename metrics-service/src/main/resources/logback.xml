@@ -15,8 +15,10 @@
     </turboFilter>
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${apimlLogPattern}</pattern>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
+                <pattern>${apimlLogPattern}</pattern>
+            </layout>
         </encoder>
     </appender>
 
@@ -33,8 +35,10 @@
             <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
         </triggeringPolicy>
 
-        <encoder>
-            <pattern>${apimlLogPattern}</pattern>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
+                <pattern>${apimlLogPattern}</pattern>
+            </layout>
         </encoder>
     </appender>
 
