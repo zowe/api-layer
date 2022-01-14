@@ -15,16 +15,14 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Build with Gradle
                 run: >
                     ./gradlew jib -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ github.event.pull_request.number || 'latest' }}
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITests:
         needs: PublishJibContainers
@@ -56,6 +54,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Run CI Tests
@@ -69,11 +68,8 @@ jobs:
                     name: ContainerCITests
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsRegistration:
         needs: PublishJibContainers
@@ -103,6 +99,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Run CI Tests
@@ -116,11 +113,8 @@ jobs:
                     name: ContainerCITestsRegistration
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsZosmfRsu2012:
         needs: PublishJibContainers
@@ -152,6 +146,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Build with Gradle
@@ -165,11 +160,8 @@ jobs:
                     name: ContainerCITestsZosmfRsu2012
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsZosmfPH34201:
         needs: PublishJibContainers
@@ -201,6 +193,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Build with Gradle
@@ -214,11 +207,8 @@ jobs:
                     name: CITestsZosmfPH34201
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsZosmfWithoutJwt:
         needs: PublishJibContainers
@@ -250,6 +240,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Build with Gradle
@@ -263,11 +254,8 @@ jobs:
                     name: ContainerCITestsZosmfWithoutJwt
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
 
     CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
@@ -300,6 +288,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Build with Gradle
@@ -313,11 +302,8 @@ jobs:
                     name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsInternalPort:
         needs: PublishJibContainers
@@ -349,6 +335,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Build with Gradle
@@ -362,11 +349,8 @@ jobs:
                     name: ContainerCITestsInternalPort
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsWithRedis:
         needs: PublishJibContainers
@@ -411,6 +395,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Build with Gradle
@@ -424,11 +409,8 @@ jobs:
                     name: ContainerCITestsWithRedis
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsWithRedisWithoutSslVerification:
         needs: PublishJibContainers
@@ -478,6 +460,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Build with Gradle
@@ -491,11 +474,8 @@ jobs:
                     name: ContainerCITestsWithRedisWithoutSslVerification
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsHA:
         needs: PublishJibContainers
@@ -551,6 +531,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Run HA Tests
@@ -568,11 +549,8 @@ jobs:
                     name: CITestsHA
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     HALoadBalancing:
         needs: PublishJibContainers
@@ -629,6 +607,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Setup Docker
@@ -661,11 +640,8 @@ jobs:
                     name: LbHaTests
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsDiscoveryChaoticHA:
         needs: PublishJibContainers
@@ -711,6 +687,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Run Discovery Service Chaotic HA Tests
@@ -729,11 +706,8 @@ jobs:
                     name: CITestsDiscoveryChaoticHA
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsGatewayChaoticHA:
         needs: PublishJibContainers
@@ -779,6 +753,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Run Gateway Service Chaotic HA Tests
@@ -797,11 +772,8 @@ jobs:
                     name: CITestsGatewayChaoticHA
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsDicoverableClientChaoticHA:
         needs: PublishJibContainers
@@ -851,6 +823,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Run Discoverable Client Chaotic HA Tests
@@ -869,11 +842,8 @@ jobs:
                     name: CITestsDicoverableClientChaoticHA
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsWebSocketChaoticHA:
         needs: PublishJibContainers
@@ -923,6 +893,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Run WebSocket Chaotic HA Tests
@@ -941,11 +912,8 @@ jobs:
                     name: CITestsWebSocketChaoticHA
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
 
     CITestsWithInfinispan:
         needs: PublishJibContainers
@@ -999,6 +967,7 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/setup
 
             -   name: Build with Gradle
@@ -1012,8 +981,5 @@ jobs:
                     name: CITestsWithInfinispan
                     path: |
                         integration-tests/build/reports/**
-            -   name: Cleanup Gradle Cache
-                run: |
-                    rm -f ~/.gradle/caches/modules-2/modules-2.lock
-                    rm -f ~/.gradle/caches/modules-2/gc.properties
-                    rm -rf ~/.gradle/caches/build-cache-1
+
+            -   uses: ./.github/actions/teardown
