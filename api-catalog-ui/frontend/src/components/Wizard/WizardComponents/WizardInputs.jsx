@@ -389,16 +389,7 @@ class WizardInputs extends Component {
      * @returns {JSX.Element} returns the input element
      */
     renderInputElement(itemKey, index, inputNode) {
-        const {
-            question,
-            value,
-            optional,
-            options,
-            maxLength,
-            lowercase,
-            tooltip,
-            disabled,
-        } = inputNode;
+        const { question, value, optional, options, maxLength, lowercase, tooltip, disabled } = inputNode;
         let caption = '';
         if (optional) {
             caption += 'Optional field; ';
