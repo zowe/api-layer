@@ -128,3 +128,7 @@ MuiTab-textColorInherit {
 .MuiFormControlLabel-labelPlacementBottom {
     flex-direction: row;
 }
+
+.MuiFormControl-root {
+    display: flex;
+}
