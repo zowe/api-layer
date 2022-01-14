@@ -399,7 +399,6 @@ class WizardInputs extends Component {
             lowercase,
             tooltip,
             problem,
-            type,
             disabled,
         } = inputNode;
         let caption = '';
@@ -417,7 +416,6 @@ class WizardInputs extends Component {
         } else {
             caption = undefined;
         }
-        const error = empty || problem;
         if (typeof value === 'boolean') {
             return (
                 <FormControlLabel
