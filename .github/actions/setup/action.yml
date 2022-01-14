@@ -1,13 +1,19 @@
 name: "Setup action"
 description: "Prepares for execution - set up Java, Node, npm, Gradle"
 
+inputs:
+    jdkVersion:
+        description: "JDK version"
+        required: false
+        default: 1.8
+
 runs:
     using: "composite"
     steps:
-        -   name: Set up JDK 1.8
+        -   name: Set up JDK ${{ inputs.jdkVersion }}
             uses: actions/setup-java@v1
             with:
-                java-version: 1.8
+                java-version: ${{ inputs.jdkVersion }}
         -   name: Set up Node
             uses: actions/setup-node@v2
             with:
