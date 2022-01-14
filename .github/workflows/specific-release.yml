@@ -22,7 +22,7 @@ jobs:
               with:
                   ref: ${{ github.head_ref }}
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
-            - uses: ./github/actions/setup
+            - uses: ./.github/actions/setup
 
             - name: Print npm version
               run: npm -v
