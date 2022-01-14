@@ -12,6 +12,9 @@ jobs:
         timeout-minutes: 30
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Build with Gradle
@@ -36,6 +39,9 @@ jobs:
         timeout-minutes: 10
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Build with Gradle

@@ -47,6 +47,9 @@ jobs:
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   uses: zowe-actions/shared-actions/prepare-workflow@main
@@ -85,6 +88,9 @@ jobs:
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   uses: zowe-actions/shared-actions/prepare-workflow@main

@@ -13,6 +13,9 @@ jobs:
         timeout-minutes: 40
 
         steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: ${{ github.head_ref }}
             - uses: ./github/actions/setup
 
             - name: Release with Gradle

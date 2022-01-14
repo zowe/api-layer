@@ -94,6 +94,9 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.event.pull_request.number || 'latest' }}
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Run CI Tests
@@ -140,6 +143,9 @@ jobs:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Build with Gradle
@@ -186,6 +192,9 @@ jobs:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Build with Gradle
@@ -232,6 +241,9 @@ jobs:
                     ZOSMF_APPLIEDAPARS: ''
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Build with Gradle
@@ -279,6 +291,9 @@ jobs:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Build with Gradle
@@ -325,6 +340,9 @@ jobs:
                 image: ghcr.io/balhar-jakub/metrics-service:${{ github.event.pull_request.number || 'latest' }}
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Build with Gradle
@@ -384,6 +402,9 @@ jobs:
                     - "6380:6380"
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Build with Gradle
@@ -448,6 +469,9 @@ jobs:
                     - "6380:6380"
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Build with Gradle
@@ -518,6 +542,9 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Run HA Tests
@@ -593,6 +620,9 @@ jobs:
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     APIML_LOADBALANCER_DISTRIBUTE: true
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Setup Docker
@@ -672,6 +702,9 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Run Discovery Service Chaotic HA Tests
@@ -737,6 +770,9 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Run Gateway Service Chaotic HA Tests
@@ -806,6 +842,9 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Run Discoverable Client Chaotic HA Tests
@@ -875,6 +914,9 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Run WebSocket Chaotic HA Tests
@@ -948,6 +990,9 @@ jobs:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./github/actions/setup
 
             -   name: Build with Gradle
