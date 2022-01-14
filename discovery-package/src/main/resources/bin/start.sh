@@ -67,6 +67,13 @@ if [ `uname` = "OS/390" ]; then
     QUICK_START=-Xquickstart
 fi
 
+DISCOVERY_LOADER_PATH=${COMMON_LIB}
+
+if [[ ! -z ${ZWE_DISCOVERY_SHARED_LIBS} ]]
+then
+    DISCOVERY_LOADER_PATH=${ZWE_DISCOVERY_SHARED_LIBS},${DISCOVERY_LOADER_PATH}
+fi
+
 EXPLORER_HOST=${ZOWE_EXPLORER_HOST:-localhost}
 DISCOVERY_SERVICE_PORT=${DISCOVERY_PORT:-7553}
 
@@ -109,7 +116,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE:-PKCS12}" \
     -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${COMMON_LIB} \
+    -Dloader.path=${DISCOVERY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
     -jar "${JAR_FILE}" &
 pid=$!
