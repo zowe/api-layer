@@ -46,5 +46,5 @@ services:
             - APIML_SERVICE_HOSTNAME=gateway-service-2
             - SERVER_INTERNAL_PORT=10027
             - APIML_SERVICE_DISCOVERYSERVICEURLS=https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-    mock-zosmf:
+    mock-services:
         image: ghcr.io/zowe/mock-services:latest

@@ -21,10 +21,16 @@ commands:
   validate: bin/validate.sh
 # if we need to automatically tag file encoding on z/OS during installation
 autoEncoding:
-# tag all files
-- "."
+  # tag all files
+  - "."
 apimlServices:
   dynamic:
     - serviceId: discovery
   static:
     - file: zosmf-static-definition.yaml.template
+configs:
+  port: 7553
+  debug: false
+  spring:
+    profiles:
+      active:

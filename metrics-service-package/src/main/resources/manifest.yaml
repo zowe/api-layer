@@ -21,8 +21,14 @@ commands:
   validate: bin/validate.sh
 # if we need to automatically tag file encoding on z/OS during installation
 autoEncoding:
-# tag all files
-- "."
+  # tag all files
+  - "."
 apimlServices:
   dynamic:
     - serviceId: metrics-service
+configs:
+  port: 7551
+  debug: false
+  spring:
+    profiles:
+      active:

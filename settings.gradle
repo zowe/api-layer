@@ -49,4 +49,6 @@ include 'metrics-service-ui'
 include 'metrics-service-package'
 include 'apiml-tomcat-common'
 include 'onboarding-enabler-java-sample-app-plain-java'
+include 'apiml-sample-extension'
+include 'apiml-sample-extension-package'
 

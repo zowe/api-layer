@@ -50,7 +50,6 @@ public class AuthConfigurationProperties {
     private AuthConfigurationProperties.PassTicket passTicket;
 
     private AuthConfigurationProperties.Zosmf zosmf = new AuthConfigurationProperties.Zosmf();
-    private String jwtKeyAlias;
 
     public enum JWT_AUTOCONFIGURATION_MODE {
         AUTO,

@@ -61,7 +61,6 @@ apiml:
         jwtInitializerTimeout: 5
         auth:
             provider: zosmf
-            jwtKeyAlias: jwtsecret
         x509:
             enabled: false
             externalMapperUrl:

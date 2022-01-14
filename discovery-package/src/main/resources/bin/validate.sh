@@ -7,16 +7,8 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-# Copyright IBM Corporation 2019, 2020
+# Copyright IBM Corporation 2021
 ################################################################################
 
-INITIAL_ERRORS_FOUND=$ERRORS_FOUND
-
-# Source main utils script
-. ${ROOT_DIR}/bin/utils/utils.sh
-
-validate_port_is_available ${DISCOVERY_PORT}
-validate_variables_are_set "KEYSTORE,KEYSTORE_PASSWORD,KEY_ALIAS,VERIFY_CERTIFICATES"
-validate_directories_are_accessible "${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
-
-return $(($ERRORS_FOUND-$INITIAL_ERRORS_FOUND))
+print_formatted_debug "ZWELS" "discovery,bin/validate.sh:${LINENO}" "- Checking Discovery port ${ZWE_configs_port}"
+validate_this "is_port_available \"${ZWE_configs_port}\" 2>&1" "discovery,bin/validate.sh:${LINENO}"

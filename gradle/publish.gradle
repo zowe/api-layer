@@ -1,6 +1,6 @@
 ext.enablers = [
-    'onboarding-enabler-spring', 
-    'onboarding-enabler-java', 
+    'onboarding-enabler-spring',
+    'onboarding-enabler-java',
     'onboarding-enabler-micronaut'
 ]
 
@@ -12,7 +12,8 @@ ext.javaLibraries = [
     'certificate-analyser',
     'common-service-core',
     'security-service-client-spring',
-    'zaas-client'
+    'zaas-client',
+    'apiml-sample-extension'
 ]
 
 ext.servicesToPublish = [

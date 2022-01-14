@@ -93,7 +93,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         inputStream = new FileInputStream(keyStoreFile);
         ks.load(inputStream, configProperties.getKeyStorePassword());
 
-        return ks.getKey("jwtsecret", configProperties.getKeyStorePassword());
+        return ks.getKey("localhost", configProperties.getKeyStorePassword());
     }
 
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {

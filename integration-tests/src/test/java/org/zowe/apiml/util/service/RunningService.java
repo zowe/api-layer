@@ -56,16 +56,15 @@ public class RunningService {
         process = builder1.inheritIO().start();
     }
 
-    public void startWithScript(String bashScript, Map<String, String> env) {
+    public void startWithScript(String binPath, Map<String, String> env) {
         log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
-
-        ProcessBuilder builder1 = new ProcessBuilder(bashScript);
+        ProcessBuilder builder1 = new ProcessBuilder(binPath + "/start.sh");
         Map<String, String> envVariables = builder1.environment();
         envVariables.putAll(env);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
-
-        builder1.directory(new File("../"));
+        File binFolder = new File("../");
         ExecutorService executorService = Executors.newFixedThreadPool(1);
+        builder1.directory(binFolder);
         executorService.submit(() -> executeCommand(builder1));
     }
 
