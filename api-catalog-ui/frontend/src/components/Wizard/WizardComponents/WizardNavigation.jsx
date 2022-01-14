@@ -84,7 +84,13 @@ class WizardNavigation extends Component {
                 <Tab
                     width="80px"
                     className={done ? 'readyTab' : undefined}
-                    icon={this.props.navsObj[name].warn ? <ReportProblemIcon style={{ color: 'red' }} /> : undefined}
+                    icon={
+                        this.props.navsObj[name].warn ? (
+                            <ReportProblemIcon aria-label="problem" style={{ color: 'red' }} />
+                        ) : (
+                            undefined
+                        )
+                    }
                     iconPosition="start"
                     label={name}
                     wrapped

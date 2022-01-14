@@ -10,14 +10,21 @@
 import * as enzyme from 'enzyme';
 import WizardDialog from './WizardDialog';
 import { categoryData } from './configs/wizard_categories';
-
+import {render, screen} from '@testing-library/react'
+import '@testing-library/jest-dom/extend-expect';
+jest.mock("./WizardComponents/WizardNavigationContainer", () =>
+    () => {
+        const WizardNavigationContainer = "WizardNavigationContainerMock";
+        return <WizardNavigationContainer />;
+    });
 describe('>>> WizardDialog tests', () => {
     it('should render the dialog if store value is true', () => {
-        const wrapper = enzyme.shallow(
+
+        render(
             <WizardDialog wizardToggleDisplay={jest.fn()} inputData={categoryData} navsObj={{ 'Tab 1': {} }}
                           wizardIsOpen />
         );
-        expect(wrapper.find('DialogBody').exists()).toEqual(true);
+        expect(screen.getByText('Onboard a New API Using')).toBeInTheDocument();
     });
     it('should create 0 inputs if content is an empty object', () => {
         const dummyData = [
