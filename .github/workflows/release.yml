@@ -13,8 +13,7 @@ on:
                 default: 'patch'
 
 jobs:
-    build:
-
+    release:
         runs-on: ubuntu-latest
         timeout-minutes: 40
 
@@ -65,7 +64,7 @@ jobs:
 
             - uses: ./.github/actions/teardown
 
-    build-images:
+    release-images:
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
         with:
             release: true

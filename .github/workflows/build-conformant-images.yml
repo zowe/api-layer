@@ -167,6 +167,7 @@ jobs:
 
     create-image-one-service:
         strategy:
+            # no max-parallel because will only make 2 s390x builds and don't want to block amd64 concurrency
             matrix:
                 arch: [ amd64, s390x ]
                 os: [ ubuntu, ubi ]
