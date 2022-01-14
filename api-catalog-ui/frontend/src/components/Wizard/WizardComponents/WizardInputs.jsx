@@ -392,13 +392,11 @@ class WizardInputs extends Component {
         const {
             question,
             value,
-            empty,
             optional,
             options,
             maxLength,
             lowercase,
             tooltip,
-            problem,
             disabled,
         } = inputNode;
         let caption = '';
