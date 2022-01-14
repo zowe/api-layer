@@ -12,7 +12,10 @@ jobs:
         timeout-minutes: 10
 
         steps:
-            -   uses: ././.github/actions/setup
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/setup
 
             -   name: Build with Gradle
                 run: >
@@ -50,7 +53,10 @@ jobs:
                 image: ghcr.io/balhar-jakub/metrics-service:${{ github.event.pull_request.number || 'latest' }}
 
         steps:
-            -   uses: ././.github/actions/setup
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/setup
 
             -   name: Run CI Tests
                 run: >
