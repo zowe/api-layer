@@ -9,9 +9,8 @@
  */
 
 import { Component } from 'react';
-import { IconArrowDropDown } from 'mineral-ui-icons';
-import { Dropdown } from 'mineral-ui';
-import Button from 'mineral-ui/Button';
+import { Button, Menu, MenuItem } from '@material-ui/core';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import './wizard.css';
 
 export default class DialogDropdown extends Component {
@@ -19,8 +18,12 @@ export default class DialogDropdown extends Component {
         super(props);
         this.state = {
             data: this.props.data,
+            isOpen: false,
+            anchorEl: null,
         };
         this.handleClick = this.handleClick.bind(this);
+        this.openMenu = this.openMenu.bind(this);
+        this.closeMenu = this.closeMenu.bind(this);
     }
 
     componentDidMount() {
@@ -30,6 +33,7 @@ export default class DialogDropdown extends Component {
     handleClick(event) {
         this.props.selectEnabler(event.target.innerText);
         this.props.toggleWizard();
+        this.closeMenu();
     }
 
     openOnClick() {
@@ -40,16 +44,53 @@ export default class DialogDropdown extends Component {
         }
     }
 
+    openMenu(event) {
+        this.setState({ isOpen: true, anchorEl: event.target });
+    }
+
+    closeMenu() {
+        this.setState({ isOpen: false });
+    }
+
     renderDropdown() {
         if (!this.props.visible || !Array.isArray(this.state.data)) {
             return null;
         }
         return (
-            <Dropdown data={this.state.data}>
-                <Button id="wizard-YAML-button" size="medium" iconEnd={<IconArrowDropDown />}>
+            <span>
+                <Button
+                    aria-controls="wizard-menu"
+                    aria-haspopup="true"
+                    onClick={this.openMenu}
+                    size="medium"
+                    variant="outlined"
+                    id="onboard-wizard-button"
+                    style={{ borderRadius: '0.1875em' }}
+                    endIcon={<KeyboardArrowDownIcon />}
+                >
                     Onboard New API
                 </Button>
-            </Dropdown>
+                <Menu
+                    id="wizard-menu"
+                    keepMounted
+                    open={this.state.isOpen}
+                    onClose={this.closeMenu}
+                    anchorEl={this.state.anchorEl}
+                    getContentAnchorEl={null}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'center',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center',
+                    }}
+                >
+                    {this.state.data.map(itemType => (
+                        <MenuItem onClick={this.handleClick}>{itemType.text}</MenuItem>
+                    ))}
+                </Menu>
+            </span>
         );
     }
 

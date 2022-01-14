@@ -9,9 +9,12 @@
  */
 import * as enzyme from 'enzyme';
 import DialogDropdown from './DialogDropdown';
+import {render, screen} from '@testing-library/react'
+import '@testing-library/jest-dom/extend-expect';
+
 describe('>>> DialogDropdown tests', () => {
     it('should have "Onboard New API" button', () => {
-        const wrapper = enzyme.shallow(
+        render(
             <DialogDropdown
                 visible={true}
                 data={[{
@@ -23,8 +26,8 @@ describe('>>> DialogDropdown tests', () => {
                 toggleWizard={jest.fn()}
             />
         );
-        let button = wrapper.find('#wizard-YAML-button');
-        expect(button.length).toEqual(1);
+        const button = screen.getByRole('button');
+        expect(button).toBeInTheDocument();
     });
     it('should not have "Onboard New API" button', () => {
         const wrapper = enzyme.shallow(

@@ -9,23 +9,23 @@
  */
 import * as enzyme from 'enzyme';
 import WizardInputs from './WizardInputs';
+import {render, fireEvent, screen, within} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import '@testing-library/jest-dom/extend-expect';
 
 describe('>>> WizardInputs tests', () => {
-    it('should change value in component\'s state on keystroke when content is an array', () => {
+    it('should change value in component\'s state on keystroke when content is an array', async () => {
         const updateWizardData = jest.fn();
         const dummyData = {
             text: 'Basic info',
             content: [
                 { testInput: { value: 'input', question: '' } },
-                { testInput: { value: 'input', question: '' } },
             ],
             multiple: true,
         };
-        const wrapper = enzyme.shallow(
-            <WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />
-        );
-        const instance = wrapper.instance();
-        instance.handleInputChange({ target: { value: 'test1', name: 'testInput', getAttribute: () => 0 } });
+        render(<WizardInputs validateInput={jest.fn()} updateWizardData={updateWizardData} data={dummyData} />)
+        const input = screen.getByRole('textbox');
+        await userEvent.type(input, "Hello");
         expect(updateWizardData).toHaveBeenCalled();
     });
     it('should handle booleans', () => {
@@ -51,28 +51,7 @@ describe('>>> WizardInputs tests', () => {
             text: 'Basic info',
         });
     });
-    it('should create events on select use', () => {
-        const updateWizardData = jest.fn();
-        const dummyCategory = {
-            text: 'Category 1',
-            content: [{
-                type: { value: 'val', question: 'Why?', options: ['Option 1', 'val'] },
-            }],
-            interference: 'catalog',
-        };
-        const wrapper = enzyme.shallow(
-            <WizardInputs updateWizardData={updateWizardData} tiles={['TIle 1']} data={dummyCategory}/>
-        );
-        const instance = wrapper.instance();
-        instance.handleSelect({name: 'type', index: 0, value: 'Option 1'});
-        expect(updateWizardData).toHaveBeenCalledWith({
-            text: 'Category 1',
-            content: [{
-                type: { value: 'Option 1', question: 'Why?', options: ['Option 1', 'val'], show: true },
-            }],
-            interference: 'catalog',
-        });
-    });
+
     it('should create 3 inputs based on data and visibility', () => {
         const dummyData = {
             text: 'Dummy Data',
@@ -84,10 +63,11 @@ describe('>>> WizardInputs tests', () => {
             }],
             multiple: false,
         };
-        const wrapper = enzyme.shallow(
+        render(
             <WizardInputs updateWizardData={jest.fn()} data={dummyData} />
         );
-        expect(wrapper.find('FormField').length).toEqual(3);
+
+        expect(screen.getAllByRole('textbox').length).toEqual(3);
     });
     it('should not load', () => {
         const updateWizardData = jest.fn();
@@ -381,28 +361,29 @@ describe('>>> WizardInputs tests', () => {
                 },
             }],
         };
-        const wrapper = enzyme.shallow(
+        render(
             <WizardInputs data={dummyData} />
         );
-        const instance = wrapper.instance();
-        instance.renderInputElement('test', 0, dummyData.content[0].test);
-        expect(wrapper.find('FormField').props().caption).toEqual('Optional field; Field must be lowercase; Max length is 40 characters');
+        const element = screen.getByText('Optional field; Field must be lowercase; Max length is 40 characters');
+        expect(element).toBeInTheDocument();
     });
     it('should handle select\'s onCLick', () => {
         const updateWizardData = jest.fn();
         const dummyCategory = {
             text: 'Category 1',
             content: [{
-                type: { value: 'val', question: 'Why?', options: ['Option 1', 'val'] },
+                type: { value: 'val ', question: 'Why?', options: ['Option 1', 'val'] },
             }],
             interference: 'catalog',
         };
-        const wrapper = enzyme.shallow(
+        render(
             <WizardInputs updateWizardData={updateWizardData}  validateInput={jest.fn()} tiles={['TIle 1']} data={dummyCategory}/>
         );
-        const instance = wrapper.instance();
-        const a = instance.renderInputElement('type', 0, dummyCategory.content[0].type);
-        a.props.data[1].onClick();
+
+        fireEvent.mouseDown(screen.getByRole('button'));
+
+        const listbox = within(screen.getByRole('listbox'));
+        fireEvent.click(listbox.getByText(/val/i));
         expect(updateWizardData).toHaveBeenCalledWith({
             text: 'Category 1',
             content: [{
@@ -462,12 +443,10 @@ describe('>>> WizardInputs tests', () => {
                 },
             }],
         };
-        const wrapper = enzyme.shallow(
+        render(
             <WizardInputs data={dummyData} />
         );
-        const instance = wrapper.instance();
-        instance.renderInputElement('test', 0, dummyData.content[0].test);
-        expect(wrapper.find('Tooltip').props().content).toEqual('hey');
+        expect(screen.getByTitle('hey')).toBeInTheDocument();
     });
     it('should alter fields if there\'s interference', () => {
         const updateWizardData = jest.fn();

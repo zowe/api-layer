@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Button, Dialog, DialogActions, DialogBody, DialogFooter, DialogHeader, DialogTitle, Text } from 'mineral-ui';
+import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, IconButton } from '@material-ui/core';
 import * as YAML from 'yaml';
 
 class ConfirmDialog extends Component {
@@ -17,26 +17,22 @@ class ConfirmDialog extends Component {
     render() {
         const { confirmDialog, serviceId, confirmStaticDefOverride } = this.props;
         return (
-            <Dialog isOpen={confirmDialog} closeOnClickOutside={false}>
-                <DialogHeader>
-                    <DialogTitle>Are you sure?</DialogTitle>
-                </DialogHeader>
-                <DialogBody>
-                    <Text>
+            <Dialog open={confirmDialog}>
+                <DialogTitle>Are you sure?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
                         Static definition with serviceId <code>{serviceId}</code> already exists. Do you wish to
                         overwrite it?
-                    </Text>
-                </DialogBody>
-                <DialogFooter>
-                    <DialogActions>
-                        <Button onClick={confirmStaticDefOverride} size="medium">
-                            No, I'll change my serviceId
-                        </Button>
-                        <Button onClick={this.override} size="medium">
-                            Yes, overwrite
-                        </Button>
-                    </DialogActions>
-                </DialogFooter>
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <IconButton onClick={confirmStaticDefOverride} size="medium">
+                        No, I'll change my serviceId
+                    </IconButton>
+                    <IconButton onClick={this.override} size="medium">
+                        Yes, overwrite
+                    </IconButton>
+                </DialogActions>
             </Dialog>
         );
     }

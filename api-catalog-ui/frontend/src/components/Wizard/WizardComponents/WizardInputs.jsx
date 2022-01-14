@@ -8,10 +8,19 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component } from 'react';
-import { Checkbox, FormField, Select, Tooltip } from 'mineral-ui';
-import TextInput from 'mineral-ui/TextInput';
-import Button from 'mineral-ui/Button';
-import { IconDelete } from 'mineral-ui-icons';
+import {
+    Button,
+    Checkbox,
+    FormControl,
+    FormControlLabel,
+    FormHelperText,
+    InputLabel,
+    MenuItem,
+    Select,
+    Input,
+    Tooltip,
+} from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 class WizardInputs extends Component {
     constructor(props) {
@@ -27,11 +36,11 @@ class WizardInputs extends Component {
      * When users fills out an input the inputData object is updated with the new information
      * @param event object containing input's name, value and its data-index attr.
      */
-    handleInputChange = event => {
+    handleInputChange = (event, index) => {
         const { name, checked } = event.target;
         let { value } = event.target;
         const objectToChange = this.props.data;
-        const arrIndex = parseInt(event.target.getAttribute('data-index'));
+        const arrIndex = typeof index !== 'undefined' ? index : parseInt(event.target.getAttribute('data-index'));
         const { maxLength, lowercase, regexRestriction, validUrl } = objectToChange.content[arrIndex][name];
         const prevValue = objectToChange.content[arrIndex][name].value;
         if (name === 'serviceId') {
@@ -203,9 +212,10 @@ class WizardInputs extends Component {
      * Select's onChange event contains only the changed value, so we create a usable event ourselves
      * @param entry each item's basic info - name value and index - we create event from that
      */
-    handleSelect = entry => {
-        const { name, value, index } = entry;
-        this.interferenceInjection({ title: value, name, index });
+    handleSelect = (entry, values) => {
+        const { index, itemKey } = values;
+        const { value } = entry.target;
+        this.interferenceInjection({ title: value, name: itemKey, index });
     };
 
     /**
@@ -336,7 +346,7 @@ class WizardInputs extends Component {
                 variant="danger"
                 minimal
                 size="medium"
-                iconStart={!this.state[`delBtn${index}`] ? <IconDelete /> : undefined}
+                iconStart={!this.state[`delBtn${index}`] ? <DeleteIcon /> : undefined}
                 name={index}
                 onClick={this.handleDelete}
             >
@@ -379,19 +389,7 @@ class WizardInputs extends Component {
      * @returns {JSX.Element} returns the input element
      */
     renderInputElement(itemKey, index, inputNode) {
-        const {
-            question,
-            value,
-            empty,
-            optional,
-            options,
-            maxLength,
-            lowercase,
-            tooltip,
-            problem,
-            type,
-            disabled,
-        } = inputNode;
+        const { question, value, optional, options, maxLength, lowercase, tooltip, disabled } = inputNode;
         let caption = '';
         if (optional) {
             caption += 'Optional field; ';
@@ -407,61 +405,52 @@ class WizardInputs extends Component {
         } else {
             caption = undefined;
         }
-        const error = empty || problem;
-        const variant = error ? 'danger' : undefined;
         if (typeof value === 'boolean') {
             return (
-                <Checkbox
-                    className="wCheckBox"
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            className="wCheckBox"
+                            checked={value}
+                            onChange={event => this.handleInputChange(event, index)}
+                            name={itemKey}
+                        />
+                    }
                     label={question}
-                    checked={value}
-                    onChange={this.handleInputChange}
-                    name={itemKey}
-                    data-index={index}
+                    labelPlacement="bottom"
                 />
             );
         }
         if (Array.isArray(options)) {
             return (
-                <FormField
-                    className="formField"
-                    input={Select}
-                    size="large"
-                    placeholder={itemKey}
-                    selectedItem={{ text: value }}
-                    label={question}
-                    variant={variant}
-                    caption={caption}
-                    data={options.map(entry => ({
-                        text: entry,
-                        onClick: () => this.handleSelect({ name: itemKey, index, value: entry }),
-                    }))}
-                    disabled={disabled}
-                />
+                <FormControl className="formField" disabled={disabled}>
+                    <InputLabel shrink>{question}</InputLabel>
+                    <Select id={itemKey} value={value} onChange={event => this.handleSelect(event, { index, itemKey })}>
+                        {options.map(entry => (
+                            <MenuItem value={entry}>{entry}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
             );
         }
-        const disableTooltip = false;
         let finalTooltip = tooltip;
         if (tooltip === undefined) {
             finalTooltip = 'filler';
         }
+        const captionId = `my-helper${itemKey}`;
         return (
-            <Tooltip className="wizardTooltip" content={finalTooltip} disabled={disableTooltip}>
-                <FormField
-                    type={type}
-                    className="wizardFormFields"
-                    input={TextInput}
-                    size="large"
-                    name={itemKey}
-                    onChange={this.handleInputChange}
-                    data-index={index}
-                    placeholder={itemKey}
-                    value={value}
-                    label={question}
-                    variant={variant}
-                    caption={caption}
-                    disabled={disabled}
-                />
+            <Tooltip className="wizardTooltip" title={finalTooltip}>
+                <FormControl className="wizardFormFields" disabled={disabled}>
+                    <InputLabel shrink>{question}</InputLabel>
+                    <Input
+                        id={itemKey}
+                        name={itemKey}
+                        value={value}
+                        onChange={event => this.handleInputChange(event, index)}
+                        aria-describedby={captionId}
+                    />
+                    <FormHelperText id={captionId}>{caption}</FormHelperText>
+                </FormControl>
             </Tooltip>
         );
     }
@@ -472,7 +461,9 @@ class WizardInputs extends Component {
             <div className="wizardForm">
                 {this.loadInputs()}
                 {multiple && typeof isMinion === 'undefined' ? (
-                    <Button onClick={this.addFieldsToCurrentCategory}>Add more fields</Button>
+                    <Button onClick={this.addFieldsToCurrentCategory} style={{ borderRadius: '0.1875em' }}>
+                        Add more fields
+                    </Button>
                 ) : null}
             </div>
         );

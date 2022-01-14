@@ -9,14 +9,29 @@
  */
 import * as enzyme from 'enzyme';
 import WizardNavigation from './WizardNavigation';
-import { IconDanger } from 'mineral-ui-icons';
+import {render, screen} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import '@testing-library/jest-dom/extend-expect';
 
+jest.mock("../YAML/YAMLVisualizerContainer", () =>
+     () => {
+        const YAMLVisualizerContainerMock = "YAMLVisualizerContainerMock";
+        return <YAMLVisualizerContainerMock />;
+    });
+jest.mock("./WizardInputsContainer", () =>
+    () => {
+        const WizardInputsContainer = "WizardInputsContainerMock";
+        return <WizardInputsContainer />;
+    });
 describe('>>> Wizard navigation tests', () => {
+
+
     it('should handle category change', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
         const validateInput = jest.fn();
-        const wrapper = enzyme.shallow(
+
+        render(
             <WizardNavigation
                 selectedCategory={0}
                 inputData={[]}
@@ -26,8 +41,7 @@ describe('>>> Wizard navigation tests', () => {
                 validateInput={validateInput}
             />
         );
-        const instance = wrapper.instance();
-        instance.handleChange(2);
+        userEvent.click(screen.getByRole('tab'));
         expect(changeWizardCategory).toHaveBeenCalled();
         expect(validateInput).toHaveBeenCalled();
     });
@@ -35,20 +49,44 @@ describe('>>> Wizard navigation tests', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
         const validateInput = jest.fn();
-        const wrapper = enzyme.shallow(
+        const dummyData = [
+            {
+                text: 'Some Enabler',
+                nav: 'Nav #1',
+                categories: [
+                    { name: 'Category 1', indentation: false },
+                    { name: 'Category 2', indentation: false },
+                ],
+                help: 'Some additional information',
+                helpUrl: {
+                    title: 'Help',
+                    link: 'https://docs.zowe.org/stable/extend/extend-apiml/onboard-plain-java-enabler/#api-catalog-information',
+                },
+            },
+            {
+                text: 'Other Enabler',
+                nav: 'Nav #2',
+                categories: [
+                    { name: 'Category 1', indentation: false },
+                    { name: 'Category 2', indentation: false },
+                ],
+            },
+        ];
+        render(
             <WizardNavigation
                 selectedCategory={0}
-                inputData={[]}
-                navsObj={{ 'Nav1': {}, 'Nav2': {} }}
+                inputData={dummyData}
+                navsObj={{ 'Nav #1': {}, 'Nav #2': {} }}
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 validateInput={validateInput}
                 assertAuthorization={jest.fn()}
             />
         );
-        const instance = wrapper.instance();
-        instance.handleChange(2);
-        expect(validateInput).toHaveBeenCalledTimes(3);
+        userEvent.click(screen.getByRole('tab',{name: 'Nav #1'}));
+        userEvent.click(screen.getByRole('tab',{name: 'Nav #2'}));
+        userEvent.click(screen.getByRole('tab',{name: 'YAML result'}));
+        expect(validateInput).toHaveBeenCalledTimes(5);
     });
     it('should not validate upon accessing something else', () => {
         const next = jest.fn();
@@ -88,6 +126,7 @@ describe('>>> Wizard navigation tests', () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
         const checkFilledInput = jest.fn();
+        const validateInput = jest.fn();
         const dummyData = [
             {
                 text: 'Some Enabler',
@@ -111,7 +150,7 @@ describe('>>> Wizard navigation tests', () => {
                 ],
             },
         ];
-        const wrapper = enzyme.shallow(
+        render(
             <WizardNavigation
                 selectedCategory={0}
                 inputData={dummyData}
@@ -119,12 +158,12 @@ describe('>>> Wizard navigation tests', () => {
                 nextWizardCategory={next}
                 changeWizardCategory={changeWizardCategory}
                 checkFilledInput={checkFilledInput}
-
+                validateInput={validateInput}
             />
         );
-        expect(wrapper.find('Tab').length).toEqual(2);
-        expect(wrapper.find('Card').length).toEqual(1);
-        expect(wrapper.find('Link').length).toEqual(1);
+        userEvent.click(screen.getByRole('tab',{name: 'Nav #1'}));
+        expect(screen.getByRole('link')).toBeInTheDocument();
+        expect(screen.getByRole('tablist')).toBeInTheDocument();
     });
 
     it('should add a class name for the problematic tabs', () => {
@@ -141,7 +180,7 @@ describe('>>> Wizard navigation tests', () => {
                 nav: 'Nav #1',
             },
         ];
-        const wrapper = enzyme.shallow(
+        render(
             <WizardNavigation
                 selectedCategory={0}
                 inputData={dummyData}
@@ -152,6 +191,6 @@ describe('>>> Wizard navigation tests', () => {
 
             />
         );
-        expect(wrapper.instance().loadTabs()[0].props.icon).toEqual(<IconDanger style={{ color: 'red' }} />);
+        expect(screen.getByLabelText("problem")).toBeInTheDocument();
     });
 });

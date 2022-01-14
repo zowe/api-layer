@@ -76,3 +76,59 @@ label.wCheckBox span:last-child {
 .readyTab {
     font-weight: 800;
 }
+
+#wizard-done-button:disabled {
+    cursor: none;
+    color: rgb(175, 186, 204);
+    outline: currentcolor none 0px;
+    background-color: rgb(235, 239, 245);
+    border-color: transparent;
+    border-radius: 0.1875em;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.entry span.MuiTypography-root {
+    color: #58606e;
+    font-size: 0.875em;
+    font-family: "Open Sans",-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}
+
+.MuiInputLabel-formControl {
+    position: relative;
+}
+
+.MuiTab-wrapper {
+    flex-direction: row;
+    justify-content: end;
+    max-width: 100%;
+    font-size: 0.875em;
+    text-align: right;
+}
+
+.MuiTab-labelIcon {
+    min-height: 0;
+    height: 50px;
+}
+
+MuiTab-textColorInherit {
+    height: 50px;
+}
+
+.MuiTabs-vertical {
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    font-size: 0.875em;
+}
+
+.MuiFormControlLabel-labelPlacementBottom {
+    flex-direction: row;
+}
+
+.MuiFormControl-root {
+    display: flex;
+}
