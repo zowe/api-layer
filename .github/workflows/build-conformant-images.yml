@@ -12,6 +12,11 @@ on:
                 type: string
                 default: 'all'
                 required: false
+            version:
+                description: 'Version of images that will be published.'
+                type: string
+                default: ''
+                required: false
         secrets:
             registry-user:
                 required: true
@@ -34,6 +39,22 @@ env:
     IMAGE_BASE_DIR: ./containers
 
 jobs:
+    set-gradle-properties-version:
+        # images publish with the version in gradle.properties
+        # if a version is provided, use that version to publish, else use value in gradle.properties
+        if: ${{ inputs.version != '' }}
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   name: Set gradle.properties version
+                run: sed -i 's/version=.*/version=${{ inputs.version }}/g' gradle.properties
+
+            -   name: Check value in gradle.properties
+                run: cat gradle.properties | grep ^version
+
     create-image-all-services-amd64:
         strategy:
             matrix:
@@ -184,6 +205,9 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+
+            -   name: Debug gradle.properties value
+                run: cat gradle.properties | grep ^version
 
             -   uses: zowe-actions/shared-actions/prepare-workflow@main
 
