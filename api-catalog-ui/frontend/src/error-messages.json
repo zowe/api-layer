@@ -13,6 +13,10 @@
             "messageText": "Invalid username or password"
         },
         {
+            "messageKey": "ZWEAS199E",
+            "messageText": "The password for the specified identity has expired"
+        },
+        {
             "messageKey": "ZWEAS123E",
             "messageText": "Invalid token type in response from Authentication service"
         },

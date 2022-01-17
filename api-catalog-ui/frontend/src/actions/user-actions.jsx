@@ -27,7 +27,6 @@ function login(credentials) {
 
     return dispatch => {
         dispatch(request(credentials));
-
         userService.login(credentials).then(
             token => {
                 dispatch(success(token));
@@ -71,6 +70,7 @@ function authenticationFailure(error) {
     }
     return dispatch => {
         dispatch(failure(error));
+        debugger;
         if (error.xhr.getResponseHeader('WWW-Authenticate')) {
             window.location.href = process.env.REACT_APP_CATALOG_HOMEPAGE;
         } else {

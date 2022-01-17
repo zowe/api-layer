@@ -7,7 +7,7 @@ const testinson = require('../assets/services/testinson');
 const cademoapps = require('../assets/services/cademoapps');
 const loginSuccess = require('../assets/services/login_success');
 const invalidCredentials = require('../assets/services/user-name-invalid.json');
-
+const passwordExpired = require('../assets/services/password-expired.json');
 const apiCatalog = require('../assets/apidoc/apicatalog.json');
 const discoverableClient = require('../assets/apidoc/discoverableclient');
 const sampleClient = require('../assets/apidoc/sample');
@@ -16,6 +16,10 @@ let allUP = false;
 
 function validateCredentials({ username, password }) {
     return username === 'user' && password === 'user';
+}
+
+function validateExpiredCredentials({ username, password }) {
+    return username === 'user' && password === 'expiredPass';
 }
 
 const appRouter = app => {
@@ -30,7 +34,10 @@ const appRouter = app => {
         if (validateCredentials(credentials)) {
             console.log('LOGIN');
             setTimeout(() => res.status(204).send(loginSuccess), 2000);
-        } else {
+        } else if(validateExpiredCredentials(credentials)){
+            res.status(401).send(passwordExpired);
+        }
+        else {
             console.log(invalidCredentials);
             res.status(401).send(invalidCredentials);
         }

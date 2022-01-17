@@ -86,16 +86,19 @@ export default class Login extends React.Component {
     handleSubmit(e) {
         e.preventDefault();
 
-        const { username, password } = this.state;
+        const { username, password, newPassword } = this.state;
         const { login } = this.props;
 
         if (username && password) {
             login({ username, password });
         }
+        if (username && password && newPassword) {
+            login({ username, password, newPassword });
+        }
     }
 
     render() {
-        const { username, password, errorMessage, showPassword, warning } = this.state;
+        const { username, password, errorMessage, showPassword, warning, newPassword, repeatNewPassword  } = this.state;
         const { authentication, isFetching } = this.props;
         let messageText;
         if (
