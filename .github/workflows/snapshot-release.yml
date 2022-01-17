@@ -28,7 +28,7 @@ jobs:
 
     release-images:
         needs:
-            # TODO need to set gradle.properties version field to version I want images to release with
+            # TODO the before tag commit to master from the gradle release task will trigger a snapshot build here, and that will release images as if they are the real ones
             - release # Ensure services can build and binary released successfully
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
         with:

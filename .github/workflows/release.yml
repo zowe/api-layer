@@ -71,7 +71,7 @@ jobs:
 
     release-images:
         needs:
-            # TODO need to get version from the above gradlew release task - check if this is necessary based on what happens when tag changes are committed to master (though that is interdependency on another workflow...)\
+            # TODO get version to release with and use that here
             - release # Ensure services can build and binary released successfully
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
         with:

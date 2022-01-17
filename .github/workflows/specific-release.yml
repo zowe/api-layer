@@ -66,11 +66,11 @@ jobs:
 
     release-images:
         needs:
-            # TODO need to set gradle.properties release field to version I want to release with
             - release # Ensure services can build and binary released successfully
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
         with:
             release: true
+            version: ${{ inputs.release_version }}
         secrets:
             registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
             registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
