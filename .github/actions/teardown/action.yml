@@ -1,0 +1,14 @@
+name: "Tear down action"
+description: "General clean up after jobs are finished"
+
+runs:
+    using: "composite"
+    steps:
+        -   name: Cleanup Gradle Cache
+            # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
+            # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+            shell: bash
+            run: |
+                rm -f ~/.gradle/caches/modules-2/modules-2.lock
+                rm -f ~/.gradle/caches/modules-2/gc.properties
+                rm -rf ~/.gradle/caches/build-cache-1
