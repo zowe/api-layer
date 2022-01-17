@@ -1,5 +1,5 @@
 name: "Tear down action"
-description: "General lean up after jobs are finished"
+description: "General clean up after jobs are finished"
 
 runs:
     using: "composite"
