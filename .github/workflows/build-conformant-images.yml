@@ -39,25 +39,8 @@ env:
     IMAGE_BASE_DIR: ./containers
 
 jobs:
-    set-gradle-properties-version:
-        # images publish with the version in gradle.properties
-        # if a version is provided, use that version to publish, else use value in gradle.properties
-        if: ${{ inputs.version != '' }}
-        runs-on: ubuntu-latest
-        steps:
-            -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   name: Set gradle.properties version
-                run: sed -i 's/version=.*/version=${{ inputs.version }}/g' gradle.properties
-
-            -   name: Check value in gradle.properties
-                run: cat gradle.properties | grep ^version
 
     create-image-all-services-amd64:
-        needs:
-            - set-gradle-properties-version
         strategy:
             matrix:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
@@ -74,9 +57,9 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
 
-            -   uses: ./.github/actions/setup
-
-            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+            -   uses: ./.github/actions/image-publish-setup
+                with:
+                    imageVersion: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
@@ -101,8 +84,6 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     create-image-all-services-s390x:
-        needs:
-            - set-gradle-properties-version
         strategy:
             max-parallel: 2
             matrix:
@@ -120,9 +101,9 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
 
-            -   uses: ./.github/actions/setup
-
-            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+            -   uses: ./.github/actions/image-publish-setup
+                with:
+                    imageVersion: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
@@ -169,9 +150,9 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
 
-            -   uses: ./.github/actions/setup
-
-            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+            -   uses: ./.github/actions/image-publish-setup
+                with:
+                    imageVersion: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
@@ -191,8 +172,6 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     create-image-one-service:
-        needs:
-            - set-gradle-properties-version
         strategy:
             # no max-parallel because will only make 2 s390x builds and don't want to block amd64 concurrency
             matrix:
@@ -210,12 +189,9 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
 
-            -   uses: ./.github/actions/setup
-
-            -   name: Debug gradle.properties value
-                run: cat gradle.properties | grep ^version
-
-            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+            -   uses: ./.github/actions/image-publish-setup
+                with:
+                    imageVersion: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
@@ -269,9 +245,9 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
 
-            -   uses: ./.github/actions/setup
-
-            -   uses: zowe-actions/shared-actions/prepare-workflow@main
+            -   uses: ./.github/actions/image-publish-setup
+                with:
+                    imageVersion: ${{ inputs.version }}
 
             -   uses: zowe-actions/shared-actions/docker-prepare@main
                 with:
