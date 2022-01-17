@@ -5,14 +5,15 @@ inputs:
     jdkVersion:
         description: "JDK version"
         required: false
-        default: 1.8
+        default: "8"
 
 runs:
     using: "composite"
     steps:
         -   name: Set up JDK ${{ inputs.jdkVersion }}
-            uses: actions/setup-java@v1
+            uses: actions/setup-java@v2
             with:
+                distribution: 'zulu'
                 java-version: ${{ inputs.jdkVersion }}
         -   name: Set up Node
             uses: actions/setup-node@v2

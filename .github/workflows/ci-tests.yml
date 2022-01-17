@@ -43,7 +43,7 @@ jobs:
 
             -   uses: ./.github/actions/setup
                 with:
-                    jdkVersion: 1.11
+                    jdkVersion: 11
 
             -   name: Build with Gradle
                 run: >
