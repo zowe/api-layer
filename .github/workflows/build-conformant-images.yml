@@ -56,6 +56,8 @@ jobs:
                 run: cat gradle.properties | grep ^version
 
     create-image-all-services-amd64:
+        needs:
+            - set-gradle-properties-version
         strategy:
             matrix:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service ]
@@ -99,6 +101,8 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     create-image-all-services-s390x:
+        needs:
+            - set-gradle-properties-version
         strategy:
             max-parallel: 2
             matrix:
@@ -187,6 +191,8 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     create-image-one-service:
+        needs:
+            - set-gradle-properties-version
         strategy:
             # no max-parallel because will only make 2 s390x builds and don't want to block amd64 concurrency
             matrix:
