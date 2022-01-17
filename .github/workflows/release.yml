@@ -8,8 +8,13 @@ on:
     workflow_dispatch:
         inputs:
             scope:
-                description: 'Specify scope that is to be used. The options are patch, minor, major'
+                description: 'Specify scope that is to be used.'
                 required: true
+                type: choice
+                options:
+                    - patch
+                    - minor
+                    - major
                 default: 'patch'
 
 jobs:

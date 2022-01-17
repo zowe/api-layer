@@ -6,8 +6,16 @@ on:
     workflow_dispatch:
         inputs:
             service:
-                description: 'Enter a service name for which to create an image. The name must match a directory in /containers. E.g. gateway-service or discovery-service. If skipped, images will be created for all services.'
-                required: false
+                description: 'Enter the service for which to create an image.'
+                type: choice
+                options:
+                    - all
+                    - gateway-service
+                    - discovery-service
+                    - api-catalog-services
+                    - caching-service
+                    - metrics-service
+                required: true
                 default: 'all'
 
 jobs:
