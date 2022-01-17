@@ -1,5 +1,6 @@
 # This workflow will create images for api-layer services
 # This workflow is used to expose build-conformant-images.yml in a way that doesn't give users the option to release.
+# TODO undo debugging stuff
 name: Create Image Only (No Release)
 
 on:
@@ -42,9 +43,10 @@ jobs:
     build-images:
         needs:
             - build-services
-        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@master
+        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@apiml/GH1923/image_builds
         with:
             service: ${{ github.event.inputs.service }}
+            version: my-test-version-SNAPSHOT
             release: false
         secrets:
             registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
