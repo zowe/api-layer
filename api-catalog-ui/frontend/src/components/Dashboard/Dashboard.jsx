@@ -94,7 +94,7 @@ export default class Dashboard extends Component {
                 <ErrorDialog refreshedStaticApisError={refreshedStaticApisError} clearError={clearError} />
                 {!fetchTilesError && (
                     <div className="apis">
-                        <div className="grid-container">
+                        <div id="grid-container">
                             <div className="filtering-container">
                                 <Shield title="Search Bar is broken !">
                                     <SearchCriteria placeholder="Search for APIs" doSearch={this.handleSearch} />

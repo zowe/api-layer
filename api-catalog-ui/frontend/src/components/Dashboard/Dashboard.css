@@ -7,7 +7,7 @@ a {
     text-decoration: none;
 }
 
-.grid-container {
+#grid-container {
     width : 100%;
     height: 100%;
     justify-items: center;
@@ -42,7 +42,7 @@ a {
 }
 
 @media only screen and (max-width: 950px) {
-    .grid-container {
+    #grid-container {
         grid-template-columns: auto;
     }
 }
@@ -52,7 +52,7 @@ a {
         grid-template-columns: 360px;
     }
 
-    .grid-container {
+    #grid-container {
         grid-template-columns: 360px;
         padding-left: 1rem;
         padding-right: 1rem;
@@ -64,7 +64,7 @@ a {
         grid-template-columns: 320px;
     }
 
-    .grid-container {
+    #grid-container {
         grid-template-columns: 320px;
         padding-left: 1rem;
         padding-right: 1rem;
@@ -79,7 +79,7 @@ a {
 
 /* Custom styles for IE10 and above */
 @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {
-    .grid-container {
+    #grid-container {
         width : 100%;
         height: 100%;
         padding: 0 3rem 3rem 36px;
@@ -87,7 +87,7 @@ a {
         flex-direction: column;
     }
 
-    .grid-container > .grid-tile {
+    #grid-container > #grid-tile {
         margin-bottom: 20px;
     }
 
@@ -107,14 +107,14 @@ a {
     }
 
     @media only screen and (max-width: 530px) {
-        .grid-container {
+        #grid-container {
             padding-left: 1rem;
             padding-right: 1rem;
         }
     }
 
     @media only screen and (max-width: 390px) {
-        .grid-container {
+        #grid-container {
             padding-left: 1rem;
             padding-right: 1rem;
         }
