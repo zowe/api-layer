@@ -101,11 +101,40 @@ s, del, .missing, del.comment {
 	color: #F44336;
 }
 
-/* Class for link show/hide article */ 
+/* Class for link show/hide article */
 .showhide {
     color: #3e373785;
-    text-decoration: none; 
+    text-decoration: none;
     padding: 2px;
     font-size: 12px;
     float: right;
+}
+
+#diff-button {
+    box-sizing: border-box;
+    color: rgb(50, 114, 217);
+    font-family: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 16px;
+    line-height: 1.25;
+    outline: 0px;
+    -webkit-font-smoothing: antialiased;
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(200, 209, 224);
+    border-radius: 0.1875em;
+    border-style: solid;
+    border-width: 1px;
+    cursor: pointer;
+    display: inline-block;
+    font-weight: 600;
+    height: 2.5em;
+    margin: 0px;
+    min-width: 2.5em;
+    padding: 0px 0.5em;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+#diff-button:hover {
+    background: rgb(200, 209, 224);
+    background-color: rgb(200, 209, 224);
 }

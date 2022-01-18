@@ -1,6 +1,6 @@
 {
     "env":{
-        "catalogHomePage": "https://localhost:10010/ui/v1/apicatalog",
+        "catalogHomePage": "https://localhost:10010/apicatalog/ui/v1",
         "viewportWidth": 1400,
         "viewportHeight": 980,
         "username": "USER",

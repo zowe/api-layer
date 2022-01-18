@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Button, Select, Text } from 'mineral-ui';
+import { IconButton, InputLabel, Select, Typography, FormControl, MenuItem } from '@material-ui/core';
 import './ServiceVersionDiff.css';
 
 export default class ServiceVersionDiff extends Component {
@@ -33,30 +33,44 @@ export default class ServiceVersionDiff extends Component {
         return (
             <div className="api-diff-container">
                 <div className="api-diff-form">
-                    <Text>Compare</Text>
-                    <Select
-                        data={versionData}
-                        name="versionSelect1"
-                        selectedItem={selectedVersion1}
-                        onChange={this.handleVersion1Change}
-                        style={selectorStyle}
-                    />
-                    <Text>with</Text>
-                    <Select
-                        data={versionData}
-                        name="versionSelect2"
-                        selectedItem={selectedVersion2}
-                        onChange={this.handleVersion2Change}
-                        style={selectorStyle}
-                    />
-                    <Button
+                    <Typography>Compare</Typography>
+                    <FormControl className="formField">
+                        <InputLabel shrink>{versionData.text}</InputLabel>
+                        <Select
+                            label="versionSelect1"
+                            value={selectedVersion1}
+                            onChange={this.handleVersion1Change}
+                            sx={selectorStyle}
+                        >
+                            {versions.map(version => (
+                                <MenuItem value={version}>{version}</MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <Typography>with</Typography>
+                    <FormControl className="formField">
+                        <InputLabel shrink>{versionData.text}</InputLabel>
+                        <Select
+                            label="versionSelect2"
+                            value={selectedVersion2}
+                            onChange={this.handleVersion2Change}
+                            sx={selectorStyle}
+                        >
+                            {versions.map(version => (
+                                <MenuItem value={version}>{version}</MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <IconButton
+                        disabled={selectedVersion1 == null || selectedVersion2 == null}
+                        id="diff-button"
                         data-testid="diff-button"
                         onClick={() => {
                             getDiff(serviceId, selectedVersion1.text, selectedVersion2.text);
                         }}
                     >
                         Go
-                    </Button>
+                    </IconButton>
                 </div>
                 {/* eslint-disable-next-line react/no-danger */}
                 <div className="api-diff-content" dangerouslySetInnerHTML={{ __html: diffText }} />
