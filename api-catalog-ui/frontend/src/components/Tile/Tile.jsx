@@ -61,7 +61,6 @@ export default class Tile extends Component {
     };
 
     // not a great way to avoid overlapping text in a card block
-    // Mineral bug
     shortenDescription = description => {
         if (description.length > 180) {
             return `${description.substring(0, 177)}...`;
@@ -92,7 +91,7 @@ export default class Tile extends Component {
                         {this.getTileStatusText(tile)}
                     </Typography>
                     {tile.sso && (
-                        <Typography variant="h6" className="grid-tile-sso">
+                        <Typography variant="h6" id="grid-tile-sso">
                             SSO
                         </Typography>
                     )}

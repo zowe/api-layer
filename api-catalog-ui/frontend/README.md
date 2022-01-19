@@ -1,4 +1,4 @@
-# React/Mineral UI based API Catalog UI
+# React/Material UI based API Catalog UI
 
 Contains React component loaded at startup which calls the running API Catalog services to get a list of registered Tiles and displays them in a list.
 

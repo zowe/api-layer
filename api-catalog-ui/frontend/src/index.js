@@ -24,7 +24,6 @@ import reduxCatch from 'redux-catch';
 import storageSession from 'redux-persist/lib/storage/session';
 import { persistReducer, persistStore } from 'redux-persist';
 import thunk from 'redux-thunk';
-import { ThemeProvider } from 'mineral-ui';
 import './index.css';
 import { rootReducer } from './reducers/index';
 import { rootEpic } from './epics';
@@ -66,9 +65,7 @@ ReactDOM.render(
     <HashRouter>
         <Provider store={store}>
             <PersistGate loading={<Spinner isLoading />} persistor={persistor}>
-                <ThemeProvider>
-                    <AsyncAppContainer />
-                </ThemeProvider>
+                <AsyncAppContainer />
             </PersistGate>
         </Provider>
     </HashRouter>,

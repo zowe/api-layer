@@ -65,7 +65,7 @@ describe('>>> Detail page test', () => {
         cy.contains('Service Homepage').should('exist');
 
         cy.get(
-            '#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a'
+            '#root > div > div.content > div.detail-page > div.content-description-container > div > div.serviceTab > div.header > a'
         )
             .should('have.attr', 'href')
             .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
@@ -108,7 +108,7 @@ describe('>>> Detail page test', () => {
         cy.get('.opblock-tag-section').should('have.length.gte', 1);
 
         cy.get(
-            '#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > p'
+            '#root > div > div.content > div.detail-page > div.content-description-container > div > div.serviceTab > div.header > h6:nth-child(7)'
         )
             .should('exist')
             .should(
@@ -128,10 +128,10 @@ describe('>>> Detail page test', () => {
             .should('exist')
             .click();
 
-        cy.get('input[data-testid="search-bar"]').should('exist');
+        cy.get('#root > div > div.content > div:nth-child(2) > div.apis > div > div.filtering-container > div > div > input').should('exist');
         cy.contains('Available API services').should('exist');
 
-        cy.get('input[data-testid="search-bar"]')
+        cy.get('#root > div > div.content > div:nth-child(2) > div.apis > div > div.filtering-container > div > div > input')
             .as('search')
             .type('API Mediation Layer API');
 
