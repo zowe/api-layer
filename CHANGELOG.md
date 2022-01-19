@@ -2,6 +2,17 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `1.27.0 (2022-01-14)`
+
+* Feature:  Enable Discovery Service class path extensions and Gateway native library extensions (#1987) ([fd03db5](https://github.com/zowe/api-layer/commit/fd03db5)), closes [#1987](https://github.com/zowe/api-layer/issues/1987)
+* Feature:  Add Zaas methods for password change support (#1991) ([7597bd7](https://github.com/zowe/api-layer/commit/7597bd7)), closes [#1991](https://github.com/zowe/api-layer/issues/1991)
+* Feature:  Create API ML sample extension (#1947) ([a085cf3](https://github.com/zowe/api-layer/commit/a085cf3)), closes [#1947](https://github.com/zowe/api-layer/issues/1947)
+* Feature:  remove jwtsecret from usage (#1976) ([62e9d1d](https://github.com/zowe/api-layer/commit/62e9d1d)), closes [#1976](https://github.com/zowe/api-layer/issues/1976)
+
+
+* Bugfix:  Build conformant images properly (#2009) ([5f07073](https://github.com/zowe/api-layer/commit/5f07073)), closes [#2009](https://github.com/zowe/api-layer/issues/2009)
+* Bugfix:  Add log masking class for sensitive logs (#2003) ([994b483](https://github.com/zowe/api-layer/commit/994b483)), closes [#2003](https://github.com/zowe/api-layer/issues/2003)
+
 ## `1.26.0 (apiml: 1.26.16 2021-13-12)`
 
 * Feature: Enable hystrix metrics stream for core APIML services (#1899) ([0734f4d8](https://github.com/zowe/api-layer/commit/0734f4d8)), closes [#1858](https://github.com/zowe/api-layer/issues/1858)
