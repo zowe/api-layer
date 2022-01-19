@@ -9,7 +9,7 @@
         "@material-ui/icons": "4.11.2",
         "@wojtekmaj/enzyme-adapter-react-17": "0.6.1",
         "axios": "0.24.0",
-        "eslint": "7.11.0",
+        "eslint": "7.32.0",
         "history": "4.10.1",
         "lodash": "4.17.21",
         "loglevel": "1.7.1",
@@ -47,6 +47,7 @@
         "prettier": "2.3.0"
     },
     "scripts": {
+        "lint": "eslint src/**/*.js --config .eslintrc",
         "build": "react-scripts build",
         "test": "react-scripts test --watchAll=false --env=jsdom --reporters=default --reporters=jest-html-reporter --coverage --silent",
         "start": "react-scripts start",
