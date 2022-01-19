@@ -21,32 +21,32 @@ describe('>>> Service version change Test', () => {
         cy.get('.tabs-container').should('exist');
         cy.get('.tabs-container').should('have.length', 2);
         cy.get('.nav-tab').should('exist');
-        cy.get('.nav-tab').should('have.length', 4);
+        cy.get('.nav-tab').should('have.length', 5);
         cy.get('.version-text').should('exist');
-        cy.get('.version-text').should('have.length', 3);
+        cy.get('.version-text').should('have.length', 4);
         cy.get('.version-text')
             .eq(0)
-            .should('contain.text', 'v1');
+            .should('contain.text', 'zowe.apiml.discoverableclient.ws v1.0.0');
         cy.get('.version-text')
             .eq(1)
-            .should('contain.text', 'v2');
+            .should('contain.text', 'zowe.apiml.discoverableclient.rest v1.0.0');
         cy.get('.version-text')
-            .eq(2)
+            .eq(3)
             .should('contain.text', 'Compare');
     });
 
     it('Should pre select default version', () => {
         cy.get('.version-text').should('exist');
-        cy.get('.base-url').should('contain.text', '/discoverableclient/api/v1');
+        cy.get('.base-url').contains( 'discoverableclient/api/v1');
     });
 
     it('Should change version when clicking version 2', () => {
         cy.get('.nav-tab')
             .eq(2)
-            .should('contain.text', 'v2');
+            .should('contain.text', 'zowe.apiml.discoverableclient.rest v1.0.0');
         cy.get('.nav-tab')
-            .eq(2)
+            .eq(3)
             .click();
-        cy.get('.base-url', { timeout: 10000 }).should('contain.text', '/discoverableclient/api/v2');
+        cy.get('.base-url', { timeout: 10000 }).contains( '/discoverableclient/api/v2');
     });
 });
