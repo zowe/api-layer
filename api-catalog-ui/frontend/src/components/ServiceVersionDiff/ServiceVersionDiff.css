@@ -111,6 +111,7 @@ s, del, .missing, del.comment {
 }
 
 #diff-button {
+    margin: 3px 20px;
     box-sizing: border-box;
     color: rgb(50, 114, 217);
     font-family: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -127,7 +128,6 @@ s, del, .missing, del.comment {
     display: inline-block;
     font-weight: 600;
     height: 2.5em;
-    margin: 0px;
     min-width: 2.5em;
     padding: 0px 0.5em;
     text-decoration: none;
@@ -137,4 +137,8 @@ s, del, .missing, del.comment {
 #diff-button:hover {
     background: rgb(200, 209, 224);
     background-color: rgb(200, 209, 224);
+}
+
+.MuiSelect-select {
+    width: 110px;
 }

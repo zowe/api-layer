@@ -15,18 +15,17 @@ export default class ServiceVersionDiff extends Component {
         this.handleVersion2Change = this.handleVersion2Change.bind(this);
     }
 
-    handleVersion1Change(version) {
-        this.setState({ selectedVersion1: version });
-    }
+    handleVersion1Change = event => {
+        this.setState({ selectedVersion1: event.target.value });
+    };
 
-    handleVersion2Change(version) {
-        this.setState({ selectedVersion2: version });
-    }
+    handleVersion2Change = event => {
+        this.setState({ selectedVersion2: event.target.value });
+    };
 
     render() {
         const { serviceId, versions, getDiff, diffText } = this.props;
         const { selectedVersion1, selectedVersion2 } = this.state;
-        const versionData = versions.map(version => ({ text: version }));
         const selectorStyle = {
             width: '140px',
         };
@@ -35,7 +34,7 @@ export default class ServiceVersionDiff extends Component {
                 <div className="api-diff-form">
                     <Typography>Compare</Typography>
                     <FormControl className="formField">
-                        <InputLabel shrink>{versionData.text}</InputLabel>
+                        <InputLabel shrink>Version</InputLabel>
                         <Select
                             label="versionSelect1"
                             value={selectedVersion1}
@@ -49,7 +48,7 @@ export default class ServiceVersionDiff extends Component {
                     </FormControl>
                     <Typography>with</Typography>
                     <FormControl className="formField">
-                        <InputLabel shrink>{versionData.text}</InputLabel>
+                        <InputLabel shrink>Version</InputLabel>
                         <Select
                             label="versionSelect2"
                             value={selectedVersion2}
@@ -62,11 +61,11 @@ export default class ServiceVersionDiff extends Component {
                         </Select>
                     </FormControl>
                     <IconButton
-                        disabled={selectedVersion1 == null || selectedVersion2 == null}
+                        disabled={!selectedVersion1 || !selectedVersion2}
                         id="diff-button"
                         data-testid="diff-button"
                         onClick={() => {
-                            getDiff(serviceId, selectedVersion1.text, selectedVersion2.text);
+                            getDiff(serviceId, selectedVersion1, selectedVersion2);
                         }}
                     >
                         Go

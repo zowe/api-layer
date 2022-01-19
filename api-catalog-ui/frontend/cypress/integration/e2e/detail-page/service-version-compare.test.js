@@ -1,5 +1,7 @@
-const PATH_TO_VERSION_SELECTORS = '.api-diff-form > span > span > div > div > span';
-const PATH_TO_VERSION_SELECTOR_ITEMS = '.api-diff-form > span > div > div > div > span > span > span';
+const PATH_TO_VERSION_SELECTORS = '.detail-page > div.content-description-container > div > div.serviceTab > div.api-diff-container > div.api-diff-form > div:nth-child(2) > div > div';
+const PATH_TO_VERSION_SELECTORS2 = '.detail-page > div.content-description-container > div > div.serviceTab > div.api-diff-container > div.api-diff-form > div:nth-child(4) > div > div';
+const PATH_TO_VERSION_SELECTOR_ITEMS = '#menu- > div.MuiPaper-root.MuiMenu-paper.MuiPopover-paper.MuiPaper-elevation8.MuiPaper-rounded > ul> li';
+const PATH_TO_VERSION_SELECTOR_ITEMS2 = '#menu- > div.MuiPaper-root.MuiMenu-paper.MuiPopover-paper.MuiPaper-elevation8.MuiPaper-rounded > ul > li:nth-child(1)';
 
 describe('>>> Service version compare Test', () => {
     beforeEach(() => {
@@ -24,103 +26,93 @@ describe('>>> Service version compare Test', () => {
         cy.get('.tabs-container').should('exist');
         cy.get('.tabs-container').should('have.length', 2);
         cy.get('.nav-tab').should('exist');
-        cy.get('.nav-tab').should('have.length', 4);
+        cy.get('.nav-tab').should('have.length', 5);
         cy.get('.version-text').should('exist');
-        cy.get('.version-text').should('have.length', 3);
+        cy.get('.version-text').should('have.length', 4);
         cy.get('.version-text')
-            .eq(2)
             .should('contain.text', 'Compare');
     });
 
     it('Should switch to compare tab when clicked', () => {
         cy.get('.api-diff-container').should('not.exist');
-        cy.get('.nav-tab')
-            .eq(3)
+        cy.get('#root > div > div.content > div.detail-page > div.content-description-container > div > div.serviceTab > div.tabs-container > span:nth-child(4) > p')
             .should('contain.text', 'Compare');
-        cy.get('.nav-tab')
-            .eq(3)
+        cy.get('.nav-tab:nth-child(4)')
             .click();
         cy.get('.api-diff-container').should('exist');
 
         cy.get('.api-diff-form').should('exist');
-        cy.get('.api-diff-form > p')
+        cy.get('.api-diff-form > div:nth-child(2) > label')
             .eq(0)
             .should('exist');
-        cy.get('.api-diff-form > p')
+        cy.get('.api-diff-form > p:nth-child(1)')
             .eq(0)
             .should('contain.text', 'Compare');
-        cy.get('.api-diff-form > p')
-            .eq(1)
+        cy.get('.api-diff-container > div.api-diff-form > p:nth-child(3)')
+            .eq(0)
             .should('exist');
-        cy.get('.api-diff-form > p')
-            .eq(1)
+        cy.get('.api-diff-container > div.api-diff-form > p:nth-child(3)')
+            .eq(0)
             .should('contain.text', 'with');
-        cy.get(PATH_TO_VERSION_SELECTORS)
+        cy.get('.api-diff-form > div:nth-child(2) > label')
             .eq(0)
             .should('exist');
-        cy.get(PATH_TO_VERSION_SELECTORS)
+        cy.get('.api-diff-container > div.api-diff-form > div:nth-child(2) > label')
             .eq(0)
-            .should('contain.text', 'Select...');
-        cy.get(PATH_TO_VERSION_SELECTORS)
-            .eq(1)
+            .should('contain.text', 'Version');
+        cy.get('.api-diff-container > div.api-diff-form > div:nth-child(4) > label')
+            .eq(0)
             .should('exist');
-        cy.get(PATH_TO_VERSION_SELECTORS)
-            .eq(1)
-            .should('contain.text', 'Select...');
+        cy.get('.api-diff-container > div.api-diff-form > div:nth-child(4) > label')
+            .eq(0)
+            .should('contain.text', 'Version');
         cy.get('.api-diff-form > button').should('exist');
         cy.get('.api-diff-form > button').should('contain.text', 'Go');
     });
 
     it('Should display version in selector', () => {
-        cy.get('.api-diff-container').should('not.exist');
-        cy.get('.nav-tab')
-            .eq(3)
-            .should('contain.text', 'Compare');
-        cy.get('.nav-tab')
-            .eq(3)
-            .click();
+        cy.get('.content-description-container > div > div.serviceTab > div.tabs-container > span:nth-child(4) > p')
+            .should('contain.text', 'Compare').click();
 
         cy.get(PATH_TO_VERSION_SELECTORS)
-            .eq(0)
             .click();
         cy.get(PATH_TO_VERSION_SELECTOR_ITEMS).should('exist');
-        cy.get(PATH_TO_VERSION_SELECTOR_ITEMS).should('have.length', 2);
+        cy.get(PATH_TO_VERSION_SELECTOR_ITEMS).should('have.length', 3);
         cy.get(PATH_TO_VERSION_SELECTOR_ITEMS)
             .eq(0)
-            .should('have.text', 'v1');
+            .should('have.text', 'zowe.apiml.discoverableclient.ws v1.0.0');
         cy.get(PATH_TO_VERSION_SELECTOR_ITEMS)
             .eq(1)
-            .should('have.text', 'v2');
+            .should('have.text', 'zowe.apiml.discoverableclient.rest v1.0.0');
+        cy.get(PATH_TO_VERSION_SELECTOR_ITEMS)
+            .eq(2)
+            .should('have.text', 'zowe.apiml.discoverableclient.rest v2.0.0');
     });
 
     // Ignored because suspected internal environment instabilities causing the test
     // to fail. Should be reenabled when tests run on stable env
-    xit('Should display diff when versions set', () => {
+    it('Should display diff when versions set', () => {
         cy.get('.api-diff-container').should('not.exist');
         cy.get('.nav-tab')
-            .eq(3)
+            .eq(4)
             .should('contain.text', 'Compare');
         cy.get('.nav-tab')
-            .eq(3)
+            .eq(4)
             .click();
 
         cy.get(PATH_TO_VERSION_SELECTORS)
-            .eq(0)
             .click();
         cy.get(PATH_TO_VERSION_SELECTOR_ITEMS)
-            .eq(0)
-            .should('exist');
-        cy.get(PATH_TO_VERSION_SELECTOR_ITEMS)
-            .eq(0)
-            .click();
-        cy.get(PATH_TO_VERSION_SELECTORS)
-            .eq(1)
-            .click();
-        cy.get(PATH_TO_VERSION_SELECTOR_ITEMS)
-            .eq(1)
             .should('exist');
         cy.get(PATH_TO_VERSION_SELECTOR_ITEMS)
             .eq(1)
+            .click();
+        cy.get(PATH_TO_VERSION_SELECTORS2)
+            .click();
+        cy.get(PATH_TO_VERSION_SELECTOR_ITEMS2)
+            .should('exist');
+        cy.get(PATH_TO_VERSION_SELECTOR_ITEMS2)
+            .eq(0)
             .click();
         cy.get('.api-diff-form > button').should('exist');
         cy.get('.api-diff-form > button').click();
