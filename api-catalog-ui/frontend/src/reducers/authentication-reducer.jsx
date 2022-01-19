@@ -39,6 +39,29 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
                     sessionDefaultState.sessionOn = false;
                 },
             };
+        case userConstants.USERS_LOGIN_EXPIREDPASSWORD:
+            return {
+                error: action.error,
+                expired: true,
+            };
+        case userConstants.USERS_LOGIN_INIT:
+            return {};
+        case userConstants.USERS_LOGIN_VALIDATE:
+            if (action.credentials.newPassword !== action.credentials.repeatNewPassword) {
+                return {
+                    error: {
+                        messageText: 'Passwords do not match',
+                        messageKey: 'org.zowe.apiml.security.platform.errno.DONOTMATCH',
+                        messageNumber: 'ZWEAS198E',
+                        messageType: 'ERROR',
+                    },
+                    expired: true,
+                };
+            }
+            return {
+                error: {},
+                expired: true,
+            };
         case userConstants.USERS_LOGOUT_REQUEST:
         case userConstants.USERS_LOGOUT_SUCCESS:
             return {

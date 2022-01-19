@@ -19,7 +19,11 @@ function validateCredentials({ username, password }) {
 }
 
 function validateExpiredCredentials({ username, password }) {
-    return username === 'user' && password === 'expiredPass';
+    return username === 'user' && password === 'exp';
+}
+
+function validatePasswordUpdate({ username, password, newPassword }) {
+    return username === 'user' && password === 'exp' && newPassword !== undefined && newPassword !== password;
 }
 
 const appRouter = app => {
@@ -30,8 +34,10 @@ const appRouter = app => {
 
     app.post('/apicatalog/api/v1/auth/login', async (req, res) => {
         const credentials = req.body;
-
-        if (validateCredentials(credentials)) {
+        if (validatePasswordUpdate(credentials)) {
+            console.log('PASSWORD UPDATE');
+            setTimeout(() => res.status(204).send(loginSuccess), 2000);
+        } else if (validateCredentials(credentials)) {
             console.log('LOGIN');
             setTimeout(() => res.status(204).send(loginSuccess), 2000);
         } else if(validateExpiredCredentials(credentials)){

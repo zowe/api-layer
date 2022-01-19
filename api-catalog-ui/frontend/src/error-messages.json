@@ -13,6 +13,10 @@
             "messageText": "Invalid username or password"
         },
         {
+            "messageKey": "ZWEAS198E",
+            "messageText": "Passwords do not match"
+        },
+        {
             "messageKey": "ZWEAS199E",
             "messageText": "The password for the specified identity has expired"
         },

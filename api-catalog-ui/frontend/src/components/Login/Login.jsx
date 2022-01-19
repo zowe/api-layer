@@ -22,6 +22,7 @@ export default class Login extends React.Component {
         this.handleClickShowPassword = this.handleClickShowPassword.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.backToLogin = this.backToLogin.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
     }
 
@@ -47,7 +48,8 @@ export default class Login extends React.Component {
         return isFetching;
     };
 
-    handleError = error => {
+    handleError = auth => {
+        const { error, expired } = auth;
         let messageText;
         const { authentication } = this.props;
         // eslint-disable-next-line global-require
@@ -75,12 +77,24 @@ export default class Login extends React.Component {
         } else if (error.status === 500) {
             messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
         }
-        return messageText;
+        return { messageText, expired };
     };
 
     handleChange(e) {
         const { name, value } = e.target;
         this.setState({ [name]: value });
+        if (name === 'repeatNewPassword') {
+            const { newPassword } = this.state;
+            const { validateInput } = this.props;
+            validateInput({ newPassword, repeatNewPassword: value });
+        }
+    }
+
+    backToLogin() {
+        this.setState({ newPassword: null });
+        this.setState({ repeatNewPassword: null });
+        const { returnToLogin } = this.props;
+        returnToLogin();
     }
 
     handleSubmit(e) {
@@ -89,28 +103,30 @@ export default class Login extends React.Component {
         const { username, password, newPassword } = this.state;
         const { login } = this.props;
 
-        if (username && password) {
-            login({ username, password });
-        }
         if (username && password && newPassword) {
             login({ username, password, newPassword });
+        } else if (username && password) {
+            login({ username, password });
         }
     }
 
     render() {
         const { username, password, errorMessage, showPassword, warning, newPassword, repeatNewPassword  } = this.state;
         const { authentication, isFetching } = this.props;
-        let messageText;
+        let error = { messageText: null, expired: false };
         if (
             authentication !== undefined &&
             authentication !== null &&
             authentication.error !== undefined &&
             authentication.error !== null
         ) {
-            messageText = this.handleError(authentication.error);
+            error = this.handleError(authentication);
         } else if (errorMessage) {
-            messageText = errorMessage;
+            error.messageText = errorMessage;
+        } else if (authentication !== null) {
+            error.expired = authentication.expired;
         }
+        debugger;
         return (
             <div className="login-object">
                 <div className="login-form">
