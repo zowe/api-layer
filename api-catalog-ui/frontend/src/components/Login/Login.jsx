@@ -102,7 +102,6 @@ export default class Login extends React.Component {
 
         const { username, password, newPassword } = this.state;
         const { login } = this.props;
-
         if (username && password && newPassword) {
             login({ username, password, newPassword });
         } else if (username && password) {
@@ -123,8 +122,6 @@ export default class Login extends React.Component {
             error = this.handleError(authentication);
         } else if (errorMessage) {
             error.messageText = errorMessage;
-        } else if (authentication !== null) {
-            error.expired = authentication.expired;
         }
         debugger;
         return (

@@ -18,6 +18,7 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
     switch (action.type) {
         case userConstants.USERS_LOGIN_REQUEST:
             return {
+                ...state,
                 user: action.user,
             };
         case userConstants.USERS_LOGIN_SUCCESS:
